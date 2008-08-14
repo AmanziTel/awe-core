@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Amanzi Wireless Explorer RCP Application Plug-in
+Bundle-SymbolicName: org.amanzi.awe;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: org.amanzi.awe.Activator
+Bundle-Vendor: Amanzi HB
+Require-Bundle: org.eclipse.core.runtime,
+ net.refractions.udig.ui
+Eclipse-LazyStart: true

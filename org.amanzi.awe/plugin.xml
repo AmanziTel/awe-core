@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         id="id1"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="org.amanzi.awe.Application">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="org.amanzi.awe.PerspectiveFactory"
+            icon="icons/obj16/world_16.png"
+            id="org.amanzi.awe.perspective"
+            name="Amanzi Wireless Explorer">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <actionSet
+               id="net.refractions.udig.project.ui.LayerActions">
+         </actionSet>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.amanzi.awe.id1"
+            name="Amanzi Wireless Explorer">
+         <property
+               name="appName"
+               value="Amanzi Wireless Explorer">
+         </property>
+         <property
+               name="aboutImage"
+               value="nl/en/about.gif">
+         </property>
+         <property
+               name="aboutText"
+               value="Amanzi Wireless Explorer&#x0A;&#x0A;This is an open source platform for data management, planning and optimization in cellular radio networks.&#x0A;For more information and support visit http://www.amanzitel.com/page/AWE">
+         </property>
+         <property
+               name="windowImages"
+               value="icons/awe_icon_16.gif,icons/awe_icon_32.gif,icons/awe_icon_48.gif,icons/awe_icon_64.gif,icons/awe_icon_128.gif">
+         </property>
+         <property
+               name="startupForegroundColor"
+               value="FFFFFF">
+         </property>
+         <property
+               name="startupMessageRect"
+               value="7,230,445,16">
+         </property>
+         <property
+               name="startupProgressRect"
+               value="0,312,500,18">
+         </property>
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+         </property>
+      </product>
+   </extension>
+
+</plugin>
