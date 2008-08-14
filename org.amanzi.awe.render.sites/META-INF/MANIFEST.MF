@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Amanzi Site Rendering Plug-in
+Bundle-SymbolicName: org.amanzi.awe.render.sites;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Vendor: amanzi.org
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui,
+ net.refractions.udig.project,
+ org.amanzi.awe.catalog.csv,
+ org.amanzi.awe.catalog.json
+Bundle-Activator: org.amanzi.awe.render.sites.Activator
+Eclipse-LazyStart: true
