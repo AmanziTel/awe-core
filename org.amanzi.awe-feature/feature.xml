@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.amanzi.awe_feature"
+      label="Feature for branding Amanzi Wireless Explorer"
+      version="1.0.0"
+      provider-name="amanzi.org">
+
+   <description url="http://www.amanzi.org/awe">
+      Amanzi Wireless Explorer
+   </description>
+
+   <copyright url="http://www.amanzi.org/awe/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.amanzi.org/awe/license">
+      [Enter License Description here.]
+   </license>
+
+   <plugin
+         id="org.amanzi.awe"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.ui.operation.shape_export"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
