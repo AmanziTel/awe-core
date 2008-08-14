@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JSON Catalog Plug-in
+Bundle-SymbolicName: org.amanzi.awe.catalog.json;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Vendor: amanzi.org
+Require-Bundle: org.eclipse.core.runtime,
+ net.refractions.udig.catalog.ui,
+ net.sf.json;visibility:=reexport,
+ com.csvreader;resolution:=optional;visibility:=reexport
+Export-Package: org.amanzi.awe.catalog.json
