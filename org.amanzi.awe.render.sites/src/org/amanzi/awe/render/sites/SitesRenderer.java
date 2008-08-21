@@ -40,7 +40,8 @@ public class SitesRenderer extends RendererImpl {
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
 
-    private void setCrsTransforms(CoordinateReferenceSystem dataCrs, boolean lenient) throws FactoryException{
+    private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
+        boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
         this.transform_d2w = CRS.findMathTransform(dataCrs, worldCrs, lenient);
         this.transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient); // could use transform_d2w.inverse() also
@@ -95,7 +96,7 @@ public class SitesRenderer extends RendererImpl {
 
             g.setColor(drawColor);
 
-            setCrsTransforms(csvGeoResource.getInfo(null).getCRS(), false);
+            setCrsTransforms(csvGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
 
             int count = 0;
@@ -161,7 +162,7 @@ public class SitesRenderer extends RendererImpl {
             monitor.subTask("connecting");
             jsonReader = jsonGeoResource.resolve(JSONReader.class, new SubProgressMonitor(monitor, 10));
 
-            setCrsTransforms(jsonGeoResource.getInfo(null).getCRS(), false);
+            setCrsTransforms(jsonGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
 
             g.setColor(drawColor);
