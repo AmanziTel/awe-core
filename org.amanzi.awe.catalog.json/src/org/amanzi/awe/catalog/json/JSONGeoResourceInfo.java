@@ -6,8 +6,6 @@ import net.refractions.udig.catalog.IGeoResourceInfo;
 import net.sf.json.JSONObject;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * This class produces information about the CSV data stream, including
@@ -24,10 +22,9 @@ public class JSONGeoResourceInfo extends IGeoResourceInfo {
         JSONReader jsonReader = handle.getJSONReader(monitor);
         JSONObject json = jsonReader.jsonObject();
         try {
-            CoordinateReferenceSystem crs = jsonReader.getCRS(DefaultGeographicCRS.WGS84);  // default WGS84 if crs cannot be found in JSON
             this.name = json.has("name") ? json.getString("name") : "GeoJSON Data";
             this.description = json.has("description") ? json.getString("description") : "GeoJSON Data";
-            this.bounds = jsonReader.getBounds();
+            this.bounds = jsonReader.getBounds();   // This also provides the CRS
         } catch (Exception e) {
             System.err.println("Failed to determine GeoResourceInfo: "+e.getMessage());
             e.printStackTrace(System.err);
