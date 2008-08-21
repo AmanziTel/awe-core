@@ -2,8 +2,6 @@
 <?eclipse version="3.2"?>
 <plugin>
    <extension
-         id="org.amanzi.awe.mapgraphic"
-         name="Amanzi Mapgraphics"
          point="net.refractions.udig.mapgraphic.mapgraphic">
       <mapGraphic
             class="org.amanzi.awe.mapgraphic.CoordinateGraphic"

@@ -8,7 +8,6 @@ import java.util.List;
 import net.refractions.udig.mapgraphic.MapGraphic;
 import net.refractions.udig.mapgraphic.MapGraphicContext;
 import net.refractions.udig.project.IBlackboard;
-import net.refractions.udig.project.IMap;
 import net.refractions.udig.ui.graphics.ViewportGraphics;
 
 import org.amanzi.awe.tool.coordinate.CoordinateTool;
@@ -17,6 +16,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 public class CoordinateGraphic implements MapGraphic {
 
+    @SuppressWarnings("unchecked")
     public void draw( MapGraphicContext context ) {
         //initialize the graphics handle
         ViewportGraphics g = context.getGraphics();
