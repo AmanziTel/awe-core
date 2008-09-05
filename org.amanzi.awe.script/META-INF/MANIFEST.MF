@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: AWEScript
+Bundle-SymbolicName: org.amanzi.awe.script;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: org.amanzi.awe.script.Activator
+Bundle-Vendor: amanzi.org
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ net.refractions.udig.ui,
+ org.jruby;bundle-version="1.1.4";visibility:=reexport,
+ com.sun.script.jruby;bundle-version="1.1.5"
+Eclipse-LazyStart: true
