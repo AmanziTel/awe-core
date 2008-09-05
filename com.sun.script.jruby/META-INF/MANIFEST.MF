@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: JRuby Script Engine
-Bundle-SymbolicName: com.sun.script.jruby
-Bundle-Version: 1.1.5
-Bundle-Vendor: Sun Microsystems
-Export-Package: com.sun.script.jruby
-Require-Bundle: org.jruby
