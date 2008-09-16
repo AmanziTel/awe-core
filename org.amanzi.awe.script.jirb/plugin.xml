@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="AWEScript"
+            id="org.amanzi.awe.script">
+      </category>
+      <view
+            name="AWEScript"
+            icon="icons/awe_icon_16.png"
+            category="org.amanzi.awe.script"
+            class="org.amanzi.awe.script.jirb.views.RubyConsole"
+            id="org.amanzi.awe.script.jirb.views.RubyConsole">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.ui.resourcePerspective">
+         <view
+               ratio="0.5"
+               relative="org.eclipse.ui.views.TaskList"
+               relationship="right"
+               id="org.amanzi.awe.script.jirb.views.RubyConsole">
+         </view>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
+   </extension>
+
+</plugin>
