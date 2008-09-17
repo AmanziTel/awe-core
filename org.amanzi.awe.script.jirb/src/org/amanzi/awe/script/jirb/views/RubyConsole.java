@@ -6,8 +6,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.part.*;
-import org.eclipse.jface.viewers.*;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.jface.action.*;
 import org.eclipse.ui.*;
 
@@ -32,6 +30,7 @@ import org.eclipse.ui.*;
 
 public class RubyConsole extends ViewPart {
 	private SWTIRBConsole ex;
+	private Action action0;
 	private Action action1;
 	private Action action2;
 
@@ -74,12 +73,15 @@ public class RubyConsole extends ViewPart {
 	}
 
 	private void fillLocalPullDown(IMenuManager manager) {
+		manager.add(action0);
+		manager.add(new Separator());
 		manager.add(action1);
 		manager.add(new Separator());
 		manager.add(action2);
 	}
 
 	private void fillContextMenu(IMenuManager manager) {
+		manager.add(action0);
 		manager.add(action1);
 		manager.add(action2);
 		// Other plug-ins can contribute there actions here
@@ -87,11 +89,28 @@ public class RubyConsole extends ViewPart {
 	}
 	
 	private void fillLocalToolBar(IToolBarManager manager) {
+		manager.add(action0);
 		manager.add(action1);
 		manager.add(action2);
 	}
 
 	private void makeActions() {
+		action0 = new Action() {
+			public void run() {
+				try {
+					ex.restart();
+				} catch(Throwable t){
+					System.err.println("Failed to re-start IRBConsole: "+t.getMessage());
+					t.printStackTrace(System.err);
+				}
+			}
+		};
+		action0.setText("Restart IRB Session");
+		action0.setToolTipText("Restart IRB Session");
+		action0.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+			getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
+		
+		final Display display = this.getSite().getShell().getDisplay();
 		action1 = new Action() {
 			public void run() {
 				try {
@@ -105,9 +124,8 @@ public class RubyConsole extends ViewPart {
 		action1.setText("Swing-based IRBConsole");
 		action1.setToolTipText("Start a Swing-based IRBConsole");
 		action1.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-			getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+			getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
 		
-		final Display display = this.getSite().getShell().getDisplay();
 		action2 = new Action() {
 			public void run() {
 				try {
@@ -121,7 +139,7 @@ public class RubyConsole extends ViewPart {
 		action2.setText("SWT/AWT based IRBConsole");
 		action2.setToolTipText("Start an SWT/AWT based IRBConsole");
 		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+				getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
 	}
 
 	/**

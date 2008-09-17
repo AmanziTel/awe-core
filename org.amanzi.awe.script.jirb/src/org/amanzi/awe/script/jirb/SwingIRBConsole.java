@@ -3,13 +3,11 @@ package org.amanzi.awe.script.jirb;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -20,6 +18,7 @@ import javax.swing.JTextPane;
 
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
+import org.jruby.demo.TextAreaReadline;
 import org.jruby.internal.runtime.ValueAccessor;
 
 public class SwingIRBConsole extends JFrame {
@@ -72,7 +71,7 @@ public class SwingIRBConsole extends JFrame {
         console.getContentPane().add(pane);
         console.validate();
 
-        final SwingTextAreaReadline tar = new SwingTextAreaReadline(text, " Welcome to the JRuby IRB Console \n\n");
+        final TextAreaReadline tar = new TextAreaReadline(text, " Welcome to the JRuby IRB Console \n\n");
         console.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 tar.shutdown();
@@ -98,7 +97,7 @@ public class SwingIRBConsole extends JFrame {
 
         // Now set the process ID inside ruby to the same as the java system id
         runtime.getGlobalVariables().defineReadonly("$$", new ValueAccessor(runtime.newFixnum(System.identityHashCode(runtime))));
-        runtime.getLoadService().init(IRBUtils.makeLoadPath());
+        runtime.getLoadService().init(IRBUtils.makeLoadPath(null));
 
         tar.hookIntoRuntime(runtime);
 
