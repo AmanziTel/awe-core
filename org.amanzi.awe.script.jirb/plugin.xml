@@ -5,15 +5,15 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            name="AWEScript"
+            name="Amanzi"
             id="org.amanzi.awe.script">
       </category>
       <view
             name="AWEScript"
             icon="icons/awe_icon_16.png"
             category="org.amanzi.awe.script"
-            class="org.amanzi.awe.script.jirb.views.RubyConsole"
-            id="org.amanzi.awe.script.jirb.views.RubyConsole">
+            class="org.amanzi.awe.script.jirb.RubyConsole"
+            id="org.amanzi.awe.script.jirb.RubyConsole">
       </view>
    </extension>
    <extension
@@ -24,7 +24,25 @@
                ratio="0.5"
                relative="org.eclipse.ui.views.TaskList"
                relationship="right"
-               id="org.amanzi.awe.script.jirb.views.RubyConsole">
+               id="org.amanzi.awe.script.jirb.RubyConsole">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.awe.script.jirb.RubyConsole"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="net.refractions.udig.ui.mapPerspective">
+         <view
+               id="org.amanzi.awe.script.jirb.RubyConsole"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
          </view>
       </perspectiveExtension>
    </extension>

@@ -1,33 +1,35 @@
-package org.amanzi.awe.script.jirb.views;
+package org.amanzi.awe.script.jirb;
 
-
-import org.amanzi.awe.script.jirb.*;
+import org.amanzi.scripting.jirb.IRBConfigData;
+import org.amanzi.scripting.jirb.SWTIRBConsole;
+import org.amanzi.scripting.jirb.SwingIRBConsole;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.part.*;
-import org.eclipse.jface.action.*;
-import org.eclipse.ui.*;
-
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.ViewPart;
 
 /**
- * This sample class demonstrates how to plug-in a new
- * workbench view. The view shows data obtained from the
- * model. The sample creates a dummy model on the fly,
- * but a real implementation would connect to the model
- * available either in this or another plug-in (e.g. the workspace).
- * The view is connected to the model using a content provider.
- * <p>
- * The view uses a label provider to define how model
- * objects should be presented in the view. Each
- * view can present the same model objects using
- * different labels and icons, if needed. Alternatively,
- * a single label provider can be shared between views
- * in order to ensure that objects of the same type are
- * presented in the same way everywhere.
- * <p>
+ * This class makes a view with an embedded JIRB Console provided by the
+ * org.amanzi.scripting.jirb plugin. In addition we provide toolbar actions for restarting the IRB
+ * if the user types 'exit', as well as for opening the console in a pure Swing JFrame and an SWT
+ * Shell. The customization options for the console are exposed from the org.amanzi.scripting.jirb
+ * plugin in the form of the IRBConfigData class, and this is used to customize the console to some
+ * extent.
+ * <p>This class was original based on the template provided by the eclipse view plugin generator.</p>
+ * @see org.amanzi.scripting.jirb
+ * @see org.amanzi.scripting.jirb.SWTIRBConsole
+ * @see org.amanzi.scripting.jirb.IRBConfigData
  */
-
 public class RubyConsole extends ViewPart {
 	private SWTIRBConsole ex;
 	private Action action0;
@@ -40,15 +42,25 @@ public class RubyConsole extends ViewPart {
 	public RubyConsole() {
 	}
 
-	/**
-	 * This is a callback that will allow us
-	 * to create the viewer and initialize it.
-	 */
+    /**
+     * This is a callback that will allow us to create the embedded SWTIRBConsole and initialize it.
+     */
 	public void createPartControl(Composite parent) {
-		ex = new SWTIRBConsole(parent);
-
+        ex = new SWTIRBConsole(parent, new IRBConfigData(){{
+            setTitle(" Welcome to the AWEScript Console \n\n");
+            addExtraGlobal("view", RubyConsole.this);
+            addExtraGlobal("catalog", net.refractions.udig.catalog.CatalogPlugin.getDefault());
+            addExtraGlobal("catalog", net.refractions.udig.catalog.CatalogPlugin.getDefault());
+            addExtraGlobal("active_map", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
+            addExtraGlobal("active_project", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
+            addExtraGlobal("maps", net.refractions.udig.project.ui.ApplicationGIS.getOpenMaps());
+            addExtraGlobal("projects", net.refractions.udig.project.ui.ApplicationGIS.getProjects());
+            String userDir = System.getProperty("user.home");
+            setExtraLoadPath(new String[]{userDir+"/.awe/script",userDir+"/.awe/lib"});
+            setExtraRequire(new String[]{"awescript"});   // add startup ruby scripts here, and they will be called before IRB.start
+        }});
 		// Create the help context id for the viewer's control
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(ex, "org.amanzi.awe.script.jirb.viewer");
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(ex, "org.amanzi.awe.script.jirb");
 		makeActions();
 		hookContextMenu();
 		contributeToActionBars();
@@ -84,7 +96,7 @@ public class RubyConsole extends ViewPart {
 		manager.add(action0);
 		manager.add(action1);
 		manager.add(action2);
-		// Other plug-ins can contribute there actions here
+		// Other plug-ins can contribute their actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
 	
@@ -98,6 +110,7 @@ public class RubyConsole extends ViewPart {
 		action0 = new Action() {
 			public void run() {
 				try {
+				    // restart the embedded console
 					ex.restart();
 				} catch(Throwable t){
 					System.err.println("Failed to re-start IRBConsole: "+t.getMessage());
@@ -114,6 +127,7 @@ public class RubyConsole extends ViewPart {
 		action1 = new Action() {
 			public void run() {
 				try {
+				    // Create a new standalone swing console (based on org.jruby.demo.IRBConsole)
 					SwingIRBConsole.start(null);
 				} catch(Throwable t){
 					System.err.println("Failed to start swing-based IRBConsole: "+t.getMessage());
@@ -129,9 +143,10 @@ public class RubyConsole extends ViewPart {
 		action2 = new Action() {
 			public void run() {
 				try {
+                    // Create a new standalone SWT console console (based on org.jruby.demo.IRBConsole embedded in SWT)
 					SWTIRBConsole.start(display);
 				} catch(Throwable t){
-					System.err.println("Failed to start swing-based IRBConsole: "+t.getMessage());
+					System.err.println("Failed to start SWT-based IRBConsole: "+t.getMessage());
 					t.printStackTrace(System.err);
 				}
 			}
@@ -143,10 +158,9 @@ public class RubyConsole extends ViewPart {
 	}
 
 	/**
-	 * Passing the focus request to the viewer's control.
+	 * Passing the focus request to the embedded composite.
 	 */
 	public void setFocus() {
-		//viewer.getControl().setFocus();
 		ex.setFocus();
 	}
 }

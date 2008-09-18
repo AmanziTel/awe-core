@@ -29,3 +29,12 @@ module IRB
   end
 end
 
+print "Useful global variables: "
+puts Kernel.global_variables.find_all{|v| v.length>7 && v.downcase==v || v=~/map/ || v=~/view/}.join(', ')
+if Kernel.global_variables.grep(/projects/)
+  puts "Loaded projects: #{$projects.map{|p|p.name}.join(', ')}"
+end
+if Kernel.global_variables.grep(/projects/)
+  puts "Open maps: #{$maps.map{|m|m.name}.join(', ')}"
+end
+
