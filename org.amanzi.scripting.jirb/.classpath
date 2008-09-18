@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="lib" path="/org.amanzi.scripting.jruby/jruby.jar" sourcepath="/home/craig/dev/jruby-1.1.4/src"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
