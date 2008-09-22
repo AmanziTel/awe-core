@@ -175,11 +175,23 @@ public class SWTIRBConsole extends Composite {
                     }
                 }
                 IRubyObject result = null;
-                for(String scriptlet:irbConfig.getStartScriptlets()){
-                    if(!(result = runtime.evalScriptlet(scriptlet)).isTrue()){
-                    	System.err.println("Error running scriptlet '"+scriptlet+"': "+result);
-                    	runtime.getErr().println("Error running scriptlet '"+scriptlet+"': "+result);
-                    	break;
+                try{
+                    for(String scriptlet:irbConfig.getStartScriptlets()){
+                        if(!(result = runtime.evalScriptlet(scriptlet)).isTrue()){
+                        	System.err.println("Error running scriptlet '"+scriptlet+"': "+result);
+                        	runtime.getErr().println("Error running scriptlet '"+scriptlet+"': "+result);
+                        	break;
+                        }
+                    }
+                }catch(Exception e){
+                    System.err.println("Error running JRuby: "+e);
+                    e.printStackTrace(System.err);
+                    try{
+                        runtime.getErr().println("Error running JRuby: "+e.getMessage());
+                        e.printStackTrace(runtime.getErr());
+                    }catch(Throwable t){
+                        System.err.println("Error reporting error to console: "+t.getMessage());
+                        t.printStackTrace(System.err);
                     }
                 }
                 if(shell!=null){    // we are running in a standalone shell, so close it down
