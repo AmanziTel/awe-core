@@ -1,5 +1,7 @@
 package org.amanzi.awe.script.jirb;
 
+import net.refractions.udig.project.IMap;
+
 import org.amanzi.scripting.jirb.IRBConfigData;
 import org.amanzi.scripting.jirb.SWTIRBConsole;
 import org.amanzi.scripting.jirb.SwingIRBConsole;
@@ -49,12 +51,13 @@ public class RubyConsole extends ViewPart {
         ex = new SWTIRBConsole(parent, new IRBConfigData(){{
             setTitle(" Welcome to the AWEScript Console \n\n");
             addExtraGlobal("view", RubyConsole.this);
+            addExtraGlobal("udig_sdk_libs", "/home/craig/dev/udig-1.1.jun27/udig-sdk/plugins/net.refractions.udig.libs_1.1.0/lib");
             addExtraGlobal("catalog", net.refractions.udig.catalog.CatalogPlugin.getDefault());
-            addExtraGlobal("catalog", net.refractions.udig.catalog.CatalogPlugin.getDefault());
-            addExtraGlobal("active_map", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
+            addExtraGlobal("catalogs", net.refractions.udig.catalog.CatalogPlugin.getDefault().getCatalogs());
+            addExtraGlobal("projects", net.refractions.udig.project.ui.ApplicationGIS.getProjects());
             addExtraGlobal("active_project", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
             addExtraGlobal("maps", net.refractions.udig.project.ui.ApplicationGIS.getOpenMaps());
-            addExtraGlobal("projects", net.refractions.udig.project.ui.ApplicationGIS.getProjects());
+            addExtraGlobal("active_map", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
             String userDir = System.getProperty("user.home");
             setExtraLoadPath(new String[]{userDir+"/.awe/script",userDir+"/.awe/lib"});
             setExtraRequire(new String[]{"awescript"});   // add startup ruby scripts here, and they will be called before IRB.start

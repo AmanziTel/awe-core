@@ -7,7 +7,8 @@ Bundle-Vendor: org.amanzi
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.amanzi.scripting.jirb,
- net.refractions.udig.catalog,
+ net.refractions.udig.ui,
+ net.refractions.udig.catalog.ui,
  net.refractions.udig.project.ui
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Eclipse-LazyStart: false
