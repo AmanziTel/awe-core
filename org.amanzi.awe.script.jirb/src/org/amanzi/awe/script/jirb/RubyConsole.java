@@ -1,7 +1,5 @@
 package org.amanzi.awe.script.jirb;
 
-import net.refractions.udig.project.IMap;
-
 import org.amanzi.scripting.jirb.IRBConfigData;
 import org.amanzi.scripting.jirb.SWTIRBConsole;
 import org.amanzi.scripting.jirb.SwingIRBConsole;
@@ -58,6 +56,8 @@ public class RubyConsole extends ViewPart {
             addExtraGlobal("active_project", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
             addExtraGlobal("maps", net.refractions.udig.project.ui.ApplicationGIS.getOpenMaps());
             addExtraGlobal("active_map", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
+            addExtraGlobal("json_reader_class", org.amanzi.awe.catalog.json.JSONReader.class);
+            addExtraGlobal("feature_source_class", org.geotools.data.FeatureSource.class);
             String userDir = System.getProperty("user.home");
             setExtraLoadPath(new String[]{userDir+"/.awe/script",userDir+"/.awe/lib"});
             setExtraRequire(new String[]{"awescript"});   // add startup ruby scripts here, and they will be called before IRB.start
