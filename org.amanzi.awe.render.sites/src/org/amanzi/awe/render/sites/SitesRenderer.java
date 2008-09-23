@@ -16,7 +16,6 @@ import net.sf.json.JSONObject;
 import org.amanzi.awe.catalog.csv.CSV;
 import org.amanzi.awe.catalog.json.JSONReader;
 import org.amanzi.awe.catalog.json.JSONReader.Feature;
-import org.amanzi.awe.catalog.json.JSONReader.FeatureReader;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -169,9 +168,7 @@ public class SitesRenderer extends RendererImpl {
             int count = 0;
             monitor.subTask("drawing");
             Coordinate world_location = new Coordinate(); // single object for re-use in transform below (minimize object creation)
-            FeatureReader featureReader = jsonReader.getFeatureReader();
-            Feature feature;
-            while( (feature = featureReader.getFeature()) != null ) {
+            for(Feature feature:jsonReader.getFeatures()) {
                 Point[] points = feature.getPoints();
                 Point point = points[0];    // TODO: Support multi-point geometries
                 Coordinate location = point.getCoordinate();
