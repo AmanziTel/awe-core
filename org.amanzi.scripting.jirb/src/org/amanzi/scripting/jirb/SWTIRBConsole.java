@@ -47,6 +47,7 @@ public class SWTIRBConsole extends Composite {
     private IRBConfigData irbConfig = null;
     private RubyInstanceConfig config = null;
     private Ruby runtime = null;
+    private boolean shuttingDown;
 	
     /**
      * Construct an instance of this class, which will also result in
@@ -177,7 +178,7 @@ public class SWTIRBConsole extends Composite {
                 IRubyObject result = null;
                 try{
                     for(String scriptlet:irbConfig.getStartScriptlets()){
-                        if(!(result = runtime.evalScriptlet(scriptlet)).isTrue()){
+                        if(!(result = runtime.evalScriptlet(scriptlet)).isTrue() && !shuttingDown){
                         	System.err.println("Error running scriptlet '"+scriptlet+"': "+result);
                         	runtime.getErr().println("Error running scriptlet '"+scriptlet+"': "+result);
                         	break;
@@ -201,7 +202,7 @@ public class SWTIRBConsole extends Composite {
 							shell.dispose();
 						}
 	                });
-                }else{  // we are running in an embedded console, so try report exit code
+                }else if(!shuttingDown){  // we are running in an embedded console, so try report exit code
                 	runtime.getErr().println("IRB-Console exited: "+result);
                 	if(result.isNil()){
 	                	tar.shutdown();
@@ -248,7 +249,15 @@ public class SWTIRBConsole extends Composite {
 	 * then this method will attempt to re-start it within the same console.
 	 */
 	public void restart() {
-		if(irbThread==null || !irbThread.isAlive()){
+	    shuttingDown = true;
+	    tar.shutdown();
+	    while(irbThread!=null && irbThread.isAlive()){
+	        try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {}
+	    }
+	    shuttingDown = false;
+	    if(irbThread==null || !irbThread.isAlive()){
 	        tar = new TextAreaReadline(editorPane, irbConfig.getTitle());
 			irbThread = start_irb_panel(null);
 		}
