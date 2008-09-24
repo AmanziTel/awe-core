@@ -43,7 +43,7 @@ public class IRBConfigData {
 		scriptlets.add("require 'irb'");
 		scriptlets.add("require 'irb/completion'");
         for(String require:getExtraRequire()) scriptlets.add("require '"+require+"'");
-		scriptlets.add("IRB.start");
+        scriptlets.add("IRB.start");
 		return scriptlets.toArray(new String[0]);
 	}
     public HashMap<String, Object> getExtraGlobals() {
