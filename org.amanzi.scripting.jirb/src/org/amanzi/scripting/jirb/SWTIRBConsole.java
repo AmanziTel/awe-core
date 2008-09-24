@@ -206,7 +206,7 @@ public class SWTIRBConsole extends Composite {
                 	runtime.getErr().println("IRB-Console exited: "+result);
                 	if(result.isNil()){
 	                	tar.shutdown();
-	                }else if(result.convertToInteger().getLongValue()==0){
+	                }else if(result.isTrue() || result.convertToInteger().getLongValue()==0){
 	                	// user typed 'exit' or 'exit 0'
 	                	// we can use the information to restart the interpreter
 	                	tar.shutdown();
