@@ -1,8 +1,15 @@
 package org.amanzi.awe.script.jirb;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URL;
+
 import org.amanzi.scripting.jirb.IRBConfigData;
 import org.amanzi.scripting.jirb.SWTIRBConsole;
 import org.amanzi.scripting.jirb.SwingIRBConsole;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -60,7 +67,20 @@ public class RubyConsole extends ViewPart {
             addExtraGlobal("feature_source_class", org.geotools.data.FeatureSource.class);
             String userDir = System.getProperty("user.home");
             setExtraLoadPath(new String[]{userDir+"/.awe/script",userDir+"/.awe/lib"});
-            setExtraRequire(new String[]{"awescript"});   // add startup ruby scripts here, and they will be called before IRB.start
+            try{
+                URL scriptURL = FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("awescript.rb"));
+                StringWriter sw = new StringWriter();
+                BufferedReader br = new BufferedReader(new FileReader(scriptURL.getPath()));
+                String line;
+                while((line=br.readLine())!=null) sw.write(line);
+                System.out.println("Adding script to scriptlets: "+sw.toString());
+                setExtraRequire(new String[]{sw.toString()});
+            }catch(Exception e){
+                System.err.println("Failed to add internal awescript startup: "+e);
+                e.printStackTrace(System.err);
+                setExtraRequire(new String[]{"awescript"});   // add startup ruby scripts here, and they will be called before IRB.start
+            }
+
         }});
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(ex, "org.amanzi.awe.script.jirb");

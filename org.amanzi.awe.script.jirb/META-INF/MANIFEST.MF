@@ -15,3 +15,4 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Eclipse-LazyStart: false
 Bundle-ClassPath: jruby.jar,
  .
+Bundle-Activator: org.amanzi.awe.script.jirb.Activator
