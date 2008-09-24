@@ -12,7 +12,10 @@ module IRB
       end
     end
   end
-  # And now we add some useful commands to the base of the shell
+end
+
+# And now define some useful commands that can be added either to the IRB shell base, or to any AWEScript run
+module AWE
   module ExtendCommandBundle
     # This is a placeholder for a possible set of AWE commands for the DSL or API
     def awe(cmd=nil,*args,&block)
@@ -28,69 +31,118 @@ module IRB
       end
     end
     # Find and set the active project (pass project index if other than 0)
-    def project(index=0)
-      $active_project ||= $projects[index] if $projects
+    def project(index=nil)
+      $active_project = $projects[index||0] if($projects && ($active_map.nil? || index))
+      $active_project
+    end
+    # Find all projects as an array
+    def projects
+      $projects
     end
     # Find the active map (pass project index and map index if different from 0,0)
-    def map(index=0,map_index=0)
-      $active_map = nil if($active_map.to_s =~ /ProjectImpl/)	# workaround bug
-      $active_map ||= project(index).elements[map_index] if project
+    def map(index=nil,map_index=nil)
+      $active_map = project(index).elements[map_index||0] if(project && ($active_map.nil? || map_index))
+      $active_map
     end
-    # Find the map layer (pass index, defaults to 0)
-    def layer(index=0)
-      map && map.map_layers[index]
+    # Find all maps in current or specified project
+    def maps(index=nil)
+      project(index) && project.elements
     end
-    # Find the geo_resource of the layer (pass layer index, default 0)
-    def geo_resource(index=0)
+    # Find the current or specified layer in current map
+    def layer(index=nil)
+      $active_layer = map.map_layers[index||0] if(map && ($active_layer.nil? || index))
+      $active_layer
+    end
+    # Find all the map layers in the current or specified map
+    def layers(index=nil)
+      map(index) && map(index).map_layers
+    end
+    # Find the geo_resource of the current or specified layer (pass layer index, default 0)
+    def geo_resource(index=nil)
       (lyr=layer(index)) && lyr.geo_resource
     end
-    # Find the feature store in the specified layer (default layer index 0, default store type FeatureSource)
-    def feature_store(index=0,fs_class=$feature_source_class)
+    # Find the feature store in the current or specified layer (default layer index 0, default store type FeatureSource)
+    def feature_store(index=nil,fs_class=$feature_source_class)
       (geo_rs=geo_resource(index)) && (try_fs_from(geo_rs,fs_class) || try_fs_from(geo_rs,$feature_source_class) || try_fs_from(geo_rs,$json_reader_class))
     end
+    # Find all features in the current or specified layer (default layer index 0, default store type FeatureSource)
+    def features(index=nil,fs_class=$feature_source_class)
+      (fea_str=feature_store(index,fs_class)) && fea_str.features
+    end
+private
     def try_fs_from(geo_rs,fs_class)
       geo_rs.can_resolve(fs_class) && geo_rs.resolve(fs_class,nil)
-    end
-    # Find all features in the specified layer (default layer index 0, default store type FeatureSource)
-    def features(index=0,fs_class=$feature_source_class)
-      (fea_str=feature_store(index,fs_class)) && fea_str.features
     end
   end
 end
 
+# Add the AWE commands defined above to the root of the IRB
+module IRB
+  module ExtendCommandBundle
+    include AWE::ExtendCommandBundle
+  end
+end
+
+# Some utilities for setting up AWE, including paths to uDIG jars
 module AWE
-  class Setup
+  class Awe
     class << self
-      def setup
-        setup_libs
-        print_globals
-      end
       def returning
         yield
       end
       def setup_libs
-        $udig_sdk_plugins ||= returning do
-          '/home/craig/dev/udig-1.1-aug18/udig-sdk/plugins'
+        $udig_plugin_path ||= returning do
+          Java::JavaLang::System.get_property 'osgi.syspath'
         end
-        $udig_sdk_lib ||= returning do
-          $udig_sdk_plugins+'/net.refractions.udig.libs_1.1.0/lib'
+        $udig_lib_path ||= returning do
+          $udig_plugin_path+'/net.refractions.udig.libs_1.1.0/lib'
         end
       end
       def print_globals
         print "Useful global variables: "
         puts Kernel.global_variables.find_all{|v| v.length>7 && v.downcase==v || v=~/map/ || v=~/view/}.join(', ')
-        if Kernel.global_variables.grep(/projects/)
-          puts "Loaded projects: #{$projects.map{|p|p.name}.join(', ')}"
+        puts
+      end
+      def print_data_model
+        if $projects && $projects.length>0
+          puts "Data model:"
+          ($projects||[]).each_with_index do |pp,pi|
+            puts "#{pi}:#{pp.name}" if($projects.length>1)
+            pp.elements.each_with_index do |pm,mi|
+              puts "#{(mi==0 && pp.elements.length>1) ? '   maps ' : '        '}#{mi}:#{pm.name}"
+              pm.map_layers.each_with_index do |ml,li|
+                puts "#{(li==0) ? '         layers ' : '                '}#{ml.name}"
+              end
+            end
+          end
+        else
+          puts "No projects loaded"
         end
-        if Kernel.global_variables.grep(/maps/)
-          puts "Open maps: #{$maps.map{|m|m.name}.join(', ')}"
-        end
+        puts
+      end
+      def print_startup_help
+        puts "Useful AWE methods/commands:"
+        puts "\t#{AWE::ExtendCommandBundle.public_instance_methods.sort.join(', ')}"
+        puts
+        puts "Most AWE commands take an optional index parameter and cache the result for later use. " +
+             "For example, 'layer 2' will return the third layer, and later calls to 'layer' will return the same one again. " +
+             "Methods that depend on elements higher in the tree will use the previously cached results. " +
+             "For example, 'features' will return an enumeration of all features in the cached layer. " +
+             "To use a different layer, either use 'features #' or use 'layer #' and then 'features'. "
+        puts
       end
     end
   end
 end
 
-AWE::Setup.setup
-require $udig_sdk_lib+'/geoapi.jar'
-require $udig_sdk_lib+'/gt2-api.jar'
-require $udig_sdk_lib+'/gt2-main.jar'
+begin
+  AWE::Awe.setup_libs
+  AWE::Awe.print_globals
+  AWE::Awe.print_data_model
+  AWE::Awe.print_startup_help
+rescue
+  puts "Error starting AWEScript"
+end
+require $udig_lib_path+'/geoapi.jar'
+require $udig_lib_path+'/gt2-api.jar'
+require $udig_lib_path+'/gt2-main.jar'

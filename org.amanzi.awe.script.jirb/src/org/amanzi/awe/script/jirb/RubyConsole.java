@@ -1,11 +1,5 @@
 package org.amanzi.awe.script.jirb;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URL;
-
 import org.amanzi.scripting.jirb.IRBConfigData;
 import org.amanzi.scripting.jirb.SWTIRBConsole;
 import org.amanzi.scripting.jirb.SwingIRBConsole;
@@ -56,29 +50,21 @@ public class RubyConsole extends ViewPart {
         ex = new SWTIRBConsole(parent, new IRBConfigData(){{
             setTitle(" Welcome to the AWEScript Console \n\n");
             addExtraGlobal("view", RubyConsole.this);
-            addExtraGlobal("udig_sdk_libs", "/home/craig/dev/udig-1.1.jun27/udig-sdk/plugins/net.refractions.udig.libs_1.1.0/lib");
             addExtraGlobal("catalog", net.refractions.udig.catalog.CatalogPlugin.getDefault());
             addExtraGlobal("catalogs", net.refractions.udig.catalog.CatalogPlugin.getDefault().getCatalogs());
             addExtraGlobal("projects", net.refractions.udig.project.ui.ApplicationGIS.getProjects());
             addExtraGlobal("active_project", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
-            addExtraGlobal("maps", net.refractions.udig.project.ui.ApplicationGIS.getOpenMaps());
-            addExtraGlobal("active_map", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
             addExtraGlobal("json_reader_class", org.amanzi.awe.catalog.json.JSONReader.class);
             addExtraGlobal("feature_source_class", org.geotools.data.FeatureSource.class);
             String userDir = System.getProperty("user.home");
             setExtraLoadPath(new String[]{userDir+"/.awe/script",userDir+"/.awe/lib"});
             try{
-                URL scriptURL = FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("awescript.rb"));
-                StringWriter sw = new StringWriter();
-                BufferedReader br = new BufferedReader(new FileReader(scriptURL.getPath()));
-                String line;
-                while((line=br.readLine())!=null) sw.write(line);
-                System.out.println("Adding script to scriptlets: "+sw.toString());
-                setExtraRequire(new String[]{sw.toString()});
+                // Add the code from the internal plugin awescript.rb to the startup
+                addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("awescript.rb")));
             }catch(Exception e){
                 System.err.println("Failed to add internal awescript startup: "+e);
                 e.printStackTrace(System.err);
-                setExtraRequire(new String[]{"awescript"});   // add startup ruby scripts here, and they will be called before IRB.start
+                setExtraRequire(new String[]{"awescript"});   // try find the script from Ruby instead
             }
 
         }});

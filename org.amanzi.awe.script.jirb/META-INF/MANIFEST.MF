@@ -12,7 +12,7 @@ Require-Bundle: org.eclipse.ui,
  net.refractions.udig.project.ui,
  org.amanzi.awe.catalog.json
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
-Eclipse-LazyStart: false
+Eclipse-LazyStart: true
 Bundle-ClassPath: jruby.jar,
  .
 Bundle-Activator: org.amanzi.awe.script.jirb.Activator
