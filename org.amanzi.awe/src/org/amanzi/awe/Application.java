@@ -25,7 +25,7 @@ public class Application extends UDIGApplication implements IApplication {
 		return new UDIGWorkbenchAdvisor() {
 			@Override
 			public String getInitialWindowPerspectiveId() {
-				return "org.amanzi.awe.perspective";
+				return PerspectiveFactory.AWE_PERSPECTIVE;
 			}
 		};
 	}

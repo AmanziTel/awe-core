@@ -35,6 +35,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       </win>
    </launcher>
 
+
    <vm>
       <linux type="jre">jre1.6.0_06_(64_JAI)</linux>
    </vm>
