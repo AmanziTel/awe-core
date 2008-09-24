@@ -6,16 +6,23 @@
       provider-name="amanzi.org">
 
    <description url="http://www.amanzi.org/awe">
-      Amanzi Wireless Explorer
+      Amanzi Wireless Explorer - customizable GIS and data management for mobile radio network planning and optimization
    </description>
 
    <copyright url="http://www.amanzi.org/awe/copyright">
-      [Enter Copyright Description here.]
+      The Amanzi Wireless Explorer contains code written by Amanzi
+HB, AmanziTel AB, Refractions Research, Geotools, the Eclipse
+Foundation and others. All code is copyright their respective
+owners.
    </copyright>
 
    <license url="http://www.amanzi.org/awe/license">
-      [Enter License Description here.]
+      The Amanzi Wireless Explorer contains code written by Amanzi HB, AmanziTel AB, Refractions Research, Geotools, the Eclipse Foundation and others. All code is copyright their respective owners. All code by Amanzi HB is licensed using the LGPL version 2.1 or later. Each of the copyright owners has licensed their work using their prefered licenses, so please refer to each component for the specific license.
    </license>
+
+   <requires>
+      <import feature="net.refractions.udig_base" version="1.1.0"/>
+   </requires>
 
    <plugin
          id="org.amanzi.awe"
@@ -26,6 +33,88 @@
 
    <plugin
          id="org.amanzi.awe.ui.operation.shape_export"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.sun.script.jruby"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.jruby"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.amanzi.awe.catalog.csv"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.catalog.json"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.mapgraphic"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.render.sites"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.script"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.script.jirb"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.tool.coordinate"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.scripting.jirb"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.scripting.jirb.console"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.scripting.jruby"
          download-size="0"
          install-size="0"
          version="0.0.0"
