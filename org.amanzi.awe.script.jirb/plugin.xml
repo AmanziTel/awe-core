@@ -26,6 +26,9 @@
                relationship="right"
                id="org.amanzi.awe.script.jirb.RubyConsole">
          </view>
+         <viewShortcut
+               id="org.amanzi.awe.script.jirb.RubyConsole">
+         </viewShortcut>
       </perspectiveExtension>
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective">
@@ -35,6 +38,9 @@
                relative="net.refractions.udig.catalog.ui.CatalogView"
                visible="true">
          </view>
+         <viewShortcut
+               id="org.amanzi.awe.script.jirb.RubyConsole">
+         </viewShortcut>
       </perspectiveExtension>
       <perspectiveExtension
             targetID="net.refractions.udig.ui.mapPerspective">
@@ -44,6 +50,9 @@
                relative="net.refractions.udig.catalog.ui.CatalogView"
                visible="true">
          </view>
+         <viewShortcut
+               id="org.amanzi.awe.script.jirb.RubyConsole">
+         </viewShortcut>
       </perspectiveExtension>
    </extension>
    <extension
