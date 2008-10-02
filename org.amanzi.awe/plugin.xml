@@ -35,6 +35,36 @@
          <actionSet
                id="net.refractions.udig.project.ui.data.menu">
          </actionSet>
+         <view
+               id="net.refractions.udig.browser.ui.browserContainerView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <view
+               id="org.tcat.citd.sim.udig.bookmarks.internal.ui.BookmarksView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="net.refractions.udig.browser.ui.browserContainerView">
+         </viewShortcut>
+         <viewShortcut
+               id="org.tcat.citd.sim.udig.bookmarks.internal.ui.BookmarksView">
+         </viewShortcut>
+         <viewShortcut
+               id="net.refractions.udig.catalog.ui.CatalogView">
+         </viewShortcut>
+         <perspectiveShortcut
+               id="org.amanzi.awe.perspective">
+         </perspectiveShortcut>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="net.refractions.udig.ui.mapPerspective">
+         <perspectiveShortcut
+               id="org.amanzi.awe.perspective">
+         </perspectiveShortcut>
       </perspectiveExtension>
    </extension>
    <extension

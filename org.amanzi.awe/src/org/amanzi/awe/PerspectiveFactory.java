@@ -7,7 +7,6 @@ import org.eclipse.ui.IPerspectiveFactory;
 
 public class PerspectiveFactory implements IPerspectiveFactory {
     public static final String AWE_PERSPECTIVE = "org.amanzi.awe.perspective"; //$NON-NLS-1$
-	private static final String BOOKMARKS = "org.tcat.citd.sim.udig.bookmarks.internal.ui.BookmarksView"; //$NON-NLS-1$
     private static final String PROJECTS = "net.refractions.udig.project.ui.projectExplorer"; //$NON-NLS-1$
     private static final String LAYERS = "net.refractions.udig.project.ui.layerManager"; //$NON-NLS-1$
     private static final String CATALOG = "net.refractions.udig.catalog.ui.CatalogView"; //$NON-NLS-1$
@@ -31,8 +30,8 @@ public class PerspectiveFactory implements IPerspectiveFactory {
         layout.addView(PROJECTS, IPageLayout.LEFT, 0.25f, editorArea);
         layout.addView(LAYERS, IPageLayout.BOTTOM, 0.25f, PROJECTS);
         layout.addView(CATALOG, IPageLayout.BOTTOM, 0.65f, editorArea);
-        //layout.addView(BOOKMARKS, IPageLayout.RIGHT, 0.5f, CATALOG);
 
+        // TODO: This code seems redundant with the perspectiveExtensions in plugin.xml
         layout.addPerspectiveShortcut(AWE_PERSPECTIVE);
         layout.addPerspectiveShortcut(MapPerspective.ID_PERSPECTIVE);
     }
