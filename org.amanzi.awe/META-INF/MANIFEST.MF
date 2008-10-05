@@ -7,5 +7,6 @@ Bundle-Activator: org.amanzi.awe.Activator
 Bundle-Vendor: Amanzi HB
 Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.ui,
- net.refractions.udig.browser
+ net.refractions.udig.browser,
+ net.refractions.udig.tool.select
 Eclipse-LazyStart: true

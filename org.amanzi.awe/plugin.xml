@@ -59,6 +59,15 @@
          <perspectiveShortcut
                id="org.amanzi.awe.perspective">
          </perspectiveShortcut>
+         <view
+               id="net.refractions.udig.tool.select.TableView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="net.refractions.udig.tool.select.TableView">
+         </viewShortcut>
       </perspectiveExtension>
       <perspectiveExtension
             targetID="net.refractions.udig.ui.mapPerspective">
