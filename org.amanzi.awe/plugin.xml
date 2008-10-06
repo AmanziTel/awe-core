@@ -10,8 +10,7 @@
          </run>
       </application>
    </extension>
-   <extension
-         point="org.eclipse.ui.perspectives">
+   <extension point="org.eclipse.ui.perspectives">
       <perspective
             class="org.amanzi.awe.PerspectiveFactory"
             icon="icons/obj16/world_16.png"
@@ -19,22 +18,38 @@
             name="Amanzi Wireless Explorer">
       </perspective>
    </extension>
-   <extension
-         point="org.eclipse.ui.perspectiveExtensions">
-      <perspectiveExtension
-            targetID="org.amanzi.awe.perspective">
-         <actionSet
-               id="net.refractions.udig.project.ui.LayerActions">
-         </actionSet>
-         <actionSet
-               id="net.refractions.udig.project.ui.layer.menu">
-         </actionSet>
-         <actionSet
-               id="net.refractions.udig.project.ui.map.menu">
-         </actionSet>
-         <actionSet
-               id="net.refractions.udig.project.ui.data.menu">
-         </actionSet>
+   <extension point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension targetID="org.amanzi.awe.perspective">
+         <actionSet id="net.refractions.udig.project.ui.LayerActions"/>
+         <actionSet id="net.refractions.udig.project.ui.layer.menu"/>
+         <actionSet id="net.refractions.udig.project.ui.map.menu"/>
+         <actionSet id="net.refractions.udig.project.ui.data.menu"/>
+         <view
+               closeable="true"
+               standalone="true"
+               moveable="true"
+               visible="true"
+               showTitle="true"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               relationship="stack"
+               id="net.refractions.udig.catalog.ui.CatalogView">
+         </view>
+         <view
+               id="net.refractions.udig.tool.select.TableView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+		 <view
+               closeable="true"
+               standalone="true"
+               moveable="true"
+               visible="true"
+               showTitle="true"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               relationship="stack"
+               id="net.refractions.udig.catalog.ui.Search">
+         </view>
          <view
                id="net.refractions.udig.browser.ui.browserContainerView"
                relationship="stack"
@@ -47,33 +62,15 @@
                relative="net.refractions.udig.catalog.ui.CatalogView"
                visible="true">
          </view>
-         <viewShortcut
-               id="net.refractions.udig.browser.ui.browserContainerView">
-         </viewShortcut>
-         <viewShortcut
-               id="org.tcat.citd.sim.udig.bookmarks.internal.ui.BookmarksView">
-         </viewShortcut>
-         <viewShortcut
-               id="net.refractions.udig.catalog.ui.CatalogView">
-         </viewShortcut>
-         <perspectiveShortcut
-               id="org.amanzi.awe.perspective">
-         </perspectiveShortcut>
-         <view
-               id="net.refractions.udig.tool.select.TableView"
-               relationship="stack"
-               relative="net.refractions.udig.catalog.ui.CatalogView"
-               visible="true">
-         </view>
-         <viewShortcut
-               id="net.refractions.udig.tool.select.TableView">
-         </viewShortcut>
+         <viewShortcut id="net.refractions.udig.catalog.ui.CatalogView"/>
+         <viewShortcut id="net.refractions.udig.tool.select.TableView"/>
+         <viewShortcut id="net.refractions.udig.catalog.ui.Search"/>
+         <viewShortcut id="net.refractions.udig.browser.ui.browserContainerView"/>
+         <viewShortcut id="org.tcat.citd.sim.udig.bookmarks.internal.ui.BookmarksView"/>
+         <perspectiveShortcut id="org.amanzi.awe.perspective"/>
       </perspectiveExtension>
-      <perspectiveExtension
-            targetID="net.refractions.udig.ui.mapPerspective">
-         <perspectiveShortcut
-               id="org.amanzi.awe.perspective">
-         </perspectiveShortcut>
+      <perspectiveExtension targetID="net.refractions.udig.ui.mapPerspective">
+         <perspectiveShortcut id="org.amanzi.awe.perspective"/>
       </perspectiveExtension>
    </extension>
    <extension
