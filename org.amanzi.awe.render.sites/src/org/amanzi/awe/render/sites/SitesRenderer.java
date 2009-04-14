@@ -16,9 +16,19 @@ import net.sf.json.JSONObject;
 import org.amanzi.awe.catalog.csv.CSV;
 import org.amanzi.awe.catalog.json.JSONReader;
 import org.amanzi.awe.catalog.json.JSONReader.Feature;
+import org.amanzi.awe.views.network.utils.TreeViewContentProvider;
+import org.amanzi.awe.views.network.utils.ViewLabelProvider;
+import org.amanzi.awe.views.network.views.NetworkTreeView;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -33,6 +43,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Point;
 
 public class SitesRenderer extends RendererImpl {
+//	private Render
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
     private Color fillColor = new Color(120, 255, 170);
@@ -157,6 +168,7 @@ public class SitesRenderer extends RendererImpl {
         monitor.beginTask("render network sites and sectors", IProgressMonitor.UNKNOWN);    // TODO: Get size from info
 
         JSONReader jsonReader = null;
+
         try {
             monitor.subTask("connecting");
             jsonReader = jsonGeoResource.resolve(JSONReader.class, new SubProgressMonitor(monitor, 10));
@@ -168,6 +180,8 @@ public class SitesRenderer extends RendererImpl {
             int count = 0;
             monitor.subTask("drawing");
             Coordinate world_location = new Coordinate(); // single object for re-use in transform below (minimize object creation)
+            final JSONObject jsonObject = jsonReader.jsonObject();
+                        
             for(Feature feature:jsonReader.getFeatures()) {
                 Point[] points = feature.getPoints();
                 Point point = points[0];    // TODO: Support multi-point geometries
@@ -231,6 +245,36 @@ public class SitesRenderer extends RendererImpl {
                 if (monitor.isCanceled())
                     break;
             }
+            /**
+             * Below Code is added by Sachin P
+             * After loading the map, Network tree view should be shown. Below code creates new thread
+             * and in that new thread renders a view which is populated with geo_JSON data in tree format.
+             */
+            Display display = PlatformUI.getWorkbench().getDisplay();
+            display.asyncExec(new Runnable() {
+			
+			public void run() {
+				
+					IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();					
+					NetworkTreeView viewPart;
+					try {
+						viewPart = (NetworkTreeView)window.getActivePage().
+											showView(NetworkTreeView.NETWORK_VIEW_ID,null,IWorkbenchPage.VIEW_ACTIVATE);
+						viewPart.getViewer().setContentProvider(new TreeViewContentProvider(jsonObject));
+						viewPart.getViewer().setLabelProvider(new ViewLabelProvider());
+						viewPart.getViewer().setInput(viewPart.getViewSite());
+						viewPart.makeActions();		
+						viewPart.hookDoubleClickAction();
+						viewPart.setFocus();
+						window.getActivePage().activate(viewPart);
+					} catch (PartInitException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}			
+				}
+			});
+            
+            
         } catch (TransformException e) {
             throw new RenderException(e);
         } catch (FactoryException e) {
@@ -243,7 +287,7 @@ public class SitesRenderer extends RendererImpl {
             monitor.done();
         }
     }
-
+    
     /**
      * Render the sector symbols based on the point and azimuth.
      * We simply save the graphics transform, then modify the graphics
