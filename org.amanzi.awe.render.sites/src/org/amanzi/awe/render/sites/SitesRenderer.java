@@ -247,17 +247,22 @@ public class SitesRenderer extends RendererImpl {
             }
             /**
              * Below Code is added by Sachin P
-             * After loading the map, Network tree view should be shown. Below code creates new thread
-             * and in that new thread renders a view which is populated with geo_JSON data in tree format.
+             * After loading the map, Network tree view should be shown. Below code creates view in same UI thread
+             * and same renders a view which is populated with geo_JSON data in tree format.
              */
             Display display = PlatformUI.getWorkbench().getDisplay();
-            display.asyncExec(new Runnable() {
+            display.syncExec(new Runnable() {
 			
 			public void run() {
 				
 					IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();					
 					NetworkTreeView viewPart;
 					try {
+						//Finding if the view is opened.
+						IWorkbenchPart part = window.getActivePage().findView(NetworkTreeView.NETWORK_VIEW_ID);
+						if(part != null)
+							window.getActivePage().hideView((IViewPart)part);
+						
 						viewPart = (NetworkTreeView)window.getActivePage().
 											showView(NetworkTreeView.NETWORK_VIEW_ID,null,IWorkbenchPage.VIEW_ACTIVATE);
 						viewPart.getViewer().setContentProvider(new TreeViewContentProvider(jsonObject));
