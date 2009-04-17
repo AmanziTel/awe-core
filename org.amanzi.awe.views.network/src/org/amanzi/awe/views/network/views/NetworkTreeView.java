@@ -4,7 +4,8 @@
  */
 package org.amanzi.awe.views.network.views;
 
-import org.amanzi.awe.views.network.domain.TreeObject;
+import net.sf.json.JSONObject;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -59,15 +60,26 @@ public class NetworkTreeView extends ViewPart {
 			public void run() {
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				if (obj.getClass().getName().equals(TreeObject.class.getName())) {
-					System.out.println("Double click event");
+				JSONObject jsonObj = (JSONObject)obj;
+				if(jsonObj.containsKey("properties")){
+					JSONObject lJsonObj = (JSONObject)jsonObj.get("properties");
+					if(lJsonObj.containsKey("height"))
+						System.out.println("Double click event on child");
+					else {
+						expand(obj);
+					}
 				} else {
-					if (viewer.getExpandedState(obj))
-						viewer.setExpandedState(obj, false);
-					else
-						viewer.setExpandedState(obj, true);
+					expand(obj);
 				}
 			}
+			
+			private void expand(Object obj){
+				if (viewer.getExpandedState(obj))
+					viewer.setExpandedState(obj, false);
+				else
+					viewer.setExpandedState(obj, true);
+			}
+			
 		};
 		/**
 		 * When user clicks on any node below method gets invoked

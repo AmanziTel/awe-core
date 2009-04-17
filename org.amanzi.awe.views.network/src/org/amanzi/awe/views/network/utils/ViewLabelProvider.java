@@ -4,14 +4,11 @@
  */
 package org.amanzi.awe.views.network.utils;
 
-import java.io.IOException;
 import java.io.InputStream;
 
-import org.amanzi.awe.views.network.domain.TreeObject;
-import org.amanzi.awe.views.network.domain.TreeParent;
+import net.sf.json.JSONObject;
+
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 /**
@@ -24,7 +21,20 @@ public class ViewLabelProvider extends LabelProvider {
 	 * 
 	 */
 	public String getText(Object obj) {
-		return obj.toString();
+		JSONObject object = (JSONObject)obj;
+		if(object.containsKey("ROOT")){
+			return object.getString("ROOT");
+		}
+		else if(object.containsKey("name") && (object.containsKey("bsc"))){
+			return object.getString("bsc");
+		}
+		else if(object.containsKey("name")){
+			return object.getString("name");
+		}else if(object.containsKey("properties")){
+			JSONObject propObj = (JSONObject) object.get("properties");
+			return propObj.getString("name");
+		}
+		return "";
 	}
 	/**
 	 * This method will be invoked when in viewer for a particular node or child image icon needs to 
@@ -32,28 +42,15 @@ public class ViewLabelProvider extends LabelProvider {
 	 */
 	public Image getImage(Object obj) {
 		InputStream in = null;
-		in = getClass().getResourceAsStream("/icons/world_16.png");
-		if(obj.getClass().getName().equals(TreeObject.class.getName())){
-			return new Image(Display.getCurrent(), in);
-		}
-		TreeParent node = (TreeParent)obj;
-		if (node.getChildren().length > 0) {
-			in = getClass().getResourceAsStream("/icons/awe_icon_16.gif");
-			if (in != null) {
-				try {
-					return new Image(Display.getCurrent(), in);
-				} catch (SWTException e) {
-					if (e.code != SWT.ERROR_INVALID_IMAGE) {
-						throw e;
-					}
-				} finally {
-					try {
-						in.close();
-					} catch (IOException e) {
-					}
-				}
+		JSONObject jsonObj = (JSONObject)obj;
+		if(jsonObj.containsKey("properties")){
+			JSONObject lJsonObj = (JSONObject)jsonObj.get("properties");
+			if(lJsonObj.containsKey("height")){
+				in = getClass().getResourceAsStream("/icons/world_16.png");
+				return new Image(Display.getCurrent(), in);
 			}
 		}
-		return null;
+		in = getClass().getResourceAsStream("/icons/awe_icon_16.gif");
+		return new Image(Display.getCurrent(), in);
 	}
 }
