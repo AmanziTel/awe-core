@@ -65,12 +65,10 @@ public class NetworkTreeView extends ViewPart {
 					JSONObject lJsonObj = (JSONObject)jsonObj.get("properties");
 					if(lJsonObj.containsKey("height"))
 						System.out.println("Double click event on child");
-					else {
+					else 
 						expand(obj);
-					}
-				} else {
+				} else 
 					expand(obj);
-				}
 			}
 			
 			private void expand(Object obj){
