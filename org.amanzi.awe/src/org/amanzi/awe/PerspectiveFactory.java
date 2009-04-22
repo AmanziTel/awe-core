@@ -12,6 +12,7 @@ public class PerspectiveFactory implements IPerspectiveFactory {
     private static final String LAYERS = "net.refractions.udig.project.ui.layerManager"; //$NON-NLS-1$
     private static final String CATALOG = "net.refractions.udig.catalog.ui.CatalogView"; //$NON-NLS-1$
     private static final String NETWORK_VIEW_ID = "org.amanzi.awe.networktree.views.NetworkTreeView";
+    private static final String BOTTOM_LEFT = "bottomLeft";
     /** 
      * Creates the initial layout for a page.
      * <p>
@@ -35,7 +36,7 @@ public class PerspectiveFactory implements IPerspectiveFactory {
 //      layout.addView(LAYERS, IPageLayout.BOTTOM, 0.25f, PROJECTS);
         //Below code is added by Sachin P 
         //Here we are making folder layout to show two views side by side
-        IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, 0.25f,PROJECTS);
+        IFolderLayout bottomLeft = layout.createFolder(BOTTOM_LEFT, IPageLayout.BOTTOM, 0.25f,PROJECTS);
         bottomLeft.addView(LAYERS);
         bottomLeft.addView(NETWORK_VIEW_ID);
         // TODO: This code seems redundant with the perspectiveExtensions in plugin.xml
