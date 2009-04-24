@@ -4,17 +4,22 @@
  */
 package org.amanzi.awe.views.network.utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.amanzi.awe.catalog.json.JSONReader;
+import org.amanzi.awe.catalog.json.JSONReader.Feature;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IViewSite;
+
 /**
  * This class is responsible to populate actual object contents in a tree
  * @author sachinp
@@ -40,8 +45,44 @@ public class TreeViewContentProvider implements IStructuredContentProvider,
 	 * Parameterized constructor responsible for to load the JSONObject from file
 	 * @param jsonObject
 	 */
-	public TreeViewContentProvider(JSONObject jsonObject) {
-		this.features = jsonObject.getJSONArray("features");
+	public TreeViewContentProvider(JSONReader jsonReader) {
+		JSONObject jsonObject = null;
+		try {
+			jsonObject = jsonReader.jsonObject();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if(jsonObject.containsKey("features") && jsonObject.getJSONArray("features") != null && 
+				jsonObject.getJSONArray("features").size() > 0)
+			this.features = jsonObject.getJSONArray("features");
+		else{
+			this.features = new JSONArray();
+			for(Feature feature:jsonReader.getFeatures()) {
+				Map<String, Object> map = feature.getProperties();
+				JSONObject jsonFeature = new JSONObject();
+				JSONObject jsonSector = new JSONObject();
+				//1
+				String bsc = (String)map.get("bsc");
+				jsonSector.put("bsc", bsc);
+				//2
+				String name = (String)map.get("name");
+				jsonSector.put("name", name);
+				//3
+				JSONArray sectorsArray = (JSONArray)map.get("sectors");
+				jsonSector.put("sectors", sectorsArray);
+				//4
+				String easting = (String)map.get("easting");
+				jsonSector.put("easting", easting);
+				//5
+				String northing = (String)map.get("northing");
+				jsonSector.put("northing", northing);
+				
+				jsonFeature.put("properties", jsonSector);
+				
+				features.add(jsonFeature);
+	        }
+			
+		}
 	}
 	
 	/**
@@ -66,15 +107,18 @@ public class TreeViewContentProvider implements IStructuredContentProvider,
 		JSONObject jsonPropObj = null;
 		JSONObject inObject = (JSONObject)parent;
 		List<JSONObject> list = new ArrayList<JSONObject>();
-		JSONObject propObj = (JSONObject) inObject.get("properties");
-		if(propObj != null && propObj.containsKey("sectors")){
-			JSONArray sectorsArray = propObj.getJSONArray("sectors");
-			Iterator<JSONObject> iterator = sectorsArray.iterator();
-			while (iterator.hasNext()) {
-				JSONObject leafObj = iterator.next();
-				list.add(leafObj);
+		
+		if(inObject.containsKey("properties")){
+			JSONObject propObj = (JSONObject) inObject.get("properties");
+			if(propObj != null && propObj.containsKey("sectors")){
+				JSONArray sectorsArray = propObj.getJSONArray("sectors");
+				Iterator<JSONObject> iterator = sectorsArray.iterator();
+				while (iterator.hasNext()) {
+					JSONObject leafObj = iterator.next();
+					list.add(leafObj);
+				}
+				return list.toArray();
 			}
-			return list.toArray();
 		}
 		if(bscList == null){
 			bscList = new ArrayList<JSONObject>();
@@ -82,12 +126,14 @@ public class TreeViewContentProvider implements IStructuredContentProvider,
 			return bscList.toArray();
 		}
 		Iterator<JSONObject> iter = features.iterator();
-		String bsc = inObject.getString("bsc");
-		while (iter.hasNext()) {
-			JSONObject featureObj = iter.next();
-			jsonPropObj = (JSONObject) featureObj.get("properties");
-			if(bsc.equals(jsonPropObj.getString("bsc")))
-				list.add(featureObj);
+		if(inObject.containsKey("bsc")){
+			String bsc = inObject.getString("bsc");
+			while (iter.hasNext()) {
+				JSONObject featureObj = iter.next();
+				jsonPropObj = (JSONObject) featureObj.get("properties");
+				if(bsc.equals(jsonPropObj.getString("bsc")))
+					list.add(featureObj);
+			}
 		}
 		return list.toArray();
 	}

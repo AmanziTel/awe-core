@@ -9,6 +9,6 @@ Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.project,
  org.amanzi.awe.catalog.csv,
  org.amanzi.awe.catalog.json,
- org.amanzi.awe.views.network;visibility:=reexport 
+ org.amanzi.awe.views.network;visibility:=reexport
 Bundle-Activator: org.amanzi.awe.render.sites.Activator
 Eclipse-LazyStart: true

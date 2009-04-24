@@ -165,13 +165,11 @@ public class SitesRenderer extends RendererImpl {
     private void renderJSON( Graphics2D g, IGeoResource jsonGeoResource, IProgressMonitor monitor ) throws RenderException {
         if (monitor == null)
             monitor = new NullProgressMonitor();
-        monitor.beginTask("render network sites and sectors", IProgressMonitor.UNKNOWN);    // TODO: Get size from info
-
-        JSONReader jsonReader = null;
-
+        monitor.beginTask("render network sites and sectors", IProgressMonitor.UNKNOWN);    
+        // TODO: Get size from info
         try {
             monitor.subTask("connecting");
-            jsonReader = jsonGeoResource.resolve(JSONReader.class, new SubProgressMonitor(monitor, 10));
+            final JSONReader jsonReader = jsonGeoResource.resolve(JSONReader.class, new SubProgressMonitor(monitor, 10));
 
             setCrsTransforms(jsonGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -180,7 +178,6 @@ public class SitesRenderer extends RendererImpl {
             int count = 0;
             monitor.subTask("drawing");
             Coordinate world_location = new Coordinate(); // single object for re-use in transform below (minimize object creation)
-            final JSONObject jsonObject = jsonReader.jsonObject();
                         
             for(Feature feature:jsonReader.getFeatures()) {
                 Point[] points = feature.getPoints();
@@ -265,7 +262,7 @@ public class SitesRenderer extends RendererImpl {
 						
 						viewPart = (NetworkTreeView)window.getActivePage().
 											showView(NetworkTreeView.NETWORK_VIEW_ID,null,IWorkbenchPage.VIEW_ACTIVATE);
-						viewPart.getViewer().setContentProvider(new TreeViewContentProvider(jsonObject));
+						viewPart.getViewer().setContentProvider(new TreeViewContentProvider(jsonReader));
 						viewPart.getViewer().setLabelProvider(new ViewLabelProvider());
 						viewPart.getViewer().setInput(viewPart.getViewSite());
 						viewPart.makeActions();		
@@ -273,7 +270,6 @@ public class SitesRenderer extends RendererImpl {
 						viewPart.setFocus();
 						window.getActivePage().activate(viewPart);
 					} catch (PartInitException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}			
 				}
