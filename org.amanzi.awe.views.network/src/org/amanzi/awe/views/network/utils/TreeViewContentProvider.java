@@ -52,28 +52,30 @@ public class TreeViewContentProvider implements IStructuredContentProvider,
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		//when map and view is loaded from file from disk below if block will get executed  
 		if(jsonObject.containsKey("features") && jsonObject.getJSONArray("features") != null && 
 				jsonObject.getJSONArray("features").size() > 0)
 			this.features = jsonObject.getJSONArray("features");
 		else{
+		//when map and view is loaded from REST resources this else block will populate all features
 			this.features = new JSONArray();
 			for(Feature feature:jsonReader.getFeatures()) {
 				Map<String, Object> map = feature.getProperties();
 				JSONObject jsonFeature = new JSONObject();
 				JSONObject jsonSector = new JSONObject();
-				//1
+				//1 -- bsc
 				String bsc = (String)map.get("bsc");
 				jsonSector.put("bsc", bsc);
-				//2
+				//2 -- name
 				String name = (String)map.get("name");
 				jsonSector.put("name", name);
-				//3
+				//3 -- sectors
 				JSONArray sectorsArray = (JSONArray)map.get("sectors");
 				jsonSector.put("sectors", sectorsArray);
-				//4
+				//4 -- easting
 				String easting = (String)map.get("easting");
 				jsonSector.put("easting", easting);
-				//5
+				//5 -- northing
 				String northing = (String)map.get("northing");
 				jsonSector.put("northing", northing);
 				
