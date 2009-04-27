@@ -144,7 +144,7 @@ public class JSONReader {
     public ReferencedEnvelope getBounds() {
         if (bounds == null) {
             // Create Null envelope
-            this.bounds = new ReferencedEnvelope(crs);
+            this.bounds = new ReferencedEnvelope(getCRS());
             // First try to find the BBOX definition in the JSON directly
             try {
                 JSONArray jsonBBox = jsonObject().getJSONArray("bbox");
