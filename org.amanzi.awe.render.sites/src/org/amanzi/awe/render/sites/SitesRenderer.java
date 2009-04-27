@@ -43,7 +43,6 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Point;
 
 public class SitesRenderer extends RendererImpl {
-//	private Render
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
     private Color fillColor = new Color(120, 255, 170);
@@ -163,13 +162,14 @@ public class SitesRenderer extends RendererImpl {
      * This method is called to render data from the JSON Geo-Resource.
      */
     private void renderJSON( Graphics2D g, IGeoResource jsonGeoResource, IProgressMonitor monitor ) throws RenderException {
-        if (monitor == null)
-            monitor = new NullProgressMonitor();
+        if (monitor == null) {
+        	monitor = new NullProgressMonitor();
+        }
         monitor.beginTask("render network sites and sectors", IProgressMonitor.UNKNOWN);    
         // TODO: Get size from info
         try {
             monitor.subTask("connecting");
-            final JSONReader jsonReader = jsonGeoResource.resolve(JSONReader.class, new SubProgressMonitor(monitor, 10));
+            JSONReader jsonReader = jsonGeoResource.resolve(JSONReader.class, new SubProgressMonitor(monitor, 10));
 
             setCrsTransforms(jsonGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -242,39 +242,7 @@ public class SitesRenderer extends RendererImpl {
                 if (monitor.isCanceled())
                     break;
             }
-            /**
-             * Below Code is added by Sachin P
-             * After loading the map, Network tree view should be shown. Below code creates view in same UI thread
-             * and same renders a view which is populated with geo_JSON data in tree format.
-             */
-            Display display = PlatformUI.getWorkbench().getDisplay();
-            display.syncExec(new Runnable() {
-			
-			public void run() {
-				
-					IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();					
-					NetworkTreeView viewPart;
-					try {
-						//Finding if the view is opened.
-						IWorkbenchPart part = window.getActivePage().findView(NetworkTreeView.NETWORK_VIEW_ID);
-						if(part != null)
-							window.getActivePage().hideView((IViewPart)part);
-						
-						viewPart = (NetworkTreeView)window.getActivePage().
-											showView(NetworkTreeView.NETWORK_VIEW_ID,null,IWorkbenchPage.VIEW_ACTIVATE);
-						viewPart.getViewer().setContentProvider(new TreeViewContentProvider(jsonReader));
-						viewPart.getViewer().setLabelProvider(new ViewLabelProvider());
-						viewPart.getViewer().setInput(viewPart.getViewSite());
-						viewPart.makeActions();		
-						viewPart.hookDoubleClickAction();
-						viewPart.setFocus();
-						window.getActivePage().activate(viewPart);
-					} catch (PartInitException e1) {
-						e1.printStackTrace();
-					}			
-				}
-			});
-            
+            updateNetworkTreeView(jsonReader);
             
         } catch (TransformException e) {
             throw new RenderException(e);
@@ -287,6 +255,41 @@ public class SitesRenderer extends RendererImpl {
 //                jsonReader.close();
             monitor.done();
         }
+    }
+
+    /**
+     * Below Code is added by Sachin P
+     * After loading the map, Network tree view should be shown. Below code creates view in same UI thread
+     * and same renders a view which is populated with geo_JSON data in tree format.
+     */
+    private void updateNetworkTreeView( final JSONReader jsonReader ) {
+        Display display = PlatformUI.getWorkbench().getDisplay();
+        display.syncExec(new Runnable() {
+        
+        public void run() {
+        	
+        		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();					
+        		NetworkTreeView viewPart;
+        		try {
+        			//Finding if the view is opened.
+        			IWorkbenchPart part = window.getActivePage().findView(NetworkTreeView.NETWORK_VIEW_ID);
+        			if(part != null)
+        				window.getActivePage().hideView((IViewPart)part);
+        			
+        			viewPart = (NetworkTreeView)window.getActivePage().
+        								showView(NetworkTreeView.NETWORK_VIEW_ID,null,IWorkbenchPage.VIEW_ACTIVATE);
+        			viewPart.getViewer().setContentProvider(new TreeViewContentProvider(jsonReader));
+        			viewPart.getViewer().setLabelProvider(new ViewLabelProvider());
+        			viewPart.getViewer().setInput(viewPart.getViewSite());
+        			viewPart.makeActions();		
+        			viewPart.hookDoubleClickAction();
+        			viewPart.setFocus();
+        			window.getActivePage().activate(viewPart);
+        		} catch (PartInitException e1) {
+        			e1.printStackTrace();
+        		}			
+        	}
+        });
     }
     
     /**
