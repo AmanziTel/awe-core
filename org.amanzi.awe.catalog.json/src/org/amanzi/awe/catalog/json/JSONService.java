@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.refractions.udig.catalog.IService;
+import net.refractions.udig.catalog.URLUtils;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -116,8 +117,8 @@ public class JSONService extends IService {
 
 	private File getValidFile(){
 	    try {
-            return (new File(getValidURL().toURI()));
-        } catch (URISyntaxException e) {
+            return (URLUtils.urlToFile(getValidURL()));
+        } catch (Exception e) {
             return null;    // if we get here, the msg should already have been set in getValidURL()
         }
 	}
@@ -132,7 +133,7 @@ public class JSONService extends IService {
                 if (validUrl == null) {
                     try {
                         if(url.getProtocol().equals("file")){
-                            File file = new File(url.toURI());  // throws exception on invalid file url
+                            File file = URLUtils.urlToFile(url);  // throws exception on invalid file url
                             if( !file.exists() ){
                                 msg = new FileNotFoundException(url.toString());
                             }

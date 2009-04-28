@@ -8,6 +8,7 @@ import java.util.Map;
 
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.catalog.ServiceExtension;
+import net.refractions.udig.catalog.URLUtils;
 
 public class JSONServiceExtension implements ServiceExtension {
     /* CSV service key, URL to the CSV file */
@@ -18,7 +19,7 @@ public class JSONServiceExtension implements ServiceExtension {
         try {
             if (url.getProtocol().equals("file")) {
                 // the URL represent a normal file on disk
-                File file = new File(url.toURI());
+                File file = URLUtils.urlToFile(url);
                 if (file.exists()) {
                     // check the filename, is it a CSV file?
                     if (file.getName().toLowerCase().endsWith(".json") || file.getName().toLowerCase().endsWith(".geo_json")) {
@@ -38,6 +39,8 @@ public class JSONServiceExtension implements ServiceExtension {
             }
         } catch (Throwable t) {
             // something went wrong, URL must be for another service
+            System.err.println("Failed to initialize parameters for url["+url+"]: "+t.toString());
+            t.printStackTrace(System.err);
         }
 
         // unable to create the parameters, URL must be for another service
