@@ -14,7 +14,7 @@ public class JSONServiceExtension implements ServiceExtension {
     /* CSV service key, URL to the CSV file */
     public static final String URL_KEY = "org.amanzi.awe.catalog.json.url";
     public static final String CLASS_KEY = "org.amanzi.awe.catalog.json.class";
-    
+
     public Map<String, Serializable> createParams( URL url ) {
         try {
             if (url.getProtocol().equals("file")) {
@@ -22,14 +22,17 @@ public class JSONServiceExtension implements ServiceExtension {
                 File file = URLUtils.urlToFile(url);
                 if (file.exists()) {
                     // check the filename, is it a CSV file?
-                    if (file.getName().toLowerCase().endsWith(".json") || file.getName().toLowerCase().endsWith(".geo_json")) {
+                    if (file.getName().toLowerCase().endsWith(".json")
+                            || file.getName().toLowerCase().endsWith(".geo_json")
+                            || file.getName().toLowerCase().endsWith(".ext_json")) {
                         Map<String, Serializable> params = new HashMap<String, Serializable>();
                         params.put(URL_KEY, url);
                         params.put(CLASS_KEY, File.class);
                         return params;
                     }
                 }
-            } else if (url.getProtocol().equals("http") && url.getPath().toLowerCase().endsWith("json")) {
+            } else if (url.getProtocol().equals("http")
+                    && url.getPath().toLowerCase().endsWith("json")) {
                 // the URL represents a web service accessible through HTTP
                 url.openConnection(); // throws exception if it fails, and we return null below
                 Map<String, Serializable> params = new HashMap<String, Serializable>();
@@ -39,7 +42,8 @@ public class JSONServiceExtension implements ServiceExtension {
             }
         } catch (Throwable t) {
             // something went wrong, URL must be for another service
-            System.err.println("Failed to initialize parameters for url["+url+"]: "+t.toString());
+            System.err.println("Failed to initialize parameters for url[" + url + "]: "
+                    + t.toString());
             t.printStackTrace(System.err);
         }
 

@@ -16,7 +16,7 @@
          name="GeoJSON Formats"
          point="net.refractions.udig.catalog.ui.fileFormat">
       <fileService
-            fileExtension="*.json;*.geo_json"
+            fileExtension="*.json;*.geo_json;*.ext_json"
             name="GeoJSON (Javascript Object Notation for Geographic Data)">
       </fileService>
    </extension>

@@ -1,9 +1,11 @@
 package org.amanzi.awe.catalog.json;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -15,6 +17,8 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.amanzi.awe.catalog.json.beans.ExtJSON;
+import org.amanzi.awe.catalog.json.beans.GisGeo;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -49,7 +53,10 @@ public class JSONReader {
     private static GeometryFactory geometryFactory = new GeometryFactory();
 
     private Boolean networkGeoJSON;
-    final CharSequence csSite = "site";
+    private final CharSequence csSite = "site";
+
+    private ExtJSON extJSON;
+    private GisGeo gisGeo;
 
     /**
      * Create a JSON reader on the specified URL. This class opens the URL connection on demand for
@@ -58,13 +65,50 @@ public class JSONReader {
      * 
      * @param url
      */
-    public JSONReader( URL url ) {
+    public JSONReader( final URL url ) {
         this.url = url;
     }
 
-    public JSONReader( JSONService service ) {
+    public JSONReader( final JSONService service ) {
         this.url = service.getValidURL();
         this.dataURL = service.getURL();
+    }
+
+    /**
+     * @param baseUrl
+     * @param href
+     * @return
+     * @throws MalformedURLException
+     */
+    public static URL createRelativeURL( final URL baseUrl, final String href )
+            throws MalformedURLException {
+        return new URL(baseUrl, new File(baseUrl.toString()).getParent() + href);
+    }
+    /**
+     * Reads ExtJSON data structure into object and makes a cache in field of this class.
+     * 
+     * @return {@link ExtJSON}object
+     * @throws IOException file not found
+     */
+    public final ExtJSON getExtJSON() throws IOException {
+        if (extJSON == null) {
+            extJSON = new ExtJSON(JSONObject.fromObject(readURL(url)));
+        }
+        return extJSON;
+    }
+    /**
+     * Reads GisGeo data structure into object and makes a cache in field of this class.
+     * 
+     * @return {@link GisGeo}object
+     * @throws IOException file not found
+     * @throws URISyntaxException
+     */
+    public final GisGeo getGisGeo() throws IOException {
+        if (gisGeo == null) {
+            final String href = getExtJSON().getExtGis().getHref();
+            gisGeo = new GisGeo(JSONObject.fromObject(readURL(createRelativeURL(url, href))));
+        }
+        return gisGeo;
     }
 
     /**
@@ -72,22 +116,44 @@ public class JSONReader {
      * queries. It is available here for code that wishes to investigate the JSON more specifically.
      * 
      * @return the entire dataset as a JSONObject instance
-     * @throws IOException
+     * @throws IOException file not found
      */
-    public JSONObject jsonObject() throws IOException {
+    public final JSONObject jsonObject() throws IOException {
         if (data == null) {
-            data = JSONObject.fromObject(readURL(url));
+            final String href = getGisGeo().getFeatureSource().getHref();
+            data = JSONObject.fromObject(readURL(createRelativeURL(url, href)));
         }
         return data;
     }
-    private static String readURL( URL url ) throws IOException {
-        Reader reader = new InputStreamReader(url.openStream());
-        char[] buffer = new char[1024];
-        int bytesRead = 0;
-        StringBuffer sb = new StringBuffer();
-        while( (bytesRead = reader.read(buffer)) >= 0 ) {
-            if (bytesRead > 0) {
-                sb.append(buffer);
+
+    /**
+     * Read a file from given URL.
+     * 
+     * @param url {@link URL}object
+     * @return file as string
+     */
+    public static String readURL( final URL url ) {
+        final StringBuilder sb = new StringBuilder();
+        Reader reader = null;
+        try {
+            reader = new InputStreamReader(url.openStream(), "UTF8");
+            final char[] buffer = new char[1024];
+            int bytesRead = 0;
+
+            while( (bytesRead = reader.read(buffer)) >= 0 ) {
+                if (bytesRead > 0) {
+                    sb.append(buffer);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to get features from url '" + url + "': " + e);
+            e.printStackTrace(System.err);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                }
             }
         }
         return sb.toString();
@@ -98,7 +164,7 @@ public class JSONReader {
      * 
      * @return CoordinateReferenceSystem
      */
-    public CoordinateReferenceSystem getCRS() {
+    public final CoordinateReferenceSystem getCRS() {
         return getCRS(DefaultGeographicCRS.WGS84);
     }
 
@@ -108,7 +174,7 @@ public class JSONReader {
      * 
      * @return CoordinateReferenceSystem
      */
-    public CoordinateReferenceSystem getCRS( CoordinateReferenceSystem defaultCRS ) {
+    public final CoordinateReferenceSystem getCRS( final CoordinateReferenceSystem defaultCRS ) {
         if (crs == null) {
             crs = defaultCRS; // default if crs cannot be found below
             try {
@@ -141,7 +207,7 @@ public class JSONReader {
      * 
      * @return ReferencedEnvelope for bounding box
      */
-    public ReferencedEnvelope getBounds() {
+    public final ReferencedEnvelope getBounds() {
         if (bounds == null) {
             // Create Null envelope
             this.bounds = new ReferencedEnvelope(getCRS());
@@ -208,7 +274,7 @@ public class JSONReader {
      * 
      * @return dataset name
      */
-    public String getName() {
+    public final String getName() {
         if (name == null) {
             try {
                 name = jsonObject().getString("name");
@@ -216,8 +282,9 @@ public class JSONReader {
                 System.err.println("Failed to find name element: " + e.getMessage());
                 e.printStackTrace(System.err);
             }
-            if (name == null)
+            if (name == null) {
                 name = url.getFile();
+            }
         }
         return name;
     }
@@ -228,7 +295,7 @@ public class JSONReader {
      * 
      * @return Network GeoJSON indicator, false if it is not, true if it is
      */
-    public boolean isNetworkGeoJSON() {
+    public final boolean isNetworkGeoJSON() {
         if (networkGeoJSON == null) {
             try {
                 boolean containsKeyName = jsonObject().containsKey("name");
@@ -260,7 +327,7 @@ public class JSONReader {
      * 
      * @return descriptive string
      */
-    public String toString() {
+    public final String toString() {
         return "JSON[" + getName() + "]: CRS:" + getCRS() + " Bounds:" + getBounds();
     }
 
@@ -272,9 +339,10 @@ public class JSONReader {
      * @return instance of com.vividsolutions.jts.geom.Point
      * @throws IOException
      */
-    public static Point getPointX( JSONObject jsonObject ) throws IOException {
-        if (jsonObject == null)
+    public static Point getPointX( final JSONObject jsonObject ) throws IOException {
+        if (jsonObject == null) {
             return null;
+        }
         double x = Double.valueOf(jsonObject.get("x").toString());
         double y = Double.valueOf(jsonObject.get("y").toString());
         Coordinate coordinate = new Coordinate(x, y);
@@ -289,12 +357,24 @@ public class JSONReader {
      * @author craig
      */
     public static interface Feature {
-        /** get the type, as specified in the GeoJSON spec, eg. Point, MultiPoint, Polygon, etc. */
-        public String getType();
-        /** get the set of points representing this feature, or array of length 1 for Point type */
-        public Point[] getPoints();
-        /** get the map of additional properties for this data type, eg. domain specific data */
-        public Map<String, Object> getProperties();
+        /**
+         * get the type, as specified in the GeoJSON spec, eg. Point, MultiPoint, Polygon, etc.
+         * 
+         * @return type
+         */
+        String getType();
+        /**
+         * get the set of points representing this feature, or array of length 1 for Point type.
+         * 
+         * @return array of {@link Point} objects
+         */
+        Point[] getPoints();
+        /**
+         * get the map of additional properties for this data type, eg. domain specific data
+         * 
+         * @return {@link Map} object
+         */
+        Map<String, Object> getProperties();
         /**
          * Creates geometry object for this feature.
          * 
@@ -317,17 +397,17 @@ public class JSONReader {
         private HashMap<String, Object> propMap;
         private Geometry objGeometry;
 
-        public JSONFeature( JSONObject jsonObject ) {
+        public JSONFeature( final JSONObject jsonObject ) {
             this.geometry = jsonObject.getJSONObject("geometry");
             this.properties = jsonObject.getJSONObject("properties");
             this.type = this.geometry.getString("type"); // We only care about the geometry type,
             // because the feature type is by
             // definition "Feature"
         }
-        public String getType() {
+        public final String getType() {
             return type;
         }
-        public Point[] getPoints() {
+        public final Point[] getPoints() {
             if (points == null) {
                 JSONArray coordinates = geometry.getJSONArray("coordinates");
                 if (type.equals("Point")) {
@@ -343,12 +423,12 @@ public class JSONReader {
             }
             return points;
         }
-        private Point makePoint( JSONArray jsonPoint ) {
+        private Point makePoint( final JSONArray jsonPoint ) {
             Coordinate coordinate = new Coordinate(jsonPoint.getDouble(0), jsonPoint.getDouble(1));
             return geometryFactory.createPoint(coordinate);
         }
 
-        public Geometry createGeometry() {
+        public final Geometry createGeometry() {
             if (objGeometry == null) {
                 if (geometry != null) {
                     final JSONGeoFeatureType featureType = JSONGeoFeatureType.fromCode(type);
@@ -382,10 +462,10 @@ public class JSONReader {
         /**
          * Creates {@link Point} object from json string.
          * 
-         * @param jsonCoordinates {@link JSONArray} object
+         * @param coordinates {@link JSONArray} object
          * @return {@link Point} object
          */
-        private Geometry createPoint( JSONArray coordinates ) {
+        private Geometry createPoint( final JSONArray coordinates ) {
             return geometryFactory.createPoint(createCoordinate(coordinates));
         }
 
@@ -394,7 +474,6 @@ public class JSONReader {
          * 
          * @param jsonCoordinates json representation of MultiPoint.
          * @return {@link MultiPoint} object
-         * @throws JSONException json is malformed
          */
         private Geometry createMultiPoint( final JSONArray jsonCoordinates ) {
             return geometryFactory.createMultiPoint(createCoordinates(jsonCoordinates));
@@ -503,7 +582,7 @@ public class JSONReader {
             return new Coordinate(json.getDouble(0), json.getDouble(1));
         }
 
-        public Map<String, Object> getProperties() {
+        public final Map<String, Object> getProperties() {
             if (propMap == null) {
                 this.propMap = new HashMap<String, Object>();
                 if (properties != null) {
@@ -514,40 +593,43 @@ public class JSONReader {
             }
             return propMap;
         }
-        public String toString() {
-            if (getProperties().containsKey("name"))
+        public final String toString() {
+            if (getProperties().containsKey("name")) {
                 return getProperties().get("name").toString();
-            else
+            } else {
                 return points[0].toString();
+            }
         }
     }
     public static class SimplePointFeature implements Feature {
         private Point point;
         private HashMap<String, Object> properties;
-        public SimplePointFeature( double x, double y, HashMap<String, Object> properties ) {
+        public SimplePointFeature( final double x, final double y,
+                final HashMap<String, Object> properties ) {
             Coordinate coordinate = new Coordinate(x, y);
             this.point = geometryFactory.createPoint(coordinate);
             this.properties = properties;
         }
-        public Point[] getPoints() {
+        public final Point[] getPoints() {
             return new Point[]{this.point};
         }
-        public Map<String, Object> getProperties() {
+        public final Map<String, Object> getProperties() {
             return properties;
         }
-        public String getType() {
+        public final String getType() {
             return "Point";
         }
 
-        public Geometry createGeometry() {
+        public final Geometry createGeometry() {
             return point;
         }
 
-        public String toString() {
-            if (properties.containsKey("name"))
+        public final String toString() {
+            if (properties.containsKey("name")) {
                 return properties.get("name").toString();
-            else
+            } else {
                 return point.toString();
+            }
         }
     }
 
@@ -560,21 +642,22 @@ public class JSONReader {
      * 
      * @author craig
      */
-    public static abstract class FeatureIterator implements Iterable<Feature>, Enumeration<Feature> {
+    public abstract static class FeatureIterator implements Iterable<Feature>, Enumeration<Feature> {
         private Iterator<Feature> iter = null;
-        public boolean hasMoreElements() {
-            if (iter == null)
+        public final boolean hasMoreElements() {
+            if (iter == null) {
                 iter = iterator();
+            }
             return iter.hasNext();
         }
-        public Feature nextElement() {
+        public final Feature nextElement() {
             return hasMoreElements() ? iter.next() : null;
         }
     }
     private static class JSONFeatureReader extends FeatureIterator {
         protected JSONArray features;
         private int index;
-        public JSONFeatureReader( JSONArray features ) {
+        public JSONFeatureReader( final JSONArray features ) {
             this.index = 0;
             this.features = features;
         }
@@ -603,19 +686,15 @@ public class JSONReader {
     }
     private static class JSONURLFeatureReader extends JSONFeatureReader {
         private URL feature_url;
-        public JSONURLFeatureReader( URL feature_url ) {
+        public JSONURLFeatureReader( final URL feature_url ) {
             super(null);
             this.feature_url = feature_url;
         }
         private void setupFeatures() {
-            try {
-                String content = readURL(feature_url);
-                JSONObject json = JSONObject.fromObject(content);
-                features = json.getJSONArray("features");
-            } catch (IOException e) {
-                System.err.println("Failed to get features from url '" + feature_url + "': " + e);
-                e.printStackTrace(System.err);
-            }
+            String content = readURL(feature_url);
+            JSONObject json = JSONObject.fromObject(content);
+
+            features = json.getJSONArray("features");
         }
         /** provide an iterator reset to the first element, if any */
         public Iterator<Feature> iterator() {
@@ -629,35 +708,41 @@ public class JSONReader {
         private int x_col = -1;
         private int y_col = -1;
         private int name_col = -1;
-        public CSVURLFeatureReader( URL feature_url ) {
+        public CSVURLFeatureReader( final URL feature_url ) {
             this.feature_url = feature_url;
         }
         private void setupFeatures() {
             try {
-                if (reader != null)
+                if (reader != null) {
                     reader.close();
+                }
                 reader = new CsvReader(new InputStreamReader(feature_url.openStream()));
                 reader.readHeaders(); // Assume all CSV files have a header line
                 HashMap<String, Integer> headers = new HashMap<String, Integer>();
                 for( String header : reader.getHeaders() )
                     headers.put(header.toLowerCase(), headers.size());
                 for( String head : new String[]{"long", "longitude", "x"} ) {
-                    if (headers.containsKey(head))
+                    if (headers.containsKey(head)) {
                         x_col = headers.get(head);
+                    }
                 }
                 for( String head : new String[]{"lat", "latitude", "y"} ) {
-                    if (headers.containsKey(head))
+                    if (headers.containsKey(head)) {
                         y_col = headers.get(head);
+                    }
                 }
                 for( String head : new String[]{"description", "name"} ) {
-                    if (headers.containsKey(head))
+                    if (headers.containsKey(head)) {
                         name_col = headers.get(head);
+                    }
                 }
                 // test for invalid x and y columns
-                if (x_col < 0 || x_col >= reader.getHeaderCount())
+                if (x_col < 0 || x_col >= reader.getHeaderCount()) {
                     throw new Exception("Invalid easting column: " + x_col);
-                if (y_col < 0 || y_col >= reader.getHeaderCount())
+                }
+                if (y_col < 0 || y_col >= reader.getHeaderCount()) {
                     throw new Exception("Invalid northing column: " + y_col);
+                }
                 // fix invalid name_col
                 int loops = 0;
                 while( loops < 2 && invalidNameCol() ) {
@@ -667,16 +752,18 @@ public class JSONReader {
                         loops++;
                     }
                 }
-                if (invalidNameCol())
+                if (invalidNameCol()) {
                     name_col = -1; // deal with this later
+                }
             } catch (Exception e) {
                 System.err.println("Failed to get features from url '" + feature_url + "': " + e);
                 e.printStackTrace(System.err);
             }
         }
         private Feature getFeature() {
-            if (reader == null)
+            if (reader == null) {
                 setupFeatures();
+            }
             try {
                 double x = Double.valueOf(reader.get(x_col));
                 double y = Double.valueOf(reader.get(y_col));
@@ -684,8 +771,9 @@ public class JSONReader {
                 HashMap<String, Object> properties = new HashMap<String, Object>();
                 properties.put("name", name);
                 for( int i = 0; i < reader.getColumnCount(); i++ ) {
-                    if (i != x_col && i != y_col && i != name_col)
+                    if (i != x_col && i != y_col && i != name_col) {
                         properties.put(reader.getHeader(i), reader.get(i));
+                    }
                 }
                 return new SimplePointFeature(x, y, properties);
             } catch (Exception e) {
@@ -705,8 +793,9 @@ public class JSONReader {
                     return (next = getFeature()) != null;
                 }
                 public Feature next() {
-                    if (next == null)
+                    if (next == null) {
                         next = getFeature();
+                    }
                     return next;
                 }
                 public void remove() {
@@ -715,7 +804,7 @@ public class JSONReader {
         }
     }
 
-    public FeatureIterator getFeatures() {
+    public final FeatureIterator getFeatures() {
         JSONArray features = null;
         JSONObject featureSource = null;
         try {
@@ -767,4 +856,9 @@ public class JSONReader {
             return null;
         }
     }
+
+    public URL getUrl() {
+        return url;
+    }
+
 }
