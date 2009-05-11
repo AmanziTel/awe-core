@@ -3,7 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: JRuby
 Bundle-SymbolicName: org.jruby
 Bundle-Version: 1.2.0
-Bundle-ClassPath: jruby.jar
+Bundle-ClassPath: lib/bsf.jar,
+ lib/jruby.jar
 Bundle-Vendor: JRuby Community
 Export-Package: org.jruby.ast.visitor.rewriter;uses:="org.jruby.ast,or
  g.jruby.util,org.jruby.ast.visitor,org.jruby.ast.visitor.rewriter.uti
