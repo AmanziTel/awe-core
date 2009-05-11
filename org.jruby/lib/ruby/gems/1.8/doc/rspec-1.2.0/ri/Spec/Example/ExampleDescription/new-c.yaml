@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+params: (description, options={}, backtrace=nil)
+is_singleton: true
+block_params: 
+name: new
+comment: 
+full_name: Spec::Example::ExampleDescription::new
+visibility: public
+aliases: []
+
