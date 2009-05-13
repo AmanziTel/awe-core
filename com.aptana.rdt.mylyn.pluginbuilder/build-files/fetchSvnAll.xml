@@ -1,0 +1,17 @@
+<project name="Generated">
+	<target name="fetch.svn.all">
+		<antcall target="svn.co">
+			<param name="target" value="features" />
+			<param name="element.id" value="com.aptana.rdt.mylyn_feature" />
+			<param name="project.name" value="features/com.aptana.rdt.mylyn-feature" />
+			<param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk/rdt" />
+		</antcall>
+		<!-- Check out Mylyn Extension Plugins -->
+		<antcall target="svn.co">
+			<param name="target" value="plugins" />
+			<param name="element.id" value="com.aptana.rdt.mylyn" />
+			<param name="project.name" value="plugins/com.aptana.rdt.mylyn" />
+			<param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk/rdt" />
+		</antcall>
+	</target>
+</project>

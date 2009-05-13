@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Aptana RDT Gem Libraries
+Bundle-SymbolicName: com.aptana.rdt.libraries;singleton:=true
+Bundle-Version: 1.0.4
+Bundle-Activator: com.aptana.rdt.libraries.Activator
+Bundle-Vendor: Aptana, Inc.
+Require-Bundle: org.eclipse.core.runtime,
+ com.aptana.rdt
+Eclipse-LazyStart: true

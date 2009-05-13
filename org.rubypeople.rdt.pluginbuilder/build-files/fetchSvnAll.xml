@@ -1,0 +1,176 @@
+<project name="Generated">
+  <target name="fetch.svn.all">
+    <antcall target="svn.co">
+      <param name="target" value="features"/>
+      <param name="element.id" value="org.rubypeople.rdt"/>
+      <param name="project.name" value="features/org.rubypeople.rdt-feature"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+	<antcall target="svn.co">
+      <param name="target" value="features"/>
+      <param name="element.id" value="org.rubypeople.rdt-tests"/>
+      <param name="project.name" value="features/org.rubypeople.rdt-test-feature"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+<!--
+	<antcall target="svn.co">
+      <param name="target" value="features"/>
+      <param name="element.id" value="com.aptana.rdt.mylyn-feature"/>
+      <param name="project.name" value="features/com.aptana.rdt.mylyn-feature"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+-->
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.kxml2"/>
+      <param name="project.name" value="plugins/org.kxml2"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.doc.user"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.doc.user"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.epic.regexp"/>
+      <param name="project.name" value="plugins/org.epic.regexp"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.ui"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.ui"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.testunit"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.testunit"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.launching"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.launching"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.debug.ui"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.debug.ui"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.debug.core"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.debug.core"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.core"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.core"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.jruby"/>
+      <param name="project.name" value="plugins/org.jruby"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.refactoring"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.refactoring"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="com.aptana.rdt"/>
+      <param name="project.name" value="plugins/com.aptana.rdt"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="com.aptana.rdt.ui"/>
+      <param name="project.name" value="plugins/com.aptana.rdt.ui"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.branding"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.branding"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+<!--
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="com.aptana.rdt.mylyn.core"/>
+      <param name="project.name" value="plugins/com.aptana.rdt.mylyn"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+-->
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.eclipse.shams"/>
+      <param name="project.name" value="plugins/org.rubypeople.eclipse.shams"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.eclipse.testutils"/>
+      <param name="project.name" value="plugins/org.rubypeople.eclipse.testutils"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.core.tests"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.core.tests"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.debug.core.tests"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.debug.core.tests"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.debug.ui.tests"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.debug.ui.tests"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.launching.tests"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.launching.tests"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.tests.all"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.tests.all"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.ui.tests"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.ui.tests"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="org.rubypeople.rdt.refactoring.tests"/>
+      <param name="project.name" value="plugins/org.rubypeople.rdt.refactoring.tests"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+	<antcall target="svn.co">
+      <param name="target" value="plugins"/>
+      <param name="element.id" value="com.aptana.rdt.tests"/>
+      <param name="project.name" value="plugins/com.aptana.rdt.tests"/>
+      <param name="url" value="https://source.aptana.com/aptanarepo/aptana/ide_suite/trunk"/>
+    </antcall>
+  </target>
+</project>

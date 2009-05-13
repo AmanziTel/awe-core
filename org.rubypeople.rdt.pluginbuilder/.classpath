@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="lib" path="build-files/automatedTests/ant-contrib.jar"/>
+	<classpathentry kind="lib" path="build-files/ftp/commons-net-1.4.1.jar"/>
+	<classpathentry kind="lib" path="build-files/ftp/jakarta-oro-2.0.8.jar"/>
+	<classpathentry kind="lib" path="build-files/svn/commons-lang-2.0.jar"/>
+	<classpathentry kind="lib" path="build-files/svn/jakarta-regexp-1.3.jar"/>
+	<classpathentry kind="lib" path="build-files/svn/svnant.jar"/>
+	<classpathentry kind="lib" path="build-files/svn/svnClientAdapter.jar"/>
+	<classpathentry kind="lib" path="build-files/svn/svnjavahl.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
