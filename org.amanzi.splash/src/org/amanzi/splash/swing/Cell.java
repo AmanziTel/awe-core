@@ -1,8 +1,7 @@
 package org.amanzi.splash.swing;
 
+import java.net.URI;
 import java.util.ArrayList;
-
-import javax.swing.table.TableModel;
 
 import org.amanzi.splash.jruby.SplashJRubyInterpreter;
 import org.amanzi.splash.utilities.Util;
@@ -22,6 +21,9 @@ public class Cell
 	private ArrayList<Cell> rfdCells;
 	private ArrayList<Cell> rfgCells;
 	
+	//Lagutko: new attributes 
+	private URI scriptURI;
+	private boolean hasReference;
 	
 	/**
 	 * Another constructor (create an expression using definition and value), used with 
@@ -40,6 +42,8 @@ public class Cell
 		rfgCells = new ArrayList<Cell>();
 		
 		cellFormat = new CellFormat();
+		//Lagutko: Cell hasn't reference to script on creation
+		hasReference = false;
 	}
 	
 	public void renameCell(String oldCellID, String newCellID)
@@ -177,7 +181,7 @@ public class Cell
 	}
 
 	public void setValue(Object value) {
-		this.value = value;
+		this.value = value;		
 	}
 	
 	/**
@@ -330,5 +334,37 @@ public class Cell
 	public String toString ()
 	{
 		return row + " " + column;
+	}
+	
+	//Lagutko: getter and setter for script name
+	
+	/**
+	 * Set name of script and sets that cell has reference to script
+	 * @param newScriptName name of scipt
+	 * @author Lagutko_N
+	 */
+	public void setScriptURI(URI newScriptName) {
+		scriptURI = newScriptName;
+		hasReference = true;		
+	}
+	
+	/**
+	 * Returns name of script
+	 * 
+	 * @return name of script
+	 * @author Lagutko_N
+	 */
+	public URI getScriptURI() {
+		return scriptURI;
+	}
+	
+	/**
+	 * Is this cell has reference to script?
+	 * 
+	 * @return Is this cell has reference to script?
+	 * @author Lagutko_N
+	 */
+	public boolean hasReference() {
+		return hasReference;
 	}
 }

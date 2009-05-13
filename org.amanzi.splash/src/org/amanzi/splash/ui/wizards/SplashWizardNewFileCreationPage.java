@@ -31,12 +31,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
-import org.eclipse.ui.part.FileEditorInput;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -60,7 +56,8 @@ public class SplashWizardNewFileCreationPage
 		super("SplashWizardNewFileCreationPage", selection);
 
 		this.setTitle("Folder, Name and Dimensions");
-		this.setFileName("sample" + nameCounter + ".jrss");
+		//Lagutko 8.05.2009, extract Spreadsheet file extensition to constant
+		this.setFileName("sample" + nameCounter + Util.DEFAULT_SPREADSHEET_EXTENSION);
 		this.workbench = workbench;
 	}
 
@@ -139,15 +136,8 @@ public class SplashWizardNewFileCreationPage
 		if (newFile == null)
 			return false;
 
-		try {
-			IWorkbenchPage page =
-				workbench.getActiveWorkbenchWindow().getActivePage();
-			if (page != null) {
-				IFileEditorInput fi = new FileEditorInput(newFile);
-				page.openEditor(fi, "org.amanzi.splash.editor");				
-			}
-
-		} catch (PartInitException e) {
+		//Lagutko: use utility function to open editor
+		if (Util.openSpreadsheet(workbench, newFile) == null) {
 			return false;
 		}
 
@@ -227,7 +217,7 @@ public class SplashWizardNewFileCreationPage
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < rowCount; i++) {
 			for (int j = 0; j < columnCount; j++) {
-				sb.append(";" + "" + ";" + Util.getFormatString(new CellFormat()) + ";");
+				sb.append(";" + "" + ";" + Util.getFormatString(new CellFormat()) + ";" + "false;");
 			}
 			sb.append("\n");
 		}

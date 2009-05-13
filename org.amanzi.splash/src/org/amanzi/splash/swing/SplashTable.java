@@ -1,16 +1,11 @@
 package org.amanzi.splash.swing;
 
 
-import java.util.ArrayList;
-
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
-
-
-import org.amanzi.splash.utilities.Util;
 
 public class SplashTable extends JTable
 {
@@ -19,7 +14,7 @@ public class SplashTable extends JTable
 	 */
 	private static final long serialVersionUID = 1232338822L;
 	private TableCellEditor        editor;
-	//private SplashExpressionParser   expressionParser;
+	//private SplashExpressionParser   expressionParser;	
 	
 	/**
 	 * Initialize table with 500x200
@@ -27,6 +22,7 @@ public class SplashTable extends JTable
 	public SplashTable ()
 	{
 		this (500, 200);
+		
 	}
 
 	/**

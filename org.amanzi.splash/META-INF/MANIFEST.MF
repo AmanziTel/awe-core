@@ -15,7 +15,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.ui.ide,
  com.sun.script.jruby,
- org.amanzi.scripting.jruby
+ org.amanzi.scripting.jruby,
+ org.rubypeople.rdt.ui,
+ org.rubypeople.rdt.core
 Eclipse-LazyStart: true
 export-package: org.amanzi.splash.ui,
  org.amanzi.splash.utilities

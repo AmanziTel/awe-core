@@ -8,7 +8,7 @@
       <editor
             name="Amanzi: Mini-Spreadsheet"
             icon="icons/spreadsheet.gif"
-            extensions="mss"
+            extensions="jrss"
             contributorClass="org.amanzi.splash.ui.actions.JRSSEditorActionBarContributor"
             class="org.amanzi.splash.ui.SplashResourceEditor"
             id="org.amanzi.splash.editor">

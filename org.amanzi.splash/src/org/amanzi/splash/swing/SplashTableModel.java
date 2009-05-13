@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -22,6 +24,9 @@ import javax.swing.table.DefaultTableModel;
 
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.Util;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 
 import com.eteks.openjeks.format.BorderStyle;
@@ -149,6 +154,20 @@ public class SplashTableModel extends DefaultTableModel
 		Util.log("JRuby1: " + s);
 		return s;
 	}
+	
+	/**
+	 * Function that updates definitiona of Cell from Script
+	 * 
+	 * @param cell Cell to update
+	 * @author Lagutko_N
+	 */
+	
+	public void updateDefinitionFromScript(Cell cell) {
+		String content = Util.getScriptContent(cell.getScriptURI());
+		cell.setDefinition(content);
+	}
+	
+	
 
 	public Cell interpret(String definition, int row, int column){
 		
@@ -156,17 +175,16 @@ public class SplashTableModel extends DefaultTableModel
 		String cellID = Util.getCellIDfromRowColumn(row, column);
 		String data0 = definition;
 		Cell se = getCellByID(cellID);
-
+		
+		
 		if (definition.startsWith("=") == false){
 			// This is normal text entered into cell, then
 			//String value = definition.replace("'", "");
 			//value = definition.replace("\"", "");
-			
+		
 			Object value = interpret_element(cellID,definition);
 			se.setValue(value);
 			se.setDefinition(definition);
-			
-			
 		}
 		else{
 			List<String> list = Util.findComplexCellIDs(definition);
@@ -174,7 +192,7 @@ public class SplashTableModel extends DefaultTableModel
 			for (int i=0;i<list.size();i++){
 //				if (data0.contains("#{"+list.get(i)+"}") == false)
 //				{
-//					// this is the case of =a1
+//				// this is the case of =a1
 //					data0 = data0.replace(list.get(i), "#{" + list.get(i) + "}");
 //				}
 
@@ -185,15 +203,15 @@ public class SplashTableModel extends DefaultTableModel
 //			if (data0.contains("\"") == false)
 //				s0 = "\"" + data0 + "\"";
 //			else
-				s0 = data0;
-			
+			s0 = data0;
+		
 			Util.log("s0: " + s0);
 			Object s = interpret_element(cellID, s0);
 
 			se.setDefinition(definition);
 			se.setValue((String)s);
 		}
-
+		
 		this.setValueAt(se, row, column);
 		return se;
 	}
@@ -245,11 +263,20 @@ public class SplashTableModel extends DefaultTableModel
 			for (int j = 0; j < columnCount; j++) {
 				String definition = "";
 				String value = "";
+				boolean hasReference = false;
 				Object o = getValueAt(i, j);
 				if (o instanceof Cell && o != null)
 				{
-					definition = (String) ((Cell)o).getDefinition();
-					value = (String) ((Cell)o).getValue();
+					//Lagutko: if Cell has reference to script than we store URI of script in definition
+					Cell cell = (Cell)o;
+					if (cell.hasReference()) {
+						definition = cell.getScriptURI().toString();
+						hasReference = true;
+					}
+					else {
+						definition = (String) ((Cell)o).getDefinition();
+						value = (String) ((Cell)o).getValue();
+					}					
 				}
 
 				if (o instanceof String && o != null)
@@ -257,7 +284,13 @@ public class SplashTableModel extends DefaultTableModel
 					definition = (String) o;
 				}
 
-
+				//Lagutko: if definition of value is null than replase null with empty string
+				if (definition == null) {
+					definition = "";
+				}
+				if (value == null) {
+					value = "";
+				}
 
 				CellFormat c = t.getFormatAt(i, j);
 
@@ -265,7 +298,8 @@ public class SplashTableModel extends DefaultTableModel
 					c = new CellFormat();
 				}
 
-				String line = definition.replace("\n", "") + ";" + value.replace("\n", "") + ";" + Util.getFormatString(c) + ";";
+				//Lagutko: store also is Cell has reference or not
+				String line = definition.replace("\n", "") + ";" + value.replace("\n", "") + ";" + Util.getFormatString(c) + ";" + hasReference + ";";				
 				//Util.log("line = " + line);
 
 				sb.append(line);
@@ -329,13 +363,14 @@ public class SplashTableModel extends DefaultTableModel
 		int j=0;
 		String definition = "";
 		String value = "";
+		boolean hasReference;
 		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
 		int rowIndex = 0;
 		try
 		{
-			String line;
+			String line;			
 			line = lnr.readLine();
-			columnCount = countColumns(line)/13;
+			columnCount = countColumns(line)/14;
 			while (line != null && line.lastIndexOf(";") > 0) {
 				ArrayList<String> list = readLine(line);
 				m = 0;
@@ -403,6 +438,9 @@ public class SplashTableModel extends DefaultTableModel
 
 					if (!"".equals(str))
 						c.setVerticalAlignment(Integer.parseInt(str));
+					
+					//Lagutko: is Cell has reference?
+					hasReference = Boolean.parseBoolean(list.get(m++));
 
 					BorderStyle top,bottom,left,right,internalHorizontal,internalVertical;
 					top = bottom = left = right = internalHorizontal = internalVertical = new BorderStyle(1,BorderStyle.BASIC);
@@ -418,12 +456,27 @@ public class SplashTableModel extends DefaultTableModel
 					internalVerticalColor = new Color(0,0,0);
 
 					c.setCellBorder(new CellBorder());
-
-					// Create a new expression with value and definition
+					
+										// Create a new expression with value and definition
 					Cell se = new Cell(rowIndex, j, definition, value, c);
-
+					//Lagutko: if Cell has reference to script than we must
+					//set ScriptURI and read Definition from Script
+					if (hasReference) {
+						try {
+							se.setScriptURI(new URI(definition));							
+						}
+						catch (URISyntaxException e) {
+							
+						}
+						updateDefinitionFromScript(se);						
+					}
 					setValueAt(se, rowIndex, j);
-
+					//Lagutko: if definition is not empty than we must compute value of Cell
+					if (definition.length() > 0) {
+						interpret((String)se.getDefinition(), rowIndex, j);
+					}
+					
+					
 					//initCellReferences(rowIndex, j, definition);
 
 					//tableFormat.setFormatAt(c, rowIndex, j, rowIndex, j);
@@ -755,5 +808,21 @@ public class SplashTableModel extends DefaultTableModel
 
 		//Util.printTableModelStatus(this);
 
+	}
+	
+	/**
+	 * Method that update Cell that has reference to Script
+	 * 
+	 * @param cell Cell
+	 * @author Lagutko_N
+	 */
+	
+	public void updateCellFromScript(Cell cell) {
+		String oldFormula = (String)cell.getDefinition();
+		
+		updateDefinitionFromScript(cell);
+		
+		interpret((String)cell.getDefinition(), cell.getRow(), cell.getColumn());
+		updateCellsAndTableModelReferences(cell.getRow(), cell.getColumn(), oldFormula, (String)cell.getDefinition());
 	}
 }

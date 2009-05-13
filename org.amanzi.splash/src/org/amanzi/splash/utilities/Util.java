@@ -1,6 +1,11 @@
 package org.amanzi.splash.utilities;
 
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -13,10 +18,30 @@ import javax.swing.JTable;
 
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
 
 import com.eteks.openjeks.format.CellFormat;
 
 public class Util {
+	
+	/*
+	 * Name of SplashResourceEditor
+	 */
+	public static final String AMANZI_SPLASH_EDITOR = "org.amanzi.splash.editor";
+	
+	/*
+	 * Default extenstion for Spreadsheet file
+	 */
+	public static final String DEFAULT_SPREADSHEET_EXTENSION = ".jrss";
 	
 	private static boolean isDebug = true;
 
@@ -207,5 +232,92 @@ public class Util {
 		String cc = new Character(cellID.toUpperCase().charAt(0)).toString();
 		return STD_HEADINGS.indexOf(cc);
 	}
+	
+	/**
+	 * Utility function that fileName contains Spreadhseet extension or not
+	 * 
+	 * @param fileName name of file
+	 * @return is current file is Spreadsheet file
+	 * @author Lagutko_N
+	 */
 
+	public static boolean isValidSpreadsheetName(String fileName) {
+		return fileName.endsWith(DEFAULT_SPREADSHEET_EXTENSION);
+	}
+	
+	/**
+	 * Utility function that opens file in SplashResourceEditor
+	 * 
+	 * @param workbench platform workbench
+	 * @param file file to open	
+	 * @return opened editor
+	 * @author Lagutko_N
+	 */
+	
+	public static IEditorPart openSpreadsheet(IWorkbench workbench, IFile file) {
+		IEditorPart result = null;
+		try {
+			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
+			if (page != null) {
+				IFileEditorInput fi = new FileEditorInput(file);
+				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
+			}
+
+		} catch (PartInitException e) {
+			result = null;
+		}
+		return result;
+	}
+	
+	/**
+	 * Returns content of script
+	 * 
+	 * @param scriptURI URI of script
+	 * @return string with content of file
+	 * @author Lagutko_N
+	 */
+	
+	public static String getScriptContent(URI scriptURI) {
+		if (scriptURI == null) {
+			//TODO: handle this situation
+			return null;
+		}
+		IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(scriptURI);
+		if (files.length != 1) {
+			//TODO: handle this situation
+			return null;
+		}
+		String content = null;
+		try {
+			content = inputStreamToString(files[0].getContents());
+		}
+		catch (CoreException e) {
+			//TODO: handle exception
+		}
+		catch (IOException e) {
+			//TODO: handle exception
+		}
+		
+		return content;
+	}
+	
+	/**
+	 * Utility function that converts input stream to String
+	 * 
+	 * @param stream InputStream
+	 * @return String
+	 * @throws IOException 
+	 * @author Lagutko_N
+	 */
+	
+	private static String inputStreamToString(InputStream stream) throws IOException {
+		StringBuffer buffer = new StringBuffer();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+		String line;
+		while ((line = reader.readLine()) != null) {
+			buffer.append(line).append("\n");
+		}
+		reader.close();
+		return buffer.toString();
+	}
 }

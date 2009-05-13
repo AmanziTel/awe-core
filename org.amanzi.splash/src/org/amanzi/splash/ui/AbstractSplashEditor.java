@@ -55,19 +55,28 @@ import javax.swing.table.TableModel;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTable;
 import org.amanzi.splash.swing.SplashTableModel;
+import org.amanzi.splash.ui.wizards.ExportScriptWizard;
+import org.amanzi.splash.utilities.ActionUtil;
 import org.amanzi.splash.utilities.Util;
 import org.eclipse.albireo.core.SwingControl;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+
 import org.eclipse.ui.part.EditorPart;
+import org.rubypeople.rdt.core.RubyModelException;
+import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 
 import com.eteks.openjeks.format.CellFormat;
 import com.eteks.openjeks.format.CellFormatPanel;
@@ -100,7 +109,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * Class constructor
 	 */
 	public AbstractSplashEditor() {
-		table = new SplashTable();
+		table = new SplashTable();		
 		table.getModel().addTableModelListener(this);
 	}
 
@@ -196,8 +205,126 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 		contextMenu.add(cellFormattingMenu);
+		
+		//Lagutko, 8.05.2009: add new actions for context menu
+		contextMenu.addSeparator();
+		
+		JMenuItem openScriptMenu = new JMenuItem();
+		openScriptMenu.setText("Open script");
+		openScriptMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				openCell(rowIndex, columnIndex);
+				
+			}
+		});
+		contextMenu.add(openScriptMenu);
+		
+		
+		JMenuItem exportScriptMenu = new JMenuItem();
+		exportScriptMenu.setText("Export script");
+		exportScriptMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				exportCell(rowIndex, columnIndex);
+				
+			}
+		});
+		contextMenu.add(exportScriptMenu);
+		
+		JMenuItem updateScriptMenu = new JMenuItem();
+		updateScriptMenu.setText("Update script");
+		updateScriptMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				updateCell(rowIndex, columnIndex);
+			}
+		});
+		contextMenu.add(updateScriptMenu);
 
 		return contextMenu;
+	}
+	
+	/**
+	 * Updates value of Cell from referenced script
+	 * 
+	 * @param rowIndex row index
+	 * @param columnIndex column index
+	 * @author Lagutko_N
+	 */
+	
+	private void updateCell(int rowIndex, int columnIndex) {
+		//get selected cell and update value of cell
+		Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
+		
+		//if Cell has no reference script than it cannot be update
+		if (!cell.hasReference()) {
+			//TODO: add error message
+			return;
+		}
+		
+		tableModel.updateCellFromScript(cell);
+	}
+	
+	/**
+	 * Opens referenced script in editor
+	 * 
+	 * @param rowIndex row index
+	 * @param columnIndex column index
+	 * @author Lagutko_N
+	 */
+	
+	private void openCell(int rowIndex, int columnIndex) {
+		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
+		final Display display = swingControl.getDisplay();
+		
+		//if Cell has no references to script than it cannot be open
+		if (!cell.hasReference()) {
+			//TODO: add error message
+			return;
+		}
+		
+		//run open action
+		ActionUtil.getInstance(display).runTask(new Runnable() {
+			public void run() {
+				//find file by URI
+				IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(cell.getScriptURI());
+				if (files.length == 1) {
+					try {
+						//open file in editor
+						EditorUtility.openInEditor(files[0]);
+					}
+					catch (RubyModelException e) {
+						//TODO: handle excpetion
+					}
+					catch (PartInitException e) {
+						//TODO: handle excpetion
+					}
+				}
+				else {
+					//TODO: handle this situation
+				}
+			}
+		});
+	}
+	
+	/**
+	 * Method that exports cell to script 
+	 * 
+	 * @param rowIndex row index of cell
+	 * @param columnIndex column index of cell
+	 * @author Lagutko_N
+	 */
+	
+	private void exportCell(int rowIndex, int columnIndex) {		
+		//get Cell and Display
+		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);		
+		final Display display = swingControl.getDisplay();
+		
+		//run ExportScriptWizard
+		ActionUtil.getInstance(display).runTask( new Runnable() {
+			public void run() {
+				WizardDialog dialog = new WizardDialog(display.getActiveShell(), new ExportScriptWizard(cell));
+				dialog.open();
+			}
+		});
 	}
 
 	/**
@@ -795,7 +922,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowColumnPopup(MouseEvent e){
-		if (e.isPopupTrigger() && table.isEnabled()) {
+		if (/* e.isPopupTrigger() && */ table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -825,7 +952,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowRowPopup(MouseEvent e){
-		if (e.isPopupTrigger() && table.isEnabled()) {
+		if (/* e.isPopupTrigger() && */ table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -855,7 +982,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowPopup(MouseEvent e) {
-		if (e.isPopupTrigger() && table.isEnabled()) {
+		if (/* e.isPopupTrigger() && */ table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -885,17 +1012,16 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param parent
 	 */
 	private void createTable(final Composite parent) {
-		new SwingControl(parent, SWT.NONE) {
+		swingControl = new SwingControl(parent, SWT.NONE) {
 			{
 				setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 				setForeground(getDisplay().getSystemColor(SWT.COLOR_BLACK));
 			}
-			protected JComponent createSwingComponent() {
-
+			protected JComponent createSwingComponent() {				
 				table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 				table.createDefaultColumnsFromModel();
 				table.setCellSelectionEnabled(true);
-
+				
 				table.setOpaque(true);
 				table.setBackground(getAWTHierarchyRoot().getBackground());
 
@@ -903,7 +1029,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				scrollPane.setBorder(new EmptyBorder(0,0,0,0));
 
 				tableFormat = tableModel.tableFormat;
-
+				
 				renderer = new CellFormatRenderer (tableFormat);
 
 				table.setDefaultRenderer(Object.class, renderer);
@@ -919,13 +1045,12 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 				table.addKeyListener(new KeyListener(){
 
-					@Override
 					public void keyPressed(KeyEvent e) {
 						// TODO Auto-generated method stub
 
 					}
 
-					@Override
+					
 					public void keyReleased(KeyEvent e) {
 						// TODO Auto-generated method stub
 						//Util.log("e.getKeyCode() = " + e.getKeyCode());
@@ -952,35 +1077,35 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 						}
 					}
 
-					@Override
+					
 					public void keyTyped(KeyEvent e) {
 						// TODO Auto-generated method stub
 
 					}
 
 				});
-
+				
 				table.addMouseListener(new MouseListener(){
 
-					@Override
+					
 					public void mouseClicked(MouseEvent e) {
 
 
 					}
 
-					@Override
+					
 					public void mouseEntered(MouseEvent e) {
 
 
 					}
 
-					@Override
+					
 					public void mouseExited(MouseEvent e) {
 
 
 					}
 
-					@Override
+					
 					public void mousePressed(MouseEvent e) {
 
 						if(e.getButton()==3)
@@ -997,7 +1122,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 						}
 					}
 
-					@Override
+					
 					public void mouseReleased(MouseEvent e) {
 
 
@@ -1058,8 +1183,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	public void createPartControl(final Composite parent) {
 		createTable(parent);
 		table.setModel(tableModel);
-
-		//((SplashTableModel)table.getModel()).initializeJRubyInterpreter();
+		
+		
+		thread = Thread.currentThread();
 	}
 
 
@@ -1196,7 +1322,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 
 
-	SplashTableModel tableModel; 
+	SplashTableModel tableModel;
+	private Thread thread;
+	private SwingControl swingControl; 
 
 
 

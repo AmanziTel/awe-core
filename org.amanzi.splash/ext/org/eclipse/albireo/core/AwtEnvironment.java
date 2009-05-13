@@ -182,7 +182,7 @@ public final class AwtEnvironment {
         final Font swtFont = initialFont[0];
         final FontData[] swtFontData = swtFont.getFontData();
         try {
-            EventQueue.invokeAndWait(new Runnable() {
+        	EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
                     setLookAndFeel();
                     LookAndFeelHandler.getInstance().propagateSwtFont(swtFont, swtFontData);

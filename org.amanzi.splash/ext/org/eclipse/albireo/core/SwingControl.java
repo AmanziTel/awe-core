@@ -51,6 +51,11 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
+import org.eclipse.swt.events.MenuEvent;
+import org.eclipse.swt.events.MenuListener;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -130,7 +135,8 @@ public abstract class SwingControl extends Composite {
         super(parent, style | ((style & SWT.BORDER) == 0 ? SWT.EMBEDDED : 0) | SWT.NO_BACKGROUND);
         setLayout(new FillLayout());
         display = getDisplay();
-
+        
+        
         display.addListener(SWT.Settings, settingsListener);
 
         // Avoid a layout() on the outer Controls until we have been able to
@@ -274,7 +280,7 @@ public abstract class SwingControl extends Composite {
         // Make sure Awt environment is initialized.
         AwtEnvironment.getInstance(display);
 
-        frame = SWT_AWT.new_Frame(borderlessChild);
+        frame = SWT_AWT.new_Frame(borderlessChild);        
 
         if (verboseSizeLayout)
             ComponentDebugging.addComponentSizeDebugListeners(frame);
@@ -1131,7 +1137,7 @@ public abstract class SwingControl extends Composite {
 
     private void updateDefaultFont(Font swtFont, FontData[] swtFontData) {
         assert EventQueue.isDispatchThread();    // On AWT event thread
-
+        
         java.awt.Font awtFont = LookAndFeelHandler.getInstance().propagateSwtFont(swtFont, swtFontData);
         if (awtFont == null) {
             return;
