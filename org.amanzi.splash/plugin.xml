@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+     <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Amanzi: Mini-Spreadsheet"
+            icon="icons/spreadsheet.gif"
+            extensions="mss"
+            contributorClass="org.amanzi.splash.ui.actions.JRSSEditorActionBarContributor"
+            class="org.amanzi.splash.ui.SplashResourceEditor"
+            id="org.amanzi.splash.editor">
+      </editor>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            name="Amanzi"
+            id="com.amanzi">
+      </category>
+      <wizard
+            name="Splash Spreadsheet"
+            icon="icons/spreadsheet.gif"
+            category="com.amanzi"
+            class="org.amanzi.splash.ui.wizards.NewSplashWizard"
+            id="org.amanzi.spreadsheet.jrss.editor.ui.wizards.newminispreadsheetwizard">
+         <description>
+            Create a JRuby spreadsheet.
+         </description>
+      </wizard>
+   </extension>
+   
+   
+   
+   
+   
+  
+
+</plugin>

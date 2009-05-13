@@ -1,0 +1,72 @@
+package org.amanzi.splash.swing;
+
+import java.awt.Component;
+
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+
+import org.amanzi.splash.utilities.Util;
+
+import com.eteks.openjeks.format.CellFormat;
+
+public class SplashCellRenderer extends DefaultTableCellRenderer
+{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4271039280304551527L;
+	/**
+	 * Constructor 
+	 * @param syntax
+	 * @param interpreter
+	 */
+	public SplashCellRenderer (	Object 			syntax,
+								Object          interpreter)
+	{
+	}
+
+	/**
+	 * getTableCellRendererComponent
+	 */
+	public Component getTableCellRendererComponent (JTable table,
+													Object value,
+													boolean isSelected,
+													boolean hasFocus,
+													int row,
+													int column)
+	{
+		if (value instanceof Cell)
+		{
+			
+			if (value == null) Util.logNullAtCell("getTableCellRendererComponent", (String) value, row, column);
+			if (table == null) Util.logNullAtCell("getTableCellRendererComponent", table.toString(), row, column);
+			
+			
+			// Get the computed value to render
+			value = getExpressionValue ((Cell)value);
+			
+			if (value == null){ 
+				Util.logNullAtCell("getTableCellRendererComponent", (String) value, row, column);
+				value = new Cell(row,column,"","",new CellFormat());
+			}
+			// Once the expression is computed, its rendering is delegated
+			// to the default renderer set on the table according to the class of the result
+			return table.getDefaultRenderer (value.getClass ()).getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
+		}
+		else
+			// This renderer is supposed to be called only for Cell values
+			// but this provides a default rendering (and avoid stack overflow)
+			return super.getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
+	}
+
+	/**
+	 * Get Expression value, returns text to be displayed into cells after
+	 * stopping editing the cell.
+	 * @param expression
+	 * @return
+	 */
+	public Object getExpressionValue (Object expression)
+	{
+		return ((Cell)expression).getValue ();
+	}
+}

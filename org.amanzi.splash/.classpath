@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="cz/" kind="src" path="src"/>
+	<classpathentry kind="src" path="openjeks"/>
+	<classpathentry kind="src" path="ruby"/>
+	<classpathentry kind="src" path="ext"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="/org.jruby"/>
+	<classpathentry kind="lib" path="/com.sun.script.jruby/jruby-engine.jar"/>
+	<classpathentry kind="lib" path="/home/amabdelsalam/Downloads/jruby-1.2.0/lib/jruby.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
