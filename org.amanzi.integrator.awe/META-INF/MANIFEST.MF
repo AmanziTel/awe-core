@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: AWE-RDT Integrator Plug-in
+Bundle-SymbolicName: org.amanzi.integrator.awe
+Bundle-Version: 1.0.0
+Bundle-Vendor: Gersis Software
+Export-Package: com.gersis_software.integrator.awe
+Require-Bundle: org.eclipse.core.resources,
+ org.eclipse.core.runtime,
+ net.refractions.udig.project,
+ org.eclipse.ui

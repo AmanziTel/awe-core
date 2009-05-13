@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RDT/AWE Integrator Plug-in
+Bundle-SymbolicName: org.amanzi.integrator.rdt
+Bundle-Version: 1.0.0
+Bundle-Vendor: Gersis Software
+Require-Bundle: org.rubypeople.rdt.core,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.rubypeople.rdt.ui,
+ org.eclipse.ui
+Export-Package: com.gersis_software.integrator.rdt
