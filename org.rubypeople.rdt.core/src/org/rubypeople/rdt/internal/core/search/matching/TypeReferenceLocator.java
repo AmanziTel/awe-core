@@ -3,7 +3,6 @@ package org.rubypeople.rdt.internal.core.search.matching;
 import org.eclipse.core.runtime.CoreException;
 import org.jruby.ast.ConstNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.core.search.SearchPattern;
@@ -87,7 +86,7 @@ public class TypeReferenceLocator extends PatternLocator {
 		}
 		
 		@Override
-		public Instruction visitConstNode(ConstNode iVisited) {
+		public Object visitConstNode(ConstNode iVisited) {
 			String constantName = iVisited.getName();
 			int accuracy = resolveLevel(constantName.toCharArray());
 			if (accuracy != IMPOSSIBLE_MATCH) {				

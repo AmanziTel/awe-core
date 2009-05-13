@@ -5,7 +5,6 @@ import java.util.Map;
 import org.jruby.ast.DefnNode;
 import org.jruby.ast.DefsNode;
 import org.jruby.ast.ReturnNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
 import com.aptana.rdt.AptanaRDTPlugin;
@@ -40,13 +39,13 @@ public class TooManyReturnsVisitor extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		returnCount = 0;
 		return super.visitDefsNode(iVisited);
 	}
 	
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		returnCount = 0;
 		return super.visitDefnNode(iVisited);
 	}
@@ -68,7 +67,7 @@ public class TooManyReturnsVisitor extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitReturnNode(ReturnNode iVisited) {
+	public Object visitReturnNode(ReturnNode iVisited) {
 		returnCount++;
 		return super.visitReturnNode(iVisited);
 	}

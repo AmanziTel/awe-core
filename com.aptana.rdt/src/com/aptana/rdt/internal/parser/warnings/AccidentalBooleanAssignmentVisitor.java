@@ -11,7 +11,6 @@ import org.jruby.ast.IfNode;
 import org.jruby.ast.InstAsgnNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.IDESourcePosition;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
@@ -33,24 +32,24 @@ public class AccidentalBooleanAssignmentVisitor extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitLocalAsgnNode(LocalAsgnNode iVisited) {
+	public Object visitLocalAsgnNode(LocalAsgnNode iVisited) {
 		locals.add(iVisited.getName());
 		return super.visitLocalAsgnNode(iVisited);
 	}
 	
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		locals.clear();
 		return super.visitDefnNode(iVisited);
 	}
 	
 	@Override
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		locals.clear();
 		return super.visitDefsNode(iVisited);
 	}
 	
-	public Instruction visitIfNode(IfNode iVisited) {
+	public Object visitIfNode(IfNode iVisited) {
 		Node condition = iVisited.getCondition();		
 		if (containsAssignment(condition)) {
 			// Only create a problem if we've seen the local before (new locals assigned in an if are bad, but very common. If we've seen it before, this is bad news!)

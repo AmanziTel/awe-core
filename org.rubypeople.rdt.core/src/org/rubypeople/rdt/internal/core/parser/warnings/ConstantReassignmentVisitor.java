@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.jruby.ast.ConstDeclNode;
 import org.jruby.ast.RootNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.RubyCore;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 import org.rubypeople.rdt.internal.core.util.ASTUtil;
@@ -26,12 +25,12 @@ public class ConstantReassignmentVisitor extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitRootNode(RootNode iVisited) {
+	public Object visitRootNode(RootNode iVisited) {
 		this.root = iVisited;
 		return super.visitRootNode(iVisited);
 	}
 	
-	public Instruction visitConstDeclNode(ConstDeclNode iVisited) {		
+	public Object visitConstDeclNode(ConstDeclNode iVisited) {		
 		String namespace = ASTUtil.getNamespace(root, iVisited.getPosition().getStartOffset());
 		String name = namespace + "::" + iVisited.getName();
 		if (assignedConstants.contains(name)) {

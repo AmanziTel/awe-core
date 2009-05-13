@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jruby.ast.FCallNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.internal.core.parser.InOrderVisitor;
 import org.rubypeople.rdt.internal.core.util.ASTUtil;
 
@@ -12,7 +11,7 @@ public class RSpecStructureCreator extends InOrderVisitor {
 	
 	private List<Behavior> behaviors = new ArrayList<Behavior>();
 	
-	public Instruction visitFCallNode(FCallNode visited) {
+	public Object visitFCallNode(FCallNode visited) {
 		if (visited.getName().equals("describe"))
 		{ // start of a behavior
 			List<String> args = ASTUtil.getArgumentsFromFunctionCall(visited);

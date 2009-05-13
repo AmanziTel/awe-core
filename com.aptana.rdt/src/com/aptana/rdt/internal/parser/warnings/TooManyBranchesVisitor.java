@@ -8,7 +8,6 @@ import org.jruby.ast.DefsNode;
 import org.jruby.ast.IfNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.WhenNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
 import com.aptana.rdt.AptanaRDTPlugin;
@@ -41,19 +40,19 @@ public class TooManyBranchesVisitor extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		branchCount = 0;
 		return super.visitDefsNode(iVisited);
 	}
 	
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		branchCount = 0;
 		return super.visitDefnNode(iVisited);
 	}
 
 	@Override
-	public Instruction visitIfNode(IfNode iVisited) {
+	public Object visitIfNode(IfNode iVisited) {
 		// TODO Make sure this doesn't count modifiers
 		if (iVisited.getThenBody() != null) {
 			branchCount++;
@@ -65,7 +64,7 @@ public class TooManyBranchesVisitor extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitCaseNode(CaseNode iVisited) {
+	public Object visitCaseNode(CaseNode iVisited) {
 		WhenNode when = (WhenNode) iVisited.getFirstWhenNode();
 		while (when != null) {
 			branchCount++;

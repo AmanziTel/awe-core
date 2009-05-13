@@ -8,7 +8,6 @@ import org.jruby.ast.ClassNode;
 import org.jruby.ast.DefnNode;
 import org.jruby.ast.FCallNode;
 import org.jruby.ast.LocalAsgnNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 import org.rubypeople.rdt.internal.core.util.ASTUtil;
 
@@ -30,14 +29,14 @@ public class LocalsMaskingMethodsVisitor extends RubyLintVisitor {
 		return AptanaRDTPlugin.COMPILER_PB_LOCAL_MASKS_METHOD;
 	}
 	
-	public Instruction visitClassNode(ClassNode iVisited) {
+	public Object visitClassNode(ClassNode iVisited) {
 		methods.clear();
 		locals.clear();
 		return null;
 	}
 	
 	@Override
-	public Instruction visitFCallNode(FCallNode iVisited) {
+	public Object visitFCallNode(FCallNode iVisited) {
 		String name = iVisited.getName();
 		if (name.equals("attr_accessor") || name.equals("attr")) {
 			List<String> args = ASTUtil.getArgumentsFromFunctionCall(iVisited);
@@ -54,12 +53,12 @@ public class LocalsMaskingMethodsVisitor extends RubyLintVisitor {
 		findMaskingLocals();
 	}
 	
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		methods.add(iVisited.getName());
 		return null;
 	}
 	
-	public Instruction visitLocalAsgnNode(LocalAsgnNode iVisited) {
+	public Object visitLocalAsgnNode(LocalAsgnNode iVisited) {
 		locals.add(iVisited);
 		return null;
 	}

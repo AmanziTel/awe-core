@@ -7,7 +7,6 @@ import java.util.List;
 import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ArgumentNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.ISourcePosition;
 
 /**
@@ -53,7 +52,7 @@ public class ScopedNodeLocator extends NodeLocator {
 	/**
 	 * Searches via InOrderVisitor for matches
 	 */
-	public Instruction handleNode(Node iVisited) {
+	public Object handleNode(Node iVisited) {
 		if ( acceptor.doesAccept( iVisited ) )
 		{
 			locatedNodes.add(iVisited);
@@ -67,7 +66,7 @@ public class ScopedNodeLocator extends NodeLocator {
 	 * 
 	 * @see org.jruby.ast.visitor.NodeVisitor#visitArgsNode(org.jruby.ast.ArgsNode)
 	 */
-	public Instruction visitArgsNode(ArgsNode iVisited) {
+	public Object visitArgsNode(ArgsNode iVisited) {
 		if ( iVisited.getRequiredArgsCount() > 0 )
 		{
 			for (Iterator iter = iVisited.getArgs().childNodes().iterator(); iter.hasNext();) {

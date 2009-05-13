@@ -24,7 +24,6 @@ import org.jruby.ast.RootNode;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.VCallNode;
 import org.jruby.ast.types.INameNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
 import com.aptana.rdt.AptanaRDTPlugin;
@@ -44,12 +43,12 @@ public class SimilarVariableNameVisitor extends RubyLintVisitor {
 		return AptanaRDTPlugin.COMPILER_PB_SIMILAR_VARIABLE_NAMES;
 	}
 
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		enterMethod(iVisited);
 		return super.visitDefnNode(iVisited);
 	}
 	
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		enterMethod(iVisited);
 		return super.visitDefsNode(iVisited);
 	}
@@ -58,12 +57,12 @@ public class SimilarVariableNameVisitor extends RubyLintVisitor {
 		enterScope(node);
 	}
 	
-	public Instruction visitClassNode(ClassNode visited) {
+	public Object visitClassNode(ClassNode visited) {
 		enterScope(visited);
 		return super.visitClassNode(visited);
 	}
 
-	public Instruction visitArgsNode(ArgsNode iVisited) {
+	public Object visitArgsNode(ArgsNode iVisited) {
 		ListNode list = iVisited.getArgs();
 		if (list != null && list.childNodes() != null) {
 			for (Object arg : list.childNodes()) {
@@ -86,7 +85,7 @@ public class SimilarVariableNameVisitor extends RubyLintVisitor {
 		super.exitDefnNode(iVisited);
 	}
 
-	public Instruction visitBlockNode(BlockNode iVisited) {
+	public Object visitBlockNode(BlockNode iVisited) {
 		enterScope(iVisited);
 		return super.visitBlockNode(iVisited);
 	}
@@ -250,17 +249,17 @@ public class SimilarVariableNameVisitor extends RubyLintVisitor {
 		return y;
 	}
 
-	public Instruction visitVCallNode(VCallNode iVisited) {
+	public Object visitVCallNode(VCallNode iVisited) {
 		addVar(iVisited);
 		return super.visitVCallNode(iVisited);
 	}
 
-	public Instruction visitLocalAsgnNode(LocalAsgnNode iVisited) {
+	public Object visitLocalAsgnNode(LocalAsgnNode iVisited) {
 		addVar(iVisited);
 		return super.visitLocalAsgnNode(iVisited);
 	}
 
-	public Instruction visitLocalVarNode(LocalVarNode iVisited) {
+	public Object visitLocalVarNode(LocalVarNode iVisited) {
 		addVar(iVisited);
 		return super.visitLocalVarNode(iVisited);
 	}
@@ -295,7 +294,7 @@ public class SimilarVariableNameVisitor extends RubyLintVisitor {
 		vars.put(iVisited.getName(), (Node) iVisited);	
 	}
 
-	public Instruction visitRootNode(RootNode visited) {
+	public Object visitRootNode(RootNode visited) {
 		enterScope(visited);
 		return super.visitRootNode(visited);
 	}
@@ -314,27 +313,27 @@ public class SimilarVariableNameVisitor extends RubyLintVisitor {
 		exitScope();
 	}
 
-	public Instruction visitInstAsgnNode(InstAsgnNode iVisited) {
+	public Object visitInstAsgnNode(InstAsgnNode iVisited) {
 		addToClass(iVisited);
 		return super.visitInstAsgnNode(iVisited);
 	}
 
-	public Instruction visitInstVarNode(InstVarNode iVisited) {
+	public Object visitInstVarNode(InstVarNode iVisited) {
 		addToClass(iVisited);
 		return super.visitInstVarNode(iVisited);
 	}
 
-	public Instruction visitClassVarAsgnNode(ClassVarAsgnNode iVisited) {
+	public Object visitClassVarAsgnNode(ClassVarAsgnNode iVisited) {
 		addToClass(iVisited);
 		return super.visitClassVarAsgnNode(iVisited);
 	}
 
-	public Instruction visitClassVarNode(ClassVarNode iVisited) {
+	public Object visitClassVarNode(ClassVarNode iVisited) {
 		addToClass(iVisited);
 		return super.visitClassVarNode(iVisited);
 	}
 
-	public Instruction visitClassVarDeclNode(ClassVarDeclNode iVisited) {
+	public Object visitClassVarDeclNode(ClassVarDeclNode iVisited) {
 		addToClass(iVisited);
 		return super.visitClassVarDeclNode(iVisited);
 	}

@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.jruby.ast.FCallNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.SyntaxException;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.core.RubyCore;
@@ -78,7 +77,7 @@ public class GemLoadpathAdder extends CompilationParticipant {
 		}
 		
 		@Override
-		public Instruction visitFCallNode(FCallNode iVisited) {
+		public Object visitFCallNode(FCallNode iVisited) {
 			String name = iVisited.getName();
 			if (name.equals("gem") || name.equals("require_gem")) {
 				List<String> args = ASTUtil.getArgumentsFromFunctionCall(iVisited);

@@ -9,7 +9,6 @@ import org.jruby.ast.ClassNode;
 import org.jruby.ast.FCallNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.internal.ti.ITypeGuess;
 import org.rubypeople.rdt.internal.ti.ITypeInferrer;
 import org.rubypeople.rdt.internal.ti.TypeInferenceHelper;
@@ -74,7 +73,7 @@ public class MethodInvocationLocator extends NodeLocator {
 	}
 	
 
-	public Instruction handleNode(Node iVisited) {
+	public Object handleNode(Node iVisited) {
 		
 		// Check for invocations on self
 		if ( iVisited instanceof FCallNode ) {
@@ -111,7 +110,7 @@ public class MethodInvocationLocator extends NodeLocator {
 		return super.handleNode(iVisited);
 	}
 	
-	public Instruction visitClassNode(ClassNode iVisited) {
+	public Object visitClassNode(ClassNode iVisited) {
 		pushType( helper.getTypeNodeName( iVisited ) );
 		super.visitClassNode( iVisited );
 		popType();
@@ -119,7 +118,7 @@ public class MethodInvocationLocator extends NodeLocator {
 		return null;
 	}
 
-	public Instruction visitModuleNode(ModuleNode iVisited) {
+	public Object visitModuleNode(ModuleNode iVisited) {
 		pushType( helper.getTypeNodeName( iVisited ) );
 		super.visitModuleNode( iVisited );
 		popType();

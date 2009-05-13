@@ -21,7 +21,7 @@ import org.rubypeople.rdt.ui.wizards.NewFileWizardPage;
 
 public class NewFileCreationWizard extends NewElementWizard {
 
-	private NewFileWizardPage fPage;
+	protected NewFileWizardPage fPage;
 	
 	public NewFileCreationWizard(NewFileWizardPage page) {
 		setDefaultPageImageDescriptor(RubyPluginImages.DESC_WIZBAN_NEWFILE);
@@ -41,7 +41,7 @@ public class NewFileCreationWizard extends NewElementWizard {
 	public void addPages() {
 		super.addPages();
 		if (fPage == null) {
-			fPage= new NewFileWizardPage();
+			fPage= new NewFileWizardPage();	
 			fPage.init(getSelection());
 		}
 		addPage(fPage);

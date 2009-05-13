@@ -7,7 +7,6 @@ import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.MultipleAsgnNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
 import com.aptana.rdt.AptanaRDTPlugin;
@@ -25,7 +24,7 @@ public class DynamicVariableAliasesLocal extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitIterNode(IterNode iVisited) {
+	public Object visitIterNode(IterNode iVisited) {
 		checkNode(iVisited.getVarNode());
 		return super.visitIterNode(iVisited);
 	}

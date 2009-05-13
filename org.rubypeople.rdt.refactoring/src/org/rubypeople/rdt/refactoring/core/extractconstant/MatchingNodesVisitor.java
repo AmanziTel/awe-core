@@ -9,7 +9,6 @@ import org.jruby.ast.visitor.rewriter.DefaultFormatHelper;
 import org.jruby.ast.visitor.rewriter.FormatHelper;
 import org.jruby.ast.visitor.rewriter.ReWriteVisitor;
 import org.jruby.ast.visitor.rewriter.utils.ReWriterContext;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.internal.core.parser.InOrderVisitor;
 
 public class MatchingNodesVisitor extends InOrderVisitor {
@@ -27,7 +26,7 @@ public class MatchingNodesVisitor extends InOrderVisitor {
 	}
 	
 	@Override
-	protected Instruction visitNode(Node iVisited) {
+	protected Object visitNode(Node iVisited) {
 		if (iVisited != null && iVisited.getClass().equals(toMatch.getClass())) {
 			// same type of node
 			String currentNodeSrc = getSource(iVisited); // compare src of the nodes

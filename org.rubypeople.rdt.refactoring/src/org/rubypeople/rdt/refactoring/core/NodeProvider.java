@@ -28,6 +28,7 @@
 
 package org.rubypeople.rdt.refactoring.core;
 
+import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,7 +105,7 @@ public class NodeProvider {
 		parser.setWarnings(new NullWarnings());
 		
 		ParserConfiguration parserConfig = new ParserConfiguration(KCode.NIL, 1, true, false, CompatVersion.RUBY1_8);
-		LexerSource lexerSource = LexerSource.getSource(fileName, new StringReader(fileContent), null, parserConfig);		
+		LexerSource lexerSource = LexerSource.getSource(fileName, new ByteArrayInputStream(fileContent.getBytes()), null, parserConfig);		
 //		parserConfig.addPostProcessor(new DefaultCommentPlacer());
 		RubyParserResult result = parser.parse(parserConfig, lexerSource);
 		return (RootNode) result.getAST();

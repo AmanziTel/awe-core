@@ -24,7 +24,7 @@ public class RubyProjectAdapterFactory implements IAdapterFactory {
 	public Class[] getAdapterList() {
 		return PROPERTIES;
 	}
-
+	
 	public Object getAdapter(Object element, Class key) {
 		if (IProject.class.equals(key)) {
 			IRubyProject rubyProject = (IRubyProject) element;

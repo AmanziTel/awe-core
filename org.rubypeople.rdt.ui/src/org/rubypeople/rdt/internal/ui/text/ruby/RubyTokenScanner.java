@@ -1,5 +1,6 @@
 package org.rubypeople.rdt.internal.ui.text.ruby;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -248,10 +249,10 @@ public class RubyTokenScanner implements ITokenScanner {
 		ParserConfiguration config = new ParserConfiguration(KCode.NIL, 0, true, false, CompatVersion.RUBY1_8);
 		try {
 			fContents = document.get(offset, length);			
-			lexerSource = LexerSource.getSource("filename", new StringReader(fContents), null, config);
+			lexerSource = LexerSource.getSource("filename", new ByteArrayInputStream(fContents.getBytes()), null, config);
 			lexer.setSource(lexerSource);
 		} catch (BadLocationException e) {
-			lexerSource = LexerSource.getSource("filename", new StringReader(""), null, config);
+			lexerSource = LexerSource.getSource("filename", new ByteArrayInputStream("".getBytes()), null, config);
 			lexer.setSource(lexerSource);
 		}
 		origOffset = offset;

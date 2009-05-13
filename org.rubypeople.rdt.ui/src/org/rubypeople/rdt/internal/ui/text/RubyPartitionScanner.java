@@ -1,6 +1,8 @@
 package org.rubypeople.rdt.internal.ui.text;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -128,12 +130,12 @@ public class RubyPartitionScanner implements IPartitionTokenScanner
 			{
 				fContents = "\"" + fContents.substring(1);
 			}
-			lexerSource = LexerSource.getSource("filename", new StringReader(fContents), null, config);
+			lexerSource = LexerSource.getSource("filename", new ByteArrayInputStream(fContents.getBytes()), null, config);
 			lexer.setSource(lexerSource);
 		}
 		catch (BadLocationException e)
 		{
-			lexerSource = LexerSource.getSource("filename", new StringReader(""), null, config);
+			lexerSource = LexerSource.getSource("filename", new ByteArrayInputStream("".getBytes()), null, config);
 			lexer.setSource(lexerSource);
 		}
 		origOffset = myOffset;

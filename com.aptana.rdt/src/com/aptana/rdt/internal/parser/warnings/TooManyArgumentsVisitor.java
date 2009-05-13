@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.jruby.ast.DefnNode;
 import org.jruby.ast.DefsNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 import org.rubypeople.rdt.internal.core.util.ASTUtil;
 
@@ -37,7 +36,7 @@ public class TooManyArgumentsVisitor extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		String[] args = ASTUtil.getArgs(iVisited.getArgsNode(), iVisited.getScope());
 		if (args != null && args.length > maxArgLength) {
 			createProblem(iVisited.getArgsNode().getPosition(), "Too many method arguments: " + args.length);
@@ -46,7 +45,7 @@ public class TooManyArgumentsVisitor extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		String[] args = ASTUtil.getArgs(iVisited.getArgsNode(), iVisited.getScope());
 		if (args != null && args.length > maxArgLength) {
 			createProblem(iVisited.getArgsNode().getPosition(), "Too many method arguments: " + args.length);

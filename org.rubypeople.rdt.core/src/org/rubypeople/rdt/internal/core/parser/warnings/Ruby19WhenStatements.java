@@ -1,7 +1,6 @@
 package org.rubypeople.rdt.internal.core.parser.warnings;
 
 import org.jruby.ast.WhenNode;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.IDESourcePosition;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.rubypeople.rdt.core.RubyCore;
@@ -20,7 +19,7 @@ public class Ruby19WhenStatements extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitWhenNode(WhenNode iVisited) {
+	public Object visitWhenNode(WhenNode iVisited) {
 		if (iVisited.getExpressionNodes() == null) return super.visitWhenNode(iVisited);	
 		if (iVisited.getBodyNode() == null) return super.visitWhenNode(iVisited);		
 		if (iVisited.getPosition() == null) return super.visitWhenNode(iVisited);

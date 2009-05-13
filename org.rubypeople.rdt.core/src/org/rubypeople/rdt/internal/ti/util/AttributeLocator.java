@@ -12,7 +12,6 @@ import org.jruby.ast.FCallNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
-import org.jruby.evaluator.Instruction;
 
 /**
  * Visitor to find all instance and class attribute declarations (attr_*, cattr_*) within a specific scope.
@@ -51,7 +50,7 @@ public class AttributeLocator extends NodeLocator {
 	/**
 	 * Searches via InOrderVisitor for matches
 	 */
-	public Instruction handleNode(Node node ) {
+	public Object handleNode(Node node ) {
 		// Look for FCallNodes to attr_*
 		if ( node instanceof FCallNode ) {
 			FCallNode fCallNode = (FCallNode)node;

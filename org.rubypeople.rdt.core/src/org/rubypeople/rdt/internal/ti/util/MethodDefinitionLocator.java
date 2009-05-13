@@ -9,7 +9,6 @@ import org.jruby.ast.DefnNode;
 import org.jruby.ast.DefsNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.internal.ti.TypeInferenceHelper;
 
 /**
@@ -64,7 +63,7 @@ public class MethodDefinitionLocator extends NodeLocator {
 	}
 	
 
-	public Instruction handleNode(Node iVisited) {
+	public Object handleNode(Node iVisited) {
 		if ( ( iVisited instanceof DefnNode ) || ( iVisited instanceof DefsNode ) ) {
 			if ( peekType().equals(typeName)) {
 				String methodName = helper.getMethodDefinitionNodeName( iVisited );
@@ -77,7 +76,7 @@ public class MethodDefinitionLocator extends NodeLocator {
 		return super.handleNode(iVisited);
 	}
 	
-	public Instruction visitClassNode(ClassNode iVisited) {
+	public Object visitClassNode(ClassNode iVisited) {
 		pushType( helper.getTypeNodeName( iVisited ) );
 		super.visitClassNode( iVisited );
 		popType();
@@ -85,7 +84,7 @@ public class MethodDefinitionLocator extends NodeLocator {
 		return null;
 	}
 
-	public Instruction visitModuleNode(ModuleNode iVisited) {
+	public Object visitModuleNode(ModuleNode iVisited) {
 		pushType( helper.getTypeNodeName( iVisited ) );
 		super.visitModuleNode( iVisited );
 		popType();

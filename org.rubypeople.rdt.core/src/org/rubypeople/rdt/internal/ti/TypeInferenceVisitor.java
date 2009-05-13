@@ -10,7 +10,6 @@ import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.internal.core.parser.InOrderVisitor;
 import org.rubypeople.rdt.internal.ti.data.LiteralNodeTypeNames;
 import org.rubypeople.rdt.internal.ti.data.TypicalMethodReturnNames;
@@ -31,7 +30,7 @@ public class TypeInferenceVisitor extends InOrderVisitor {
 	 * Visit a ModuleNode, and extract its local variables from the embedded
 	 * body ScopeNode
 	 */
-	public Instruction visitModuleNode(ModuleNode iVisited) {		
+	public Object visitModuleNode(ModuleNode iVisited) {		
 		Scope newScope = pushScope( iVisited );
 		Variable.insertLocalsFromScopeNode(iVisited.getScope(), newScope);
 		return super.visitModuleNode(iVisited);
@@ -41,7 +40,7 @@ public class TypeInferenceVisitor extends InOrderVisitor {
 	 * Visit a ClassNode, and extract its local variables from the embedded body
 	 * ScopeNode
 	 */
-	public Instruction visitClassNode(ClassNode iVisited) {
+	public Object visitClassNode(ClassNode iVisited) {
 		Scope newScope = pushScope( iVisited );
 		Variable.insertLocalsFromScopeNode(iVisited.getScope(), newScope);
 		return super.visitClassNode(iVisited);
@@ -51,7 +50,7 @@ public class TypeInferenceVisitor extends InOrderVisitor {
 	 * Visit a DefnNode, and extract its local variables from the embedded body
 	 * ScopeNode
 	 */
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		Scope newScope = pushScope( iVisited );
 		Variable.insertLocalsFromScopeNode(iVisited.getScope(), newScope);
 		// TODO: insert from argsNodes
@@ -62,7 +61,7 @@ public class TypeInferenceVisitor extends InOrderVisitor {
 	 * Visit a DefsNode, and extract its local variables from the embedded body
 	 * ScopeNode
 	 */
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		Scope newScope = pushScope( iVisited );
 		Variable.insertLocalsFromScopeNode(iVisited.getScope(), newScope);
 		// TODO: insert from argsNodes
@@ -72,7 +71,7 @@ public class TypeInferenceVisitor extends InOrderVisitor {
 	/**
 	 * Visit an IterNode, and extract variable references from it
 	 */
-	public Instruction visitIterNode(IterNode iVisited) {
+	public Object visitIterNode(IterNode iVisited) {
 		// TODO: push iterator var into the iter's scope.
 //		Scope newScope = pushScope(iVisited);
 // newScope.getVariables().add( new Variable( newScope, ))
@@ -105,7 +104,7 @@ public class TypeInferenceVisitor extends InOrderVisitor {
 	 * Used to build STIGuess instances by recording instances of method
 	 * invocation against variables.
 	 */
-	public Instruction visitCallNode(CallNode iVisited) {
+	public Object visitCallNode(CallNode iVisited) {
 		Variable var = getVariableByVarNode( iVisited.getReceiverNode() );
 		if ( var != null ) {
 			// TODO: add call to list
@@ -138,7 +137,7 @@ public class TypeInferenceVisitor extends InOrderVisitor {
 	/**
 	 * Local assignment may provide a concrete type from the rvalue
 	 */
-	public Instruction visitLocalAsgnNode(LocalAsgnNode iVisited) {
+	public Object visitLocalAsgnNode(LocalAsgnNode iVisited) {
 		Variable var = currentScope.getLocalVariableByCount( iVisited.getIndex() );
 		if ( var == null )
 		{

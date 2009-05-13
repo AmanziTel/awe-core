@@ -38,7 +38,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.jruby.ast.Node;
 import org.jruby.ast.RootNode;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.SyntaxException;
 import org.rubypeople.rdt.core.CompletionRequestor;
 import org.rubypeople.rdt.core.IBuffer;
@@ -65,6 +64,8 @@ import org.rubypeople.rdt.internal.core.buffer.BufferManager;
 import org.rubypeople.rdt.internal.core.util.MementoTokenizer;
 import org.rubypeople.rdt.internal.core.util.Util;
 
+import com.gersis_software.integrator.awe.AWEProjectManager;
+
 
 /**
  * @author Chris
@@ -83,6 +84,13 @@ public class RubyScript extends Openable implements IRubyScript {
 		super(parent);
 		this.name = name;
 		this.owner = owner;
+		//Lagutko: create RubyScript also in AWE Project structure
+		try {
+			AWEProjectManager.createRubyScript(parent.getResource().getProject(), name, getUnderlyingResource());
+		}
+		catch (RubyModelException e) {
+			//TODO: handle this exception
+		}
 	}
 
 	/**
@@ -130,7 +138,7 @@ public class RubyScript extends Openable implements IRubyScript {
 			SourceElementParser sp = new SourceElementParser(requestor){
 			
 				@Override
-				public Instruction visitRootNode(RootNode iVisited) {
+				public Object visitRootNode(RootNode iVisited) {
 					lastGoodAST = iVisited;
 					return super.visitRootNode(iVisited);
 				}			

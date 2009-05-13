@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -78,6 +79,9 @@ public class RubyEditorActionContributor extends BasicTextEditorActionContributo
         
 		IMenuManager navigateMenu= menu.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
 		if (navigateMenu != null) {
+			if (navigateMenu.find(IWorkbenchActionConstants.SHOW_EXT) == null) {
+				navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.SHOW_EXT));
+			}
 			navigateMenu.appendToGroup(IWorkbenchActionConstants.SHOW_EXT, fShowOutline);
 			navigateMenu.appendToGroup(IWorkbenchActionConstants.SHOW_EXT, fOpenHierarchy);
 		}

@@ -12,7 +12,6 @@ import org.jruby.ast.DefnNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.RootNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyScript;
 import org.rubypeople.rdt.core.ISourceFolderRoot;
@@ -69,7 +68,7 @@ public class CoreClassReOpening extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		String typeName = getCurrentTypeName();
 		if (isCoreClass(typeName)) {
 			String methodName = iVisited.getName();
@@ -139,7 +138,7 @@ public class CoreClassReOpening extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitRootNode(RootNode iVisited) {
+	public Object visitRootNode(RootNode iVisited) {
 		this.rootNode = iVisited;
 		return super.visitRootNode(iVisited);
 	}
@@ -151,7 +150,7 @@ public class CoreClassReOpening extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitClassNode(ClassNode iVisited) {
+	public Object visitClassNode(ClassNode iVisited) {
 		push(iVisited);
 		return super.visitClassNode(iVisited);
 	}
@@ -163,7 +162,7 @@ public class CoreClassReOpening extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitModuleNode(ModuleNode iVisited) {
+	public Object visitModuleNode(ModuleNode iVisited) {
 		push(iVisited);
 		return super.visitModuleNode(iVisited);
 	}

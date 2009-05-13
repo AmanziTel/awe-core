@@ -17,7 +17,6 @@ import org.jruby.ast.ModuleNode;
 import org.jruby.ast.RootNode;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.StrNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.internal.core.parser.InOrderVisitor;
 import org.rubypeople.rdt.internal.core.util.ASTUtil;
 
@@ -71,66 +70,66 @@ class RubyParseTreeBuilder extends InOrderVisitor {
     }
     
     @Override
-    public Instruction visitClassNode(ClassNode iVisited) {
+    public Object visitClassNode(ClassNode iVisited) {
     	int start = iVisited.getPosition().getStartOffset();
     	int end = iVisited.getPosition().getEndOffset();
     	push(RubyNode.CLASS, ASTUtil.getFullyQualifiedName(iVisited.getCPath()), start, end - start);
-    	Instruction ins = super.visitClassNode(iVisited);
+    	Object ins = super.visitClassNode(iVisited);
     	pop();
     	return ins;
     }
     
     @Override
-    public Instruction visitSClassNode(SClassNode iVisited) {
+    public Object visitSClassNode(SClassNode iVisited) {
     	int start = iVisited.getPosition().getStartOffset();
     	int end = iVisited.getPosition().getEndOffset();
     	push(RubyNode.CLASS, ASTUtil.getNameReflectively(iVisited.getReceiverNode()), start, end - start);
-    	Instruction ins = super.visitSClassNode(iVisited);
+    	Object ins = super.visitSClassNode(iVisited);
     	pop();
     	return ins;
     }
     
     @Override
-    public Instruction visitModuleNode(ModuleNode iVisited) {
+    public Object visitModuleNode(ModuleNode iVisited) {
     	int start = iVisited.getPosition().getStartOffset();
     	int end = iVisited.getPosition().getEndOffset();
     	push(RubyNode.MODULE, ASTUtil.getFullyQualifiedName(iVisited.getCPath()), start, end - start);
-    	Instruction ins = super.visitModuleNode(iVisited);
+    	Object ins = super.visitModuleNode(iVisited);
     	pop();
     	return ins;
     }
     
     @Override
-    public Instruction visitRootNode(RootNode iVisited) {
+    public Object visitRootNode(RootNode iVisited) {
     	if (fShowCU)
     		push(RubyNode.SCRIPT, null, iVisited.getPosition().getStartOffset(), iVisited.getPosition().getEndOffset());
-    	Instruction ins = super.visitRootNode(iVisited);
+    	Object ins = super.visitRootNode(iVisited);
     	if (fShowCU)
     		pop();
     	return ins;
     }
     
     @Override
-    public Instruction visitDefnNode(DefnNode iVisited) {
+    public Object visitDefnNode(DefnNode iVisited) {
     	int start = iVisited.getPosition().getStartOffset();
     	int end = iVisited.getPosition().getEndOffset();
     	push(RubyNode.METHOD, iVisited.getName(), start, end - start);
-    	Instruction ins = super.visitDefnNode(iVisited);
+    	Object ins = super.visitDefnNode(iVisited);
     	pop();
     	return ins;
     }
     
     @Override
-    public Instruction visitDefsNode(DefsNode iVisited) {
+    public Object visitDefsNode(DefsNode iVisited) {
     	int start = iVisited.getPosition().getStartOffset();
     	int end = iVisited.getPosition().getEndOffset();
     	push(RubyNode.METHOD, iVisited.getName(), start, end - start);
-    	Instruction ins = super.visitDefsNode(iVisited);
+    	Object ins = super.visitDefsNode(iVisited);
     	pop();
     	return ins;
     }
     
-    public Instruction visitFCallNode(FCallNode iVisited) {
+    public Object visitFCallNode(FCallNode iVisited) {
 		String name = iVisited.getName();
 		List<String> arguments = getArgumentsFromFunctionCall(iVisited);
 		if (name.equals("require") || name.equals("load")) {
@@ -172,41 +171,41 @@ class RubyParseTreeBuilder extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitInstAsgnNode(InstAsgnNode iVisited) {
+	public Object visitInstAsgnNode(InstAsgnNode iVisited) {
 		int start = iVisited.getPosition().getStartOffset();
 		int end = iVisited.getPosition().getEndOffset();
 		push(RubyNode.FIELD, iVisited.getName(), start, end - start);
-		Instruction ins = super.visitInstAsgnNode(iVisited);
+		Object ins = super.visitInstAsgnNode(iVisited);
 		pop();
 		return ins;
 	}
 	
 	@Override
-	public Instruction visitClassVarDeclNode(ClassVarDeclNode iVisited) {
+	public Object visitClassVarDeclNode(ClassVarDeclNode iVisited) {
 		int start = iVisited.getPosition().getStartOffset();
 		int end = iVisited.getPosition().getEndOffset();
 		push(RubyNode.FIELD, iVisited.getName(), start, end - start);
-		Instruction ins = super.visitClassVarDeclNode(iVisited);
+		Object ins = super.visitClassVarDeclNode(iVisited);
 		pop();
 		return ins;
 	}
 	
 	@Override
-	public Instruction visitClassVarAsgnNode(ClassVarAsgnNode iVisited) {
+	public Object visitClassVarAsgnNode(ClassVarAsgnNode iVisited) {
 		int start = iVisited.getPosition().getStartOffset();
 		int end = iVisited.getPosition().getEndOffset();
 		push(RubyNode.FIELD, iVisited.getName(), start, end - start);
-		Instruction ins = super.visitClassVarAsgnNode(iVisited);
+		Object ins = super.visitClassVarAsgnNode(iVisited);
 		pop();
 		return ins;
 	}
 	
 	@Override
-	public Instruction visitConstDeclNode(ConstDeclNode iVisited) {
+	public Object visitConstDeclNode(ConstDeclNode iVisited) {
 		int start = iVisited.getPosition().getStartOffset();
 		int end = iVisited.getPosition().getEndOffset();
 		push(RubyNode.FIELD, iVisited.getName(), start, end - start);
-		Instruction ins = super.visitConstDeclNode(iVisited);
+		Object ins = super.visitConstDeclNode(iVisited);
 		pop();
 		return ins;
 	}

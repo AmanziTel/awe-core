@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.internal.core.parser.InOrderVisitor;
 
 import com.sun.org.apache.xpath.internal.Expression;
@@ -88,7 +87,7 @@ public class SelectionAnalyzer extends InOrderVisitor {
 	
 	//--- node management ---------------------------------------------------------
 	
-	protected Instruction visitNode(Node node) {
+	protected Object visitNode(Node node) {
 		// The selection lies behind the node.
 		if (fSelection.liesOutside(node)) {
 			return null;

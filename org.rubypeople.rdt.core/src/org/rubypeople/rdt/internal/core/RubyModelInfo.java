@@ -13,6 +13,8 @@ package org.rubypeople.rdt.internal.core;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 
+import com.gersis_software.integrator.awe.AWEProjectManager;
+
 /**
  * Implementation of IRubyModel. A Ruby Model is specific to a
  * workspace.
@@ -30,7 +32,7 @@ public class RubyModelInfo extends OpenableElementInfo {
  * Compute the non-java resources contained in this java project.
  */
 private Object[] computeNonRubyResources() {
-	IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+	IProject[] projects = AWEProjectManager.getAllRubyProjects();
 	int length = projects.length;
 	Object[] resources = null;
 	int index = 0;

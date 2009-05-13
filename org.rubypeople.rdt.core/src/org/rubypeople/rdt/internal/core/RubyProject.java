@@ -78,6 +78,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.gersis_software.integrator.awe.AWEProjectManager;
+
 public class RubyProject extends Openable implements IProjectNature, IRubyElement, IRubyProject {
 
 	protected IProject project;
@@ -111,7 +113,7 @@ public class RubyProject extends Openable implements IProjectNature, IRubyElemen
 	 */
 
 	public RubyProject() {
-		super(null);
+		super(null);		
 	}
 
 	/**
@@ -120,6 +122,8 @@ public class RubyProject extends Openable implements IProjectNature, IRubyElemen
 	public RubyProject(IProject aProject, RubyElement parent) {
 		super(parent);
 		setProject(aProject);
+		//Lagutko: create RubyProject also in AWE Project Structure
+		AWEProjectManager.createRubyProject(aProject);
 	}
 
 	/**

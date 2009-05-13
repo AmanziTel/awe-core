@@ -12,7 +12,6 @@ import org.jruby.ast.IArgumentNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.VCallNode;
 import org.jruby.ast.types.INameNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.IMember;
 import org.rubypeople.rdt.core.IMethod;
 import org.rubypeople.rdt.core.IParent;
@@ -53,31 +52,31 @@ public class MethodLocator extends PatternLocator {
 			new InOrderVisitor() {
 			
 				@Override
-				public Instruction visitVCallNode(VCallNode iVisited) {
+				public Object visitVCallNode(VCallNode iVisited) {
 					match(iVisited, 0);
 					return super.visitVCallNode(iVisited);
 				}
 				
 				@Override
-				public Instruction visitFCallNode(FCallNode iVisited) {
+				public Object visitFCallNode(FCallNode iVisited) {
 					match(iVisited, getArgumentsFromFunctionCall(iVisited).size());
 					return super.visitFCallNode(iVisited);
 				}
 				
 				@Override
-				public Instruction visitCallNode(CallNode iVisited) {
+				public Object visitCallNode(CallNode iVisited) {
 					match(iVisited, getArgumentsFromFunctionCall(iVisited).size());
 					return super.visitCallNode(iVisited);
 				}
 				
 				@Override
-				public Instruction visitDefnNode(DefnNode iVisited) {
+				public Object visitDefnNode(DefnNode iVisited) {
 					if (findDeclarations) matchDeclaration(iVisited, iVisited.getArgsNode().getRequiredArgsCount());
 					return super.visitDefnNode(iVisited);
 				}
 				
 				@Override
-				public Instruction visitDefsNode(DefsNode iVisited) {
+				public Object visitDefsNode(DefsNode iVisited) {
 					if (findDeclarations) matchDeclaration(iVisited, iVisited.getArgsNode().getRequiredArgsCount());
 					return super.visitDefsNode(iVisited);
 				}

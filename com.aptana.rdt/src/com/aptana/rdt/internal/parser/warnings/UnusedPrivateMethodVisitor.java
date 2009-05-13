@@ -14,7 +14,6 @@ import org.jruby.ast.Node;
 import org.jruby.ast.SelfNode;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.VCallNode;
-import org.jruby.evaluator.Instruction;
 import org.jruby.runtime.Visibility;
 import org.rubypeople.rdt.core.compiler.IProblem;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
@@ -33,7 +32,7 @@ public class UnusedPrivateMethodVisitor extends RubyLintVisitor {
 		visibility = Visibility.PUBLIC;
 	}
 	
-	public Instruction visitFCallNode(FCallNode iVisited) {
+	public Object visitFCallNode(FCallNode iVisited) {
 		usedMethods.add(iVisited.getName()); // we've used the method
 		
 		List<Node> args = ASTUtil.getArgumentNodesFromFunctionCall(iVisited);
@@ -46,14 +45,14 @@ public class UnusedPrivateMethodVisitor extends RubyLintVisitor {
 		return null;
 	}
 
-	public Instruction visitCallNode(CallNode iVisited) {
+	public Object visitCallNode(CallNode iVisited) {
 		Node receiver = iVisited.getReceiverNode();
 		if (receiver instanceof SelfNode)
 			usedMethods.add(iVisited.getName()); // we've used the method
 		return null;
 	}
 	
-	public Instruction visitVCallNode(VCallNode iVisited) {
+	public Object visitVCallNode(VCallNode iVisited) {
 		usedMethods.add(iVisited.getName()); // we've used the method
 		if (iVisited.getName().equals("private")) {
 			visibility = Visibility.PRIVATE;
@@ -65,7 +64,7 @@ public class UnusedPrivateMethodVisitor extends RubyLintVisitor {
 		return null;
 	}
 	
-	public Instruction visitClassNode(ClassNode iVisited) {
+	public Object visitClassNode(ClassNode iVisited) {
 		privateMethods.clear();
 		usedMethods.clear();
 		visibility = Visibility.PUBLIC;
@@ -83,7 +82,7 @@ public class UnusedPrivateMethodVisitor extends RubyLintVisitor {
 		}		
 	}
 	
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		if (visibility.isPrivate()) {
 			privateMethods.put(iVisited.getName(), iVisited);
 		}		

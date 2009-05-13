@@ -6,7 +6,6 @@ import java.util.Set;
 import org.jruby.ast.HashNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 import org.rubypeople.rdt.internal.core.util.ASTUtil;
 
@@ -27,7 +26,7 @@ public class DuplicateHashKeyVisitor extends RubyLintVisitor
 	}
 
 	@Override
-	public Instruction visitHashNode(HashNode visited)
+	public Object visitHashNode(HashNode visited)
 	{
 		ListNode list = visited.getListNode();
 		Set<String> keys = new HashSet<String>();

@@ -242,7 +242,7 @@ public abstract class OptionsConfigurationBlock {
 		return getKey(RubyCore.PLUGIN_ID, key);
 	}
 	
-	protected final static Key getRDTUIKey(String key) {
+	protected final static Key getRDTUIKey(String key) {		
 		return getKey(RubyUI.ID_PLUGIN, key);
 	}
 	

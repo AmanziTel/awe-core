@@ -6,7 +6,6 @@ import org.jruby.ast.ConstNode;
 import org.jruby.ast.DefnNode;
 import org.jruby.ast.FCallNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
@@ -33,7 +32,7 @@ public class ComparableInclusionVisitor extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitFCallNode(FCallNode iVisited) {
+	public Object visitFCallNode(FCallNode iVisited) {
 		if (includedComparable) return null;
 		String callName = iVisited.getName();
 		if (!callName.equals(INCLUDE))
@@ -56,7 +55,7 @@ public class ComparableInclusionVisitor extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		String methodName = iVisited.getName();
 		if (methodName.equals(COMPARABLE_METHOD)) {
 			definedComparableMethod = true;

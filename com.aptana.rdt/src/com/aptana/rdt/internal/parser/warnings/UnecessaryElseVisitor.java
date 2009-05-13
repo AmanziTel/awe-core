@@ -10,7 +10,6 @@ import org.jruby.ast.Node;
 import org.jruby.ast.ReturnNode;
 import org.jruby.ast.RootNode;
 import org.jruby.ast.WhenNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 import org.rubypeople.rdt.internal.core.parser.InOrderVisitor;
 
@@ -28,7 +27,7 @@ public class UnecessaryElseVisitor extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitIfNode(IfNode iVisited) {
+	public Object visitIfNode(IfNode iVisited) {
 		String src = getSource(iVisited);
 		Node elseBody;
 		Node thenBody;
@@ -63,7 +62,7 @@ public class UnecessaryElseVisitor extends RubyLintVisitor {
 		private Set<ReturnVisitor> branches = new HashSet<ReturnVisitor>();
 
 		@Override
-		protected Instruction visitNode(Node iVisited) {
+		protected Object visitNode(Node iVisited) {
 			if (iVisited != null && !structuralNode(iVisited)
 					&& !branchingNode(iVisited)
 					&& !(iVisited instanceof ReturnNode)) {
@@ -82,13 +81,13 @@ public class UnecessaryElseVisitor extends RubyLintVisitor {
 		}
 
 		@Override
-		public Instruction visitReturnNode(ReturnNode iVisited) {
+		public Object visitReturnNode(ReturnNode iVisited) {
 			implicit = false;
 			return null;
 		}
 
 		@Override
-		public Instruction visitCaseNode(CaseNode iVisited) {
+		public Object visitCaseNode(CaseNode iVisited) {
 			Node node = iVisited.getFirstWhenNode();
 			WhenNode whenNode = (WhenNode) node;
 			while (whenNode != null) {
@@ -101,7 +100,7 @@ public class UnecessaryElseVisitor extends RubyLintVisitor {
 		}
 
 		@Override
-		public Instruction visitIfNode(IfNode iVisited) {
+		public Object visitIfNode(IfNode iVisited) {
 			if (iVisited.getThenBody() != null) {
 				ReturnVisitor visitor = new ReturnVisitor();
 				iVisited.getThenBody().accept(visitor);

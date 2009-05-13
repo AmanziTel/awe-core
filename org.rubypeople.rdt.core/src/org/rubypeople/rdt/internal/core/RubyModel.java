@@ -28,6 +28,8 @@ import org.rubypeople.rdt.core.WorkingCopyOwner;
 import org.rubypeople.rdt.internal.core.util.MementoTokenizer;
 import org.rubypeople.rdt.internal.core.util.Messages;
 
+import com.gersis_software.integrator.awe.AWEProjectManager;
+
 /**
  * @author Chris
  * 
@@ -148,7 +150,9 @@ public class RubyModel extends Openable implements IRubyModel {
 
 	protected boolean buildStructure(OpenableElementInfo info, IProgressMonitor pm, Map newElements, IResource underlyingResource) {
 		// determine my children
-		IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+		//Lagutko: we must get not all RubyProject, but only 
+		//those RubyProject that are referenced by AWE Projects
+		IProject[] projects = AWEProjectManager.getAllRubyProjects();
 		for (int i = 0, max = projects.length; i < max; i++) {
 			IProject project = projects[i];
 			if (RubyProject.hasRubyNature(project)) {

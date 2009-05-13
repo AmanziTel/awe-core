@@ -28,6 +28,7 @@
 
 package org.rubypeople.rdt.refactoring.core.formatsource;
 
+import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -60,7 +61,7 @@ public class PreviewGeneratorImpl implements PreviewGenerator {
 		parser.setWarnings(new NullWarnings());
 
 		ParserConfiguration parserConfig = new ParserConfiguration(KCode.NIL, 1, true, false, CompatVersion.RUBY1_8);
-		LexerSource lexerSource = LexerSource.getSource("", new StringReader(source), null, parserConfig); //$NON-NLS-1$
+		LexerSource lexerSource = LexerSource.getSource("", new ByteArrayInputStream(source.getBytes()), null, parserConfig); //$NON-NLS-1$
 		ReWriteVisitor visitor = factory.createReWriteVisitor();		
 //		parserConfig.addPostProcessor(new DefaultCommentPlacer());
 		parser.parse(parserConfig, lexerSource).getAST().accept(visitor);

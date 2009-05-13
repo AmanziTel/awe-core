@@ -2,7 +2,6 @@ package com.aptana.rdt.internal.parser.warnings;
 
 import org.jruby.ast.RescueBodyNode;
 import org.jruby.ast.RetryNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
 import com.aptana.rdt.AptanaRDTPlugin;
@@ -17,7 +16,7 @@ public class RetryOutsideRescueBodyChecker extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitRetryNode(RetryNode iVisited) {
+	public Object visitRetryNode(RetryNode iVisited) {
 		if (!insideRescue) {
 			createProblem(iVisited.getPosition(), "'retry' will not be allowed outside a rescue block in Ruby 1.9");
 		}
@@ -25,7 +24,7 @@ public class RetryOutsideRescueBodyChecker extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitRescueBodyNode(RescueBodyNode iVisited) {
+	public Object visitRescueBodyNode(RescueBodyNode iVisited) {
 		insideRescue = true;
 		return super.visitRescueBodyNode(iVisited);
 	}

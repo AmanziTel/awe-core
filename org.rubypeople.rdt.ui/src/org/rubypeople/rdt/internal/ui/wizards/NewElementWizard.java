@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -144,7 +145,7 @@ public abstract class NewElementWizard extends Wizard implements INewWizard {
 		return fWorkbench;
 	}
 
-	protected void selectAndReveal(IResource newResource) {
+	protected void selectAndReveal(IResource newResource) {		
 		BasicNewResourceWizard.selectAndReveal(newResource, fWorkbench.getActiveWorkbenchWindow());
 	}
 

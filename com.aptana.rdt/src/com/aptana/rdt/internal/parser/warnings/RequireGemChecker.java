@@ -1,7 +1,6 @@
 package com.aptana.rdt.internal.parser.warnings;
 
 import org.jruby.ast.FCallNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
 import com.aptana.rdt.AptanaRDTPlugin;
@@ -22,7 +21,7 @@ public class RequireGemChecker extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitFCallNode(FCallNode iVisited) {
+	public Object visitFCallNode(FCallNode iVisited) {
 		if (iVisited.getName().equals(REQUIRE_GEM))
 			createProblem(iVisited.getPosition(), MSG);
 		return super.visitFCallNode(iVisited);

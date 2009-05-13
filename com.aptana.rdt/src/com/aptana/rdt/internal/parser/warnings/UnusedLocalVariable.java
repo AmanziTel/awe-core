@@ -10,7 +10,6 @@ import org.jruby.ast.DefnNode;
 import org.jruby.ast.DefsNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.compiler.IProblem;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
@@ -38,13 +37,13 @@ public class UnusedLocalVariable extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		clear();
 		return super.visitDefnNode(iVisited);
 	}
 	
 	@Override
-	public Instruction visitArgsNode(ArgsNode visited) {
+	public Object visitArgsNode(ArgsNode visited) {
 		inArgsNode = true;
 		return super.visitArgsNode(visited);
 	}
@@ -56,13 +55,13 @@ public class UnusedLocalVariable extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		clear();
 		return super.visitDefsNode(iVisited);
 	}
 	
 	@Override
-	public Instruction visitLocalAsgnNode(LocalAsgnNode iVisited) {
+	public Object visitLocalAsgnNode(LocalAsgnNode iVisited) {
 		if (!inArgsNode) {
 			locals.add(iVisited);
 		}
@@ -70,7 +69,7 @@ public class UnusedLocalVariable extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitLocalVarNode(LocalVarNode iVisited) {
+	public Object visitLocalVarNode(LocalVarNode iVisited) {
 		refs.add(iVisited.getName());
 		return super.visitLocalVarNode(iVisited);
 	}

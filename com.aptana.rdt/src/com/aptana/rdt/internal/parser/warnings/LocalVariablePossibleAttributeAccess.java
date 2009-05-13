@@ -7,7 +7,6 @@ import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ClassNode;
 import org.jruby.ast.FCallNode;
 import org.jruby.ast.LocalAsgnNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 import org.rubypeople.rdt.internal.core.util.ASTUtil;
 
@@ -31,20 +30,20 @@ public class LocalVariablePossibleAttributeAccess extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitClassNode(ClassNode iVisited) {
+	public Object visitClassNode(ClassNode iVisited) {
 		locals.clear();
 		attributes.clear();
 		return super.visitClassNode(iVisited);
 	}
 
 	@Override
-	public Instruction visitLocalAsgnNode(LocalAsgnNode iVisited) {		
+	public Object visitLocalAsgnNode(LocalAsgnNode iVisited) {		
 		if (!insideMethodSignature) locals.add(iVisited);
 		return super.visitLocalAsgnNode(iVisited);
 	}
 	
 	@Override
-	public Instruction visitArgsNode(ArgsNode iVisited) {
+	public Object visitArgsNode(ArgsNode iVisited) {
 		//  Don't add if the local being assigned inside method signature
 		insideMethodSignature = true;
 		return super.visitArgsNode(iVisited);
@@ -57,7 +56,7 @@ public class LocalVariablePossibleAttributeAccess extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitFCallNode(FCallNode iVisited) {
+	public Object visitFCallNode(FCallNode iVisited) {
 		String name = iVisited.getName();
 		if (name.equals("attr_accessor") || name.equals("attr_writer")
 				|| name.equals("attr")) {

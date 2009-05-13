@@ -13,7 +13,6 @@ import org.jruby.ast.ArrayNode;
 import org.jruby.ast.CallNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.RootNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.CompletionProposal;
 import org.rubypeople.rdt.core.IMethod;
 import org.rubypeople.rdt.core.IRubyElement;
@@ -168,7 +167,7 @@ public class HashKeyHeuristicProposalComputer extends RubyCompletionProposalComp
 		}
 		
 		@Override
-		public Instruction visitCallNode(CallNode iVisited) {
+		public Object visitCallNode(CallNode iVisited) {
 			String methodName = iVisited.getName();
 			if (methodName.equals("[]")) {
 				Node receiver = iVisited.getReceiverNode();

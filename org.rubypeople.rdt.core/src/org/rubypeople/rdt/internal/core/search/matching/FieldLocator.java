@@ -10,7 +10,6 @@ import org.jruby.ast.InstAsgnNode;
 import org.jruby.ast.InstVarNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.types.INameNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.IMember;
 import org.rubypeople.rdt.core.IParent;
 import org.rubypeople.rdt.core.IRubyElement;
@@ -50,7 +49,7 @@ public class FieldLocator extends PatternLocator {
 			new InOrderVisitor() {
 			
 				@Override
-				public Instruction visitInstVarNode(InstVarNode iVisited) {
+				public Object visitInstVarNode(InstVarNode iVisited) {
 					match(iVisited);
 					return super.visitInstVarNode(iVisited);
 				}
@@ -58,37 +57,37 @@ public class FieldLocator extends PatternLocator {
 				// XXX Handle constant references!
 			
 				@Override
-				public Instruction visitGlobalVarNode(GlobalVarNode iVisited) {
+				public Object visitGlobalVarNode(GlobalVarNode iVisited) {
 					match(iVisited);
 					return super.visitGlobalVarNode(iVisited);
 				}
 				
 				@Override
-				public Instruction visitConstDeclNode(ConstDeclNode iVisited) {
+				public Object visitConstDeclNode(ConstDeclNode iVisited) {
 					if (findDeclarations) match(iVisited);
 					return super.visitConstDeclNode(iVisited);
 				}
 			
 				@Override
-				public Instruction visitGlobalAsgnNode(GlobalAsgnNode iVisited) {
+				public Object visitGlobalAsgnNode(GlobalAsgnNode iVisited) {
 					match(iVisited); // TODO check whether we want to find write references
 					return super.visitGlobalAsgnNode(iVisited);
 				}
 				
 				@Override
-				public Instruction visitClassVarNode(ClassVarNode iVisited) {					
+				public Object visitClassVarNode(ClassVarNode iVisited) {					
 					match(iVisited);
 					return super.visitClassVarNode(iVisited);
 				}
 				
 				@Override
-				public Instruction visitClassVarAsgnNode(ClassVarAsgnNode iVisited) {
+				public Object visitClassVarAsgnNode(ClassVarAsgnNode iVisited) {
 					match(iVisited); // TODO check whether we want to find write references
 					return super.visitClassVarAsgnNode(iVisited);
 				}
 				
 				@Override
-				public Instruction visitInstAsgnNode(InstAsgnNode iVisited) {
+				public Object visitInstAsgnNode(InstAsgnNode iVisited) {
 					match(iVisited); // TODO check whether we want to find write references
 					return super.visitInstAsgnNode(iVisited);
 				}

@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.jruby.ast.DefnNode;
 import org.jruby.ast.DefsNode;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
@@ -38,7 +37,7 @@ public class TooManyLinesVisitor extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		ISourcePosition pos = iVisited.getPosition();
 		int lines = (pos.getEndLine() - pos.getStartLine()) - 1;
 		if (lines > maxLines) {
@@ -48,7 +47,7 @@ public class TooManyLinesVisitor extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		ISourcePosition pos = iVisited.getPosition();
 		int lines = (pos.getEndLine() - pos.getStartLine()) - 1;
 		if (lines > maxLines) {

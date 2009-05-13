@@ -69,5 +69,5 @@ public interface IScanner {
 	 * 
 	 * @param source the given source
 	 */
-	void setSource(char[] source);
+	void setSource(byte[] source);
 }

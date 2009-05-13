@@ -11,7 +11,6 @@ import org.jruby.ast.IArgumentNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.RootNode;
 import org.jruby.ast.StrNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.internal.core.parser.InOrderVisitor;
 import org.rubypeople.rdt.internal.core.util.ASTUtil;
 
@@ -21,7 +20,7 @@ public class RakeStructureCreator extends InOrderVisitor {
 	private static final String NAMESPACE = "namespace";
 	private List<Namespace> namespaces = new ArrayList<Namespace>();
 
-	public Instruction visitFCallNode(FCallNode visited) {
+	public Object visitFCallNode(FCallNode visited) {
 		if (visited.getName().equals(TASK)) { // start of a task
 			String name = getFirstArgument(visited);
 			Task task = new Task(name, getStart(visited), getLength(visited));
@@ -34,14 +33,14 @@ public class RakeStructureCreator extends InOrderVisitor {
 			Namespace curNamespace = namespaces.get(namespaces.size() - 1);
 			curNamespace.addChild(namespace);
 			namespaces.add(namespace);
-			Instruction ins = super.visitFCallNode(visited);
+			Object ins = super.visitFCallNode(visited);
 			namespaces.remove(namespaces.size() - 1);
 			return ins;
 		}
 		return super.visitFCallNode(visited);
 	}
 
-	public Instruction visitCallNode(CallNode visited) {
+	public Object visitCallNode(CallNode visited) {
 		if (visited.getName().equals("new")) {
 			String receiver = ASTUtil.stringRepresentation(visited
 					.getReceiverNode());
@@ -81,7 +80,7 @@ public class RakeStructureCreator extends InOrderVisitor {
 		return name;
 	}
 
-	public Instruction visitRootNode(RootNode visited) {
+	public Object visitRootNode(RootNode visited) {
 		namespaces.add(new Namespace("ROOT", getStart(visited),
 				getLength(visited)));
 		return super.visitRootNode(visited);

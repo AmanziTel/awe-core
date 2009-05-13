@@ -3,7 +3,6 @@ package com.aptana.rdt.internal.parser.warnings;
 import org.jruby.ast.DefnNode;
 import org.jruby.ast.DefsNode;
 import org.jruby.ast.LocalAsgnNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
 import com.aptana.rdt.AptanaRDTPlugin;
@@ -21,7 +20,7 @@ public class LocalAndMethodNamingConvention extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		String name = iVisited.getName();
 		if (!name.toLowerCase().equals(name)) {
 			createProblem(iVisited.getPosition(), "Method name doesn't match the under_scores_all_lower convention: " + name);
@@ -30,7 +29,7 @@ public class LocalAndMethodNamingConvention extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitLocalAsgnNode(LocalAsgnNode iVisited) {
+	public Object visitLocalAsgnNode(LocalAsgnNode iVisited) {
 		String name = iVisited.getName();
 		if (!name.toLowerCase().equals(name)) {
 			createProblem(iVisited.getPosition(), "Method name doesn't match the under_scores_all_lower convention: " + name);
@@ -39,7 +38,7 @@ public class LocalAndMethodNamingConvention extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		String name = iVisited.getName();
 		if (!name.toLowerCase().equals(name)) {
 			createProblem(iVisited.getPosition(), "Local variable name doesn't match the under_scores_all_lower convention: " + name);

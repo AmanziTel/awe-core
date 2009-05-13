@@ -8,7 +8,6 @@ import org.jruby.ast.Colon2Node;
 import org.jruby.ast.ConstNode;
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 
 /**
  * Given a JRuby AST Node and a source offset, recursively searches
@@ -77,7 +76,7 @@ public class OffsetNodeLocator extends NodeLocator {
 	 * If so, see if it spans it more closely than any previously identified spanning node.
 	 * If so, record it as the most closely spanning yet.
 	 */
-	public Instruction handleNode(Node iVisited) {
+	public Object handleNode(Node iVisited) {
 		// Skip the NewlineNode since its position is very unaccurate
 		if (!(iVisited instanceof NewlineNode) && nodeDoesSpanOffset(iVisited, offset)) {
 			//note: careful... should this be <=?  I think so; since it traverses in-order, this should find the "most specific" closest node. i.e.

@@ -45,7 +45,7 @@ public class RubyTokenComparator implements ITokenComparator {
 		fCount= 0;
 		
 		IScanner scanner= ToolFactory.createScanner(true, true, false, false); // returns comments & whitespace
-		scanner.setSource(fText.toCharArray());
+		scanner.setSource(fText.getBytes());
 		try {
 			int endPos= 0;
 			while (scanner.getNextToken() != IScanner.TokenNameEOF) {

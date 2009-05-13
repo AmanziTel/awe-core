@@ -24,8 +24,8 @@ import org.rubypeople.rdt.internal.ui.wizards.dialogfields.StringDialogField;
 
 public class NewFileWizardPage extends NewContainerWizardPage {
 
-	private StringDialogField fScriptNameDialogField;
-	private IRubyScript fCreatedScript;
+	protected StringDialogField fScriptNameDialogField;
+	protected IRubyScript fCreatedScript;
 	
 	private final static String PAGE_NAME= "NewFileWizardPage"; //$NON-NLS-1$
 	
@@ -41,7 +41,7 @@ public class NewFileWizardPage extends NewContainerWizardPage {
 		fScriptNameDialogField.setText(getDefaultScriptName());
 	}
 	
-	private String getDefaultScriptName() {		
+	protected String getDefaultScriptName() {		
 		return "file.rb";// TODO Translate?
 	}
 

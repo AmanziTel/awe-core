@@ -1,7 +1,6 @@
 package org.rubypeople.rdt.internal.ti.util;
 
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 
 /**
  * Visitor to find the closest node that spans a given offset that satisfies a given condition.
@@ -48,7 +47,7 @@ public class ClosestSpanningNodeLocator extends NodeLocator {
 	/**
 	 * Searches via InOrderVisitor for the closest spanning node.
 	 */
-	public Instruction handleNode(Node iVisited)
+	public Object handleNode(Node iVisited)
 	{
 		boolean nodeSpansOffset = nodeSpansOffset( iVisited, offset );
 		boolean nodeSpansMoreCloselyThanCurrent = ( locatedNode == null ) ||

@@ -1,5 +1,6 @@
 package org.rubypeople.rdt.internal.core.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.CharArrayReader;
 import java.io.IOException;
 
@@ -20,7 +21,7 @@ import org.rubypeople.rdt.core.compiler.InvalidInputException;
 public class PublicScanner implements IScanner
 {
 
-	private char[] source;
+	private byte[] source;
 	private RubyYaccLexer lexer;
 	private ParserSupport parserSupport;
 	private RubyParserResult result;
@@ -90,7 +91,7 @@ public class PublicScanner implements IScanner
 		return returnValue;
 	}
 
-	public void setSource(char[] source)
+	public void setSource(byte[] source)
 	{
 		this.source = source;
 
@@ -98,7 +99,7 @@ public class PublicScanner implements IScanner
 		lexer.setState(LexState.EXPR_BEG);
 		parserSupport.initTopLocalVariables();
 		ParserConfiguration config = new ParserConfiguration(KCode.NIL, 0, true, false, CompatVersion.RUBY1_8);
-		lexerSource = LexerSource.getSource("filename", new CharArrayReader(source), null, config);
+		lexerSource = LexerSource.getSource("filename", new ByteArrayInputStream(source), null, config);
 		lexer.setSource(lexerSource);
 	}
 

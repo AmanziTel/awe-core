@@ -1,7 +1,6 @@
 package org.rubypeople.rdt.internal.ti.util;
 
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 
 /**
  * Visitor to find the first node that precedes a given offset that satisfies a given condition.
@@ -48,7 +47,7 @@ public class FirstPrecursorNodeLocator extends NodeLocator {
 	/**
 	 * Searches via InOrderVisitor for the closest precursor.
 	 */
-	public Instruction handleNode(Node iVisited) {
+	public Object handleNode(Node iVisited) {
 // TODO This will include nodes that envelop nodeStart, not only those starting strictly before it.
 //      If this behavior is unwanted, remove the || (iVisited.getPosition().getStartOffset() <= offset)
 //		in the conditional		

@@ -42,6 +42,8 @@ import org.rubypeople.rdt.internal.core.search.indexing.IndexManager;
 import org.rubypeople.rdt.internal.core.util.CharOperation;
 import org.rubypeople.rdt.internal.core.util.Util;
 
+import com.gersis_software.integrator.awe.AWEProjectManager;
+
 public class DeltaProcessor {
 
 	static class RootInfo {
@@ -918,6 +920,10 @@ public class DeltaProcessor {
 
 			// remove preferences from per project info
 			this.manager.resetProjectPreferences(rubyProject);	
+			
+			//Lagutko: delete RubyProject also from AWE Project structure
+			AWEProjectManager.deleteRubyProject(project);
+			
 		} catch (RubyModelException e) {
 			// java project doesn't exist: ignore
 		}
@@ -1606,7 +1612,7 @@ public class DeltaProcessor {
             } else {
                 close(element);
                 removeFromParentInfo(element);
-                currentDelta().removed(element);
+                currentDelta().removed(element);                
             }
         } else {
             // element is moved
@@ -1976,7 +1982,7 @@ public class DeltaProcessor {
 					// resource might be containing shared roots (see bug 19058)
 					this.state.updateRoots(deltaRes.getFullPath(), delta, this);
 					return rootInfo != null && rootInfo.inclusionPatterns != null;
-				}
+				}				
 				updateIndex(element, delta);
 				elementRemoved(element, delta, rootInfo);
 	

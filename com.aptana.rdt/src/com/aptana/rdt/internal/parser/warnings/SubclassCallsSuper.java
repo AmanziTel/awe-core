@@ -8,7 +8,6 @@ import org.jruby.ast.DefnNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.SuperNode;
 import org.jruby.ast.ZSuperNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
 import com.aptana.rdt.AptanaRDTPlugin;
@@ -30,7 +29,7 @@ public class SubclassCallsSuper extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitClassNode(ClassNode iVisited) {
+	public Object visitClassNode(ClassNode iVisited) {
 		Node superNode = iVisited.getSuperNode();
 		if (superNode != null) {
 			subclassStack.add(Boolean.TRUE);
@@ -47,7 +46,7 @@ public class SubclassCallsSuper extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		if (!isSubClass()) return null;
 		if (!iVisited.getName().equals("initialize")) return null;
 		inConstructor = true;
@@ -61,13 +60,13 @@ public class SubclassCallsSuper extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitSuperNode(SuperNode iVisited) {
+	public Object visitSuperNode(SuperNode iVisited) {
 		if (inConstructor) calledSuper = true;
 		return super.visitSuperNode(iVisited);
 	}
 	
 	@Override
-	public Instruction visitZSuperNode(ZSuperNode iVisited) {
+	public Object visitZSuperNode(ZSuperNode iVisited) {
 		if (inConstructor) calledSuper = true;
 		return super.visitZSuperNode(iVisited);
 	}

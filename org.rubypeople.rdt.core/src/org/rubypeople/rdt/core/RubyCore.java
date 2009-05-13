@@ -48,6 +48,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -76,6 +77,8 @@ import org.rubypeople.rdt.internal.core.util.Messages;
 import org.rubypeople.rdt.internal.core.util.Util;
 import org.rubypeople.rdt.internal.ti.DataFlowTypeInferrer;
 import org.rubypeople.rdt.internal.ti.ITypeInferrer;
+
+import com.gersis_software.integrator.awe.AWEProjectManager;
 
 public class RubyCore extends Plugin
 {
@@ -498,6 +501,23 @@ public class RubyCore extends Plugin
 		if (project == null)
 		{
 			return null;
+		}
+		RubyModel rubyModel = RubyModelManager.getRubyModelManager().getRubyModel();
+		return rubyModel.getRubyProject(project);
+	}
+	
+	public static IRubyProject create(IProject project, String aweProjectName)
+	{
+		if (project == null)
+		{
+			return null;
+		}
+		try {
+			//Lagutko: set name of AWE Project to newly created RubyProject
+			project.setPersistentProperty(AWEProjectManager.AWE_PROJECT_NAME, aweProjectName);
+		}
+		catch (CoreException e) {
+			
 		}
 		RubyModel rubyModel = RubyModelManager.getRubyModelManager().getRubyModel();
 		return rubyModel.getRubyProject(project);

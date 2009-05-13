@@ -54,7 +54,7 @@ public abstract class NewContainerWizardPage extends NewElementWizardPage {
 	protected IStatus fContainerStatus;
 	
 	private IWorkspaceRoot fWorkspaceRoot;
-	private StringButtonDialogField fContainerDialogField;
+	protected StringButtonDialogField fContainerDialogField;
 
 	private ISourceFolder fCurrSourceFolder;	
 
@@ -75,7 +75,7 @@ public abstract class NewContainerWizardPage extends NewElementWizardPage {
 		fContainerDialogField.setButtonLabel(NewWizardMessages.NewContainerWizardPage_container_button); 
 		
 		fContainerStatus= new StatusInfo();
-		fCurrSourceFolder= null;
+		fCurrSourceFolder= null;		
 	}
 	
 	/**
@@ -269,7 +269,7 @@ public abstract class NewContainerWizardPage extends NewElementWizardPage {
 						}
 						if (!rproject.isOnLoadpath(fCurrSourceFolder)) {
 							status.setWarning(Messages.format(NewWizardMessages.NewContainerWizardPage_warning_NotOnLoadPath, str)); 
-						}		
+						}
 					} catch (CoreException e) {
 						status.setWarning(NewWizardMessages.NewContainerWizardPage_warning_NotARubyProject); 
 					}

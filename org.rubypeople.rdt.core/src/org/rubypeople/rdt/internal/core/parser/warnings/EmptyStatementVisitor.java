@@ -5,7 +5,6 @@ import org.jruby.ast.DefsNode;
 import org.jruby.ast.IfNode;
 import org.jruby.ast.IterNode;
 import org.jruby.ast.WhenNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.RubyCore;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
@@ -20,7 +19,7 @@ public class EmptyStatementVisitor extends RubyLintVisitor {
 		return RubyCore.COMPILER_PB_EMPTY_STATEMENT;
 	}
 
-	public Instruction visitIfNode(IfNode iVisited) {
+	public Object visitIfNode(IfNode iVisited) {
 		String source = getSource(iVisited);
 		if (iVisited.getThenBody() == null && source.indexOf("unless") == -1) {
 			createProblem(iVisited.getPosition(), "Empty Conditional Body");
@@ -28,28 +27,28 @@ public class EmptyStatementVisitor extends RubyLintVisitor {
 		return super.visitIfNode(iVisited);
 	}
 	
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		if (iVisited.getBodyNode() == null) {
 			createProblem(iVisited.getPosition(), "Empty Method Definition");
 		}
 		return super.visitDefnNode(iVisited);
 	}
 
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		if (iVisited.getBodyNode() == null) {
 			createProblem(iVisited.getPosition(), "Empty Method Definition");
 		}
 		return super.visitDefsNode(iVisited);
 	}
 	
-	public Instruction visitWhenNode(WhenNode iVisited) {
+	public Object visitWhenNode(WhenNode iVisited) {
 		if (iVisited.getBodyNode() == null) {
 			createProblem(iVisited.getPosition(), "Empty When Body");
 		}
 		return super.visitWhenNode(iVisited);
 	}
 	
-	public Instruction visitIterNode(IterNode iVisited) {
+	public Object visitIterNode(IterNode iVisited) {
 		if (iVisited.getBodyNode() == null) {
 			createProblem(iVisited.getPosition(), "Empty Block");
 		}

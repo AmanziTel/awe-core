@@ -65,7 +65,6 @@ import org.jruby.ast.SplatNode;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.VCallNode;
 import org.jruby.ast.YieldNode;
-import org.jruby.evaluator.Instruction;
 import org.jruby.runtime.Visibility;
 import org.rubypeople.rdt.core.IMethod;
 import org.rubypeople.rdt.internal.compiler.ISourceElementRequestor;
@@ -116,7 +115,7 @@ public class SourceElementParser extends InOrderVisitor {
 	 * 
 	 * @see org.jruby.ast.visitor.NodeVisitor#visitClassNode(org.jruby.ast.ClassNode)
 	 */
-	public Instruction visitClassNode(ClassNode iVisited) {
+	public Object visitClassNode(ClassNode iVisited) {
 		// This resets the visibility when opening or declaring a class to
 		// public
 		pushVisibility(Visibility.PUBLIC);
@@ -136,21 +135,21 @@ public class SourceElementParser extends InOrderVisitor {
 		typeName = typeInfo.name;
 		requestor.enterType(typeInfo);
 		
-		Instruction ins = super.visitClassNode(iVisited);
+		Object ins = super.visitClassNode(iVisited);
 		popVisibility();
 		requestor.exitType(iVisited.getPosition().getEndOffset() - 2);
 		return ins;
 	}
 	
 	@Override
-	public Instruction visitConstNode(ConstNode iVisited) {
+	public Object visitConstNode(ConstNode iVisited) {
 		// FIXME ConstNode could be a reference to a type, or a constant(field)!
 		requestor.acceptTypeReference(iVisited.getName(), iVisited.getPosition().getStartOffset(), iVisited.getPosition().getEndOffset());
 		return super.visitConstNode(iVisited);
 	}
 	
 	@Override
-	public Instruction visitModuleNode(ModuleNode iVisited) {
+	public Object visitModuleNode(ModuleNode iVisited) {
 		pushVisibility(Visibility.PUBLIC);
 		TypeInfo typeInfo = new TypeInfo();
 		typeInfo.name = ASTUtil.getFullyQualifiedName(iVisited.getCPath());
@@ -164,7 +163,7 @@ public class SourceElementParser extends InOrderVisitor {
 		typeName = typeInfo.name;
 		requestor.enterType(typeInfo);
 		
-		Instruction ins = super.visitModuleNode(iVisited);
+		Object ins = super.visitModuleNode(iVisited);
 		
 		popVisibility();
 		requestor.exitType(iVisited.getPosition().getEndOffset() - 2);
@@ -173,7 +172,7 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		Visibility visibility = getCurrentVisibility();		
 		MethodInfo methodInfo = new MethodInfo();
 		methodInfo.declarationStart = iVisited.getPosition().getStartOffset();
@@ -196,7 +195,7 @@ public class SourceElementParser extends InOrderVisitor {
 			requestor.enterMethod(methodInfo);
 		}
 		
-		Instruction ins = super.visitDefnNode(iVisited); // now traverse it's body
+		Object ins = super.visitDefnNode(iVisited); // now traverse it's body
 		int end = iVisited.getPosition().getEndOffset() - 2;
 		if (methodInfo.isConstructor) {
 			requestor.exitConstructor(end);
@@ -207,7 +206,7 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitArgsNode(ArgsNode iVisited) {
+	public Object visitArgsNode(ArgsNode iVisited) {
 		// Add args as local vars!
 		ListNode list = iVisited.getArgs();
 		if (list != null) {
@@ -239,7 +238,7 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		MethodInfo methodInfo = new MethodInfo();
 		methodInfo.declarationStart = iVisited.getPosition().getStartOffset();
 		methodInfo.name = iVisited.getName();
@@ -251,7 +250,7 @@ public class SourceElementParser extends InOrderVisitor {
 		methodInfo.parameterNames = ASTUtil.getArgs(iVisited.getArgsNode(), iVisited.getScope());
 		requestor.enterMethod(methodInfo);
 
-		Instruction ins = super.visitDefsNode(iVisited); // now traverse it's body
+		Object ins = super.visitDefsNode(iVisited); // now traverse it's body
 		
 		requestor.exitMethod(iVisited.getPosition().getEndOffset() - 2);
 		return ins;
@@ -272,10 +271,10 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitRootNode(RootNode iVisited) {
+	public Object visitRootNode(RootNode iVisited) {
 		requestor.enterScript();
 		pushVisibility(Visibility.PUBLIC);
-		Instruction ins = super.visitRootNode(iVisited);
+		Object ins = super.visitRootNode(iVisited);
 		popVisibility();
 		requestor.exitScript(iVisited.getPosition().getEndOffset());
 		return ins;
@@ -286,7 +285,7 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitConstDeclNode(ConstDeclNode iVisited) {			
+	public Object visitConstDeclNode(ConstDeclNode iVisited) {			
 		FieldInfo field = createFieldInfo(iVisited);
 		field.name = iVisited.getName();
 		requestor.enterField(field);
@@ -294,7 +293,7 @@ public class SourceElementParser extends InOrderVisitor {
 		return super.visitConstDeclNode(iVisited);
 	}
 	
-	public Instruction visitClassVarAsgnNode(ClassVarAsgnNode iVisited) {
+	public Object visitClassVarAsgnNode(ClassVarAsgnNode iVisited) {
 		FieldInfo field = createFieldInfo(iVisited);
 		field.name = iVisited.getName();
 		requestor.enterField(field);
@@ -303,7 +302,7 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitClassVarDeclNode(ClassVarDeclNode iVisited) {
+	public Object visitClassVarDeclNode(ClassVarDeclNode iVisited) {
 		FieldInfo field = createFieldInfo(iVisited);
 		field.name = iVisited.getName();
 		requestor.enterField(field);
@@ -312,12 +311,12 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitClassVarNode(ClassVarNode iVisited) {
+	public Object visitClassVarNode(ClassVarNode iVisited) {
 		requestor.acceptFieldReference(iVisited.getName(), iVisited.getPosition().getStartOffset());
 		return super.visitClassVarNode(iVisited);
 	}
 	
-	public Instruction visitLocalAsgnNode(LocalAsgnNode iVisited) {	
+	public Object visitLocalAsgnNode(LocalAsgnNode iVisited) {	
 		FieldInfo field = createFieldInfo(iVisited);
 		field.name = iVisited.getName();
 		requestor.enterField(field);
@@ -326,7 +325,7 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitInstAsgnNode(InstAsgnNode iVisited) {
+	public Object visitInstAsgnNode(InstAsgnNode iVisited) {
 		FieldInfo field = createFieldInfo(iVisited);
 		field.name = iVisited.getName();
 		requestor.enterField(field);
@@ -335,13 +334,13 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitInstVarNode(InstVarNode iVisited) {
+	public Object visitInstVarNode(InstVarNode iVisited) {
 		requestor.acceptFieldReference(iVisited.getName(), iVisited.getPosition().getStartOffset());
 		return super.visitInstVarNode(iVisited);
 	}
 	
 	@Override
-	public Instruction visitGlobalAsgnNode(GlobalAsgnNode iVisited) {
+	public Object visitGlobalAsgnNode(GlobalAsgnNode iVisited) {
 		FieldInfo field = createFieldInfo(iVisited);
 		field.name = iVisited.getName();
 		requestor.enterField(field);
@@ -350,7 +349,7 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitGlobalVarNode(GlobalVarNode iVisited) {
+	public Object visitGlobalVarNode(GlobalVarNode iVisited) {
 		requestor.acceptFieldReference(iVisited.getName(), iVisited.getPosition().getStartOffset());
 		return super.visitGlobalVarNode(iVisited);
 	}
@@ -373,14 +372,14 @@ public class SourceElementParser extends InOrderVisitor {
 	 * 
 	 * @see org.jruby.ast.visitor.NodeVisitor#visitIterNode(org.jruby.ast.IterNode)
 	 */
-	public Instruction visitIterNode(IterNode iVisited) {
+	public Object visitIterNode(IterNode iVisited) {
 		requestor.acceptBlock(iVisited.getPosition().getStartOffset(), iVisited.getPosition().getEndOffset() - 1);
 		return super.visitIterNode(iVisited);
 	}
 	
 
 	@Override
-	public Instruction visitDAsgnNode(DAsgnNode iVisited) {
+	public Object visitDAsgnNode(DAsgnNode iVisited) {
 		FieldInfo field = createFieldInfo(iVisited);
 		field.name = iVisited.getName();
 		field.isDynamic = true;
@@ -390,13 +389,13 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitSClassNode(SClassNode iVisited) {
+	public Object visitSClassNode(SClassNode iVisited) {
 		Node receiver = iVisited.getReceiverNode();
 		if (receiver instanceof SelfNode) {
 			inSingletonClass = true;
 		}
 		pushVisibility(Visibility.PUBLIC);
-		Instruction ins = super.visitSClassNode(iVisited);		
+		Object ins = super.visitSClassNode(iVisited);		
 		popVisibility();
 		if (receiver instanceof SelfNode) {
 			inSingletonClass = false;
@@ -404,7 +403,7 @@ public class SourceElementParser extends InOrderVisitor {
 		return ins;
 	}
 	
-	public Instruction visitFCallNode(FCallNode iVisited) {
+	public Object visitFCallNode(FCallNode iVisited) {
 		String name = iVisited.getName();
 		List<String> arguments = getArgumentsFromFunctionCall(iVisited);
 		if (name.equals(REQUIRE) || name.equals(LOAD)) {
@@ -593,7 +592,7 @@ public class SourceElementParser extends InOrderVisitor {
 		}
 	}
 	
-	public Instruction visitVCallNode(VCallNode iVisited) {
+	public Object visitVCallNode(VCallNode iVisited) {
 		String functionName = iVisited.getName();
 		if (functionName.equals(PUBLIC)) {
 			setVisibility(Visibility.PUBLIC);
@@ -618,7 +617,7 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 
 	@Override
-	public Instruction visitCallNode(CallNode iVisited) {
+	public Object visitCallNode(CallNode iVisited) {
 		String name = iVisited.getName();
 		List<String> arguments = getArgumentsFromFunctionCall(iVisited);
 		if (name.equals(PUBLIC)) {
@@ -664,7 +663,7 @@ public class SourceElementParser extends InOrderVisitor {
 				typeInfo.secondary = false;
 				requestor.enterType(typeInfo);
 
-				Instruction ins = super.visitCallNode(iVisited);
+				Object ins = super.visitCallNode(iVisited);
 				popVisibility();
 				requestor.exitType(iVisited.getPosition().getEndOffset() - 2);
 
@@ -675,7 +674,7 @@ public class SourceElementParser extends InOrderVisitor {
 		return super.visitCallNode(iVisited);
 	}
 
-	public Instruction visitAliasNode(AliasNode iVisited) {
+	public Object visitAliasNode(AliasNode iVisited) {
 		String name = iVisited.getNewName();		
 		int nameStart = iVisited.getPosition().getStartOffset() + ALIAS.length() - 1;
 		addAliasMethod(name, iVisited.getPosition().getStartOffset(), iVisited.getPosition().getEndOffset(), nameStart);		
@@ -695,7 +694,7 @@ public class SourceElementParser extends InOrderVisitor {
 	}
 	
 	@Override
-	public Instruction visitYieldNode(YieldNode iVisited) {
+	public Object visitYieldNode(YieldNode iVisited) {
 		Node argsNode = iVisited.getArgsNode();
 		if (argsNode instanceof LocalVarNode) {
 			requestor.acceptYield(((LocalVarNode) argsNode).getName());

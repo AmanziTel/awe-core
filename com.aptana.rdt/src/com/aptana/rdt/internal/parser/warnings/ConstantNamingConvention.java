@@ -1,7 +1,6 @@
 package com.aptana.rdt.internal.parser.warnings;
 
 import org.jruby.ast.ConstDeclNode;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.IDESourcePosition;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
@@ -21,7 +20,7 @@ public class ConstantNamingConvention extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitConstDeclNode(ConstDeclNode iVisited) {
+	public Object visitConstDeclNode(ConstDeclNode iVisited) {
 		String name = iVisited.getName();
 		if (!name.toUpperCase().equals(name)) {
 			ISourcePosition pos = iVisited.getPosition();

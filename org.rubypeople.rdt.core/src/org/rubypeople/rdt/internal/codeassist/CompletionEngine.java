@@ -35,7 +35,6 @@ import org.jruby.ast.Node;
 import org.jruby.ast.RootNode;
 import org.jruby.ast.SelfNode;
 import org.jruby.ast.YieldNode;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.SyntaxException;
 import org.jruby.parser.StaticScope;
 import org.rubypeople.rdt.core.CompletionProposal;
@@ -1052,19 +1051,19 @@ public class CompletionEngine {
 			InOrderVisitor visitor = new InOrderVisitor() {
 				private String typeName;
 				@Override
-				public Instruction visitClassNode(ClassNode iVisited) {
+				public Object visitClassNode(ClassNode iVisited) {
 					typeName = ASTUtil.getFullyQualifiedName(iVisited.getCPath());
 					return super.visitClassNode(iVisited);
 				}
 				
 				@Override
-				public Instruction visitModuleNode(ModuleNode iVisited) {
+				public Object visitModuleNode(ModuleNode iVisited) {
 					typeName = ASTUtil.getFullyQualifiedName(iVisited.getCPath());
 					return super.visitModuleNode(iVisited);
 				}
 				
 				@Override
-				public Instruction visitYieldNode(YieldNode iVisited) {
+				public Object visitYieldNode(YieldNode iVisited) {
 					Node argsNode = iVisited.getArgsNode();
 					if (argsNode instanceof LocalVarNode) {
 						vars.add(((LocalVarNode) argsNode).getName());

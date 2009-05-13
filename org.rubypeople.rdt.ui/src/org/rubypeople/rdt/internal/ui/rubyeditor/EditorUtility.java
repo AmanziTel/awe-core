@@ -21,6 +21,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.IGotoMarker;
@@ -61,8 +62,9 @@ public class EditorUtility {
 	 */
 	public static IEditorPart openInEditor(Object inputElement, boolean activate) throws RubyModelException, PartInitException {
 
-		if (inputElement instanceof IFile)
+		if (inputElement instanceof IFile) {			
 			return openInEditor((IFile) inputElement, activate);
+		}
 
 		IEditorInput input= getEditorInput(inputElement);
 		if (input instanceof IFileEditorInput) {

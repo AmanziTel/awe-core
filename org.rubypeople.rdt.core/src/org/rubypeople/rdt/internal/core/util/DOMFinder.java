@@ -100,7 +100,6 @@ import org.jruby.ast.YieldNode;
 import org.jruby.ast.ZArrayNode;
 import org.jruby.ast.ZSuperNode;
 import org.jruby.ast.visitor.NodeVisitor;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.rubypeople.rdt.core.IMember;
 import org.rubypeople.rdt.core.ISourceRange;
@@ -121,23 +120,23 @@ public class DOMFinder implements NodeVisitor {
 		this.element = element;
 	}
 
-	public Instruction visitAliasNode(AliasNode arg0) {
+	public Object visitAliasNode(AliasNode arg0) {
 		return null;
 	}
 
-	public Instruction visitAndNode(AndNode iVisited) {
+	public Object visitAndNode(AndNode iVisited) {
 		visitNode(iVisited.getFirstNode());
 		visitNode(iVisited.getSecondNode());
 		return null;
 	}
 
-	public Instruction visitArgsCatNode(ArgsCatNode iVisited) {
+	public Object visitArgsCatNode(ArgsCatNode iVisited) {
 		visitNode(iVisited.getFirstNode());
 		visitNode(iVisited.getSecondNode());
 		return null;
 	}
 
-	public Instruction visitArgsNode(ArgsNode iVisited) {
+	public Object visitArgsNode(ArgsNode iVisited) {
 		visitNode(iVisited.getBlockArgNode());
 		if (iVisited.getOptArgs() != null) {
 			visitIter(iVisited.getOptArgs().childNodes().iterator());
@@ -145,65 +144,65 @@ public class DOMFinder implements NodeVisitor {
 		return null;
 	}
 	
-	private Instruction visitIter(Iterator iterator) {
+	private Object visitIter(Iterator iterator) {
 		while (iterator.hasNext()) {
 			visitNode((Node) iterator.next());
 		}
 		return null;
 	}
 
-	public Instruction visitArrayNode(ArrayNode iVisited) {
+	public Object visitArrayNode(ArrayNode iVisited) {
 		visitIter(iVisited.childNodes().iterator());
 		return null;
 	}
 
-	public Instruction visitBackRefNode(BackRefNode arg0) {
+	public Object visitBackRefNode(BackRefNode arg0) {
 		return null;
 	}
 
-	public Instruction visitBeginNode(BeginNode iVisited) {
+	public Object visitBeginNode(BeginNode iVisited) {
 		visitNode(iVisited.getBodyNode());
 		return null;
 	}
 
-	public Instruction visitBignumNode(BignumNode arg0) {
+	public Object visitBignumNode(BignumNode arg0) {
 		return null;
 	}
 
-	public Instruction visitBlockArgNode(BlockArgNode arg0) {
+	public Object visitBlockArgNode(BlockArgNode arg0) {
 		return null;
 	}
 
-	public Instruction visitBlockNode(BlockNode iVisited) {
+	public Object visitBlockNode(BlockNode iVisited) {
 		visitIter(iVisited.childNodes().iterator());
 		return null;
 	}
 
-	public Instruction visitBlockPassNode(BlockPassNode iVisited) {
+	public Object visitBlockPassNode(BlockPassNode iVisited) {
 		visitNode(iVisited.getArgsNode());
 		visitNode(iVisited.getBodyNode());
 		return null;
 	}
 
-	public Instruction visitBreakNode(BreakNode iVisited) {
+	public Object visitBreakNode(BreakNode iVisited) {
 		visitNode(iVisited.getValueNode());
 		return null;
 	}
 
-	public Instruction visitCallNode(CallNode iVisited) {
+	public Object visitCallNode(CallNode iVisited) {
 		visitNode(iVisited.getReceiverNode());
 		visitNode(iVisited.getArgsNode());
 		visitNode(iVisited.getIterNode());
 		return null;
 	}
 
-	public Instruction visitCaseNode(CaseNode iVisited) {
+	public Object visitCaseNode(CaseNode iVisited) {
 		visitNode(iVisited.getCaseNode());
 		visitNode(iVisited.getFirstWhenNode());
 		return null;
 	}
 
-	public Instruction visitClassNode(ClassNode node) {
+	public Object visitClassNode(ClassNode node) {
 		String name = getFullyQualifiedName(node.getCPath());
 		ISourcePosition pos = node.getPosition();
 		int nameStart = pos.getStartOffset() + "class".length() + 1;
@@ -214,7 +213,7 @@ public class DOMFinder implements NodeVisitor {
 		return null;
 	}
 	
-	private Instruction visitNode(Node iVisited) {
+	private Object visitNode(Node iVisited) {
 		if (iVisited != null)
 			iVisited.accept(this);
 		return null;
@@ -244,77 +243,77 @@ public class DOMFinder implements NodeVisitor {
 		return "";
 	}
 	
-	public Instruction visitClassVarAsgnNode(ClassVarAsgnNode arg0) {
+	public Object visitClassVarAsgnNode(ClassVarAsgnNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitClassVarDeclNode(ClassVarDeclNode arg0) {
+	public Object visitClassVarDeclNode(ClassVarDeclNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitClassVarNode(ClassVarNode arg0) {
+	public Object visitClassVarNode(ClassVarNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitColon2Node(Colon2Node arg0) {
+	public Object visitColon2Node(Colon2Node arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitColon3Node(Colon3Node arg0) {
+	public Object visitColon3Node(Colon3Node arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitConstDeclNode(ConstDeclNode arg0) {
+	public Object visitConstDeclNode(ConstDeclNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitConstNode(ConstNode arg0) {
+	public Object visitConstNode(ConstNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitDAsgnNode(DAsgnNode arg0) {
+	public Object visitDAsgnNode(DAsgnNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitDRegxNode(DRegexpNode arg0) {
+	public Object visitDRegxNode(DRegexpNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitDStrNode(DStrNode arg0) {
+	public Object visitDStrNode(DStrNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitDSymbolNode(DSymbolNode arg0) {
+	public Object visitDSymbolNode(DSymbolNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitDVarNode(DVarNode arg0) {
+	public Object visitDVarNode(DVarNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitDXStrNode(DXStrNode arg0) {
+	public Object visitDXStrNode(DXStrNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitDefinedNode(DefinedNode arg0) {
+	public Object visitDefinedNode(DefinedNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		String name = iVisited.getName();
 		ISourcePosition pos = iVisited.getPosition();
 		int nameStart = pos.getStartOffset() + "def".length() + 1; 
@@ -325,7 +324,7 @@ public class DOMFinder implements NodeVisitor {
 		return null;
 	}
 
-	public Instruction visitDefsNode(DefsNode iVisited) {
+	public Object visitDefsNode(DefsNode iVisited) {
 		String name;
 		String receiver = ASTUtil.stringRepresentation(iVisited.getReceiverNode());
 		if (receiver != null && receiver.trim().length() > 0) {
@@ -343,302 +342,302 @@ public class DOMFinder implements NodeVisitor {
 		return null;
 	}
 
-	public Instruction visitDotNode(DotNode arg0) {
+	public Object visitDotNode(DotNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitEnsureNode(EnsureNode arg0) {
+	public Object visitEnsureNode(EnsureNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitEvStrNode(EvStrNode arg0) {
+	public Object visitEvStrNode(EvStrNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitFCallNode(FCallNode arg0) {
+	public Object visitFCallNode(FCallNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitFalseNode(FalseNode arg0) {
+	public Object visitFalseNode(FalseNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitFixnumNode(FixnumNode arg0) {
+	public Object visitFixnumNode(FixnumNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitFlipNode(FlipNode arg0) {
+	public Object visitFlipNode(FlipNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitFloatNode(FloatNode arg0) {
+	public Object visitFloatNode(FloatNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitForNode(ForNode arg0) {
+	public Object visitForNode(ForNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitGlobalAsgnNode(GlobalAsgnNode arg0) {
+	public Object visitGlobalAsgnNode(GlobalAsgnNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitGlobalVarNode(GlobalVarNode arg0) {
+	public Object visitGlobalVarNode(GlobalVarNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitHashNode(HashNode arg0) {
+	public Object visitHashNode(HashNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitIfNode(IfNode arg0) {
+	public Object visitIfNode(IfNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitInstAsgnNode(InstAsgnNode arg0) {
+	public Object visitInstAsgnNode(InstAsgnNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitInstVarNode(InstVarNode arg0) {
+	public Object visitInstVarNode(InstVarNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitIterNode(IterNode arg0) {
+	public Object visitIterNode(IterNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitLocalAsgnNode(LocalAsgnNode arg0) {
+	public Object visitLocalAsgnNode(LocalAsgnNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitLocalVarNode(LocalVarNode arg0) {
+	public Object visitLocalVarNode(LocalVarNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitMatch2Node(Match2Node arg0) {
+	public Object visitMatch2Node(Match2Node arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitMatch3Node(Match3Node arg0) {
+	public Object visitMatch3Node(Match3Node arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitMatchNode(MatchNode arg0) {
+	public Object visitMatchNode(MatchNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitModuleNode(ModuleNode arg0) {
+	public Object visitModuleNode(ModuleNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitMultipleAsgnNode(MultipleAsgnNode arg0) {
+	public Object visitMultipleAsgnNode(MultipleAsgnNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitNewlineNode(NewlineNode iVisited) {
+	public Object visitNewlineNode(NewlineNode iVisited) {
 		visitNode(iVisited.getNextNode());
 		return null;
 	}
 
-	public Instruction visitNextNode(NextNode iVisited) {
+	public Object visitNextNode(NextNode iVisited) {
 		visitNode(iVisited.getValueNode());
 		return null;
 	}
 
-	public Instruction visitNilNode(NilNode arg0) {
+	public Object visitNilNode(NilNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitNotNode(NotNode arg0) {
+	public Object visitNotNode(NotNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitNthRefNode(NthRefNode arg0) {
+	public Object visitNthRefNode(NthRefNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitOpAsgnAndNode(OpAsgnAndNode arg0) {
+	public Object visitOpAsgnAndNode(OpAsgnAndNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitOpAsgnNode(OpAsgnNode arg0) {
+	public Object visitOpAsgnNode(OpAsgnNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitOpAsgnOrNode(OpAsgnOrNode arg0) {
+	public Object visitOpAsgnOrNode(OpAsgnOrNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitOpElementAsgnNode(OpElementAsgnNode arg0) {
+	public Object visitOpElementAsgnNode(OpElementAsgnNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitOrNode(OrNode arg0) {
+	public Object visitOrNode(OrNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
-	public Instruction visitPreExeNode(PreExeNode iVisited) {
+	public Object visitPreExeNode(PreExeNode iVisited) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitPostExeNode(PostExeNode arg0) {
+	public Object visitPostExeNode(PostExeNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitRedoNode(RedoNode arg0) {
+	public Object visitRedoNode(RedoNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitRegexpNode(RegexpNode arg0) {
+	public Object visitRegexpNode(RegexpNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitRescueBodyNode(RescueBodyNode arg0) {
+	public Object visitRescueBodyNode(RescueBodyNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitRescueNode(RescueNode arg0) {
+	public Object visitRescueNode(RescueNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitRetryNode(RetryNode arg0) {
+	public Object visitRetryNode(RetryNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitReturnNode(ReturnNode arg0) {
+	public Object visitReturnNode(ReturnNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitSClassNode(SClassNode arg0) {
+	public Object visitSClassNode(SClassNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitSValueNode(SValueNode arg0) {
+	public Object visitSValueNode(SValueNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitSelfNode(SelfNode arg0) {
+	public Object visitSelfNode(SelfNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitSplatNode(SplatNode arg0) {
+	public Object visitSplatNode(SplatNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitStrNode(StrNode arg0) {
+	public Object visitStrNode(StrNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitSuperNode(SuperNode arg0) {
+	public Object visitSuperNode(SuperNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitSymbolNode(SymbolNode arg0) {
+	public Object visitSymbolNode(SymbolNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitToAryNode(ToAryNode arg0) {
+	public Object visitToAryNode(ToAryNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitTrueNode(TrueNode arg0) {
+	public Object visitTrueNode(TrueNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitUndefNode(UndefNode arg0) {
+	public Object visitUndefNode(UndefNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitUntilNode(UntilNode arg0) {
+	public Object visitUntilNode(UntilNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitVAliasNode(VAliasNode arg0) {
+	public Object visitVAliasNode(VAliasNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitVCallNode(VCallNode arg0) {
+	public Object visitVCallNode(VCallNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitWhenNode(WhenNode arg0) {
+	public Object visitWhenNode(WhenNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitWhileNode(WhileNode arg0) {
+	public Object visitWhileNode(WhileNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitXStrNode(XStrNode arg0) {
+	public Object visitXStrNode(XStrNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitYieldNode(YieldNode arg0) {
+	public Object visitYieldNode(YieldNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitZArrayNode(ZArrayNode arg0) {
+	public Object visitZArrayNode(ZArrayNode arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitZSuperNode(ZSuperNode node) {
+	public Object visitZSuperNode(ZSuperNode node) {
 		return null;
 	}
 
@@ -654,28 +653,28 @@ public class DOMFinder implements NodeVisitor {
 		return this.foundNode;
 	}
 
-	public Instruction visitArgsPushNode(ArgsPushNode node) {
+	public Object visitArgsPushNode(ArgsPushNode node) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitAttrAssignNode(AttrAssignNode iVisited) {
+	public Object visitAttrAssignNode(AttrAssignNode iVisited) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Instruction visitRootNode(RootNode iVisited) {
+	public Object visitRootNode(RootNode iVisited) {
 		visitNode(iVisited.getBodyNode());
 		return null;
 	}
 	
-	public Instruction visitRestArgNode(RestArgNode visited)
+	public Object visitRestArgNode(RestArgNode visited)
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
-	public Instruction visitMultipleAsgnNode(MultipleAsgn19Node visited)
+	public Object visitMultipleAsgnNode(MultipleAsgn19Node visited)
 	{
 		// TODO Auto-generated method stub
 		return null;

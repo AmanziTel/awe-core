@@ -11,8 +11,15 @@
 
 package org.rubypeople.rdt.internal.core.parser;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Scanner;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -56,7 +63,7 @@ public class RubyParser
 		this.pool = RubyParserPool.getInstance();
 	}
 
-	private RubyParserResult parse(String fileName, Reader content)
+	private RubyParserResult parse(String fileName, InputStream content)
 	{
 		if (fileName == null)
 		{
@@ -137,8 +144,8 @@ public class RubyParser
 			return new NullParserResult();
 		RubyParserResult ast = (RubyParserResult) cachedASTs.get(source);
 		if (ast != null)
-			return ast;
-		ast = parse(fileName, new StringReader(source));
+			return ast;		
+		ast = parse(fileName, new ByteArrayInputStream(source.getBytes()));
 		if (ast == null)
 			ast = new NullParserResult();
 		cachedASTs.put(source, ast);

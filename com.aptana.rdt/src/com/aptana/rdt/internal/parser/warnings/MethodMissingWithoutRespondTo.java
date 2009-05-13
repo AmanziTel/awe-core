@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.jruby.ast.ClassNode;
 import org.jruby.ast.DefnNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
 import com.aptana.rdt.AptanaRDTPlugin;
@@ -28,7 +27,7 @@ public class MethodMissingWithoutRespondTo extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		methods.put(iVisited.getName(), iVisited);
 		return super.visitDefnNode(iVisited);
 	}

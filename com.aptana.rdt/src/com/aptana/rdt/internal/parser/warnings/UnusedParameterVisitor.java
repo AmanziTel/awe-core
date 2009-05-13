@@ -12,7 +12,6 @@ import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.IDESourcePosition;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.rubypeople.rdt.core.compiler.IProblem;
@@ -36,7 +35,7 @@ public class UnusedParameterVisitor extends RubyLintVisitor {
 		return AptanaRDTPlugin.COMPILER_PB_UNUSED_PARAMETER;
 	}
 	
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		List<Node> args = getArgs(iVisited.getArgsNode());
 		for (Node arg : args) {
 			declared.put(ASTUtil.getNameReflectively(arg), arg);
@@ -45,7 +44,7 @@ public class UnusedParameterVisitor extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitArgsNode(ArgsNode visited) {
+	public Object visitArgsNode(ArgsNode visited) {
 		inArgsNode = true;
 		return super.visitArgsNode(visited);
 	}
@@ -57,7 +56,7 @@ public class UnusedParameterVisitor extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitLocalAsgnNode(LocalAsgnNode iVisited) {
+	public Object visitLocalAsgnNode(LocalAsgnNode iVisited) {
 		if (inArgsNode) {
 			declared.put(iVisited.getName(), iVisited);
 		}
@@ -93,7 +92,7 @@ public class UnusedParameterVisitor extends RubyLintVisitor {
 		return arguments;
 	}
 	
-	public Instruction visitLocalVarNode(LocalVarNode iVisited) {
+	public Object visitLocalVarNode(LocalVarNode iVisited) {
 		usedParameter(iVisited.getName());
 		return super.visitLocalVarNode(iVisited);
 	}

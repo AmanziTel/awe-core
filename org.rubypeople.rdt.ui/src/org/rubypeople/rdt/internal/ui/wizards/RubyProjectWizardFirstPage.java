@@ -73,10 +73,59 @@ import org.rubypeople.rdt.launching.RubyRuntime;
 import org.rubypeople.rdt.launching.VMStandin;
 import org.rubypeople.rdt.ui.RubyUI;
 
+import com.gersis_software.integrator.awe.AWEProjectManager;
+
 /**
  * The first page of the <code>SimpleProjectWizard</code>.
  */
 public class RubyProjectWizardFirstPage extends WizardPage {
+	
+	/**
+	 * When we create new RubyProject we must also choose AWE Project that will contain
+	 * this Ruby Project
+	 * 
+	 * @author Lagutko_N
+	 *
+	 */
+	
+	private final class AWEProjectNameGroup extends Observable implements IDialogFieldListener {
+	
+		protected final ComboDialogField fAWEProjectName;
+		
+		public AWEProjectNameGroup(Composite composite) {
+			final Composite nameComposite= new Composite(composite, SWT.NONE);
+			nameComposite.setFont(composite.getFont());
+			nameComposite.setLayout(initGridLayout(new GridLayout(2, false), false));
+			nameComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			
+			// text field for project name
+			fAWEProjectName = new ComboDialogField(0);
+			fAWEProjectName.setLabelText("Choose AWE project"); 
+			fAWEProjectName.setDialogFieldListener(this);
+
+			fAWEProjectName.doFillIntoGrid(nameComposite, 2);
+			
+			ArrayList<String> items = new ArrayList<String>();
+			for (IProject project : AWEProjectManager.getAWEProjects()) {
+				items.add(project.getName());
+			}
+			fAWEProjectName.setItems(items.toArray(new String[]{}));
+		}
+
+		public void dialogFieldChanged(DialogField field) {
+			fireEvent();
+		}
+		
+		protected void fireEvent() {
+			setChanged();
+			notifyObservers();
+		}
+		
+		public String getName() {
+			return fAWEProjectName.getText().trim();
+		}
+
+	}
 	
 	/**
 	 * Request a project name. Fires an event whenever the text field is
@@ -91,7 +140,7 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 			nameComposite.setFont(composite.getFont());
 			nameComposite.setLayout(initGridLayout(new GridLayout(2, false), false));
 			nameComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
+			
 			// text field for project name
 			fNameField= new StringDialogField();
 			fNameField.setLabelText(NewWizardMessages.RubyProjectWizardFirstPage_NameGroup_label_text); 
@@ -619,6 +668,7 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 	private JREGroup fJREGroup;
 	private DetectGroup fDetectGroup;
 	private Validator fValidator;
+	private AWEProjectNameGroup fAWEProject;
 
 	private String fInitialName;
 	
@@ -657,6 +707,9 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 
 		// create UI elements
 		fNameGroup= new NameGroup(composite, fInitialName);
+		
+		fAWEProject = new AWEProjectNameGroup(composite);
+		
 		fLocationGroup= new LocationGroup(composite);
 		fJREGroup= new JREGroup(composite);
 		fDetectGroup= new DetectGroup(composite);
@@ -718,6 +771,10 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 	
 	public String getProjectName() {
 		return fNameGroup.getName();
+	}
+	
+	public String getAWEProjectName() {
+		return fAWEProject.getName();
 	}
 
 	public boolean getDetect() {

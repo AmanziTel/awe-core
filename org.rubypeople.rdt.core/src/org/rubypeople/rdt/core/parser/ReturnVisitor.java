@@ -13,7 +13,6 @@ import org.jruby.ast.Node;
 import org.jruby.ast.ReturnNode;
 import org.jruby.ast.RootNode;
 import org.jruby.ast.WhenNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.internal.core.parser.InOrderVisitor;
 
 /**
@@ -29,7 +28,7 @@ public class ReturnVisitor extends InOrderVisitor
 	private Node lastNode;
 
 	@Override
-	protected Instruction visitNode(Node iVisited)
+	protected Object visitNode(Node iVisited)
 	{
 		if (iVisited != null && !structuralNode(iVisited) && !branchingNode(iVisited)
 				&& !(iVisited instanceof ReturnNode))
@@ -51,7 +50,7 @@ public class ReturnVisitor extends InOrderVisitor
 	}
 
 	@Override
-	public Instruction visitReturnNode(ReturnNode iVisited)
+	public Object visitReturnNode(ReturnNode iVisited)
 	{
 		implicit = false;
 		lastNode = null;
@@ -60,7 +59,7 @@ public class ReturnVisitor extends InOrderVisitor
 	}
 
 	@Override
-	public Instruction visitCaseNode(CaseNode iVisited)
+	public Object visitCaseNode(CaseNode iVisited)
 	{
 		Node node = iVisited.getFirstWhenNode();
 		WhenNode whenNode = (WhenNode) node;
@@ -96,7 +95,7 @@ public class ReturnVisitor extends InOrderVisitor
 	}
 
 	@Override
-	public Instruction visitIfNode(IfNode iVisited)
+	public Object visitIfNode(IfNode iVisited)
 	{
 		if (iVisited.getThenBody() != null)
 		{

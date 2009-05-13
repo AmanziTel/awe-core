@@ -29,7 +29,8 @@ Export-Package: .,
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.jface.text,
- org.jruby,
- org.eclipse.core.filesystem
+ org.eclipse.core.filesystem,
+ org.amanzi.integrator.awe,
+ org.jruby
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: J2SE-1.5

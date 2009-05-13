@@ -948,14 +948,14 @@
             description="%RubyElementCreationActionSet.description"
             visible="false"
             id="org.rubypeople.rdt.ui.RubyElementCreationActionSet">
-         <action
+          <action
                label="%NewClassWizardAction.label"
                icon="icons/full/etool16/newclass_wiz.gif"
                tooltip="%NewClassWizardAction.tooltip"
                class="org.rubypeople.rdt.internal.ui.wizards.NewClassWizardAction"
                toolbarPath="Normal/RubyWizards"
                id="org.rubypeople.rdt.ui.actions.NewClassWizard">
-         </action>
+          </action>
           <action
                label="%OpenProjectWizardAction.label"
                icon="icons/full/etool16/newrprj_wiz.gif"

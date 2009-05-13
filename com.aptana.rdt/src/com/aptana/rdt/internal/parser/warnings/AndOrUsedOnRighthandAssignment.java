@@ -3,7 +3,6 @@ package com.aptana.rdt.internal.parser.warnings;
 import org.jruby.ast.AndNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.OrNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 import org.rubypeople.rdt.internal.core.util.ASTUtil;
 
@@ -21,7 +20,7 @@ public class AndOrUsedOnRighthandAssignment extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitOrNode(OrNode iVisited) {
+	public Object visitOrNode(OrNode iVisited) {
 		Node leftHand = iVisited.getFirstNode();
 		if (isAssignment(leftHand)) {
 			createProblem(iVisited.getPosition(), createMessage(iVisited));
@@ -30,7 +29,7 @@ public class AndOrUsedOnRighthandAssignment extends RubyLintVisitor {
 	}
 
 	@Override
-	public Instruction visitAndNode(AndNode iVisited) {
+	public Object visitAndNode(AndNode iVisited) {
 		Node leftHand = iVisited.getFirstNode();
 		if (isAssignment(leftHand)) {
 			createProblem(iVisited.getPosition(), createMessage(iVisited));

@@ -12,7 +12,6 @@ import org.jruby.ast.FCallNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.VCallNode;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.IDESourcePosition;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.rubypeople.rdt.core.IMember;
@@ -76,7 +75,7 @@ class CalleeAnalyzerVisitor extends InOrderVisitor {
     // FIXME When visiting types, check to see if we even need to traverse into the type...
     
     @Override
-    public Instruction visitVCallNode(VCallNode iVisited) {
+    public Object visitVCallNode(VCallNode iVisited) {
     	if (isNodeWithinMethod(iVisited)) {
     		addMethodCall(iVisited.getPosition());
     	}
@@ -84,7 +83,7 @@ class CalleeAnalyzerVisitor extends InOrderVisitor {
     }
     
     @Override
-    public Instruction visitFCallNode(FCallNode iVisited) {
+    public Object visitFCallNode(FCallNode iVisited) {
     	if (isNodeWithinMethod(iVisited)) {
     		addMethodCall(iVisited.getPosition());// FIXME Only look up the hierarchy for the resolution
     	}
@@ -92,7 +91,7 @@ class CalleeAnalyzerVisitor extends InOrderVisitor {
     }
     
     @Override
-    public Instruction visitCallNode(CallNode iVisited) {
+    public Object visitCallNode(CallNode iVisited) {
     	if (isNodeWithinMethod(iVisited)) {
     		if (iVisited.getName().equals("[]"))return super.visitCallNode(iVisited);
     		String receiver = ASTUtil.stringRepresentation(iVisited.getReceiverNode());
@@ -120,25 +119,25 @@ class CalleeAnalyzerVisitor extends InOrderVisitor {
     }
     
     @Override
-    public Instruction visitDefnNode(DefnNode iVisited) {
+    public Object visitDefnNode(DefnNode iVisited) {
     	 progressMonitorWorked(1);
     	return super.visitDefnNode(iVisited);
     }
     
     @Override
-    public Instruction visitDefsNode(DefsNode iVisited) {
+    public Object visitDefsNode(DefsNode iVisited) {
     	 progressMonitorWorked(1);
     	return super.visitDefsNode(iVisited);
     }
     
     @Override
-    public Instruction visitClassNode(ClassNode iVisited) {
+    public Object visitClassNode(ClassNode iVisited) {
     	 progressMonitorWorked(1);
     	return super.visitClassNode(iVisited);
     }
     
     @Override
-    public Instruction visitModuleNode(ModuleNode iVisited) {
+    public Object visitModuleNode(ModuleNode iVisited) {
     	 progressMonitorWorked(1);
     	return super.visitModuleNode(iVisited);
     }

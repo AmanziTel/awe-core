@@ -1,7 +1,6 @@
 package com.aptana.rdt.internal.parser.warnings;
 
 import org.jruby.ast.DefnNode;
-import org.jruby.evaluator.Instruction;
 import org.rubypeople.rdt.core.parser.warnings.RubyLintVisitor;
 
 import com.aptana.rdt.AptanaRDTPlugin;
@@ -14,7 +13,7 @@ public class MisspelledConstructorVisitor extends RubyLintVisitor {
 		super(AptanaRDTPlugin.getDefault().getOptions(), contents);
 	}
 
-	public Instruction visitDefnNode(DefnNode iVisited) {
+	public Object visitDefnNode(DefnNode iVisited) {
 		String methodName = iVisited.getName();
 		if (methodName.equals("intialize") || methodName.equals("initialise") || methodName.equals("initalize")) {
 			createProblem(iVisited.getNameNode().getPosition(), "Possible mis-spelling of constructor");

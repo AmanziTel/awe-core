@@ -5,7 +5,6 @@ import java.util.List;
 import org.jruby.ast.HashNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.Node;
-import org.jruby.evaluator.Instruction;
 import org.jruby.lexer.yacc.IDESourcePosition;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.rubypeople.rdt.core.RubyCore;
@@ -30,7 +29,7 @@ public class Ruby19HashCommaSyntax extends RubyLintVisitor {
 	}
 	
 	@Override
-	public Instruction visitHashNode(HashNode iVisited) {
+	public Object visitHashNode(HashNode iVisited) {
 		ListNode list = iVisited.getListNode();
 		List<Node> children = list.childNodes();
 		for (int i = 0; i < children.size(); i += 2) {			

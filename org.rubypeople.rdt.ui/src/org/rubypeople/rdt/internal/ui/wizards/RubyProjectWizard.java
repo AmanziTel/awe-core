@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
@@ -127,7 +128,7 @@ public class RubyProjectWizard extends NewElementWizard implements IExecutableEx
 			}
 			
 			BuildPathsBlock.createProject(project, fCurrProjectLocation, monitor);
-			IRubyProject rubyProject = RubyCore.create(project);
+			IRubyProject rubyProject = RubyCore.create(project, fFirstPage.getAWEProjectName());
 			List<ILoadpathEntry> cpEntries= new ArrayList<ILoadpathEntry>();
 			IPath projectPath= project.getFullPath();
 			cpEntries.add(RubyCore.newSourceEntry(projectPath));
@@ -170,7 +171,7 @@ public class RubyProjectWizard extends NewElementWizard implements IExecutableEx
 	public boolean performFinish() {
 		boolean res= super.performFinish();
 		if (res) {
-			BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
+			BasicNewProjectResourceWizard.updatePerspective(fConfigElement);			
 	 		selectAndReveal(fFirstPage.getProjectHandle());
 		}
 		return res;
