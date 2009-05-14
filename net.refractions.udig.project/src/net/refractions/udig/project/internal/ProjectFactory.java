@@ -5,6 +5,7 @@ package net.refractions.udig.project.internal;
 
 import java.util.List;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.ecore.EFactory;
 
 /**
@@ -155,5 +156,32 @@ public interface ProjectFactory extends EFactory {
      * @generated
      */
     ProjectPackage getProjectPackage();
+    
+    /**
+	 * Returns a new object of class '<em>Ruby Project</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Ruby Project</em>'.
+	 * @generated
+	 */
+	RubyProject createRubyProject();
+
+	/**
+	 * Returns a new object of class '<em>Ruby File</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Ruby File</em>'.
+	 * @generated
+	 */
+	RubyFile createRubyFile();
+
+	/**
+	 * Returns a new object of class '<em>Ruby Class</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Ruby Class</em>'.
+	 * @generated
+	 */
+	RubyClass createRubyClass();
 
 } // ProjectFactory

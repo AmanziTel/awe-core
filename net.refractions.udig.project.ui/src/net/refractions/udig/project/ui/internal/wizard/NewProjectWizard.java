@@ -80,6 +80,7 @@ public class NewProjectWizard extends Wizard implements INewWizard {
         Project project  = ProjectPlugin.getPlugin().getProjectRegistry().getProject(projectPath+"/"+projectName+".udig");
         project.setName(projectName);
         Resource projectResource = project.eResource();
+        
         try {
 			projectResource.save(Collections.EMPTY_MAP);
 		} catch (IOException e) {

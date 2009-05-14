@@ -130,6 +130,73 @@ public class ProjectItemProviderAdapterFactory extends ProjectAdapterFactory
     public Adapter createProjectAdapter() {
         return new ProjectItemProvider(this);
     }
+    
+    /**
+	 * This keeps track of the one adapter used for all {@link net.refractions.udig.project.internal.RubyProject} instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected RubyProjectItemProvider rubyProjectItemProvider;
+
+	/**
+	 * This creates an adapter for a {@link net.refractions.udig.project.internal.RubyProject}.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Adapter createRubyProjectAdapter() {
+		if (rubyProjectItemProvider == null) {
+			rubyProjectItemProvider = new RubyProjectItemProvider(this);
+		}
+
+		return rubyProjectItemProvider;
+	}
+
+
+/**
+	 * This keeps track of the one adapter used for all {@link net.refractions.udig.project.internal.RubyFile} instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected RubyFileItemProvider rubyFileItemProvider;
+
+	/**
+	 * This creates an adapter for a {@link net.refractions.udig.project.internal.RubyFile}.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Adapter createRubyFileAdapter() {
+		if (rubyFileItemProvider == null) {
+			rubyFileItemProvider = new RubyFileItemProvider(this);
+		}
+
+		return rubyFileItemProvider;
+	}
+
+	/**
+	 * This keeps track of the one adapter used for all {@link net.refractions.udig.project.internal.RubyClass} instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected RubyClassItemProvider rubyClassItemProvider;
+
+	/**
+	 * This creates an adapter for a {@link net.refractions.udig.project.internal.RubyClass}.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Adapter createRubyClassAdapter() {
+		if (rubyClassItemProvider == null) {
+			rubyClassItemProvider = new RubyClassItemProvider(this);
+		}
+
+		return rubyClassItemProvider;
+	}
 
     /**
      * This keeps track of the one adapter used for all {@link net.refractions.udig.project.internal.ProjectRegistry} instances.

@@ -106,7 +106,7 @@ public class ElementItemProviderAdapterFactory extends ElementAdapterFactory
 
         return projectElementAdapterItemProvider;
     }
-
+    
     /**
      * This returns the root adapter factory that contains this factory.
      * <!-- begin-user-doc -->
@@ -204,7 +204,7 @@ public class ElementItemProviderAdapterFactory extends ElementAdapterFactory
      */
     public void dispose() {
         if (projectElementAdapterItemProvider != null)
-            projectElementAdapterItemProvider.dispose();
+            projectElementAdapterItemProvider.dispose();        
     }
 
 }

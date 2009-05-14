@@ -14,6 +14,10 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
+import net.refractions.udig.project.IRubyClass;
+import net.refractions.udig.project.IRubyFile;
+import net.refractions.udig.project.IRubyProject;
+import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.internal.AbstractContext;
 import net.refractions.udig.project.internal.Blackboard;
 import net.refractions.udig.project.internal.BlackboardEntry;
@@ -27,6 +31,10 @@ import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.ProjectRegistry;
+import net.refractions.udig.project.internal.RubyClass;
+import net.refractions.udig.project.internal.RubyFile;
+import net.refractions.udig.project.internal.RubyProject;
+import net.refractions.udig.project.internal.RubyProjectElement;
 import net.refractions.udig.project.internal.StyleBlackboard;
 import net.refractions.udig.project.internal.StyleEntry;
 import net.refractions.udig.project.render.IRenderManager;
@@ -174,6 +182,98 @@ public class ProjectSwitch {
                 result = defaultCase(theEObject);
             return result;
         }
+        case ProjectPackage.RUBY_PROJECT: {
+        	RubyProject rubyProject = (RubyProject) theEObject;
+        	Object result = caseRubyProject(rubyProject);
+        	if (result == null) {
+        		result = caseProjectElement(rubyProject);
+        	}
+        	if (result == null) {
+        		result = caseIRubyProject(rubyProject);
+        	}
+        	if (result == null) {
+        		result = caseIProjectElement(rubyProject);
+        	}
+        	if (result == null) {
+        		result = caseIAdaptable(rubyProject);
+        	}
+        	if (result == null) {
+        		result = defaultCase(theEObject);
+        	}
+        	return result;
+        }
+        case ProjectPackage.RUBY_PROJECT_ELEMENT: {
+        	RubyProjectElement rubyProjectElement = (RubyProjectElement) theEObject;
+        	Object result = caseRubyProjectElement(rubyProjectElement);
+        	if (result == null) {
+        		result = caseProjectElement(rubyProjectElement);
+        	}
+        	if (result == null) {
+        		result = caseIRubyProjectElement(rubyProjectElement);
+        	}
+        	if (result == null) {
+        		result = caseIProjectElement(rubyProjectElement);
+        	}
+        	if (result == null) {
+        		result = caseIAdaptable(rubyProjectElement);
+        	}
+        	if (result == null) {
+        		result = defaultCase(theEObject);
+        	}
+        	return result;
+        }        
+        case ProjectPackage.RUBY_CLASS: {
+        	RubyClass rubyClass = (RubyClass) theEObject;
+        	Object result = caseRubyClass(rubyClass);
+        	if (result == null) {
+        		result = caseRubyProjectElement(rubyClass);
+        	}
+        	if (result == null) {
+        		result = caseProjectElement(rubyClass);
+        	}
+        	if (result == null) {
+        		result = caseIRubyClass(rubyClass);
+        	}
+        	if (result == null) {
+        		result = caseIRubyProjectElement(rubyClass);
+        	}
+        	if (result == null) {
+        		result = caseIProjectElement(rubyClass);
+        	}
+        	if (result == null) {
+        		result = caseIAdaptable(rubyClass);
+        	}
+        	if (result == null) {
+        		result = defaultCase(theEObject);
+        	}
+        	return result;
+        }        
+        case ProjectPackage.RUBY_FILE: {
+        	RubyFile rubyFile = (RubyFile) theEObject;
+        	Object result = caseRubyFile(rubyFile);
+        	if (result == null) {
+        		result = caseRubyProjectElement(rubyFile);
+        	}
+        	if (result == null) {
+        		result = caseProjectElement(rubyFile);
+        	}
+        	if (result == null) {
+        		result = caseIRubyFile(rubyFile);
+        	}
+        	if (result == null) {
+        		result = caseIRubyProjectElement(rubyFile);
+        	}
+        	if (result == null) {
+        		result = caseIProjectElement(rubyFile);
+        	}
+        	if (result == null) {
+        		result = caseIAdaptable(rubyFile);
+        	}
+        	if (result == null) {
+        		result = defaultCase(theEObject);
+        	}
+        	return result;
+        }        
         case ProjectPackage.PROJECT_REGISTRY: {
             ProjectRegistry projectRegistry = (ProjectRegistry) theEObject;
             Object result = caseProjectRegistry(projectRegistry);
@@ -618,6 +718,118 @@ public class ProjectSwitch {
      */
     public Object defaultCase( EObject object ) {
         return null;
+    }
+    
+    /**
+     * Returns the result of interpretting the object as an instance of '<em>EObject</em>'. <!--
+     * begin-user-doc --> This implementation returns null; returning a non-null result will
+     * terminate the switch, but this is the last case anyway. <!-- end-user-doc -->
+     * 
+     * @param object the target of the switch.
+     * @return the result of interpretting the object as an instance of '<em>EObject</em>'.
+     * @see #doSwitch(org.eclipse.emf.ecore.EObject)
+     * @generated
+     */
+    public Object caseIRubyProject( IRubyProject object) {
+    	return null;
+    }
+    
+    /**
+     * Returns the result of interpretting the object as an instance of '<em>EObject</em>'. <!--
+     * begin-user-doc --> This implementation returns null; returning a non-null result will
+     * terminate the switch, but this is the last case anyway. <!-- end-user-doc -->
+     * 
+     * @param object the target of the switch.
+     * @return the result of interpretting the object as an instance of '<em>EObject</em>'.
+     * @see #doSwitch(org.eclipse.emf.ecore.EObject)
+     * @generated
+     */
+    public Object caseIRubyProjectElement( IRubyProjectElement object) {
+    	return null;
+    }       
+    
+    /**
+     * Returns the result of interpretting the object as an instance of '<em>EObject</em>'. <!--
+     * begin-user-doc --> This implementation returns null; returning a non-null result will
+     * terminate the switch, but this is the last case anyway. <!-- end-user-doc -->
+     * 
+     * @param object the target of the switch.
+     * @return the result of interpretting the object as an instance of '<em>EObject</em>'.
+     * @see #doSwitch(org.eclipse.emf.ecore.EObject)
+     * @generated
+     */
+    public Object caseIRubyFile( IRubyFile object) {
+    	return null;
+    }
+    
+    /**
+     * Returns the result of interpretting the object as an instance of '<em>EObject</em>'. <!--
+     * begin-user-doc --> This implementation returns null; returning a non-null result will
+     * terminate the switch, but this is the last case anyway. <!-- end-user-doc -->
+     * 
+     * @param object the target of the switch.
+     * @return the result of interpretting the object as an instance of '<em>EObject</em>'.
+     * @see #doSwitch(org.eclipse.emf.ecore.EObject)
+     * @generated
+     */
+    public Object caseIRubyClass( IRubyClass object) {
+    	return null;
+    }
+    
+    /**
+     * Returns the result of interpretting the object as an instance of '<em>EObject</em>'. <!--
+     * begin-user-doc --> This implementation returns null; returning a non-null result will
+     * terminate the switch, but this is the last case anyway. <!-- end-user-doc -->
+     * 
+     * @param object the target of the switch.
+     * @return the result of interpretting the object as an instance of '<em>EObject</em>'.
+     * @see #doSwitch(org.eclipse.emf.ecore.EObject)
+     * @generated
+     */
+    public Object caseRubyProject( RubyProject object) {
+    	return null;
+    }
+    
+    /**
+     * Returns the result of interpretting the object as an instance of '<em>EObject</em>'. <!--
+     * begin-user-doc --> This implementation returns null; returning a non-null result will
+     * terminate the switch, but this is the last case anyway. <!-- end-user-doc -->
+     * 
+     * @param object the target of the switch.
+     * @return the result of interpretting the object as an instance of '<em>EObject</em>'.
+     * @see #doSwitch(org.eclipse.emf.ecore.EObject)
+     * @generated
+     */
+    public Object caseRubyProjectElement( RubyProjectElement object) {
+    	return null;
+    }        
+    
+    /**
+     * Returns the result of interpretting the object as an instance of '<em>EObject</em>'. <!--
+     * begin-user-doc --> This implementation returns null; returning a non-null result will
+     * terminate the switch, but this is the last case anyway. <!-- end-user-doc -->
+     * 
+     * @param object the target of the switch.
+     * @return the result of interpretting the object as an instance of '<em>EObject</em>'.
+     * @see #doSwitch(org.eclipse.emf.ecore.EObject)
+     * @generated
+     */
+    public Object caseRubyFile( RubyFile object) {
+    	return null;
+    }
+    
+    /**
+     * Returns the result of interpretting the object as an instance of '<em>EObject</em>'. <!--
+     * begin-user-doc --> This implementation returns null; returning a non-null result will
+     * terminate the switch, but this is the last case anyway. <!-- end-user-doc -->
+     * 
+     * @param object the target of the switch.
+     * @return the result of interpretting the object as an instance of '<em>EObject</em>'.
+     * @see #doSwitch(org.eclipse.emf.ecore.EObject)
+     * @generated
+     */
+    public Object caseRubyClass( RubyClass object) {
+    	return null;
     }
 
 } // ProjectSwitch

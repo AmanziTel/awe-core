@@ -19,6 +19,10 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
+import net.refractions.udig.project.IRubyClass;
+import net.refractions.udig.project.IRubyFile;
+import net.refractions.udig.project.IRubyProject;
+import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.command.CommandStack;
 import net.refractions.udig.project.command.EditCommand;
 import net.refractions.udig.project.command.MapCommand;
@@ -39,6 +43,10 @@ import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectFactory;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.ProjectRegistry;
+import net.refractions.udig.project.internal.RubyClass;
+import net.refractions.udig.project.internal.RubyFile;
+import net.refractions.udig.project.internal.RubyProject;
+import net.refractions.udig.project.internal.RubyProjectElement;
 import net.refractions.udig.project.internal.StyleBlackboard;
 import net.refractions.udig.project.internal.StyleEntry;
 import net.refractions.udig.project.internal.render.RenderPackage;
@@ -252,6 +260,62 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
      * @generated
      */
     private EClass iResolveChangeListenerEClass = null;
+    
+    /**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass iRubyProjectEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass iRubyProjectElementEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass iRubyClassEClass = null;
+	
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass iRubyFileEClass = null;
+	
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass rubyProjectEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass rubyProjectElementEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass rubyClassEClass = null;
+	
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass rubyFileEClass = null;
 
     /**
      * <!-- begin-user-doc --> <!-- end-user-doc -->
@@ -1428,6 +1492,97 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
     public ProjectFactory getProjectFactory() {
         return (ProjectFactory) getEFactoryInstance();
     }
+    
+    /**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getRubyFile() {
+		return rubyFileEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getRubyClass() {
+		return rubyClassEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getRubyProjectElement() {
+		return rubyProjectElementEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getRubyProjectElement_RubyProjectInternal() {
+		return (EReference) rubyProjectElementEClass.getEStructuralFeatures()
+				.get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getRubyProject() {
+		return rubyProjectEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getRubyProject_RubyElementsInternal() {
+		return (EReference) rubyProjectEClass.getEStructuralFeatures().get(0);
+	}
+	
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getIRubyClass() {
+		return iRubyClassEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getIRubyFile() {
+		return iRubyFileEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getIRubyProject() {
+		return iRubyProjectEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getIRubyProjectElement() {
+		return iRubyProjectElementEClass;
+	}
 
     /**
      * <!-- begin-user-doc --> <!-- end-user-doc -->
@@ -1467,6 +1622,14 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
         iRenderManagerEClass = createEClass(IRENDER_MANAGER);
 
         iViewportModelEClass = createEClass(IVIEWPORT_MODEL);
+        
+        iRubyProjectEClass = createEClass(IRUBY_PROJECT);
+
+		iRubyProjectElementEClass = createEClass(IRUBY_PROJECT_ELEMENT);
+
+		iRubyClassEClass = createEClass(IRUBY_CLASS);
+
+		iRubyFileEClass = createEClass(IRUBY_FILE);
 
         abstractContextEClass = createEClass(ABSTRACT_CONTEXT);
         createEReference(abstractContextEClass, ABSTRACT_CONTEXT__RENDER_MANAGER_INTERNAL);
@@ -1516,6 +1679,16 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
         createEReference(mapEClass, MAP__RENDER_MANAGER_INTERNAL);
         createEAttribute(mapEClass, MAP__COLOUR_SCHEME);
         createEReference(mapEClass, MAP__BLACK_BOARD_INTERNAL);
+        
+        rubyProjectEClass = createEClass(RUBY_PROJECT);
+		createEReference(rubyProjectEClass, RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL);
+
+		rubyProjectElementEClass = createEClass(RUBY_PROJECT_ELEMENT);
+		createEReference(rubyProjectElementEClass, RUBY_PROJECT_ELEMENT__RUBY_PROJECT_INTERNAL);
+
+		rubyFileEClass = createEClass(RUBY_FILE);
+
+		rubyClassEClass = createEClass(RUBY_CLASS);
 
         projectEClass = createEClass(PROJECT);
         createEAttribute(projectEClass, PROJECT__NAME);
@@ -1527,8 +1700,8 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 
         projectRegistryEClass = createEClass(PROJECT_REGISTRY);
         createEReference(projectRegistryEClass, PROJECT_REGISTRY__CURRENT_PROJECT);
-        createEReference(projectRegistryEClass, PROJECT_REGISTRY__PROJECTS);
-
+        createEReference(projectRegistryEClass, PROJECT_REGISTRY__PROJECTS);        
+        
         styleBlackboardEClass = createEClass(STYLE_BLACKBOARD);
         createEReference(styleBlackboardEClass, STYLE_BLACKBOARD__CONTENT);
 
@@ -1637,7 +1810,18 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
         styleBlackboardEClass.getESuperTypes().add(this.getIBlackboard());
         styleBlackboardEClass.getESuperTypes().add(this.getCloneable());
         picoBlackboardEClass.getESuperTypes().add(this.getIBlackboard());
-        blackboardEClass.getESuperTypes().add(this.getIBlackboard());
+        blackboardEClass.getESuperTypes().add(this.getIBlackboard());        
+        rubyProjectEClass.getESuperTypes().add(this.getProjectElement());
+		rubyProjectEClass.getESuperTypes().add(this.getIRubyProject());
+		rubyFileEClass.getESuperTypes().add(this.getIRubyFile());
+		rubyFileEClass.getESuperTypes().add(this.getProjectElement());
+		rubyFileEClass.getESuperTypes().add(this.getRubyProjectElement());
+		rubyClassEClass.getESuperTypes().add(this.getIRubyClass());
+		rubyClassEClass.getESuperTypes().add(this.getRubyProjectElement());
+		rubyClassEClass.getESuperTypes().add(this.getProjectElement());
+		rubyProjectElementEClass.getESuperTypes().add(this.getProjectElement());
+		rubyProjectElementEClass.getESuperTypes().add(this.getIRubyProjectElement());
+		rubyProjectElementEClass.getESuperTypes().add(this.getIAdaptable());		
 
         // Initialize classes and features; add operations and parameters
         initEClass(comparableEClass, Comparable.class,
@@ -1645,6 +1829,18 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 
         initEClass(iMapEClass, IMap.class,
                 "IMap", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+        
+        initEClass(iRubyProjectEClass, IRubyProject.class,
+				"IRubyProject", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+
+		initEClass(iRubyProjectElementEClass, IRubyProjectElement.class,
+				"IRubyProjectElement", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+
+		initEClass(iRubyClassEClass, IRubyClass.class,
+				"IRubyClass", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+
+		initEClass(iRubyFileEClass, IRubyFile.class,
+				"IRubyFile", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
 
         initEClass(iLayerEClass, ILayer.class,
                 "ILayer", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
@@ -1669,7 +1865,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 
         initEClass(iViewportModelEClass, IViewportModel.class,
                 "IViewportModel", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
-
+        
         initEClass(abstractContextEClass, AbstractContext.class,
                 "AbstractContext", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
         initEReference(
@@ -1893,7 +2089,29 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 
         addEOperation(mapEClass, null, "forewardHistory"); //$NON-NLS-1$
 
-        initEClass(projectEClass, Project.class,
+        initEClass(rubyProjectEClass, RubyProject.class,
+				"RubyProject", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+		initEReference(
+				getRubyProject_RubyElementsInternal(),
+				this.getRubyProjectElement(),
+				this.getRubyProjectElement_RubyProjectInternal(),
+				"rubyElementsInternal", null, 0, -1, RubyProject.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$
+
+		initEClass(rubyProjectElementEClass, RubyProjectElement.class,
+				"RubyProjectElement", IS_ABSTRACT, IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+		initEReference(
+				getRubyProjectElement_RubyProjectInternal(),
+				this.getRubyProject(),
+				this.getRubyProject_RubyElementsInternal(),
+				"rubyProjectInternal", null, 0, 1, RubyProjectElement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$
+
+		initEClass(rubyFileEClass, RubyFile.class,
+				"RubyFile", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+
+		initEClass(rubyClassEClass, RubyClass.class,
+				"RubyClass", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+		
+		initEClass(projectEClass, Project.class,
                 "Project", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
         initEAttribute(
                 getProject_Name(),
@@ -1904,7 +2122,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
                 this.getProjectElement(),
                 this.getProjectElement_ProjectInternal(),
                 "elementsInternal", null, 0, -1, Project.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$
-
+        
         initEClass(projectElementEClass, ProjectElement.class,
                 "ProjectElement", IS_ABSTRACT, IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
         initEAttribute(
@@ -1916,7 +2134,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
                 this.getProject(),
                 this.getProject_ElementsInternal(),
                 "projectInternal", null, 0, 1, ProjectElement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$
-
+        
         initEClass(projectRegistryEClass, ProjectRegistry.class,
                 "ProjectRegistry", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
         initEReference(
@@ -2105,6 +2323,6 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 
     private EClassifier getDefaultColor() {
         return defaultColorEDataType ;
-    }
+    }	
 
 } // ProjectPackageImpl

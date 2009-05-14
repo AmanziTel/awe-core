@@ -2565,5 +2565,372 @@ public interface ProjectPackage extends EPackage {
      * @generated
      */
     ProjectFactory getProjectFactory();
+    
+    /**
+	 * The meta object id for the '{@link org.rubypeople.rdt.core.IRubyProject <em>IRuby Project</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see org.rubypeople.rdt.core.IRubyProject
+	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getIRubyProject()
+	 * @generated
+	 */
+	int IRUBY_PROJECT = 58;
+
+	/**
+	 * The number of structural features of the '<em>IRuby Project</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int IRUBY_PROJECT_FEATURE_COUNT = 0;
+
+	/**
+	 * The meta object id for the '{@link org.rubypeople.rdt.core.IRubyElement <em>IRuby Project Element</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see org.rubypeople.rdt.core.IRubyElement
+	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getIRubyProjectElement()
+	 * @generated
+	 */
+	int IRUBY_PROJECT_ELEMENT = 59;
+
+	/**
+	 * The number of structural features of the '<em>IRuby Project Element</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int IRUBY_PROJECT_ELEMENT_FEATURE_COUNT = 0;
+
+	/**
+	 * The meta object id for the '{@link org.rubypeople.rdt.core.IRubyScript <em>IRuby Class</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see org.rubypeople.rdt.core.IRubyScript
+	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getIRubyClass()
+	 * @generated
+	 */
+	int IRUBY_CLASS = 60;
+
+	/**
+	 * The number of structural features of the '<em>IRuby Class</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int IRUBY_CLASS_FEATURE_COUNT = 0;
+
+	/**
+	 * The meta object id for the '{@link org.rubypeople.rdt.core.IRubyScript <em>IRuby File</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see org.rubypeople.rdt.core.IRubyScript
+	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getIRubyFile()
+	 * @generated
+	 */
+	int IRUBY_FILE = 61;
+
+	/**
+	 * The number of structural features of the '<em>IRuby File</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int IRUBY_FILE_FEATURE_COUNT = 0;
+
+	/**
+	 * The meta object id for the '{@link net.refractions.udig.project.internal.impl.RubyProjectImpl <em>Ruby Project</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see net.refractions.udig.project.internal.impl.RubyProjectImpl
+	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getRubyProject()
+	 * @generated
+	 */
+	int RUBY_PROJECT = 62;
+
+	/**
+	 * The feature id for the '<em><b>Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_PROJECT__NAME = PROJECT_ELEMENT__NAME;
+
+	/**
+	 * The feature id for the '<em><b>Project Internal</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_PROJECT__PROJECT_INTERNAL = PROJECT_ELEMENT__PROJECT_INTERNAL;
+
+	/**
+	 * The feature id for the '<em><b>Ruby Elements Internal</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL = PROJECT_ELEMENT_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Ruby Project</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_PROJECT_FEATURE_COUNT = PROJECT_ELEMENT_FEATURE_COUNT + 1;
+
+	/**
+	 * The meta object id for the '{@link net.refractions.udig.project.internal.RubyProjectElement <em>Ruby Project Element</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see net.refractions.udig.project.internal.RubyProjectElement
+	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getRubyProjectElement()
+	 * @generated
+	 */
+	int RUBY_PROJECT_ELEMENT = 63;
+
+	/**
+	 * The feature id for the '<em><b>Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_PROJECT_ELEMENT__NAME = PROJECT_ELEMENT__NAME;
+
+	/**
+	 * The feature id for the '<em><b>Project Internal</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_PROJECT_ELEMENT__PROJECT_INTERNAL = PROJECT_ELEMENT__PROJECT_INTERNAL;
+
+	/**
+	 * The feature id for the '<em><b>Ruby Project Internal</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_PROJECT_ELEMENT__RUBY_PROJECT_INTERNAL = PROJECT_ELEMENT_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Ruby Project Element</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_PROJECT_ELEMENT_FEATURE_COUNT = PROJECT_ELEMENT_FEATURE_COUNT + 1;
+
+	/**
+	 * The meta object id for the '{@link net.refractions.udig.project.internal.impl.RubyFileImpl <em>Ruby File</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see net.refractions.udig.project.internal.impl.RubyFileImpl
+	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getRubyFile()
+	 * @generated
+	 */
+	int RUBY_FILE = 64;
+
+	/**
+	 * The feature id for the '<em><b>Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_FILE__NAME = IRUBY_FILE_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Project Internal</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_FILE__PROJECT_INTERNAL = IRUBY_FILE_FEATURE_COUNT + 1;
+
+	/**
+	 * The feature id for the '<em><b>Ruby Project Internal</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_FILE__RUBY_PROJECT_INTERNAL = IRUBY_FILE_FEATURE_COUNT + 2;
+
+	/**
+	 * The number of structural features of the '<em>Ruby File</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_FILE_FEATURE_COUNT = IRUBY_FILE_FEATURE_COUNT + 3;
+
+	/**
+	 * The meta object id for the '{@link net.refractions.udig.project.internal.impl.RubyClassImpl <em>Ruby Class</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see net.refractions.udig.project.internal.impl.RubyClassImpl
+	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getRubyClass()
+	 * @generated
+	 */
+	int RUBY_CLASS = 65;
+
+	/**
+	 * The feature id for the '<em><b>Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_CLASS__NAME = IRUBY_CLASS_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Project Internal</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_CLASS__PROJECT_INTERNAL = IRUBY_CLASS_FEATURE_COUNT + 1;
+
+	/**
+	 * The feature id for the '<em><b>Ruby Project Internal</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_CLASS__RUBY_PROJECT_INTERNAL = IRUBY_CLASS_FEATURE_COUNT + 2;
+
+	/**
+	 * The number of structural features of the '<em>Ruby Class</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int RUBY_CLASS_FEATURE_COUNT = IRUBY_CLASS_FEATURE_COUNT + 3;
+
+
+	/**
+	 * Returns the meta object for class '{@link org.rubypeople.rdt.core.IRubyProject <em>IRuby Project</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>IRuby Project</em>'.
+	 * @see org.rubypeople.rdt.core.IRubyProject
+	 * @model instanceClass="org.rubypeople.rdt.core.IRubyProject"
+	 * @generated
+	 */
+	EClass getIRubyProject();
+
+	/**
+	 * Returns the meta object for class '{@link org.rubypeople.rdt.core.IRubyElement <em>IRuby Project Element</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>IRuby Project Element</em>'.
+	 * @see org.rubypeople.rdt.core.IRubyElement
+	 * @model instanceClass="org.rubypeople.rdt.core.IRubyElement"
+	 * @generated
+	 */
+	EClass getIRubyProjectElement();
+
+	/**
+	 * Returns the meta object for class '{@link org.rubypeople.rdt.core.IRubyScript <em>IRuby Class</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>IRuby Class</em>'.
+	 * @see org.rubypeople.rdt.core.IRubyScript
+	 * @model instanceClass="org.rubypeople.rdt.core.IRubyScript"
+	 * @generated
+	 */
+	EClass getIRubyClass();
+
+	/**
+	 * Returns the meta object for class '{@link org.rubypeople.rdt.core.IRubyScript <em>IRuby File</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>IRuby File</em>'.
+	 * @see org.rubypeople.rdt.core.IRubyScript
+	 * @model instanceClass="org.rubypeople.rdt.core.IRubyScript"
+	 * @generated
+	 */
+	EClass getIRubyFile();
+
+	/**
+	 * Returns the meta object for class '{@link net.refractions.udig.project.internal.RubyProject <em>Ruby Project</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Ruby Project</em>'.
+	 * @see net.refractions.udig.project.internal.RubyProject
+	 * @generated
+	 */
+	EClass getRubyProject();
+
+	/**
+	 * Returns the meta object for the reference list '{@link net.refractions.udig.project.internal.RubyProject#getRubyElementsInternal <em>Ruby Elements Internal</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference list '<em>Ruby Elements Internal</em>'.
+	 * @see net.refractions.udig.project.internal.RubyProject#getRubyElementsInternal()
+	 * @see #getRubyProject()
+	 * @generated
+	 */
+	EReference getRubyProject_RubyElementsInternal();
+
+	/**
+	 * Returns the meta object for class '{@link net.refractions.udig.project.internal.RubyProjectElement <em>Ruby Project Element</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Ruby Project Element</em>'.
+	 * @see net.refractions.udig.project.internal.RubyProjectElement
+	 * @generated
+	 */
+	EClass getRubyProjectElement();
+
+	/**
+	 * Returns the meta object for the reference '{@link net.refractions.udig.project.internal.RubyProjectElement#getRubyProjectInternal <em>Ruby Project Internal</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Ruby Project Internal</em>'.
+	 * @see net.refractions.udig.project.internal.RubyProjectElement#getRubyProjectInternal()
+	 * @see #getRubyProjectElement()
+	 * @generated
+	 */
+	EReference getRubyProjectElement_RubyProjectInternal();
+
+	/**
+	 * Returns the meta object for class '{@link net.refractions.udig.project.internal.RubyFile <em>Ruby File</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Ruby File</em>'.
+	 * @see net.refractions.udig.project.internal.RubyFile
+	 * @generated
+	 */
+	EClass getRubyFile();
+
+	/**
+	 * Returns the meta object for class '{@link net.refractions.udig.project.internal.RubyClass <em>Ruby Class</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Ruby Class</em>'.
+	 * @see net.refractions.udig.project.internal.RubyClass
+	 * @generated
+	 */
+	EClass getRubyClass();
 
 } // ProjectPackage

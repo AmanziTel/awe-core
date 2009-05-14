@@ -9,6 +9,10 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
+import net.refractions.udig.project.IRubyClass;
+import net.refractions.udig.project.IRubyFile;
+import net.refractions.udig.project.IRubyProject;
+import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.internal.AbstractContext;
 import net.refractions.udig.project.internal.Blackboard;
 import net.refractions.udig.project.internal.BlackboardEntry;
@@ -22,6 +26,10 @@ import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.ProjectRegistry;
+import net.refractions.udig.project.internal.RubyClass;
+import net.refractions.udig.project.internal.RubyFile;
+import net.refractions.udig.project.internal.RubyProject;
+import net.refractions.udig.project.internal.RubyProjectElement;
 import net.refractions.udig.project.internal.StyleBlackboard;
 import net.refractions.udig.project.internal.StyleEntry;
 import net.refractions.udig.project.render.IRenderManager;
@@ -106,6 +114,30 @@ public class ProjectAdapterFactory extends AdapterFactoryImpl {
         }
         public Object caseIProject( IProject object ) {
             return createIProjectAdapter();
+        }
+        public Object caseIRubyProject( IRubyProject object) {
+        	return createIRubyProjectAdapter();
+        }
+        public Object caseIRubyProjectElement( IRubyProjectElement object) {
+        	return createIRubyProjectElementAdapter();
+        }        
+        public Object caseIRubyFile( IRubyFile object) {
+        	return createIRubyFileAdapter();
+        }
+        public Object caseIRubyClass( IRubyClass object) {
+        	return createIRubyClassAdapter();
+        }
+        public Object caseRubyProject( RubyProject object) {
+        	return createRubyProjectAdapter();
+        }
+        public Object caseRubyProjectElement( RubyProjectElement object) {
+        	return createRubyProjectElementAdapter();
+        }        
+        public Object caseRubyFile( RubyFile object) {
+        	return createRubyFileAdapter();
+        }
+        public Object caseRubyClass( RubyClass object) {
+        	return createRubyClassAdapter();
         }
         public Object caseIAbstractContext( IAbstractContext object ) {
             return createIAbstractContextAdapter();
@@ -540,7 +572,7 @@ public class ProjectAdapterFactory extends AdapterFactoryImpl {
     public Adapter createIProjectAdapter() {
         return null;
     }
-
+    
     /**
      * Creates a new adapter for an object of class '{@link net.refractions.udig.project.IAbstractContext <em>IAbstract Context</em>}'.
      * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
@@ -575,6 +607,110 @@ public class ProjectAdapterFactory extends AdapterFactoryImpl {
      * @generated
      */
     public Adapter createEObjectAdapter() {
+        return null;
+    }
+    
+    /**
+     * Creates a new adapter for an object of class '{@link net.refractions.udig.project.IRubyProject <em>IRubyProject</em>}'.
+     * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
+     * cases; it's useful to ignore a case when inheritance will catch all the cases anyway. <!--
+     * end-user-doc -->
+     * @return the new adapter.
+     * @see net.refractions.udig.project.IRubyProject
+     * @generated
+     */
+    public Adapter createIRubyProjectAdapter() {
+        return null;
+    }
+    
+    /**
+     * Creates a new adapter for an object of class '{@link net.refractions.udig.project.IRubyProjectElement <em>IRubyProjectElement</em>}'.
+     * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
+     * cases; it's useful to ignore a case when inheritance will catch all the cases anyway. <!--
+     * end-user-doc -->
+     * @return the new adapter.
+     * @see net.refractions.udig.project.IRubyProjectElement
+     * @generated
+     */
+    public Adapter createIRubyProjectElementAdapter() {
+        return null;
+    }
+    
+    /**
+     * Creates a new adapter for an object of class '{@link net.refractions.udig.project.IRubyClass <em>IRubyClass</em>}'.
+     * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
+     * cases; it's useful to ignore a case when inheritance will catch all the cases anyway. <!--
+     * end-user-doc -->
+     * @return the new adapter.
+     * @see net.refractions.udig.project.IRubyClass
+     * @generated
+     */
+    public Adapter createIRubyClassAdapter() {
+        return null;
+    }
+    
+    /**
+     * Creates a new adapter for an object of class '{@link net.refractions.udig.File.IRubyFile <em>IRubyFile</em>}'.
+     * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
+     * cases; it's useful to ignore a case when inheritance will catch all the cases anyway. <!--
+     * end-user-doc -->
+     * @return the new adapter.
+     * @see net.refractions.udig.File.IRubyFile
+     * @generated
+     */
+    public Adapter createIRubyFileAdapter() {
+        return null;
+    }
+    
+    /**
+     * Creates a new adapter for an object of class '{@link net.refractions.udig.project.RubyProject <em>RubyProject</em>}'.
+     * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
+     * cases; it's useful to ignore a case when inheritance will catch all the cases anyway. <!--
+     * end-user-doc -->
+     * @return the new adapter.
+     * @see net.refractions.udig.project.RubyProject
+     * @generated
+     */
+    public Adapter createRubyProjectAdapter() {
+        return null;
+    }
+    
+    /**
+     * Creates a new adapter for an object of class '{@link net.refractions.udig.project.RubyProjectElement <em>RubyProjectElement</em>}'.
+     * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
+     * cases; it's useful to ignore a case when inheritance will catch all the cases anyway. <!--
+     * end-user-doc -->
+     * @return the new adapter.
+     * @see net.refractions.udig.project.RubyProjectElement
+     * @generated
+     */
+    public Adapter createRubyProjectElementAdapter() {
+        return null;
+    }
+    
+    /**
+     * Creates a new adapter for an object of class '{@link net.refractions.udig.project.RubyClass <em>RubyClass</em>}'.
+     * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
+     * cases; it's useful to ignore a case when inheritance will catch all the cases anyway. <!--
+     * end-user-doc -->
+     * @return the new adapter.
+     * @see net.refractions.udig.project.RubyClass
+     * @generated
+     */
+    public Adapter createRubyClassAdapter() {
+        return null;
+    }
+    
+    /**
+     * Creates a new adapter for an object of class '{@link net.refractions.udig.File.RubyFile <em>RubyFile</em>}'.
+     * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
+     * cases; it's useful to ignore a case when inheritance will catch all the cases anyway. <!--
+     * end-user-doc -->
+     * @return the new adapter.
+     * @see net.refractions.udig.project.RubyFile
+     * @generated
+     */
+    public Adapter createRubyFileAdapter() {
         return null;
     }
 

@@ -36,6 +36,9 @@ import net.refractions.udig.project.internal.ProjectFactory;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.internal.ProjectRegistry;
+import net.refractions.udig.project.internal.RubyClass;
+import net.refractions.udig.project.internal.RubyFile;
+import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.StyleBlackboard;
 import net.refractions.udig.project.internal.StyleEntry;
 import net.refractions.udig.project.internal.render.RenderFactory;
@@ -120,6 +123,12 @@ public class ProjectFactoryImpl extends EFactoryImpl implements ProjectFactory {
             return createBlackboard();
         case ProjectPackage.BLACKBOARD_ENTRY:
             return createBlackboardEntry();
+        case ProjectPackage.RUBY_PROJECT:
+			return createRubyProject();
+		case ProjectPackage.RUBY_FILE:
+			return createRubyFile();
+		case ProjectPackage.RUBY_CLASS:
+			return createRubyClass();
         default:
             throw new IllegalArgumentException(
                     "The class '" + eClass.getName() + "' is not a valid classifier"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -981,5 +990,36 @@ public class ProjectFactoryImpl extends EFactoryImpl implements ProjectFactory {
         
         return map;
     }
+    
+    /**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public RubyProject createRubyProject() {
+		RubyProjectImpl rubyProject = new RubyProjectImpl();
+		return rubyProject;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public RubyFile createRubyFile() {
+		RubyFileImpl rubyFile = new RubyFileImpl();
+		return rubyFile;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public RubyClass createRubyClass() {
+		RubyClassImpl rubyClass = new RubyClassImpl();
+		return rubyClass;
+	}
+
 
 } // ProjectFactoryImpl

@@ -38,6 +38,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
+import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.ProjectBlackboardConstants;
 import net.refractions.udig.project.element.ElementFactory;
 import net.refractions.udig.project.element.IGenericProjectElement;
@@ -51,6 +52,7 @@ import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.internal.commands.AddLayersCommand;
 import net.refractions.udig.project.internal.commands.CreateMapCommand;
 import net.refractions.udig.project.internal.impl.ProjectRegistryImpl;
+import net.refractions.udig.project.internal.impl.RubyFileImpl;
 import net.refractions.udig.project.internal.render.CompositeRenderContext;
 import net.refractions.udig.project.internal.render.RenderContext;
 import net.refractions.udig.project.internal.render.RenderFactory;
@@ -98,6 +100,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+
+import com.gersis_software.integrator.rdt.RDTProjectManager;
 
 /**
  * A facade into udig to simplify operations such as getting the active map and openning a map
@@ -529,6 +533,16 @@ public class ApplicationGIS {
 
         return elem;
     }
+    
+    /**
+     * Opens RubyFile in RubyEditor
+     * 
+     * @param element RubyFile to open
+     */
+    
+    private static void openRuby(RubyFileImpl element) {
+    	RDTProjectManager.openScript(element.getResource());
+    }    
 
     /**
      * Opens a {@link IProjectElement} for editing/viewing.  
@@ -538,6 +552,12 @@ public class ApplicationGIS {
      */
     public static void openProjectElement( IProjectElement obj, boolean wait ) {
         OpenProjectElementCommand command=new OpenProjectElementCommand(obj);
+        if (obj instanceof IRubyProjectElement) {
+        	//Lagutko: when we open RubyEditor it's need to be in the same thread as Plugin
+        	//so we can't run this as Command, because Command runs in other thread
+        	openRuby((RubyFileImpl)obj);
+        	return;
+        }
         if( wait)
             ApplicationGIS.getActiveProject().sendSync(command);
         else

@@ -15,6 +15,7 @@ import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectPackage;
+import net.refractions.udig.project.internal.impl.ProjectImpl;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notification;
@@ -57,6 +58,8 @@ public class ProjectItemProvider extends AbstractLazyLoadingItemProvider
      */
     public ProjectItemProvider( AdapterFactory adapterFactory ) {
         super(adapterFactory);
+        
+        
     }
 
     /**

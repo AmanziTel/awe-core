@@ -25,6 +25,8 @@ import java.util.Map.Entry;
 
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.IRubyFile;
+import net.refractions.udig.project.IRubyProject;
 import net.refractions.udig.project.command.MapCommand;
 import net.refractions.udig.project.command.UndoableMapCommand;
 import net.refractions.udig.project.command.factory.EditCommandFactory;
@@ -32,6 +34,8 @@ import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPlugin;
+import net.refractions.udig.project.internal.RubyFile;
+import net.refractions.udig.project.internal.impl.RubyProjectImpl;
 import net.refractions.udig.project.preferences.PreferenceConstants;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.UDIGGenericAction;
@@ -56,6 +60,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.geotools.feature.Feature;
+
+import com.gersis_software.integrator.rdt.RDTProjectManager;
 
 /**
  * Deletes the selected elements from a project.
@@ -175,6 +181,19 @@ public class Delete extends UDIGGenericAction {
                 if (editor != null)
                     page.closeEditor(editor, false);
             }
+            //Lagutko: if ProjectElement is RubyProject than first delete it from RDT Project Structure
+            if (element instanceof IRubyProject) {
+            	RDTProjectManager.deleteProject(element.getName(), deleteFiles);
+            }
+            //Lagutko: if ProjectElement is RubyFile than first delete it from RDT Project Structure
+            else if (element instanceof IRubyFile) {
+            	RubyFile file = (RubyFile)element;
+            	RubyProjectImpl project = (RubyProjectImpl)file.getRubyProjectInternal();
+            	RDTProjectManager.deleteScript(project.getName(), file.getName(), deleteFiles);
+            	
+            	//Lagutko: also delete this RubyFile from RubyProject InternalElements
+            	project.removeRubyElementInternal(file);
+            }
             Project projectInternal = element.getProjectInternal();
             if (projectInternal != null)
                 projectInternal.getElementsInternal().remove(element);
@@ -182,7 +201,7 @@ public class Delete extends UDIGGenericAction {
                 Project project = findProject(element);
                 if (project != null)
                     project.getElementsInternal().remove(element);
-            }
+            }            
             Resource resource = element.eResource();
             if (resource != null) {
                 resource.getContents().remove(element);

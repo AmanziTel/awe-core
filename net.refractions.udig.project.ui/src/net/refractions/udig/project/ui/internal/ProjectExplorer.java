@@ -48,9 +48,11 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
@@ -220,7 +222,7 @@ public class ProjectExplorer extends ViewPart implements IMenuListener, ISetSele
         addDoubleCickListener();
         setGlobalActions();
     }
-
+    
     private void setTreeSorter() {
         treeViewer.setSorter(new ViewerSorter(){
             ViewerLayerSorter layerSorter=new ViewerLayerSorter();

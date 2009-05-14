@@ -8,6 +8,12 @@
          <run
                class="org.amanzi.awe.Application">
          </run>
+         <run
+         	   class="org.eclipse.core.resources.ResourcesPlugin">
+         </run>
+         <run
+         	   class="org.rubypeople.rdt.internal.ui.RubyPlugin">         
+         </run>
       </application>
    </extension>
    <extension point="org.eclipse.ui.perspectives">
@@ -62,12 +68,24 @@
                relative="net.refractions.udig.catalog.ui.CatalogView"
                visible="true">
          </view>
+         <view
+         	   id="org.eclipse.ui.console.ConsoleView"
+         	   relationship="stack"
+         	   relative="net.refractions.udig.catalog.ui.CatalogView"
+         	   visible="true">
+         </view>
+         <viewShortcut id="org.eclipse.ui.console.ConsoleView"/>
          <viewShortcut id="net.refractions.udig.catalog.ui.CatalogView"/>
          <viewShortcut id="net.refractions.udig.tool.select.TableView"/>
          <viewShortcut id="net.refractions.udig.catalog.ui.Search"/>
          <viewShortcut id="net.refractions.udig.browser.ui.browserContainerView"/>
          <viewShortcut id="org.tcat.citd.sim.udig.bookmarks.internal.ui.BookmarksView"/>
          <perspectiveShortcut id="org.amanzi.awe.perspective"/>
+         
+         <newWizardShortcut id="org.rubypeople.rdt.ui.wizards.RubyProjectWizard"/>
+         <newWizardShortcut id="org.rubypeople.rdt.ui.wizards.RubyNewClassWizard"/>
+         <newWizardShortcut id="org.rubypeople.rdt.ui.wizards.RubyNewFileWizard"/>                  
+	     <viewShortcut id="org.rubypeople.rdt.ui.RubyExplorer"/>
       </perspectiveExtension>
       <perspectiveExtension targetID="net.refractions.udig.ui.mapPerspective">
          <perspectiveShortcut id="org.amanzi.awe.perspective"/>
