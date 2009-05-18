@@ -46,6 +46,7 @@ public class SplashTable extends JTable
 
 	public SplashTable (int rowCount, int columnCount, boolean isTesting)
 	{
+		
 		this (new SplashTableModel (rowCount, columnCount, isTesting));
 		tableFormat = new TableFormat();
 	}
@@ -59,6 +60,8 @@ public class SplashTable extends JTable
 		this (model, true);
 		
 	}
+	
+	
 
 	/**
 	 * Called by previous function to define the parser

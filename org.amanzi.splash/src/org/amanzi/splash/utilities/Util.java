@@ -43,7 +43,7 @@ public class Util {
 	 */
 	public static final String DEFAULT_SPREADSHEET_EXTENSION = ".jrss";
 
-	private static boolean isDebug = false;
+	public static boolean isDebug = false;
 
 	public static boolean isTesting = false;
 	public static String ColorToString (Color c)
@@ -213,8 +213,8 @@ public class Util {
 			System.out.print(title + ": ");
 
 			System.out.print(c.getCellID() + "\n");
-			printCellList(c.getCellID() + " RFG list:", c.getRfgCells());
-			printCellList(c.getCellID() + " RFD list:", c.getRfdCells());
+			//printCellList(c.getCellID() + " RFG list:", c.getRfgCells());
+			//printCellList(c.getCellID() + " RFD list:", c.getRfdCells());
 
 			Util.logn("=================================================\n");
 		}

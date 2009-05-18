@@ -87,17 +87,18 @@ public class SplashTableModel extends DefaultTableModel
 	{
 		this.rowCount     = rowCount;
 		this.columnCount  = columnCount;
-
+		Util.isTesting = isTesting;
+		Util.isDebug = true;
 		initializeJRubyInterpreter();
 
 		cellValues = new Hashtable ();
+		
 
-
-		if (isTesting){
+		if (Util.isTesting){
 			for (int i=0;i<rowCount;i++)
 				for (int j=0;j<columnCount;j++)
 				{
-					setValueAt(new Cell("",""),i,j);
+					setValueAt(new Cell(i,j,"","",new CellFormat()),i,j);
 				}
 		}
 	}
@@ -125,22 +126,23 @@ public class SplashTableModel extends DefaultTableModel
 		//Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
 		//rubyEngine.eval("require '/home/craig/.m2/repository/org/opengis/geoapi/2.2-SNAPSHOT/geoapi-2.2-20080605.180517-15.jar'");
-		URL scriptURL = null;
-		try {
-			scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry("jruby.rb"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
+		
 		String path = "";
 		if (Util.isTesting == false){
+			URL scriptURL = null;
+			try {
+				scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry("jruby.rb"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 			path = scriptURL.getPath();
 		}
 		else{
 			path ="/home/amabdelsalam/Desktop/amanzi/jrss/org.amanzi.splash/jruby.rb";	
 		}
 
-		if (Util.isTesting == false){
+		//if (Util.isTesting == false){
 			ScriptEngineManager m = new ScriptEngineManager(getClass().getClassLoader());
 
 			m.registerEngineName("jruby", 
@@ -177,17 +179,7 @@ public class SplashTableModel extends DefaultTableModel
 				e.printStackTrace();
 			}
 		}
-
-		//execJRubyCommand(input);
-
-
-
-//		} catch (ScriptException e) {
-//		e.printStackTrace();
-//		}finally{
-//		Thread.currentThread().setContextClassLoader(remember);
-//		}
-	}
+	//}
 
 	/**
 	 * Method that update Cell that has reference to Script
@@ -288,12 +280,8 @@ public class SplashTableModel extends DefaultTableModel
 			"return " + "$sheet.cells." + cellID.toLowerCase();
 
 			Util.logn("ERB Input: " + input);
-
-			if (Util.isTesting == false){
-				s = (String) engine.eval(input, engine.getContext());
-			}else{
-				s = (String)execJRubyCommand(input);
-			}
+			s = (String) engine.eval(input, engine.getContext());
+			
 
 			Util.logn("ERB Output = " + s);
 
@@ -314,6 +302,8 @@ public class SplashTableModel extends DefaultTableModel
 
 		String cellID = Util.getCellIDfromRowColumn(row, column);
 		String formula1 = definition;
+		Util.logn("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
+		Util.logn("Start interpreting a cell...");
 		Util.logn("CellID = " + cellID);
 
 		Cell se = getCellByID(cellID);
@@ -321,7 +311,7 @@ public class SplashTableModel extends DefaultTableModel
 		if (se == null)
 		{
 			Util.logn("WARNING: se = null");
-			se = new Cell("","");
+			se = new Cell(row, column, "","", new CellFormat());
 		}
 
 		List<String> list = Util.findComplexCellIDs(definition);
@@ -333,25 +323,29 @@ public class SplashTableModel extends DefaultTableModel
 
 
 		if (definition.startsWith("=") == false){
+			Util.logn("Formula not starting with =, dealing as normal text");
 		}
 		else{
+			Util.logn("Formula starts with =, Converting formula to ERB format");
 			formula1 = "<%= " +formula1.replace("=", "") + " %>";
 		}
-		Util.logn("I'm before interpret_erb");
+		
+		Util.logn("Interpreting cell using ERB...");
 		Object s1 = interpret_erb(cellID, formula1);
-		Util.logn("I'm after interpret_erb");
-
+		
+		Util.logn("Setting cell definition: "+ definition);
 		se.setDefinition(definition);
 
-		Util.logn("I'm after setting definition");
-		Util.logn("(String)s1 = " + (String)s1);
+		Util.logn("Setting cell value:" + (String)s1);
 		se.setValue((String)s1);
-
-		Util.logn("I'm after setting value");
-
+		
+		Util.logn("setValueAt " + row +"," +column);
+		Util.printCell("se", se);
 		this.setValueAt(se, row, column, oldDefinition);
 
-		Util.logn("I'm after this.setValueAt");
+		Util.logn("finish interpreting a cell...");
+		Util.logn("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
+		
 		return se;
 	}
 
@@ -706,7 +700,8 @@ public class SplashTableModel extends DefaultTableModel
 		if (value != null)
 		{
 			tableFormat.setFormatAt(((Cell)value).getCellFormat(), row, column, row, column);
-			updateCellsAndTableModelReferences(row, column, oldDefinition, (String) ((Cell)value).getDefinition());
+			
+			updateCellsAndTableModelReferences(((Cell)value), oldDefinition, (String) ((Cell)value).getDefinition());
 		}
 
 		fireTableChanged (new TableModelEvent (this, row, row, column));
@@ -742,7 +737,7 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 	public void updateCellsAndTableModelReferences(int row, int column, String oldFormula, String newFormula)
 	{
-		//Util.logEnter("updateCellsAndTableModelReferences");
+		Util.logEnter("updateCellsAndTableModelReferences");
 		String cellID = Util.getCellIDfromRowColumn(row,column);
 		Cell cell ;
 		ArrayList<Cell> list;
@@ -750,7 +745,7 @@ public class SplashTableModel extends DefaultTableModel
 		Util.logn("oldFormula = " + oldFormula);
 		Util.logn("newFormula = " + newFormula);
 
-		////Util.logn("finding cell with cellID = " + cellID);
+		Util.logn("finding cell with cellID = " + cellID);
 		cell = getCellByID(cellID);
 
 		Util.printCell("Cell found", cell);
@@ -788,7 +783,65 @@ public class SplashTableModel extends DefaultTableModel
 			}
 		}
 
-		//Util.logExit("updateCellsAndTableModelReferences");
+		Util.logExit("updateCellsAndTableModelReferences");
+	}
+	
+	/**
+	 * Update cell references and update table model with such references.
+	 * @param row
+	 * @param column
+	 * @param oldFormula
+	 * @param newFormula
+	 */
+	public void updateCellsAndTableModelReferences(Cell cell, String oldFormula, String newFormula)
+	{
+		Util.logEnter("updateCellsAndTableModelReferences");
+		String cellID = cell.getCellID();
+		//Cell cell ;
+		ArrayList<Cell> list;
+		////Util.logn("updateCellsAndTableModelReferences");
+		Util.logn("oldFormula = " + oldFormula);
+		Util.logn("newFormula = " + newFormula);
+
+		Util.logn("finding cell with cellID = " + cellID);
+		//cell = getCellByID(cellID);
+
+		Util.printCell("Cell found", cell);
+		Util.logn("checking formulas...");
+		if (!newFormula.equals(oldFormula) && oldFormula != null)
+		{
+			Util.logn("!newFormula.equals(oldFormula) && oldFormula != null");
+			if (cell != null)
+			{
+				if (isInfiniteLoop(cell, newFormula) == false)
+				{
+					Util.logn("No infinite loop found ");
+					Util.logn("Updating cell references of Cell " + cellID + " with formula " + newFormula);
+
+					updateCellReferences (cellID,	newFormula);
+					Util.logn("After updateCellReferences");
+
+					// Get all referring cells to update
+					list = getAllReferringCells(cell);
+
+					Util.logn("After getAllReferringCells(cell)");
+
+					Util.printCellList("Referring Cells of Cell " + cell.getCellID(), list);
+
+					for (int i=0;i<list.size();i++)
+					{
+						refreshCell(list.get(i));
+					}
+					Util.logn("After loop");
+				}
+				else
+				{
+					Util.logn("infinite loop found !!!!!");
+				}
+			}
+		}
+
+		Util.logExit("updateCellsAndTableModelReferences");
 	}
 
 	private void refreshCell(Cell cell) {
@@ -857,13 +910,16 @@ public class SplashTableModel extends DefaultTableModel
 
 	public Cell getCellByID(String cellID)
 	{
-		////Util.log("cellID = " + cellID);
+		Util.logEnter("getCellByID");
+		Util.logn("cellID = " + cellID);
 		int row = Util.getRowIndexFromCellID(cellID);
-		////Util.log("row = " + row);
+		Util.logn("row = " + row);
 		int column = Util.getColumnIndexFromCellID(cellID);
-		////Util.log("column = " + column);
-
+		Util.logn("column = " + column);
+		
+		Util.logExit("getCellByID");
 		return (Cell)getValueAt(row, column);
+		
 	}
 
 	public boolean isInfiniteLoop(Cell c, String new_formula)
