@@ -2,6 +2,7 @@ package org.amanzi.splash.swing;
 
 import java.net.URI;
 import java.util.ArrayList;
+import javax.swing.table.TableModel;
 
 import org.amanzi.splash.jruby.SplashJRubyInterpreter;
 import org.amanzi.splash.utilities.Util;
@@ -33,11 +34,8 @@ public class Cell
 	 */
 	public Cell (String definition, String value)
 	{
-		
 		this.definition = definition;
-		//SplashJRubyInterpreter s = new SplashJRubyInterpreter();
 		this.value = value;
-		
 		rfdCells = new ArrayList<Cell>();
 		rfgCells = new ArrayList<Cell>();
 		
@@ -88,7 +86,8 @@ public class Cell
 	{
 		this.row    = row;
 		this.column = column;
-		
+		rfdCells = new ArrayList<Cell>();
+		rfgCells = new ArrayList<Cell>();
 		cellFormat = new CellFormat();
 	}
 
@@ -130,7 +129,7 @@ public class Cell
 		this.value = value;
 		this.definition = definition;
 		this.cellGraphInfo = cellGraphInfo;
-		
+		cellFormat = new CellFormat();
 		rfdCells = new ArrayList<Cell>();
 		rfgCells = new ArrayList<Cell>();
 	}
@@ -141,7 +140,8 @@ public class Cell
 	 */
 	public Object getValue ()
 	{
-		return value;
+		String s = (String) value;
+		return s.replace("\n", "");
 	}
 
 	/**
@@ -181,7 +181,7 @@ public class Cell
 	}
 
 	public void setValue(Object value) {
-		this.value = value;		
+		this.value = value;
 	}
 	
 	/**

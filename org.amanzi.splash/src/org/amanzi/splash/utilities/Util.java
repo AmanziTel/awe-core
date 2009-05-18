@@ -32,19 +32,20 @@ import org.eclipse.ui.part.FileEditorInput;
 import com.eteks.openjeks.format.CellFormat;
 
 public class Util {
-	
+
 	/*
 	 * Name of SplashResourceEditor
 	 */
 	public static final String AMANZI_SPLASH_EDITOR = "org.amanzi.splash.editor";
-	
+
 	/*
 	 * Default extenstion for Spreadsheet file
 	 */
 	public static final String DEFAULT_SPREADSHEET_EXTENSION = ".jrss";
-	
-	private static boolean isDebug = true;
 
+	private static boolean isDebug = false;
+
+	public static boolean isTesting = false;
 	public static String ColorToString (Color c)
 	{
 		String s = Integer.toString(c.getRed()) + ";" + Integer.toString(c.getGreen() )
@@ -52,40 +53,99 @@ public class Util {
 
 		return s;
 	}
-	
+
 	public static void logNullAtCell(String func, String value, int row, int column){
-		Util.log(func + ":Null value ("+value+ ") at " + Util.getCellIDfromRowColumn(row, column));
+		if (isDebug == true){
+			Util.logn(func + ":Null value ("+value+ ") at " + Util.getCellIDfromRowColumn(row, column));
+		}
 	}
 
 	public static void printTableModelStatus(SplashTableModel model)
 	{
-		Util.log("Model Status:");
-		for (int i=0;i<5/*model.getRowCount()*/;i++){
-			for (int j=0;j<model.getColumnCount();j++)
-			{
-				Cell c = (Cell) model.getValueAt(i, j);
-				if (c != null)
+		if (isDebug == true){
+			Util.logn("Model Status:");
+			for (int i=0;i<5/*model.getRowCount()*/;i++){
+				for (int j=0;j<model.getColumnCount();j++)
 				{
-					printCell("Cell", c);
-					printCellList("RFD List of Cell " + c.getCellID(), c.getRfdCells());
-					printCellList("RFG List of Cell " + c.getCellID(), c.getRfgCells());
-					Util.log("--------------------------------------------");
-				}
-				else
-				{
-					Util.log("NULL cell at row="+i+",column="+j);
+					Cell c = (Cell) model.getValueAt(i, j);
+					if (c != null)
+					{
+						printCell("Cell", c);
+						printCellList("RFD List of Cell " + c.getCellID(), c.getRfdCells());
+						printCellList("RFG List of Cell " + c.getCellID(), c.getRfgCells());
+						Util.logn("--------------------------------------------");
+					}
+					else
+					{
+						Util.logn("NULL cell at row="+i+",column="+j);
+					}
 				}
 			}
 		}
 	}
+
+	public static int tab = 0;
+
+	public static void addtab()
+	{
+//		for (int i=0;i<tab;i++)	System.out.print(" ");
+//		if (tab == 0)
+//		System.out.print("\n<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
+	}
+
+	public static void logEnter(String fn)
+	{
+		if (isDebug == true){
+			addtab();
+
+			Util.logn("---------------- ENTER: " + fn + "----------------");
+
+			tab += 1;
+		}
+	}
+
+	public static void logExit(String fn)
+	{
+		if (isDebug == true){
+			addtab();
+			Util.logn("---------------- EXIT: " + fn + "----------------");
+
+			tab -= 1;
+		}
+	}
+
+	public static void printTableModelStatus(SplashTableModel model, int rowCount, int columnCount)
+	{
+		if (isDebug == true){
+			Util.logn("Model Status:");
+			for (int i=0;i<rowCount;i++){
+				for (int j=0;j<columnCount;j++)
+				{
+					Cell c = (Cell) model.getValueAt(i, j);
+					if (c != null)
+					{
+						printCell("Cell", c);
+						//printCellList("RFD List of Cell " + c.getCellID(), c.getRfdCells());
+						//printCellList("RFG List of Cell " + c.getCellID(), c.getRfgCells());
+						//Util.logn("--------------------------------------------");
+					}
+					else
+					{
+						Util.logn("NULL cell at row="+i+",column="+j);
+					}
+				}
+			}
+		}
+	}
+
 	public static void listScriptingEngines() {
 		ScriptEngineManager mgr = new ScriptEngineManager();
 		for (ScriptEngineFactory factory : mgr.getEngineFactories()) {
-			Util.log("ScriptEngineFactory Info");
+			Util.logn("ScriptEngineFactory Info");
 			//Util.log("\tScript Engine: %s (%s)\n", factory.getEngineName(), factory.getEngineVersion());
 			//Util.log("\tLanguage: %s (%s)\n", factory.getLanguageName(), factory.getLanguageVersion());
 //			for (String name : factory.getNames()) {
-//				Util.logf("\tEngine Alias: %s\n", name);
+//			Util.logf("\tEngine Alias: %s\n", name);
 //			}
 		}
 
@@ -131,28 +191,33 @@ public class Util {
 
 	public static void displayStringList(String title, List<String> list)
 	{
-		if (list == null)
-		{
-			//Util.log("NULL List !!!\n");
-			return;
-		}
-		Util.log(title + ":");
-		for (int i=0;i<list.size();i++)
-		{
-			Util.log(list.get(i) + ";");
-		}
+		if (isDebug == true){
+			if (list == null)
+			{
+				//Util.log("NULL List !!!\n");
+				return;
+			}
+			Util.logn(title + ":");
+			for (int i=0;i<list.size();i++)
+			{
+				Util.logn(list.get(i) + ";");
+			}
 
-		Util.log("\n");
+			Util.logn("\n");
+		}
 	}
 	public static void printCell(String title, Cell c)
 	{
-		Util.log(title + ": ");
+		if (isDebug == true){
+			addtab();
+			System.out.print(title + ": ");
 
-		Util.log(c.getCellID());
-		printCellList(c.getCellID() + " RFG list:", c.getRfgCells());
-		printCellList(c.getCellID() + " RFD list:", c.getRfdCells());
+			System.out.print(c.getCellID() + "\n");
+			printCellList(c.getCellID() + " RFG list:", c.getRfgCells());
+			printCellList(c.getCellID() + " RFD list:", c.getRfdCells());
 
-		Util.log("=================================================\n");
+			Util.logn("=================================================\n");
+		}
 	}
 
 	/**
@@ -168,20 +233,35 @@ public class Util {
 
 	public static void printCellList(String title, ArrayList<Cell> list)
 	{
-		Util.log(title + ": ");
+		if (isDebug == true){
+			addtab();
+			System.out.print(title + ": ");
 
-		for (int i=0;i<list.size();i++)
-			Util.log(list.get(i).getCellID()+", ");
+			for (int i=0;i<list.size();i++)
+				System.out.print(list.get(i).getCellID()+", ");
 
-		Util.log("\n");
+			System.out.print("\n");
+		}
 	}
-	
-	
+
+
 
 	public static void log(String s)
 	{
-		if (isDebug)
+		if (isDebug){
+			addtab();
+			System.out.print(s);
+		}
+
+	}
+
+	public static void logn(String s)
+	{
+		if (isDebug){
+			addtab();
 			System.out.println(s);
+		}
+
 	}
 
 	public static String getCellIDfromRowColumn(int row, int column)
@@ -198,18 +278,29 @@ public class Util {
 
 	public static boolean isCellInList(Cell c, ArrayList<Cell> list)
 	{
-		boolean ret = false;
-		if (c == null || list == null) return false;
-		for (int i=0;i<list.size();i++)
-		{
-			if (list.get(i).getCellID().equals(c.getCellID()));
-			{
-				ret = true;
-				break;
-			}
-		}
+//		boolean ret = false;
 
-		return ret;
+//		Util.logn("isCellInList: Cell " + c.getCellID());
+//		Util.printCellList("isCellInList: ", list);
+
+//		if (c == null || list == null) return false;
+
+//		for (int i=0;i<list.size();i++)
+//		{
+//		String s1 = list.get(i).getCellID();
+//		Util.logn("isCellInList: s1 = " + s1);
+//		String s2 = c.getCellID();
+//		Util.logn("isCellInList: s2 = " + s2);
+//		if (s1.equals(s2));
+//		{
+//		return true;
+//		}
+//		}
+
+//		return false;
+
+		return list.contains(c);
+
 	}
 
 	public static int getRowIndexFromCellID(String cellID) {
@@ -232,7 +323,7 @@ public class Util {
 		String cc = new Character(cellID.toUpperCase().charAt(0)).toString();
 		return STD_HEADINGS.indexOf(cc);
 	}
-	
+
 	/**
 	 * Utility function that fileName contains Spreadhseet extension or not
 	 * 
@@ -244,7 +335,7 @@ public class Util {
 	public static boolean isValidSpreadsheetName(String fileName) {
 		return fileName.endsWith(DEFAULT_SPREADSHEET_EXTENSION);
 	}
-	
+
 	/**
 	 * Utility function that opens file in SplashResourceEditor
 	 * 
@@ -253,7 +344,7 @@ public class Util {
 	 * @return opened editor
 	 * @author Lagutko_N
 	 */
-	
+
 	public static IEditorPart openSpreadsheet(IWorkbench workbench, IFile file) {
 		IEditorPart result = null;
 		try {
@@ -268,7 +359,7 @@ public class Util {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Returns content of script
 	 * 
@@ -276,7 +367,7 @@ public class Util {
 	 * @return string with content of file
 	 * @author Lagutko_N
 	 */
-	
+
 	public static String getScriptContent(URI scriptURI) {
 		if (scriptURI == null) {
 			//TODO: handle this situation
@@ -297,10 +388,10 @@ public class Util {
 		catch (IOException e) {
 			//TODO: handle exception
 		}
-		
+
 		return content;
 	}
-	
+
 	/**
 	 * Utility function that converts input stream to String
 	 * 
@@ -309,7 +400,7 @@ public class Util {
 	 * @throws IOException 
 	 * @author Lagutko_N
 	 */
-	
+
 	private static String inputStreamToString(InputStream stream) throws IOException {
 		StringBuffer buffer = new StringBuffer();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));

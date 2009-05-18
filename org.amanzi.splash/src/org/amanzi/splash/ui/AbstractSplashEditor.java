@@ -10,14 +10,7 @@ package org.amanzi.splash.ui;
  * Code or samples provided herein are provided without warranty of any kind.
  */
 
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -25,31 +18,22 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.IOException;
-import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import javax.swing.CellEditor;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 import org.amanzi.splash.swing.Cell;
@@ -73,15 +57,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-
 import org.eclipse.ui.part.EditorPart;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 
 import com.eteks.openjeks.format.CellFormat;
 import com.eteks.openjeks.format.CellFormatPanel;
-import com.eteks.openjeks.format.CellFormatRenderer;
-import com.eteks.openjeks.format.TableFormat;
 
 /**
  * Defines a sample "mini-spreadsheet" editor that demonstrates how to create an
@@ -96,21 +77,26 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	private TableViewer tableViewer;
 	CellFormatPanel cellFormatPanel = null;
 	CellFormat cellFormat = null;
-	CellFormatRenderer renderer = null;
-	TableFormat tableFormat = null;
+	SplashTableModel tableModel; 
+
 	private ResourceBundle resourceBundle = ResourceBundle.getBundle ("com.eteks.openjeks.resources.openjeks");
 	private String selectCellValue = "";
 	SplashTable table;
-	JTable rowHeader;
+	private Thread thread;
+	private SwingControl swingControl; 
 	private int ROWS_EDGE_MARGIN = 5;
 	private int COLUMNS_EDGE_MARGIN = 5;
-	
+
 	/**
 	 * Class constructor
 	 */
 	public AbstractSplashEditor() {
-		table = new SplashTable();		
+		table = new SplashTable();
 		table.getModel().addTableModelListener(this);
+	}
+
+	public SplashTable getTable(){
+		return table;
 	}
 
 	/**
@@ -132,7 +118,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		firstColumn = table.getSelectedColumn();
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
-		cellFormat = tableFormat.getFormatAt(firstRow, firstColumn , lastRow, lastColumn);
+		cellFormat = getTable().tableFormat.getFormatAt(firstRow, firstColumn , lastRow, lastColumn);
 
 		cellFormatPanel = new CellFormatPanel(cellFormat);
 		if (JOptionPane.showConfirmDialog(null,
@@ -142,7 +128,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				JOptionPane.PLAIN_MESSAGE) == 0)
 		{
 			cellFormat = cellFormatPanel.getCellFormat();
-			tableFormat.setFormatAt(cellFormat, firstRow, firstColumn , lastRow, lastColumn);
+			getTable().tableFormat.setFormatAt(cellFormat, firstRow, firstColumn , lastRow, lastColumn);
 			setIsDirty(true);
 		}
 		cellFormatPanel = null;
@@ -159,89 +145,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		if (!selectCellValue.equals(model.getValueAt(row, column))) setIsDirty(true);
 	}
 
-	/**
-	 * 
-	 * @param rowIndex
-	 * @param columnIndex
-	 * @return
-	 */
-	private JPopupMenu createContextMenu(final int rowIndex,
-			final int columnIndex) {
-		JPopupMenu contextMenu = new JPopupMenu();
 
-//		JMenuItem copyMenu = new JMenuItem();
-//		copyMenu.setText("Copy");
-//		copyMenu.addActionListener(new ActionListener() {
-//		public void actionPerformed(ActionEvent e) {
-//		Object value = table.getModel().getValueAt(rowIndex,
-//		columnIndex);
-//		setClipboardContents(value == null ? "" : value
-//		.toString());
-//		}
-//		});
-//		contextMenu.add(copyMenu);
-
-//		JMenuItem pasteMenu = new JMenuItem();
-//		pasteMenu.setText("Paste");
-//		if (isClipboardContainingText(this)
-//		&& table.getModel().isCellEditable(rowIndex, columnIndex)) {
-//		pasteMenu.addActionListener(new ActionListener() {
-//		public void actionPerformed(ActionEvent e) {
-//		String value = getClipboardContents(this);
-//		table.getModel().setValueAt(value, rowIndex,
-//		columnIndex);
-//		}
-//		});
-//		} else {
-//		pasteMenu.setEnabled(false);
-//		}
-//		contextMenu.add(pasteMenu);
-
-		JMenuItem cellFormattingMenu = new JMenuItem();
-		cellFormattingMenu.setText("Cell Formatting");
-		cellFormattingMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				launchCellFormatPanel(table);
-			}
-		});
-		contextMenu.add(cellFormattingMenu);
-		
-		//Lagutko, 8.05.2009: add new actions for context menu
-		contextMenu.addSeparator();
-		
-		JMenuItem openScriptMenu = new JMenuItem();
-		openScriptMenu.setText("Open script");
-		openScriptMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				openCell(rowIndex, columnIndex);
-				
-			}
-		});
-		contextMenu.add(openScriptMenu);
-		
-		
-		JMenuItem exportScriptMenu = new JMenuItem();
-		exportScriptMenu.setText("Export script");
-		exportScriptMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				exportCell(rowIndex, columnIndex);
-				
-			}
-		});
-		contextMenu.add(exportScriptMenu);
-		
-		JMenuItem updateScriptMenu = new JMenuItem();
-		updateScriptMenu.setText("Update script");
-		updateScriptMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateCell(rowIndex, columnIndex);
-			}
-		});
-		contextMenu.add(updateScriptMenu);
-
-		return contextMenu;
-	}
-	
 	/**
 	 * Updates value of Cell from referenced script
 	 * 
@@ -249,20 +153,20 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param columnIndex column index
 	 * @author Lagutko_N
 	 */
-	
+
 	private void updateCell(int rowIndex, int columnIndex) {
 		//get selected cell and update value of cell
 		Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
-		
+
 		//if Cell has no reference script than it cannot be update
 		if (!cell.hasReference()) {
 			//TODO: add error message
 			return;
 		}
-		
+
 		tableModel.updateCellFromScript(cell);
 	}
-	
+
 	/**
 	 * Opens referenced script in editor
 	 * 
@@ -270,17 +174,17 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param columnIndex column index
 	 * @author Lagutko_N
 	 */
-	
+
 	private void openCell(int rowIndex, int columnIndex) {
 		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
 		final Display display = swingControl.getDisplay();
-		
+
 		//if Cell has no references to script than it cannot be open
 		if (!cell.hasReference()) {
 			//TODO: add error message
 			return;
 		}
-		
+
 		//run open action
 		ActionUtil.getInstance(display).runTask(new Runnable() {
 			public void run() {
@@ -304,7 +208,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 	}
-	
+
 	/**
 	 * Method that exports cell to script 
 	 * 
@@ -312,12 +216,12 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param columnIndex column index of cell
 	 * @author Lagutko_N
 	 */
-	
+
 	private void exportCell(int rowIndex, int columnIndex) {		
 		//get Cell and Display
 		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);		
 		final Display display = swingControl.getDisplay();
-		
+
 		//run ExportScriptWizard
 		ActionUtil.getInstance(display).runTask( new Runnable() {
 			public void run() {
@@ -337,584 +241,6 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		}
 	}
 
-	/**
-	 * UNUSED NOW: get contents from clipboard
-	 * @param requestor
-	 * @return
-	 */
-	private static String getClipboardContents(Object requestor) {
-		Transferable t = Toolkit.getDefaultToolkit()
-		.getSystemClipboard().getContents(requestor);
-		if (t != null) {
-			DataFlavor df = DataFlavor.stringFlavor;
-			if (df != null) {
-				try {
-					Reader r = df.getReaderForText(t);
-					char[] charBuf = new char[512];
-					StringBuffer buf = new StringBuffer();
-					int n;
-					while ((n = r.read(charBuf, 0, charBuf.length)) > 0) {
-						buf.append(charBuf, 0, n);
-					}
-					r.close();
-					return (buf.toString());
-				} catch (IOException ex) {
-					ex.printStackTrace();
-				} catch (UnsupportedFlavorException ex) {
-					ex.printStackTrace();
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * UNUSED NOW: check if clipboard contains text or not
-	 * @param requestor
-	 * @return
-	 */
-	private static boolean isClipboardContainingText(Object requestor) {
-		Transferable t = Toolkit.getDefaultToolkit()
-		.getSystemClipboard().getContents(requestor);
-		return t != null
-		&& (t.isDataFlavorSupported(DataFlavor.stringFlavor) || t
-				.isDataFlavorSupported(DataFlavor.plainTextFlavor) );
-	}
-
-	/**
-	 * UNUSED NOW: set clipboard contents
-	 * @param s
-	 */
-	private static void setClipboardContents(String s) {
-		StringSelection selection = new StringSelection(s);
-		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-				selection, selection);
-	}
-
-	/**
-	 * create context menu for columns
-	 * @param rowIndex
-	 * @param columnIndex
-	 * @return
-	 */
-	private JPopupMenu createColumnContextMenu(final int rowIndex,
-			final int columnIndex) {
-		JPopupMenu contextMenu = new JPopupMenu();
-
-		JMenuItem columnInsertMenu = new JMenuItem();
-		columnInsertMenu.setText("Insert Column");
-		columnInsertMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				insertColumn(columnIndex);
-			}
-		});
-		contextMenu.add(columnInsertMenu);
-
-		JMenuItem deleteColumnMenu = new JMenuItem();
-		deleteColumnMenu.setText("Delete Column");
-		deleteColumnMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				deleteColumn(columnIndex);
-			}
-		});
-		contextMenu.add(deleteColumnMenu);
-
-		JMenuItem moveColumnLeftMenu = new JMenuItem();
-		moveColumnLeftMenu.setText("Move Column Left");
-		moveColumnLeftMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				moveColumnLeft(columnIndex);
-				table.setColumnSelectionInterval(columnIndex-1, columnIndex-1);
-			}
-
-
-		});
-		contextMenu.add(moveColumnLeftMenu);
-
-		JMenuItem moveColumnRightMenu = new JMenuItem();
-		moveColumnRightMenu.setText("Move Column Right");
-		moveColumnRightMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				moveColumnRight(columnIndex);
-				//Util.printTableModelStatus((SplashTableModel) table.getModel());
-				table.setColumnSelectionInterval(columnIndex+1, columnIndex+1);
-			}
-		});
-		contextMenu.add(moveColumnRightMenu);
-
-
-		JMenuItem columnFormattingMenu = new JMenuItem();
-		columnFormattingMenu.setText("Column Formatting");
-		columnFormattingMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				launchCellFormatPanel(table);
-			}
-		});
-		contextMenu.add(columnFormattingMenu);
-
-		return contextMenu;
-	}
-	/**
-	 * create context menu for rows
-	 * @param rowIndex
-	 * @param columnIndex
-	 * @return
-	 */
-	private JPopupMenu createRowContextMenu(final int rowIndex,
-			final int columnIndex) {
-		JPopupMenu contextMenu = new JPopupMenu();
-
-		JMenuItem rowInsertMenu = new JMenuItem();
-		rowInsertMenu.setText("Insert Row");
-		rowInsertMenu.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				insertRow(rowIndex);
-			}
-		});
-		contextMenu.add(rowInsertMenu);
-
-		JMenuItem deleteRowMenu = new JMenuItem();
-		deleteRowMenu.setText("Delete Row");
-		deleteRowMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				deleteRow(rowIndex);
-			}
-		});
-		contextMenu.add(deleteRowMenu);
-
-		JMenuItem moveRowUpMenu = new JMenuItem();
-		moveRowUpMenu.setText("Move Row Up");
-		moveRowUpMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				moveRowUp(rowIndex);
-				table.setRowSelectionInterval(rowIndex-1, rowIndex-1);
-			}
-		});
-		contextMenu.add(moveRowUpMenu);
-
-		JMenuItem moveRowDownMenu = new JMenuItem();
-		moveRowDownMenu.setText("Move Row Down");
-		moveRowDownMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				moveRowDown(rowIndex);
-				table.setRowSelectionInterval(rowIndex+1, rowIndex+1);
-			}
-		});
-		contextMenu.add(moveRowDownMenu);
-
-		JMenuItem rowFormattingMenu = new JMenuItem();
-		rowFormattingMenu.setText("Row Formatting");
-		rowFormattingMenu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				launchCellFormatPanel(table);
-			}
-		});
-		contextMenu.add(rowFormattingMenu);
-
-		return contextMenu;
-	}
-
-
-	/**
-	 * utility function for swapping cell contents
-	 * @param x1
-	 * @param y1
-	 * @param x2
-	 * @param y2
-	 */
-	private void swapCells(int x1,int y1, int x2, int y2)
-	{
-		Object o1 = table.getModel().getValueAt(x1,y1);
-		Object o2 = table.getModel().getValueAt(x2,y2);
-
-		String o1CellID = Util.getCellIDfromRowColumn(x1, y1);
-		String o2CellID = Util.getCellIDfromRowColumn(x2, y2);
-
-		((Cell) o1).renameCell(o1CellID, o2CellID);
-		((Cell) o2).renameCell(o2CellID, o1CellID);
-
-		table.getModel().setValueAt(o1, x2, y2);
-		table.getModel().setValueAt(o2, x1, y1);
-	}
-
-	/**
-	 * move column contents to right
-	 * @param index
-	 */
-	private void moveColumnRight(int index) {
-		int rowCount = table.getModel().getRowCount();
-		int columnCount = table.getModel().getColumnCount();
-
-		if (index > columnCount-1) return;
-
-		for (int i=0;i<rowCount;i++)
-		{
-			swapCells(i,index,i,index+1);
-		}
-		updateTableFormatting(((SplashTableModel)table.getModel()).tableFormat);
-		setIsDirty(true);
-	}
-
-	/**
-	 * move volumn contents to left
-	 * @param index
-	 */
-	private void moveColumnLeft(int index) {
-		int rowCount = table.getModel().getRowCount();
-
-
-		if (index < 1) return;
-
-		for (int i=0;i<rowCount;i++)
-		{
-			swapCells(i,index,i,index-1);
-		}
-		updateTableFormatting(((SplashTableModel)table.getModel()).tableFormat);
-		setIsDirty(true);
-	}
-
-	private void updateTableFormatting(TableFormat tf)
-	{
-		tableFormat = tf;
-
-		renderer = new CellFormatRenderer (tableFormat);
-
-		table.setDefaultRenderer(Object.class, renderer);
-		table.setDefaultRenderer(Long.class, renderer);
-		table.setDefaultRenderer(Double.class, renderer);
-		table.setDefaultRenderer(String.class, renderer);
-	}
-
-	/**
-	 * 
-	 */
-	@SuppressWarnings("unused")
-	private void addRow()
-	{
-		int rowCount = table.getModel().getRowCount();
-		int columnCount = table.getModel().getColumnCount();
-
-		SplashTableModel newModel = new SplashTableModel(rowCount+1, columnCount);
-
-		for (int i=0;i<rowCount;i++)
-			for (int j=0;j<columnCount;j++)
-				newModel.setValueAt(table.getModel().getValueAt(i, j), i, j);
-
-		table.setModel(newModel);
-		RowModel r = new RowModel(table.getModel());
-		rowHeader.setModel(r);
-
-		setIsDirty(true);
-	}
-
-	/**
-	 * 
-	 */
-	@SuppressWarnings("unused")
-	private void addColumn()
-	{
-		int rowCount = table.getModel().getRowCount();
-		int columnCount = table.getModel().getColumnCount();
-
-		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount+1);
-
-		for (int i=0;i<rowCount;i++)
-			for (int j=0;j<columnCount;j++)
-				newModel.setValueAt(table.getModel().getValueAt(i, j), i, j);
-
-		table.setModel(newModel);
-		RowModel r = new RowModel(table.getModel());
-		rowHeader.setModel(r);
-
-		setIsDirty(true);
-	}
-
-	/**
-	 * delete a complete row
-	 */
-	private void deleteRow(int index)
-	{
-		int rowCount = table.getModel().getRowCount();
-		int columnCount = table.getModel().getColumnCount();
-
-		SplashTableModel newModel = new SplashTableModel(rowCount-1, columnCount);
-
-		for (int i=0;i<index;i++)
-			for (int j=0;j<columnCount;j++)
-				newModel.setValueAt(table.getModel().getValueAt(i,j), i, j);
-
-		for (int i=index+1;i<rowCount-1;i++)
-			for (int j=0;j<columnCount;j++)
-			{
-				Cell c = (Cell) table.getModel().getValueAt(i,j);
-				String oldCellID = Util.getCellIDfromRowColumn(i, j);
-				String newCellID = Util.getCellIDfromRowColumn(i-1, j);
-				c.renameCell(oldCellID, newCellID);
-				newModel.setValueAt(table.getModel().getValueAt(i,j), i-1, j);
-			}
-
-		table.setModel(newModel);
-		RowModel r = new RowModel(table.getModel());
-		rowHeader.setModel(r);
-		updateTableFormatting(newModel.tableFormat);
-		setIsDirty(true);
-	}
-	/**
-	 * delete a complete column
-	 * @param index
-	 */
-	private void deleteColumn(int index)
-	{
-		int rowCount = table.getModel().getRowCount();
-		int columnCount = table.getModel().getColumnCount();
-
-		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount-1);
-
-		for (int i=0;i<rowCount;i++)
-			for (int j=0;j<index;j++)
-				newModel.setValueAt(table.getModel().getValueAt(i,j), i, j);
-
-		for (int i=0;i<rowCount;i++)
-			for (int j=index+1;j<columnCount;j++)
-			{
-				Cell c = (Cell) table.getModel().getValueAt(i,j);
-				String oldCellID = Util.getCellIDfromRowColumn(i, j);
-				String newCellID = Util.getCellIDfromRowColumn(i, j-1);
-				c.renameCell(oldCellID, newCellID);
-				newModel.setValueAt(table.getModel().getValueAt(i,j), i, j-1);
-			}
-
-		table.setModel(newModel);
-		RowModel r = new RowModel(table.getModel());
-		rowHeader.setModel(r);
-		updateTableFormatting(newModel.tableFormat);
-		setIsDirty(true);
-	}
-
-	/**
-	 * insert row at index
-	 * @param index
-	 */
-	private void insertRow(int index)
-	{
-		int rowCount = table.getModel().getRowCount();
-		int columnCount = table.getModel().getColumnCount();
-
-		SplashTableModel newModel = new SplashTableModel(rowCount+1, columnCount);
-
-		for (int j=0;j<columnCount;j++)
-		{
-			newModel.setValueAt(new Cell(index, j, "", "", new CellFormat()), index, j);
-		}
-
-		for (int i=0;i<index;i++)
-			for (int j=0;j<columnCount;j++)
-			{
-				newModel.setValueAt(table.getModel().getValueAt(i,j), i, j);
-			}
-
-		for (int i=index+1;i<rowCount+1;i++)
-			for (int j=0;j<columnCount;j++)
-			{
-				Cell c = (Cell) table.getModel().getValueAt(i-1,j);
-				String oldCellID = Util.getCellIDfromRowColumn(i-1, j);
-				String newCellID = Util.getCellIDfromRowColumn(i, j);
-				c.renameCell(oldCellID, newCellID);
-				//c.setRow(i);
-
-				newModel.setValueAt(c, i, j);
-			}
-		table.setModel(newModel);
-
-		updateTableFormatting(newModel.tableFormat);
-
-		RowModel r = new RowModel(table.getModel());
-		rowHeader.setModel(r);
-
-		setIsDirty(true);
-	}
-	/**
-	 * insert row at index
-	 * @param index
-	 */
-	private void insertRows(int index, int count)
-	{
-		int rowCount = table.getModel().getRowCount();
-		int columnCount = table.getModel().getColumnCount();
-
-		SplashTableModel newModel = new SplashTableModel(rowCount+count, columnCount);
-
-		for (int i=index;i<index+count;i++)
-			for (int j=0;j<columnCount;j++)
-			{
-				newModel.setValueAt(new Cell(i, j, "", "", new CellFormat()), i, j);
-			}
-
-		for (int i=0;i<index;i++)
-			for (int j=0;j<columnCount;j++)
-			{
-				newModel.setValueAt(table.getModel().getValueAt(i,j), i, j);
-			}
-
-		for (int i=index+count;i<rowCount+count;i++)
-			for (int j=0;j<columnCount;j++)
-			{
-				Cell c = (Cell) table.getModel().getValueAt(i-count,j);
-				String oldCellID = Util.getCellIDfromRowColumn(i-count, j);
-				String newCellID = Util.getCellIDfromRowColumn(i, j);
-				c.renameCell(oldCellID, newCellID);
-				//c.setRow(i);
-
-				newModel.setValueAt(c, i, j);
-			}
-		table.setModel(newModel);
-
-		updateTableFormatting(newModel.tableFormat);
-
-		RowModel r = new RowModel(table.getModel());
-		rowHeader.setModel(r);
-
-		setIsDirty(true);
-	}
-	/**
-	 * insert a column at index
-	 * @param index
-	 */
-	private void insertColumn(int index)
-	{
-		int rowCount = table.getModel().getRowCount();
-		int columnCount = table.getModel().getColumnCount();
-
-		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount+1);
-
-		for (int i=0;i<rowCount;i++)
-		{
-			newModel.setValueAt(new Cell(i,index,"","",new CellFormat()), i, index);
-		}
-
-		for (int i=0;i<rowCount;i++)
-			for (int j=0;j<index;j++)
-				newModel.setValueAt(table.getModel().getValueAt(i,j), i, j);
-
-		for (int i=0;i<rowCount;i++)
-			for (int j=index+1;j<columnCount+1;j++)
-			{
-				Cell c = (Cell) table.getModel().getValueAt(i,j-1);
-				String oldCellID = Util.getCellIDfromRowColumn(i, j-1);
-				String newCellID = Util.getCellIDfromRowColumn(i, j);
-				//c.setCellID(Util.getCellIDfromRowColumn(i, j));
-				//c.setColumn(j);
-				c.renameCell(oldCellID, newCellID);
-				newModel.setValueAt(c, i, j);
-				//newModel.updateCellReferences(Util.getCellIDfromRowColumn(i, j-1),"");
-				//newModel.updateCellReferences(Util.getCellIDfromRowColumn(i, j), (String) c.getDefinition());
-			}
-
-
-
-
-		//Util.printTableModelStatus(newModel);
-
-		table.setModel(newModel);
-
-		updateTableFormatting(newModel.tableFormat);
-
-		RowModel r = new RowModel(table.getModel());
-		rowHeader.setModel(r);
-
-		setIsDirty(true);
-	}
-	
-	/**
-	 * insert a column at index
-	 * @param index
-	 */
-	private void insertColumns(int index, int count)
-	{
-		int rowCount = table.getModel().getRowCount();
-		int columnCount = table.getModel().getColumnCount();
-
-		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount+count);
-
-		for (int i=0;i<rowCount;i++)
-		{
-			for (int j=index;j<index+count;j++)
-				newModel.setValueAt(new Cell(i,j,"","",new CellFormat()), i, j);
-		}
-
-		for (int i=0;i<rowCount;i++)
-			for (int j=0;j<index;j++)
-				newModel.setValueAt(table.getModel().getValueAt(i,j), i, j);
-
-		for (int i=0;i<rowCount;i++)
-			for (int j=index+count;j<columnCount+count;j++)
-			{
-				Cell c = (Cell) table.getModel().getValueAt(i,j-count);
-				String oldCellID = Util.getCellIDfromRowColumn(i, j-count);
-				String newCellID = Util.getCellIDfromRowColumn(i, j);
-				//c.setCellID(Util.getCellIDfromRowColumn(i, j));
-				//c.setColumn(j);
-				c.renameCell(oldCellID, newCellID);
-				newModel.setValueAt(c, i, j);
-				//newModel.updateCellReferences(Util.getCellIDfromRowColumn(i, j-1),"");
-				//newModel.updateCellReferences(Util.getCellIDfromRowColumn(i, j), (String) c.getDefinition());
-			}
-
-		//Util.printTableModelStatus(newModel);
-
-		table.setModel(newModel);
-
-		updateTableFormatting(newModel.tableFormat);
-
-		RowModel r = new RowModel(table.getModel());
-		rowHeader.setModel(r);
-
-		setIsDirty(true);
-	}
-	/**
-	 * move row up
-	 * @param index
-	 */
-	private void moveRowUp(int index)
-	{
-
-		int columnCount = table.getModel().getColumnCount();
-
-		if (index < 1) return;
-
-		for (int j=0;j<columnCount;j++)
-		{
-			swapCells(index, j, index-1, j);
-		}
-
-		updateTableFormatting(((SplashTableModel)table.getModel()).tableFormat);
-
-		setIsDirty(true);
-
-	}
-	/**
-	 * move row down
-	 * @param index
-	 */
-	private void moveRowDown(int index)
-	{
-		int rowCount = table.getModel().getRowCount();
-		int columnCount = table.getModel().getColumnCount();
-
-		if (index >= rowCount-1) return;
-
-
-		for (int j=0;j<columnCount;j++)
-		{
-			swapCells(index, j, index+1, j);
-		}
-		updateTableFormatting(((SplashTableModel)table.getModel()).tableFormat);
-		setIsDirty(true);
-	}
-
-
-
 
 
 	/**
@@ -922,7 +248,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowColumnPopup(MouseEvent e){
-		if (/* e.isPopupTrigger() && */ table.isEnabled()) {
+		if (e.isPopupTrigger() && table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -952,7 +278,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowRowPopup(MouseEvent e){
-		if (/* e.isPopupTrigger() && */ table.isEnabled()) {
+		if (e.isPopupTrigger() && table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -982,7 +308,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowPopup(MouseEvent e) {
-		if (/* e.isPopupTrigger() && */ table.isEnabled()) {
+		if (e.isPopupTrigger() && table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -995,8 +321,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				cancelCellEditing();
 
 //				create popup menu...
-				JPopupMenu contextMenu = createContextMenu(row,
-						mcol);
+				JPopupMenu contextMenu = createContextMenu(row,	mcol);
 
 //				... and show it
 				if (contextMenu != null
@@ -1017,40 +342,38 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 				setForeground(getDisplay().getSystemColor(SWT.COLOR_BLACK));
 			}
-			protected JComponent createSwingComponent() {				
-				table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-				table.createDefaultColumnsFromModel();
-				table.setCellSelectionEnabled(true);
-				
+			protected JComponent createSwingComponent() {
+
+				JScrollPane scrollPane = new JScrollPane(table);
+
 				table.setOpaque(true);
 				table.setBackground(getAWTHierarchyRoot().getBackground());
 
-				JScrollPane scrollPane = new JScrollPane(table);
-				scrollPane.setBorder(new EmptyBorder(0,0,0,0));
-
-				tableFormat = tableModel.tableFormat;
 				
-				renderer = new CellFormatRenderer (tableFormat);
 
-				table.setDefaultRenderer(Object.class, renderer);
-				table.setDefaultRenderer(Long.class, renderer);
-				table.setDefaultRenderer(Double.class, renderer);
-				table.setDefaultRenderer(String.class, renderer);
+				scrollPane.setBorder(new EmptyBorder(1,1,1,1));
 
-				final String headers[] = new String[table.getModel().getRowCount()];
-				for (int i=0;i<table.getModel().getRowCount();i++)
-				{
-					headers[i] = Integer.toString(i+1);
-				}
+				scrollPane.setRowHeaderView(getTable().rowHeader);
 
+				table.setTableFormat(tableModel.tableFormat);
+
+				// set selection mode for contiguous  intervals
+				MouseListener ml = new HeaderMouseAdapter();
+
+				// we don't allow reordering
+				table.getTableHeader().setReorderingAllowed(false);
+				table.getTableHeader().addMouseListener(ml);
+				table.rowHeader.addMouseListener(ml);
 				table.addKeyListener(new KeyListener(){
 
+					@Override
 					public void keyPressed(KeyEvent e) {
 						// TODO Auto-generated method stub
 
 					}
 
-					
+					@SuppressWarnings("static-access")
+					@Override
 					public void keyReleased(KeyEvent e) {
 						// TODO Auto-generated method stub
 						//Util.log("e.getKeyCode() = " + e.getKeyCode());
@@ -1059,60 +382,60 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 						{
 							int row = table.getSelectedRow();
 							int column = table.getSelectedColumn();
-							
 							int rdiff = table.getRowCount() - row;
-							//Util.log("rdiff = " + rdiff);
-							
 							int cdiff = table.getColumnCount() - column;
-							//Util.log("cdiff = " + cdiff);
+
+							
 							if (rdiff < COLUMNS_EDGE_MARGIN)
 							{
-								insertRows(table.getRowCount()-1, COLUMNS_EDGE_MARGIN-rdiff);
+								getTable().insertRows(table.getRowCount()-1, COLUMNS_EDGE_MARGIN-rdiff);
+								setIsDirty(true);
 							}
 
 							if (cdiff < ROWS_EDGE_MARGIN)
 							{
-								insertColumns(table.getColumnCount()-1,ROWS_EDGE_MARGIN-cdiff );
+								getTable().insertColumns(table.getColumnCount()-1,ROWS_EDGE_MARGIN-cdiff );
+								setIsDirty(true);
 							}						
 						}
 					}
 
-					
+					@Override
 					public void keyTyped(KeyEvent e) {
 						// TODO Auto-generated method stub
 
 					}
 
 				});
-				
 				table.addMouseListener(new MouseListener(){
 
-					
+					@Override
 					public void mouseClicked(MouseEvent e) {
 
 
 					}
 
-					
+					@Override
 					public void mouseEntered(MouseEvent e) {
 
 
 					}
 
-					
+					@Override
 					public void mouseExited(MouseEvent e) {
 
 
 					}
 
-					
+					@Override
 					public void mousePressed(MouseEvent e) {
 
+						int col = table.columnAtPoint(e.getPoint());
+						int row = table.rowAtPoint(e.getPoint());
 						if(e.getButton()==3)
 						{
 
-							int col = table.columnAtPoint(e.getPoint());
-							int row = table.rowAtPoint(e.getPoint());
+
 
 							table.setColumnSelectionInterval(col, col);
 							table.setRowSelectionInterval(row, row);
@@ -1120,9 +443,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 							maybeShowPopup(e);
 							//launchCellFormatPanel(table);
 						}
+
+
 					}
 
-					
+					@Override
 					public void mouseReleased(MouseEvent e) {
 
 
@@ -1131,40 +456,6 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				});
 
 
-				// set selection mode for contiguous  intervals
-				table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-				table.setCellSelectionEnabled(true);
-
-				MouseListener ml = new HeaderMouseAdapter();
-
-				// we don't allow reordering
-				table.getTableHeader().setReorderingAllowed(false);
-				table.getTableHeader().addMouseListener(ml);
-
-				rowHeader = new JTable(new RowModel(table.getModel()));
-				TableCellRenderer renderer = new RowHeaderRenderer();
-
-				rowHeader.setIntercellSpacing(new Dimension(0, 0));
-
-				Dimension d = rowHeader.getPreferredScrollableViewportSize();
-				d.width = 30;//comp.getPreferredSize().width;
-				rowHeader.setPreferredScrollableViewportSize(d);
-				rowHeader.setRowHeight(table.getRowHeight());
-				rowHeader.setDefaultRenderer(Object.class, renderer);
-				rowHeader.addMouseListener(ml);
-
-				scrollPane.setRowHeaderView(rowHeader);
-				// initial selection
-				//resetSelection();
-				table.setRequestFocusEnabled(true);
-
-				//menuBar.setRequestFocusEnabled(false);
-				//toolBar.setRequestFocusEnabled(false);
-				table.requestFocus();
-
-				ListSelectionListener lsl = new SelectionAdapter();
-				table.getSelectionModel().addListSelectionListener(lsl);
-				table.getColumnModel().getSelectionModel().addListSelectionListener(lsl);
 
 
 				return scrollPane;
@@ -1183,12 +474,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	public void createPartControl(final Composite parent) {
 		createTable(parent);
 		table.setModel(tableModel);
-		
-		
-		thread = Thread.currentThread();
 	}
-
-
 
 	/**
 	 * @see org.eclipse.ui.IEditorPart#doSave(IProgressMonitor)
@@ -1275,6 +561,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * indicator (*).
 	 */
 	protected void setIsDirty(boolean isDirty) {
+
 		this.isDirty = isDirty;
 
 		firePropertyChange(PROP_DIRTY);
@@ -1322,9 +609,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 
 
-	SplashTableModel tableModel;
-	private Thread thread;
-	private SwingControl swingControl; 
+
 
 
 
@@ -1344,16 +629,14 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		// the programmer / reader; production code would instead
 		// log an error and provide a helpful, friendly message.
 		if (ei == null)
-			throw new PartInitException(
-					MessageFormat.format(
-							"Invalid input.\n\n({0} is not a valid input for {1})",
-							new String[] {editorInput.getClass().getName(),
-									this.getClass().getName()
-							}));
+			throw new PartInitException(MessageFormat.format("Invalid input.\n\n({0} is not a valid input for {1})",
+					new String[] {editorInput.getClass().getName(),
+					this.getClass().getName()
+			}));
 
 		try {
 
-			Util.log("ei: " + ei.toString());
+			Util.logn("ei: " + ei.toString());
 			setInput(ei);
 			setContents(ei);
 			setSite(site);
@@ -1361,6 +644,165 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		} catch (CoreException e) {
 			throw new PartInitException(e.getMessage());
 		}
+	}
+
+
+	/**
+	 * create context menu for columns
+	 * @param rowIndex
+	 * @param columnIndex
+	 * @return
+	 */
+	private JPopupMenu createColumnContextMenu(final int rowIndex,
+			final int columnIndex) {
+		JPopupMenu contextMenu = new JPopupMenu();
+
+		JMenuItem columnInsertMenu = new JMenuItem();
+		columnInsertMenu.setText("Insert Column");
+		columnInsertMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getTable().insertColumn(columnIndex);
+				table.setColumnSelectionInterval(columnIndex, columnIndex);
+				table.setRowSelectionInterval(0, table.getRowCount() - 1);
+				setIsDirty(true);
+			}
+		});
+		contextMenu.add(columnInsertMenu);
+
+		JMenuItem deleteColumnMenu = new JMenuItem();
+		deleteColumnMenu.setText("Delete Column");
+		deleteColumnMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getTable().deleteColumn(columnIndex);
+				setIsDirty(true);
+			}
+		});
+		contextMenu.add(deleteColumnMenu);
+
+		JMenuItem moveColumnLeftMenu = new JMenuItem();
+		moveColumnLeftMenu.setText("Move Column Left");
+		moveColumnLeftMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getTable().moveColumnLeft(columnIndex);
+
+				table.setColumnSelectionInterval(columnIndex-1, columnIndex-1);
+				setIsDirty(true);
+			}
+
+
+		});
+		contextMenu.add(moveColumnLeftMenu);
+
+		JMenuItem moveColumnRightMenu = new JMenuItem();
+		moveColumnRightMenu.setText("Move Column Right");
+		moveColumnRightMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getTable().moveColumnRight(columnIndex);
+				table.setColumnSelectionInterval(columnIndex+1, columnIndex+1);
+				setIsDirty(true);
+			}
+		});
+		contextMenu.add(moveColumnRightMenu);
+
+
+		JMenuItem columnFormattingMenu = new JMenuItem();
+		columnFormattingMenu.setText("Column Formatting");
+		columnFormattingMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				launchCellFormatPanel(table);
+			}
+		});
+		contextMenu.add(columnFormattingMenu);
+
+		return contextMenu;
+	}
+	/**
+	 * create context menu for rows
+	 * @param rowIndex
+	 * @param columnIndex
+	 * @return
+	 */
+	private JPopupMenu createRowContextMenu(final int rowIndex,
+			final int columnIndex) {
+		JPopupMenu contextMenu = new JPopupMenu();
+
+		JMenuItem rowInsertMenu = new JMenuItem();
+		rowInsertMenu.setText("Insert Row");
+		rowInsertMenu.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				int col = table.getSelectedColumn();
+				getTable().insertRow(rowIndex);
+				table.setColumnSelectionInterval(col, col);
+				table.setRowSelectionInterval(0, rowIndex);
+				setIsDirty(true);
+			}
+		});
+		contextMenu.add(rowInsertMenu);
+
+		JMenuItem deleteRowMenu = new JMenuItem();
+		deleteRowMenu.setText("Delete Row");
+		deleteRowMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getTable().deleteRow(rowIndex);
+				setIsDirty(true);
+			}
+		}); 
+		contextMenu.add(deleteRowMenu);
+
+		JMenuItem moveRowUpMenu = new JMenuItem();
+		moveRowUpMenu.setText("Move Row Up");
+		moveRowUpMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getTable().moveRowUp(rowIndex);
+				table.setRowSelectionInterval(rowIndex-1, rowIndex-1);
+				setIsDirty(true);
+			}
+		});
+		contextMenu.add(moveRowUpMenu);
+
+		JMenuItem moveRowDownMenu = new JMenuItem();
+		moveRowDownMenu.setText("Move Row Down");
+		moveRowDownMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getTable().moveRowDown(rowIndex);
+				table.setRowSelectionInterval(rowIndex+1, rowIndex+1);
+				setIsDirty(true);
+			}
+		});
+		contextMenu.add(moveRowDownMenu);
+
+		JMenuItem rowFormattingMenu = new JMenuItem();
+		rowFormattingMenu.setText("Row Formatting");
+		rowFormattingMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				launchCellFormatPanel(table);
+			}
+		});
+		contextMenu.add(rowFormattingMenu);
+
+		return contextMenu;
+	}
+
+	/**
+	 * 
+	 * @param rowIndex
+	 * @param columnIndex
+	 * @return
+	 */
+	private JPopupMenu createContextMenu(final int rowIndex,
+			final int columnIndex) {
+		JPopupMenu contextMenu = new JPopupMenu();
+
+		JMenuItem cellFormattingMenu = new JMenuItem();
+		cellFormattingMenu.setText("Cell Formatting");
+		cellFormattingMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				launchCellFormatPanel(table);
+			}
+		});
+		contextMenu.add(cellFormattingMenu);
+		return contextMenu;
 	}
 
 
@@ -1373,94 +815,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		this.enabled = enabled;
 	}
 
-	private static class RowHeaderRenderer extends DefaultTableCellRenderer
-	{
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -8376789651877346556L;
 
-		public RowHeaderRenderer()
-		{
-			setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-			setHorizontalAlignment(RIGHT);
-		}
 
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focused, int row, int column)
-		{
-			if (table != null)
-			{
-				JTableHeader header = table.getTableHeader();
-				if (header != null)
-				{
-					setForeground(header.getForeground());
-					setBackground(header.getBackground());
-				}
-			}
-			setValue(String.valueOf(row + 1));
-
-			return this;
-		}
-
-		public void updateUI()
-		{
-			super.updateUI();
-			setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-		}
-	}
-
-	private static class RowModel implements TableModel
-	{
-		private TableModel source;
-
-		RowModel(TableModel source)
-		{
-			this.source = source;
-		}
-
-		public boolean isCellEditable(int rowIndex, int columnIndex)
-		{
-			return false;
-		}
-
-		@SuppressWarnings("unchecked")
-		public Class getColumnClass(int columnIndex)
-		{
-			return Object.class;
-		}
-
-		public int getColumnCount()
-		{
-			return 1;
-		}
-
-		public String getColumnName(int columnIndex)
-		{
-			return null;
-		}
-
-		public int getRowCount()
-		{
-			return source.getRowCount();
-		}
-
-		public void setValueAt(Object aValue, int rowIndex, int columnIndex)
-		{
-		}
-
-		public Object getValueAt(int rowIndex, int columnIndex)
-		{
-			return null;
-		}
-
-		public void addTableModelListener(javax.swing.event.TableModelListener l)
-		{
-		}
-
-		public void removeTableModelListener(javax.swing.event.TableModelListener l)
-		{
-		}
-	}
 	private class HeaderMouseAdapter extends MouseAdapter
 	{
 
@@ -1573,26 +929,3 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	}
 }
 
-class RowHeaderRenderer extends JLabel implements ListCellRenderer {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
-	RowHeaderRenderer(JTable table) {
-		JTableHeader header = table.getTableHeader();
-		setOpaque(true);
-		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-		setHorizontalAlignment(CENTER);
-		setForeground(header.getForeground());
-		setBackground(header.getBackground());
-		setFont(header.getFont());
-	}
-
-	public Component getListCellRendererComponent( JList list, 
-			Object value, int index, boolean isSelected, boolean cellHasFocus) {
-		setText((value == null) ? "" : value.toString());
-		return this;
-	}
-}

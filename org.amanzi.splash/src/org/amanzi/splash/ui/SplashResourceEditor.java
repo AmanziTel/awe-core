@@ -94,7 +94,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
         is = sei.getStorage().getContents();
         
         tableModel = new SplashTableModel(is);
-        tableFormat = tableModel.tableFormat;
+        getTable().tableFormat = tableModel.tableFormat;
         
         setIsDirty(false);
         tableModel.addTableModelListener(this);
@@ -105,7 +105,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         try {
             StringBuffer sb = new StringBuffer();
-            ((SplashTableModel)table.getModel()).save(sb, tableFormat);
+            ((SplashTableModel)table.getModel()).save(sb, getTable().tableFormat);
             IFile file = ((IFileEditorInput) getEditorInput()).getFile();
             file.setContents(
                     new ByteArrayInputStream(sb.toString().getBytes()),

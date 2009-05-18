@@ -2,8 +2,13 @@ package org.amanzi.splash.swing;
 
 import java.awt.Component;
 
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 
 import org.amanzi.splash.utilities.Util;
 
@@ -70,3 +75,38 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 		return ((Cell)expression).getValue ();
 	}
 }
+class RowHeaderRenderer extends DefaultTableCellRenderer
+{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8376789651877346556L;
+	public RowHeaderRenderer()
+	{
+		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+		setHorizontalAlignment(RIGHT);
+	}
+
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focused, int row, int column)
+	{
+		if (table != null)
+		{
+			JTableHeader header = table.getTableHeader();
+			if (header != null)
+			{
+				setForeground(header.getForeground());
+				setBackground(header.getBackground());
+			}
+		}
+		setValue(String.valueOf(row + 1));
+
+		return this;
+	}
+
+	public void updateUI()
+	{
+		super.updateUI();
+		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+	}
+}
+

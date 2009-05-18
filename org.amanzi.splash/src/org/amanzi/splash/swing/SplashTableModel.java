@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -20,20 +21,24 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
+import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.Util;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
+
 
 import com.eteks.openjeks.format.BorderStyle;
 import com.eteks.openjeks.format.CellBorder;
 import com.eteks.openjeks.format.CellFormat;
 import com.eteks.openjeks.format.CellSetBorder;
 import com.eteks.openjeks.format.TableFormat;
+import org.jruby.Ruby;
+import org.jruby.javasupport.Java;
+import org.jruby.javasupport.JavaEmbedUtils;
 
 public class SplashTableModel extends DefaultTableModel
 {
@@ -43,6 +48,7 @@ public class SplashTableModel extends DefaultTableModel
 	private static final long serialVersionUID = -2315033560766233243L;
 	private int    rowCount;
 	private int    columnCount;
+	@SuppressWarnings("unchecked")
 	private Hashtable cellValues;
 	public TableFormat tableFormat = new TableFormat();
 	private ScriptEngine engine;
@@ -61,6 +67,7 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param rowCount
 	 * @param columnCount
 	 */
+	@SuppressWarnings("unchecked")
 	public SplashTableModel (int rowCount, int columnCount)
 	{
 		this.rowCount     = rowCount;
@@ -70,6 +77,33 @@ public class SplashTableModel extends DefaultTableModel
 
 		cellValues = new Hashtable ();
 	}
+	/**
+	 * Constructor for class using RowCount and ColumnCount
+	 * @param rowCount
+	 * @param columnCount
+	 */
+	@SuppressWarnings("unchecked")
+	public SplashTableModel (int rowCount, int columnCount, boolean isTesting)
+	{
+		this.rowCount     = rowCount;
+		this.columnCount  = columnCount;
+
+		initializeJRubyInterpreter();
+
+		cellValues = new Hashtable ();
+
+
+		if (isTesting){
+			for (int i=0;i<rowCount;i++)
+				for (int j=0;j<columnCount;j++)
+				{
+					setValueAt(new Cell("",""),i,j);
+				}
+		}
+	}
+
+
+
 
 	/**
 	 * Override for constructor to accept input stream
@@ -85,30 +119,37 @@ public class SplashTableModel extends DefaultTableModel
 	}
 
 	public void initializeJRubyInterpreter(){
-		ClassLoader remember = Thread.currentThread().getContextClassLoader();
-		try{
-			// This hack was needed so that the ruby code can find the same java classes as the current java code
-			//Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+//		ClassLoader remember = Thread.currentThread().getContextClassLoader();
+//		try{
+		// This hack was needed so that the ruby code can find the same java classes as the current java code
+		//Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
-			//rubyEngine.eval("require '/home/craig/.m2/repository/org/opengis/geoapi/2.2-SNAPSHOT/geoapi-2.2-20080605.180517-15.jar'");
-			URL scriptURL = null;
-			try {
-				scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry("jruby.rb"));
-			} catch (IOException e) {
+		//rubyEngine.eval("require '/home/craig/.m2/repository/org/opengis/geoapi/2.2-SNAPSHOT/geoapi-2.2-20080605.180517-15.jar'");
+		URL scriptURL = null;
+		try {
+			scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry("jruby.rb"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-				e.printStackTrace();
-			}
+		String path = "";
+		if (Util.isTesting == false){
+			path = scriptURL.getPath();
+		}
+		else{
+			path ="/home/amabdelsalam/Desktop/amanzi/jrss/org.amanzi.splash/jruby.rb";	
+		}
 
-			ScriptEngineManager m = new ScriptEngineManager();
+		if (Util.isTesting == false){
+			ScriptEngineManager m = new ScriptEngineManager(getClass().getClassLoader());
 
 			m.registerEngineName("jruby", 
 					new com.sun.script.jruby.JRubyScriptEngineFactory());
 
 			engine = m.getEngineByName("jruby");
+
 			ScriptContext context = engine.getContext();
 
-			Util.log("scriptURL.getPath():" + scriptURL.getPath());
-			String path = scriptURL.getPath();
 
 			String input = "";
 			FileReader fr;
@@ -127,92 +168,190 @@ public class SplashTableModel extends DefaultTableModel
 
 				e.printStackTrace();
 			}
-			Util.log("input: " + input);
-			engine.eval(input);
 
-			engine.eval("$sheet = Spreadsheet.new", context);
-
-		} catch (ScriptException e) {
-			Util.log(e.toString()+": "+e.getFileName()+"["+e.getLineNumber()+":"+e.getColumnNumber()+"]: "+e.getMessage());
-			e.printStackTrace();
-		}finally{
-			Thread.currentThread().setContextClassLoader(remember);
+			try {
+				engine.eval(input, context);
+				engine.eval("$sheet = Spreadsheet.new", context);
+			} catch (ScriptException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+
+		//execJRubyCommand(input);
+
+
+
+//		} catch (ScriptException e) {
+//		e.printStackTrace();
+//		}finally{
+//		Thread.currentThread().setContextClassLoader(remember);
+//		}
 	}
 
-	private Object interpret_element(String cellID, String formula){
-		ScriptContext ctx = engine.getContext();
-		String input = "$sheet.cells." + cellID.toLowerCase() + "=" +formula;
-		Util.log ("input = " + input);
-		Object s = null;
-		try {
-			s = engine.eval(input, ctx);
-		} catch (ScriptException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Util.log("JRuby1: " + s);
-		return s;
-	}
+	/**
+	 * Method that update Cell that has reference to Script
+	 * 
+	 * @param cell Cell
+	 * @author Lagutko_N
+	 */
 	
+	public void updateCellFromScript(Cell cell) {
+		String oldFormula = (String)cell.getDefinition();
+		
+		updateDefinitionFromScript(cell);
+		
+		interpret((String)cell.getDefinition(), cell.getRow(), cell.getColumn());
+		updateCellsAndTableModelReferences(cell.getRow(), cell.getColumn(), oldFormula, (String)cell.getDefinition());
+	}
+
+	public Object execJRubyCommand(String input){
+		Object ret = "";
+		if (Util.isTesting == true){
+			Ruby runtime = JavaEmbedUtils.initialize(Collections.EMPTY_LIST);
+			runtime.evalScriptlet(input);
+		}else{
+			try {
+				ret = engine.eval(input);
+			} catch (ScriptException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		return ret;
+	}
+
 	/**
 	 * Function that updates definitiona of Cell from Script
 	 * 
 	 * @param cell Cell to update
 	 * @author Lagutko_N
 	 */
-	
+
 	public void updateDefinitionFromScript(Cell cell) {
 		String content = Util.getScriptContent(cell.getScriptURI());
 		cell.setDefinition(content);
 	}
-	
-	
 
 	public Cell interpret(String definition, int row, int column){
-		
-		String s0 = "";
+		//Util.logEnter("interpret");
+
 		String cellID = Util.getCellIDfromRowColumn(row, column);
-		String data0 = definition;
+		String formula1 = definition;
 		Cell se = getCellByID(cellID);
-		
-		
+		////Util.logn("Interpreting formula: " + formula1 + " at Cell " + cellID);
+		List<String> list = Util.findComplexCellIDs(definition);
+
+		for (int i=0;i<list.size();i++){
+			if (formula1.contains("$sheet.cells." + list.get(i)) == false)
+				formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
+		}
+
+		////Util.logn("Interpreting formula: " + formula1 + " at Cell " + cellID);
+
 		if (definition.startsWith("=") == false){
 			// This is normal text entered into cell, then
-			//String value = definition.replace("'", "");
-			//value = definition.replace("\"", "");
-		
-			Object value = interpret_element(cellID,definition);
-			se.setValue(value);
-			se.setDefinition(definition);
+			////Util.logn("CASE 1: Formula not starting with =");
 		}
 		else{
-			List<String> list = Util.findComplexCellIDs(definition);
-			data0 = data0.replace("=", "");
-			for (int i=0;i<list.size();i++){
-//				if (data0.contains("#{"+list.get(i)+"}") == false)
-//				{
-//				// this is the case of =a1
-//					data0 = data0.replace(list.get(i), "#{" + list.get(i) + "}");
-//				}
+			////Util.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
+			formula1 = "<%= " +formula1.replace("=", "") + " %>";
+		}
 
-				data0 = data0.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
-				
+		Object s1 = interpret_erb(cellID, formula1);
+		//Util.log("definition = " + definition);
+
+		se.setDefinition(definition);
+		se.setValue((String)s1);
+
+		this.setValueAt(se, row, column);
+		//Util.logExit("interpret");
+		return se;
+	}
+
+	public String interpret_erb(String cellID, String formula) {
+		String s = "";
+		//Util.logEnter("interpret_erb");
+		String path = ScriptUtils.getJRubyHome() + "/lib/ruby/1.8" + "/erb";
+
+		Util.logn("interpret_erb: formula = " + formula + " - cellID:" + cellID);
+		Util.logn("path = " + path);
+		Util.logn("cellID.toLowerCase():" + cellID.toLowerCase());
+
+		try {
+			String input = "require" + "'" + path + "'" + "\n" +
+			"template = ERB.new <<-EOF" + "\n" +
+			formula + "\n" +
+			"EOF" + "\n" +
+			"$sheet.cells." + cellID.toLowerCase() + "=" +  "template.result(binding)" + "\n" + 
+			"return " + "$sheet.cells." + cellID.toLowerCase();
+
+			Util.logn("ERB Input: " + input);
+
+			if (Util.isTesting == false){
+				s = (String) engine.eval(input, engine.getContext());
+			}else{
+				s = (String)execJRubyCommand(input);
 			}
 
-//			if (data0.contains("\"") == false)
-//				s0 = "\"" + data0 + "\"";
-//			else
-			s0 = data0;
-		
-			Util.log("s0: " + s0);
-			Object s = interpret_element(cellID, s0);
+			Util.logn("ERB Output = " + s);
 
-			se.setDefinition(definition);
-			se.setValue((String)s);
+
+		} catch (ScriptException e) {
+			s = "";
+			e.printStackTrace();
 		}
-		
-		this.setValueAt(se, row, column);
+
+		if (s == null) s = "";
+
+		//Util.logExit("interpret_erb");
+		return s;
+	}
+
+	public Cell interpret(String definition, String oldDefinition, int row, int column){
+		//Util.logEnter("interpret(String definition, String oldDefinition, int row, int column)");
+
+		String cellID = Util.getCellIDfromRowColumn(row, column);
+		String formula1 = definition;
+		Util.logn("CellID = " + cellID);
+
+		Cell se = getCellByID(cellID);
+
+		if (se == null)
+		{
+			Util.logn("WARNING: se = null");
+			se = new Cell("","");
+		}
+
+		List<String> list = Util.findComplexCellIDs(definition);
+
+		for (int i=0;i<list.size();i++){
+			if (formula1.contains("$sheet.cells." + list.get(i)) == false)
+				formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
+		}
+
+
+		if (definition.startsWith("=") == false){
+		}
+		else{
+			formula1 = "<%= " +formula1.replace("=", "") + " %>";
+		}
+		Util.logn("I'm before interpret_erb");
+		Object s1 = interpret_erb(cellID, formula1);
+		Util.logn("I'm after interpret_erb");
+
+		se.setDefinition(definition);
+
+		Util.logn("I'm after setting definition");
+		Util.logn("(String)s1 = " + (String)s1);
+		se.setValue((String)s1);
+
+		Util.logn("I'm after setting value");
+
+		this.setValueAt(se, row, column, oldDefinition);
+
+		Util.logn("I'm after this.setValueAt");
 		return se;
 	}
 
@@ -222,8 +361,8 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param sb
 	 */
 	public void save(StringBuffer sb)  {
-		Util.log("rowCount = " + rowCount);
-		Util.log("columnCount = " + columnCount);
+		////Util.log("rowCount = " + rowCount);
+		////Util.log("columnCount = " + columnCount);
 		for (int i = 0; i < rowCount; i++) {
 			for (int j = 0; j < columnCount; j++) {
 				String definition = "";
@@ -241,7 +380,7 @@ public class SplashTableModel extends DefaultTableModel
 				}
 
 				String line = definition.replace("\n", "") + ";" + value.replace("\n", "") + ";" + Util.getFormatString(new CellFormat()) + ";";
-				//Util.log("line = " + line);
+				////Util.log("line = " + line);
 				sb.append(line);
 			}
 			sb.append("\n");
@@ -256,8 +395,8 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param t
 	 */
 	public void save(StringBuffer sb, TableFormat t)  {
-		Util.log("rowCount = " + rowCount);
-		Util.log("columnCount = " + columnCount);
+		////Util.log("rowCount = " + rowCount);
+		////Util.log("columnCount = " + columnCount);
 
 		for (int i = 0; i < rowCount; i++) {
 			for (int j = 0; j < columnCount; j++) {
@@ -284,13 +423,6 @@ public class SplashTableModel extends DefaultTableModel
 					definition = (String) o;
 				}
 
-				//Lagutko: if definition of value is null than replase null with empty string
-				if (definition == null) {
-					definition = "";
-				}
-				if (value == null) {
-					value = "";
-				}
 
 				CellFormat c = t.getFormatAt(i, j);
 
@@ -298,9 +430,8 @@ public class SplashTableModel extends DefaultTableModel
 					c = new CellFormat();
 				}
 
-				//Lagutko: store also is Cell has reference or not
-				String line = definition.replace("\n", "") + ";" + value.replace("\n", "") + ";" + Util.getFormatString(c) + ";" + hasReference + ";";				
-				//Util.log("line = " + line);
+				String line = definition.replace("\n", "") + ";" + value.replace("\n", "") + ";" + Util.getFormatString(c) + ";";
+				////Util.log("line = " + line);
 
 				sb.append(line);
 
@@ -363,14 +494,14 @@ public class SplashTableModel extends DefaultTableModel
 		int j=0;
 		String definition = "";
 		String value = "";
-		boolean hasReference;
+		boolean hasReference = false;
 		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
 		int rowIndex = 0;
 		try
 		{
-			String line;			
+			String line;
 			line = lnr.readLine();
-			columnCount = countColumns(line)/14;
+			columnCount = countColumns(line)/13;
 			while (line != null && line.lastIndexOf(";") > 0) {
 				ArrayList<String> list = readLine(line);
 				m = 0;
@@ -378,9 +509,9 @@ public class SplashTableModel extends DefaultTableModel
 				for (j=0;j<columnCount;j++)
 				{
 					definition = list.get(m++);
-					//Util.log("definition:" + definition);
+					////Util.log("definition:" + definition);
 					value = list.get(m++);
-					//Util.log("value:" + value);
+					////Util.log("value:" + value);
 					// Load cell formatting
 					CellFormat c = new CellFormat();
 					String o1= list.get(m++);
@@ -438,26 +569,9 @@ public class SplashTableModel extends DefaultTableModel
 
 					if (!"".equals(str))
 						c.setVerticalAlignment(Integer.parseInt(str));
-					
-					//Lagutko: is Cell has reference?
-					hasReference = Boolean.parseBoolean(list.get(m++));
-
-					BorderStyle top,bottom,left,right,internalHorizontal,internalVertical;
-					top = bottom = left = right = internalHorizontal = internalVertical = new BorderStyle(1,BorderStyle.BASIC);
-
-
-					Color topColor, bottomColor, leftColor, rightColor, internalHorizontalColor, internalVerticalColor;
-
-					topColor = new Color(0,0,0);
-					bottomColor = new Color(0,0,0);
-					leftColor = new Color(0,0,0);
-					rightColor = new Color(0,0,0);
-					internalHorizontalColor = new Color(0,0,0);
-					internalVerticalColor = new Color(0,0,0);
 
 					c.setCellBorder(new CellBorder());
-					
-										// Create a new expression with value and definition
+					// Create a new expression with value and definition
 					Cell se = new Cell(rowIndex, j, definition, value, c);
 					//Lagutko: if Cell has reference to script than we must
 					//set ScriptURI and read Definition from Script
@@ -536,11 +650,45 @@ public class SplashTableModel extends DefaultTableModel
 		return true;
 	}
 
+	public String getPlainText(){
+		return "PLAINTEXT";
+	}
+
+
 	/**
 	 * set model data with a certain value
 	 */
+	@SuppressWarnings("unchecked")
 	public void setValueAt (Object value, int row, int column)
 	{
+		// row and column index are checked but storing in a Hashtable
+		// won't cause real problems
+		if (row >= getRowCount ())
+			throw new ArrayIndexOutOfBoundsException (row);
+		if (column >= getColumnCount ())
+			throw new ArrayIndexOutOfBoundsException (column);
+
+		Cell cell = new Cell (row, column);
+
+
+		if (   value == null
+				|| "".equals (value))
+			cellValues.remove (cell);
+		else
+			cellValues.put (cell, value);
+
+		if (value != null)
+		{
+			tableFormat.setFormatAt(((Cell)value).getCellFormat(), row, column, row, column);
+		}
+
+		fireTableChanged (new TableModelEvent (this, row, row, column));
+	}
+
+	@SuppressWarnings("unchecked")
+	public void setValueAt (Object value, int row, int column, String oldDefinition)
+	{
+		//Util.logEnter("setValueAt (Object value, int row, int column, String oldDefinition)");
 		// row and column index are checked but storing in a Hashtable
 		// won't cause real problems
 		if (row >= getRowCount ())
@@ -558,40 +706,14 @@ public class SplashTableModel extends DefaultTableModel
 		if (value != null)
 		{
 			tableFormat.setFormatAt(((Cell)value).getCellFormat(), row, column, row, column);
-			updateCellReferences(Util.getCellIDfromRowColumn(row, column), (String) ((Cell)value).getDefinition());
+			updateCellsAndTableModelReferences(row, column, oldDefinition, (String) ((Cell)value).getDefinition());
 		}
 
 		fireTableChanged (new TableModelEvent (this, row, row, column));
+		//Util.logExit("setValueAt (Object value, int row, int column, String oldDefinition)");
 	}
 
-	/**
-	 * Get definition string
-	 * @param row
-	 * @param column
-	 * @return
-	 */
-	private String getCellDefinition(int row, int column)
-	{
-		Object o = getValueAt(row, column);
-		if (o instanceof Cell)
-		{
-			Cell ex = (Cell)(getValueAt(row, column));
-			return (String) ex.getDefinition();
-		}
-		else
-			return getValueAt(row, column).toString();
-	}
 
-	/**
-	 * set definition string
-	 * @param row
-	 * @param column
-	 * @param value
-	 */
-	private void setDefinitionString(int row, int column, Object value)
-	{
-		setValueAt(value, row, column);
-	}
 
 	/**
 	 * Initialize inter-cell relationships with new formula
@@ -620,58 +742,97 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 	public void updateCellsAndTableModelReferences(int row, int column, String oldFormula, String newFormula)
 	{
+		//Util.logEnter("updateCellsAndTableModelReferences");
 		String cellID = Util.getCellIDfromRowColumn(row,column);
+		Cell cell ;
+		ArrayList<Cell> list;
+		////Util.logn("updateCellsAndTableModelReferences");
+		Util.logn("oldFormula = " + oldFormula);
+		Util.logn("newFormula = " + newFormula);
 
-		//Util.log("oldFormula = " + oldFormula);
-		//Util.log("newFormula = " + newFormula);
+		////Util.logn("finding cell with cellID = " + cellID);
+		cell = getCellByID(cellID);
 
-		if (!newFormula.equals(oldFormula) && oldFormula != null )
+		Util.printCell("Cell found", cell);
+		Util.logn("checking formulas...");
+		if (!newFormula.equals(oldFormula) && oldFormula != null)
 		{
-			Cell cell ;
-			ArrayList<Cell> list;
-			Util.log("cellID = " + cellID);
-
-			cell = getCellByID(cellID);
-
-			Util.printCell("cell", cell);
-
+			Util.logn("!newFormula.equals(oldFormula) && oldFormula != null");
 			if (cell != null)
 			{
 				if (isInfiniteLoop(cell, newFormula) == false)
 				{
-					Util.log("No infinite loop found ");
-					updateCellReferences (cellID,	newFormula);
+					Util.logn("No infinite loop found ");
+					Util.logn("Updating cell references of Cell " + cellID + " with formula " + newFormula);
 
+					updateCellReferences (cellID,	newFormula);
+					Util.logn("After updateCellReferences");
+
+					// Get all referring cells to update
 					list = getAllReferringCells(cell);
+
+					Util.logn("After getAllReferringCells(cell)");
 
 					Util.printCellList("Referring Cells of Cell " + cell.getCellID(), list);
 
 					for (int i=0;i<list.size();i++)
 					{
-						int r = list.get(i).getRow();
-						int c = list.get(i).getColumn();
-
-						Util.log("r = " + r);
-						Util.log("c = " + c);
-						Util.log("CellID = " + Util.getCellIDfromRowColumn(r, c));
-
-						String definition = getCellDefinition(r,c);
-
-						Util.log("definition = " + definition);
-						interpret(definition, r, c);
+						refreshCell(list.get(i));
 					}
+					Util.logn("After loop");
+				}
+				else
+				{
+					Util.logn("infinite loop found !!!!!");
 				}
 			}
 		}
-		else
-		{
-			updateCellReferences (cellID,	newFormula );
-		}
 
-		//Util.printTableModelStatus(this);
+		//Util.logExit("updateCellsAndTableModelReferences");
 	}
 
+	private void refreshCell(Cell cell) {
+		//Util.logEnter("refreshCell");
+		Util.printCell("Refreshing Cell", cell);
+		Util.logEnter("interpret(String definition, String oldDefinition, int row, int column)");
 
+		String cellID = cell.getCellID();
+
+		Util.logn("refreshCell: cellID = " + cellID);
+
+		String definition = (String) cell.getDefinition();
+		String formula1 = (String) cell.getDefinition();
+		Cell se = cell;
+
+		if (se == null){
+			Util.logn("WARNING: se = null");
+		}
+
+		List<String> list = Util.findComplexCellIDs(definition);
+		for (int i=0;i<list.size();i++){
+			formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
+		}
+
+		Util.logn("Interpreting formula: " + formula1 + " at Cell " + cellID);
+
+		if (definition.startsWith("=") == false){
+			// This is normal text entered into cell, then
+			Util.logn("CASE 1: Formula not starting with =");
+		}
+		else{
+			Util.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
+			formula1 = "<%= " +formula1.replace("=", "") + " %>";
+		}
+
+		Util.logn("formula1 =" + formula1);
+
+		Object s1 = interpret_erb(cellID, formula1);
+		se.setDefinition(definition);
+		se.setValue((String)s1);
+
+		this.setValueAt(se, cell.getRow(), cell.getColumn());
+		//Util.logExit("refreshCell");
+	}
 
 	private CellFormat getCellFormatAt(int row, int column)
 	{
@@ -687,32 +848,37 @@ public class SplashTableModel extends DefaultTableModel
 
 	public void removeReferenceBetweenTwoCells(Cell C, Cell A)
 	{
+		//Util.logEnter("removeReferenceBetweenTwoCells");
 		// Removing reference means remove A from RFD list of C, and C from RFG list of A
 		C.removeRfdCell(A);
 		A.removeRfgCell(C);
+		//Util.logExit("removeReferenceBetweenTwoCells");
 	}
 
 	public Cell getCellByID(String cellID)
 	{
-		//Util.log("cellID = " + cellID);
+		////Util.log("cellID = " + cellID);
 		int row = Util.getRowIndexFromCellID(cellID);
-		//Util.log("row = " + row);
+		////Util.log("row = " + row);
 		int column = Util.getColumnIndexFromCellID(cellID);
-		//Util.log("column = " + column);
+		////Util.log("column = " + column);
 
 		return (Cell)getValueAt(row, column);
 	}
 
 	public boolean isInfiniteLoop(Cell c, String new_formula)
 	{
+		//Util.logEnter("isInfiniteLoop");
 		boolean ret = false;
 
 		// find RFDs
 		List<Cell> idsList = findComplexCellIDs(new_formula);
 
+		//Util.printCell("isInfiniteLoop check of Cell " + c.getCellID(), c);
 		for (int i=0;i<idsList.size();i++)
 		{
 			Cell c1 = idsList.get(i);
+			//Util.printCell("isInfiniteLoop check of Cell " + c1.getCellID(), c1);
 			if (Util.isCellInList(c1, getAllReferringCells(c)) == true)
 			{
 				ret = true;
@@ -720,11 +886,13 @@ public class SplashTableModel extends DefaultTableModel
 			}
 		}
 
+		//Util.logExit("isInfiniteLoop");
 		return ret;
 	}
 
 	public ArrayList<Cell> getAllReferringCells(Cell C)
 	{
+		//Util.logEnter("getAllReferringCells");
 		ArrayList<Cell> templist = new ArrayList<Cell>();
 		ArrayList<Cell> list = new ArrayList<Cell>();
 		//if (C.isTraversed() == false)
@@ -734,11 +902,13 @@ public class SplashTableModel extends DefaultTableModel
 
 			for (int i=0;i<templist.size();i++)
 			{
+				Util.printCell("getAllReferringCells: templist.get(i):", templist.get(i));
 				list.add(templist.get(i));
 
 				list.addAll((ArrayList<Cell>)(getAllReferringCells(templist.get(i))));
 			}
 		}
+		//Util.logExit("getAllReferringCells");
 		return list;
 	}
 
@@ -763,66 +933,117 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 	public void updateCellReferences(String cellID, String newDefinition)
 	{
-		//Util.log("C_Content = " + newDefinition);
+		//Util.logEnter("updateCellReferences");
+		////Util.log("C_Content = " + newDefinition);
 
 		Cell C = getCellByID(cellID);
 
-		ArrayList<Cell> definitionCells = findComplexCellIDs(newDefinition);
+		//Util.printCell("updateCellReferences: Input Cell", C);
 
-		if (definitionCells.size() == 0) return;
+		//Util.log("newDefinition: " + newDefinition);
+		//Util.log("oldDefinition: " + C.getDefinition());
 
-		//Util.printCellList("definitionCells", definitionCells);
+		ArrayList<Cell> newDefinitionCells = findComplexCellIDs(newDefinition);
+		//Util.printCellList("updateCellReferences: Input Definition Cells", newDefinitionCells);
 
-		//Util.printCellList("RFD Cells of " + C.getCellID(), C.getRfdCells());
+		if (newDefinitionCells.size() == 0){
+			//Util.log("new definition contains no cells...");
+		}
 
 		/* Now, we will scan over cells in RFD list (which form old definition of cell)
 		 * if Cell exist in new definition, then it's added reference between current cell and such cell
 		 * if Cell exist in old definition, not existing in new definition, then remove reference between current cell and such cell 
 		 */ 
 
-		for (int i=0;i< C.getRfdCells().size();i++)
+		ArrayList<Cell> oldDefinitionRfdCells = C.getRfdCells();
+
+
+		for (int i=0;i< oldDefinitionRfdCells.size();i++)
 		{
-			Cell oldDefinitionCell = C.getRfdCells().get(i);
+			Cell rfdCell = oldDefinitionRfdCells.get(i);
+			Util.logn("processing RFD cell " + rfdCell.getCellID());
 
 			//Util.log("checking RFD cell " + oldDefinitionCell.getCellID() + " to exist in new definition cells");
 			// if existAB is not found in the new listAB, then remove reference
-			if (Util.isCellInList(oldDefinitionCell, definitionCells) == false)
+			if (Util.isCellInList(rfdCell, newDefinitionCells) == false)
 			{
-				//Util.log("cell " + oldDefinitionCell.getCellID() + " doesn't exist, and will be removed");
-				removeReferenceBetweenTwoCells(C, oldDefinitionCell);
+				Util.logn("Cell" + rfdCell.getCellID() + "not in input list, removing references");
+				removeReferenceBetweenTwoCells(C, rfdCell);
 			}
 		}
 
-		for (int i=0;i< definitionCells.size();i++)
+		for (int i=0;i< newDefinitionCells.size();i++)
 		{
-			Cell newDefinitionCell = definitionCells.get(i);
-			//Util.log("checking new definition cell " + newDefinitionCell.getCellID() + " to exist in RFD cells");
+			Cell newDefinitionCell = newDefinitionCells.get(i);
+			Util.logn("processing new input cell " + newDefinitionCell.getCellID());
+
 			// if existAB is not found in the new listAB, then remove reference
-			if (Util.isCellInList(newDefinitionCell, C.getRfdCells()) == false)
+			if (Util.isCellInList(newDefinitionCell, oldDefinitionRfdCells) == false)
 			{
-				//Util.log("cell " + newDefinitionCell.getCellID() + " doesn't exist, and will be added");
-				//Util.printTableModelStatus(this);
+				Util.logn("Cell " + newDefinitionCell.getCellID() + "not in RFD cells, adding RFD cells");
 				addReferenceBetweenTwoCells(C, newDefinitionCell);
 			}
 		}
 
-		//Util.printTableModelStatus(this);
+		//Util.printCell("updateCellReferences: Cell After processing: ", C);
+		//Util.logExit("updateCellReferences");
+	}
+}
+class RowModel implements TableModel
+{
+	private TableModel source;
 
+	RowModel(TableModel source)
+	{
+		this.source = source;
+	}
+
+	public boolean isCellEditable(int rowIndex, int columnIndex)
+	{
+		return false;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Class getColumnClass(int columnIndex)
+	{
+		return Object.class;
+	}
+
+	public int getColumnCount()
+	{
+		return 1;
+	}
+
+	public String getColumnName(int columnIndex)
+	{
+		return null;
+	}
+
+	public int getRowCount()
+	{
+		return source.getRowCount();
+	}
+
+	public void setValueAt(Object aValue, int rowIndex, int columnIndex)
+	{
+	}
+
+	public Object getValueAt(int rowIndex, int columnIndex)
+	{
+		return null;
 	}
 	
-	/**
-	 * Method that update Cell that has reference to Script
-	 * 
-	 * @param cell Cell
-	 * @author Lagutko_N
-	 */
 	
-	public void updateCellFromScript(Cell cell) {
-		String oldFormula = (String)cell.getDefinition();
+
+	@Override
+	public void addTableModelListener(TableModelListener arg0) {
+		// TODO Auto-generated method stub
 		
-		updateDefinitionFromScript(cell);
+	}
+
+	@Override
+	public void removeTableModelListener(TableModelListener arg0) {
+		// TODO Auto-generated method stub
 		
-		interpret((String)cell.getDefinition(), cell.getRow(), cell.getColumn());
-		updateCellsAndTableModelReferences(cell.getRow(), cell.getColumn(), oldFormula, (String)cell.getDefinition());
 	}
 }

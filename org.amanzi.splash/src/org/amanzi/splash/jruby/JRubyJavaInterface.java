@@ -21,7 +21,6 @@ public class JRubyJavaInterface {
 	public static String UpdateCellValueFromSpreadsheet(String cell_id)
 	{
 		// TODO: This should be replaced by function to get content of cell(cell_id)
-		//System.out.println("Updating spreadsheet cell: " + CellID + " with value: " + CellValue);
 		return "Hello World!";
 	}
 }
