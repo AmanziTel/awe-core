@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.mail.search.ReceivedDateTerm;
+//import javax.mail.search.ReceivedDateTerm;
 
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
