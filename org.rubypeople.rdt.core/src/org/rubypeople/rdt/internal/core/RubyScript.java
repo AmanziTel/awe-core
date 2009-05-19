@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -64,7 +65,6 @@ import org.rubypeople.rdt.internal.core.buffer.BufferManager;
 import org.rubypeople.rdt.internal.core.util.MementoTokenizer;
 import org.rubypeople.rdt.internal.core.util.Util;
 
-import com.gersis_software.integrator.awe.AWEProjectManager;
 
 
 /**
@@ -90,7 +90,7 @@ public class RubyScript extends Openable implements IRubyScript {
 		}
 		catch (RubyModelException e) {
 			//TODO: handle this exception
-		}
+		}		
 	}
 
 	/**

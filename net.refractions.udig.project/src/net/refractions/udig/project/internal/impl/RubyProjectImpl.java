@@ -15,7 +15,6 @@ import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPackage;
-import net.refractions.udig.project.internal.RubyFile;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
 
@@ -25,7 +24,6 @@ import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 
 import org.eclipse.emf.ecore.EClass;
@@ -103,7 +101,7 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 	 * @generated
 	 * @ordered
 	 */
-	protected List<RubyProjectElement> rubyElementsInternal = new ArrayList<RubyProjectElement>();
+	protected List<RubyProjectElement> rubyElementsInternal = null;
 	
 	private Adapter projectPersistenceListener = new AdapterImpl(){
         /**
@@ -261,120 +259,15 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<RubyProjectElement> getRubyElementsInternal() {		
+		if (rubyElementsInternal == null) {
+			rubyElementsInternal = new SynchronizedEObjectWithInverseResolvingEList(
+					RubyProjectElement.class, this,
+					ProjectPackage.RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL,
+					ProjectPackage.RUBY_PROJECT_ELEMENT__RUBY_PROJECT_INTERNAL);
+		}
 		return rubyElementsInternal;
 	}
 	
-	/**
-	 * Creates a new Resource from map.  The new Resource will be in the same directory as the project's
-	 * resource.  The Resource will start with map appended with a number that will make the name unique.
-	 * The resource will end in .umap.
-	 */
-	private void createResourceAndAddElement(RubyProject value, RubyProjectElement projectElement) {
-        if( projectElement==null || projectElement.eIsProxy() )
-            return;
-		Resource projectResource = eResource();
-		if (projectResource != null) {
-			URI projectURI = projectResource.getURI();
-			String elementPath = null;
-			elementPath = findElementResourcePath(projectElement, elementPath);
-
-			String projectPath = findProjectResourcePath(projectURI);
-
-            if (!projectPath.equals(elementPath)) 
-                doCreation(projectElement, projectResource, elementPath, projectPath);
-                
-		}
-	}
-	
-	private String findElementResourcePath( RubyProjectElement projectElement, String elementPath2 ) {
-        String elementPath=elementPath2;
-        if (projectElement.eResource() != null) {
-        	elementPath = projectElement.eResource().getURI().toFileString();
-            elementPath = elementPath.substring(0, elementPath
-                    .lastIndexOf(File.separatorChar));
-            while (elementPath.startsWith(File.separator + File.separator)) { 
-                elementPath = elementPath.substring(1);
-            }
-            if (Platform.getOS().equals(Platform.OS_WIN32)
-                    && elementPath.startsWith(File.separator)) { 
-                elementPath = elementPath.substring(1);
-            }
-        }
-        return elementPath;
-    }
-	
-	private static String findProjectResourcePath( URI projectURI ) {
-        String projectPath = projectURI.toFileString();
-        projectPath = projectPath.substring(0, projectPath
-        		.lastIndexOf(File.separatorChar));
-        while (projectPath.startsWith(File.separator + File.separator)) { 
-        	projectPath = projectPath.substring(1);
-        }
-        if (Platform.getOS().equals(Platform.OS_WIN32)
-        		&& projectPath.startsWith(File.separator)) { 
-        	projectPath = projectPath.substring(1);
-        }
-        return projectPath;
-    }
-	
-	@SuppressWarnings("unchecked")
-    private static void doCreation( RubyProjectElement projectElement, Resource projectResource, String elementPath, String projectPath ) {
-        	Resource resource = null;
-
-        	URI uri = createNewResource(projectResource, projectPath, projectElement);
-        	resource = projectResource.getResourceSet().createResource(uri);
-        	resource.getContents().add(projectElement);
-            resource.setTrackingModification(true);
-            resource.setModified(true);
-    }
-	
-	@SuppressWarnings("unchecked")
-	private static URI createNewResource(Resource projectResource, String projectPath, RubyProjectElement projectElement) {
-		int i = 0;
-		List<Resource> list = projectResource.getResourceSet().getResources();
-		URIConverter uriConverter = projectResource.getResourceSet()
-				.getURIConverter();
-		URI uri = null;
-		boolean found = false;
-		do {
-			found = false;
-			i++;
-			//TODO Add file extension name to ProjectElement
-			uri = generateResourceName(projectPath, projectElement, i);
-			
-			URI normalizedURI = uriConverter.normalize(uri);
-			for (Resource resource2 : list) {
-				if (uriConverter.normalize(resource2.getURI()).equals(
-						normalizedURI)) {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				File file = new File(uri.toFileString());
-				if (file.exists())
-					found = true;
-			}
-		} while (found);
-		uri.deresolve(projectResource.getURI(), true, true, true);
-		return uri;
-	}
-	
-	private static URI generateResourceName(String projectPath,
-            RubyProjectElement projectElement, int i) {
-        URI uri;
-        String resourceName = (projectElement.getName()==null?"element":projectElement.getName())+i; //$NON-NLS-1$
-        resourceName = resourceName.replaceAll("[/\\\\]", ""); //$NON-NLS-1$ //$NON-NLS-2$
-        resourceName = resourceName.replaceAll("\\s", "_"); //$NON-NLS-1$ //$NON-NLS-2$
-        resourceName = resourceName.replaceAll("_+", "_"); //$NON-NLS-1$ //$NON-NLS-2$
-        String extension = projectElement.getFileExtension();
-        if( !extension.startsWith(".") ) //$NON-NLS-1$
-            extension="."+extension; //$NON-NLS-1$
-        String tempPath = "file://" + projectPath + File.separator + resourceName + extension; //$NON-NLS-1$  
-        uri = URI.createURI(tempPath);
-        return uri;
-    }
-
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -388,10 +281,6 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 				msgs = ((InternalEObject) projectInternal).eInverseRemove(this,
 						ProjectPackage.PROJECT__ELEMENTS_INTERNAL,
 						Project.class, msgs);
-			return basicSetProjectInternal((Project) otherEnd, msgs);
-		case ProjectPackage.RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL:
-			return ((InternalEList) getRubyElementsInternal()).basicAdd(
-					otherEnd, msgs);
 		}
 		return super.eInverseAdd(otherEnd, featureID, msgs);
 	}
@@ -406,9 +295,6 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 		switch (featureID) {
 		case ProjectPackage.RUBY_PROJECT__PROJECT_INTERNAL:
 			return basicSetProjectInternal(null, msgs);
-		case ProjectPackage.RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL:
-			return ((InternalEList) getRubyElementsInternal()).basicRemove(
-					otherEnd, msgs);
 		}
 		return super.eInverseRemove(otherEnd, featureID, msgs);
 	}
@@ -544,20 +430,6 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 			};
     	}
         return null;
-    }
-
-	public void addRubyElementInternal(RubyProjectElement element) {
-		getRubyElementsInternal().add(element);
-		if (eNotificationRequired())
-			eNotify(new ENotificationImpl(this, Notification.ADD,
-					ProjectPackage.RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL, null, getRubyElementsInternal()));		
-	}
-	
-	public void removeRubyElementInternal(RubyProjectElement element) {
-		getRubyElementsInternal().remove(element);
-		if (eNotificationRequired())
-			eNotify(new ENotificationImpl(this, Notification.ADD,
-					ProjectPackage.RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL, null, getRubyElementsInternal()));		
-	}
+    }	
 
 } //RubyProjectImpl

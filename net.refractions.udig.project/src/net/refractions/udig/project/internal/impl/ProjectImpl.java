@@ -357,7 +357,7 @@ public class ProjectImpl extends EObjectImpl implements Project {
         	resource = projectResource.getResourceSet().createResource(uri);
         	resource.getContents().add(projectElement);
             resource.setTrackingModification(true);
-            resource.setModified(true);
+            resource.setModified(true);            
     }
 
     private static String findProjectResourcePath( URI projectURI ) {

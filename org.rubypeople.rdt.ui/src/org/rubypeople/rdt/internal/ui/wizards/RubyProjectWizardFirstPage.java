@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -73,7 +74,6 @@ import org.rubypeople.rdt.launching.RubyRuntime;
 import org.rubypeople.rdt.launching.VMStandin;
 import org.rubypeople.rdt.ui.RubyUI;
 
-import com.gersis_software.integrator.awe.AWEProjectManager;
 
 /**
  * The first page of the <code>SimpleProjectWizard</code>.

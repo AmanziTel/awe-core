@@ -18,6 +18,7 @@ import net.refractions.udig.project.ui.internal.ProjectExplorer;
 import net.refractions.udig.project.ui.internal.ProjectUIPlugin;
 import net.refractions.udig.ui.PlatformGIS;
 
+import org.amanzi.integrator.rdt.RDTProjectManager;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -30,7 +31,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.intro.IIntroManager;
 import org.eclipse.ui.intro.IIntroPart;
 
-import com.gersis_software.integrator.rdt.RDTProjectManager;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class OpenProjectElementCommand implements UndoableCommand {

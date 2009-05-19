@@ -50,27 +50,5 @@ public interface RubyProject extends ProjectElement, IRubyProject {
 	 * @generated
 	 */
 	List<RubyProjectElement> getRubyElementsInternal();
-	
-	/**
-	 * Function that adds RubyProjectElement to RubyProject
-	 * 
-	 * Note: we don't load RubyProjectElement from file like any other EMF object. 
-	 * 
-	 * @param element
-	 * @author Lagutko_N
-	 */
-	
-	public void addRubyElementInternal(RubyProjectElement element);
-	
-	/**
-	 * Function that removes RubyProjectElement from RubyProject
-	 * 
-	 * Note: we don't load RubyProjectElement from file like any other EMF object. 
-	 * 
-	 * @param element
-	 * @author Lagutko_N
-	 */
-	
-	public void removeRubyElementInternal(RubyProjectElement element);
 
 } // RubyProject

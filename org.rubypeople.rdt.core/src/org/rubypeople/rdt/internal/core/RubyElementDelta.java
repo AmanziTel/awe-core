@@ -12,13 +12,13 @@ package org.rubypeople.rdt.internal.core;
 
 import java.util.ArrayList;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceDelta;
 import org.jruby.ast.Node;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyElementDelta;
 
-import com.gersis_software.integrator.awe.AWEProjectManager;
 
 /**
  * @see IRubyElementDelta

@@ -5,8 +5,6 @@
  */
 package net.refractions.udig.project.internal;
 
-import org.eclipse.core.resources.IResource;
-
 import net.refractions.udig.project.IRubyFile;
 
 /**

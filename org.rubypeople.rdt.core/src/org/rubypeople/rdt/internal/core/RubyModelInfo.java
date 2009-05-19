@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.rubypeople.rdt.internal.core;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 
-import com.gersis_software.integrator.awe.AWEProjectManager;
 
 /**
  * Implementation of IRubyModel. A Ruby Model is specific to a

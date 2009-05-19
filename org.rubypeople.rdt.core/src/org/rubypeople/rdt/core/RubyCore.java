@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -78,7 +79,6 @@ import org.rubypeople.rdt.internal.core.util.Util;
 import org.rubypeople.rdt.internal.ti.DataFlowTypeInferrer;
 import org.rubypeople.rdt.internal.ti.ITypeInferrer;
 
-import com.gersis_software.integrator.awe.AWEProjectManager;
 
 public class RubyCore extends Plugin
 {

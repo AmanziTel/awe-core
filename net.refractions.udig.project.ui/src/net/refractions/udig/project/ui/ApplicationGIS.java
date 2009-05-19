@@ -81,6 +81,7 @@ import net.refractions.udig.project.ui.tool.IToolContext;
 import net.refractions.udig.project.ui.tool.IToolManager;
 import net.refractions.udig.ui.PlatformGIS;
 
+import org.amanzi.integrator.rdt.RDTProjectManager;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
@@ -101,7 +102,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 
-import com.gersis_software.integrator.rdt.RDTProjectManager;
 
 /**
  * A facade into udig to simplify operations such as getting the active map and openning a map

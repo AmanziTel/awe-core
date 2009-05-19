@@ -48,6 +48,7 @@ import net.refractions.udig.project.ui.internal.UDIGEditorInputDescriptor;
 import net.refractions.udig.project.ui.render.displayAdapter.ViewportPane;
 import net.refractions.udig.ui.PlatformGIS;
 
+import org.amanzi.integrator.rdt.RDTProjectManager;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -61,7 +62,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.geotools.feature.Feature;
 
-import com.gersis_software.integrator.rdt.RDTProjectManager;
 
 /**
  * Deletes the selected elements from a project.
@@ -192,7 +192,7 @@ public class Delete extends UDIGGenericAction {
             	RDTProjectManager.deleteScript(project.getName(), file.getName(), deleteFiles);
             	
             	//Lagutko: also delete this RubyFile from RubyProject InternalElements
-            	project.removeRubyElementInternal(file);
+            	project.getRubyElementsInternal().remove(file);
             }
             Project projectInternal = element.getProjectInternal();
             if (projectInternal != null)
