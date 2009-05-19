@@ -95,7 +95,7 @@ module AWE
           Java::JavaLang::System.get_property 'osgi.syspath'
         end
         $udig_lib_path ||= returning do
-          $udig_plugin_path+'/net.refractions.udig.libs_1.1.0/lib'
+          $udig_plugin_path+'/net.refractions.udig.libs_1.1.1/lib'
         end
       end
       def print_globals
