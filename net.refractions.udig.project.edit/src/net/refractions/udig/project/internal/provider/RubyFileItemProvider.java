@@ -9,7 +9,6 @@ import java.io.File;
 import java.util.List;
 
 import net.refractions.udig.project.internal.ProjectPackage;
-import net.refractions.udig.project.internal.RubyClass;
 import net.refractions.udig.project.internal.RubyFile;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
