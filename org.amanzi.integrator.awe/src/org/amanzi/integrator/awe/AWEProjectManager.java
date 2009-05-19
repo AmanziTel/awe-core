@@ -1,4 +1,4 @@
-package com.gersis_software.integrator.awe;
+package org.amanzi.integrator.awe;
 
 import java.util.ArrayList;
 
@@ -123,7 +123,7 @@ public class AWEProjectManager {
 			RubyFile rubyFile = ProjectFactoryImpl.eINSTANCE.createRubyFile();
 			rubyFile.setName(scriptName);
 			rubyFile.setResource(scriptResource);
-			rubyProject.addRubyElementInternal(rubyFile);
+			rubyProject.getRubyElementsInternal().add(rubyFile);
 			rubyFile.setRubyProjectInternal(rubyProject);
 		}
 	}
@@ -214,7 +214,7 @@ public class AWEProjectManager {
 	
 	private static void deleteElement(RubyProjectElement element) {
 		RubyProject projectInternal = element.getRubyProjectInternal();
-        projectInternal.removeRubyElementInternal(element);
+		projectInternal.getRubyElementsInternal().remove(element);
                     
         deleteResource(element);   
 	}

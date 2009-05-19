@@ -1,4 +1,4 @@
-package com.gersis_software.integrator.rdt;
+package org.amanzi.integrator.rdt;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;

@@ -9,4 +9,4 @@ Require-Bundle: org.rubypeople.rdt.core,
  org.eclipse.core.resources,
  org.rubypeople.rdt.ui,
  org.eclipse.ui
-Export-Package: com.gersis_software.integrator.rdt
+Export-Package: org.amanzi.integrator.rdt
