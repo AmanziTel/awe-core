@@ -94,12 +94,12 @@ public class SplashTableModel extends DefaultTableModel
 		cellValues = new Hashtable ();
 		
 
-		if (Util.isTesting){
-			for (int i=0;i<rowCount;i++)
-				for (int j=0;j<columnCount;j++)
-				{
+		if (Util.isTesting) {
+			for (int i=0;i<rowCount;i++) {
+				for (int j=0;j<columnCount;j++) {
 					setValueAt(new Cell(i,j,"","",new CellFormat()),i,j);
 				}
+			}
 		}
 	}
 
