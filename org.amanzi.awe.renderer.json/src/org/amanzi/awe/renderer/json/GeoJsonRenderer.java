@@ -10,10 +10,10 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
+import org.amanzi.awe.catalog.json.Feature;
+import org.amanzi.awe.catalog.json.FeatureIterator;
 import org.amanzi.awe.catalog.json.JSONGeoFeatureType;
 import org.amanzi.awe.catalog.json.JSONReader;
-import org.amanzi.awe.catalog.json.JSONReader.Feature;
-import org.amanzi.awe.catalog.json.JSONReader.FeatureIterator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -38,20 +38,17 @@ import com.vividsolutions.jts.geom.Polygon;
  * Custom renderer for GeoJson files.
  * 
  * @author Milan Dinic
- * 
  */
 public class GeoJsonRenderer extends RendererImpl {
 
     /**
      * Rendering method called by system.
      * 
-     * @param monitor
-     *                reference to a {@link IProgressMonitor} implementation
-     * @exception RenderException
-     *                    error occurred while rendering
+     * @param monitor reference to a {@link IProgressMonitor} implementation
+     * @exception RenderException error occurred while rendering
      */
     @Override
-    public final void render(final IProgressMonitor monitor) throws RenderException {
+    public final void render( final IProgressMonitor monitor ) throws RenderException {
         Graphics2D g = getContext().getImage().createGraphics();
         render(g, monitor);
     }
@@ -59,14 +56,11 @@ public class GeoJsonRenderer extends RendererImpl {
     /**
      * Drawing operations are done in this method.
      * 
-     * @param g
-     *                {@link Graphics2D} object
-     * @param monitor
-     *                reference to a {@link IProgressMonitor} implementation
-     * @exception RenderException
-     *                    error occurred while rendering
+     * @param g {@link Graphics2D} object
+     * @param monitor reference to a {@link IProgressMonitor} implementation
+     * @exception RenderException error occurred while rendering
      */
-    public final void render(final Graphics2D g, IProgressMonitor monitor) throws RenderException {
+    public final void render( final Graphics2D g, IProgressMonitor monitor ) throws RenderException {
 
         if (monitor == null) {
             monitor = new NullProgressMonitor();
@@ -89,14 +83,15 @@ public class GeoJsonRenderer extends RendererImpl {
             ReferencedEnvelope bounds = getRenderBounds();
             monitor.subTask("connecting");
 
-            final JSONReader geoJson = resource.resolve(JSONReader.class, new SubProgressMonitor(monitor, 10));
+            final JSONReader geoJson = resource.resolve(JSONReader.class, new SubProgressMonitor(
+                    monitor, 10));
 
             final IProgressMonitor drawMonitor = new SubProgressMonitor(monitor, 90);
             Coordinate worldLocation = new Coordinate();
 
             FeatureIterator features = geoJson.getFeatures();
 
-            for (Feature feature : features) {
+            for( Feature feature : features ) {
                 boolean containsSelector = feature.getProperties().containsKey("sectors");
                 if (containsSelector) {
                     // do not render
@@ -115,14 +110,14 @@ public class GeoJsonRenderer extends RendererImpl {
                 }
 
                 final JSONGeoFeatureType type = JSONGeoFeatureType.fromCode(feature.getType());
-                switch (type) {
+                switch( type ) {
                 case POINT:
                     drawPoint(g, (Point) geometry);
                     break;
                 case MULTI_POINT:
                     final MultiPoint multiPoint = (MultiPoint) geometry;
                     int numPoints = multiPoint.getNumPoints();
-                    for (int i = 0; i < numPoints; i++) {
+                    for( int i = 0; i < numPoints; i++ ) {
                         final Point point = (Point) multiPoint.getGeometryN(i);
                         drawPoint(g, point);
                     }
@@ -133,7 +128,7 @@ public class GeoJsonRenderer extends RendererImpl {
                 case MULTI_LINE_STRING:
                     final MultiLineString multiLineString = (MultiLineString) geometry;
                     int numGeometries = multiLineString.getNumGeometries();
-                    for (int i = 0; i < numGeometries; i++) {
+                    for( int i = 0; i < numGeometries; i++ ) {
                         final LineString lineString = (LineString) multiLineString.getGeometryN(i);
                         drawLineString(g, lineString);
                     }
@@ -143,7 +138,7 @@ public class GeoJsonRenderer extends RendererImpl {
                     break;
                 case MULTI_POLYGON:
                     final MultiPolygon multiPolygon = (MultiPolygon) geometry;
-                    for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {
+                    for( int i = 0; i < multiPolygon.getNumGeometries(); i++ ) {
                         drawPolygon(g, (Polygon) multiPolygon.getGeometryN(i));
                     }
                     break;
@@ -172,12 +167,10 @@ public class GeoJsonRenderer extends RendererImpl {
     /**
      * Draws given point on graphics2D.
      * 
-     * @param g
-     *                {@link Graphics2D} object
-     * @param point
-     *                {@link Point} object
+     * @param g {@link Graphics2D} object
+     * @param point {@link Point} object
      */
-    private void drawPoint(final Graphics2D g, final Point point) {
+    private void drawPoint( final Graphics2D g, final Point point ) {
         final java.awt.Point p = getAwtPoint(point);
         g.fillOval(p.x, p.y, 2, 2);
     }
@@ -185,17 +178,15 @@ public class GeoJsonRenderer extends RendererImpl {
     /**
      * Draws given polygon on graphics2D.
      * 
-     * @param g
-     *                {@link Graphics2D} object
-     * @param polygon
-     *                {@link Polygon} object
+     * @param g {@link Graphics2D} object
+     * @param polygon {@link Polygon} object
      */
-    private void drawPolygon(final Graphics2D g, final Polygon polygon) {
+    private void drawPolygon( final Graphics2D g, final Polygon polygon ) {
         final LineString exteriorRing = polygon.getExteriorRing();
         int numPoints = exteriorRing.getNumPoints();
         int[] xpoints = new int[numPoints];
         int[] ypoints = new int[numPoints];
-        for (int i = 0; i < numPoints; i++) {
+        for( int i = 0; i < numPoints; i++ ) {
             Point point = exteriorRing.getPointN(i);
             java.awt.Point awtPoint = getAwtPoint(point);
             xpoints[i] = awtPoint.x;
@@ -208,15 +199,13 @@ public class GeoJsonRenderer extends RendererImpl {
     /**
      * Draws {@link LineString} object on g from given points.
      * 
-     * @param g
-     *                {@link Graphics2D} object
-     * @param lineString
-     *                {@link LineString} object
+     * @param g {@link Graphics2D} object
+     * @param lineString {@link LineString} object
      */
-    private void drawLineString(final Graphics2D g, final LineString lineString) {
+    private void drawLineString( final Graphics2D g, final LineString lineString ) {
         final int numPoints = lineString.getNumPoints();
         Point startPoint = lineString.getPointN(0);
-        for (int i = 1; i < numPoints; i++) {
+        for( int i = 1; i < numPoints; i++ ) {
             final Point pointN = lineString.getPointN(i);
             drawLine(g, startPoint, pointN);
             startPoint = pointN;
@@ -226,14 +215,11 @@ public class GeoJsonRenderer extends RendererImpl {
     /**
      * Draws line on g from given points.
      * 
-     * @param g
-     *                {@link Graphics} object
-     * @param startPoint
-     *                {@link Point} object
-     * @param endPoint
-     *                {@link Point} object
+     * @param g {@link Graphics} object
+     * @param startPoint {@link Point} object
+     * @param endPoint {@link Point} object
      */
-    private void drawLine(final Graphics g, final Point startPoint, final Point endPoint) {
+    private void drawLine( final Graphics g, final Point startPoint, final Point endPoint ) {
 
         final java.awt.Point awtStartPoint = getAwtPoint(startPoint);
         final java.awt.Point awtEndPoint = getAwtPoint(endPoint);
@@ -244,11 +230,10 @@ public class GeoJsonRenderer extends RendererImpl {
     /**
      * Converts {@link Point} object to {@link java.awt.Point} object.
      * 
-     * @param point
-     *                {@link Point} object
+     * @param point {@link Point} object
      * @return {@link java.awt.Point} object
      */
-    private java.awt.Point getAwtPoint(final Point point) {
+    private java.awt.Point getAwtPoint( final Point point ) {
         return getContext().worldToPixel(point.getCoordinate());
     }
 

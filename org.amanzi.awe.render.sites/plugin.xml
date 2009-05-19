@@ -9,5 +9,24 @@
             name="Amanzi Sites Renderer">
       </renderer>
    </extension>
+   <extension
+         point="net.refractions.udig.project.ui.tool">
+      <modalTool
+            categoryId="org.amanzi.awe.category.selection"
+            class="org.amanzi.awe.render.sites.tool.ArrowSelect"
+            icon="icon/etool16/select_feature_mode.gif"
+            id="org.amanzi.awe.tools.ArrowSelect"
+            name="Select network element"
+            onToolbar="true"
+            toolCursorId="selectFeatureCursor"
+            tooltip="Use to select network featuers">
+         <cursor
+               hotspotX="10"
+               hotspotY="10"
+               id="arrow_cursor"
+               image="icon/pointers/select_feature_cursor.gif">
+         </cursor>
+      </modalTool>
+   </extension>
 
 </plugin>

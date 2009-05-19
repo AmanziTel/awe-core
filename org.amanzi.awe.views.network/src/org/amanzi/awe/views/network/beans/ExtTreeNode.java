@@ -1,4 +1,4 @@
-package org.amanzi.awe.catalog.json.beans;
+package org.amanzi.awe.views.network.beans;
 
 import net.sf.json.JSONObject;
 /**

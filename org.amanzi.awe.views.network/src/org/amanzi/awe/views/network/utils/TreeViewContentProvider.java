@@ -6,12 +6,13 @@ package org.amanzi.awe.views.network.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.amanzi.awe.catalog.json.JSONReader;
-import org.amanzi.awe.catalog.json.beans.ExtTreeNode;
-import org.amanzi.awe.catalog.json.beans.ExtTreeNodes;
+import org.amanzi.awe.views.network.beans.ExtTreeNode;
+import org.amanzi.awe.views.network.beans.ExtTreeNodes;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -28,22 +29,16 @@ public class TreeViewContentProvider implements IStructuredContentProvider, ITre
      */
     private static final String ROOT = "NETWORK";
 
-    /**
-     * base url.
-     */
-    private URL newurl;
     private ExtTreeNode rootNode;
     /**
      * Parameterized constructor responsible for to load the JSONObject from file.
      * 
-     * @param jsonReader {@link JSONReader} object
+     * @param treeHref
+     * @param baseUrl {@link URL} object
      */
-    public TreeViewContentProvider( final JSONReader jsonReader ) {
+    public TreeViewContentProvider( final String treeHref, final URL baseUrl ) {
         try {
-            final String href = jsonReader.getExtJSON().getExtTree().getHref();
-            newurl = new URL(jsonReader.getUrl(), new File(jsonReader.getUrl().toString())
-                    .getParent()
-                    + href);
+            final URL newurl = new URL(baseUrl, new File(baseUrl.toString()).getParent() + treeHref);
             rootNode = new ExtTreeNode(ROOT, newurl.toString());
         } catch (IOException e) {
             e.printStackTrace();
@@ -56,6 +51,7 @@ public class TreeViewContentProvider implements IStructuredContentProvider, ITre
      * node.
      * 
      * @param parent
+     * @return
      */
     public Object[] getElements( Object parent ) {
         if (parent instanceof IViewSite) {
@@ -69,6 +65,7 @@ public class TreeViewContentProvider implements IStructuredContentProvider, ITre
      * When user clicks on + sign below tree is populated, this method would be called that time.
      * 
      * @param parent
+     * @return
      */
     public Object[] getChildren( Object parent ) {
         ExtTreeNodes nodes = new ExtTreeNodes();
@@ -82,8 +79,7 @@ public class TreeViewContentProvider implements IStructuredContentProvider, ITre
                 address = rootNode.getHref() + "_node=" + treeNode.getId();
             }
 
-            System.out.println(address);
-            final String treeNodesString = JSONReader.readURL(new URL(address));
+            final String treeNodesString = readURL(new URL(address));
             if (treeNodesString != null) {
                 nodes = new ExtTreeNodes(treeNodesString);
             }
@@ -137,10 +133,46 @@ public class TreeViewContentProvider implements IStructuredContentProvider, ITre
     }
     /**
      * Given a input as child object this method returns parent object if exists otherwise returns
-     * null
+     * null.
+     * 
+     * @param child
      */
     public Object getParent( Object child ) {
 
         return null;
+    }
+
+    /**
+     * TODO move to some util package since this method exists in JSONReader also.<br />
+     * Read a file from given URL.
+     * 
+     * @param url {@link URL}object
+     * @return file as string
+     */
+    public static String readURL( final URL url ) {
+        final StringBuilder sb = new StringBuilder();
+        Reader reader = null;
+        try {
+            reader = new InputStreamReader(url.openStream(), "UTF8");
+            final char[] buffer = new char[1024];
+            int bytesRead = 0;
+
+            while( (bytesRead = reader.read(buffer)) >= 0 ) {
+                if (bytesRead > 0) {
+                    sb.append(buffer);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to get features from url '" + url + "': " + e);
+            e.printStackTrace(System.err);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        return sb.toString();
     }
 }

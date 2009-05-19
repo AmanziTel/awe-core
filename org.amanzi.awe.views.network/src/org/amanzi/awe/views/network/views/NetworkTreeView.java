@@ -5,9 +5,12 @@
 package org.amanzi.awe.views.network.views;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Vector;
 
-import org.amanzi.awe.catalog.json.beans.ExtTreeNode;
+import org.amanzi.awe.views.network.beans.ExtTreeNode;
+import org.amanzi.awe.views.network.utils.ITreeSelectionChanged;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -24,7 +27,9 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.part.ViewPart;
 
 /**
@@ -42,14 +47,15 @@ public class NetworkTreeView extends ViewPart {
     private Action doubleClickAction;
 
     private List<String> selectedTreeItems;
-    private boolean initialized;
+    private Collection<ITreeSelectionChanged> changeListeners;
+    private ISelectionListener selectionListener;
 
     /**
      * The constructor.
      */
     public NetworkTreeView() {
+        changeListeners = new Vector<ITreeSelectionChanged>();
         selectedTreeItems = new ArrayList<String>();
-        initialized = false;
     }
     /**
      * Disposes the title image when super is called and then hides the view.
@@ -90,7 +96,9 @@ public class NetworkTreeView extends ViewPart {
                 for( TreeItem treeItem : selection ) {
                     addSelected(treeItem.getText());
                 }
-
+                for( ITreeSelectionChanged changeListener : changeListeners ) {
+                    changeListener.update(selectedTreeItems);
+                }
             }
         });
     }
@@ -183,17 +191,57 @@ public class NetworkTreeView extends ViewPart {
     public void setSelectedTreeItems( List<String> selectedTreeItems ) {
         this.selectedTreeItems = selectedTreeItems;
     }
-    /**
-     * @return the initialized
-     */
-    public boolean isInitialized() {
-        return initialized;
+    public void addChangeListeners( ITreeSelectionChanged changeListener ) {
+        changeListeners.add(changeListener);
     }
     /**
-     * @param initialized the initialized to set
+     * Find tree items that who's names correspond to selected items on map and select them.
+     * 
+     * @param selectedNames list of elected map items.
      */
-    public void setInitialized( boolean initialized ) {
-        this.initialized = initialized;
-    }
+    public void select( List<String> selectedNames ) {
+        for( ITreeSelectionChanged changeListener : changeListeners ) {
+            changeListener.update(selectedNames);
+        }
+        final Tree tree = viewer.getTree();
+        final List<TreeItem> selectedItems = new ArrayList<TreeItem>();
 
+        final TreeItem[] items = tree.getItems();
+        for( TreeItem treeItem : items ) {
+            processItem(treeItem, selectedNames, selectedItems);
+        }
+        final TreeItem[] array = new TreeItem[selectedItems.size()];
+        for( int i = 0; i < array.length; i++ ) {
+            array[i] = selectedItems.get(i);
+        }
+
+        tree.setSelection(array);
+    }
+    /**
+     * Iterates through provided tree item, and appends selectedItems list with tree items that
+     * correspond to selected items on map.
+     * 
+     * @param treeItem {@link TreeItem} object
+     * @param selected list of strings
+     * @param selectedItems list of {@link TreeItem} objects
+     */
+    private void processItem( final TreeItem treeItem, final List<String> selected,
+            final List<TreeItem> selectedItems ) {
+        TreeItem[] items = treeItem.getItems();
+        if (items.length > 0) {
+            if (items.length == 1 && items[0].getText().equals("")) {
+                if (selected.contains(treeItem.getText())) {
+                    selectedItems.add(treeItem);
+                }
+            } else {
+                for( TreeItem subItem : items ) {
+                    processItem(subItem, selected, selectedItems);
+                }
+            }
+        } else {
+            if (selected.contains(treeItem.getText())) {
+                selectedItems.add(treeItem);
+            }
+        }
+    }
 }

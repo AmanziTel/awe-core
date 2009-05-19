@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,20 +16,15 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.amanzi.awe.catalog.csv.CSV;
+import org.amanzi.awe.catalog.json.Feature;
 import org.amanzi.awe.catalog.json.JSONReader;
-import org.amanzi.awe.catalog.json.JSONReader.Feature;
-import org.amanzi.awe.views.network.utils.TreeViewContentProvider;
-import org.amanzi.awe.views.network.utils.ViewLabelProvider;
+import org.amanzi.awe.views.network.utils.ITreeSelectionChanged;
 import org.amanzi.awe.views.network.views.NetworkTreeView;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -43,7 +39,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Point;
 
-public class SitesRenderer extends RendererImpl {
+public class SitesRenderer extends RendererImpl implements ITreeSelectionChanged {
     private static final Color SELECTION_COLOR = Color.RED;
     private AffineTransform base_transform = null; // save original graphics transform for repeated
     // re-use
@@ -51,8 +47,25 @@ public class SitesRenderer extends RendererImpl {
     private Color fillColor = new Color(120, 255, 170);
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
+    private List<String> selectedTreeItems = new ArrayList<String>();
 
-    private List<String> selectedTreeItems;
+    public SitesRenderer() {
+        Display display = PlatformUI.getWorkbench().getDisplay();
+        display.syncExec(new Runnable(){
+
+            public void run() {
+                final IWorkbenchWindow window = PlatformUI.getWorkbench()
+                        .getActiveWorkbenchWindow();
+                try {
+                    final NetworkTreeView viewPart = (NetworkTreeView) window.getActivePage()
+                            .showView(NetworkTreeView.NETWORK_VIEW_ID);
+                    viewPart.addChangeListeners(SitesRenderer.this);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
     private void setCrsTransforms( final CoordinateReferenceSystem dataCrs )
             throws FactoryException {
@@ -191,22 +204,6 @@ public class SitesRenderer extends RendererImpl {
 
             monitor.subTask("connecting");
 
-            Display display = PlatformUI.getWorkbench().getDisplay();
-            display.syncExec(new Runnable(){
-
-                public void run() {
-                    final IWorkbenchWindow window = PlatformUI.getWorkbench()
-                            .getActiveWorkbenchWindow();
-                    try {
-                        final NetworkTreeView viewPart = (NetworkTreeView) window.getActivePage()
-                                .showView(NetworkTreeView.NETWORK_VIEW_ID);
-                        selectedTreeItems = viewPart.getSelectedTreeItems();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
             JSONReader jsonReader = jsonGeoResource.resolve(JSONReader.class,
                     new SubProgressMonitor(monitor, 10));
 
@@ -270,8 +267,8 @@ public class SitesRenderer extends RendererImpl {
                                             if (selected) {
                                                 selectedSector = true;
                                             } else {
-                                                if (selectedTreeItems.contains(sector
-                                                        .getString("name"))) {
+                                                final String sectorName = sector.getString("name");
+                                                if (selectedTreeItems.contains(sectorName)) {
                                                     selectedSector = true;
                                                 }
                                             }
@@ -315,7 +312,7 @@ public class SitesRenderer extends RendererImpl {
                     break;
                 }
             }
-            updateNetworkTreeView(jsonReader);
+            // updateNetworkTreeView(jsonReader);
         } catch (TransformException e) {
             throw new RenderException(e);
         } catch (FactoryException e) {
@@ -328,53 +325,6 @@ public class SitesRenderer extends RendererImpl {
             monitor.done();
         }
     }
-    /**
-     * Below Code is added by Sachin P After loading the map, Network tree view should be shown.
-     * Below code creates view in same UI thread and same renders a view which is populated with
-     * geo_JSON data in tree format.
-     */
-    private void updateNetworkTreeView( final JSONReader jsonReader ) {
-        Display display = PlatformUI.getWorkbench().getDisplay();
-        display.syncExec(new Runnable(){
-
-            public void run() {
-
-                IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-
-                try {
-                    // Finding if the view is opened.
-                    IWorkbenchPart part = window.getActivePage().findView(
-                            NetworkTreeView.NETWORK_VIEW_ID);
-                    //TODO this is temp solution. method updateNetworkTreeView will be removed
-                    if (!((NetworkTreeView) part).isInitialized()) {
-
-                        if (part != null) {
-                            window.getActivePage().hideView((IViewPart) part);
-                        }
-
-                        NetworkTreeView viewPart = (NetworkTreeView) window.getActivePage()
-                                .showView(NetworkTreeView.NETWORK_VIEW_ID, null,
-                                        IWorkbenchPage.VIEW_ACTIVATE);
-
-                        viewPart.getViewer().setContentProvider(
-                                new TreeViewContentProvider(jsonReader));
-                        viewPart.getViewer().setLabelProvider(new ViewLabelProvider());
-                        viewPart.getViewer().setInput(viewPart.getViewSite());
-                        viewPart.makeActions();
-                        viewPart.hookDoubleClickAction();
-                        viewPart.setFocus();
-                        viewPart.setSelectedTreeItems(selectedTreeItems);
-                        viewPart.setInitialized(true);
-                        window.getActivePage().activate(viewPart);
-                    }
-
-                } catch (PartInitException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        });
-    }
-
     private void renderSector( final Graphics2D g, final java.awt.Point p, final double azimuth,
             final double beamwidth ) {
         renderSector(g, p, azimuth, beamwidth, false);
@@ -445,8 +395,14 @@ public class SitesRenderer extends RendererImpl {
 
     @Override
     public final void render( final IProgressMonitor monitor ) throws RenderException {
-        Graphics2D g = getContext().getImage().createGraphics();
+
+        final Graphics2D g = getContext().getImage().createGraphics();
         render(g, monitor);
+    }
+
+    public void update( List<String> selectedTreeItems ) {
+        this.selectedTreeItems = selectedTreeItems;
+        setState(RENDER_REQUEST);
     }
 
 }

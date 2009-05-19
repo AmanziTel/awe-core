@@ -22,9 +22,9 @@ public class JSONServiceExtension implements ServiceExtension {
                 File file = URLUtils.urlToFile(url);
                 if (file.exists()) {
                     // check the filename, is it a CSV file?
-                    if (file.getName().toLowerCase().endsWith(".json")
-                            || file.getName().toLowerCase().endsWith(".geo_json")
-                            || file.getName().toLowerCase().endsWith(".ext_json")) {
+                    final String lowerCase = file.getName().toLowerCase();
+                    if (lowerCase.endsWith(".json") || lowerCase.endsWith(".geo_json")
+                            || lowerCase.endsWith(".ext_json")) {
                         Map<String, Serializable> params = new HashMap<String, Serializable>();
                         params.put(URL_KEY, url);
                         params.put(CLASS_KEY, File.class);

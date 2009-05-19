@@ -5,43 +5,31 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.IResolveChangeEvent;
+import net.refractions.udig.catalog.IResolveChangeListener;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.amanzi.awe.catalog.json.beans.ExtJSON;
 import org.amanzi.awe.catalog.json.beans.GisGeo;
+import org.amanzi.awe.views.network.utils.TreeViewContentProvider;
+import org.amanzi.awe.views.network.utils.ViewLabelProvider;
+import org.amanzi.awe.views.network.views.NetworkTreeView;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.csvreader.CsvReader;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
-
-/**
- * This class is a utility class for reading from CSV files, using the CSVReader library. This class
- * needs to be resolved by the CSVGeoResource class that uDIG uses when placing the data into the
- * map. Currently this class assumes the data contains "x" and "y" headings, and that the projection
- * matches the one returned by the CSVGeoResourceInfo metadata.
- * 
- * @author craig
- */
 public class JSONReader {
     private URL url; // URL to start reading (might be only a header URL)
     private URL dataURL; // optional data URL in case it was automatically determined from header
@@ -50,26 +38,19 @@ public class JSONReader {
     private CoordinateReferenceSystem crs;
     private ReferencedEnvelope bounds;
     private String name;
-    private static GeometryFactory geometryFactory = new GeometryFactory();
-
     private Boolean networkGeoJSON;
     private final CharSequence csSite = "site";
 
     private ExtJSON extJSON;
     private GisGeo gisGeo;
 
-    /**
-     * Create a JSON reader on the specified URL. This class opens the URL connection on demand for
-     * any data request. The URL is not checked until opened, so if it is likely to be invalid, test
-     * before this point.
-     * 
-     * @param url
-     */
-    public JSONReader( final URL url ) {
-        this.url = url;
+    public JSONReader() {
+        super();
+        CatalogPlugin.addListener(new MyResolveChangeReporter());
     }
 
     public JSONReader( final JSONService service ) {
+        this();
         this.url = service.getValidURL();
         this.dataURL = service.getURL();
     }
@@ -101,7 +82,6 @@ public class JSONReader {
      * 
      * @return {@link GisGeo}object
      * @throws IOException file not found
-     * @throws URISyntaxException
      */
     public final GisGeo getGisGeo() throws IOException {
         if (gisGeo == null) {
@@ -172,7 +152,8 @@ public class JSONReader {
      * Find the Coordinate Reference System in the JSON, or default to the specified default if no
      * CRS is found in the JSON.
      * 
-     * @return CoordinateReferenceSystem
+     * @param defaultCRS {@link CoordinateReferenceSystem} object
+     * @return {@link CoordinateReferenceSystem} object
      */
     public final CoordinateReferenceSystem getCRS( final CoordinateReferenceSystem defaultCRS ) {
         if (crs == null) {
@@ -224,9 +205,9 @@ public class JSONReader {
                 } else {
                     System.err.println("No BBox defined in the GeoJSON object");
                 }
-            } catch (Exception bbox_e) {
-                System.err.println("Failed to interpret BBOX: " + bbox_e.getMessage());
-                bbox_e.printStackTrace(System.err);
+            } catch (Exception e) {
+                System.err.println("Failed to interpret BBOX: " + e.getMessage());
+                e.printStackTrace(System.err);
             }
             // Secondly, if bounds is still empty, try find all feature geometries and calculate
             // bounds
@@ -261,9 +242,9 @@ public class JSONReader {
                         }
                     }
                 }
-            } catch (Exception bbox_e) {
-                System.err.println("Failed to interpret BBOX: " + bbox_e.getMessage());
-                bbox_e.printStackTrace(System.err);
+            } catch (Exception e) {
+                System.err.println("Failed to interpret BBOX: " + e.getMessage());
+                e.printStackTrace(System.err);
             }
         }
         return bounds;
@@ -277,13 +258,14 @@ public class JSONReader {
     public final String getName() {
         if (name == null) {
             try {
-                name = jsonObject().getString("name");
+                if (jsonObject().has("name")) {
+                    name = jsonObject().getString("name");
+                } else {
+                    name = url.getFile();
+                }
             } catch (IOException e) {
                 System.err.println("Failed to find name element: " + e.getMessage());
                 e.printStackTrace(System.err);
-            }
-            if (name == null) {
-                name = url.getFile();
             }
         }
         return name;
@@ -329,479 +311,6 @@ public class JSONReader {
      */
     public final String toString() {
         return "JSON[" + getName() + "]: CRS:" + getCRS() + " Bounds:" + getBounds();
-    }
-
-    /**
-     * This is the main method called by the application to produce the data for display on the map.
-     * Should be called repeatedly until it returns null.
-     * 
-     * @param reader
-     * @return instance of com.vividsolutions.jts.geom.Point
-     * @throws IOException
-     */
-    public static Point getPointX( final JSONObject jsonObject ) throws IOException {
-        if (jsonObject == null) {
-            return null;
-        }
-        double x = Double.valueOf(jsonObject.get("x").toString());
-        double y = Double.valueOf(jsonObject.get("y").toString());
-        Coordinate coordinate = new Coordinate(x, y);
-        return geometryFactory.createPoint(coordinate);
-    }
-
-    /**
-     * A generic interface for all features, whether made from JSON or from some other source of
-     * data. This is to allow for more compact data formats like CSV, or hex streams. It is modeled
-     * however on the types of data found in GeoJSON features.
-     * 
-     * @author craig
-     */
-    public static interface Feature {
-        /**
-         * get the type, as specified in the GeoJSON spec, eg. Point, MultiPoint, Polygon, etc.
-         * 
-         * @return type
-         */
-        String getType();
-        /**
-         * get the set of points representing this feature, or array of length 1 for Point type.
-         * 
-         * @return array of {@link Point} objects
-         */
-        Point[] getPoints();
-        /**
-         * get the map of additional properties for this data type, eg. domain specific data
-         * 
-         * @return {@link Map} object
-         */
-        Map<String, Object> getProperties();
-        /**
-         * Creates geometry object for this feature.
-         * 
-         * @return {@link Geometry} object
-         */
-        Geometry createGeometry();
-    }
-
-    /**
-     * This is the based class for all features that are genuinely build from JSON. As such a
-     * JSONObject is passed to the constructor, and used to generate the feature data required.
-     * 
-     * @author craig
-     */
-    public static class JSONFeature implements Feature {
-        private String type;
-        private JSONObject geometry;
-        private JSONObject properties;
-        private Point[] points;
-        private HashMap<String, Object> propMap;
-        private Geometry objGeometry;
-
-        public JSONFeature( final JSONObject jsonObject ) {
-            this.geometry = jsonObject.getJSONObject("geometry");
-            this.properties = jsonObject.getJSONObject("properties");
-            this.type = this.geometry.getString("type"); // We only care about the geometry type,
-            // because the feature type is by
-            // definition "Feature"
-        }
-        public final String getType() {
-            return type;
-        }
-        public final Point[] getPoints() {
-            if (points == null) {
-                JSONArray coordinates = geometry.getJSONArray("coordinates");
-                if (type.equals("Point")) {
-                    points = new Point[]{makePoint(coordinates)};
-                } else {
-                    // Assume 2D array of points
-                    int countPoints = coordinates.size();
-                    points = new Point[countPoints];
-                    for( int i = 0; i < countPoints; i++ ) {
-                        points[i] = makePoint(coordinates.getJSONArray(i));
-                    }
-                }
-            }
-            return points;
-        }
-        private Point makePoint( final JSONArray jsonPoint ) {
-            Coordinate coordinate = new Coordinate(jsonPoint.getDouble(0), jsonPoint.getDouble(1));
-            return geometryFactory.createPoint(coordinate);
-        }
-
-        public final Geometry createGeometry() {
-            if (objGeometry == null) {
-                if (geometry != null) {
-                    final JSONGeoFeatureType featureType = JSONGeoFeatureType.fromCode(type);
-                    final JSONArray coordinates = geometry.getJSONArray("coordinates");
-                    switch( featureType ) {
-                    case POINT:
-                        objGeometry = createPoint(coordinates);
-                        break;
-                    case MULTI_POINT:
-                        objGeometry = createMultiPoint(coordinates);
-                        break;
-                    case LINE:
-                        objGeometry = createLine(coordinates);
-                        break;
-                    case MULTI_LINE_STRING:
-                        objGeometry = createMultiLine(coordinates);
-                        break;
-                    case POLYGON:
-                        objGeometry = createPolygon(coordinates);
-                        break;
-                    case MULTI_POLYGON:
-                        objGeometry = createMultiPolygon(coordinates);
-                    default:
-                        break;
-                    }
-                }
-            }
-            return objGeometry;
-        }
-
-        /**
-         * Creates {@link Point} object from json string.
-         * 
-         * @param coordinates {@link JSONArray} object
-         * @return {@link Point} object
-         */
-        private Geometry createPoint( final JSONArray coordinates ) {
-            return geometryFactory.createPoint(createCoordinate(coordinates));
-        }
-
-        /**
-         * Creates {@link MultiPoint} object from json string.
-         * 
-         * @param jsonCoordinates json representation of MultiPoint.
-         * @return {@link MultiPoint} object
-         */
-        private Geometry createMultiPoint( final JSONArray jsonCoordinates ) {
-            return geometryFactory.createMultiPoint(createCoordinates(jsonCoordinates));
-        }
-
-        /**
-         * Creates {@link LineString} object from json string.
-         * 
-         * @param jsonCoordinates json representation of LineString.
-         * @return {@link LineString} object
-         */
-        private Geometry createLine( final JSONArray jsonCoordinates ) {
-            return geometryFactory.createLineString(createCoordinates(jsonCoordinates));
-        }
-
-        /**
-         * Creates {@link MultiLineString} object from json string.
-         * 
-         * @param jsonCoordinates json representation of MultiLineString.
-         * @return {@link MultiLineString} object
-         */
-        private Geometry createMultiLine( final JSONArray jsonCoordinates ) {
-            List<LineString> lineStringList = new ArrayList<LineString>();
-            for( int i = 0; i < jsonCoordinates.size(); i++ ) {
-                JSONArray jsonLine = jsonCoordinates.getJSONArray(i);
-                lineStringList.add(geometryFactory.createLineString(createCoordinates(jsonLine)));
-            }
-            return geometryFactory.createMultiLineString(lineStringList
-                    .toArray(new LineString[lineStringList.size()]));
-        }
-
-        /**
-         * Creates {@link Polygon} object from {@link JSONArray} object.
-         * 
-         * @param jsonCoordinates {@link JSONArray} object
-         * @return {@link Polygon} object
-         */
-        private Polygon createPolygon( final JSONArray jsonCoordinates ) {
-            LinearRing linearRing = null;
-
-            final List<LinearRing> holeLinearRings = new ArrayList<LinearRing>();
-            for( int i = 0; i < jsonCoordinates.size(); i++ ) {
-                if (i == 0) {
-                    linearRing = createLinearRing(jsonCoordinates.getJSONArray(i));
-                } else {
-                    holeLinearRings.add(createLinearRing(jsonCoordinates.getJSONArray(i)));
-                }
-            }
-            return geometryFactory.createPolygon(linearRing, holeLinearRings
-                    .toArray(new LinearRing[holeLinearRings.size()]));
-        }
-
-        /**
-         * Creates {@link MultiPolygon} object from json string.
-         * 
-         * @param jsonCoordinates json representation of MultiPolygon.
-         * @return {@link MultiPolygon} object
-         */
-        private Geometry createMultiPolygon( final JSONArray jsonCoordinates ) {
-
-            List<Polygon> polygons = new ArrayList<Polygon>();
-            for( int i = 0; i < jsonCoordinates.size(); i++ ) {
-                JSONArray jsonPolygon = jsonCoordinates.getJSONArray(i);
-                polygons.add(createPolygon(jsonPolygon));
-            }
-            return geometryFactory.createMultiPolygon(polygons
-                    .toArray(new Polygon[polygons.size()]));
-        }
-
-        /**
-         * Creates {@link LinearRing} object from given json.
-         * 
-         * @param jsonCoordinates {@link JSONArray} object
-         * @return {@link LinearRing} object
-         */
-        private LinearRing createLinearRing( final JSONArray jsonCoordinates ) {
-            final Coordinate[] coordinates = new Coordinate[jsonCoordinates.size()];
-            for( int i = 0; i < coordinates.length; i++ ) {
-                coordinates[i] = createCoordinate(jsonCoordinates.getJSONArray(i));
-            }
-            final CoordinateArraySequence sequence = new CoordinateArraySequence(coordinates);
-            return new LinearRing(sequence, geometryFactory);
-        }
-
-        /**
-         * Creates {@link Coordinate} array out of given {@link JSONArray} object.
-         * 
-         * @param jsonCoordinates {@link JSONArray} object that represents array of coordinates
-         * @return array of {@link Coordinate} objects
-         */
-        private Coordinate[] createCoordinates( final JSONArray jsonCoordinates ) {
-            Coordinate[] coordinates = new Coordinate[jsonCoordinates.size()];
-            for( int i = 0; i < jsonCoordinates.size(); i++ ) {
-                coordinates[i] = createCoordinate(jsonCoordinates.getJSONArray(i));
-            }
-            return coordinates;
-        }
-
-        /**
-         * Creates {@link Coordinate} object out of given {@link JSONArray} object.
-         * 
-         * @param json {@link JSONArray} object
-         * @return {@link Coordinate} object
-         */
-        private Coordinate createCoordinate( final JSONArray json ) {
-            return new Coordinate(json.getDouble(0), json.getDouble(1));
-        }
-
-        public final Map<String, Object> getProperties() {
-            if (propMap == null) {
-                this.propMap = new HashMap<String, Object>();
-                if (properties != null) {
-                    for( Object key : properties.keySet() ) {
-                        propMap.put(key.toString(), properties.get(key));
-                    }
-                }
-            }
-            return propMap;
-        }
-        public final String toString() {
-            if (getProperties().containsKey("name")) {
-                return getProperties().get("name").toString();
-            } else {
-                return points[0].toString();
-            }
-        }
-    }
-    public static class SimplePointFeature implements Feature {
-        private Point point;
-        private HashMap<String, Object> properties;
-        public SimplePointFeature( final double x, final double y,
-                final HashMap<String, Object> properties ) {
-            Coordinate coordinate = new Coordinate(x, y);
-            this.point = geometryFactory.createPoint(coordinate);
-            this.properties = properties;
-        }
-        public final Point[] getPoints() {
-            return new Point[]{this.point};
-        }
-        public final Map<String, Object> getProperties() {
-            return properties;
-        }
-        public final String getType() {
-            return "Point";
-        }
-
-        public final Geometry createGeometry() {
-            return point;
-        }
-
-        public final String toString() {
-            if (properties.containsKey("name")) {
-                return properties.get("name").toString();
-            } else {
-                return point.toString();
-            }
-        }
-    }
-
-    /**
-     * This class provides the API for various anonymous inner classes that can produce a stream of
-     * JSON features. We implement both the Iterator and the Enumeration interfaces to be friendly
-     * to both the java5-style 'for loop' and the JRuby 'each' method. This allows, for example, the
-     * JSON to contain the features directly as well as reference another data source, like a file
-     * or another URL, that will provide the necessary data.
-     * 
-     * @author craig
-     */
-    public abstract static class FeatureIterator implements Iterable<Feature>, Enumeration<Feature> {
-        private Iterator<Feature> iter = null;
-        public final boolean hasMoreElements() {
-            if (iter == null) {
-                iter = iterator();
-            }
-            return iter.hasNext();
-        }
-        public final Feature nextElement() {
-            return hasMoreElements() ? iter.next() : null;
-        }
-    }
-    private static class JSONFeatureReader extends FeatureIterator {
-        protected JSONArray features;
-        private int index;
-        public JSONFeatureReader( final JSONArray features ) {
-            this.index = 0;
-            this.features = features;
-        }
-        private Feature getFeature() {
-            try {
-                JSONObject feature = features.getJSONObject(index++);
-                return new JSONFeature(feature);
-            } catch (Throwable e) {
-                return null;
-            }
-        }
-        /** provide an iterator reset to the first element, if any */
-        public Iterator<Feature> iterator() {
-            index = 0;
-            return new Iterator<Feature>(){
-                public boolean hasNext() {
-                    return features != null && features.size() > index;
-                }
-                public Feature next() {
-                    return getFeature();
-                }
-                public void remove() {
-                }
-            };
-        }
-    }
-    private static class JSONURLFeatureReader extends JSONFeatureReader {
-        private URL feature_url;
-        public JSONURLFeatureReader( final URL feature_url ) {
-            super(null);
-            this.feature_url = feature_url;
-        }
-        private void setupFeatures() {
-            String content = readURL(feature_url);
-            JSONObject json = JSONObject.fromObject(content);
-
-            features = json.getJSONArray("features");
-        }
-        /** provide an iterator reset to the first element, if any */
-        public Iterator<Feature> iterator() {
-            setupFeatures();
-            return super.iterator();
-        }
-    }
-    private static class CSVURLFeatureReader extends FeatureIterator {
-        private URL feature_url;
-        private CsvReader reader;
-        private int x_col = -1;
-        private int y_col = -1;
-        private int name_col = -1;
-        public CSVURLFeatureReader( final URL feature_url ) {
-            this.feature_url = feature_url;
-        }
-        private void setupFeatures() {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-                reader = new CsvReader(new InputStreamReader(feature_url.openStream()));
-                reader.readHeaders(); // Assume all CSV files have a header line
-                HashMap<String, Integer> headers = new HashMap<String, Integer>();
-                for( String header : reader.getHeaders() )
-                    headers.put(header.toLowerCase(), headers.size());
-                for( String head : new String[]{"long", "longitude", "x"} ) {
-                    if (headers.containsKey(head)) {
-                        x_col = headers.get(head);
-                    }
-                }
-                for( String head : new String[]{"lat", "latitude", "y"} ) {
-                    if (headers.containsKey(head)) {
-                        y_col = headers.get(head);
-                    }
-                }
-                for( String head : new String[]{"description", "name"} ) {
-                    if (headers.containsKey(head)) {
-                        name_col = headers.get(head);
-                    }
-                }
-                // test for invalid x and y columns
-                if (x_col < 0 || x_col >= reader.getHeaderCount()) {
-                    throw new Exception("Invalid easting column: " + x_col);
-                }
-                if (y_col < 0 || y_col >= reader.getHeaderCount()) {
-                    throw new Exception("Invalid northing column: " + y_col);
-                }
-                // fix invalid name_col
-                int loops = 0;
-                while( loops < 2 && invalidNameCol() ) {
-                    name_col++;
-                    if (name_col >= reader.getHeaderCount()) {
-                        name_col = 0;
-                        loops++;
-                    }
-                }
-                if (invalidNameCol()) {
-                    name_col = -1; // deal with this later
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to get features from url '" + feature_url + "': " + e);
-                e.printStackTrace(System.err);
-            }
-        }
-        private Feature getFeature() {
-            if (reader == null) {
-                setupFeatures();
-            }
-            try {
-                double x = Double.valueOf(reader.get(x_col));
-                double y = Double.valueOf(reader.get(y_col));
-                String name = (name_col < 0) ? "Point[" + x + ":" + y + "]" : reader.get(name_col);
-                HashMap<String, Object> properties = new HashMap<String, Object>();
-                properties.put("name", name);
-                for( int i = 0; i < reader.getColumnCount(); i++ ) {
-                    if (i != x_col && i != y_col && i != name_col) {
-                        properties.put(reader.getHeader(i), reader.get(i));
-                    }
-                }
-                return new SimplePointFeature(x, y, properties);
-            } catch (Exception e) {
-                System.err.println("Failed to get features from url '" + feature_url + "': " + e);
-                e.printStackTrace(System.err);
-                return null;
-            }
-        }
-        private boolean invalidNameCol() {
-            return (name_col == x_col || name_col == y_col || name_col >= reader.getHeaderCount() || name_col < 0);
-        }
-        public Iterator<Feature> iterator() {
-            setupFeatures();
-            return new Iterator<Feature>(){
-                private Feature next = null;
-                public boolean hasNext() {
-                    return (next = getFeature()) != null;
-                }
-                public Feature next() {
-                    if (next == null) {
-                        next = getFeature();
-                    }
-                    return next;
-                }
-                public void remove() {
-                }
-            };
-        }
     }
 
     public final FeatureIterator getFeatures() {
@@ -857,7 +366,75 @@ public class JSONReader {
         }
     }
 
-    public URL getUrl() {
+    public class MyResolveChangeReporter implements IResolveChangeListener {
+        public final void changed( final IResolveChangeEvent event ) {
+
+            switch( event.getType() ) {
+            case POST_CHANGE:
+                System.out.println("Resources have changed.");
+                try {
+                    updateNetworkTreeView(JSONReader.this.getExtJSON().getExtTree().getHref(),
+                            JSONReader.this.getUrl());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            // unused yet
+            case PRE_CLOSE:
+                IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+                IWorkbenchPart part = window.getActivePage().findView(
+                        NetworkTreeView.NETWORK_VIEW_ID);
+                window.getActivePage().hideView((IViewPart) part);
+                break;
+            case PRE_DELETE:
+            default:
+                throw new IllegalStateException("Unexpected state occured!");
+            }
+        }
+        /**
+         * Below Code is added by Sachin P After loading the map, Network tree view should be shown.
+         * Below code creates view in same UI thread and same renders a view which is populated with
+         * geo_JSON data in tree format.
+         */
+        private void updateNetworkTreeView( final String treeHref, final URL baseUrl ) {
+            final Display display = PlatformUI.getWorkbench().getDisplay();
+            display.syncExec(new Runnable(){
+
+                public void run() {
+
+                    IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+
+                    try {
+                        // Finding if the view is opened.
+                        IWorkbenchPart part = window.getActivePage().findView(
+                                NetworkTreeView.NETWORK_VIEW_ID);
+
+                        if (part != null) {
+                            window.getActivePage().hideView((IViewPart) part);
+                        }
+
+                        NetworkTreeView viewPart = (NetworkTreeView) window.getActivePage()
+                                .showView(NetworkTreeView.NETWORK_VIEW_ID, null,
+                                        IWorkbenchPage.VIEW_ACTIVATE);
+
+                        viewPart.getViewer().setContentProvider(
+                                new TreeViewContentProvider(treeHref, baseUrl));
+                        viewPart.getViewer().setLabelProvider(new ViewLabelProvider());
+                        viewPart.getViewer().setInput(viewPart.getViewSite());
+                        viewPart.makeActions();
+                        viewPart.hookDoubleClickAction();
+                        viewPart.setFocus();
+                        window.getActivePage().activate(viewPart);
+                    } catch (PartInitException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
+    }
+
+    public final URL getUrl() {
         return url;
     }
 

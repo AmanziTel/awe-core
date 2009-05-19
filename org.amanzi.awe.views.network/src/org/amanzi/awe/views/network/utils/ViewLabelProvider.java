@@ -6,7 +6,7 @@ package org.amanzi.awe.views.network.utils;
 
 import java.io.InputStream;
 
-import org.amanzi.awe.catalog.json.beans.ExtTreeNode;
+import org.amanzi.awe.views.network.beans.ExtTreeNode;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
