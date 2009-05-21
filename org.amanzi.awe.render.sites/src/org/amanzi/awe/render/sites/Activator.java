@@ -42,7 +42,7 @@ public class Activator extends Plugin {
                 new URL("http://localhost:3005/sites/gis.geo_json"));
         catalog.add(services.get(1));
         services = CatalogPlugin.getDefault().getServiceFactory().createService(
-                new URL("http://localhost:3005/sites.csv"));
+                new URL("http://localhost:3005/network.ext_json"));
         catalog.add(services.get(1));
 
     }
