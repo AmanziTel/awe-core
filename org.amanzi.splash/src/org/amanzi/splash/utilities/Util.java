@@ -2,6 +2,7 @@ package org.amanzi.splash.utilities;
 
 import java.awt.Color;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,12 +14,11 @@ import java.util.regex.Pattern;
 
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
-import javax.swing.JTable;
-
 
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorPart;
@@ -26,7 +26,6 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 
 import com.eteks.openjeks.format.CellFormat;
@@ -350,7 +349,7 @@ public class Util {
 		try {
 			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
 			if (page != null) {
-				IFileEditorInput fi = new FileEditorInput(file);
+				IFileEditorInput fi = new FileEditorInput(file);				
 				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
 			}
 
@@ -391,7 +390,7 @@ public class Util {
 
 		return content;
 	}
-
+	
 	/**
 	 * Utility function that converts input stream to String
 	 * 
@@ -410,5 +409,51 @@ public class Util {
 		}
 		reader.close();
 		return buffer.toString();
+	}
+	
+	/**
+	 * Utility function that saves TableModel to file
+	 * 
+	 * @param spreadsheet
+	 * @param model
+	 */
+	
+	public static void saveTable(SplashTableModel model, String project, String name) {
+		IFile file = ResourcesPlugin.getWorkspace().getRoot().getProject(project).getFile(name + DEFAULT_SPREADSHEET_EXTENSION);
+		
+		try {
+			StringBuffer sb = new StringBuffer();
+			model.save(sb);			
+			file.setContents(
+							new ByteArrayInputStream(sb.toString().getBytes()),
+							IResource.KEEP_HISTORY, null);            
+        } catch (CoreException e) {
+        	//TODO: handle this exception
+            e.printStackTrace();
+        }
+	}
+	
+	/**
+	 * Utility function that load TableModel from file
+	 * 
+	 * @param project name of project
+	 * @param name name of file
+	 * @return model of table
+	 */
+	
+	public static SplashTableModel loadTable(String project, String name) {		
+		IFile file = ResourcesPlugin.getWorkspace().getRoot().getProject(project).getFile(name + DEFAULT_SPREADSHEET_EXTENSION);
+		
+		SplashTableModel model = null;
+		
+		try {
+			model = new SplashTableModel(file.getContents());
+		}
+		catch (CoreException e) {
+			//TODO: handle this exception
+			e.printStackTrace();
+		}
+		
+		return model;
 	}
 }

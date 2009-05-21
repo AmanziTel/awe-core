@@ -1,8 +1,13 @@
 package org.amanzi.awe.script.jirb;
 
+import java.io.IOException;
+import java.net.URL;
+
 import org.amanzi.scripting.jirb.IRBConfigData;
 import org.amanzi.scripting.jirb.SWTIRBConsole;
 import org.amanzi.scripting.jirb.SwingIRBConsole;
+import org.amanzi.splash.console.SpreadsheetManager;
+import org.amanzi.splash.ui.SplashPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -56,11 +61,16 @@ public class RubyConsole extends ViewPart {
             addExtraGlobal("active_project", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
             addExtraGlobal("json_reader_class", org.amanzi.awe.catalog.json.JSONReader.class);
             addExtraGlobal("feature_source_class", org.geotools.data.FeatureSource.class);
+            
+            //manager of spreadsheets
+            addExtraGlobal("spreadsheet_manager", SpreadsheetManager.getInstance());          
+            
             String userDir = System.getProperty("user.home");
             setExtraLoadPath(new String[]{userDir+"/.awe/script",userDir+"/.awe/lib"});
             try{
                 // Add the code from the internal plugin awescript.rb to the startup
                 addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("awescript.rb")));
+                addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("spreadsheet.rb")));
             }catch(Exception e){
                 System.err.println("Failed to add internal awescript startup: "+e);
                 e.printStackTrace(System.err);

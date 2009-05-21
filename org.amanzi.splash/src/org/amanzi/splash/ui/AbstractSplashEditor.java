@@ -369,13 +369,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				table.rowHeader.addMouseListener(ml);
 				table.addKeyListener(new KeyListener(){
 
-					@Override
 					public void keyPressed(KeyEvent e) {
 						
 					}
 
 					@SuppressWarnings("static-access")
-					@Override
 					public void keyReleased(KeyEvent e) {
 						int row = table.getSelectedRow();
 						int column = table.getSelectedColumn();
@@ -486,7 +484,6 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 					}
 
-					@Override
 					public void keyTyped(KeyEvent e) {
 						// TODO Auto-generated method stub
 
@@ -495,25 +492,21 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				});
 				table.addMouseListener(new MouseListener(){
 
-					@Override
 					public void mouseClicked(MouseEvent e) {
 
 
 					}
 
-					@Override
 					public void mouseEntered(MouseEvent e) {
 
 
 					}
 
-					@Override
 					public void mouseExited(MouseEvent e) {
 
 
 					}
 
-					@Override
 					public void mousePressed(MouseEvent e) {
 
 						int col = table.columnAtPoint(e.getPoint());
@@ -533,7 +526,6 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 					}
 
-					@Override
 					public void mouseReleased(MouseEvent e) {
 
 

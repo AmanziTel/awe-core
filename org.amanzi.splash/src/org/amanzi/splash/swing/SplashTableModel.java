@@ -29,18 +29,15 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 import org.amanzi.scripting.jruby.ScriptUtils;
+import org.amanzi.splash.console.SpreadsheetManager;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.Util;
 import org.eclipse.core.runtime.FileLocator;
 
-
-import com.eteks.openjeks.format.BorderStyle;
 import com.eteks.openjeks.format.CellBorder;
 import com.eteks.openjeks.format.CellFormat;
-import com.eteks.openjeks.format.CellSetBorder;
 import com.eteks.openjeks.format.TableFormat;
 import org.jruby.Ruby;
-import org.jruby.javasupport.Java;
 import org.jruby.javasupport.JavaEmbedUtils;
 
 public class SplashTableModel extends DefaultTableModel
@@ -79,6 +76,8 @@ public class SplashTableModel extends DefaultTableModel
 		initializeJRubyInterpreter();
 
 		cellValues = new Hashtable ();
+		
+		SpreadsheetManager.getInstance().setActiveModel(this);
 	}
 	/**
 	 * Constructor for class using RowCount and ColumnCount
@@ -172,7 +171,7 @@ public class SplashTableModel extends DefaultTableModel
 
 			try {
 				engine.eval(input, context);
-				engine.eval("$sheet = Spreadsheet.new", context);
+				engine.eval("$sheet = Spreadsheet.new", context);				
 			} catch (ScriptException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -362,18 +361,27 @@ public class SplashTableModel extends DefaultTableModel
 				String definition = "";
 				String value = "";
 				Object o = getValueAt(i, j);
+				boolean hasReference = false;
 				if (o instanceof Cell && o != null)
 				{
-					definition = (String) ((Cell)o).getDefinition();
-					value = (String) ((Cell)o).getValue();
+					//Lagutko: if Cell has reference to script than we store URI of script in definition
+					Cell cell = (Cell)o;
+					if (cell.hasReference()) {
+						definition = cell.getScriptURI().toString();
+						hasReference = true;
+					}
+					else {
+						definition = (String) ((Cell)o).getDefinition();
+						value = (String) ((Cell)o).getValue();
+					}	
 				}
 
 				if (o instanceof String && o != null)
 				{
 					definition = (String) o;
-				}
+				}				
 
-				String line = definition.replace("\n", "") + ";" + value.replace("\n", "") + ";" + Util.getFormatString(new CellFormat()) + ";";
+				String line = definition.replace("\n", "") + ";" + value.replace("\n", "") + ";" + Util.getFormatString(((Cell)o).getCellFormat()) + ";";
 				////Util.log("line = " + line);
 				sb.append(line);
 			}
@@ -1113,13 +1121,11 @@ class RowModel implements TableModel
 	
 	
 
-	@Override
 	public void addTableModelListener(TableModelListener arg0) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public void removeTableModelListener(TableModelListener arg0) {
 		// TODO Auto-generated method stub
 		
