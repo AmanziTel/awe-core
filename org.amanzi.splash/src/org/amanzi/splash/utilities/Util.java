@@ -43,7 +43,7 @@ public class Util {
 	 */
 	public static final String DEFAULT_SPREADSHEET_EXTENSION = ".jrss";
 
-	public static boolean isDebug = false;
+	public static boolean isDebug = true;
 
 	public static boolean isTesting = false;
 	public static String ColorToString (Color c)

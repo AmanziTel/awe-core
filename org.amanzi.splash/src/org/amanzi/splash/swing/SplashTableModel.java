@@ -15,11 +15,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.swing.JLabel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -94,12 +97,13 @@ public class SplashTableModel extends DefaultTableModel
 		cellValues = new Hashtable ();
 		
 
-		if (Util.isTesting) {
-			for (int i=0;i<rowCount;i++) {
-				for (int j=0;j<columnCount;j++) {
+		if (Util.isTesting){
+			for (int i=0;i<rowCount;i++)
+				for (int j=0;j<columnCount;j++)
+				{
 					setValueAt(new Cell(i,j,"","",new CellFormat()),i,j);
 				}
-			}
+			
 		}
 	}
 
@@ -120,12 +124,7 @@ public class SplashTableModel extends DefaultTableModel
 	}
 
 	public void initializeJRubyInterpreter(){
-//		ClassLoader remember = Thread.currentThread().getContextClassLoader();
-//		try{
-		// This hack was needed so that the ruby code can find the same java classes as the current java code
-		//Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
-		//rubyEngine.eval("require '/home/craig/.m2/repository/org/opengis/geoapi/2.2-SNAPSHOT/geoapi-2.2-20080605.180517-15.jar'");
 		
 		String path = "";
 		if (Util.isTesting == false){
@@ -142,7 +141,7 @@ public class SplashTableModel extends DefaultTableModel
 			path ="/home/amabdelsalam/Desktop/amanzi/jrss/org.amanzi.splash/jruby.rb";	
 		}
 
-		//if (Util.isTesting == false){
+
 			ScriptEngineManager m = new ScriptEngineManager(getClass().getClassLoader());
 
 			m.registerEngineName("jruby", 
@@ -179,7 +178,7 @@ public class SplashTableModel extends DefaultTableModel
 				e.printStackTrace();
 			}
 		}
-	//}
+
 
 	/**
 	 * Method that update Cell that has reference to Script
@@ -287,11 +286,12 @@ public class SplashTableModel extends DefaultTableModel
 
 
 		} catch (ScriptException e) {
-			s = "";
+			//s = "";
+			s = e.getMessage().replace("org.jruby.exceptions.RaiseException: ","");
 			e.printStackTrace();
 		}
 
-		if (s == null) s = "";
+		if (s == null) s = "ERROR";
 
 		//Util.logExit("interpret_erb");
 		return s;
@@ -699,7 +699,29 @@ public class SplashTableModel extends DefaultTableModel
 
 		if (value != null)
 		{
-			tableFormat.setFormatAt(((Cell)value).getCellFormat(), row, column, row, column);
+			CellFormat cf = ((Cell)value).getCellFormat();
+			String cell_value = (String)((Cell)value).getValue();
+			
+			String regex = "\\d+";
+			Pattern pattern = Pattern.compile(regex);
+			Matcher matcher = pattern.matcher(cell_value);
+			boolean isNumerical = false;
+			while (matcher.find()) {
+				isNumerical = true;
+			}
+			
+			if (isNumerical == true){
+				Util.logn("Numerical cell found...");
+				cf.setHorizontalAlignment(new Integer(JLabel.RIGHT));
+				
+			}else{
+				Util.logn("Text cell found...");
+				cf.setHorizontalAlignment(new Integer(JLabel.LEFT));
+			}
+			
+			((Cell)value).setCellFormat(cf);	
+			
+			tableFormat.setFormatAt(cf, row, column, row, column);
 			
 			updateCellsAndTableModelReferences(((Cell)value), oldDefinition, (String) ((Cell)value).getDefinition());
 		}

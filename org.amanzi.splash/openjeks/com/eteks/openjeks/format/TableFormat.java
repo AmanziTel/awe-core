@@ -274,7 +274,7 @@ public class TableFormat {
   /* Set or Update a CellFormat for a cell
    *
    */
-  private void setFormatAt (CellFormat cellFormat, int rowIndex, int columnIndex)
+  public void setFormatAt (CellFormat cellFormat, int rowIndex, int columnIndex)
   {
     Cell cell;
     boolean knowed = false;

@@ -84,7 +84,7 @@ class RowHeaderRenderer extends DefaultTableCellRenderer
 	public RowHeaderRenderer()
 	{
 		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-		setHorizontalAlignment(RIGHT);
+		setHorizontalAlignment(CENTER);
 	}
 
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focused, int row, int column)

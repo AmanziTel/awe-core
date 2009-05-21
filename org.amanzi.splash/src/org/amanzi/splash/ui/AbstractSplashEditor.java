@@ -10,6 +10,7 @@ package org.amanzi.splash.ui;
  * Code or samples provided herein are provided without warranty of any kind.
  */
 
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,6 +29,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -368,20 +371,19 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 					@Override
 					public void keyPressed(KeyEvent e) {
-						// TODO Auto-generated method stub
-
+						
 					}
 
 					@SuppressWarnings("static-access")
 					@Override
 					public void keyReleased(KeyEvent e) {
-						// TODO Auto-generated method stub
-						//Util.log("e.getKeyCode() = " + e.getKeyCode());
+						int row = table.getSelectedRow();
+						int column = table.getSelectedColumn();
+						Util.logn("e.getKeyCode() = " + e.getKeyCode());
 						//Util.log("e.VK_ENTER = " + e.VK_ENTER);
 						if (e.getKeyCode() == e.VK_ENTER) /*ENTER*/
 						{
-							int row = table.getSelectedRow();
-							int column = table.getSelectedColumn();
+							
 							int rdiff = table.getRowCount() - row;
 							int cdiff = table.getColumnCount() - column;
 
@@ -398,6 +400,90 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 								setIsDirty(true);
 							}						
 						}
+						
+						
+						if (e.isControlDown() && e.getKeyCode() == 67){
+							table.copyCell(row, column);
+							
+						}else if (e.isControlDown() && e.getKeyCode() == 88){
+							table.cutCell(row, column);
+						}
+						else if (e.isControlDown() && e.getKeyCode() == 86){
+							table.pasteCell(row, column);
+						}else if (e.isControlDown() && e.getKeyCode() == 66){
+							Util.logn("user pressed CTRL+B");
+							Cell cell = (Cell)table.getValueAt(row, column);
+							CellFormat cf = cell.getCellFormat();
+							
+							Integer fs = cf.getFontStyle().intValue();
+							
+							switch (fs){
+							case Font.PLAIN:
+								fs = Font.BOLD;
+								break;
+							case Font.BOLD:
+								fs = Font.PLAIN;
+								break;
+							case Font.ITALIC:
+								fs = Font.BOLD+Font.ITALIC;
+								break;
+							case Font.BOLD+Font.ITALIC:
+								fs = Font.ITALIC;
+								break;
+							}
+							
+							Util.logn("fs: " + fs);
+							cf.setFontStyle(fs);
+							table.tableFormat.setFormatAt(cf, row, column, row, column);
+							cell.setCellFormat(cf);
+							table.repaint();
+							setIsDirty(true);
+						}else if (e.isControlDown() && e.getKeyCode() == 73){
+							Util.logn("user pressed CTRL+i");
+							Cell cell = (Cell)table.getValueAt(row, column);
+							CellFormat cf = cell.getCellFormat();
+							
+							Integer fs = cf.getFontStyle().intValue();
+							Util.logn("CTRL+B has been pressed ");
+							switch (fs){
+							case Font.PLAIN:
+								fs = Font.ITALIC;
+								break;
+							case Font.BOLD:
+								fs = Font.BOLD+Font.ITALIC;
+								break;
+							case Font.ITALIC:
+								fs = Font.PLAIN;
+								break;
+							case Font.BOLD+Font.ITALIC:
+								fs = Font.BOLD;
+								break;
+							}
+							
+							Util.logn("fs: " + fs);
+							cf.setFontStyle(fs);
+							table.tableFormat.setFormatAt(cf, row, column, row, column);
+							cell.setCellFormat(cf);
+							table.repaint();
+							setIsDirty(true);
+						}else if (e.isControlDown() && e.getKeyCode() == 85){
+							Util.logn("user pressed CTRL+U");
+							Cell cell = (Cell)table.getValueAt(row, column);
+							
+							String old_value = (String) cell.getValue();
+							String new_value = "";
+							if (old_value.contains("<HTML><U>") && old_value.contains("</U></HTML>")){
+								new_value = old_value.replace("<HTML><U>", "");
+								new_value = new_value.replace("</U></HTML>", "");
+							}else{
+								new_value = "<HTML><U>" + old_value + "</U></HTML>";
+							}
+							
+							cell.setValue(new_value);
+							table.setValueAt(cell, row, column);
+							setIsDirty(true);
+						}
+
 					}
 
 					@Override
@@ -794,6 +880,33 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			final int columnIndex) {
 		JPopupMenu contextMenu = new JPopupMenu();
 
+		JMenuItem cellCopyMenu = new JMenuItem();
+		cellCopyMenu.setText("Copy \t\t Ctrl+C");
+		cellCopyMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				table.copyCell(rowIndex,columnIndex);
+			}
+		});
+		contextMenu.add(cellCopyMenu);
+		
+		JMenuItem cellCutMenu = new JMenuItem();
+		cellCutMenu.setText("Cut \t\t Ctrl+X");
+		cellCutMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				table.cutCell(rowIndex,columnIndex);
+			}
+		});
+		contextMenu.add(cellCutMenu);
+		
+		JMenuItem cellPasteMenu = new JMenuItem();
+		cellPasteMenu.setText("Paste \t\t Ctrl+V");
+		cellPasteMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				table.pasteCell(rowIndex,columnIndex);
+			}
+		});
+		contextMenu.add(cellPasteMenu);
+		
 		JMenuItem cellFormattingMenu = new JMenuItem();
 		cellFormattingMenu.setText("Cell Formatting");
 		cellFormattingMenu.addActionListener(new ActionListener() {

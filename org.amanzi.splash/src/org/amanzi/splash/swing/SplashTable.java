@@ -1,8 +1,12 @@
 package org.amanzi.splash.swing;
 
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -30,8 +34,11 @@ public class SplashTable extends JTable
 	public SplashTable ()
 	{
 		this (500, 200);
-		
+
 	}
+
+
+
 
 	/**
 	 * called by the previous function to initialize table with rows and columns
@@ -44,18 +51,24 @@ public class SplashTable extends JTable
 		tableFormat = new TableFormat();
 	}
 
-	public SplashTable (int rowCount, int columnCount, boolean isTesting) {
+	public SplashTable (int rowCount, int columnCount, boolean isTesting)
+	{
+
 		this (new SplashTableModel (rowCount, columnCount, isTesting));
-		tableFormat = new TableFormat();
+		//tableFormat = new TableFormat();
 	}
 
 	/**
 	 * called by previous function to set model
 	 * @param model
 	 */
-	public SplashTable (TableModel model) {
+	public SplashTable (TableModel model)
+	{
 		this (model, true);
+
 	}
+
+
 
 	/**
 	 * Called by previous function to define the parser
@@ -95,8 +108,12 @@ public class SplashTable extends JTable
 		rowHeader.setPreferredScrollableViewportSize(d);
 		rowHeader.setRowHeight(getRowHeight());
 		rowHeader.setDefaultRenderer(Object.class, _RowHeaderRenderer);
-		
+
 		tableFormat = new TableFormat();
+
+
+		
+	
 	}
 
 	/**
@@ -131,7 +148,6 @@ public class SplashTable extends JTable
 	{
 		return super.getColumnName (column);
 	}
-	
 	/**
 	 * utility function for swapping cell contents
 	 * @param x1
@@ -510,9 +526,9 @@ public class SplashTable extends JTable
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
 
-		
+
 	}
-	
+
 	/**
 	 * insert a column at index
 	 * @param index
@@ -556,7 +572,99 @@ public class SplashTable extends JTable
 
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
+	}
 
+	private String copiedCellID = ""; 
+	private String cutCellID = ""; 
+
+	private String cutDefinition = "";
+	private String cutValue="";
+
+	private boolean isCopy;
+
+	public void copyCell(int row, int column){
+		Util.logn("Copy pressed !!!");
+		copiedCellID = Util.getCellIDfromRowColumn(row, column);
+		Util.logn("Copied cell at: " + copiedCellID);
+		isCopy = true;
+	}
+
+	public void cutCell(int row, int column){
+		Util.logn("Cut pressed !!!");
+		cutCellID = Util.getCellIDfromRowColumn(row, column);
+		cutDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
+		cutValue = (String) ((Cell) getModel().getValueAt(row, column)).getValue();
+		deleteCell(row, column);
+		Util.logn("Cut cell at: " + copiedCellID);
+		isCopy = false;
+	}
+
+	public void pasteCell(int row, int column){
+		Util.logn("Paste pressed !!!");
+		if (isCopy){
+			Util.logn("Pasting cell " + copiedCellID + " at " + Util.getCellIDfromRowColumn(row, column));
+			int srcColumn = Util.getColumnIndexFromCellID(copiedCellID);
+			int srcRow = Util.getRowIndexFromCellID(copiedCellID);
+			Util.logn("srcColumn: " + srcColumn);
+			Util.logn("srcRow: " + srcRow);
+			String srcDefinition = (String) ((Cell) getModel().getValueAt(srcRow, srcColumn)).getDefinition();
+			String srcValue = (String) ((Cell) getModel().getValueAt(srcRow, srcColumn)).getValue();
+			Cell dstCell = new Cell(row, column, srcDefinition, srcValue, new CellFormat());
+			String oldDstDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
+			((SplashTableModel)getModel()).interpret(srcDefinition, oldDstDefinition, row, column);
+			((SplashTableModel)getModel()).updateCellsAndTableModelReferences(row, column, oldDstDefinition, srcDefinition);
+			getModel().setValueAt(dstCell, row, column);
+			
+		}else{		
+			Util.logn("Pasting cell " + cutCellID + " at " + Util.getCellIDfromRowColumn(row, column));
+			int srcColumn = Util.getColumnIndexFromCellID(cutCellID);
+			int srcRow = Util.getRowIndexFromCellID(cutCellID);
+			Util.logn("srcColumn: " + srcColumn);
+			Util.logn("srcRow: " + srcRow);
+			Cell dstCell = new Cell(row, column, cutDefinition, cutValue, new CellFormat());
+			String oldDstDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
+			((SplashTableModel)getModel()).interpret(cutDefinition, oldDstDefinition, row, column);
+			((SplashTableModel)getModel()).updateCellsAndTableModelReferences(row, column, oldDstDefinition, cutDefinition);
+			getModel().setValueAt(dstCell, row, column);
+		}
+	}
+	
+
+	protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed){
+		int row = getSelectedRow();
+		int column = getSelectedColumn();
 		
+		switch (ks.getKeyCode()){
+		case 66: // Ctrl+B
+			
+			
+			return false;
+		case 73:
+			Util.logn("CTRL+i has been pressed ");
+			
+			return false;
+		
+		case 85:
+			Util.logn("CTRL+U has been pressed ");
+			return false;
+
+		case 127:
+			deleteCell(row, column);
+			return false;
+
+		default:
+			return super.processKeyBinding (ks, e, condition, pressed);
+		}
+		
+		
+		//return false;
+	}
+
+	public void deleteCell(int row, int column){
+		Util.logn("DELETE has been pressed ");
+		Cell c = new Cell(row, column, "","",new CellFormat());
+		String oldDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
+		((SplashTableModel)getModel()).setValueAt(c, row, column, oldDefinition);
+		((SplashTableModel)getModel()).updateCellsAndTableModelReferences(row, column, oldDefinition, "");
 	}
 }
