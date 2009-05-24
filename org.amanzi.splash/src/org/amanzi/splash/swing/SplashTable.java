@@ -21,6 +21,8 @@ import com.eteks.openjeks.format.TableFormat;
 public class SplashTable extends JTable
 {
 	public JTable rowHeader;
+	private int defaultColumnWidth = 150;
+	private int defaultRowHeight = 20; 
 	/**
 	 * 
 	 */
@@ -98,16 +100,18 @@ public class SplashTable extends JTable
 		setCellSelectionEnabled (true);
 		setAutoResizeMode (JTable.AUTO_RESIZE_OFF);
 		
-		
+		//--------------------------------------------------------------------
+		// Row Header Renderer
+		//--------------------------------------------------------------------
 		RowHeaderRenderer _RowHeaderRenderer = new RowHeaderRenderer();
-		
 		rowHeader = new JTable(new RowModel(getModel()));
 		rowHeader.setIntercellSpacing(new Dimension(0, 0));
 		Dimension d = rowHeader.getPreferredScrollableViewportSize();
 		d.width = rowHeader.getPreferredSize().width/2;
 		rowHeader.setPreferredScrollableViewportSize(d);
-		rowHeader.setRowHeight(getRowHeight());
+		//rowHeader.setRowHeight(getRowHeight());
 		rowHeader.setDefaultRenderer(Object.class, _RowHeaderRenderer);
+		rowHeader.setRowHeight(getDefaultRowHeight());
 
 		tableFormat = new TableFormat();
 
@@ -666,5 +670,33 @@ public class SplashTable extends JTable
 		String oldDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
 		((SplashTableModel)getModel()).setValueAt(c, row, column, oldDefinition);
 		((SplashTableModel)getModel()).updateCellsAndTableModelReferences(row, column, oldDefinition, "");
+	}
+
+
+
+
+	public int getDefaultColumnWidth() {
+		return defaultColumnWidth;
+	}
+
+
+
+
+	public void setDefaultColumnWidth(int defaultColumnWidth) {
+		this.defaultColumnWidth = defaultColumnWidth;
+	}
+
+
+
+
+	public int getDefaultRowHeight() {
+		return defaultRowHeight;
+	}
+
+
+
+
+	public void setDefaultRowHeight(int defaultRowHeight) {
+		this.defaultRowHeight = defaultRowHeight;
 	}
 }

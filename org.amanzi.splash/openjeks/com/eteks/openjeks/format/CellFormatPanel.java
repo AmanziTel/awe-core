@@ -28,6 +28,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 
 /**
  * Panel used to specify cell format.
@@ -53,7 +54,10 @@ public class CellFormatPanel extends JPanel
     {
       e.printStackTrace();
     }
+    
+   	
     */
+	  
     this.cellFormat = cellFormat ;
     if (this.cellFormat.getCellBorder() instanceof CellSetBorder )
       this.isCellSet = true;

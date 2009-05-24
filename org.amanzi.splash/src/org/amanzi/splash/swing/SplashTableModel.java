@@ -708,24 +708,7 @@ public class SplashTableModel extends DefaultTableModel
 		if (value != null)
 		{
 			CellFormat cf = ((Cell)value).getCellFormat();
-			String cell_value = (String)((Cell)value).getValue();
 			
-			String regex = "\\d+";
-			Pattern pattern = Pattern.compile(regex);
-			Matcher matcher = pattern.matcher(cell_value);
-			boolean isNumerical = false;
-			while (matcher.find()) {
-				isNumerical = true;
-			}
-			
-			if (isNumerical == true){
-				Util.logn("Numerical cell found...");
-				cf.setHorizontalAlignment(new Integer(JLabel.RIGHT));
-				
-			}else{
-				Util.logn("Text cell found...");
-				cf.setHorizontalAlignment(new Integer(JLabel.LEFT));
-			}
 			
 			((Cell)value).setCellFormat(cf);	
 			

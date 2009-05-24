@@ -10,6 +10,7 @@ package org.amanzi.splash.ui;
  * Code or samples provided herein are provided without warranty of any kind.
  */
 
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -29,17 +30,21 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.amanzi.splash.swing.Cell;
+import org.amanzi.splash.swing.ColumnHeaderRenderer;
+import org.amanzi.splash.swing.RowHeaderRenderer;
 import org.amanzi.splash.swing.SplashTable;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.wizards.ExportScriptWizard;
@@ -121,8 +126,17 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		firstColumn = table.getSelectedColumn();
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
-		cellFormat = getTable().tableFormat.getFormatAt(firstRow, firstColumn , lastRow, lastColumn);
+		//cellFormat = getTable().tableFormat.getFormatAt(firstRow, firstColumn , lastRow, lastColumn);
+		
+		
+		try {
+		      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		    } catch(Exception e) {
+		      System.out.println("Error setting Java LAF: " + e);
+		    }
 
+		
+		cellFormat = ((Cell)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn())).getCellFormat();
 		cellFormatPanel = new CellFormatPanel(cellFormat);
 		if (JOptionPane.showConfirmDialog(null,
 				cellFormatPanel,
@@ -131,7 +145,13 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				JOptionPane.PLAIN_MESSAGE) == 0)
 		{
 			cellFormat = cellFormatPanel.getCellFormat();
-			getTable().tableFormat.setFormatAt(cellFormat, firstRow, firstColumn , lastRow, lastColumn);
+			//getTable().tableFormat.setFormatAt(cellFormat, firstRow, firstColumn , lastRow, lastColumn);
+			//table.getValueAt(table.getsele, arg1)
+			for (int i=firstRow;i<=lastRow;i++){
+				for (int j=firstColumn;j<=lastColumn;j++){
+					((Cell)table.getValueAt(i, j)).setCellFormat(cellFormat);
+				}
+			}
 			setIsDirty(true);
 		}
 		cellFormatPanel = null;
@@ -334,6 +354,23 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		}
 	}
+	// Returns the preferred height of a row.
+    // The result is equal to the tallest cell in the row.
+    public int getPreferredRowHeight(JTable table, int rowIndex, int margin) {
+        // Get the current default height for all rows
+        int height = table.getRowHeight();
+    
+        // Determine highest cell in the row
+        for (int c=0; c<table.getColumnCount(); c++) {
+            TableCellRenderer renderer = table.getCellRenderer(rowIndex, c);
+            Component comp = table.prepareRenderer(renderer, rowIndex, c);
+            int h = comp.getPreferredSize().height + 2*margin;
+            height = Math.max(height, h);
+        }
+        return height;
+    }
+    
+   
 
 	/**
 	 * create Swing table
@@ -352,17 +389,45 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				table.setOpaque(true);
 				table.setBackground(getAWTHierarchyRoot().getBackground());
 
-				
-
 				scrollPane.setBorder(new EmptyBorder(1,1,1,1));
 
 				scrollPane.setRowHeaderView(getTable().rowHeader);
-
+				
 				table.setTableFormat(tableModel.tableFormat);
+				table.setRowHeight(table.getDefaultRowHeight());
+				
+				//table.getColumnModel().getColumn(2).setCellRenderer(new BackgroundColumnCellRenderer(new java.awt.Color(255,255,204)));
+				
+				for (int i=0;i<table.getColumnCount();i++){
+					TableColumn col = table.getColumnModel().getColumn(i);
+				    col.setPreferredWidth(table.getDefaultColumnWidth());
+				    
+				    col.setHeaderRenderer(new ColumnHeaderRenderer(table.getDefaultColumnWidth(), 20));
+				}
+				
+				// Handle the listener
+				ListSelectionModel selectionModel = table.getSelectionModel();
+				selectionModel.addListSelectionListener(new ListSelectionListener(){
 
+					@Override
+					public void valueChanged(ListSelectionEvent e) {
+						// TODO Auto-generated method stub
+						
+						updateTableHeaderHighlights(table.getSelectedRow(), table.getSelectedColumn());
+						
+//						for (int i=0;i<table.getSelectedRows().length;i++){
+//							for (int j=0;j<table.getSelectedColumns().length;j++){
+//								updateTableHeaderHighlights(i,j);								
+//							}
+//						}
+					}
+					
+				});
+
+				
 				// set selection mode for contiguous  intervals
 				MouseListener ml = new HeaderMouseAdapter();
-
+					
 				// we don't allow reordering
 				table.getTableHeader().setReorderingAllowed(false);
 				table.getTableHeader().addMouseListener(ml);
@@ -509,21 +574,21 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 					public void mousePressed(MouseEvent e) {
 
-						int col = table.columnAtPoint(e.getPoint());
+						int column = table.columnAtPoint(e.getPoint());
 						int row = table.rowAtPoint(e.getPoint());
 						if(e.getButton()==3)
 						{
-
-
-
-							table.setColumnSelectionInterval(col, col);
+							table.setColumnSelectionInterval(column, column);
 							table.setRowSelectionInterval(row, row);
 
 							maybeShowPopup(e);
 							//launchCellFormatPanel(table);
+						}else{
+							Util.logn("Cell clicked !!!");
+							
+							
+							//table.repaint();
 						}
-
-
 					}
 
 					public void mouseReleased(MouseEvent e) {
@@ -532,9 +597,6 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 					}
 
 				});
-
-
-
 
 				return scrollPane;
 			}
@@ -545,6 +607,31 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 		};
 	}
+	
+	private void updateTableHeaderHighlights(int row, int column){
+		if (prev_selected_column != -1){
+			TableColumn tc = table.getColumnModel().getColumn(prev_selected_column);
+		    ((ColumnHeaderRenderer)tc.getHeaderRenderer()).selected = false;
+		}
+		
+		TableColumn tc = table.getColumnModel().getColumn(column);
+	    ((ColumnHeaderRenderer)tc.getHeaderRenderer()).selected = true;
+	    
+	    //table.rowHeader
+	    //table.rowHeader.repaint();
+	    
+		
+		prev_selected_column = column;
+		
+		((RowHeaderRenderer)table.rowHeader.getCellRenderer(row, 0)).row = row;
+		//((RowHeaderRenderer)table.rowHeader.getCellRenderer(row, 0)).column = column;
+		
+		table.getTableHeader().resizeAndRepaint();
+	    table.rowHeader.repaint();
+	}
+	
+	int prev_selected_column = -1;
+	int prev_selected_row = -1;
 
 	/**
 	 * @see org.eclipse.ui.IWorkbenchPart#createPartControl(Composite)

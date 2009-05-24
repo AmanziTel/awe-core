@@ -22,16 +22,30 @@
             id="com.amanzi">
       </category>
       <wizard
-            name="Splash Spreadsheet"
-            icon="icons/spreadsheet.gif"
+            canFinishEarly="true"
             category="com.amanzi"
             class="org.amanzi.splash.ui.wizards.NewSplashWizard"
-            id="org.amanzi.spreadsheet.jrss.editor.ui.wizards.newminispreadsheetwizard">
+            icon="icons/spreadsheet.gif"
+            id="org.amanzi.spreadsheet.jrss.editor.ui.wizards.newminispreadsheetwizard"
+            name="Splash Spreadsheet"
+            project="true">
          <description>
             Create a JRuby spreadsheet.
          </description>
       </wizard>
    </extension>
+   
+   	<extension point= "org.eclipse.ui.perspectiveExtensions">
+		<perspectiveExtension targetID= "org.eclipse.ui.resourcePerspective">
+		<actionSet id="org.eclipse.jdt.ui.JavaActionSet"/>
+		<viewShortcut id="org.eclipse.jdt.ui.PackageExplorer"/>
+		<newWizardShortcut id="org.amanzi.spreadsheet.jrss.editor.ui.wizards.newminispreadsheetwizard"/>
+		<perspectiveShortcut id="org.amanzi.awe.perspective"/>
+		<view id= "org.eclipse.jdt.ui.PackageExplorer" relative="org.eclipse.ui.views.ResourceNavigator" relationship="stack"/>
+		<view id= "org.eclipse.jdt.ui.TypeHierarchy" relative= "org.eclipse.ui.views.ResourceNavigator" relationship= "left" ratio= "0.50" />
+		</perspectiveExtension>
+	</extension>
+
    
    
    

@@ -1,6 +1,7 @@
 package org.amanzi.splash.utilities;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -37,6 +38,11 @@ public class Util {
 	 */
 	public static final String AMANZI_SPLASH_EDITOR = "org.amanzi.splash.editor";
 
+	public static Color unselectedHeaderColor = new Color(239, 235, 231);
+	public static Color selectedHeaderColor = new Color(250, 209, 132);
+	public static Font unselectedHeaderFont = new Font("Tahoma", Font.PLAIN, 12);
+	public static Font selectedHeaderFont = new Font("Tahoma", Font.BOLD, 12);
+	public static Color selectedCellColor = new Color(232, 242, 254);
 	/*
 	 * Default extenstion for Spreadsheet file
 	 */
@@ -51,6 +57,24 @@ public class Util {
 		+ ";" + Integer.toString(c.getBlue());
 
 		return s;
+	}
+	
+	public static void AddFileMenuItem(){
+//		MenuManager menu = 
+//		    new  MenuManager(ShowcasePlugin.getResourceString("menu.file"),
+//		IWorkbenchActionConstants.M_FILE);
+//		menu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+//		String newId = ActionFactory.NEW.getId();
+//		MenuManager newMenu =
+//		    new MenuManager(ShowcasePlugin.getResourceString("menu.file.new"),
+//		newId);
+//		newMenu.add(new Separator(newId));
+//		IContributionItem newWizards =
+//		ContributionItemFactory.NEW_WIZARD_SHORTLIST.create(window);
+//		newMenu.add(newWizards);
+//		       newMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+//		menu.add(newMenu);
+
 	}
 
 	public static void logNullAtCell(String func, String value, int row, int column){

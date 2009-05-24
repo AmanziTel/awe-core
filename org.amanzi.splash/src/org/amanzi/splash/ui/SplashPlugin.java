@@ -26,6 +26,7 @@ public class SplashPlugin extends AbstractUIPlugin {
 		super();
 		plugin = this;
 		//Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+		
 
 	}
 	

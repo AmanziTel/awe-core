@@ -57,8 +57,9 @@ public class SplashWizardNewFileCreationPage
 	public SplashWizardNewFileCreationPage(
 		IWorkbench workbench,
 		IStructuredSelection selection) {
+		
 		super("SplashWizardNewFileCreationPage", selection);
-
+		
 		this.setTitle("Folder, Name and Dimensions");
 		this.setFileName("sample" + nameCounter + ".jrss");
 		this.workbench = workbench;
@@ -77,6 +78,7 @@ public class SplashWizardNewFileCreationPage
 		group.setText("Dimensions");
 
 		group.setLayout(new FormLayout());
+		
 
 		Label rowLabel = new Label(group, SWT.LEFT);
 		rowLabel.setText("Rows");
@@ -87,6 +89,7 @@ public class SplashWizardNewFileCreationPage
 		rowText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				SplashWizardNewFileCreationPage.this.handleEvent(null);
+				
 			}
 		});
 
@@ -171,6 +174,7 @@ public class SplashWizardNewFileCreationPage
 			|| !path.getFileExtension().toLowerCase().equals("jrss")) {
 			setPageComplete(false);
 			setErrorMessage("Extension must be 'jrss'");
+			
 		} else {
 			setPageComplete(true);
 		}

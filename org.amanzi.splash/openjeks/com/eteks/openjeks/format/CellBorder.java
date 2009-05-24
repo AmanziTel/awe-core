@@ -250,48 +250,48 @@ public class CellBorder implements Border, Cloneable
       g2D.drawLine(x, y, x,height + y);
     }
 */
-    if(rightColor!=null && rightStyle!=null)
-    {
-      g2D.setColor(rightColor);
-      ((Graphics2D)g).setStroke(rightStyle.getStroke());
-    } else {
-       g2D.setColor(Color.lightGray);
-      ((Graphics2D)g).setStroke(bottomAndRightDefault.getStroke());
-    }
-//    if ((this.rightDefault && this.paintDefault) ||
-//        (this.rightDefault!=true)
-//       )
-
-     if ((this.paintDefault) ||
-         ( (this.paintDefault == false) &&
-          ((rightColor != Color.lightGray) && (rightColor != null))
-         )
-        )
-        {
-          g2D.drawLine(x + width - 1, y, x + width - 1, y + height - 1);
-        }
-
-    if(bottomColor!=null && bottomStyle!=null)
-    {
-      g2D.setColor(bottomColor);
-      ((Graphics2D)g).setStroke(bottomStyle.getStroke());
-    } else {
-      g2D.setColor(Color.lightGray);
-      ((Graphics2D)g).setStroke(bottomAndRightDefault.getStroke());
-    }
-
-//    if ((this.bottomDefault && this.paintDefault) ||
-//        (this.bottomDefault!=true)
-//       )
-     if ((this.paintDefault) ||
-         ( (this.paintDefault == false) &&
-           ((bottomColor != Color.lightGray) && (bottomColor != null))
-         )
-        )
-        {
-          g2D.drawLine(x, y + height - 1, width + x - 1, y + height - 1);
-        }
-
+//    if(rightColor!=null && rightStyle!=null)
+//    {
+//      g2D.setColor(rightColor);
+//      ((Graphics2D)g).setStroke(rightStyle.getStroke());
+//    } else {
+//       g2D.setColor(Color.lightGray);
+//      ((Graphics2D)g).setStroke(bottomAndRightDefault.getStroke());
+//    }
+////    if ((this.rightDefault && this.paintDefault) ||
+////        (this.rightDefault!=true)
+////       )
+//
+//     if ((this.paintDefault) ||
+//         ( (this.paintDefault == false) &&
+//          ((rightColor != Color.lightGray) && (rightColor != null))
+//         )
+//        )
+//        {
+//          g2D.drawLine(x + width - 1, y, x + width - 1, y + height - 1);
+//        }
+//
+//    if(bottomColor!=null && bottomStyle!=null)
+//    {
+//      g2D.setColor(bottomColor);
+//      ((Graphics2D)g).setStroke(bottomStyle.getStroke());
+//    } else {
+//      g2D.setColor(Color.lightGray);
+//      ((Graphics2D)g).setStroke(bottomAndRightDefault.getStroke());
+//    }
+//
+////    if ((this.bottomDefault && this.paintDefault) ||
+////        (this.bottomDefault!=true)
+////       )
+//     if ((this.paintDefault) ||
+//         ( (this.paintDefault == false) &&
+//           ((bottomColor != Color.lightGray) && (bottomColor != null))
+//         )
+//        )
+//        {
+//          g2D.drawLine(x, y + height - 1, width + x - 1, y + height - 1);
+//        }
+//
 
   }
 

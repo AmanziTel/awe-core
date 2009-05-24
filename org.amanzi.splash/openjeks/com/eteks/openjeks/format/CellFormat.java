@@ -90,9 +90,9 @@ public class CellFormat implements Cloneable
     this.format = null;
     this.fontName = "Arial";
     this.fontStyle = new Integer(Font.PLAIN);
-    this.fontSize = new Integer(10);
+    this.fontSize = new Integer(14);
     this.fontColor = Color.BLACK ;
-    this.verticalAlignment = new Integer(JLabel.BOTTOM);
+    this.verticalAlignment = new Integer(JLabel.CENTER);
     this.horizontalAlignment = new Integer(-2);
     this.backgroundColor = Color.WHITE;
     this.cellBorder = new CellBorder();
