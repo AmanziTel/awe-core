@@ -1,6 +1,7 @@
 package org.amanzi.awe.network.editor;
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.CellEditor;
@@ -9,12 +10,19 @@ import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ControlEditor;
+import org.eclipse.swt.custom.TableCursor;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
 /**
@@ -31,9 +39,13 @@ public class TableTemplate extends ViewPart {
      */
     private Action doubleClickAction;
  
+    private Vector<TableItem> updatedData;
+    
     private Table table;
 
     private TableColumn column;
+    
+    private String[] updatedRowData;
     
     private Object[][] Data;
     
@@ -44,6 +56,8 @@ public class TableTemplate extends ViewPart {
      * The constructor.
      */
     public TableTemplate(Object[][] data,String[] columns) {
+    	 
+    	      updatedData=new Vector<TableItem>();
               Data=data;
               columnNames=columns;
     }
@@ -107,6 +121,35 @@ public class TableTemplate extends ViewPart {
         createMenu();
     }
 
+    private void createButton()
+    {
+    	
+    	  final Button button = new Button(viewer.getTable().getParent(), SWT.PUSH);	
+    	  button.setText("Save");
+    	      button.addSelectionListener(new SelectionListener() 
+    	      {
+    	      public void widgetSelected(SelectionEvent event) 
+    	      {
+    	         for(int j=0;j<updatedData.size();j++)
+    	         {
+    	        	 updatedRowData=new String[columnNames.length];
+    	        	 for(int cr=0;cr<columnNames.length;cr++)
+    	        	 {
+    	        		 updatedRowData[cr]=((TableItem)updatedData.elementAt(j)).getText(cr);
+    	        	 }
+    	        	 
+    	    	   RestJsonHandler.updateJSONProperties(columnNames,updatedRowData , RestJsonHandler.uriInfo.toString());
+    	    	   
+    	         }
+    	      }
+    	      public void widgetDefaultSelected(SelectionEvent event) 
+    	      {
+    	       
+    	      }
+    	    });
+    	
+    }
+    
     private void createTable()
     {
     	if(columnNames!=null)
@@ -132,6 +175,45 @@ public class TableTemplate extends ViewPart {
     	{
     		
     	}
+    	final TableCursor cursor = new TableCursor(table, SWT.NONE);
+    	final ControlEditor editor = new ControlEditor(cursor);
+    	cursor.addSelectionListener(new SelectionAdapter() {
+    	      // This is called as the user navigates around the table
+    	      public void widgetSelected(SelectionEvent event) {
+    	        // Select the row in the table where the TableCursor is
+    	        table.setSelection(new TableItem[] { cursor.getRow()});
+    	      }
+
+    	      // This is called when the user hits Enter
+    	      public void widgetDefaultSelected(SelectionEvent event) {
+    	        // Begin an editing session
+    	        // Notice that the parent of the Text is the TableCursor, not the Table
+    	        final Text text = new Text(cursor, SWT.NONE);
+    	        text.setFocus();
+
+    	        // Copy the text from the cell to the Text
+    	        text.setText(cursor.getRow().getText(cursor.getColumn()));
+    	        text.setFocus();
+
+    	        // Add a handler to detect key presses
+    	        text.addKeyListener(new KeyAdapter() {
+    	          public void keyPressed(KeyEvent event) {
+    	            // End the editing and save the text if the user presses Enter
+    	            // End the editing and throw away the text if the user presses Esc
+    	            switch (event.keyCode) {
+    	            case SWT.CR:
+    	            	System.out.println(table.getSelectionIndex()+"   "+cursor.getColumn());
+    	              updatedData.addElement(table.getItem(table.getSelectionIndex()));
+    	              cursor.getRow().setText(cursor.getColumn(), text.getText());
+    	            case SWT.ESC:
+    	              text.dispose();
+    	              break;
+    	            }
+    	          }
+    	        });
+    	        editor.setEditor(text);
+    	      }
+    	    });
     }
 
     private void addColumn(String ColumnName)
