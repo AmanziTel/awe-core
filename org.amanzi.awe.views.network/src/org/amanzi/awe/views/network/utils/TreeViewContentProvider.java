@@ -1,7 +1,4 @@
-/*
- * Author Sachin Pathare
- * Date : 8 April 09
- */
+
 package org.amanzi.awe.views.network.utils;
 
 import java.io.File;
