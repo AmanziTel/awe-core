@@ -6,7 +6,7 @@
          point="org.eclipse.ui.views">
       <view 
             name="Network View"
-            icon="icons/awe_icon_32.gif"
+            icon="icons/awe_icon.png"
             class="org.amanzi.awe.views.network.views.NetworkTreeView"
             id="org.amanzi.awe.networktree.views.NetworkTreeView">
       </view>
