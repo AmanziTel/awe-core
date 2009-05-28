@@ -8,6 +8,7 @@ import net.refractions.udig.catalog.IGeoResource;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
+
 public class JSONGeoResource extends IGeoResource {
     private URL identifierUrl;
     private JSONService service;
