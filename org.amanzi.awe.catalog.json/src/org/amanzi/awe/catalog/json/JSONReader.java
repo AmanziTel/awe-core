@@ -46,7 +46,7 @@ public class JSONReader {
 
     public JSONReader() {
         super();
-        CatalogPlugin.addListener(new MyResolveChangeReporter());
+        CatalogPlugin.addListener(new JSONResolveChangeReporter());
     }
 
     public JSONReader( final JSONService service ) {
@@ -366,7 +366,7 @@ public class JSONReader {
         }
     }
 
-    public class MyResolveChangeReporter implements IResolveChangeListener {
+    public class JSONResolveChangeReporter implements IResolveChangeListener {
         public final void changed( final IResolveChangeEvent event ) {
 
             switch( event.getType() ) {
