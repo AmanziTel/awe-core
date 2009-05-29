@@ -1,0 +1,34 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Creates a new document from the given hash of values. This document will be
+    stored in this instance till it is commited.
+- !ruby/struct:SM::Flow::H 
+  text: Parameters
+  level: 4
+- !ruby/object:SM::Flow::LIST 
+  type: :NOTE
+  contents: 
+  - !ruby/struct:SM::Flow::LI 
+    body: The key or location where the index should be stored (relative Lucene::Config[:storage_path]
+    label: 'path<String>:'
+- !ruby/struct:SM::Flow::H 
+  text: Examples
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: index = Index.new('name_or_path_to_index') index &lt;&lt; {:id=&gt;'1', :name=&gt;'foo'}
+- !ruby/struct:SM::Flow::H 
+  text: Returns
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: Returns the index instance so that this method can be chained
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Lucene::Index#<<
+params: (key_values)
+name: "<<"
+is_singleton: false
+aliases: []
+

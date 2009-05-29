@@ -1,0 +1,23 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Returns the hash of default config values for lucene.
+- !ruby/struct:SM::Flow::H 
+  text: Returns
+  level: 4
+- !ruby/object:SM::Flow::LIST 
+  type: :NOTE
+  contents: 
+  - !ruby/struct:SM::Flow::LI 
+    body: The defaults for the config.
+    label: 'Hash:'
+- !ruby/struct:SM::Flow::P 
+  body: ":api: private"
+full_name: Lucene::Config::defaults
+params: ()
+name: defaults
+is_singleton: true
+aliases: []
+

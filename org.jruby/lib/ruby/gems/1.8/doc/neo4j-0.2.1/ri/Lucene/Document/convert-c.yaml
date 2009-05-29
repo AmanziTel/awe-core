@@ -1,0 +1,12 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Convert a java Document to a ruby Lucene::Document
+full_name: Lucene::Document::convert
+params: (field_infos, java_doc)
+name: convert
+is_singleton: true
+aliases: []
+

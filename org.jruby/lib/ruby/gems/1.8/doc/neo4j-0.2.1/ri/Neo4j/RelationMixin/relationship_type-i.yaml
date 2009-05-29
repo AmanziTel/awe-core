@@ -1,0 +1,20 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Returns the neo relationship type that this relationship is used in. (see
+    java API org.neo4j.api.core.Relationship#getType and org.neo4j.api.core.RelationshipType)
+- !ruby/struct:SM::Flow::H 
+  text: Returns
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: Symbol
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::RelationMixin#relationship_type
+params: ()
+name: relationship_type
+is_singleton: false
+aliases: []
+

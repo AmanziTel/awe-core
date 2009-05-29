@@ -1,0 +1,20 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Specifies a relationship between two node classes.
+- !ruby/struct:SM::Flow::H 
+  text: Example
+  level: 4
+- !ruby/struct:SM::Flow::VERB 
+  body: "  class Order\n     has_n(:order_lines).to(Product).relation(OrderLine)\n\
+    \  end\n"
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::NodeMixin::ClassMethods#has_n
+params: (rel_type)
+name: has_n
+is_singleton: false
+aliases: []
+

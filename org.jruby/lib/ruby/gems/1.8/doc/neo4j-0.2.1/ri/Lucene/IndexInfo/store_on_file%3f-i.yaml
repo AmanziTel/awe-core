@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+full_name: Lucene::IndexInfo#store_on_file?
+params: ()
+name: store_on_file?
+is_singleton: false
+aliases: []
+

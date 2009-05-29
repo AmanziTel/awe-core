@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+full_name: Lucene::IndexSearcher#find_dsl
+params: (field_infos,&block)
+name: find_dsl
+is_singleton: false
+aliases: []
+

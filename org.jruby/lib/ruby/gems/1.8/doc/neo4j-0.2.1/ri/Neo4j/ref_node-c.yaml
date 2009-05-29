@@ -1,0 +1,24 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Returns the reference node, which is a &quot;starting point&quot; in the node
+    space.
+- !ruby/struct:SM::Flow::P 
+  body: Usually, a client attaches relationships to this node that leads into various
+    parts of the node space. For more information about common node space organizational
+    patterns, see the design guide at http://neo4j.org/doc.
+- !ruby/struct:SM::Flow::H 
+  text: Returns
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: The the ReferenceNode
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::ref_node
+params: ()
+name: ref_node
+is_singleton: true
+aliases: []
+

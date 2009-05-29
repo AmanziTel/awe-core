@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+full_name: Lucene::Expression::new_complete
+params: (left, op, right)
+name: new_complete
+is_singleton: true
+aliases: []
+

@@ -1,0 +1,12 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: removes the document and adds it again
+full_name: Lucene::Document#update
+params: (index_writer)
+name: update
+is_singleton: false
+aliases: []
+

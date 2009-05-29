@@ -1,0 +1,12 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: ":api: private"
+full_name: Neo4j::RelationIndexer#reindex_related_nodes
+params: (node)
+name: reindex_related_nodes
+is_singleton: false
+aliases: []
+

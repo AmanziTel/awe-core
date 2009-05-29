@@ -1,0 +1,13 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Updates the specified document. The index file will not be updated until the
+    transaction commits. The doc is stored in memory till the transaction commits.
+full_name: Lucene::Index#update
+params: (doc)
+name: update
+is_singleton: false
+aliases: []
+

@@ -1,0 +1,15 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Writes to the index files Open and closes an lucene IndexWriter Close the
+    IndexSearcher so that it will read the updated index next time. This method will
+    automatically be called from a Lucene::Transaction if it was running when the
+    index was created.
+full_name: Lucene::Index#commit
+params: ()
+name: commit
+is_singleton: false
+aliases: []
+

@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: Neo4j.load(n.get_id)
+comment: 
+full_name: Neo4j::Relations::NodeTraverser#each
+params: () {|Neo4j.load(n.get_id)| ...}
+name: each
+is_singleton: false
+aliases: []
+

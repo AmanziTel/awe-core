@@ -1,0 +1,17 @@
+--- !ruby/object:RI::ClassDescription 
+includes: []
+
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Raised when an operation was called when an transaction was already running.
+attributes: []
+
+instance_methods: []
+
+class_methods: []
+
+full_name: Neo4j::AlreadyInTransactionError
+constants: []
+
+superclass: StandardError
+name: AlreadyInTransactionError

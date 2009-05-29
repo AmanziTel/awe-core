@@ -1,0 +1,14 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Returns node instances of this class.
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::NodeMixin::ClassMethods#all
+params: ()
+name: all
+is_singleton: false
+aliases: []
+

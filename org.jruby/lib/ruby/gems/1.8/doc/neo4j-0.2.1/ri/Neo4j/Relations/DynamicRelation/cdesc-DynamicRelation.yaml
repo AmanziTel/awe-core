@@ -1,0 +1,24 @@
+--- !ruby/object:RI::ClassDescription 
+includes: 
+- !ruby/object:RI::IncludedModule 
+  name: Neo4j::RelationMixin
+- !ruby/object:RI::IncludedModule 
+  name: Neo4j::DynamicAccessorMixin
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Provides dynamic property accessors. Use this as a mixin if you do not want
+    to declare what properties a Relationship has. Wrapper class for a java org.neo4j.api.core.Relationship
+    class
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+attributes: []
+
+instance_methods: []
+
+class_methods: []
+
+full_name: Neo4j::Relations::DynamicRelation
+constants: []
+
+superclass: Object
+name: DynamicRelation

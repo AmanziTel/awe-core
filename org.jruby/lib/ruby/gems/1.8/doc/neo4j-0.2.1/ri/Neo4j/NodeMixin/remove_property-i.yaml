@@ -1,0 +1,25 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Removes the property from this node. For more information see JavaDoc PropertyContainer#removeProperty
+- !ruby/struct:SM::Flow::H 
+  text: Example
+  level: 4
+- !ruby/struct:SM::Flow::VERB 
+  body: "  a = Node.new\n  a.set_property('foo',2)\n  a.remove_property('foo')\n  \
+    a.get_property('foo') # =&gt; nil\n"
+- !ruby/struct:SM::Flow::H 
+  text: Returns
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: true if the property was removed, false otherwise
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::NodeMixin#remove_property
+params: (name)
+name: remove_property
+is_singleton: false
+aliases: []
+

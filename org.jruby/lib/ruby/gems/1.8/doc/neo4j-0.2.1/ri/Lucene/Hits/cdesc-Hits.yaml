@@ -1,0 +1,29 @@
+--- !ruby/object:RI::ClassDescription 
+includes: 
+- !ruby/object:RI::IncludedModule 
+  name: Enumerable
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Contains the result as a collection of Documents from a lucene query. Is a
+    wrapper for the Java org.apache.lucene.search.Hits class
+attributes: []
+
+instance_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: '[]'
+- !ruby/object:RI::MethodSummary 
+  name: each
+- !ruby/object:RI::MethodSummary 
+  name: empty?
+- !ruby/object:RI::MethodSummary 
+  name: size
+- !ruby/object:RI::MethodSummary 
+  name: to_s
+class_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: new
+full_name: Lucene::Hits
+constants: []
+
+superclass: Object
+name: Hits

@@ -1,0 +1,41 @@
+--- !ruby/object:RI::ClassDescription 
+includes: []
+
+comment: 
+attributes: []
+
+instance_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: commit
+- !ruby/object:RI::MethodSummary 
+  name: deregister_all_indexes
+- !ruby/object:RI::MethodSummary 
+  name: deregister_index
+- !ruby/object:RI::MethodSummary 
+  name: failure
+- !ruby/object:RI::MethodSummary 
+  name: index
+- !ruby/object:RI::MethodSummary 
+  name: index?
+- !ruby/object:RI::MethodSummary 
+  name: register_index
+- !ruby/object:RI::MethodSummary 
+  name: rollback!
+- !ruby/object:RI::MethodSummary 
+  name: rollback?
+- !ruby/object:RI::MethodSummary 
+  name: to_s
+class_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: current
+- !ruby/object:RI::MethodSummary 
+  name: new
+- !ruby/object:RI::MethodSummary 
+  name: run
+- !ruby/object:RI::MethodSummary 
+  name: running?
+full_name: Lucene::Transaction
+constants: []
+
+superclass: Object
+name: Transaction

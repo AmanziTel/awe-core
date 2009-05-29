@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: node
+comment: 
+full_name: Neo4j::SearchResult#each
+params: () {|node| ...}
+name: each
+is_singleton: false
+aliases: []
+

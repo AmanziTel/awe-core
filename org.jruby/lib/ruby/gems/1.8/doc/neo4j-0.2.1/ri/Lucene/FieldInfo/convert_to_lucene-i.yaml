@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+full_name: Lucene::FieldInfo#convert_to_lucene
+params: (value)
+name: convert_to_lucene
+is_singleton: false
+aliases: []
+

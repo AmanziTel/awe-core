@@ -1,0 +1,42 @@
+--- !ruby/object:RI::ClassDescription 
+includes: []
+
+comment: 
+attributes: 
+- !ruby/object:RI::Attribute 
+  comment: 
+  rw: RW
+  name: left
+- !ruby/object:RI::Attribute 
+  comment: 
+  rw: RW
+  name: op
+- !ruby/object:RI::Attribute 
+  comment: 
+  rw: RW
+  name: query
+- !ruby/object:RI::Attribute 
+  comment: 
+  rw: RW
+  name: right
+instance_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: ==
+- !ruby/object:RI::MethodSummary 
+  name: '>'
+- !ruby/object:RI::MethodSummary 
+  name: _fields
+- !ruby/object:RI::MethodSummary 
+  name: to_lucene
+- !ruby/object:RI::MethodSummary 
+  name: to_s
+class_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: new_complete
+- !ruby/object:RI::MethodSummary 
+  name: new_uncomplete
+full_name: Lucene::Expression
+constants: []
+
+superclass: Object
+name: Expression

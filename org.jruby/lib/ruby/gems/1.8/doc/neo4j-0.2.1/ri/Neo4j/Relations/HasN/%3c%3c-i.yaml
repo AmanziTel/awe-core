@@ -1,0 +1,29 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Creates a relationship between this and the other node.
+- !ruby/struct:SM::Flow::H 
+  text: Example
+  level: 4
+- !ruby/struct:SM::Flow::VERB 
+  body: "  n1 = Node.new # Node has declared having a friend type of relationship\n\
+    \  n2 = Node.new\n  n3 = NodeMixin.new\n\n  n1 &lt;&lt; n2 &lt;&lt; n3\n"
+- !ruby/struct:SM::Flow::P 
+  body: 'This is the same as:'
+- !ruby/struct:SM::Flow::VERB 
+  body: "  n1.friends.new(n2)\n  n1.friends.new(n3)\n"
+- !ruby/struct:SM::Flow::H 
+  text: Returns
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: self
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::Relations::HasN#<<
+params: (other)
+name: "<<"
+is_singleton: false
+aliases: []
+

@@ -1,0 +1,42 @@
+--- !ruby/object:RI::ClassDescription 
+includes: []
+
+comment: 
+attributes: []
+
+instance_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: ==
+- !ruby/object:RI::MethodSummary 
+  name: '[]'
+- !ruby/object:RI::MethodSummary 
+  name: '[]='
+- !ruby/object:RI::MethodSummary 
+  name: convert_to_lucene
+- !ruby/object:RI::MethodSummary 
+  name: convert_to_query
+- !ruby/object:RI::MethodSummary 
+  name: convert_to_ruby
+- !ruby/object:RI::MethodSummary 
+  name: dup
+- !ruby/object:RI::MethodSummary 
+  name: eql?
+- !ruby/object:RI::MethodSummary 
+  name: java_field
+- !ruby/object:RI::MethodSummary 
+  name: store?
+- !ruby/object:RI::MethodSummary 
+  name: to_s
+- !ruby/object:RI::MethodSummary 
+  name: tokenized?
+class_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: new
+full_name: Lucene::FieldInfo
+constants: 
+- !ruby/object:RI::Constant 
+  comment: 
+  value: '{:store => false, :type => String}.freeze'
+  name: DEFAULTS
+superclass: Object
+name: FieldInfo

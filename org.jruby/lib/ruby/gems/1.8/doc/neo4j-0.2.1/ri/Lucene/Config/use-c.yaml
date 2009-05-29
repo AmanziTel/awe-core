@@ -1,0 +1,33 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: '@configuration'
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Yields the configuration.
+- !ruby/struct:SM::Flow::H 
+  text: Block parameters
+  level: 4
+- !ruby/object:SM::Flow::LIST 
+  type: :NOTE
+  contents: 
+  - !ruby/struct:SM::Flow::LI 
+    body: The configuration parameters.
+    label: 'c<Hash>:'
+- !ruby/struct:SM::Flow::H 
+  text: Examples
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: Lucene::Config.use do |config| config[:in_memory] = true end
+- !ruby/struct:SM::Flow::H 
+  text: Returns
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: nil
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Lucene::Config::use
+params: () {|@configuration| ...}
+name: use
+is_singleton: true
+aliases: []
+

@@ -1,0 +1,36 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Retrieve the value of a config entry, returning the provided default if the
+    key is not present
+- !ruby/struct:SM::Flow::H 
+  text: Parameters
+  level: 4
+- !ruby/object:SM::Flow::LIST 
+  type: :NOTE
+  contents: 
+  - !ruby/struct:SM::Flow::LI 
+    body: The key to retrieve the parameter for.
+    label: 'key<Object>:'
+- !ruby/struct:SM::Flow::P 
+  body: 'default&lt;Object&gt;:: The default value to return if the parameter is not
+    set.'
+- !ruby/struct:SM::Flow::H 
+  text: Returns
+  level: 4
+- !ruby/object:SM::Flow::LIST 
+  type: :NOTE
+  contents: 
+  - !ruby/struct:SM::Flow::LI 
+    body: The value of the configuration parameter or the default.
+    label: 'Object:'
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Lucene::Config::fetch
+params: (key, default)
+name: fetch
+is_singleton: true
+aliases: []
+

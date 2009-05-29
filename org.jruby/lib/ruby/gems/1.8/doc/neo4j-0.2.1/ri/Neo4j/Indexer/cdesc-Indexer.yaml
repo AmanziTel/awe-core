@@ -1,0 +1,67 @@
+--- !ruby/object:RI::ClassDescription 
+includes: []
+
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: This class is responsible for both knowing which nodes that needs to be reindexed
+    and how to perform the reindex operation (the document_updaters attribute).
+- !ruby/struct:SM::Flow::P 
+  body: There is one Indexer per Node root class.
+attributes: 
+- !ruby/object:RI::Attribute 
+  comment: 
+  rw: R
+  name: document_updaters
+- !ruby/object:RI::Attribute 
+  comment: 
+  rw: R
+  name: index_id
+- !ruby/object:RI::Attribute 
+  comment: 
+  rw: R
+  name: property_indexer
+instance_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: add_index_in_relation_on_property
+- !ruby/object:RI::MethodSummary 
+  name: add_index_on_property
+- !ruby/object:RI::MethodSummary 
+  name: delete_index
+- !ruby/object:RI::MethodSummary 
+  name: field_infos
+- !ruby/object:RI::MethodSummary 
+  name: find
+- !ruby/object:RI::MethodSummary 
+  name: index
+- !ruby/object:RI::MethodSummary 
+  name: lucene_index
+- !ruby/object:RI::MethodSummary 
+  name: new_relation_indexer_for
+- !ruby/object:RI::MethodSummary 
+  name: on_property_changed
+- !ruby/object:RI::MethodSummary 
+  name: on_relation_created
+- !ruby/object:RI::MethodSummary 
+  name: on_relation_deleted
+- !ruby/object:RI::MethodSummary 
+  name: relation_indexer_for
+- !ruby/object:RI::MethodSummary 
+  name: relation_indexer_for?
+- !ruby/object:RI::MethodSummary 
+  name: remove_index_on_property
+class_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: clear_all_instances
+- !ruby/object:RI::MethodSummary 
+  name: index
+- !ruby/object:RI::MethodSummary 
+  name: instance
+- !ruby/object:RI::MethodSummary 
+  name: new
+- !ruby/object:RI::MethodSummary 
+  name: remove_instance
+full_name: Neo4j::Indexer
+constants: []
+
+superclass: Object
+name: Indexer

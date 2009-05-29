@@ -1,0 +1,50 @@
+--- !ruby/object:RI::ClassDescription 
+includes: []
+
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: A document is like a record or row in a relation database. Contains the field
+    infos which can be used for type conversions or specifying if the field should
+    be stored or only searchable.
+attributes: 
+- !ruby/object:RI::Attribute 
+  comment: 
+  rw: R
+  name: field_infos
+- !ruby/object:RI::Attribute 
+  comment: 
+  rw: R
+  name: id_field
+- !ruby/object:RI::Attribute 
+  comment: 
+  rw: R
+  name: props
+instance_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: ==
+- !ruby/object:RI::MethodSummary 
+  name: '[]'
+- !ruby/object:RI::MethodSummary 
+  name: eql?
+- !ruby/object:RI::MethodSummary 
+  name: hash
+- !ruby/object:RI::MethodSummary 
+  name: id
+- !ruby/object:RI::MethodSummary 
+  name: java_document
+- !ruby/object:RI::MethodSummary 
+  name: java_key_term
+- !ruby/object:RI::MethodSummary 
+  name: to_s
+- !ruby/object:RI::MethodSummary 
+  name: update
+class_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: convert
+- !ruby/object:RI::MethodSummary 
+  name: new
+full_name: Lucene::Document
+constants: []
+
+superclass: Object
+name: Document

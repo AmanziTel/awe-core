@@ -1,0 +1,19 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Sets up the configuration
+- !ruby/struct:SM::Flow::H 
+  text: Returns
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: The configuration as a hash.
+- !ruby/struct:SM::Flow::P 
+  body: ":api: private"
+full_name: Neo4j::Config::setup
+params: ()
+name: setup
+is_singleton: true
+aliases: []
+

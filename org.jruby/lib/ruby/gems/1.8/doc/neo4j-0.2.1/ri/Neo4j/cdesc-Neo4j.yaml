@@ -1,0 +1,32 @@
+--- !ruby/object:RI::ClassDescription 
+includes: []
+
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: This files contains common private classes that implements various Neo4j java
+    interfaces. This classes are only used inside this Relations module
+attributes: []
+
+instance_methods: []
+
+class_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: instance
+- !ruby/object:RI::MethodSummary 
+  name: load
+- !ruby/object:RI::MethodSummary 
+  name: ref_node
+- !ruby/object:RI::MethodSummary 
+  name: running?
+- !ruby/object:RI::MethodSummary 
+  name: start
+- !ruby/object:RI::MethodSummary 
+  name: stop
+full_name: Neo4j
+constants: 
+- !ruby/object:RI::Constant 
+  comment: 
+  value: '''0.2.1'' unless defined?(Neo4j::VERSION)'
+  name: VERSION
+superclass: 
+name: Neo4j

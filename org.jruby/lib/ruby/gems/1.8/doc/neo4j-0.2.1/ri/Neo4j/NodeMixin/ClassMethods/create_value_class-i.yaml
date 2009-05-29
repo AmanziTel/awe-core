@@ -1,0 +1,20 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Creates a new value object class (a Struct) represeting this class.
+- !ruby/struct:SM::Flow::P 
+  body: 'The struct will have the Ruby on Rails method: model_name and new_record?
+    so that it can be used for restful routing.'
+- !ruby/struct:SM::Flow::P 
+  body: 'TODO: if the DynamicMixin is used it should return somthing more flexible
+    since we do not know which property a class has.'
+- !ruby/struct:SM::Flow::P 
+  body: '@api private'
+full_name: Neo4j::NodeMixin::ClassMethods#create_value_class
+params: ()
+name: create_value_class
+is_singleton: false
+aliases: []
+

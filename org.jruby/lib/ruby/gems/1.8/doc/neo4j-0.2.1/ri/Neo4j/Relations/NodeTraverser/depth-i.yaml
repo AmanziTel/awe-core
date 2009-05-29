@@ -1,0 +1,34 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Sets the depth of the traversal. Default is 1 if not specified.
+- !ruby/struct:SM::Flow::H 
+  text: Example
+  level: 4
+- !ruby/struct:SM::Flow::VERB 
+  body: " morpheus.traverse.outgoing(:friends).depth(:all).each { ... }\n morpheus.traverse.outgoing(:friends).depth(3).each \
+    { ... }\n"
+- !ruby/struct:SM::Flow::H 
+  text: Arguments
+  level: 4
+- !ruby/object:SM::Flow::LIST 
+  type: :NOTE
+  contents: 
+  - !ruby/struct:SM::Flow::LI 
+    body: the depth or :all if traversing to the end of the network.
+    label: 'd<Fixnum,Symbol>:'
+- !ruby/struct:SM::Flow::H 
+  text: Return
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: self
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::Relations::NodeTraverser#depth
+params: (d)
+name: depth
+is_singleton: false
+aliases: []
+

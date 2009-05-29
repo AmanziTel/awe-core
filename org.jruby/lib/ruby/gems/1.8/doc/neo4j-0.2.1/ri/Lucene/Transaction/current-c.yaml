@@ -1,0 +1,12 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Returns the current transaction or nil
+full_name: Lucene::Transaction::current
+params: ()
+name: current
+is_singleton: true
+aliases: []
+

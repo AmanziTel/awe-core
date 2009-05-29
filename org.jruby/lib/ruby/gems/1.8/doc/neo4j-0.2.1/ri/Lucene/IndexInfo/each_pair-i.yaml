@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: key,value
+comment: 
+full_name: Lucene::IndexInfo#each_pair
+params: () {|key,value| ...}
+name: each_pair
+is_singleton: false
+aliases: []
+

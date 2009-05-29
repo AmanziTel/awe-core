@@ -1,0 +1,15 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Traverse all nodes and update the lucene index. Can be used for example if
+    it is neccessarly to change the index on a class
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::NodeMixin::ClassMethods#update_index
+params: ()
+name: update_index
+is_singleton: false
+aliases: []
+

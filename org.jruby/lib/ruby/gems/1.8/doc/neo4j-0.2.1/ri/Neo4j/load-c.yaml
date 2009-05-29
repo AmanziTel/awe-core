@@ -1,0 +1,29 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Return a started neo instance. It will be started if this has not already
+    been done.
+- !ruby/struct:SM::Flow::H 
+  text: Parameters
+  level: 4
+- !ruby/object:SM::Flow::LIST 
+  type: :NOTE
+  contents: 
+  - !ruby/struct:SM::Flow::LI 
+    body: the unique neo id for one node
+    label: 'node_id<String, to_i>:'
+- !ruby/struct:SM::Flow::H 
+  text: Returns
+  level: 4
+- !ruby/struct:SM::Flow::P 
+  body: The node object (NodeMixin) or nil
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::load
+params: (node_id)
+name: load
+is_singleton: true
+aliases: []
+

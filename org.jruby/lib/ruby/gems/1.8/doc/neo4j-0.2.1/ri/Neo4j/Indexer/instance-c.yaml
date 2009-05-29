@@ -1,0 +1,12 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Returns the Indexer for the given Neo4j::NodeMixin class :api:private
+full_name: Neo4j::Indexer::instance
+params: (clazz)
+name: instance
+is_singleton: true
+aliases: []
+

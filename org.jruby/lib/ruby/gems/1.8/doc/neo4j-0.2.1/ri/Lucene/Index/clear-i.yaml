@@ -1,0 +1,13 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Delete all uncommited documents. Also deregister this index from the current
+    transaction (if there is one transaction)
+full_name: Lucene::Index#clear
+params: ()
+name: clear
+is_singleton: false
+aliases: []
+

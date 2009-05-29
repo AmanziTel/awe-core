@@ -1,0 +1,14 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Loads a Neo relationship If the neo property 'classname' to exist it will
+    use that to create an instance of that class. Otherwise it will create an instance
+    of Neo4j::Relations::DynamicRelation that represent 'rel'
+full_name: Neo4j::Neo#load_relationship
+params: (rel)
+name: load_relationship
+is_singleton: false
+aliases: []
+

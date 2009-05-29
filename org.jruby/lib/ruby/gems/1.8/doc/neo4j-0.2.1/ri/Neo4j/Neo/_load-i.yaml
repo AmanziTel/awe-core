@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+full_name: Neo4j::Neo#_load
+params: (classname, node_or_relationship)
+name: _load
+is_singleton: false
+aliases: []
+

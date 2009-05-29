@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: tx
+comment: 
+full_name: Lucene::Transaction::run
+params: () {|tx| ...}
+name: run
+is_singleton: true
+aliases: []
+

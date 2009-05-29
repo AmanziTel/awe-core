@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+full_name: Lucene::Expression::new_uncomplete
+params: (left, query)
+name: new_uncomplete
+is_singleton: true
+aliases: []
+

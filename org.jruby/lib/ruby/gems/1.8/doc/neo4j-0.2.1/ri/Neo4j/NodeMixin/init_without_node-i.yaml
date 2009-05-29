@@ -1,0 +1,14 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Inits when no neo java node exists. Must create a new neo java node first.
+- !ruby/struct:SM::Flow::P 
+  body: ":api: private"
+full_name: Neo4j::NodeMixin#init_without_node
+params: ()
+name: init_without_node
+is_singleton: false
+aliases: []
+

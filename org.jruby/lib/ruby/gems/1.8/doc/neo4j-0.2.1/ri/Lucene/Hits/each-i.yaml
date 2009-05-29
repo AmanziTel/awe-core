@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: Document.convert(@field_infos, hit.getDocument)
+comment: 
+full_name: Lucene::Hits#each
+params: () {|Document.convert(@field_infos, hit.getDocument)| ...}
+name: each
+is_singleton: false
+aliases: []
+

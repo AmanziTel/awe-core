@@ -1,0 +1,48 @@
+--- !ruby/object:RI::ClassDescription 
+includes: []
+
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: "Allows run and stop the Neo4j service Contains global \xc4\x87onstants such \
+    as location of the neo storage and index files on the filesystem."
+- !ruby/struct:SM::Flow::P 
+  body: A wrapper class around org.neo4j.api.core.EmbeddedNeo
+attributes: 
+- !ruby/object:RI::Attribute 
+  comment: 
+  - !ruby/struct:SM::Flow::P 
+    body: 'ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode'
+  rw: R
+  name: placebo_tx
+- !ruby/object:RI::Attribute 
+  comment: 
+  - !ruby/struct:SM::Flow::P 
+    body: 'ref_node : the reference, ReferenceNode, node, wraps a org.neo4j.api.core.NeoService#getReferenceNode'
+  rw: R
+  name: ref_node
+instance_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: _load
+- !ruby/object:RI::MethodSummary 
+  name: begin_transaction
+- !ruby/object:RI::MethodSummary 
+  name: create_node
+- !ruby/object:RI::MethodSummary 
+  name: find_node
+- !ruby/object:RI::MethodSummary 
+  name: load_node
+- !ruby/object:RI::MethodSummary 
+  name: load_relationship
+- !ruby/object:RI::MethodSummary 
+  name: start
+- !ruby/object:RI::MethodSummary 
+  name: stop
+- !ruby/object:RI::MethodSummary 
+  name: tx_manager
+class_methods: []
+
+full_name: Neo4j::Neo
+constants: []
+
+superclass: Object
+name: Neo

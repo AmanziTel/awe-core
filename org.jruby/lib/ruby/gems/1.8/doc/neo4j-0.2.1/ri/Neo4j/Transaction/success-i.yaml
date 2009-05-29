@@ -1,0 +1,15 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Marks this transaction as successful, which means that it will be commited
+    upon invocation of finish() unless failure() has or will be invoked before then.
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::Transaction#success
+params: ()
+name: success
+is_singleton: false
+aliases: []
+

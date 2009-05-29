@@ -1,0 +1,13 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Create an internal neo node (returns a java object) Don't use this method
+    - only for internal use.
+full_name: Neo4j::Neo#create_node
+params: ()
+name: create_node
+is_singleton: false
+aliases: []
+

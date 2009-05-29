@@ -1,0 +1,16 @@
+--- !ruby/object:RI::ClassDescription 
+includes: []
+
+comment: 
+attributes: []
+
+instance_methods: 
+- !ruby/object:RI::MethodSummary 
+  name: property
+class_methods: []
+
+full_name: Neo4j::RelationMixin::ClassMethods
+constants: []
+
+superclass: 
+name: ClassMethods

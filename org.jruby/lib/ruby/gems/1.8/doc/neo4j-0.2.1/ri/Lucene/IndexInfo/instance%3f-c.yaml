@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+full_name: Lucene::IndexInfo::instance?
+params: (path)
+name: instance?
+is_singleton: true
+aliases: []
+

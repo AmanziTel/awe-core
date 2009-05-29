@@ -1,0 +1,10 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+full_name: Lucene::Index#field_infos
+params: ()
+name: field_infos
+is_singleton: false
+aliases: []
+

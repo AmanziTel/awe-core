@@ -1,0 +1,35 @@
+--- !ruby/object:RI::MethodDescription 
+visibility: public
+block_params: 
+comment: 
+- !ruby/struct:SM::Flow::P 
+  body: Sets a neo property on this node. This property does not have to be declared
+    first. If the value of the property is nil the property will be removed.
+- !ruby/struct:SM::Flow::P 
+  body: Runs in a new transaction if there is not one already running, otherwise it
+    will run in the existing transaction.
+- !ruby/struct:SM::Flow::H 
+  text: Parameters
+  level: 4
+- !ruby/object:SM::Flow::LIST 
+  type: :NOTE
+  contents: 
+  - !ruby/struct:SM::Flow::LI 
+    body: the name of the property to be set
+    label: 'name<String>:'
+  - !ruby/struct:SM::Flow::LI 
+    body: the value of the property to be set.
+    label: 'value<Object>:'
+- !ruby/struct:SM::Flow::H 
+  text: Example
+  level: 4
+- !ruby/struct:SM::Flow::VERB 
+  body: "  n = Node.new\n  n.foo = 'hej'\n"
+- !ruby/struct:SM::Flow::P 
+  body: ":api: public"
+full_name: Neo4j::NodeMixin#set_property
+params: (name, value)
+name: set_property
+is_singleton: false
+aliases: []
+
