@@ -5,7 +5,9 @@ Bundle-SymbolicName: org.jruby
 Bundle-Version: 1.2.0
 Bundle-ClassPath: lib/bsf.jar,
  lib/jruby.jar,
- lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/neo-1.0-b7.jar
+ lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/neo-1.0-b7.jar,
+ lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/jta-spec1_0_1.jar,
+ lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/shell-1.0-b7.jar
 Bundle-Vendor: JRuby Community
 Export-Package: org.jruby;version="1.2.0";
   uses:="org.jruby.compiler,
