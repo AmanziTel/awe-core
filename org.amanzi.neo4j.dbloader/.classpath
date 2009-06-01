@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="index-util-0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="jta-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lucene-core-2.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="neo-1.0-b8.jar"/>
+	<classpathentry exported="true" kind="lib" path="shell-1.0-b8.jar"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
