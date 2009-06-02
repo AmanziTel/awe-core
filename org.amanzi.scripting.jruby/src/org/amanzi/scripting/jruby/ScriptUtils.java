@@ -85,6 +85,12 @@ public class ScriptUtils {
         loadPath.add(jRubyHome+"/lib/ruby/"+jRubyVersion);
         loadPath.add(jRubyHome+"/lib/ruby/"+jRubyVersion+"/java");
         loadPath.add(jRubyHome+"/lib");
+        loadPath.add(jRubyHome + "/lib/ruby/gems/" + jRubyVersion + "/gems/neo4j-0.2.1/lib");
+        loadPath.add(jRubyHome + "/lib/ruby/gems/" + jRubyVersion + "/gems/neo4j-0.2.1/lib/relations");
+        loadPath.add(jRubyHome + "/lib/ruby/gems/" + jRubyVersion + "/gems/neo4j-0.2.1/lib/mixins");
+        loadPath.add(jRubyHome + "/lib/ruby/gems/" + jRubyVersion + "/gems/neo4j-0.2.1/lib/jars");
+        loadPath.add(jRubyHome + "/lib/ruby/gems/" + jRubyVersion + "/gems/neo4j-0.2.1/examples/imdb");
+
         loadPath.add("lib/ruby/"+jRubyVersion);
         loadPath.add(".");
 		return loadPath;
