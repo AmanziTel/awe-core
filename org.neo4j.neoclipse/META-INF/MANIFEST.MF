@@ -48,4 +48,5 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.help,
  org.eclipse.core.resources
-Export-Package: org.neo4j.api.core
+Export-Package: org.neo4j.api.core,
+ org.neo4j.neoclipse
