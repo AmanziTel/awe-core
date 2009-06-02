@@ -222,7 +222,11 @@ public class NeoGraphLabelProvider extends LabelProvider implements
             RelationshipTypeControl typeControl = (RelationshipTypeControl) element;
             return typeControl.getRelType().name();
         }
-        return element.toString();
+        if (element != null){
+        	return element.toString();
+        }else{
+        	return "";
+        }
     }
 
     /**
