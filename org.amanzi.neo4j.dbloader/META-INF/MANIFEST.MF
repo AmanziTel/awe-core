@@ -11,8 +11,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.neo4j.neoclipse
 Eclipse-LazyStart: true
 Bundle-ClassPath: ./,
- index-util-0.6.jar,
- jta-1.1.jar,
- lucene-core-2.4.0.jar,
  neo-1.0-b8.jar,
- shell-1.0-b8.jar
+ index-util-0.6.jar,
+ lucene-core-2.4.0.jar
+Export-Package: org.neo4j.api.core,
+ org.neo4j.impl.transaction
