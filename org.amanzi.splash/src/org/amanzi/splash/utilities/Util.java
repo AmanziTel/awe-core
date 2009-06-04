@@ -92,7 +92,7 @@ public class Util {
 				{
 					Cell c = (Cell) model.getValueAt(i, j);
 					if (c != null)
-					{
+					{						
 						printCell("Cell", c);
 						printCellList("RFD List of Cell " + c.getCellID(), c.getRfdCells());
 						printCellList("RFG List of Cell " + c.getCellID(), c.getRfgCells());
@@ -293,10 +293,27 @@ public class Util {
 		//return t.getColumnName(column);
 
 		//String cc = (String) t.getColumnModel().getColumn(column).getHeaderValue();
-		// TODO: here, there is a bug with columns more than 26
+		
+		//Lagutko,  4.06.2009, correct bug with columns more than 26
 		String STD_HEADINGS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		String cc = new Character(STD_HEADINGS.charAt(column%26)).toString();
-		return cc + Integer.toString(row+1);
+		StringBuilder letterIndex = new StringBuilder();		
+		int iColumn = column;
+		
+		letterIndex.insert(0, STD_HEADINGS.charAt(column % 26));
+		
+		iColumn = iColumn / 26;
+		
+		STD_HEADINGS = "AABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		
+		while (iColumn > 0) {
+			int index = iColumn % 27;
+			
+			letterIndex.insert(0, STD_HEADINGS.charAt(index));
+			
+			iColumn = iColumn / 27;
+		}		
+		
+		return letterIndex + Integer.toString(row+1);
 	}
 
 	public static boolean isCellInList(Cell c, ArrayList<Cell> list)
@@ -338,13 +355,26 @@ public class Util {
 
 		return ret-1;
 	}
-
+	
 	public static int getColumnIndexFromCellID(String cellID) {
 		String STD_HEADINGS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-		// TODO: if cell column ID is more than one letter, this method will fail
-		String cc = new Character(cellID.toUpperCase().charAt(0)).toString();
-		return STD_HEADINGS.indexOf(cc);
+		//Lagutko, 4.06.2009, CellId can contain more than one letter, so count ColumnIndex until we have letter in CellId
+		String id = cellID.toUpperCase();
+		int i = 0;
+		
+		char c;
+		int index = 0;
+		
+		while (!Character.isDigit(c = id.charAt(i))) {			
+			index = index * 26;
+			
+			index = index + (STD_HEADINGS.indexOf(c) + 1);
+			
+			i++;
+		}
+		
+		return index - 1;
 	}
 
 	/**

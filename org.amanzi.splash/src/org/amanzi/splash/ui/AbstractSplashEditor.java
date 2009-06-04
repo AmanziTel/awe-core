@@ -409,7 +409,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				ListSelectionModel selectionModel = table.getSelectionModel();
 				selectionModel.addListSelectionListener(new ListSelectionListener(){
 
-					@Override
+					//@Override
 					public void valueChanged(ListSelectionEvent e) {
 						// TODO Auto-generated method stub
 						

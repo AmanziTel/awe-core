@@ -2,9 +2,7 @@ package org.amanzi.splash.swing;
 
 import java.net.URI;
 import java.util.ArrayList;
-import javax.swing.table.TableModel;
 
-import org.amanzi.splash.jruby.SplashJRubyInterpreter;
 import org.amanzi.splash.utilities.Util;
 
 import com.eteks.openjeks.format.CellFormat;
