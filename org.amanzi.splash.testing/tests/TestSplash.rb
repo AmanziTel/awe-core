@@ -110,7 +110,7 @@ class TestSplash < Test::Unit::TestCase
 
     @splashTable.getModel().getValueAt(8,0).setCellFormat(cell_format);
     
-      assert_equal 10,
+      assert_equal 14,
         @splashTable.getModel().getValueAt(8,0).getCellFormat().getFontSize()
   end
   
@@ -134,7 +134,7 @@ class TestSplash < Test::Unit::TestCase
 
     @splashTable.getModel().getValueAt(8,0).setCellFormat(cell_format);
     
-      assert_equal 3,
+      assert_equal 0,
         @splashTable.getModel().getValueAt(8,0).getCellFormat().getVerticalAlignment()
   end
   
@@ -203,7 +203,7 @@ class TestSplash < Test::Unit::TestCase
 
     @splashTable.getModel().getValueAt(8,0).setCellFormat(cell_format);
     
-      assert_equal 10,
+      assert_equal 14,
         @splashTable.getModel().getValueAt(8,0).getCellFormat().getFontSize()
     
     cell_format.setFontSize(12);
@@ -239,7 +239,7 @@ class TestSplash < Test::Unit::TestCase
 
     @splashTable.getModel().getValueAt(8,0).setCellFormat(cell_format);
     
-      assert_equal 3,
+      assert_equal 0,
         @splashTable.getModel().getValueAt(8,0).getCellFormat().getVerticalAlignment()
         
      cell_format.setVerticalAlignment(1)
