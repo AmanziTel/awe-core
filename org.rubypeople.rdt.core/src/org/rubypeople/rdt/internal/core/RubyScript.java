@@ -85,12 +85,16 @@ public class RubyScript extends Openable implements IRubyScript {
 		this.name = name;
 		this.owner = owner;
 		//Lagutko: create RubyScript also in AWE Project structure
-		try {
-			AWEProjectManager.createRubyScript(parent.getResource().getProject(), name, getUnderlyingResource());
+		//Lagutko, 9.06.2009, this constructor also uses to open external scripts (not from a project)
+		//so we must call AWEProjectManager only for the case if this is not a External script
+		if (!(this instanceof ExternalRubyScript)) {
+			try {
+				AWEProjectManager.createRubyScript(parent.getResource().getProject(), name, getUnderlyingResource());
+			}
+			catch (RubyModelException e) {
+				//TODO: handle this exception
+			}
 		}
-		catch (RubyModelException e) {
-			//TODO: handle this exception
-		}		
 	}
 
 	/**
