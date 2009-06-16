@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Hashtable;
 
 import org.amanzi.neo.loader.views.NetworkLoader;
 import org.eclipse.swt.*;
@@ -39,7 +40,7 @@ public class LoadTEMS extends AbstractActionTool {
  */
  class ShowFileDialog {
 	 
-	 
+	 Hashtable hashdata;
 	 File[] files;
   // These filter names are displayed to the user in the file dialog. Note that
   // the inclusion of the actual extension in parentheses is optional, and
@@ -127,11 +128,27 @@ public class LoadTEMS extends AbstractActionTool {
     	                }
     	            };
     	            files = dir.listFiles(filter);
+    	            hashdata=new Hashtable(files.length);
     	            for(int i=0;i<files.length;i++)
     	            {
-    	            	Button selectBtn=new Button(shell, SWT.CHECK|SWT.BOTTOM);	
+    	            	final Button selectBtn=new Button(shell, SWT.CHECK|SWT.BOTTOM);	
     	            	selectBtn.setText(files[i].getAbsolutePath());
     	            	selectBtn.setSelection(true);
+    	            	hashdata.put(files[i].getAbsolutePath(), 1);
+    	            	selectBtn.addListener(SWT.Selection, new Listener(){
+
+							public void handleEvent(Event event) 
+							{
+								if(selectBtn.getSelection())
+								{
+									hashdata.put(selectBtn.getText(), 1);
+								}
+								else
+								{
+									hashdata.put(selectBtn.getText(),0);
+								}
+							}});
+    	            	
     	            }
     		 }
     	 }
@@ -147,8 +164,16 @@ public class LoadTEMS extends AbstractActionTool {
   		{
   			for(int j =0;j<files.length;j++)
   			{
-  				TEMSLoader temsLoader = new TEMSLoader(neo,files[j].getAbsolutePath(),100);
-  				temsLoader.printStats();	// stats for this load
+  				if(files.length>1 && hashdata.get(files[j].getAbsolutePath())=="1")
+  				{
+  					TEMSLoader temsLoader = new TEMSLoader(neo,files[j].getAbsolutePath(),100);
+  	  				temsLoader.printStats();	// stats for this load
+  				}
+  				else
+  				{
+  					TEMSLoader temsLoader = new TEMSLoader(neo,files[j].getAbsolutePath(),100);
+  	  				temsLoader.printStats();	// stats for this load
+  				}
   			}
   			//printTimesStats();	// stats for all loads
   		} catch (IOException e) {
