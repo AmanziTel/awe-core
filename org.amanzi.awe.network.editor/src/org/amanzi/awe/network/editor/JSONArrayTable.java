@@ -35,6 +35,9 @@ public class JSONArrayTable
 	static String[] columnNamesBSCs;
 	static String[][] BSCsDataValues;
 	
+	static String[] columnNamesCarriers;
+	static String[][] CarriersDataValues;
+	
     
 	  @SuppressWarnings({ "unused", "unchecked" })
 	public static String[][] parseJSONofSectors(  final IGeoResource jsonGeoResource,IProgressMonitor monitor ) throws RenderException 
@@ -292,5 +295,87 @@ public class JSONArrayTable
 		        return BSCsDataValues;
 		    }
 
+	  @SuppressWarnings({ "unused", "unchecked" })
+		public static String[][] parseJSONofCarriers(  final IGeoResource jsonGeoResource,IProgressMonitor monitor ) throws RenderException 
+		{
+			  
+		        try 
+		        {
+		            JSONReader jsonReader = jsonGeoResource.resolve(JSONReader.class,new SubProgressMonitor(monitor, 10));
+		            for( Feature feature : jsonReader.getFeatures() ) 
+		            {
+		                Map<String, Object> properties = feature.getProperties();
+		               
+		                if (properties != null) 
+		                {
+		                    try 
+		                    {
+		                        if (properties.containsKey("carriers")) 
+		                        {
+		                            Object carriersObj = properties.get("carriers");
+		                            System.out.println("Found sites: " + carriersObj);
+		                            if (carriersObj instanceof JSONArray) 
+		                            {
+		                                JSONArray carriers = (JSONArray) carriersObj;
+		                                JSONObject carriersLength = carriers.getJSONObject(0);
+		                                JSONObject carriersLengthProperties = carriersLength.getJSONObject("properties");
+		                                Iterator<String> it=carriersLengthProperties.keys();
+		                                int CarriersColumns=0;
+		                                Vector<String> columnNamesVector=new Vector<String>();
+		                                while(it.hasNext())
+		                                {
+		                                	columnNamesVector.addElement(it.next());
+		                                	CarriersColumns++;
+		                                }
+		                                columnNamesCarriers=(String[])columnNamesVector.toArray();
+		                                
+		                                CarriersDataValues=new String[CarriersColumns][carriers.size()];
+		                                
+		                                for( int s = 0; s < carriers.size(); s++ ) 
+		                                {
+		                                    JSONObject site = carriers.getJSONObject(s);
+		                                    if (site != null) 
+		                                    {
+		                                        System.out.println("BSCs: " + site);
+		                                        JSONObject Carriersproperties = site.getJSONObject("properties");
+		                                      
+		                                        for(int sc=0;sc<CarriersColumns;sc++)
+		                                        {
+		                                        	CarriersDataValues[sc][s]=Carriersproperties.getString(columnNamesCarriers[sc]);
+		                                        	//I left here posibility to obtain these values like double or whatever in later implementation
+		                                        }
+		                                       // double azimuth = sectorProperties.getDouble("azimuth");
+		                                        //double beamwidth = sectorProperties.getDouble("beamwidth");
+		                                    }
+		                                }
+		                            } 
+		                            else 
+		                            {
+		                                System.err.println("Carriers object is not a JSONArray: "
+		                                        + carriersObj);
+		                            }
+		                        }
+		                    }
+		                    finally 
+		                    {
+		                    }
+		                }
+		            }
+		            // updateNetworkTreeView(jsonReader);     
+		        } 
+		        catch (IOException e) 
+		        {
+		            throw new RenderException(e); // rethrow any exceptions encountered
+		        } finally 
+		        {
+		            // if (jsonReader != null)
+		            // jsonReader.close();
+		           
+		        }
+		        return BSCsDataValues;
+		    }
+
+	  
+	  
 
 }

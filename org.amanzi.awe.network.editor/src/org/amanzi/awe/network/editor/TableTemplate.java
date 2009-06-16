@@ -29,7 +29,7 @@ import org.eclipse.ui.part.ViewPart;
  * This class represents the Network View.
  */
 public class TableTemplate extends ViewPart {
-    public static final String NETWORK_VIEW_ID = "org.amanzi.awe.network.editor.TableTemplate";
+    public static final String NETWORK_EDITOR_VIEW_ID = "org.amanzi.awe.network.editor.TableTemplate";
     /**
      * Tree viewer reference.
      */
@@ -107,7 +107,7 @@ public class TableTemplate extends ViewPart {
      * contents.
      */
     public void createPartControl( final Composite parent ) {
-    	table=new Table(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+    	createButton(parent);
     	createTable();
         viewer = new TableViewer(table);
         viewer.setUseHashlookup(true);
@@ -121,9 +121,9 @@ public class TableTemplate extends ViewPart {
         createMenu();
     }
 
-    private void createButton()
+    private void createButton(final Composite parent)
     {
-    	
+    	  table=new Table(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
     	  final Button button = new Button(viewer.getTable().getParent(), SWT.PUSH);	
     	  button.setText("Save");
     	      button.addSelectionListener(new SelectionListener() 
