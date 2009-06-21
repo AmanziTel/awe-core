@@ -1,6 +1,5 @@
 package org.amanzi.awe.network.editor;
 
-import java.awt.Graphics2D;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -14,15 +13,7 @@ import net.sf.json.JSONObject;
 import org.amanzi.awe.catalog.json.Feature;
 import org.amanzi.awe.catalog.json.JSONReader;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
-import org.geotools.geometry.jts.JTS;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.operation.TransformException;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Point;
 
 public class JSONArrayTable 
 {
