@@ -27,8 +27,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.part.ViewPart;
-import org.amanzi.awe.render.network.*;
-import org.amanzi.awe.
+
 /**
  * This class represents the Network View.
  */
@@ -188,9 +187,10 @@ public class NeoNetworkView extends ViewPart {
     public void setSelectedTreeItems( List<String> selectedTreeItems ) {
         this.selectedTreeItems = selectedTreeItems;
     }
-    public void addChangeListeners( NeoRenderer neoRenderer ) {
-        changeListeners.add(neoRenderer);
-    }
+	//TODO: Re-enable this line when the cyclic dependencies are resolved
+    //public void addChangeListeners( NeoRenderer neoRenderer ) {
+        //changeListeners.add(neoRenderer);
+    //}
     /**
      * Find tree items that who's names correspond to selected items on map and select them.
      * 
