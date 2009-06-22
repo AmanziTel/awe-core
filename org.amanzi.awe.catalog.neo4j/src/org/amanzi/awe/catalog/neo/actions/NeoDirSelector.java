@@ -13,21 +13,21 @@ import org.eclipse.swt.widgets.Shell;
 
 public class NeoDirSelector 
 {
-	public void run()
+	public void run(Display display)
 	{
-	Display display = new Display();
     Shell shell = new Shell(display);
     shell.setText("File Dialog");
     createContents(shell);
     shell.pack();
     shell.open();
+    //TODO: Do we need this if we did not create the display?
+    /*
     while (!shell.isDisposed()) {
       if (!display.readAndDispatch()) {
         display.sleep();
       }
     }
-    display.dispose();
-	
+    */
 	
 	}
 

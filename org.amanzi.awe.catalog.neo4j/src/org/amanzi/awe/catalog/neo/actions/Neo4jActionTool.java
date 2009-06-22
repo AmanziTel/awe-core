@@ -1,5 +1,7 @@
 package org.amanzi.awe.catalog.neo.actions;
 
+import org.eclipse.swt.widgets.Display;
+
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
 public class Neo4jActionTool extends AbstractActionTool 
@@ -16,10 +18,13 @@ public class Neo4jActionTool extends AbstractActionTool
 	@Override
 	public void run() 
 	{
-		// TODO Auto-generated method stub
-		 NDS=new NeoDirSelector();
-		 NDS.run();
-
+		final Display display = this.getContext().getViewportPane().getControl().getDisplay();
+		this.getContext().updateUI(new Runnable(){
+			@Override
+			public void run() {
+				 NDS=new NeoDirSelector();
+				 NDS.run(display);
+			}});
 	}
 
 	@Override
