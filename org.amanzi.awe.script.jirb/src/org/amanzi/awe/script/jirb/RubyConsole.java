@@ -59,7 +59,14 @@ public class RubyConsole extends ViewPart {
             addExtraGlobal("catalogs", net.refractions.udig.catalog.CatalogPlugin.getDefault().getCatalogs());
             addExtraGlobal("projects", net.refractions.udig.project.ui.ApplicationGIS.getProjects());
             addExtraGlobal("active_project", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
-            addExtraGlobal("json_reader_class", org.amanzi.awe.catalog.json.JSONReader.class);
+            try{
+            	// TODO: Check if 'buddy class loading' is required for this, since the plugins are not explicitly specified as dependencies
+            	addExtraGlobal("json_reader_class", Class.forName("org.amanzi.awe.catalog.json.JSONReader"));
+            	addExtraGlobal("neo_reader_class", Class.forName("org.amanzi.awe.catalog.neo.NeoReader"));
+            }catch(ClassNotFoundException e){
+            	System.err.println("Cannot find possible FeatureSource class: "+e.getMessage());
+            	//e.printStackTrace(System.err);
+            }
             addExtraGlobal("feature_source_class", org.geotools.data.FeatureSource.class);
             
             //manager of spreadsheets

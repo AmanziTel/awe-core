@@ -71,7 +71,7 @@ module AWE
     end
 private
     def try_fs_from(geo_rs,fs_class)
-      geo_rs.can_resolve(fs_class) && geo_rs.resolve(fs_class,nil)
+      fs_class && geo_rs.can_resolve(fs_class) && geo_rs.resolve(fs_class,nil)
     end
   end
 end
