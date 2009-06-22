@@ -4,14 +4,14 @@
    <extension
          point="net.refractions.udig.ui.menuBuilders">
       <menuBuilder
-            class="org.amanzi.awe.catalog.neo4j.MenuBuilder1"
+            class="org.amanzi.awe.catalog.neo.MenuBuilder1"
             id="org.amanzi.awe.catalog.neo4j.menuBuilder1">
       </menuBuilder>
    </extension>
    <extension
          point="net.refractions.udig.project.ui.tool">
       <actionTool
-            class="org.amanzi.awe.catalog.neo4j.actions.Neo4jActionTool"
+            class="org.amanzi.awe.catalog.neo.actions.Neo4jActionTool"
             id="org.amanzi.awe.catalog.neo4j.Neo4jActionTool"
             menuPath="layer/additions"
             name="Neo4j"

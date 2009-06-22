@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Neo4j Plug-in
-Bundle-SymbolicName: org.amanzi.awe.catalog.neo4j;singleton:=true
+Bundle-SymbolicName: org.amanzi.awe.catalog.neo;singleton:=true
 Bundle-Version: 1.0.0
-Bundle-Activator: org.amanzi.awe.catalog.neo4j.Activator
+Bundle-Activator: org.amanzi.awe.catalog.neo.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  net.refractions.udig.catalog;bundle-version="1.1.1",
@@ -11,6 +11,7 @@ Require-Bundle: org.eclipse.ui,
  net.refractions.udig.catalog.ui;bundle-version="1.1.1",
  net.refractions.udig.project.ui;bundle-version="1.1.1",
  net.refractions.udig.style;bundle-version="1.1.1",
- net.refractions.udig.style.sld;bundle-version="1.1.1"
+ net.refractions.udig.style.sld;bundle-version="1.1.1",
+ com.csvreader;bundle-version="2.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
