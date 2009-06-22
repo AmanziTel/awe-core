@@ -2,11 +2,11 @@ package org.amanzi.awe.catalog.neo.shapes;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-public class NeoMultiLine extends Object
+public class NeoPolygon extends Object
 {
     NeoLineCoords[] nCoords;
 	
-	public NeoMultiLine(NeoLineCoords[] nCoords)
+	public NeoPolygon(NeoLineCoords[] nCoords)
 	{
 		this.nCoords=nCoords;
 		
@@ -27,6 +27,6 @@ public class NeoMultiLine extends Object
 		return nCoords;
 	}
 	
-	
+
 	
 }

@@ -5,7 +5,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 
 
-public class NeoMultiPoint 
+public class NeoMultiPoint extends Object
 {
 
 	Coordinate[] coords;

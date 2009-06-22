@@ -1,6 +1,5 @@
 package org.amanzi.awe.catalog.neo.actions;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
