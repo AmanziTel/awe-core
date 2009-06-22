@@ -7,10 +7,6 @@ Bundle-Activator: org.neo4j.neoclipse.Activator
 Bundle-Vendor: Neo4j.org
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
-Bundle-ClassPath: lib/jta-1.1.jar,
- .,
- lib/neo-1.0-b8.jar,
- lib/remote-neo-0.1.jar
 Import-Package: org.eclipse.core.commands.common,
  org.eclipse.core.runtime,
  org.eclipse.core.runtime.preferences,
@@ -43,11 +39,12 @@ Import-Package: org.eclipse.core.commands.common,
  org.eclipse.zest.layouts,
  org.eclipse.zest.layouts.algorithms,
  org.junit;version="4.3.1",
+ org.neo4j.api.core,
  org.osgi.framework;version="1.4.0"
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.help,
- org.eclipse.core.resources
-Export-Package: org.neo4j.api.core,
- org.neo4j.neoclipse,
+ org.eclipse.core.resources,
+ org.neo4j
+Export-Package: org.neo4j.neoclipse,
  org.neo4j.neoclipse.neo

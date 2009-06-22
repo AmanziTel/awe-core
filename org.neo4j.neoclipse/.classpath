@@ -4,8 +4,5 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/test/java"/>
-	<classpathentry kind="lib" path="lib/jta-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/neo-1.0-b8.jar"/>
-	<classpathentry kind="lib" path="lib/remote-neo-0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
