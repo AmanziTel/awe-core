@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <parent>
+    <groupId>org.neo4j</groupId>
+    <artifactId>parent-pom</artifactId>
+    <version>3</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.neo4j</groupId>
+  <artifactId>remote-neo</artifactId>
+  <version>0.1</version>
+  <name>Remote Neo</name>
+  <description></description>
+
+  <scm>
+    <connection>
+      scm:svn:https://svn.neo4j.org/components/remote-neo/trunk
+    </connection>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>tobias</id>
+      <name>Tobias Ivarsson</name>
+      <email>tobias.ivarsson [at] neotechnology.com</email>
+      <timezone>+1</timezone>
+      <roles>
+	<role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo</artifactId>
+      <version>1.0-b8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>index-util</artifactId>
+      <version>0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.4</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <subpackages>org.neo4j.remote</subpackages>
+          <excludePackageNames>org.neo4j.remote.inspect</excludePackageNames>
+          <links>
+            <link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+            <link>http://components.neo4j.org/neo/apidocs/</link>
+            <link>http://components.neo4j.org/index-util/apidocs/</link>
+          </links>
+          <quiet>true</quiet>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+</project>
