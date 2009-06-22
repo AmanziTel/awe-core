@@ -18,10 +18,11 @@ import net.refractions.udig.catalog.IServiceInfo;
 
 public class NeoService extends IService
 {
+	URL urlIndentifier;
 	public NeoService(String fileName) throws MalformedURLException
 	{
 		IServiceFactory serviceFactory = CatalogPlugin.getDefault().getServiceFactory();
-		for( IService service : serviceFactory.createService( url ) ){
+		for( IService service : serviceFactory.createService( urlIndentifier ) ){
 		     try {
 		         // many different providers may think they can connect to this URL (example WFS, WMS, ...)
 		         // but we should try connecting to be sure ...
