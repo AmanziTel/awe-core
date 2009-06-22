@@ -12,8 +12,7 @@ Require-Bundle: org.eclipse.ui,
  net.refractions.udig.project.ui;bundle-version="1.1.1",
  net.refractions.udig.style;bundle-version="1.1.1",
  net.refractions.udig.style.sld;bundle-version="1.1.1",
- com.csvreader;bundle-version="2.0.0",
- org.neo4j
+ com.csvreader;bundle-version="2.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-RegisterBuddy: org.amanzi.awe.script.jirb

@@ -9,6 +9,8 @@ import net.refractions.udig.catalog.ServiceExtension;
 
 public class NeoServiceExtension implements ServiceExtension
 {
+	
+	public static final String URL_KEY = "org.amanzi.awe.catalog.neo.url";
 
 	@Override
 	public Map<String, Serializable> createParams(URL url) {

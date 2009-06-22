@@ -13,7 +13,7 @@
       <actionTool
             class="org.amanzi.awe.catalog.neo.actions.Neo4jActionTool"
             id="org.amanzi.awe.catalog.neo4j.Neo4jActionTool"
-            menuPath="layer/additions"
+            menuPath="layer/add.ext"
             name="Neo4j"
             tooltip="Open a Neo4J graph database">
          <enablement></enablement>

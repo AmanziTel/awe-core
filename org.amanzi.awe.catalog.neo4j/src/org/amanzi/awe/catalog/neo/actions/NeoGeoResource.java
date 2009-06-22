@@ -22,7 +22,7 @@ public class NeoGeoResource extends IGeoResource
 		super();
 		// TODO Auto-generated constructor stub
 		 this.service = service;
-		
+		 URL serviceUrl = service.getIdentifier();
 	}
 
 	@Override

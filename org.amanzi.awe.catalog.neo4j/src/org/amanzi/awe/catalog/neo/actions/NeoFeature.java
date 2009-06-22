@@ -4,12 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
-
-
-import org.amanzi.awe.catalog.neo.shapes.NeoCoords;
 import org.amanzi.awe.catalog.neo.shapes.NeoLine;
-import org.amanzi.awe.catalog.neo.shapes.NeoLineCoords;
 import org.amanzi.awe.catalog.neo.shapes.NeoMultiLine;
 import org.amanzi.awe.catalog.neo.shapes.NeoMultiPoint;
 import org.amanzi.awe.catalog.neo.shapes.NeoMultiPolygon;
@@ -27,13 +22,7 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
-/**
- * This is the based class for all features that are genuinely build from JSON.
- * As such a JSONObject is passed to the constructor, and used to generate the
- * feature data required.
- * 
- * @author Dalibor
- */
+
 class NeoFeature implements Feature 
 {
 	String FeatureType;
@@ -51,7 +40,8 @@ class NeoFeature implements Feature
 	}
 	
 	@Override
-	 public final Geometry createGeometry() {
+	 public final Geometry createGeometry() 
+	{
         if (objGeometry == null) 
         {
         	if(neoNode.getProperty("geometry") instanceof NeoPoint)
@@ -213,27 +203,27 @@ class NeoFeature implements Feature
 		// TODO Auto-generated method stub
 		if(neoNode.getProperty("geometry") instanceof NeoPoint)
     	{
-    		
-    	}
-    	else if(neoNode.getProperty("geometry") instanceof NeoMultiPoint)
-    	{
-    	
-    	}
-    	else if(neoNode.getProperty("geometry") instanceof NeoLine)
-    	{
-    		
-    	}
-    	else if(neoNode.getProperty("geometry") instanceof NeoMultiLine)
-    	{
-    		
-    	}
-    	else if(neoNode.getProperty("geometry") instanceof NeoMultiPoint)
-    	{
-    		
+    		return "NeoPoint";
     	}
     	else if(neoNode.getProperty("geometry") instanceof NeoMultiPoint)
     	{
     		return "NeoMultiPoint";
+    	}
+    	else if(neoNode.getProperty("geometry") instanceof NeoLine)
+    	{
+    		return "NeoLine";
+    	}
+    	else if(neoNode.getProperty("geometry") instanceof NeoMultiLine)
+    	{
+    		return "NeoMultiLine";
+    	}
+    	else if(neoNode.getProperty("geometry") instanceof NeoPolygon)
+    	{
+    		return "NeoPolygon";
+    	}
+    	else if(neoNode.getProperty("geometry") instanceof NeoMultiPolygon)
+    	{
+    		return "NeoMultiPolygon";
     	}
 		return null;
 	}
