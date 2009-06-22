@@ -10,16 +10,15 @@ import java.util.List;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
-import org.amanzi.awe.views.network.utils.ITreeSelectionChanged;
-import org.amanzi.awe.views.network.views.NetworkTreeView;
+//import org.amanzi.awe.neo.views.network.utils.ITreeSelectionChanged;
+//import org.amanzi.awe.neo.views.network.views.NetworkTreeView;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.opengis.referencing.operation.MathTransform;
-import org.amanzi.awe.views.network.views.NetworkTreeView;
 
-public class NeoRenderer extends RendererImpl implements ITreeSelectionChanged
+public class NeoRenderer extends RendererImpl //implements ITreeSelectionChanged
 {
 	    private static final Color SELECTION_COLOR = Color.RED;
 	    private AffineTransform base_transform = null; // save original graphics transform for repeated
@@ -34,6 +33,8 @@ public class NeoRenderer extends RendererImpl implements ITreeSelectionChanged
 	public NeoRenderer() 
 	{
         Display display = PlatformUI.getWorkbench().getDisplay();
+        //TODO: Re-enable when the cyclic dependencies are resolved
+        /*
         display.syncExec(new Runnable(){
 
             public void run() 
@@ -52,6 +53,7 @@ public class NeoRenderer extends RendererImpl implements ITreeSelectionChanged
                 }
             }
         });
+        */
     }
 
 	
