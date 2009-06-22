@@ -12,27 +12,21 @@ package org.amanzi.neo4j.dbloader.importWizards;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IPerspectiveDescriptor;
-import org.eclipse.ui.IPerspectiveRegistry;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchMessages;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.neo4j.apps.imdb.parser.InjectImdbData;
-import org.neo4j.neoclipse.preference.NeoPreferences;
+//import org.neo4j.apps.imdb.parser.InjectImdbData;
+//import org.neo4j.neoclipse.preference.NeoPreferences;
 
 public class Neo4jDbImportWizard extends Wizard implements IImportWizard {
 
@@ -53,7 +47,7 @@ public class Neo4jDbImportWizard extends Wizard implements IImportWizard {
 	 */
 	public boolean performFinish() {
 		IFile file = mainPage.createNewFile();
-		InjectImdbData iid = new InjectImdbData();
+		//InjectImdbData iid = new InjectImdbData();
 		//iid.create_db();
 		System.out.println("mainPage.filename : " + mainPage.filename);
 
@@ -74,12 +68,15 @@ public class Neo4jDbImportWizard extends Wizard implements IImportWizard {
 
 		System.out.println("mainPage.filename : " + mainPage.filename);
 
-		IPreferenceStore pref = org.neo4j.neoclipse.Activator.getDefault().getPreferenceStore();
-		//pref.setDefault( NeoPreferences.DATABASE_LOCATION, "" );
-		String defaultDBLocation = pref.getString(NeoPreferences.DATABASE_LOCATION);
-
-
-		System.out.println("defaultDBLocation: "+defaultDBLocation); 
+		//TODO: Currently the code does nothing with the neoclipse database location
+		// so we have commented out this code, to be re-enabled if/when we need it again
+		// remember to add back the plugin dependency on neoclipse if we enable this code again
+//		IPreferenceStore pref = org.neo4j.neoclipse.Activator.getDefault().getPreferenceStore();
+//		//pref.setDefault( NeoPreferences.DATABASE_LOCATION, "" );
+//		String defaultDBLocation = pref.getString(NeoPreferences.DATABASE_LOCATION);
+//
+//
+//		System.out.println("defaultDBLocation: "+defaultDBLocation); 
 
 		//iid.create_db(mainPage.filename, defaultDBLocation);
 		
@@ -137,8 +134,7 @@ public class Neo4jDbImportWizard extends Wizard implements IImportWizard {
 			if (activePage != null) {
 				activePage.setPerspective(desc);
 			} else {
-				IAdaptable input = ((Workbench) workbench)
-				.getDefaultPageInput();
+				IAdaptable input = ((Workbench) workbench).getDefaultPageInput();
 				activeWorkbenchWindow.openPage(perspectiveId, input);
 			}
 		} catch (WorkbenchException e) {

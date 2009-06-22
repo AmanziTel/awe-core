@@ -3,9 +3,5 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="lib" path="/org.neo4j.neoclipse/lib/jta-1.1.jar"/>
-	<classpathentry kind="lib" path="/org.neo4j.neoclipse/lib/neo-1.0-b8.jar"/>
-	<classpathentry kind="lib" path="lib/index-util-0.6.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-core-2.4.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
