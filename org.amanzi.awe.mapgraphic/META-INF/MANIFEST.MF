@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: AWE Mapgraphic Plug-in
-Bundle-SymbolicName: org.amanzi.awe.mapgraphic;singleton:=true
-Bundle-Version: 1.0.0
-Bundle-Vendor: amanzi.org
-Require-Bundle: net.refractions.udig.project.ui,
- net.refractions.udig.mapgraphic,
- org.amanzi.awe.tool.coordinate
