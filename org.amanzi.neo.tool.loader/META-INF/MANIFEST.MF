@@ -7,7 +7,6 @@ Bundle-Activator: org.amanzi.neo.loader.tool.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  net.refractions.udig.project;bundle-version="1.1.1",
- org.amanzi.awe.catalog.csv;bundle-version="1.0.0",
- org.amanzi.awe.catalog.json;bundle-version="1.0.0",
- net.refractions.udig.project.ui;bundle-version="1.1.1"
+ net.refractions.udig.project.ui;bundle-version="1.1.1",
+ org.neo4j
 Eclipse-LazyStart: true
