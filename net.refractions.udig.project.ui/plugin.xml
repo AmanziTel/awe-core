@@ -68,13 +68,13 @@
       		   class="org.rubypeople.rdt.internal.ui.wizards.NewClassWizardAction"
       		   tooltip="NewClassWizardAction.tooltip"
       		   enablesFor="1"
-      		   id="org.rubypeople.rdt.ui.actions.NewClassWizard"
+      		   id="org.amanzi.rdt.ui.actions.NewClassWizard"
       		   label="New Ruby Class"/>
       	 <action
       		   class="org.rubypeople.rdt.internal.ui.wizards.NewScriptWizardAction"
       		   tooltip="NewClassWizardAction.tooltip"
       		   enablesFor="1"
-      		   id="org.rubypeople.rdt.ui.actions.NewClassWizard"
+      		   id="org.amanzi.rdt.ui.actions.NewScriptWizard"
       		   label="New Ruby Script"/>
       </objectContribution>
      <objectContribution
@@ -144,7 +144,6 @@
                label="%rename.label"
                menubarPath="additions"/>
       </objectContribution>
-      
    </extension>
    <extension
          point="org.eclipse.ui.views">
@@ -177,6 +176,15 @@
             id="net.refractions.udig.project.ui.mapEditor"
             name="%mapEditor.name">
       </editor>
+   </extension>  
+   <extension
+         point="org.eclipse.ui.actionSetPartAssociations">
+      <actionSetPartAssociation
+            targetID="org.eclipse.debug.ui.launchActionSet">
+         <part
+               id="net.refractions.udig.project.ui.mapEditor">
+         </part>
+      </actionSetPartAssociation>
    </extension>   
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -806,7 +814,7 @@
             id="net.refractions.udig.project.ui.map.menu"
             label="Map"
             visible="false">
-      </actionSet>
+      </actionSet>      
       <actionSet
             id="net.refractions.udig.project.ui.layer.menu"
             label="Layer">
