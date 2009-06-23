@@ -261,7 +261,7 @@ public class SplashTableModel extends DefaultTableModel
 	}
 
 	public String interpret_erb(String cellID, String formula) {
-		String s = "";
+		Object s = "";
 		//Util.logEnter("interpret_erb");
 		String path = ScriptUtils.getJRubyHome() + "/lib/ruby/1.8" + "/erb";
 
@@ -278,7 +278,7 @@ public class SplashTableModel extends DefaultTableModel
 			"return " + "$sheet.cells." + cellID.toLowerCase();
 
 			Util.logn("ERB Input: " + input);
-			s = (String) engine.eval(input, engine.getContext());
+			s = engine.eval(input, engine.getContext());
 			
 
 			Util.logn("ERB Output = " + s);
@@ -293,7 +293,7 @@ public class SplashTableModel extends DefaultTableModel
 		if (s == null) s = "ERROR";
 
 		//Util.logExit("interpret_erb");
-		return s;
+		return s.toString();
 	}
 
 	public Cell interpret(String definition, String oldDefinition, int row, int column){
@@ -313,38 +313,70 @@ public class SplashTableModel extends DefaultTableModel
 			se = new Cell(row, column, "","", new CellFormat());
 		}
 
-		List<String> list = Util.findComplexCellIDs(definition);
-
-		for (int i=0;i<list.size();i++){
-			if (formula1.contains("$sheet.cells." + list.get(i)) == false)
-				formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
-		}
+		List<String> list = null; 
 
 
 		if (definition.startsWith("=") == false){
 			Util.logn("Formula not starting with =, dealing as normal text");
+			if (definition.startsWith("<%=") && definition.endsWith("%>")){
+				Util.logn("The entered formula is already ERB");
+				Util.logn("Interpreting cell using ERB...");
+				Object s1 = interpret_erb(cellID, formula1);
+
+				Util.logn("Setting cell definition: "+ definition);
+				se.setDefinition(definition);
+
+				Util.logn("Setting cell value:" + (String)s1);
+				se.setValue((String)s1);
+			}else{
+				Util.logn("The entered formula just text, not ERB and not Ruby");
+				Util.logn("Setting cell definition: "+ definition);
+				se.setDefinition(definition);
+
+				Util.logn("Setting cell value:" + definition);
+				se.setValue(definition);
+			}
 		}
 		else{
+			Util.logn("definition = " + definition);
+
+			if (definition.startsWith("='")){
+				Util.logn("definition started with ='");
+				list = Util.findComplexCellIDsInRubyText(definition);
+
+				for (int i=0;i<list.size();i++){
+					if (formula1.contains("$sheet.cells." + list.get(i)) == false)
+						formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
+				}
+			}else{
+				Util.logn("definition NOT started with ='");
+				list = Util.findComplexCellIDs(definition);
+
+				for (int i=0;i<list.size();i++){
+					if (formula1.contains("$sheet.cells." + list.get(i)) == false)
+						formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
+				}
+			}
+			
+			Util.displayStringList("list", list);
+
 			Util.logn("Formula starts with =, Converting formula to ERB format");
 			formula1 = "<%= " +formula1.replace("=", "") + " %>";
+		
+
+			Util.logn("Interpreting cell using ERB...");
+			Object s1 = interpret_erb(cellID, formula1);
+
+			Util.logn("Setting cell definition: "+ definition);
+			se.setDefinition(definition);
+
+			Util.logn("Setting cell value:" + (String)s1);
+			se.setValue((String)s1);
+
 		}
-		
-		Util.logn("Interpreting cell using ERB...");
-		Object s1 = interpret_erb(cellID, formula1);
-		
-		Util.logn("Setting cell definition: "+ definition);
-		se.setDefinition(definition);
 
-		Util.logn("Setting cell value:" + (String)s1);
-		se.setValue((String)s1);
-		
-		Util.logn("setValueAt " + row +"," +column);
-		Util.printCell("se", se);
-		this.setValueAt(se, row, column, oldDefinition);
+		setValueAt(se, row, column, oldDefinition);
 
-		Util.logn("finish interpreting a cell...");
-		Util.logn("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
-		
 		return se;
 	}
 
@@ -748,8 +780,9 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param oldFormula
 	 * @param newFormula
 	 */
-	public void updateCellsAndTableModelReferences(int row, int column, String oldFormula, String newFormula)
+	public boolean updateCellsAndTableModelReferences(int row, int column, String oldFormula, String newFormula)
 	{
+		boolean isInfLoop = false;
 		Util.logEnter("updateCellsAndTableModelReferences");
 		String cellID = Util.getCellIDfromRowColumn(row,column);
 		Cell cell ;
@@ -763,40 +796,38 @@ public class SplashTableModel extends DefaultTableModel
 
 		Util.printCell("Cell found", cell);
 		Util.logn("checking formulas...");
-		if (!newFormula.equals(oldFormula) && oldFormula != null)
+		if (isInfiniteLoop(cell, newFormula) == false)
 		{
-			Util.logn("!newFormula.equals(oldFormula) && oldFormula != null");
+			
+			Util.logn("No infinite loop found ");
 			if (cell != null)
 			{
-				if (isInfiniteLoop(cell, newFormula) == false)
+				
+				if (!newFormula.equals(oldFormula) && oldFormula != null)
 				{
-					Util.logn("No infinite loop found ");
+					Util.logn("!newFormula.equals(oldFormula) && oldFormula != null");
 					Util.logn("Updating cell references of Cell " + cellID + " with formula " + newFormula);
-
 					updateCellReferences (cellID,	newFormula);
-					Util.logn("After updateCellReferences");
-
 					// Get all referring cells to update
 					list = getAllReferringCells(cell);
-
-					Util.logn("After getAllReferringCells(cell)");
-
-					Util.printCellList("Referring Cells of Cell " + cell.getCellID(), list);
-
 					for (int i=0;i<list.size();i++)
 					{
 						refreshCell(list.get(i));
 					}
-					Util.logn("After loop");
-				}
-				else
-				{
-					Util.logn("infinite loop found !!!!!");
+					
 				}
 			}
+		}else{
+			//cell.setValue("ERR: INF LOOP");
+			//refreshCell(cell);
+			Cell se = new Cell(row, column, newFormula, "ERROR", new CellFormat());
+			setValueAt(se, row, column);
+			isInfLoop = true;
+			Util.logn("infinite loop found !!!!!");
 		}
 
 		Util.logExit("updateCellsAndTableModelReferences");
+		return isInfLoop;
 	}
 	
 	/**
@@ -849,6 +880,10 @@ public class SplashTableModel extends DefaultTableModel
 				}
 				else
 				{
+					int row = Util.getRowIndexFromCellID(cellID);
+					int column = Util.getColumnIndexFromCellID(cellID);
+					Cell se = new Cell(row, column, newFormula, "ERROR", new CellFormat());
+					setValueAt(se, row, column);
 					Util.logn("infinite loop found !!!!!");
 				}
 			}
@@ -923,39 +958,43 @@ public class SplashTableModel extends DefaultTableModel
 
 	public Cell getCellByID(String cellID)
 	{
-		Util.logEnter("getCellByID");
-		Util.logn("cellID = " + cellID);
+		//Util.logEnter("getCellByID");
+		//Util.logn("cellID = " + cellID);
 		int row = Util.getRowIndexFromCellID(cellID);
-		Util.logn("row = " + row);
+		//Util.logn("row = " + row);
 		int column = Util.getColumnIndexFromCellID(cellID);
-		Util.logn("column = " + column);
+		//Util.logn("column = " + column);
 		
-		Util.logExit("getCellByID");
+		//Util.logExit("getCellByID");
 		return (Cell)getValueAt(row, column);
 		
 	}
 
 	public boolean isInfiniteLoop(Cell c, String new_formula)
 	{
-		//Util.logEnter("isInfiniteLoop");
+		Util.logEnter("isInfiniteLoop");
 		boolean ret = false;
 
 		// find RFDs
 		List<Cell> idsList = findComplexCellIDs(new_formula);
-
-		//Util.printCell("isInfiniteLoop check of Cell " + c.getCellID(), c);
-		for (int i=0;i<idsList.size();i++)
-		{
-			Cell c1 = idsList.get(i);
-			//Util.printCell("isInfiniteLoop check of Cell " + c1.getCellID(), c1);
-			if (Util.isCellInList(c1, getAllReferringCells(c)) == true)
+		
+		if (idsList.contains(c) == true){
+			ret = true;
+		}else{
+			//Util.printCell("isInfiniteLoop check of Cell " + c.getCellID(), c);
+			for (int i=0;i<idsList.size();i++)
 			{
-				ret = true;
-				break;
+				Cell c1 = idsList.get(i);
+				//Util.printCell("isInfiniteLoop check of Cell " + c1.getCellID(), c1);
+				if (Util.isCellInList(c1, getAllReferringCells(c)) == true)
+				{
+					ret = true;
+					break;
+				}
 			}
 		}
 
-		//Util.logExit("isInfiniteLoop");
+		Util.logExit("isInfiniteLoop");
 		return ret;
 	}
 

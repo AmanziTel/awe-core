@@ -9,15 +9,27 @@ class Cells
       puts "s = " + s
       a = args.to_s
       puts "a = " + a
-      if (a =~ /\d+/ and a.include?".")
-      	puts "FLOAT DETECTED"
+      
+      if (a =~ /\d+/ and a.include?"." and (not a.include?"/[a-z]/"))
+      	puts "Float detected"
       	b = a.to_f
-      elsif (a =~ /\d+/)
-      	puts "INTEGER DETECTED"
+      elsif (a =~ /\d+/ and (not a =~ /[a-z]/))
+      	puts "Integer detected"
       	b = a.to_i
       else
+      	puts "String detected"
       	b = a
-      end
+      end	
+      
+      #if (a =~ /\d+/ and a.include?"." and !a.include?"/[.]/")
+      #	puts "FLOAT DETECTED"
+      #	b = a.to_f
+      #elsif (a =~ /\d+/ and !a.include?"/[.]/")
+      #	puts "INTEGER DETECTED"
+      #	b = a.to_i
+      #else
+      #	b = a
+      #end
       
       if (args.to_s.eql?"")
         #puts "value of "+ s + "= " + @cells[s]

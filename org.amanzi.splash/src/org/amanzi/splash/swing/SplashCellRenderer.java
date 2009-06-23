@@ -87,11 +87,11 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 		}
 		
 		if (isNumerical == true){
-			Util.logn("Numerical cell found...");
+			//Util.logn("Numerical cell found...");
 			setHorizontalAlignment(new Integer(JLabel.RIGHT));
 			
 		}else{
-			Util.logn("Text cell found...");
+			//Util.logn("Text cell found...");
 			setHorizontalAlignment(new Integer(JLabel.LEFT));
 		}
 		

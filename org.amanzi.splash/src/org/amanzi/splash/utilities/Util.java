@@ -190,6 +190,24 @@ public class Util {
 		//Util.displayStringList("list.add(cellID)", list);
 		return list;
 	}
+	
+	public static ArrayList<String> findComplexCellIDsInRubyText(String content) {
+		ArrayList<String> list = new ArrayList<String>();
+		String regex = "[a-zA-Z]\\d+";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(content);
+
+		while (matcher.find()) {
+			String cellID = matcher.group();
+			if (content.contains("#{" + cellID + "}"))
+				list.add(cellID);
+		}
+
+
+		//Util.displayStringList("list.add(cellID)", list);
+		return list;
+	}
+
 
 	public static String getFormatString(CellFormat c)
 	{
