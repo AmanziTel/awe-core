@@ -6,13 +6,8 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.amanzi.awe.catalog.neo.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- net.refractions.udig.catalog;bundle-version="1.1.1",
- net.refractions.udig;bundle-version="1.1.0",
- net.refractions.udig.catalog.ui;bundle-version="1.1.1",
- net.refractions.udig.project.ui;bundle-version="1.1.1",
- net.refractions.udig.style;bundle-version="1.1.1",
- net.refractions.udig.style.sld;bundle-version="1.1.1",
- com.csvreader;bundle-version="2.0.0",
+ net.refractions.udig.project,
+ net.refractions.udig.project.ui,
  org.neo4j
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
