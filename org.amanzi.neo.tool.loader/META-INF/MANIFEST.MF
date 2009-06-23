@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Dalibor Plug-in
-Bundle-SymbolicName: org.amanzi.dalibor; singleton:=true
+Bundle-SymbolicName: org.amanzi.neo.loader.tool;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: org.amanzi.neo.loader.tool.Activator
 Require-Bundle: org.eclipse.ui,

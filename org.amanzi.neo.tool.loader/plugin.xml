@@ -40,7 +40,7 @@
          <enablement></enablement>
       </actionTool>
       <actionTool
-            class="LoadTEMS"
+            class="org.amanzi.neo.loader.tool.LoadTEMS"
             commandHandler="TEMSLoader"
             icon="icons/32/file.png"
             id="org.amanzi.neo.tool.loader.loadTems"

@@ -13,6 +13,7 @@ import org.neo4j.api.core.EmbeddedNeo;
  * This class demonstrates FileDialog
  */
 public class ShowFileDialog {
+	Display display;
   // These filter names are displayed to the user in the file dialog. Note that
   // the inclusion of the actual extension in parentheses is optional, and
   // doesn't have any effect on which files are displayed.
@@ -28,7 +29,7 @@ public class ShowFileDialog {
    * Runs the application
    */
   public void run() {
-    Display display = new Display();
+    display = new Display();
     Shell shell = new Shell(display);
     shell.setText("File Dialog");
     createContents(shell);
