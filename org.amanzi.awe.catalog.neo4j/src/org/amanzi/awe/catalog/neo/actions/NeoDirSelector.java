@@ -1,7 +1,17 @@
 package org.amanzi.awe.catalog.neo.actions;
 
 import java.io.File;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.IService;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -13,6 +23,10 @@ import org.eclipse.swt.widgets.Shell;
 
 public class NeoDirSelector 
 {
+	
+	IProgressMonitor monitor;
+	
+	
 	public void run(Display display)
 	{
     Shell shell = new Shell(display);
@@ -54,7 +68,10 @@ public class NeoDirSelector
 		    					if(neoLocationFile.list()[j].equals("neostore.nodestore"))
 		    					{
 		    						//here should be loaded data from Neo database
-		    						break;
+		    						System.out.println("Starting NeoService !!!");
+		    						startService();
+		    						shell.close();
+		    						//break;
 		    					}
 		    				}
 		    			} 
@@ -62,6 +79,38 @@ public class NeoDirSelector
 		    		 }
 		    	 }
 		    });
+	}
+	
+	
+	@SuppressWarnings("deprecation")
+	private void startService()
+	{
+	    	monitor = new NullProgressMonitor(); 
+		    Map<String,Serializable> params = new HashMap<String,Serializable>();
+	        params.put( "url",NeoServiceExtension.URL_KEY );
+	        
+	        List<IService> match = CatalogPlugin.getDefault().getServiceFactory().acquire( params );
+	        if( !match.isEmpty()){
+	            IService service = match.get(0);
+	            
+	            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+	    		IService found = catalog.getById( NeoService.class,service.getIdentifier(), monitor );
+	    		if( found != null ){
+	    		   return; // already loaded!
+	    		}
+	    		ICatalog local = CatalogPlugin.getDefault().getLocalCatalog();
+	    		try
+	    		{
+	    		local.add( service );
+	    		}
+	    		catch(Exception ex)
+	    		{
+	    			System.err.println("Error service cannot start!");
+	    		}
+	        }         
+		
+		monitor.done();
+		
 	}
 	
 
