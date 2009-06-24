@@ -9,4 +9,5 @@ Require-Bundle: org.eclipse.ui,
  org.neo4j
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.awe.neo.views.network.views
+Export-Package: org.amanzi.awe.neo.views.network.utils,
+ org.amanzi.awe.neo.views.network.views
