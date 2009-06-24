@@ -2,6 +2,7 @@ package org.amanzi.awe.catalog.neo.actions;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class NeoDirSelector
 		    					{
 		    						//here should be loaded data from Neo database
 		    						System.out.println("Starting NeoService !!!");
-		    						startService();
+		    						startService(dirLocation);
 		    						shell.close();
 		    						//break;
 		    					}
@@ -83,11 +84,12 @@ public class NeoDirSelector
 	
 	
 	@SuppressWarnings("deprecation")
-	private void startService()
+	private void startService(String neoLocationFile)
 	{
 	    	monitor = new NullProgressMonitor(); 
 		    Map<String,Serializable> params = new HashMap<String,Serializable>();
-	        params.put( "url",NeoServiceExtension.URL_KEY );
+	        params.put( NeoServiceExtension.URL_KEY,neoLocationFile );
+	        params.put( NeoServiceExtension.CLASS_KEY,URL.class );
 	        
 	        List<IService> match = CatalogPlugin.getDefault().getServiceFactory().acquire( params );
 	        if( !match.isEmpty()){

@@ -251,6 +251,11 @@ public class NeoReader
 	 public final CoordinateReferenceSystem getCRS() {
 	        return getCRS(DefaultGeographicCRS.WGS84,node);
 	    }
+
+	public FeatureIterator getFeatures() {
+		// TODO Auto-generated method stub
+		return new NeoFeatureReader((Object[])node.getProperty("features"));
+	}
 	
 	
 }

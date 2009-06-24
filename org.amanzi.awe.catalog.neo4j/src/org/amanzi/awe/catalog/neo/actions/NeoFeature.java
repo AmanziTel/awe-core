@@ -34,6 +34,13 @@ class NeoFeature implements Feature
 	private static GeometryFactory geometryFactory = new GeometryFactory();
 
 	
+	public NeoFeature(Node node)
+	{
+		this.neoNode=node;
+	}
+	
+	
+	
 	public NeoFeature(EmbeddedNeo neo,Node node)
 	{
 		this.neoNode=node;

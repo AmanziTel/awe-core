@@ -46,17 +46,17 @@ public class NeoGeoResource extends IGeoResource {
         return service;
     }
 
-    private NeoReader jsonReader;
+    private NeoReader neoReader;
   
     public NeoReader getNeoReader( IProgressMonitor monitor ) throws IOException {
-        if (jsonReader == null) {
+        if (neoReader == null) {
             synchronized (this) {
-                if (jsonReader == null) {
-                    jsonReader = new NeoReader(service);
+                if (neoReader == null) {
+                    neoReader = new NeoReader(service);
                 }
             }
         }
-        return jsonReader;
+        return neoReader;
     }
 
     public <T> boolean canResolve( Class<T> adaptee ) {
