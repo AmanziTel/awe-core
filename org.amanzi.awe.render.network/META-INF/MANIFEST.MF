@@ -6,6 +6,10 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.amanzi.awe.render.network.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- net.refractions.udig.project;bundle-version="1.1.1"
+ net.refractions.udig.project;bundle-version="1.1.1",
+ org.amanzi.awe.neo.views.network;bundle-version="1.0.0",
+ org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
+ org.amanzi.awe.views.network
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: org.amanzi.awe.render.network
