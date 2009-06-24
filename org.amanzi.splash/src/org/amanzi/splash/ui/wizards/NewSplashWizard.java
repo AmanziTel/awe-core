@@ -45,6 +45,7 @@ import org.rubypeople.rdt.core.ILoadpathEntry;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.core.RubyCore;
 import org.rubypeople.rdt.internal.ui.wizards.NewWizardMessages;
+import org.rubypeople.rdt.internal.ui.wizards.OpenNewRubyProjectWizardAction;
 import org.rubypeople.rdt.internal.ui.wizards.buildpaths.BuildPathsBlock;
 import org.rubypeople.rdt.internal.ui.wizards.buildpaths.CPListElement;
 import org.rubypeople.rdt.launching.IVMInstall;
@@ -155,7 +156,7 @@ public class NewSplashWizard extends Wizard implements INewWizard {
 	 */
 	public boolean performFinish() {
 		
-		if (selection.toString().equals("<empty selection>") == true){
+		if (selection.toString().contains("net.refractions.udig.project.internal.impl.RubyProject") == false){
 			Util.logn("Empty Selection: Finish button clicked !!!");
 			//return spreadsheetPropertiesPage.finish();
 			boolean res= true;//super.performFinish();
@@ -195,9 +196,10 @@ public class NewSplashWizard extends Wizard implements INewWizard {
 	 */
 	public void addPages() {
 		
-		if (selection.toString().equals("<empty selection>") == true){
-			fFirstPage = new SpreadsheetProjectWizardPage(workbench, "project");
-			addPage(fFirstPage);
+		if (selection.toString().contains("net.refractions.udig.project.internal.impl.RubyProject") == false){
+			//fFirstPage = new SpreadsheetProjectWizardPage(workbench, "project");
+			new OpenNewRubyProjectWizardAction().run();
+			//addPage(fFirstPage);
 		}
 		else{
 			fileCreationPage =
