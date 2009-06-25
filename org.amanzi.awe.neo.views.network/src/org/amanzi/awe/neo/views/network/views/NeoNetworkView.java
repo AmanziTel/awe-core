@@ -7,7 +7,7 @@ import java.util.Vector;
 
 import org.amanzi.awe.neo.views.network.beans.ExtTreeNode;
 import org.amanzi.awe.neo.views.network.utils.ITreeSelectionChanged;
-import org.amanzi.awe.render.network.NeoRenderer;
+//import org.amanzi.awe.render.network.NeoRenderer;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -191,9 +191,11 @@ public class NeoNetworkView extends ViewPart {
         this.selectedTreeItems = selectedTreeItems;
     }
 	
+/* Uncomment this when the cyclic dependencies are resolved
     public void addChangeListeners( NeoRenderer neoRenderer ) {
         changeListeners.add(neoRenderer);
     }
+*/
     /**
      * Find tree items that who's names correspond to selected items on map and select them.
      * 

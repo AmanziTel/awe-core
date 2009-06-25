@@ -59,7 +59,8 @@ public class NeoRenderer extends RendererImpl implements ITreeSelectionChanged
 					final NeoNetworkView viewPart = (NeoNetworkView) window
 							.getActivePage().showView(
 									NeoNetworkView.NETWORK_VIEW_ID);
-					viewPart.addChangeListeners(NeoRenderer.this);
+					//TODO: Uncomment this call and the method definition called when cyclic dependencies are resolved
+					//viewPart.addChangeListeners(NeoRenderer.this);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
