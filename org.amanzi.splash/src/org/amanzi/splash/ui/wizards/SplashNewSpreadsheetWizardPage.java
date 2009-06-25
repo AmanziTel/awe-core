@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
+import org.rubypeople.rdt.internal.ui.wizards.OpenNewRubyProjectWizardAction;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -69,7 +70,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		Composite container = new Composite(parent, SWT.NULL);
 		GridLayout layout = new GridLayout();
 		container.setLayout(layout);
-		layout.numColumns = 3;
+		layout.numColumns = 4;
 		layout.verticalSpacing = 9;
 		Label label = new Label(container, SWT.NULL);
 		label.setText("&Container:");
@@ -92,6 +93,9 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 				handleBrowse();
 			}
 		});
+		
+		
+		
 		label = new Label(container, SWT.NULL);
 		label.setText("&File name:");
 
@@ -101,6 +105,14 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		fileText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
+			}
+		});
+		
+		Button button1 = new Button(container, SWT.PUSH);
+		button1.setText("New Ruby Project...");
+		button1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				new OpenNewRubyProjectWizardAction().run();
 			}
 		});
 		
