@@ -26,7 +26,7 @@ public class NeoDirSelector
 {
 	
 	IProgressMonitor monitor;
-	
+	 String dirLocation;
 	
 	public void run(Display display)
 	{
@@ -56,10 +56,21 @@ public class NeoDirSelector
 		    	 public void widgetSelected(SelectionEvent event) 
 		    	 {
 		    		   DirectoryDialog dirDlg=new DirectoryDialog(shell);
-		    		   String dirLocation=dirDlg.open();
+		    		   dirLocation=dirDlg.open();
+		    		 
+		    	 }
+		    });
+		    
+		    
+		    Button chceckDir = new Button(shell, SWT.PUSH);
+		    chceckDir.setText("Set Neo location...");
+		    chceckDir.addSelectionListener(new SelectionAdapter()
+		    {
+		    	 public void widgetSelected(SelectionEvent event) 
+		    	 {
 		    		 if(dirLocation!=null)
 		    		 {
-		    		    File neoLocationFile=new File(dirLocation);
+		    		  File neoLocationFile=new File(dirLocation);
 		    		 if(neoLocationFile.isDirectory())
 		    		 {
 		    			if(neoLocationFile.list().length>0)
@@ -78,7 +89,9 @@ public class NeoDirSelector
 		    			} 
 		    		 }
 		    		 }
+		    		 
 		    	 }
+		    
 		    });
 	}
 	
