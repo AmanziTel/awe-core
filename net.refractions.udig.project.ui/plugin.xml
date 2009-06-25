@@ -1331,4 +1331,18 @@
               name="Add to Map">
         </action>
      </extension>
+     
+     <!--Lagutko, 23.06.2009, adapters to run scripts --> 
+     <extension point="org.eclipse.core.runtime.adapters">
+         <factory 
+            class="" 
+            adaptableType="net.refractions.udig.project.ui.internal.MapEditorInput">
+            <adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
+         </factory>
+         <factory
+         	class=""
+         	adaptableType="net.recractions.udig.project.IRubyProjectElement">
+         	<adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
+         </factory>
+    </extension>
    </plugin>

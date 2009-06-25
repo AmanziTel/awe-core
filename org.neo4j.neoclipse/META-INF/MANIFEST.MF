@@ -48,3 +48,4 @@ Require-Bundle: org.eclipse.ui,
  org.neo4j
 Export-Package: org.neo4j.neoclipse,
  org.neo4j.neoclipse.neo
+Bundle-ClassPath: .
