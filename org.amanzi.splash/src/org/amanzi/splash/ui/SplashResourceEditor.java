@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.amanzi.splash.swing.SplashTableModel;
+import org.amanzi.splash.utilities.Util;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -27,11 +28,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IStorageEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.SaveAsDialog;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.IShowInSource;
@@ -197,7 +201,13 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
                     // for more details).
                     Display.getDefault().syncExec(new Runnable() {
                         public void run() {
-                            setIsDirty(true);
+                            Util.logn("spreadsheet has been deleted !!!");
+                        	//setIsDirty(true);
+                            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                            
+                            IEditorPart editor = page.findEditor(getEditorInput());
+                            
+                            page.closeEditor(editor, false);
                         }
                     });
                 }

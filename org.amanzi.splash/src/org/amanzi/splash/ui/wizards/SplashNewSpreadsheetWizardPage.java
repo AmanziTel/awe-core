@@ -56,8 +56,8 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 	 */
 	public SplashNewSpreadsheetWizardPage(ISelection selection) {
 		super("wizardPage");
-		setTitle("Splash Spreadsheet Wizard");
-		setDescription("This wizard creates a new file with *.jrss extension that can be opened by a multi-page editor.");
+		setTitle("Amanzi Splash Spreadsheet Wizard");
+		setDescription("This wizard creates Amanzi Splash Spreadsheet file");
 		this.selection = selection;
 	}
 	private int rowCount = 30, columnCount = 30;

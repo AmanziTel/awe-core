@@ -22,23 +22,11 @@
             id="com.amanzi">
       </category>
       <wizard
-            canFinishEarly="true"
-            category="com.amanzi"
-            class="org.amanzi.splash.ui.wizards.NewSplashWizard"
-            icon="icons/spreadsheet.gif"
-            id="org.amanzi.spreadsheet.jrss.editor.ui.wizards.newminispreadsheetwizard"
-            name="Splash Spreadsheet"
-            project="true">
-         <description>
-            Create a JRuby spreadsheet.
-         </description>
-      </wizard>
-      <wizard
             category="com.amanzi"
             class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizard"
             icon="icons/spreadsheet.gif"
             id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard"
-            name="Splash Spreadsheet Wizard">
+            name="Amanzi Splash Spreadsheet">
       </wizard>
    </extension>
    
