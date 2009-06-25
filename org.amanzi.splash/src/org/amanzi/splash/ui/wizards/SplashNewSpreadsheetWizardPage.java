@@ -70,7 +70,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		Composite container = new Composite(parent, SWT.NULL);
 		GridLayout layout = new GridLayout();
 		container.setLayout(layout);
-		layout.numColumns = 4;
+		layout.numColumns = 3;
 		layout.verticalSpacing = 9;
 		Label label = new Label(container, SWT.NULL);
 		label.setText("&Container:");
@@ -116,69 +116,6 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 			}
 		});
 		
-//		Group group = new Group(container, SWT.NONE);
-//		group.setLayoutData(
-//			new GridData(
-//				GridData.GRAB_HORIZONTAL
-//					| GridData.HORIZONTAL_ALIGN_FILL
-//					| GridData.GRAB_VERTICAL
-//					| GridData.VERTICAL_ALIGN_FILL));
-//		group.setText("Dimensions");
-//
-//		group.setLayout(new FormLayout());
-//		Label rowLabel = new Label(group, SWT.LEFT);
-//		rowLabel.setText("Rows");
-//
-//		rowText = new Text(group, SWT.SINGLE | SWT.BORDER);
-//		rowText.setText(Integer.toString(rowCount));
-//
-//		rowText.addModifyListener(new ModifyListener() {
-//			public void modifyText(ModifyEvent e) {
-//				//SplashWizardNewFileCreationPage.this.handleEvent(null);
-//				
-//			}
-//		});
-//
-//		Label columnLabel = new Label(group, SWT.LEFT);
-//		columnLabel.setText("Columns");
-//
-//		columnText = new Text(group, SWT.SINGLE | SWT.BORDER);
-//		columnText.setText(Integer.toString(columnCount));
-//
-//		FormData data = new FormData();
-//		data.left = new FormAttachment(0, 10);
-//		data.top = new FormAttachment(0, 10);
-//		rowLabel.setLayoutData(data);
-//
-//		data = new FormData();
-//		data.left = new FormAttachment(30, 0);
-//		data.top = new FormAttachment(0, 10);
-//		data.width = 100;
-//		rowText.setLayoutData(data);
-//
-//		data = new FormData();
-//		data.left = new FormAttachment(0, 10);
-//		data.top = new FormAttachment(rowLabel, 10, SWT.DEFAULT);
-//		columnLabel.setLayoutData(data);
-//
-//		data = new FormData();
-//		data.left = new FormAttachment(rowText, 0, SWT.LEFT);
-//		data.top = new FormAttachment(rowLabel, 10, SWT.DEFAULT);
-//		data.width = 100;
-//		columnText.setLayoutData(data);
-//
-//		columnText.addModifyListener(new ModifyListener() {
-//			public void modifyText(ModifyEvent e) {
-//				//SplashNewSpreadsheetWizardPage.this.handleEvent(null);
-//			}
-//		});
-//
-//		Label separator = new Label(group, SWT.LEFT);
-//		data = new FormData();
-//		data.left = new FormAttachment(0, 10);
-//		data.top = new FormAttachment(columnText, 10, SWT.DEFAULT);
-//		data.height = 10;
-//		separator.setLayoutData(data);
 
 		
 		initialize();
@@ -239,7 +176,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 				
 				
 				containerText.setText(container.getFullPath().toString());
-			}else{
+			}else if (obj instanceof RubyProjectImpl){
 				RubyProjectImpl rpi = (RubyProjectImpl) obj;
 				if (!"".equals( rpi.getName()))
 					containerText.setText("/" + rpi.getName());
