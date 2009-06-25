@@ -33,6 +33,13 @@
             Create a JRuby spreadsheet.
          </description>
       </wizard>
+      <wizard
+            category="com.amanzi"
+            class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizard"
+            icon="icons/spreadsheet.gif"
+            id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard"
+            name="Splash Spreadsheet Wizard">
+      </wizard>
    </extension>
    
    	<extension point= "org.eclipse.ui.perspectiveExtensions">

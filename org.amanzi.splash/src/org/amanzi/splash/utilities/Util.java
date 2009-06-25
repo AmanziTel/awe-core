@@ -48,6 +48,10 @@ public class Util {
 	 */
 	public static final String DEFAULT_SPREADSHEET_EXTENSION = ".jrss";
 
+	public static final int MAX_SPLASH_ROW_COUNT = 30;
+
+	public static final int MAX_SPLASH_COL_COUNT = 30;
+
 	public static boolean isDebug = true;
 
 	public static boolean isTesting = false;
@@ -173,6 +177,8 @@ public class Util {
 		}
 
 	}
+	
+	
 
 	public static ArrayList<String> findComplexCellIDs(String content) {
 		ArrayList<String> list = new ArrayList<String>();
@@ -421,6 +427,7 @@ public class Util {
 		try {
 			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
 			if (page != null) {
+				
 				IFileEditorInput fi = new FileEditorInput(file);				
 				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
 			}
