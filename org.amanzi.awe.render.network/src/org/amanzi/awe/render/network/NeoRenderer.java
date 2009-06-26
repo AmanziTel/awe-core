@@ -17,7 +17,7 @@ import org.amanzi.awe.catalog.neo.actions.Feature;
 import org.amanzi.awe.catalog.neo.actions.NeoReader;
 import org.amanzi.awe.catalog.neo.beans.Sector;
 import org.amanzi.awe.neo.views.network.views.NeoNetworkView;
-import org.amanzi.awe.views.network.utils.ITreeSelectionChanged;
+import org.amanzi.awe.neo.views.network.utils.ITreeSelectionChanged;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -60,7 +60,7 @@ public class NeoRenderer extends RendererImpl implements ITreeSelectionChanged
 							.getActivePage().showView(
 									NeoNetworkView.NETWORK_VIEW_ID);
 					//TODO: Uncomment this call and the method definition called when cyclic dependencies are resolved
-					//viewPart.addChangeListeners(NeoRenderer.this);
+					viewPart.addChangeListeners(NeoRenderer.this);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
