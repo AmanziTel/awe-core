@@ -12,6 +12,7 @@
          point="net.refractions.udig.project.ui.tool">
       <actionTool
             class="org.amanzi.awe.catalog.neo.actions.Neo4jActionTool"
+            icon="icons/neo-16.png"
             id="org.amanzi.awe.catalog.neo4j.Neo4jActionTool"
             menuPath="layer/add.ext"
             name="Neo4j"

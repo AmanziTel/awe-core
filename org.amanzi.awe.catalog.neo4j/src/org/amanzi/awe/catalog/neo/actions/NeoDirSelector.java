@@ -77,13 +77,13 @@ public class NeoDirSelector
 		    			{
 		    				for(int j=0;j<neoLocationFile.list().length;j++)
 		    				{
-		    					if(neoLocationFile.list()[j].equals("neostore.nodestore"))
+		    					if(neoLocationFile.list()[j].startsWith("neostore.nodestore"))
 		    					{
 		    						//here should be loaded data from Neo database
 		    						System.out.println("Starting NeoService !!!");
 		    						startService(dirLocation);
 		    						shell.close();
-		    						//break;
+		    						break;
 		    					}
 		    				}
 		    			} 
