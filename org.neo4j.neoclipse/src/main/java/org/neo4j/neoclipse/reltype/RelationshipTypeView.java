@@ -47,8 +47,10 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.Page;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.GraphViewer;
 import org.neo4j.api.core.Direction;
@@ -142,11 +144,14 @@ public class RelationshipTypeView extends ViewPart implements
     {
         if ( graphView == null )
         {
-            graphView = (NeoGraphViewPart) PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().findView(
-                    NeoGraphViewPart.ID );
-            graphView
-                .addRelColorChangeListener( new RelationshipColorChangeHandler() );
+        	IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            
+        	graphView = (NeoGraphViewPart) page.findView( NeoGraphViewPart.ID );
+        	
+        	System.out.println(graphView);
+        	
+        	if ( graphView != null)
+                 graphView.addRelColorChangeListener( new RelationshipColorChangeHandler() );
         }
         return graphView;
     }
@@ -770,7 +775,8 @@ public class RelationshipTypeView extends ViewPart implements
                 }
             }
         }
-
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        if (page != null && getGraphView() != null){
         List<Node> currentSelectedNodes = getGraphView()
             .getCurrentSelectedNodes();
         setEnableAddRelationship( getCurrentSelectedRelTypes().size() == 1
@@ -779,6 +785,7 @@ public class RelationshipTypeView extends ViewPart implements
             && !currentSelectedNodes.isEmpty() );
         setEnableSetIcon( !getCurrentSelectedRelTypes().isEmpty() );
         getGraphView().updateMenuState();
+        }
     }
 
     /**

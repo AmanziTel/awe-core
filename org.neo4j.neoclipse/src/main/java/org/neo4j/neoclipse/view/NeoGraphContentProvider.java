@@ -70,7 +70,7 @@ public class NeoGraphContentProvider implements
         Node start = (Node) source;
         Node end = (Node) dest;
         List<Relationship> rels = new ArrayList<Relationship>();
-        if ( !relTypes.isEmpty() )
+        if ( !relTypes.isEmpty() && start != null)
         {
             for ( RelationshipType relType : relTypes )
             {
