@@ -43,6 +43,7 @@ import org.neo4j.neoclipse.action.browse.RefreshAction;
 import org.neo4j.neoclipse.action.browse.ShowReferenceNodeAction;
 import org.neo4j.neoclipse.action.context.CommitAction;
 import org.neo4j.neoclipse.action.context.DeleteAction;
+import org.neo4j.neoclipse.action.context.PropertiesAction;
 import org.neo4j.neoclipse.action.context.RollbackAction;
 import org.neo4j.neoclipse.action.decorate.node.ShowNodeColorsAction;
 import org.neo4j.neoclipse.action.decorate.node.ShowNodeIconsAction;
@@ -254,7 +255,8 @@ public class NeoGraphMenu
     private final RefreshAction refreshAction;
 
     private final DeleteAction deleteAction;
-
+    private final PropertiesAction propertiesAction;
+    
     private final CommitAction commitAction;
     private final RollbackAction rollbackAction;
 
@@ -333,6 +335,9 @@ public class NeoGraphMenu
         this.graphView = graphView;
         graphViewer = graphView.getViewer();
         deleteAction = new DeleteAction( graphView );
+        
+        propertiesAction = new PropertiesAction (graphView);
+        
         backAction = new GoBackAction( graphView );
         forwardAction = new GoForwardAction( graphView );
         decAction = new DecreaseTraversalDepthAction( graphView );
@@ -503,6 +508,7 @@ public class NeoGraphMenu
      */
     private void nodeSpaceActions( final IToolBarManager tm )
     {
+    	tm.add(propertiesAction);
         tm.add( deleteAction );
         tm.add( SEPARATOR );
     }
@@ -514,7 +520,8 @@ public class NeoGraphMenu
      */
     private void contributeContextActions( final MenuManager cm )
     {
-        cm.add( addRelMenuMgr );
+        cm.add(propertiesAction);
+    	cm.add( addRelMenuMgr );
         cm.add( addOutNodeMenuMgr );
         cm.add( addInNodeMenuMgr );
         cm.add( SEPARATOR );
@@ -527,6 +534,7 @@ public class NeoGraphMenu
      */
     private void contributeTransactionActions( final IToolBarManager tm )
     {
+    	tm.add(propertiesAction);
         tm.add( commitAction );
         tm.add( rollbackAction );
         tm.add( SEPARATOR );
@@ -540,6 +548,7 @@ public class NeoGraphMenu
     private void contributeNavigationActions( final IToolBarManager tm )
     {
         {
+        	tm.add(propertiesAction);
             tm.add( backAction );
             tm.add( forwardAction );
 
@@ -559,6 +568,7 @@ public class NeoGraphMenu
     private void contributeRecursionLevelActions( final IToolBarManager tm )
     {
         {
+        	tm.add(propertiesAction);
             tm.add( incAction );
 
             tm.add( decAction );
@@ -576,6 +586,7 @@ public class NeoGraphMenu
     {
         {
             ZoomAction zoomAction = new ZoomAction( graphView );
+            tm.add(propertiesAction);
             tm.add( zoomAction );
             tm.add( SEPARATOR );
         }
