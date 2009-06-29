@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Launching Plug-in
+Bundle-SymbolicName: org.amanzi.rdt.launching;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: org.amanzi.rdt.internal.launching.AweLaunchingPlugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.rubypeople.rdt.debug.ui,
+ org.eclipse.debug.ui,
+ org.eclipse.jface,
+ org.eclipse.ui,
+ org.rubypeople.rdt.launching,
+ org.rubypeople.rdt.ui,
+ org.jruby,
+ org.eclipse.ui.console,
+ org.amanzi.scripting.jruby,
+ net.refractions.udig.libs,
+ net.refractions.udig.catalog,
+ org.amanzi.integrator.awe,
+ org.rubypeople.rdt.core,
+ org.eclipse.jface.text
+Eclipse-LazyStart: true
+Export-Package: org.amanzi.rdt.internal.launching,
+ org.amanzi.rdt.internal.launching.launcher,
+ org.amanzi.rdt.launching.util,
+ org.amanzi.rdt.launching.vm
+Eclipse-BuddyPolicy: registered
