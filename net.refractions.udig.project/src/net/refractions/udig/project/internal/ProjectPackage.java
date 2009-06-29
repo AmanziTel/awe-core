@@ -2605,23 +2605,23 @@ public interface ProjectPackage extends EPackage {
 	int IRUBY_PROJECT_ELEMENT_FEATURE_COUNT = 0;
 
 	/**
-	 * The meta object id for the '{@link org.rubypeople.rdt.core.IRubyScript <em>IRuby Class</em>}' class.
+	 * The meta object id for the '{@link org.rubypeople.rdt.core.ISpreadsheet <em>ISpreadsheet</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see org.rubypeople.rdt.core.IRubyScript
-	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getIRubyClass()
+	 * @see org.rubypeople.rdt.core.ISpreadsheet
+	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getISpreadsheet()
 	 * @generated
 	 */
-	int IRUBY_CLASS = 60;
+	int ISPREADSHEET = 60;
 
 	/**
-	 * The number of structural features of the '<em>IRuby Class</em>' class.
+	 * The number of structural features of the '<em>ISpreadsheet</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int IRUBY_CLASS_FEATURE_COUNT = 0;
+	int ISPREADSHEET_FEATURE_COUNT = 0;
 
 	/**
 	 * The meta object id for the '{@link org.rubypeople.rdt.core.IRubyScript <em>IRuby File</em>}' class.
@@ -2781,14 +2781,14 @@ public interface ProjectPackage extends EPackage {
 	int RUBY_FILE_FEATURE_COUNT = IRUBY_FILE_FEATURE_COUNT + 3;
 
 	/**
-	 * The meta object id for the '{@link net.refractions.udig.project.internal.impl.RubyClassImpl <em>Ruby Class</em>}' class.
+	 * The meta object id for the '{@link net.refractions.udig.project.internal.impl.SpreadsheetImpl <em>Ruby Class</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see net.refractions.udig.project.internal.impl.RubyClassImpl
-	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getRubyClass()
+	 * @see net.refractions.udig.project.internal.impl.SpreadsheetImpl
+	 * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getSpreadsheet()
 	 * @generated
 	 */
-	int RUBY_CLASS = 65;
+	int SPREADSHEET = 65;
 
 	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2797,7 +2797,7 @@ public interface ProjectPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int RUBY_CLASS__NAME = IRUBY_CLASS_FEATURE_COUNT + 0;
+	int SPREADSHEET__NAME = ISPREADSHEET_FEATURE_COUNT + 0;
 
 	/**
 	 * The feature id for the '<em><b>Project Internal</b></em>' reference.
@@ -2806,7 +2806,7 @@ public interface ProjectPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int RUBY_CLASS__PROJECT_INTERNAL = IRUBY_CLASS_FEATURE_COUNT + 1;
+	int SPREADSHEET__PROJECT_INTERNAL = ISPREADSHEET_FEATURE_COUNT + 1;
 
 	/**
 	 * The feature id for the '<em><b>Ruby Project Internal</b></em>' reference.
@@ -2815,7 +2815,7 @@ public interface ProjectPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int RUBY_CLASS__RUBY_PROJECT_INTERNAL = IRUBY_CLASS_FEATURE_COUNT + 2;
+	int SPREADSHEET__RUBY_PROJECT_INTERNAL = ISPREADSHEET_FEATURE_COUNT + 2;
 
 	/**
 	 * The number of structural features of the '<em>Ruby Class</em>' class.
@@ -2824,7 +2824,7 @@ public interface ProjectPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int RUBY_CLASS_FEATURE_COUNT = IRUBY_CLASS_FEATURE_COUNT + 3;
+	int SPREADSHEET_FEATURE_COUNT = ISPREADSHEET_FEATURE_COUNT + 3;
 
 
 	/**
@@ -2850,15 +2850,13 @@ public interface ProjectPackage extends EPackage {
 	EClass getIRubyProjectElement();
 
 	/**
-	 * Returns the meta object for class '{@link org.rubypeople.rdt.core.IRubyScript <em>IRuby Class</em>}'.
+	 * Returns the meta object for class '{@link org.rubypeople.rdt.core.ISpreadsheet <em>ISpreadsheet</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>IRuby Class</em>'.
-	 * @see org.rubypeople.rdt.core.IRubyScript
-	 * @model instanceClass="org.rubypeople.rdt.core.IRubyScript"
+	 * @return the meta object for class '<em>ISpreadsheet</em>'.
 	 * @generated
 	 */
-	EClass getIRubyClass();
+	EClass getISpreadsheet();
 
 	/**
 	 * Returns the meta object for class '{@link org.rubypeople.rdt.core.IRubyScript <em>IRuby File</em>}'.
@@ -2924,13 +2922,13 @@ public interface ProjectPackage extends EPackage {
 	EClass getRubyFile();
 
 	/**
-	 * Returns the meta object for class '{@link net.refractions.udig.project.internal.RubyClass <em>Ruby Class</em>}'.
+	 * Returns the meta object for class '{@link net.refractions.udig.project.internal.Spreadsheet <em>Spreadsheet</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Ruby Class</em>'.
-	 * @see net.refractions.udig.project.internal.RubyClass
+	 * @return the meta object for class '<em>Spreadsheet</em>'.
+	 * @see net.refractions.udig.project.internal.Spreadsheet
 	 * @generated
 	 */
-	EClass getRubyClass();
+	EClass getSpreadsheet();
 
 } // ProjectPackage

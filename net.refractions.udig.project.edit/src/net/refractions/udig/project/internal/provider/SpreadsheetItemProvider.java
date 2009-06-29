@@ -9,7 +9,7 @@ import java.io.File;
 import java.util.List;
 
 import net.refractions.udig.project.internal.ProjectPackage;
-import net.refractions.udig.project.internal.RubyClass;
+import net.refractions.udig.project.internal.Spreadsheet;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notification;
@@ -24,17 +24,18 @@ import org.eclipse.emf.edit.provider.IItemPropertySource;
 import org.eclipse.emf.edit.provider.IStructuredItemContentProvider;
 import org.eclipse.emf.edit.provider.ITreeItemContentProvider;
 import org.eclipse.emf.edit.provider.ItemPropertyDescriptor;
+import org.eclipse.emf.edit.provider.ItemProviderAdapter;
 import org.eclipse.emf.edit.provider.ViewerNotification;
 
 /**
- * This is the item provider adapter for a {@link net.refractions.udig.project.internal.RubyClass} object.
+ * This is the item provider adapter for a {@link net.refractions.udig.project.internal.Spreadsheet} object.
  * <!-- begin-user-doc -->
  * <!-- end-user-doc -->
  * @generated
  */
-public class RubyClassItemProvider extends AbstractLazyLoadingItemProvider implements
-		IEditingDomainItemProvider, IStructuredItemContentProvider,
-		ITreeItemContentProvider, IItemLabelProvider, IItemPropertySource {
+public class SpreadsheetItemProvider extends ItemProviderAdapter implements
+											IEditingDomainItemProvider, IStructuredItemContentProvider,
+											ITreeItemContentProvider, IItemLabelProvider, IItemPropertySource {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -48,7 +49,7 @@ public class RubyClassItemProvider extends AbstractLazyLoadingItemProvider imple
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public RubyClassItemProvider(AdapterFactory adapterFactory) {
+	public SpreadsheetItemProvider(AdapterFactory adapterFactory) {
 		super(adapterFactory);
 	}
 
@@ -106,14 +107,14 @@ public class RubyClassItemProvider extends AbstractLazyLoadingItemProvider imple
 	}
 
 	/**
-	 * This returns RubyClass.gif.
+	 * This returns Spreadsheet.gif.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
 	public Object getImage(Object object) {
 		return overlayImage(object, getResourceLocator().getImage(
-				"full/obj16/RubyClass")); //$NON-NLS-1$
+				"full/obj16/Spreadsheet")); //$NON-NLS-1$
 	}
 
 	/**
@@ -123,10 +124,10 @@ public class RubyClassItemProvider extends AbstractLazyLoadingItemProvider imple
 	 * @generated
 	 */
 	public String getText(Object object) {
-		RubyClass rubyClass = ((RubyClass) object);
-		String label = rubyClass.getName();
+		Spreadsheet spreadsheet = ((Spreadsheet) object);
+		String label = spreadsheet.getName();
         if( label == null ){
-        	Resource resource = rubyClass.eResource();
+        	Resource resource = spreadsheet.eResource();
         	if( resource !=null ){
 				String toString = resource.toString();
 				int lastSlash = toString.lastIndexOf(File.pathSeparator);
@@ -135,7 +136,7 @@ public class RubyClassItemProvider extends AbstractLazyLoadingItemProvider imple
 				label = toString.substring(lastSlash);
         	}
         }
-        return label == null || label.length() == 0 ? "Unable to load RubyClass" : label; 
+        return label == null || label.length() == 0 ? "Unable to load Spreadsheet" : label; 
 	}
 
 	/**
@@ -148,8 +149,8 @@ public class RubyClassItemProvider extends AbstractLazyLoadingItemProvider imple
 	public void notifyChanged(Notification notification) {
 		updateChildren(notification);
 
-		switch (notification.getFeatureID(RubyClass.class)) {
-		case ProjectPackage.RUBY_CLASS__NAME:
+		switch (notification.getFeatureID(Spreadsheet.class)) {
+		case ProjectPackage.SPREADSHEET__NAME:
 			fireNotifyChanged(new ViewerNotification(notification, notification
 					.getNotifier(), false, true));
 			return;

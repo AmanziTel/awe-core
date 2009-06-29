@@ -55,7 +55,7 @@
                id="net.refractions.udig.project.ui.newMap"
                label="%map.new.label"/>
          <action
-         	   class="org.rubypeople.rdt.internal.ui.wizards.OpenRubyProjectWizardToolbarAction"
+         	   class="net.refractions.udig.project.ui.internal.actions.CreateRubyProject"
          	   enablesFor="1"
          	   id="org.rubypeople.rdt.ui.actions.OpenProjectWizard"
          	   label="New Ruby Project"/>         	   
@@ -1339,9 +1339,19 @@
             adaptableType="net.refractions.udig.project.ui.internal.MapEditorInput">
             <adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
          </factory>
+         <factory 
+            class="" 
+            adaptableType="net.refractions.udig.project.ui.internal.MapEditorInput">
+            <adapter type="org.eclipse.core.resources.IResource"/>
+         </factory>
+         <factory 
+            class="" 
+            adaptableType="net.refractions.udig.project.ui.internal.MapEditor">
+            <adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
+         </factory>
          <factory
          	class=""
-         	adaptableType="net.recractions.udig.project.IRubyProjectElement">
+         	adaptableType="net.refractions.udig.project.IRubyProjectElement">
          	<adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
          </factory>
     </extension>

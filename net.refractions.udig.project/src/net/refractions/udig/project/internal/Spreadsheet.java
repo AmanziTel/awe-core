@@ -5,7 +5,7 @@
  */
 package net.refractions.udig.project.internal;
 
-import net.refractions.udig.project.IRubyClass;
+import net.refractions.udig.project.ISpreadsheet;
 
 /**
  * <!-- begin-user-doc -->
@@ -17,7 +17,7 @@ import net.refractions.udig.project.IRubyClass;
  * @model superTypes="net.refractions.udig.project.internal.IRubyClass net.refractions.udig.project.internal.RubyProjectElement net.refractions.udig.project.internal.ProjectElement"
  * @generated
  */
-public interface RubyClass extends IRubyClass, RubyProjectElement,
+public interface Spreadsheet extends ISpreadsheet, RubyProjectElement,
 		ProjectElement {
 	/**
 	 * <!-- begin-user-doc -->

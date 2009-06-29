@@ -14,10 +14,11 @@ import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPackage;
-import net.refractions.udig.project.internal.RubyClass;
+import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -39,15 +40,15 @@ import org.eclipse.ui.model.WorkbenchAdapter;
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link net.refractions.udig.project.internal.impl.RubyClassImpl#getName <em>Name</em>}</li>
- *   <li>{@link net.refractions.udig.project.internal.impl.RubyClassImpl#getProjectInternal <em>Project Internal</em>}</li>
- *   <li>{@link net.refractions.udig.project.internal.impl.RubyClassImpl#getRubyProjectInternal <em>Ruby Project Internal</em>}</li>
+ *   <li>{@link net.refractions.udig.project.internal.impl.SpreadsheetImpl#getName <em>Name</em>}</li>
+ *   <li>{@link net.refractions.udig.project.internal.impl.SpreadsheetImpl#getProjectInternal <em>Project Internal</em>}</li>
+ *   <li>{@link net.refractions.udig.project.internal.impl.SpreadsheetImpl#getRubyProjectInternal <em>Ruby Project Internal</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
-public class RubyClassImpl extends EObjectImpl implements RubyClass {
+public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -94,13 +95,21 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 	 * @ordered
 	 */
 	protected RubyProject rubyProjectInternal;
+	
+	/**
+	 * Field for Resource of file
+	 * 
+	 * @author Lagutko_N
+	 */
+	
+	private IResource resource;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	protected RubyClassImpl() {
+	protected SpreadsheetImpl() {
 		super();
 	}
 
@@ -110,7 +119,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 	 * @generated
 	 */
 	protected EClass eStaticClass() {
-		return ProjectPackage.eINSTANCE.getRubyClass();
+		return ProjectPackage.eINSTANCE.getSpreadsheet();
 	}
 
 	/**
@@ -132,7 +141,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 		name = newName;
 		if (eNotificationRequired())
 			eNotify(new ENotificationImpl(this, Notification.SET,
-					ProjectPackage.RUBY_CLASS__NAME, oldName, name));
+					ProjectPackage.SPREADSHEET__NAME, oldName, name));
 	}
 
 	/**
@@ -167,7 +176,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
             if (projectInternal != oldProjectInternal) {
                 if (eNotificationRequired())
                     eNotify(new ENotificationImpl(this, Notification.RESOLVE,
-                            ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL, oldProjectInternal,
+                            ProjectPackage.SPREADSHEET__PROJECT_INTERNAL, oldProjectInternal,
                             projectInternal));
             }
         }
@@ -195,7 +204,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 		if (eNotificationRequired()) {
 			ENotificationImpl notification = new ENotificationImpl(this,
 					Notification.SET,
-					ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL,
+					ProjectPackage.SPREADSHEET__PROJECT_INTERNAL,
 					oldProjectInternal, newProjectInternal);
 			if (msgs == null)
 				msgs = notification;
@@ -226,7 +235,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 				msgs.dispatch();
 		} else if (eNotificationRequired())
 			eNotify(new ENotificationImpl(this, Notification.SET,
-					ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL,
+					ProjectPackage.SPREADSHEET__PROJECT_INTERNAL,
 					newProjectInternal, newProjectInternal));
 	}
 
@@ -242,7 +251,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 			if (rubyProjectInternal != oldRubyProjectInternal) {
 				if (eNotificationRequired())
 					eNotify(new ENotificationImpl(this, Notification.RESOLVE,
-							ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL,
+							ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL,
 							oldRubyProjectInternal, rubyProjectInternal));
 			}
 		}
@@ -270,7 +279,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 		if (eNotificationRequired()) {
 			ENotificationImpl notification = new ENotificationImpl(this,
 					Notification.SET,
-					ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL,
+					ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL,
 					oldRubyProjectInternal, newRubyProjectInternal);
 			if (msgs == null)
 				msgs = notification;
@@ -303,7 +312,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 				msgs.dispatch();
 		} else if (eNotificationRequired())
 			eNotify(new ENotificationImpl(this, Notification.SET,
-					ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL,
+					ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL,
 					newRubyProjectInternal, newRubyProjectInternal));
 	}
 
@@ -315,13 +324,13 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 	public NotificationChain eInverseAdd(InternalEObject otherEnd,
 			int featureID, NotificationChain msgs) {
 		switch (featureID) {
-		case ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__PROJECT_INTERNAL:
 			if (projectInternal != null)
 				msgs = ((InternalEObject) projectInternal).eInverseRemove(this,
 						ProjectPackage.PROJECT__ELEMENTS_INTERNAL,
 						Project.class, msgs);
 			return basicSetProjectInternal((Project) otherEnd, msgs);
-		case ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 			if (rubyProjectInternal != null)
 				msgs = ((InternalEObject) rubyProjectInternal).eInverseRemove(
 						this,
@@ -340,9 +349,9 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 	public NotificationChain eInverseRemove(InternalEObject otherEnd,
 			int featureID, NotificationChain msgs) {
 		switch (featureID) {
-		case ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__PROJECT_INTERNAL:
 			return basicSetProjectInternal(null, msgs);
-		case ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 			return basicSetRubyProjectInternal(null, msgs);
 		}
 		return super.eInverseRemove(otherEnd, featureID, msgs);
@@ -355,13 +364,13 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 	 */
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
-		case ProjectPackage.RUBY_CLASS__NAME:
+		case ProjectPackage.SPREADSHEET__NAME:
 			return getName();
-		case ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__PROJECT_INTERNAL:
 			if (resolve)
 				return getProjectInternal();
 			return basicGetProjectInternal();
-		case ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 			if (resolve)
 				return getRubyProjectInternal();
 			return basicGetRubyProjectInternal();
@@ -376,13 +385,13 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 	 */
 	public void eSet(int featureID, Object newValue) {
 		switch (featureID) {
-		case ProjectPackage.RUBY_CLASS__NAME:
+		case ProjectPackage.SPREADSHEET__NAME:
 			setName((String) newValue);
 			return;
-		case ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__PROJECT_INTERNAL:
 			setProjectInternal((Project) newValue);
 			return;
-		case ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 			setRubyProjectInternal((RubyProject) newValue);
 			return;
 		}
@@ -396,13 +405,13 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 	 */
 	public void eUnset(int featureID) {
 		switch (featureID) {
-		case ProjectPackage.RUBY_CLASS__NAME:
+		case ProjectPackage.SPREADSHEET__NAME:
 			setName(NAME_EDEFAULT);
 			return;
-		case ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__PROJECT_INTERNAL:
 			setProjectInternal((Project) null);
 			return;
-		case ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 			setRubyProjectInternal((RubyProject) null);
 			return;
 		}
@@ -416,12 +425,12 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 	 */
 	public boolean eIsSet(int featureID) {
 		switch (featureID) {
-		case ProjectPackage.RUBY_CLASS__NAME:
+		case ProjectPackage.SPREADSHEET__NAME:
 			return NAME_EDEFAULT == null ? name != null : !NAME_EDEFAULT
 					.equals(name);
-		case ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__PROJECT_INTERNAL:
 			return projectInternal != null;
-		case ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL:
+		case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 			return rubyProjectInternal != null;
 		}
 		return super.eIsSet(featureID);
@@ -447,9 +456,9 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 		}
 		if (baseClass == ProjectElement.class) {
 			switch (derivedFeatureID) {
-			case ProjectPackage.RUBY_CLASS__NAME:
+			case ProjectPackage.SPREADSHEET__NAME:
 				return ProjectPackage.PROJECT_ELEMENT__NAME;
-			case ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL:
+			case ProjectPackage.SPREADSHEET__PROJECT_INTERNAL:
 				return ProjectPackage.PROJECT_ELEMENT__PROJECT_INTERNAL;
 			default:
 				return -1;
@@ -463,7 +472,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 		}
 		if (baseClass == RubyProjectElement.class) {
 			switch (derivedFeatureID) {
-			case ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL:
+			case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 				return ProjectPackage.RUBY_PROJECT_ELEMENT__RUBY_PROJECT_INTERNAL;
 			default:
 				return -1;
@@ -493,9 +502,9 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 		if (baseClass == ProjectElement.class) {
 			switch (baseFeatureID) {
 			case ProjectPackage.PROJECT_ELEMENT__NAME:
-				return ProjectPackage.RUBY_CLASS__NAME;
+				return ProjectPackage.SPREADSHEET__NAME;
 			case ProjectPackage.PROJECT_ELEMENT__PROJECT_INTERNAL:
-				return ProjectPackage.RUBY_CLASS__PROJECT_INTERNAL;
+				return ProjectPackage.SPREADSHEET__PROJECT_INTERNAL;
 			default:
 				return -1;
 			}
@@ -509,7 +518,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
 		if (baseClass == RubyProjectElement.class) {
 			switch (baseFeatureID) {
 			case ProjectPackage.RUBY_PROJECT_ELEMENT__RUBY_PROJECT_INTERNAL:
-				return ProjectPackage.RUBY_CLASS__RUBY_PROJECT_INTERNAL;
+				return ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL;
 			default:
 				return -1;
 			}
@@ -541,7 +550,7 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
     }
 
 	public String getFileExtension() {
-		return "urc";
+		return "uss";
 	}
 
 	/**
@@ -572,5 +581,19 @@ public class RubyClassImpl extends EObjectImpl implements RubyClass {
     	}
         return null;
     }
+    
+    /*
+	 * Getter and setter for Resource
+	 * (non-Javadoc)
+	 * @see net.refractions.udig.project.IRubyFile#getResource()
+	 */
+	
+	public IResource getResource() {
+		return resource;
+	}
+	
+	public void setResource(IResource resource) {
+		this.resource = resource;
+	}
 
 } //RubyClassImpl

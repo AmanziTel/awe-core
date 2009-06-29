@@ -38,7 +38,8 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
-import net.refractions.udig.project.IRubyProjectElement;
+import net.refractions.udig.project.IRubyFile;
+import net.refractions.udig.project.ISpreadsheet;
 import net.refractions.udig.project.ProjectBlackboardConstants;
 import net.refractions.udig.project.element.ElementFactory;
 import net.refractions.udig.project.element.IGenericProjectElement;
@@ -49,6 +50,7 @@ import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectFactory;
 import net.refractions.udig.project.internal.ProjectPlugin;
+import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.commands.AddLayersCommand;
 import net.refractions.udig.project.internal.commands.CreateMapCommand;
 import net.refractions.udig.project.internal.impl.ProjectRegistryImpl;
@@ -543,6 +545,17 @@ public class ApplicationGIS {
     private static void openRuby(RubyFileImpl element) {
     	RDTProjectManager.openScript(element.getResource());
     }    
+    
+    /**
+     * Opens Spreadsheet in SplashEditor
+     * 
+     * @param element Spreadsheet to open
+     * @author Lagutko_N
+     */
+    
+    private static void openSpreadsheet(Spreadsheet element) {
+    	RDTProjectManager.openSpreadsheet(element.getResource());
+    }
 
     /**
      * Opens a {@link IProjectElement} for editing/viewing.  
@@ -552,10 +565,15 @@ public class ApplicationGIS {
      */
     public static void openProjectElement( IProjectElement obj, boolean wait ) {
         OpenProjectElementCommand command=new OpenProjectElementCommand(obj);
-        if (obj instanceof IRubyProjectElement) {
+        if (obj instanceof IRubyFile) {
         	//Lagutko: when we open RubyEditor it's need to be in the same thread as Plugin
         	//so we can't run this as Command, because Command runs in other thread
         	openRuby((RubyFileImpl)obj);
+        	return;
+        }
+        else if (obj instanceof ISpreadsheet){
+        	//Lagutko, 29.06.2009, same situation for Spreadsheet
+        	openSpreadsheet((Spreadsheet)obj);
         	return;
         }
         if( wait)

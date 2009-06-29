@@ -14,7 +14,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
-import net.refractions.udig.project.IRubyClass;
+import net.refractions.udig.project.ISpreadsheet;
 import net.refractions.udig.project.IRubyFile;
 import net.refractions.udig.project.IRubyProject;
 import net.refractions.udig.project.IRubyProjectElement;
@@ -31,7 +31,7 @@ import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.ProjectRegistry;
-import net.refractions.udig.project.internal.RubyClass;
+import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.RubyFile;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
@@ -222,9 +222,9 @@ public class ProjectSwitch {
         	}
         	return result;
         }        
-        case ProjectPackage.RUBY_CLASS: {
-        	RubyClass rubyClass = (RubyClass) theEObject;
-        	Object result = caseRubyClass(rubyClass);
+        case ProjectPackage.SPREADSHEET: {
+        	Spreadsheet rubyClass = (Spreadsheet) theEObject;
+        	Object result = caseSpreadsheet(rubyClass);
         	if (result == null) {
         		result = caseRubyProjectElement(rubyClass);
         	}
@@ -232,7 +232,7 @@ public class ProjectSwitch {
         		result = caseProjectElement(rubyClass);
         	}
         	if (result == null) {
-        		result = caseIRubyClass(rubyClass);
+        		result = caseISpreadsheet(rubyClass);
         	}
         	if (result == null) {
         		result = caseIRubyProjectElement(rubyClass);
@@ -772,7 +772,7 @@ public class ProjectSwitch {
      * @see #doSwitch(org.eclipse.emf.ecore.EObject)
      * @generated
      */
-    public Object caseIRubyClass( IRubyClass object) {
+    public Object caseISpreadsheet( ISpreadsheet object) {
     	return null;
     }
     
@@ -828,7 +828,7 @@ public class ProjectSwitch {
      * @see #doSwitch(org.eclipse.emf.ecore.EObject)
      * @generated
      */
-    public Object caseRubyClass( RubyClass object) {
+    public Object caseSpreadsheet( Spreadsheet object) {
     	return null;
     }
 

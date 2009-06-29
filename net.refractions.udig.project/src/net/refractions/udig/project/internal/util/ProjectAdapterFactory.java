@@ -9,7 +9,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
-import net.refractions.udig.project.IRubyClass;
+import net.refractions.udig.project.ISpreadsheet;
 import net.refractions.udig.project.IRubyFile;
 import net.refractions.udig.project.IRubyProject;
 import net.refractions.udig.project.IRubyProjectElement;
@@ -26,7 +26,7 @@ import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.ProjectRegistry;
-import net.refractions.udig.project.internal.RubyClass;
+import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.RubyFile;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
@@ -124,8 +124,8 @@ public class ProjectAdapterFactory extends AdapterFactoryImpl {
         public Object caseIRubyFile( IRubyFile object) {
         	return createIRubyFileAdapter();
         }
-        public Object caseIRubyClass( IRubyClass object) {
-        	return createIRubyClassAdapter();
+        public Object caseISpreadsheet( ISpreadsheet object) {
+        	return createISpreadsheetAdapter();
         }
         public Object caseRubyProject( RubyProject object) {
         	return createRubyProjectAdapter();
@@ -136,8 +136,8 @@ public class ProjectAdapterFactory extends AdapterFactoryImpl {
         public Object caseRubyFile( RubyFile object) {
         	return createRubyFileAdapter();
         }
-        public Object caseRubyClass( RubyClass object) {
-        	return createRubyClassAdapter();
+        public Object caseSpreadsheet( Spreadsheet object) {
+        	return createSpreadsheetAdapter();
         }
         public Object caseIAbstractContext( IAbstractContext object ) {
             return createIAbstractContextAdapter();
@@ -637,15 +637,15 @@ public class ProjectAdapterFactory extends AdapterFactoryImpl {
     }
     
     /**
-     * Creates a new adapter for an object of class '{@link net.refractions.udig.project.IRubyClass <em>IRubyClass</em>}'.
+     * Creates a new adapter for an object of class '{@link net.refractions.udig.project.ISpreadsheet <em>ISpreadsheet</em>}'.
      * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
      * cases; it's useful to ignore a case when inheritance will catch all the cases anyway. <!--
      * end-user-doc -->
      * @return the new adapter.
-     * @see net.refractions.udig.project.IRubyClass
+     * @see net.refractions.udig.project.ISpreadsheet
      * @generated
      */
-    public Adapter createIRubyClassAdapter() {
+    public Adapter createISpreadsheetAdapter() {
         return null;
     }
     
@@ -689,15 +689,15 @@ public class ProjectAdapterFactory extends AdapterFactoryImpl {
     }
     
     /**
-     * Creates a new adapter for an object of class '{@link net.refractions.udig.project.RubyClass <em>RubyClass</em>}'.
+     * Creates a new adapter for an object of class '{@link net.refractions.udig.project.Spreadsheet <em>Spreadsheet</em>}'.
      * <!-- begin-user-doc --> This default implementation returns null so that we can easily ignore
      * cases; it's useful to ignore a case when inheritance will catch all the cases anyway. <!--
      * end-user-doc -->
      * @return the new adapter.
-     * @see net.refractions.udig.project.RubyClass
+     * @see net.refractions.udig.project.Spreadsheet
      * @generated
      */
-    public Adapter createRubyClassAdapter() {
+    public Adapter createSpreadsheetAdapter() {
         return null;
     }
     

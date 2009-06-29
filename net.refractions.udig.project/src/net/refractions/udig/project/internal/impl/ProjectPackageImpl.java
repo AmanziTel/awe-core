@@ -19,7 +19,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
-import net.refractions.udig.project.IRubyClass;
+import net.refractions.udig.project.ISpreadsheet;
 import net.refractions.udig.project.IRubyFile;
 import net.refractions.udig.project.IRubyProject;
 import net.refractions.udig.project.IRubyProjectElement;
@@ -43,7 +43,7 @@ import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectFactory;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.ProjectRegistry;
-import net.refractions.udig.project.internal.RubyClass;
+import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.RubyFile;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
@@ -280,7 +280,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	private EClass iRubyClassEClass = null;
+	private EClass iSpreadsheetEClass = null;
 	
 	/**
 	 * <!-- begin-user-doc -->
@@ -308,7 +308,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	private EClass rubyClassEClass = null;
+	private EClass spreadsheetEClass = null;
 	
 	/**
 	 * <!-- begin-user-doc -->
@@ -1507,8 +1507,8 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EClass getRubyClass() {
-		return rubyClassEClass;
+	public EClass getSpreadsheet() {
+		return spreadsheetEClass;
 	}
 
 	/**
@@ -1553,8 +1553,8 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EClass getIRubyClass() {
-		return iRubyClassEClass;
+	public EClass getISpreadsheet() {
+		return iSpreadsheetEClass;
 	}
 
 	/**
@@ -1627,7 +1627,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 
 		iRubyProjectElementEClass = createEClass(IRUBY_PROJECT_ELEMENT);
 
-		iRubyClassEClass = createEClass(IRUBY_CLASS);
+		iSpreadsheetEClass = createEClass(ISPREADSHEET);
 
 		iRubyFileEClass = createEClass(IRUBY_FILE);
 
@@ -1688,7 +1688,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 
 		rubyFileEClass = createEClass(RUBY_FILE);
 
-		rubyClassEClass = createEClass(RUBY_CLASS);
+		spreadsheetEClass = createEClass(SPREADSHEET);
 
         projectEClass = createEClass(PROJECT);
         createEAttribute(projectEClass, PROJECT__NAME);
@@ -1816,9 +1816,9 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 		rubyFileEClass.getESuperTypes().add(this.getIRubyFile());
 		rubyFileEClass.getESuperTypes().add(this.getProjectElement());
 		rubyFileEClass.getESuperTypes().add(this.getRubyProjectElement());
-		rubyClassEClass.getESuperTypes().add(this.getIRubyClass());
-		rubyClassEClass.getESuperTypes().add(this.getRubyProjectElement());
-		rubyClassEClass.getESuperTypes().add(this.getProjectElement());
+		spreadsheetEClass.getESuperTypes().add(this.getISpreadsheet());
+		spreadsheetEClass.getESuperTypes().add(this.getRubyProjectElement());
+		spreadsheetEClass.getESuperTypes().add(this.getProjectElement());
 		rubyProjectElementEClass.getESuperTypes().add(this.getProjectElement());
 		rubyProjectElementEClass.getESuperTypes().add(this.getIRubyProjectElement());
 		rubyProjectElementEClass.getESuperTypes().add(this.getIAdaptable());		
@@ -1836,8 +1836,8 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 		initEClass(iRubyProjectElementEClass, IRubyProjectElement.class,
 				"IRubyProjectElement", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
 
-		initEClass(iRubyClassEClass, IRubyClass.class,
-				"IRubyClass", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+		initEClass(iSpreadsheetEClass, ISpreadsheet.class,
+				"ISpreadsheet", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
 
 		initEClass(iRubyFileEClass, IRubyFile.class,
 				"IRubyFile", IS_ABSTRACT, IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
@@ -2108,8 +2108,8 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 		initEClass(rubyFileEClass, RubyFile.class,
 				"RubyFile", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
 
-		initEClass(rubyClassEClass, RubyClass.class,
-				"RubyClass", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+		initEClass(spreadsheetEClass, Spreadsheet.class,
+				"Spreadsheet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
 		
 		initEClass(projectEClass, Project.class,
                 "Project", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$

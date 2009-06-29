@@ -177,25 +177,25 @@ public class ProjectItemProviderAdapterFactory extends ProjectAdapterFactory
 	}
 
 	/**
-	 * This keeps track of the one adapter used for all {@link net.refractions.udig.project.internal.RubyClass} instances.
+	 * This keeps track of the one adapter used for all {@link net.refractions.udig.project.internal.Spreadsheet} instances.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	protected RubyClassItemProvider rubyClassItemProvider;
+	protected SpreadsheetItemProvider spreadsheetItemProvider;
 
 	/**
-	 * This creates an adapter for a {@link net.refractions.udig.project.internal.RubyClass}.
+	 * This creates an adapter for a {@link net.refractions.udig.project.internal.Spreadsheet}.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public Adapter createRubyClassAdapter() {
-		if (rubyClassItemProvider == null) {
-			rubyClassItemProvider = new RubyClassItemProvider(this);
+	public Adapter createSpreadsheetAdapter() {
+		if (spreadsheetItemProvider == null) {
+			spreadsheetItemProvider = new SpreadsheetItemProvider(this);
 		}
 
-		return rubyClassItemProvider;
+		return spreadsheetItemProvider;
 	}
 
     /**

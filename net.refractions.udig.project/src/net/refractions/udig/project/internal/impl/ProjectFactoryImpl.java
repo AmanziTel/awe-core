@@ -36,7 +36,7 @@ import net.refractions.udig.project.internal.ProjectFactory;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.internal.ProjectRegistry;
-import net.refractions.udig.project.internal.RubyClass;
+import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.RubyFile;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.StyleBlackboard;
@@ -127,8 +127,8 @@ public class ProjectFactoryImpl extends EFactoryImpl implements ProjectFactory {
 			return createRubyProject();
 		case ProjectPackage.RUBY_FILE:
 			return createRubyFile();
-		case ProjectPackage.RUBY_CLASS:
-			return createRubyClass();
+		case ProjectPackage.SPREADSHEET:
+			return createSpreadsheet();
         default:
             throw new IllegalArgumentException(
                     "The class '" + eClass.getName() + "' is not a valid classifier"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1016,9 +1016,9 @@ public class ProjectFactoryImpl extends EFactoryImpl implements ProjectFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public RubyClass createRubyClass() {
-		RubyClassImpl rubyClass = new RubyClassImpl();
-		return rubyClass;
+	public Spreadsheet createSpreadsheet() {
+		SpreadsheetImpl spreadsheet = new SpreadsheetImpl();
+		return spreadsheet;
 	}
 
 

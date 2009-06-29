@@ -17,7 +17,7 @@
       abstract="true" interface="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="IRubyProjectElement" instanceClassName="net.refractions.udig.project.IRubyProjectElement"
       abstract="true" interface="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="IRubyClass" instanceClassName="net.refractions.udig.project.IRubyClass"
+  <eClassifiers xsi:type="ecore:EClass" name="ISpreadsheet" instanceClassName="net.refractions.udig.project.ISpreadsheet"
       abstract="true" interface="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="IRubyFile" instanceClassName="net.refractions.udig.project.IRubyFile"
       abstract="true" interface="true"/>
@@ -150,7 +150,7 @@
         eOpposite="#//Project/elementsInternal"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RubyFile" eSuperTypes="#//IRubyFile #//ProjectElement #//RubyProjectElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="RubyClass" eSuperTypes="#//IRubyClass #//RubyProjectElement #//ProjectElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Spreadsheet" eSuperTypes="#//ISpreadsheet #//RubyProjectElement #//ProjectElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ProjectRegistry">
     <eOperations name="getProject" eType="#//Project">
       <eParameters name="uri" eType="#//URI"/>

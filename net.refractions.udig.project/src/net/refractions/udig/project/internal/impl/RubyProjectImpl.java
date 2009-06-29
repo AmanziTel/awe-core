@@ -5,26 +5,21 @@
  */
 package net.refractions.udig.project.internal.impl;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.internal.Project;
-import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
+import net.refractions.udig.project.internal.Spreadsheet;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
-
-import org.eclipse.emf.common.util.URI;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -34,8 +29,6 @@ import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.impl.EObjectImpl;
 
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
@@ -116,6 +109,8 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
             }
         }
     };
+
+	private List<Spreadsheet> spreadsheetsInternal;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -264,7 +259,7 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 					RubyProjectElement.class, this,
 					ProjectPackage.RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL,
 					ProjectPackage.RUBY_PROJECT_ELEMENT__RUBY_PROJECT_INTERNAL);
-		}
+		}		
 		return rubyElementsInternal;
 	}
 	
@@ -280,7 +275,11 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 			if (projectInternal != null)
 				msgs = ((InternalEObject) projectInternal).eInverseRemove(this,
 						ProjectPackage.PROJECT__ELEMENTS_INTERNAL,
-						Project.class, msgs);
+						Project.class, msgs);	
+			break;
+		case ProjectPackage.RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL:
+			return ((InternalEList) getRubyElementsInternal()).basicAdd(
+					otherEnd, msgs);
 		}
 		return super.eInverseAdd(otherEnd, featureID, msgs);
 	}
@@ -295,6 +294,8 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 		switch (featureID) {
 		case ProjectPackage.RUBY_PROJECT__PROJECT_INTERNAL:
 			return basicSetProjectInternal(null, msgs);
+		case ProjectPackage.RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL:
+            return ((InternalEList) getRubyElementsInternal()).basicRemove(otherEnd, msgs);
 		}
 		return super.eInverseRemove(otherEnd, featureID, msgs);
 	}
