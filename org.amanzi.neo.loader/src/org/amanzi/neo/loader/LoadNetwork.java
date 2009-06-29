@@ -6,10 +6,11 @@ import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
 public class LoadNetwork extends AbstractActionTool {
 	private static final String[] FILTER_NAMES = {
+		"Comma Separated Values Files (*.csv)",
 		"OpenOffice.org Spreadsheet Files (*.sxc)",
 		"Microsoft Excel Spreadsheet Files (*.xls)",
-		"Comma Separated Values Files (*.csv)", "All Files (*.*)" };
-	private static final String[] FILTER_EXTS = { "*.sxc", "*.xls", "*.csv", "*.*" };
+		"All Files (*.*)" };
+	private static final String[] FILTER_EXTS = { "*.csv", "*.sxc", "*.xls", "*.*" };
 
 	public LoadNetwork() {
 	}

@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.amanzi.neo.loader.NetworkLoader.NetworkRelationshipTypes;
 import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
@@ -26,7 +26,7 @@ public class TEMSLoader {
 		SOURCE,
 		POINT
 	}
-	private EmbeddedNeo neo;
+	private NeoService neo;
 	private String filename = null;
 	private String basename = null;
 	private Node file = null;
@@ -51,15 +51,18 @@ public class TEMSLoader {
     private int limit = 0;
     private static int[] times = new int[2];
 
-	public TEMSLoader(EmbeddedNeo neo) {
-		this.neo = neo;
+	public TEMSLoader(String filename) {
+		this(null,filename);
 	}
 
-	public TEMSLoader(EmbeddedNeo neo, String filename, int limit) throws IOException{
-		this(neo);
-		this.limit = limit;
+	public TEMSLoader(NeoService neo, String filename) {
+		this.neo = neo;
+		if(this.neo == null) this.neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();
 		this.filename = filename;
 		this.basename = (new File(filename)).getName();
+	}
+
+	public void run() throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		try{
 			String line;
@@ -377,7 +380,9 @@ public class TEMSLoader {
 		EmbeddedNeo neo = new EmbeddedNeo("var/neo");
 		try{
 			for(String filename:args){
-				TEMSLoader temsLoader = new TEMSLoader(neo,filename,100);
+				TEMSLoader temsLoader = new TEMSLoader(neo,filename);
+				temsLoader.setLimit(100);
+				temsLoader.run();
 				temsLoader.printStats();	// stats for this load
 			}
 			printTimesStats();	// stats for all loads

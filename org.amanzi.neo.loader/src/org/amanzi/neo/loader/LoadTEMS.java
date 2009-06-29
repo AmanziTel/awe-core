@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.neo4j.api.core.EmbeddedNeo;
 
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
@@ -28,7 +27,6 @@ public class LoadTEMS extends AbstractActionTool {
 	//private static final String[] FILTER_EXTS = {"*.FMT","*.fmt"};
 
 	public LoadTEMS() {
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -165,19 +163,20 @@ public class LoadTEMS extends AbstractActionTool {
     load.addSelectionListener(new SelectionAdapter() {
       public void widgetSelected(SelectionEvent event) 
       {
-    	  EmbeddedNeo neo = new EmbeddedNeo("var/neo");
   		try
   		{
   			for(int j =0;j<files.length;j++)
   			{
   				if(files.length>1 && hashdata.get(files[j].getAbsolutePath())=="1")
   				{
-  					TEMSLoader temsLoader = new TEMSLoader(neo,files[j].getAbsolutePath(),100);
+  					TEMSLoader temsLoader = new TEMSLoader(files[j].getAbsolutePath());
+  					temsLoader.run();
   	  				temsLoader.printStats();	// stats for this load
   				}
   				else
   				{
-  					TEMSLoader temsLoader = new TEMSLoader(neo,files[j].getAbsolutePath(),100);
+  					TEMSLoader temsLoader = new TEMSLoader(files[j].getAbsolutePath());
+  					temsLoader.run();
   	  				temsLoader.printStats();	// stats for this load
   				}
   			}
@@ -185,8 +184,6 @@ public class LoadTEMS extends AbstractActionTool {
   		} catch (IOException e) {
   			System.err.println("Error loading TEMS data: "+e);
   			e.printStackTrace(System.err);
-  		}finally{
-  			neo.shutdown();
   		}
       
 	  }});

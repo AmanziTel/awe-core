@@ -12,7 +12,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.neo4j.api.core.EmbeddedNeo;
 
 /**
  * This class demonstrates FileDialog
@@ -29,6 +28,8 @@ public class ShowFileDialog {
 	private String[] filterNames = DEFAULT_FILTER_NAMES;
 	private String[] filterExts = DEFAULT_FILTER_EXTS;
 	private String title = "file";
+
+	private Shell shell;
 
 	/** Construct with specified title, file names and extensions
 	 * @param title to show the user
@@ -57,7 +58,7 @@ public class ShowFileDialog {
 	 * Runs the application
 	 */
 	public void run(Display display) {
-		Shell shell = new Shell(display);
+		shell = new Shell(display);
 		shell.setText("File Dialog");
 		createContents(shell);
 		shell.pack();
@@ -100,15 +101,14 @@ public class ShowFileDialog {
 			public void widgetSelected(SelectionEvent event) {
 				// Display.getDefault().asyncExec(new Runnable(){
 				//	public void run() {
-				EmbeddedNeo neo = new EmbeddedNeo("var/neo");
 				NetworkLoader networkLoader;
 				try {
-					networkLoader = new NetworkLoader(neo, fileName.getText());
+					networkLoader = new NetworkLoader(fileName.getText());
+					networkLoader.run();
 					networkLoader.printStats();
-					neo.shutdown();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.err.println("Error loading file: "+e.getMessage());
+					e.printStackTrace(System.err);
 				}
 			}
 		});
@@ -120,7 +120,15 @@ public class ShowFileDialog {
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args) {
-		new ShowFileDialog().run(new Display());
+	    Display display = new Display();
+		ShowFileDialog dialog = new ShowFileDialog();
+		dialog.run(display);
+	    while (!dialog.shell.isDisposed()) {
+	      if (!display.readAndDispatch()) {
+	        display.sleep();
+	      }
+	    }
+	    display.dispose();
 	}
 
 }

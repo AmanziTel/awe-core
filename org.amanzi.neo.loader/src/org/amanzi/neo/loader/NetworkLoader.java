@@ -2,6 +2,7 @@ package org.amanzi.neo.loader;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.HashMap;
 
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.RelationshipType;
@@ -66,7 +68,7 @@ public class NetworkLoader {
 			return crs;
 		}
 	}
-	private EmbeddedNeo neo;
+	private NeoService neo;
 	private String siteName = null;
 	private String bscName = null;
 	private Node site = null;
@@ -81,14 +83,18 @@ public class NetworkLoader {
 	private String filename;
 	private String basename;
 
-	public NetworkLoader(EmbeddedNeo neo) {
-		this.neo = neo;
+	public NetworkLoader(String filename) {
+		this(null, filename);
 	}
 
-	public NetworkLoader(EmbeddedNeo neo, String filename) throws IOException{
-		this(neo);
+	public NetworkLoader(NeoService neo, String filename) {
+		this.neo = neo;
+		if(this.neo == null) this.neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();
 		this.filename = filename;
 		this.basename = (new File(filename)).getName();
+	}
+	
+	public void run() throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		try{
 			String line;
@@ -193,7 +199,7 @@ public class NetworkLoader {
 	/**
 	 * This code finds the specified network node in the database, creating its own transaction for that.
 	 */
-	public static Node getNetwork(EmbeddedNeo neo, String basename) {
+	public static Node getNetwork(NeoService neo, String basename) {
 		Node network = null;
 		Transaction tx = neo.beginTx();
 		try {
@@ -264,6 +270,7 @@ public class NetworkLoader {
 		EmbeddedNeo neo = new EmbeddedNeo("var/neo");
 		try{
 			NetworkLoader networkLoader = new NetworkLoader(neo,args.length>0 ? args[0] : "amanzi/network.csv");
+			networkLoader.run();
 			networkLoader.printStats();
 		} catch (IOException e) {
 			System.err.println("Failed to load network: "+e);
