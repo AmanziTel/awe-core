@@ -11,8 +11,7 @@ Require-Bundle: net.refractions.udig;bundle-version="1.1.0",
  org.eclipse.swt;bundle-version="3.3.2",
  net.refractions.udig.project.ui;bundle-version="1.1.1",
  org.neo4j;bundle-version="1.0.0",
- org.amanzi.awe.neo.views.network;bundle-version="1.0.0",
- org.amanzi.rdt.launching
+ org.amanzi.awe.neo.views.network;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-RegisterBuddy: org.amanzi.awe.script.jirb, org.amanzi.rdt.launching
