@@ -2,6 +2,7 @@ package org.amanzi.awe;
 
 import net.refractions.udig.internal.ui.MapPerspective;
 
+import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
@@ -45,6 +46,9 @@ public class PerspectiveFactory implements IPerspectiveFactory {
         // TODO: This code seems redundant with the perspectiveExtensions in plugin.xml
         layout.addPerspectiveShortcut(AWE_PERSPECTIVE);
         layout.addPerspectiveShortcut(MapPerspective.ID_PERSPECTIVE);
+        
+        //Lagutko, 15.06.2009, add launch action set
+        layout.addActionSet(IDebugUIConstants.LAUNCH_ACTION_SET);
     }
 
 //	public void createInitialLayout(IPageLayout layout) {

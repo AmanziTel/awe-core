@@ -11,9 +11,6 @@
          <run
          	   class="org.eclipse.core.resources.ResourcesPlugin">
          </run>
-         <run
-         	   class="org.rubypeople.rdt.internal.ui.RubyPlugin">         
-         </run>
       </application>
    </extension>
    <extension point="org.eclipse.ui.perspectives">
@@ -80,7 +77,7 @@
          <viewShortcut id="net.refractions.udig.catalog.ui.Search"/>
          <viewShortcut id="net.refractions.udig.browser.ui.browserContainerView"/>
          <viewShortcut id="org.tcat.citd.sim.udig.bookmarks.internal.ui.BookmarksView"/>
-         <perspectiveShortcut id="org.amanzi.awe.perspective"/>
+         <perspectiveShortcut id="org.amanzi.awe.perspective"/>         
          
          <newWizardShortcut id="org.rubypeople.rdt.ui.wizards.RubyProjectWizard"/>
          <newWizardShortcut id="org.rubypeople.rdt.ui.wizards.RubyNewClassWizard"/>

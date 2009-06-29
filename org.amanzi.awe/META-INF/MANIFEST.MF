@@ -10,5 +10,7 @@ Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.browser,
  net.refractions.udig.tool.select,
  org.eclipse.ui.ide,
- org.rubypeople.rdt.ui
+ org.rubypeople.rdt.ui,
+ org.eclipse.debug.ui,
+ org.amanzi.integrator.awe
 Eclipse-LazyStart: true
