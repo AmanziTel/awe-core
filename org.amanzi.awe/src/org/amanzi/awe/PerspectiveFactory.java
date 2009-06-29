@@ -42,6 +42,7 @@ public class PerspectiveFactory implements IPerspectiveFactory {
         //Here we are making folder layout to show two views side by side
         IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, 0.25f,PROJECTS);
         bottomLeft.addView(LAYERS);
+        //TODO: Uncomment and edit the next line once the network tree view is working again
         bottomLeft.addView(NETWORK_VIEW_ID);
         // TODO: This code seems redundant with the perspectiveExtensions in plugin.xml
         layout.addPerspectiveShortcut(AWE_PERSPECTIVE);
