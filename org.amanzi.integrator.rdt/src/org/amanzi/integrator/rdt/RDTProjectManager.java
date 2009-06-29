@@ -1,8 +1,23 @@
 package org.amanzi.integrator.rdt;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+
+import org.amanzi.rdt.internal.launching.launcher.RubyLaunchShortcut;
+import org.amanzi.rdt.launching.util.LaunchUtils;
+import org.amanzi.splash.utilities.Util;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyProject;
@@ -152,6 +167,35 @@ public class RDTProjectManager {
 		catch (RubyModelException e) {
 			//TODO: handle this exception
 		}
+	}
+	
+	/**
+	 * Runs RubyScript
+	 * 
+	 * @param projectName name of project of RubyScript
+	 * @param scriptName name of script
+	 */
+	
+	public static void runScript(String projectName, String scriptName) {
+		try {
+			IRubyProject parent = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(projectName);
 		
+			IRubyScript script = getScriptByName((RubyElement)parent, scriptName);
+			
+			LaunchUtils.launchRubyScript(script);
+		}
+		catch (RubyModelException e) {
+			
+		}
+	}
+	
+	/**
+	 * Opens Spreadsheet in Editor
+	 * 
+	 * @param resource resource of Spreadsheet to open
+	 */
+	
+	public static void openSpreadsheet(IResource resource) {
+		Util.openSpreadsheet(PlatformUI.getWorkbench(), (IFile)resource);
 	}
 }
