@@ -34,14 +34,17 @@ class Spreadsheet
     @cells
   end
   
-  #search for Spreadsheet by it's name and project name
-  def self.find(project, name)
-    Spreadsheet.new($spreadsheet_manager.getSpreadsheet(project, name))
+  #search for Spreadsheet by it's name, Ruby Project name and uDIG project name
+  def self.find(name, options={})
+  	rdtName = options[:rdt]
+  	udigName = options[:udig]
+  	
+  	Spreadsheet.new($spreadsheet_manager.getSpreadsheet(name, rdtName, udigName))  	  
   end
   
   #returns Active Spreadsheet
   def self.findActive()    
-    Spreadsheet.new($spreadsheet_manager.getActiveSpreadsheet())
+    Spreadsheet.new($spreadsheet_manager.getActiveSpreadsheet)
   end
   
   #saves content of this Spreadsheet

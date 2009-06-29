@@ -76,8 +76,10 @@ public class RubyConsole extends ViewPart {
             setExtraLoadPath(new String[]{userDir+"/.awe/script",userDir+"/.awe/lib"});
             try{
                 // Add the code from the internal plugin awescript.rb to the startup
+            	addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("gisCommands.rb")));
                 addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("awescript.rb")));
-                addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("spreadsheet.rb")));
+                addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("spreadsheet.rb")));                
+                
             }catch(Exception e){
                 System.err.println("Failed to add internal awescript startup: "+e);
                 e.printStackTrace(System.err);
