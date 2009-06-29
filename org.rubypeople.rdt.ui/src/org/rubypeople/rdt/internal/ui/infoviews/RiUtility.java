@@ -35,7 +35,8 @@ import org.rubypeople.rdt.launching.RubyRuntime;
 import org.rubypeople.rdt.ui.text.ansi.ANSIParser;
 import org.rubypeople.rdt.ui.text.ansi.ANSIToken;
 
-import com.aptana.rdt.AptanaRDTPlugin;
+//Lagutko: 22.06.2009, com.aptana plugins was deleted
+//import com.aptana.rdt.AptanaRDTPlugin;
 
 public class RiUtility implements IRubyInformation {
 	
@@ -260,7 +261,8 @@ public class RiUtility implements IRubyInformation {
 				}			
 				return buf.toString();
 		} catch (Exception e) {
-			AptanaRDTPlugin.log(e);
+			//Lagutko: 22.06.2009, com.aptana plugins was deleted
+			//AptanaRDTPlugin.log(e);
 		}
 		return null;
 	}
@@ -276,9 +278,10 @@ public class RiUtility implements IRubyInformation {
 				buf.append("\n");
 			}
 		} catch (FileNotFoundException e) {
-			AptanaRDTPlugin.log(e);
+			//Lagutko: 22.06.2009, com.aptana plugins was deleted
+			//AptanaRDTPlugin.log(e);
 		} catch (IOException e) {
-			AptanaRDTPlugin.log(e);
+			//AptanaRDTPlugin.log(e);
 		} finally {
 			try {
 				if (reader != null) reader.close();

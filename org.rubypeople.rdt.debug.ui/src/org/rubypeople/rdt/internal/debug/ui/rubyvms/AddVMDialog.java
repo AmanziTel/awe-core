@@ -336,11 +336,12 @@ public class AddVMDialog extends StatusDialog {
 		fVMName= new StringDialogField();
 		fVMName.setLabelText(RubyVMMessages.addVMDialog_jreName); 
 		
-		fRubyVMRoot= new StringButtonDialogField(new IStringButtonAdapter() {
-			public void changeControlPressed(DialogField field) {
-				browseForInstallLocation();
-			}
-		});
+		//Lagutko, 22.06.2009, deny possibility to change RubyHome
+//		fRubyVMRoot= new StringButtonDialogField(new IStringButtonAdapter() {
+//			public void changeControlPressed(DialogField field) {
+//				browseForInstallLocation();
+//			}
+//		});
 		fRubyVMRoot.setLabelText(RubyVMMessages.addVMDialog_jreHome); 
 		fRubyVMRoot.setButtonLabel(RubyVMMessages.addVMDialog_browse1); 
 			

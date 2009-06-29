@@ -46,7 +46,7 @@ Export-Package: org.rubypeople.rdt.internal.corext;x-internal:=true,
  org.rubypeople.rdt.internal.ui.util;x-internal:=true,
  org.rubypeople.rdt.internal.ui.viewsupport;x-internal:=true,
  org.rubypeople.rdt.internal.ui.wizards;x-friends:="org.amanzi.splash",
- org.rubypeople.rdt.internal.ui.wizards.buildpaths;x-internal:=true,
+ org.rubypeople.rdt.internal.ui.wizards.buildpaths;x-friends:="org.amanzi.rdt.testing",
  org.rubypeople.rdt.internal.ui.wizards.buildpaths.newsourcepage;x-internal:=true,
  org.rubypeople.rdt.internal.ui.wizards.dialogfields;x-internal:=true,
  org.rubypeople.rdt.internal.ui.workingsets;x-internal:=true,
@@ -85,10 +85,9 @@ Require-Bundle: org.eclipse.ui.ide,
  org.eclipse.core.expressions,
  org.eclipse.ltk.core.refactoring,
  com.ibm.icu,
- com.aptana.rdt,
  org.eclipse.debug.core,
  org.eclipse.team.core,
  org.amanzi.integrator.awe,
- org.jruby
+ org.jruby;visibility:=reexport
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: J2SE-1.5

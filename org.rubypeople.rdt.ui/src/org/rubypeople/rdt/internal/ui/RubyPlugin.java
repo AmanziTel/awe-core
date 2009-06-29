@@ -198,13 +198,17 @@ public class RubyPlugin extends AbstractUIPlugin
 		// Swap in our process console manager for theirs
 		launchListener = new AptanaProcessConsoleManager();
 		DebugPlugin.getDefault().getLaunchManager().addLaunchListener(launchListener);
-
+		
 		// Initialize AST provider
 		getASTProvider();
-
+		
 		fRubyExplorerTracker = new RubyExplorerTracker();
 
 		new InitializeAfterLoadJob().schedule();
+	}
+	
+	public ILaunchListener getLaunchListener() {
+		return launchListener;
 	}
 
 	/**

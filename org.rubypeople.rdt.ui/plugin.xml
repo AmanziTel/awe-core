@@ -217,16 +217,18 @@
          <perspectiveShortcut
                id="org.rubypeople.rdt.ui.PerspectiveRuby">
          </perspectiveShortcut>
+         <!-- Lagutko, 23.06.2009, Debug disabled, so we don't need Debug Perspective
          <perspectiveShortcut id="org.eclipse.debug.ui.DebugPerspective"/>
+         -->
          <viewShortcut id="org.rubypeople.rdt.ui.RubyExplorer"/>
       </perspectiveExtension>
-      <perspectiveExtension
+      <!-- <perspectiveExtension
             targetID="org.eclipse.debug.ui.DebugPerspective">
          <perspectiveShortcut
                id="org.rubypeople.rdt.ui.PerspectiveRuby">
          </perspectiveShortcut>
          <perspectiveShortcut id="org.rubypeople.rdt.ui.RubyBrowsingPerspective"/>
-      </perspectiveExtension>
+      </perspectiveExtension> -->
    	 <perspectiveExtension targetID="org.eclipse.ui.resourcePerspective">
        <perspectiveShortcut id="org.rubypeople.rdt.ui.PerspectiveRuby" />
        <perspectiveShortcut id="org.rubypeople.rdt.ui.RubyBrowsingPerspective"/>
@@ -246,10 +248,11 @@
        <actionSet id="org.rubypeople.rdt.ui.RubyElementCreationActionSet"/>
        <perspectiveShortcut
                id="org.rubypeople.rdt.ui.RubyBrowsingPerspective">
-         </perspectiveShortcut>
+         </perspectiveShortcut>         
+       <!-- LN, 23.06.2009, no Debug perspective 
        <perspectiveShortcut
                id="org.eclipse.debug.ui.DebugPerspective">
-         </perspectiveShortcut>
+         </perspectiveShortcut> -->
        <perspectiveShortcut
                id="org.rubypeople.rdt.ui.PerspectiveRuby">
          </perspectiveShortcut>
@@ -1491,7 +1494,7 @@
                class="org.eclipse.ui.texteditor.BookmarkRulerAction"
                actionID="RulerDoubleClick"
                id="org.rubypeople.rdt.internal.ui.rubyeditor.BookmarkRulerAction">
-         </action> -->
+         </action>
          <action
                label="%RubySelectRulerAction.label"
                class="org.rubypeople.rdt.internal.ui.rubyeditor.RubySelectRulerAction"

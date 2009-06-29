@@ -77,7 +77,7 @@ public class RubyConsoleTracker implements IConsoleLineTracker
 		}
 	}
 
-	private final FileExistanceChecker existanceChecker;
+	protected final FileExistanceChecker existanceChecker;
 
 	public RubyConsoleTracker()
 	{
@@ -94,8 +94,8 @@ public class RubyConsoleTracker implements IConsoleLineTracker
 	 */
 	protected IConsole fConsole;
 
-	private ILaunch fLastLaunch;
-	private IProject fProject;
+	protected ILaunch fLastLaunch;
+	protected IProject fProject;
 
 	/**
 	 * @see org.eclipse.debug.ui.console.IConsoleLineTracker#init(org.eclipse.debug.ui.console.IConsole)

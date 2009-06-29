@@ -62,7 +62,7 @@ public class RubyStackTraceHyperlink implements IHyperlink {
 	 */
 	public void linkExited() {}
 
-	private void setEditorToLine(IEditorPart pEditorPart, IEditorInput pInput) throws CoreException {
+	protected void setEditorToLine(IEditorPart pEditorPart, IEditorInput pInput) throws CoreException {
 		if (!(pEditorPart instanceof ITextEditor)) { return; }
 		int lineNumber = this.getLineNumber();
 		// documents start at 0

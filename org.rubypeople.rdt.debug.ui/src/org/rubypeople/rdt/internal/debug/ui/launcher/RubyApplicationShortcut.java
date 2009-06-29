@@ -9,7 +9,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
@@ -21,11 +20,9 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.rubypeople.rdt.core.IRubyElement;
-import org.rubypeople.rdt.debug.ui.InstallDeveloperToolsDialog;
 import org.rubypeople.rdt.debug.ui.RdtDebugUiConstants;
 import org.rubypeople.rdt.internal.debug.ui.RdtDebugUiMessages;
 import org.rubypeople.rdt.internal.debug.ui.RdtDebugUiPlugin;
@@ -33,16 +30,11 @@ import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.launching.IRubyLaunchConfigurationConstants;
 import org.rubypeople.rdt.launching.RubyRuntime;
 
-import com.aptana.rdt.AptanaRDTPlugin;
-import com.aptana.rdt.core.gems.ContributedGemRegistry;
-import com.aptana.rdt.core.gems.Gem;
-
 public class RubyApplicationShortcut implements ILaunchShortcut
 {
 
 	public void launch(ISelection selection, String mode)
 	{
-
 		Object firstSelection = null;
 		if (selection instanceof IStructuredSelection)
 		{
@@ -54,6 +46,7 @@ public class RubyApplicationShortcut implements ILaunchShortcut
 			log("Could not find selection.");
 			return;
 		}
+		
 		IRubyElement rubyElement = null;
 		if (firstSelection instanceof IAdaptable)
 		{
@@ -69,86 +62,87 @@ public class RubyApplicationShortcut implements ILaunchShortcut
 
 	private void doLaunchWithErrorHandling(IRubyElement rubyElement, String mode)
 	{
+		//Lagutko, 11.06.2009, we don't have DEBUG mode for AWE application
 		// Install ruby-debug and ruby-prof on demand when user first tries to use those launch modes
-		if (mode.equals(ILaunchManager.DEBUG_MODE))
-		{
-			if (!AptanaRDTPlugin.getDefault().getGemManager().gemInstalled("ruby-debug-ide"))
-			{
-				if (MessageDialog
-						.openQuestion(Display.getDefault().getActiveShell(), "ruby-debug not installed",
-								"To debug, it is recommended that you use the ruby-debug based debugger. Would you like us to install that gem?"))
-				{
-
-					if (InstallDeveloperToolsDialog.shouldShow())
-					{
-						InstallDeveloperToolsDialog dialog = new InstallDeveloperToolsDialog(Display.getDefault()
-								.getActiveShell());
-						dialog.open();
-						return;
-					}
-
-					List<Gem> finalGems = new ArrayList<Gem>();
-					Gem gem = ContributedGemRegistry.getGem("ruby-debug-base");
-					if (gem != null)
-						finalGems.add(gem);
-					gem = ContributedGemRegistry.getGem("ruby-debug-ide");
-					if (gem != null)
-						finalGems.add(gem);
-					Job job = new InstallGemsJob(finalGems);
-					job.setSystem(true);
-					job.schedule();
-					try
-					{
-						job.join();
-					}
-					catch (InterruptedException e)
-					{
-						RdtDebugUiPlugin.log(e);
-					}
-				}
-			}
-		}
-		else if (mode.equals(ILaunchManager.PROFILE_MODE))
-		{
-			if (RubyRuntime.currentVMIsJRuby())
-			{
-				MessageDialog
-						.openError(
-								Display.getDefault().getActiveShell(),
-								"Profiling not yet supported on JRuby",
-								"Profiling is not yet available for the JRuby interpreter. We rely on the ruby-prof gem, which requires native code, and there is not yet a Java based version of the gem.");
-				return;
-			}
-			if (!AptanaRDTPlugin.getDefault().getGemManager().gemInstalled("ruby-prof"))
-			{
-				if (MessageDialog
-						.openQuestion(Display.getDefault().getActiveShell(), "ruby-prof not installed",
-								"To profile, it is required that you use the ruby-prof gem. Would you like us to install that gem?"))
-				{
-
-					if (InstallDeveloperToolsDialog.shouldShow())
-					{
-						InstallDeveloperToolsDialog dialog = new InstallDeveloperToolsDialog(Display.getDefault()
-								.getActiveShell());
-						dialog.open();
-						return;
-					}
-
-					List<Gem> finalGems = new ArrayList<Gem>();
-					Gem gem = ContributedGemRegistry.getGem("ruby-prof");
-					if (gem != null)
-						finalGems.add(gem);
-					Job job = new InstallGemsJob(finalGems);
-					job.setSystem(true);
-					job.schedule();
-					return;
-				}
-				else
-				{
-					return;
-				}
-			}
-		}
+//		if (mode.equals(ILaunchManager.DEBUG_MODE))
+//		{
+//			if (!AptanaRDTPlugin.getDefault().getGemManager().gemInstalled("ruby-debug-ide"))
+//			{
+//				if (MessageDialog
+//						.openQuestion(Display.getDefault().getActiveShell(), "ruby-debug not installed",
+//								"To debug, it is recommended that you use the ruby-debug based debugger. Would you like us to install that gem?"))
+//				{
+//
+//					if (InstallDeveloperToolsDialog.shouldShow())
+//					{
+//						InstallDeveloperToolsDialog dialog = new InstallDeveloperToolsDialog(Display.getDefault()
+//								.getActiveShell());
+//						dialog.open();
+//						return;
+//					}
+//
+//					List<Gem> finalGems = new ArrayList<Gem>();
+//					Gem gem = ContributedGemRegistry.getGem("ruby-debug-base");
+//					if (gem != null)
+//						finalGems.add(gem);
+//					gem = ContributedGemRegistry.getGem("ruby-debug-ide");
+//					if (gem != null)
+//						finalGems.add(gem);
+//					Job job = new InstallGemsJob(finalGems);
+//					job.setSystem(true);
+//					job.schedule();
+//					try
+//					{
+//						job.join();
+//					}
+//					catch (InterruptedException e)
+//					{
+//						RdtDebugUiPlugin.log(e);
+//					}
+//				}
+//			}
+//		}
+//		else if (mode.equals(ILaunchManager.PROFILE_MODE))
+//		{
+//			if (RubyRuntime.currentVMIsJRuby())
+//			{
+//				MessageDialog
+//						.openError(
+//								Display.getDefault().getActiveShell(),
+//								"Profiling not yet supported on JRuby",
+//								"Profiling is not yet available for the JRuby interpreter. We rely on the ruby-prof gem, which requires native code, and there is not yet a Java based version of the gem.");
+//				return;
+//			}
+//			if (!AptanaRDTPlugin.getDefault().getGemManager().gemInstalled("ruby-prof"))
+//			{
+//				if (MessageDialog
+//						.openQuestion(Display.getDefault().getActiveShell(), "ruby-prof not installed",
+//								"To profile, it is required that you use the ruby-prof gem. Would you like us to install that gem?"))
+//				{
+//
+//					if (InstallDeveloperToolsDialog.shouldShow())
+//					{
+//						InstallDeveloperToolsDialog dialog = new InstallDeveloperToolsDialog(Display.getDefault()
+//								.getActiveShell());
+//						dialog.open();
+//						return;
+//					}
+//
+//					List<Gem> finalGems = new ArrayList<Gem>();
+//					Gem gem = ContributedGemRegistry.getGem("ruby-prof");
+//					if (gem != null)
+//						finalGems.add(gem);
+//					Job job = new InstallGemsJob(finalGems);
+//					job.setSystem(true);
+//					job.schedule();
+//					return;
+//				}
+//				else
+//				{
+//					return;
+//				}
+//			}
+//		}
 
 		try
 		{

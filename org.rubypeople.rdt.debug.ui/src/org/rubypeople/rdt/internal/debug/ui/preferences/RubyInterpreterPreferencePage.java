@@ -126,14 +126,15 @@ public class RubyInterpreterPreferencePage extends PreferencePage implements IWo
 		layout.marginWidth = 0;
 		buttons.setLayout(layout);
 
-		addButton = new Button(buttons, SWT.PUSH);
-		addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		addButton.setText(RdtDebugUiMessages.RubyInterpreterPreferencePage_addButton_label);
-		addButton.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event evt) {
-				addInterpreter();
-			}
-		});
+		//Lagutko: 22.06.2009, have no possibilities to add or remove Ruby Interpreters
+//		addButton = new Button(buttons, SWT.PUSH);
+//		addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+//		addButton.setText(RdtDebugUiMessages.RubyInterpreterPreferencePage_addButton_label);
+//		addButton.addListener(SWT.Selection, new Listener() {
+//			public void handleEvent(Event evt) {
+//				addInterpreter();
+//			}
+//		});
 
 		editButton = new Button(buttons, SWT.PUSH);
 		editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -144,14 +145,14 @@ public class RubyInterpreterPreferencePage extends PreferencePage implements IWo
 			}
 		});
 
-		removeButton = new Button(buttons, SWT.PUSH);
-		removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		removeButton.setText(RdtDebugUiMessages.RubyInterpreterPreferencePage_removeButton_label);
-		removeButton.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event evt) {
-				removeInterpreter();
-			}
-		});
+//		removeButton = new Button(buttons, SWT.PUSH);
+//		removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+//		removeButton.setText(RdtDebugUiMessages.RubyInterpreterPreferencePage_removeButton_label);
+//		removeButton.addListener(SWT.Selection, new Listener() {
+//			public void handleEvent(Event evt) {
+//				removeInterpreter();
+//			}
+//		});
 	}
 
 	protected void createInstalledInterpretersTableViewer(Table table) {

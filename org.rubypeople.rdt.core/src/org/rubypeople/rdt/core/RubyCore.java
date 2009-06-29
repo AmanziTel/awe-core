@@ -493,7 +493,7 @@ public class RubyCore extends Plugin
 
 	public static IRubyScript create(IFile file)
 	{
-		return RubyModelManager.create(file, null/* unknown ruby project */);
+		return RubyModelManager.create(file, null/* unknown ruby project */);		
 	}
 
 	public static IRubyProject create(IProject project)
@@ -513,11 +513,15 @@ public class RubyCore extends Plugin
 			return null;
 		}
 		try {
+			//LN, 25.06.2009, if name of AWE project name is default than use Default AWE Project
+			aweProjectName = AWEProjectManager.getActiveProjectName();
+			
 			//Lagutko: set name of AWE Project to newly created RubyProject
 			project.setPersistentProperty(AWEProjectManager.AWE_PROJECT_NAME, aweProjectName);
 		}
 		catch (CoreException e) {
-			
+			//TODO: handle this exception
+			e.printStackTrace();
 		}
 		RubyModel rubyModel = RubyModelManager.getRubyModelManager().getRubyModel();
 		return rubyModel.getRubyProject(project);

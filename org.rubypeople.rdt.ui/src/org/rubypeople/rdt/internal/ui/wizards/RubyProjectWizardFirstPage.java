@@ -48,7 +48,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Group;
@@ -81,53 +80,6 @@ import org.rubypeople.rdt.ui.RubyUI;
 public class RubyProjectWizardFirstPage extends WizardPage {
 	
 	/**
-	 * When we create new RubyProject we must also choose AWE Project that will contain
-	 * this Ruby Project
-	 * 
-	 * @author Lagutko_N
-	 *
-	 */
-	
-	private final class AWEProjectNameGroup extends Observable implements IDialogFieldListener {
-	
-		protected final ComboDialogField fAWEProjectName;
-		
-		public AWEProjectNameGroup(Composite composite) {
-			final Composite nameComposite= new Composite(composite, SWT.NONE);
-			nameComposite.setFont(composite.getFont());
-			nameComposite.setLayout(initGridLayout(new GridLayout(2, false), false));
-			nameComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			
-			// text field for project name
-			fAWEProjectName = new ComboDialogField(0);
-			fAWEProjectName.setLabelText("Choose AWE project"); 
-			fAWEProjectName.setDialogFieldListener(this);
-
-			fAWEProjectName.doFillIntoGrid(nameComposite, 2);
-			
-			ArrayList<String> items = new ArrayList<String>();
-			for (IProject project : AWEProjectManager.getAWEProjects()) {
-				items.add(project.getName());
-			}
-			fAWEProjectName.setItems(items.toArray(new String[]{}));
-		}
-
-		public void dialogFieldChanged(DialogField field) {
-			fireEvent();
-		}
-		
-		protected void fireEvent() {
-			setChanged();
-			notifyObservers();
-		}
-		
-		public String getName() {
-			return fAWEProjectName.getText().trim();
-		}
-
-	}
-	
-	/**
 	 * Request a project name. Fires an event whenever the text field is
 	 * changed, regardless of its content.
 	 */
@@ -158,7 +110,8 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 		}
 
 		public String getName() {
-			return fNameField.getText().trim();
+			//Lagutko, 29.06.2009, name of Ruby project contains also name of AWE project
+			return getAWEProjectName() + "." + fNameField.getText().trim();
 		}
 
 		public void postSetFocus() {
@@ -253,7 +206,7 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 		public IPath getLocation() {
 			if (isInWorkspace()) {
 				return Platform.getLocation();
-			}
+			}			
 			return Path.fromOSString(fLocation.getText().trim());
 		}
 
@@ -306,12 +259,12 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 	
 	private final class JREGroup implements Observer, SelectionListener, IDialogFieldListener {
 
-		private final SelectionButtonDialogField fUseDefaultJRE, fUseProjectJRE;
-		private final ComboDialogField fJRECombo;
+		private final SelectionButtonDialogField fUseDefaultJRE;//, fUseProjectJRE;
+		//private final ComboDialogField fJRECombo;
 		private final Group fGroup;
 //		private String[] fComplianceLabels;
 //		private String[] fComplianceData;
-		private final Link fPreferenceLink;
+		//private final Link fPreferenceLink;
 		private IVMInstall[] fInstalledJVMs;
 		
 		public JREGroup(Composite composite) {
@@ -325,40 +278,42 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 			fUseDefaultJRE.setLabelText(getDefaultJVMLabel());
 			fUseDefaultJRE.doFillIntoGrid(fGroup, 2);
 			
-			fPreferenceLink= new Link(fGroup, SWT.NONE);
-			fPreferenceLink.setFont(fGroup.getFont());
-			fPreferenceLink.setText(NewWizardMessages.RubyProjectWizardFirstPage_JREGroup_link_description);
-			fPreferenceLink.setLayoutData(new GridData(GridData.END, GridData.CENTER, false, false));
-			fPreferenceLink.addSelectionListener(this);
-		
-			fUseProjectJRE= new SelectionButtonDialogField(SWT.RADIO);
-			fUseProjectJRE.setLabelText(NewWizardMessages.RubyProjectWizardFirstPage_JREGroup_specific_compliance);
-			fUseProjectJRE.doFillIntoGrid(fGroup, 1);
-			fUseProjectJRE.setDialogFieldListener(this);
-						
-			fJRECombo= new ComboDialogField(SWT.READ_ONLY);
-			fillInstalledJREs(fJRECombo);
-			fJRECombo.setDialogFieldListener(this);
-
-			Combo comboControl= fJRECombo.getComboControl(fGroup);
-			comboControl.setLayoutData(new GridData(GridData.BEGINNING, GridData.CENTER, true, false)); // make sure column 2 is grabing (but no fill)
-			comboControl.setVisibleItemCount(20);
+			//Lagutko, 22.06.2009, deny possibility to choose Ruby VM
+//			fPreferenceLink= new Link(fGroup, SWT.NONE);
+//			fPreferenceLink.setFont(fGroup.getFont());
+//			fPreferenceLink.setText(NewWizardMessages.RubyProjectWizardFirstPage_JREGroup_link_description);
+//			fPreferenceLink.setLayoutData(new GridData(GridData.END, GridData.CENTER, false, false));
+//			fPreferenceLink.addSelectionListener(this);
+//		
+//			fUseProjectJRE= new SelectionButtonDialogField(SWT.RADIO);
+//			fUseProjectJRE.setLabelText(NewWizardMessages.RubyProjectWizardFirstPage_JREGroup_specific_compliance);
+//			fUseProjectJRE.doFillIntoGrid(fGroup, 1);
+//			fUseProjectJRE.setDialogFieldListener(this);
+//						
+//			fJRECombo= new ComboDialogField(SWT.READ_ONLY);
+//			fillInstalledJREs(fJRECombo);
+//			fJRECombo.setDialogFieldListener(this);
+//
+//			Combo comboControl= fJRECombo.getComboControl(fGroup);
+//			comboControl.setLayoutData(new GridData(GridData.BEGINNING, GridData.CENTER, true, false)); // make sure column 2 is grabing (but no fill)
+//			comboControl.setVisibleItemCount(20);
 			
 			DialogField.createEmptySpace(fGroup);
 			
 			fUseDefaultJRE.setSelection(true);
-			fJRECombo.setEnabled(fUseProjectJRE.isSelected());
+			//fJRECombo.setEnabled(fUseProjectJRE.isSelected());
 		}
 
 		private void fillInstalledJREs(ComboDialogField comboField) {
 			String selectedItem= null;
 			int selectionIndex= -1;
-			if (fUseProjectJRE.isSelected()) {
-				selectionIndex= comboField.getSelectionIndex();
-				if (selectionIndex != -1) {//paranoia
-					selectedItem= comboField.getItems()[selectionIndex];
-				}
-			}
+			//Lagutko, 22.06.2009, deny possibility to choose Ruby VM
+//			if (fUseProjectJRE.isSelected()) {
+//				selectionIndex= comboField.getSelectionIndex();
+//				if (selectionIndex != -1) {//paranoia
+//					selectedItem= comboField.getItems()[selectionIndex];
+//				}
+//			}
 			
 			fInstalledJVMs= getWorkspaceJREs();
 			Arrays.sort(fInstalledJVMs, new Comparator() {
@@ -398,12 +353,13 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 			for (int i= 0; i < fInstalledJVMs.length; i++) {
 				items[i] = fInstalledJVMs[i].getName();
 			}
-			fJRECombo.setItems(items);
-			if (selectionIndex == -1) {
-				fJRECombo.selectItem(getDefaultJVMName());
-			} else {
-				fJRECombo.selectItem(selectedItem);
-			}
+			//Lagutko, 22.06.2009, deny possibility to choose Ruby VM
+//			fJRECombo.setItems(items);
+//			if (selectionIndex == -1) {
+//				fJRECombo.selectItem(getDefaultJVMName());
+//			} else {
+//				fJRECombo.selectItem(selectedItem);
+//			}
 		}
 		
 		private IVMInstall[] getWorkspaceJREs() {
@@ -435,12 +391,12 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 		}
 
 		private void updateEnableState() {
-			final boolean detect= fDetectGroup.mustDetect();
-			fUseDefaultJRE.setEnabled(!detect);
-			fUseProjectJRE.setEnabled(!detect);
-			fJRECombo.setEnabled(!detect && fUseProjectJRE.isSelected());
-			fPreferenceLink.setEnabled(!detect);
-			fGroup.setEnabled(!detect);
+//			final boolean detect= fDetectGroup.mustDetect();
+//			fUseDefaultJRE.setEnabled(!detect);
+//			fUseProjectJRE.setEnabled(!detect);
+//			fJRECombo.setEnabled(!detect && fUseProjectJRE.isSelected());
+//			fPreferenceLink.setEnabled(!detect);
+//			fGroup.setEnabled(!detect);
 		}
 		
 		/* (non-Javadoc)
@@ -465,8 +421,8 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 		}
 		
 		public void handlePossibleJVMChange() {
-			fUseDefaultJRE.setLabelText(getDefaultJVMLabel());
-			fillInstalledJREs(fJRECombo);
+//			fUseDefaultJRE.setLabelText(getDefaultJVMLabel());
+//			fillInstalledJREs(fJRECombo);
 		}
 		
 
@@ -479,16 +435,17 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 		}
 		
 		public boolean isUseSpecific() {
-			return fUseProjectJRE.isSelected();
+//			return fUseProjectJRE.isSelected();
+			return true;
 		}
 		
 		public IVMInstall getSelectedJVM() {
-			if (fUseProjectJRE.isSelected()) {
-				int index= fJRECombo.getSelectionIndex();
-				if (index >= 0 && index < fInstalledJVMs.length) { // paranoia
-					return fInstalledJVMs[index];
-				}
-			}
+//			if (fUseProjectJRE.isSelected()) {
+//				int index= fJRECombo.getSelectionIndex();
+//				if (index >= 0 && index < fInstalledJVMs.length) { // paranoia
+//					return fInstalledJVMs[index];
+//				}
+//			}
 			return null;
 		}
 		
@@ -668,22 +625,31 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 	private JREGroup fJREGroup;
 	private DetectGroup fDetectGroup;
 	private Validator fValidator;
-	private AWEProjectNameGroup fAWEProject;
 
 	private String fInitialName;
+	
+	//Lagutko, 25.06.2009, variable for name of AWE Project
+	private String fAWEProjectName;
+	
+	//Lagutko, 25.06.2009, default name of RubyProject
+	private final String DEFAULT_NAME = "AWEScript";
 	
 	private static final String PAGE_NAME= NewWizardMessages.RubyProjectWizardFirstPage_page_pageName; 
 
 	/**
 	 * Create a new <code>SimpleProjectFirstPage</code>.
+	 * 
 	 */
 	public RubyProjectWizardFirstPage() {
 		super(PAGE_NAME);
-		setPageComplete(false);
+		//Lagutko. 25.06.2009, page is complete
+		setPageComplete(true);
 		setTitle(NewWizardMessages.RubyProjectWizardFirstPage_page_title); 
-		setDescription(NewWizardMessages.RubyProjectWizardFirstPage_page_description); 
-		fInitialName= ""; //$NON-NLS-1$
+		setDescription(NewWizardMessages.RubyProjectWizardFirstPage_page_description);
+		//Lagutko, 25.06.2009, set default RubyProject name
+		fInitialName= DEFAULT_NAME; //$NON-NLS-1$
 		initializeDefaultVM();
+		
 	}
 	
 	private void initializeDefaultVM() {
@@ -707,8 +673,6 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 
 		// create UI elements
 		fNameGroup= new NameGroup(composite, fInitialName);
-		
-		fAWEProject = new AWEProjectNameGroup(composite);
 		
 		fLocationGroup= new LocationGroup(composite);
 		fJREGroup= new JREGroup(composite);
@@ -761,7 +725,7 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 	 * 
 	 * @return the new project resource handle
 	 */
-	public IProject getProjectHandle() {
+	public IProject getProjectHandle() {		
 		return ResourcesPlugin.getWorkspace().getRoot().getProject(fNameGroup.getName());
 	}
 	
@@ -773,8 +737,23 @@ public class RubyProjectWizardFirstPage extends WizardPage {
 		return fNameGroup.getName();
 	}
 	
+	/**
+	 * Set name of AWE project, if name is null than computes name of default project
+	 * 
+	 * @param name
+	 * @author Lagutko_N
+	 */
+	
+	public void setAWEProjectName(String name) {		
+		if (name == null) {
+			name = AWEProjectManager.getActiveProjectName();
+		}
+		
+		fAWEProjectName = name;
+	}
+	
 	public String getAWEProjectName() {
-		return fAWEProject.getName();
+		return fAWEProjectName;
 	}
 
 	public boolean getDetect() {

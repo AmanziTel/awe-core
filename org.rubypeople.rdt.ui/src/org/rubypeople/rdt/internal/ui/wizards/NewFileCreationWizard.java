@@ -19,7 +19,7 @@ import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.internal.ui.RubyPluginImages;
 import org.rubypeople.rdt.ui.wizards.NewFileWizardPage;
 
-public class NewFileCreationWizard extends NewElementWizard {
+public class NewFileCreationWizard extends NewRubyElementCreationWizard {
 
 	protected NewFileWizardPage fPage;
 	

@@ -8,8 +8,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.ui.PlatformUI;
-import org.rubypeople.rdt.internal.ui.IRubyHelpContextIds;
 import org.rubypeople.rdt.ui.actions.AbstractOpenWizardAction;
 
 public class NewScriptWizardAction extends AbstractOpenWizardAction implements IWorkbenchWindowActionDelegate  {

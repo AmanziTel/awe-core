@@ -12,6 +12,7 @@
    <extension-point id="terminals" name="%terminals" schema="schema/terminals.exsd"/>
    <extension-point id="vmConnectors" name="%vmConnectors" schema="schema/vmConnectors.exsd"/>
    
+   <!-- Lagutko, 22.06.2009, we don't have standard VM types 
    <extension
          point="org.rubypeople.rdt.launching.vmInstallTypes">
       <vmInstallType
@@ -26,18 +27,19 @@
             class="org.rubypeople.rdt.internal.launching.RubiniusVMType"
             id="org.rubypeople.rdt.launching.RubiniusVMType">
 	  </vmInstallType>
-   </extension>   
-   <extension
-         point="org.eclipse.debug.core.launchConfigurationTypes">
+   </extension>   -->
+      <!-- Lagutko, 12.06.2009, we don't need standard RDT debug configuration
+      <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">               
       <launchConfigurationType
             delegate="org.rubypeople.rdt.launching.RubyLaunchDelegate"
             id="org.rubypeople.rdt.launching.LaunchConfigurationTypeRubyApplication"
             migrationDelegate="org.rubypeople.rdt.internal.launching.RubyMigrationDelegate"
-            modes="run,debug,profile"
-            name="%LaunchConfigurationTypeRubyApplication.name"
-            public="true"
+            modes="run"
+            name="%LaunchConfigurationTypeRubyApplication.name"            
+            public="false"
             sourceLocatorId="org.rubypeople.rdt.debug.ui.rubySourceLocator">
-      </launchConfigurationType>
+      </launchConfigurationType>      
       <launchConfigurationType
             delegate="org.rubypeople.rdt.internal.launching.RemoteRubyLaunchConfigurationDelegate"
             id="org.rubypeople.rdt.launching.remoteRubyApplication"
@@ -46,7 +48,7 @@
             name="%remoteRubyApplication"
             sourceLocatorId="org.rubypeople.rdt.debug.ui.rubySourceLocator">
       </launchConfigurationType>
-   </extension>
+   </extension>  -->
    <extension
          point="org.rubypeople.rdt.core.loadpathVariableInitializer">
       <loadpathVariableInitializer

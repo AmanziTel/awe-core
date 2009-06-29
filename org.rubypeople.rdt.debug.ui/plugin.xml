@@ -11,13 +11,13 @@
             id="org.rubypeople.rdt.debug.ui.DisplayView">
       </view>
     </extension>
-	<extension point="org.eclipse.ui.preferencePages">
+	<!--<extension point="org.eclipse.ui.preferencePages">
 		<page name="%PreferencePage.RubyInterpreter.name"
 			category="org.rubypeople.rdt.ui.preferences.PreferencePageRubyBase"
 			class="org.rubypeople.rdt.internal.debug.ui.preferences.RubyInterpreterPreferencePage"
 			id="org.rubypeople.rdt.debug.ui.preferences.PreferencePageRubyInterpreter">
 		</page>
-	</extension>
+	</extension>-->
 	<extension point="org.eclipse.ui.preferencePages">
 		<page name="%PreferencePage.EvaluationExpressions.name"
 			category="org.rubypeople.rdt.ui.preferences.PreferencePageRubyBase"
@@ -60,6 +60,7 @@
 			id="org.rubypeople.rdt.debug">
 		</debugModelPresentation>
 	</extension>
+	<!-- Lagutko, 23.06.2009, Debug disabled so we don't need breakpoints 
 	<extension point="org.eclipse.ui.popupMenus">
 		<viewerContribution
 			targetID="org.rubypeople.rdt.ui.rubyeditor.rulerContextMenu"
@@ -69,7 +70,7 @@
 				menubarPath="debug" id="ManageBreakpointRulerActionDelegate">
 			</action>
 		</viewerContribution>
-	</extension>
+	</extension> -->
 	<extension point="org.eclipse.debug.core.sourceLocators">
 		<sourceLocator name="RubySourceLocator"
 			class="org.rubypeople.rdt.internal.debug.ui.RubySourceLocator"
@@ -141,11 +142,11 @@
 			parentId="org.eclipse.debug.ui.debugging">
 		</context>
 	</extension>
-	<extension point="org.eclipse.debug.ui.debugModelContextBindings">
+	<!-- <extension point="org.eclipse.debug.ui.debugModelContextBindings">
 		<modelContextBinding debugModelId="org.rubypeople.rdt.debug"
 			contextId="org.rubypeople.rdt.debug.ui.debugging">
 		</modelContextBinding>
-	</extension>
+	</extension> -->
 	<extension point="org.eclipse.ui.popupMenus">
 		<viewerContribution
 			targetID="org.rubypeople.rdt.ui.rubyeditor.contextMenu"
@@ -208,13 +209,14 @@
 			</action>
 		</viewerContribution>
 	</extension>
-	<extension point="org.eclipse.debug.ui.consoleLineTrackers">
+	<!-- <extension point="org.eclipse.debug.ui.consoleLineTrackers">
 		<consoleLineTracker
 			class="org.rubypeople.rdt.internal.debug.ui.console.RubyConsoleTracker"
 			processType="ruby"
 			id="org.rubypeople.rdt.debug.ui.RubyConsoleTracker">
 		</consoleLineTracker>
-	</extension>
+	</extension> -->
+	<!-- Lagutko, 12.06.2009, we don't need standart RDT run configuration 
 	<extension point="org.eclipse.debug.ui.launchShortcuts">
 		<shortcut label="%RubyApplicationShortcut.label"
 			icon="icons/full/ctool16/run_ruby.gif"
@@ -252,8 +254,8 @@
 			<perspective id="org.rubypeople.rdt.ui.PerspectiveRuby">
 			</perspective>
 		</shortcut>
-	</extension>
-	<extension point="org.eclipse.ui.commands">
+	</extension> -->	
+	<!--<extension point="org.eclipse.ui.commands">
 		<command name="%ContextualRunRubyApplication.label"
 			description="%ContextualRunRubyApplication.label"
 			categoryId="org.eclipse.debug.ui.category.run"
@@ -264,7 +266,7 @@
 			categoryId="org.eclipse.debug.ui.category.run"
 			id="org.rubypeople.rdt.debug.ui.RubyShortcut.debug">
 		</command>
-  <command
+  	<command
         categoryId="org.eclipse.debug.ui.category.run"
         id="org.rubypeople.rdt.debug.ui.commands.ModifyCatchpoint"
         name="Add Ruby Exception Breakpoint"/>
@@ -276,7 +278,7 @@
 		<key sequence="M3+M2+X R"
 			commandId="org.rubypeople.rdt.debug.ui.RubyShortcut.run"
 			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-	</extension>
+	</extension> -->
 	
 	<extension point="org.rubypeople.rdt.ui.editorPopupExtender">
 		<rubyEditorPopupMenuExtension
