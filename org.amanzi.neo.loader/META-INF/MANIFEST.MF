@@ -9,3 +9,4 @@ Require-Bundle: org.eclipse.ui,
  org.neo4j.neoclipse
 Eclipse-LazyStart: false
 Bundle-Vendor: AmanziTel AB
+Bundle-ClassPath: bin/
