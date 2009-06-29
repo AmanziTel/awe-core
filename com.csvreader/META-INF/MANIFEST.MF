@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: CSV Reader Plug-in
-Bundle-SymbolicName: com.csvreader
-Bundle-Version: 2.0
-Bundle-ClassPath: javacsv.jar
-Bundle-Vendor: csvreader.com
-Export-Package: com.csvreader
