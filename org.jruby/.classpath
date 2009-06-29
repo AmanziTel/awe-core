@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/bsf.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/profile.jar"/>
+	<classpathentry kind="lib" path="build_lib/apt-mirror-api.jar"/>
+	<classpathentry kind="lib" path="build_lib/backport-util-concurrent.jar"/>
+	<classpathentry kind="lib" path="build_lib/bnd-0.0.249.jar"/>
+	<classpathentry kind="lib" path="build_lib/constantine.jar"/>
+	<classpathentry kind="lib" path="build_lib/dynalang-0.3.jar"/>
+	<classpathentry kind="lib" path="build_lib/emma_ant.jar"/>
+	<classpathentry kind="lib" path="build_lib/emma.jar"/>
+	<classpathentry kind="lib" path="build_lib/invokedynamic.jar"/>
+	<classpathentry kind="lib" path="build_lib/jarjar-1.0rc8.jar"/>
+	<classpathentry kind="lib" path="build_lib/jcodings.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi.jar"/>
+	<classpathentry kind="lib" path="build_lib/jline-0.9.93.jar"/>
+	<classpathentry kind="lib" path="build_lib/jna.jar"/>
+	<classpathentry kind="lib" path="build_lib/jna-posix.jar"/>
+	<classpathentry kind="lib" path="build_lib/joda-time-1.5.1.jar"/>
+	<classpathentry kind="lib" path="build_lib/joni.jar"/>
+	<classpathentry kind="lib" path="build_lib/junit.jar"/>
+	<classpathentry kind="lib" path="build_lib/jvyamlb-0.2.5.jar"/>
+	<classpathentry kind="lib" path="build_lib/retroweaver-2.0.5.jar"/>
+	<classpathentry kind="lib" path="build_lib/retroweaver-rt-2.0.5.jar"/>
+	<classpathentry kind="lib" path="build_lib/yydebug.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="build_lib/asm-util-3.0.jar"/>
+	<classpathentry kind="lib" path="build_lib/asm-commons-3.0.jar"/>
+	<classpathentry kind="lib" path="build_lib/asm-3.0.jar"/>
+	<classpathentry kind="lib" path="build_lib/asm-tree-3.0.jar"/>
+	<classpathentry kind="lib" path="build_lib/asm-analysis-3.0.jar"/>
+	<classpathentry kind="lib" path="build_lib/bytelist-1.0.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="lib" path="lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/jta-spec1_0_1.jar"/>
+	<classpathentry kind="lib" path="lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/neo-1.0-b7.jar"/>
+	<classpathentry kind="lib" path="lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/shell-1.0-b7.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
