@@ -48,7 +48,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import java.util.zip.ZipException;
-import org.jruby.CompatVersion;
+
+import org.eclipse.core.runtime.FileLocator;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyFile;
@@ -60,8 +61,6 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.Constants;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.JRubyFile;
-
-import sun.net.www.protocol.mailto.MailToURLConnection;
 
 /**
  * <b>How require works in JRuby</b>
@@ -952,6 +951,16 @@ public class LoadService {
             
             // otherwise, try to load from classpath (Note: Jar resources always uses '/')
             URL loc = classLoader.getResource(entry + "/" + name);
+            
+            //Lagutko, 29.06.2009, compute full path from bundle-dependent path
+            if (loc != null) {
+            	try {
+            		loc = FileLocator.resolve(loc);
+            	}
+            	catch (IOException e) {
+            	
+            	}
+            }
 
             // Make sure this is not a directory or unavailable in some way
             if (isRequireable(loc)) {
@@ -966,6 +975,16 @@ public class LoadService {
         // "./A/b.rb" in a jar file.
         URL loc = classLoader.getResource(name);
         
+        //Lagutko, 29.06.2009, compute full path from bundle-dependent path
+        if (loc != null) {
+        	try {
+        		loc = FileLocator.resolve(loc);
+        	}
+        	catch (IOException e) {
+        	
+        	}
+        }
+
         return isRequireable(loc) ? new LoadServiceResource(loc, loc.getPath()) : null;
     }
     

@@ -518,7 +518,25 @@ Export-Package: org.jruby;version="1.2.0";
    org.jruby.exceptions,
    org.jruby.javasupport.util,
    org.jruby.runtime,
-   org.jruby"
+   org.jruby",
+ org.neo4j.api.core,
+ org.neo4j.impl,
+ org.neo4j.impl.cache,
+ org.neo4j.impl.core,
+ org.neo4j.impl.event,
+ org.neo4j.impl.nioneo.store,
+ org.neo4j.impl.nioneo.util,
+ org.neo4j.impl.nioneo.xa,
+ org.neo4j.impl.persistence,
+ org.neo4j.impl.shell,
+ org.neo4j.impl.shell.apps,
+ org.neo4j.impl.transaction,
+ org.neo4j.impl.transaction.xaframework,
+ org.neo4j.impl.traversal,
+ org.neo4j.impl.util,
+ org.neo4j.util.shell,
+ org.neo4j.util.shell.apps,
+ org.neo4j.util.shell.apps.extra
 Bundle-Version: 1.2.0
 Ignore-Package: org.jruby.ast.visitor.rewriter,org.jruby.javasupport,o
  rg.jruby.ast.executable,org.jruby.compiler,org.jruby.ast.visitor,org.
@@ -619,6 +637,9 @@ Bundle-ClassPath: .,
  build_lib/retroweaver-rt-2.0.5.jar,
  build_lib/yydebug.jar,
  lib/bsf.jar,
- lib/profile.jar
+ lib/profile.jar,
+ lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/jta-spec1_0_1.jar,
+ lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/neo-1.0-b7.jar,
+ lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/shell-1.0-b7.jar
 Require-Bundle: org.eclipse.core.runtime
 
