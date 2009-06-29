@@ -508,7 +508,7 @@ public class NeoGraphMenu
      */
     private void nodeSpaceActions( final IToolBarManager tm )
     {
-    	tm.add(propertiesAction);
+    	
         tm.add( deleteAction );
         tm.add( SEPARATOR );
     }
@@ -534,7 +534,7 @@ public class NeoGraphMenu
      */
     private void contributeTransactionActions( final IToolBarManager tm )
     {
-    	tm.add(propertiesAction);
+    	
         tm.add( commitAction );
         tm.add( rollbackAction );
         tm.add( SEPARATOR );
@@ -548,7 +548,7 @@ public class NeoGraphMenu
     private void contributeNavigationActions( final IToolBarManager tm )
     {
         {
-        	tm.add(propertiesAction);
+        
             tm.add( backAction );
             tm.add( forwardAction );
 
@@ -568,7 +568,7 @@ public class NeoGraphMenu
     private void contributeRecursionLevelActions( final IToolBarManager tm )
     {
         {
-        	tm.add(propertiesAction);
+        
             tm.add( incAction );
 
             tm.add( decAction );
@@ -586,7 +586,7 @@ public class NeoGraphMenu
     {
         {
             ZoomAction zoomAction = new ZoomAction( graphView );
-            tm.add(propertiesAction);
+            //tm.add(propertiesAction);
             tm.add( zoomAction );
             tm.add( SEPARATOR );
         }

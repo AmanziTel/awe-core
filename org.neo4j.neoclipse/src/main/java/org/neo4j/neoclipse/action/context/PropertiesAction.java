@@ -8,8 +8,8 @@ import org.neo4j.neoclipse.action.Actions;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
 /**
- * Action to delete a node or relationship.
- * @author Anders Nawroth
+ * Action to Properties a node or relationship.
+ * @author Ahmed Abdelsalam
  */
 public class PropertiesAction extends AbstractGraphAction
 {
