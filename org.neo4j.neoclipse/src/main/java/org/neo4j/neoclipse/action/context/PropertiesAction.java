@@ -8,7 +8,7 @@ import org.neo4j.neoclipse.action.Actions;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
 /**
- * Action to Properties a node or relationship.
+ * Action to open the properties editor for a node or relationship.
  * @author Ahmed Abdelsalam
  */
 public class PropertiesAction extends AbstractGraphAction
