@@ -18,6 +18,8 @@ public class Spreadsheet {
 	private SplashTableModel model;
 	private String currentProject;
 	private String currentFile;
+	private boolean isSaved;
+	
 	
 	/**
 	 * Constructor for Spreadsheet
@@ -64,6 +66,8 @@ public class Spreadsheet {
 		model.interpret(newFormula, oldFormula, row, column);
 		
 		model.updateCellsAndTableModelReferences(row, column, oldFormula, newFormula);
+		
+		isSaved = false;
 	}
 	
 	/**
@@ -74,6 +78,17 @@ public class Spreadsheet {
 		if (currentFile != null) {
 			Util.saveTable(model, currentProject, currentFile);
 		}
+		isSaved = true;
+	}
+	
+	/**
+	 * Is this spreadsheet was saved?
+	 * 
+	 * @return
+	 */
+	
+	public boolean isSaved() {
+		return isSaved;
 	}
 
 }

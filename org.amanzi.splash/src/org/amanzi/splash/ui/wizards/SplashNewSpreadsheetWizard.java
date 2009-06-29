@@ -1,5 +1,6 @@
 package org.amanzi.splash.ui.wizards;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.splash.utilities.Util;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -15,7 +16,6 @@ import org.eclipse.core.runtime.CoreException;
 import java.io.*;
 
 import org.eclipse.ui.*;
-import org.eclipse.ui.ide.IDE;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -103,18 +103,17 @@ public class SplashNewSpreadsheetWizard extends Wizard implements INewWizard {
 
 	private void doFinish(
 		String containerName,
-		String fileName,
+		final String fileName,
 		IProgressMonitor monitor)
 		throws CoreException {
 		// create a sample file
 		monitor.beginTask("Creating " + fileName, 2);
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		IResource resource = root.findMember(new Path(containerName));
+		final IProject resource = root.getProject(containerName);
 		if (!resource.exists() || !(resource instanceof IContainer)) {
 			throwCoreException("Container \"" + containerName + "\" does not exist.");
-		}
-		IContainer container = (IContainer) resource;
-		final IFile file = container.getFile(new Path(fileName));
+		}		
+		final IFile file = resource.getFile(new Path(fileName));
 		try {
 			InputStream stream = getInitialContents();
 			if (file.exists()) {
@@ -132,6 +131,10 @@ public class SplashNewSpreadsheetWizard extends Wizard implements INewWizard {
 				IWorkbenchPage page =
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 				//IDE.openEditor(page, file, Util.AMANZI_SPLASH_EDITOR);
+				
+				//Lagutko, 29.06.2009, create Spreadsheet also for uDIG project structure
+				AWEProjectManager.createSpreadsheet(resource, fileName, file);
+				
 				Util.openSpreadsheet(PlatformUI.getWorkbench(), file);
 			}
 		});

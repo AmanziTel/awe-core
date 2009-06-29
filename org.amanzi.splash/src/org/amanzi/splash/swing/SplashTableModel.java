@@ -137,7 +137,7 @@ public class SplashTableModel extends DefaultTableModel
 			path = scriptURL.getPath();
 		}
 		else{
-			path ="/home/amabdelsalam/Desktop/amanzi/jrss/org.amanzi.splash/jruby.rb";	
+			path ="D:/projects/AWE from SVN/org.amanzi.splash/jruby.rb";	
 		}
 
 

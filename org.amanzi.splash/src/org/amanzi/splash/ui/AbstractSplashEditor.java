@@ -29,6 +29,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
@@ -42,6 +43,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import org.amanzi.rdt.launching.util.LaunchUtils;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.ColumnHeaderRenderer;
 import org.amanzi.splash.swing.RowHeaderRenderer;
@@ -172,15 +174,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	/**
 	 * Updates value of Cell from referenced script
 	 * 
-	 * @param rowIndex row index
-	 * @param columnIndex column index
+	 * @param cell Cell to export
 	 * @author Lagutko_N
 	 */
 
-	private void updateCell(int rowIndex, int columnIndex) {
-		//get selected cell and update value of cell
-		Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
-
+	private void updateCell(final Cell cell) {
 		//if Cell has no reference script than it cannot be update
 		if (!cell.hasReference()) {
 			//TODO: add error message
@@ -193,13 +191,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	/**
 	 * Opens referenced script in editor
 	 * 
-	 * @param rowIndex row index
-	 * @param columnIndex column index
+	 * @param cell cell to export
 	 * @author Lagutko_N
 	 */
 
-	private void openCell(int rowIndex, int columnIndex) {
-		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
+	private void openCell(final Cell cell) {
 		final Display display = swingControl.getDisplay();
 
 		//if Cell has no references to script than it cannot be open
@@ -234,15 +230,13 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 	/**
 	 * Method that exports cell to script 
-	 * 
-	 * @param rowIndex row index of cell
-	 * @param columnIndex column index of cell
+	 *
+	 * @param Cell cell to export
 	 * @author Lagutko_N
 	 */
 
-	private void exportCell(int rowIndex, int columnIndex) {		
+	private void exportCell(final Cell cell) {		
 		//get Cell and Display
-		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);		
 		final Display display = swingControl.getDisplay();
 
 		//run ExportScriptWizard
@@ -271,7 +265,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowColumnPopup(MouseEvent e){
-		if (e.isPopupTrigger() && table.isEnabled()) {
+		//Lagutko, 16.06.2009, isPopupTrigger doesn't work correctly for Windows systems
+		if (/*e.isPopupTrigger() &&*/ table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -301,7 +296,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowRowPopup(MouseEvent e){
-		if (e.isPopupTrigger() && table.isEnabled()) {
+		//Lagutko, 16.06.2009, isPopupTrigger doesn't work correctly for Windows systems
+		if (/*e.isPopupTrigger() &&*/ table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -331,7 +327,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowPopup(MouseEvent e) {
-		if (e.isPopupTrigger() && table.isEnabled()) {
+		//Lagutko, 16.06.2009, isPopupTrigger doesn't work correctly for Windows systems
+		if (/*e.isPopupTrigger() &&*/ table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -958,6 +955,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	private JPopupMenu createContextMenu(final int rowIndex,
 			final int columnIndex) {
 		JPopupMenu contextMenu = new JPopupMenu();
+		
+		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
 
 		JMenuItem cellCopyMenu = new JMenuItem();
 		cellCopyMenu.setText("Copy \t\t Ctrl+C");
@@ -994,10 +993,44 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 		contextMenu.add(cellFormattingMenu);
+		
+		//Lagutko, 16.06.2009, new menu items for integration with RDT
+		
+		JSeparator separator = new JSeparator();
+		contextMenu.add(separator);
+		
+		if (!cell.hasReference()) {
+			JMenuItem exportCellMenu = new JMenuItem();
+			exportCellMenu.setText("Export Cell");
+			exportCellMenu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					exportCell(cell);
+				}
+			});
+			contextMenu.add(exportCellMenu);
+		}
+		else {		
+			JMenuItem openCellMenu = new JMenuItem();
+			openCellMenu.setText("Open Cell");
+			openCellMenu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					openCell(cell);
+				}
+			});
+			contextMenu.add(openCellMenu);
+		
+			JMenuItem updateCellMenu = new JMenuItem();
+			updateCellMenu.setText("Update Cell");
+			updateCellMenu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					updateCell(cell);
+				}
+			});
+			contextMenu.add(updateCellMenu);
+		}
+		
 		return contextMenu;
 	}
-
-
 
 	public boolean isEnabled() {
 		return enabled;

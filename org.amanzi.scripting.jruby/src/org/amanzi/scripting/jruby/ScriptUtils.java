@@ -2,9 +2,13 @@ package org.amanzi.scripting.jruby;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
 
 /**
  * This utility class has some static methods for investigating the environment
@@ -99,7 +103,13 @@ public class ScriptUtils {
 	/** return JRubyHome, searching for it if necessary */
 	private String ensureJRubyHome() {
 		if(jRubyHome==null){
-			jRubyHome = ScriptUtils.findJRubyHome(System.getProperty("jruby.home"));
+			try {
+				jRubyHome = ScriptUtils.findJRubyHome(System.getProperty("jruby.home"));
+			}
+			catch (IOException e) {
+				//TODO: handle this exception
+				e.printStackTrace();				
+			}
 		}
 		return(jRubyHome);
 	}
@@ -113,10 +123,12 @@ public class ScriptUtils {
 	}
 
 	/** search for jruby home, starting with passed value, if any */
-	private static String findJRubyHome(String suggested) {
+	private static String findJRubyHome(String suggested) throws IOException {
 		String jRubyHome = null;
-		String userDir = System.getProperty("user.home");
-		for (String path : new String[] { suggested,
+		String userDir = System.getProperty("user.home");	
+		//Lagutko, 22.06.2009, since now we search ruby home only in org.jruby plugin		
+		for (String path : new String[] { FileLocator.resolve(Platform.getBundle("org.jruby").getEntry(".")).getFile() /*suggested,
+				Platform.getBundle("org.jruby").getLocation(),
 				".",
 				"C:/Program Files/JRuby",
 				"/usr/lib/jruby",
@@ -133,13 +145,15 @@ public class ScriptUtils {
 				userDir+"/dev/jruby-1.1.2",
 				userDir+"/dev/jruby-1.1.1",
 				userDir+"/dev/jruby-1.1",
-				userDir+"/dev/jruby-1.1RC1"
+				userDir+"/dev/jruby-1.1RC1"*/
 		}) {
 			try {
-				if ((new java.io.File(path+"/lib")).isDirectory() && (new java.io.File(path+"/lib/jruby.jar")).exists()) {
+				//Lagutko, 22.06.2009, JRuby path contains source files but not a JAR
+				/*if ((new java.io.File(path+"/lib")).isDirectory() && (new java.io.File(path+"/lib/jruby.jar")).exists()) {
 					jRubyHome = path;
 					break;
-				}
+				}*/
+				jRubyHome = path;
 			} catch (Exception e) {
 				System.err
 						.println("Failed to process possible JRuby path '"
