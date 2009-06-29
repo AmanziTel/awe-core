@@ -62,7 +62,7 @@ public class RubyConsole extends ViewPart {
             try{
             	// TODO: Check if 'buddy class loading' is required for this, since the plugins are not explicitly specified as dependencies
             	addExtraGlobal("json_reader_class", Class.forName("org.amanzi.awe.catalog.json.JSONReader"));
-            	addExtraGlobal("neo_reader_class", Class.forName("org.amanzi.awe.catalog.neo.NeoReader"));
+            	addExtraGlobal("neo_reader_class", Class.forName("org.amanzi.awe.catalog.neo.actions.NeoReader"));
             }catch(ClassNotFoundException e){
             	System.err.println("Cannot find possible FeatureSource class: "+e.getMessage());
             	//e.printStackTrace(System.err);
