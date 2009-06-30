@@ -128,10 +128,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="RubyProject" eSuperTypes="#//ProjectElement #//IRubyProject">
     <eStructuralFeatures xsi:type="ecore:EReference" name="rubyElementsInternal" upperBound="-1"
         eType="#//RubyProjectElement" eOpposite="#//RubyProjectElement/rubyProjectInternal"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="loadpathFile" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="projectFile" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Project" eSuperTypes="#//IProject">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -150,7 +146,10 @@
         eOpposite="#//Project/elementsInternal"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RubyFile" eSuperTypes="#//IRubyFile #//ProjectElement #//RubyProjectElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Spreadsheet" eSuperTypes="#//ISpreadsheet #//RubyProjectElement #//ProjectElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Spreadsheet" eSuperTypes="#//ISpreadsheet #//RubyProjectElement #//ProjectElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="spreadsheetFile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral=""/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ProjectRegistry">
     <eOperations name="getProject" eType="#//Project">
       <eParameters name="uri" eType="#//URI"/>
