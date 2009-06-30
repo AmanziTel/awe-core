@@ -101,12 +101,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * Class constructor
 	 */
 	public AbstractSplashEditor() {
-		//IStorageEditorInput sei = (IStorageEditorInput) getEditorInput();
-		//splashID = sei.getName();
-		splashID = "SP1";
-		Util.logn("splashID = " + splashID);
-		table = new SplashTable(splashID);
-		table.getModel().addTableModelListener(this);
+		
+		
 	}
 
 	public SplashTable getTable(){
@@ -643,6 +639,12 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @see org.eclipse.ui.IWorkbenchPart#createPartControl(Composite)
 	 */
 	public void createPartControl(final Composite parent) {
+		IStorageEditorInput sei = (IStorageEditorInput) getEditorInput();
+		splashID = sei.getName().replace(".jrss", "");
+		Util.logn("splashID = " + splashID);
+		table = new SplashTable(splashID);
+		table.getModel().addTableModelListener(this);
+		
 		createTable(parent);
 		//table.setModel(tableModel);
 	}

@@ -97,6 +97,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 
         is = sei.getStorage().getContents();
         
+        Util.logn("sei.getName = " + sei.getName());
         
         //tableModel = new SplashTableModel();
         //getTable().tableFormat = tableModel.tableFormat;

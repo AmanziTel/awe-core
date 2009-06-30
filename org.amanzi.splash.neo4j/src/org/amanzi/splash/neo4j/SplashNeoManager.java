@@ -8,7 +8,9 @@ import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.utilities.Util;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
@@ -30,17 +32,17 @@ public class SplashNeoManager{
 	protected NeoService neo;
 	private NeoIndexService splashIndexService;
 	private Transaction tx;
-	
+
 	private String splashID = "";
-	
-	
+
+
 	public SplashNeoManager(String splash_id)
 	{
 		if (neo != null) return;
 		splashID = splash_id;
-		
+
 		startNeoService();
-		
+
 		//neo = org.amanzi.neo4j.Activator.getDefault().getNeo();
 		//indexService = org.amanzi.neo4j.Activator.getDefault().getIndexService();
 	}
@@ -61,39 +63,10 @@ public class SplashNeoManager{
 			// try the resource URI first
 //			String resourceUri = preferenceStore
 //			.getString( NeoPreferences.DATABASE_RESOURCE_URI );
-			
-			String location = ResourcesPlugin.getWorkspace().getRoot() + splashID;//home/amabdelsalam/Desktop/neo";
+
+			String location = Platform.getLocation() + "/neo4j/" + splashID;
 			Util.logn("location: " + location);
-			
-//			if ( (resourceUri != null) && (resourceUri.trim().length() != 0) )
-//			{
-//				// let's try the resource URI
-//				try
-//				{
-//					System.out.println( "Splash: trying remote neo" );
-//					neo = new RemoteNeo( resourceUri );
-//					System.out.println( "Splash: connected to remote neo" );
-//				}
-//				catch ( Exception e )
-//				{
-//					e.printStackTrace();
-//				}
-//			}
-//			else
-//			{
-//				// determine the neo directory from the preferences
-////				String location = preferenceStore
-////				.getString( NeoPreferences.DATABASE_LOCATION );
-//				String location = "/home/amadelsalam/Desktop/neo";
-//				if ( (location == null) || (location.trim().length() == 0) )
-//				{
-//					return;
-//				}
-//				// seems to be a valid directory, try starting neo
-//				neo = new EmbeddedNeo( location );
-//				System.out.println( "Splash: connected to embedded neo" );
-//			}
-			
+
 			neo = new EmbeddedNeo( location );
 			this.splashIndexService = new NeoIndexService( neo );
 			System.out.println( "Splash: connected to embedded neo" );
@@ -107,34 +80,23 @@ public class SplashNeoManager{
 	{
 		if ( neo != null )
 		{
-//			try
-//			{
-//				//tx.failure();
-//				tx.finish();
-//			}
-//			catch ( Exception e )
-//			{
-//				e.printStackTrace();
-//			}
 			try
 			{
 				tx.finish();
 				neo.shutdown();
 				Util.logn("Neo Service Stopped");
-				// notify listeners
-				//fireServiceChangedEvent( NeoServiceStatus.STOPPED );
-				}
+			}
 			finally
 			{
-//				neo = null;
+
 			}
-			
-			
+
+
 		}
 	}
 
 	public Cell getCell(String id){
-		
+
 		Transaction tx = neo.beginTx();
 		Node n = null;
 		Cell cell = null;
@@ -151,24 +113,24 @@ public class SplashNeoManager{
 
 		if (n != null){
 			try{
-			String value = (String) n.getProperty("value");
-			String definition = (String) n.getProperty("definition");
-			CellFormat cf = new CellFormat();
-			cf.setFontName((String) n.getProperty("fontName"));
-			cf.setFontStyle((Integer) n.getProperty("fontStyle"));
-			cf.setFontSize((Integer) n.getProperty("fontSize"));
-			cf.setVerticalAlignment((Integer) n.getProperty("verticalAlignment"));
-			cf.setHorizontalAlignment((Integer) n.getProperty("horizontalAlignment"));
+				String value = (String) n.getProperty("value");
+				String definition = (String) n.getProperty("definition");
+				CellFormat cf = new CellFormat();
+				cf.setFontName((String) n.getProperty("fontName"));
+				cf.setFontStyle((Integer) n.getProperty("fontStyle"));
+				cf.setFontSize((Integer) n.getProperty("fontSize"));
+				cf.setVerticalAlignment((Integer) n.getProperty("verticalAlignment"));
+				cf.setHorizontalAlignment((Integer) n.getProperty("horizontalAlignment"));
 
-			cell = new Cell(Util.getRowIndexFromCellID(id),
-					Util.getColumnIndexFromCellID(id),
-					definition, 
-					value, cf);
-			
-			
-			Util.logn("cell.definition: " + cell.getDefinition());
-			Util.logn("cell.value: " + cell.getValue());
-			
+				cell = new Cell(Util.getRowIndexFromCellID(id),
+						Util.getColumnIndexFromCellID(id),
+						definition, 
+						value, cf);
+
+
+				Util.logn("cell.definition: " + cell.getDefinition());
+				Util.logn("cell.value: " + cell.getValue());
+
 			}catch (Exception ex){
 				cell = new Cell(Util.getRowIndexFromCellID(id),
 						Util.getColumnIndexFromCellID(id),
@@ -232,7 +194,7 @@ public class SplashNeoManager{
 		Transaction tx = neo.beginTx();// neo.beginTx();
 		try{
 			Node n = this.splashIndexService.getSingleNode( "id", id );
-			
+
 			//Util.logn("Updating cell id=" + id + " - value=" + updatedCell.getValue());
 
 			n.setProperty("value", updatedCell.getValue());
@@ -249,7 +211,7 @@ public class SplashNeoManager{
 			//Util.logn("Indexing cell ...");
 			this.splashIndexService.index( n, "id", id );
 			//Util.logn("Finished Indexing cell ...");
-			
+
 			//Util.logn("Finding cell IDs...");
 			List<String> rfdCellsIDs = Util.findComplexCellIDs((String) updatedCell.getDefinition());
 
