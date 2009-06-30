@@ -8,9 +8,6 @@
          <run
                class="org.amanzi.awe.Application">
          </run>
-         <run
-         	   class="org.eclipse.core.resources.ResourcesPlugin">
-         </run>
       </application>
    </extension>
    <extension point="org.eclipse.ui.perspectives">
