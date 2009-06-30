@@ -62,7 +62,7 @@ public class SplashNeoManager{
 //			String resourceUri = preferenceStore
 //			.getString( NeoPreferences.DATABASE_RESOURCE_URI );
 			
-			String location = ResourcesPlugin.getWorkspace().getRoot() + "/" + splashID;//home/amabdelsalam/Desktop/neo";
+			String location = ResourcesPlugin.getWorkspace().getRoot() + splashID;//home/amabdelsalam/Desktop/neo";
 			Util.logn("location: " + location);
 			
 //			if ( (resourceUri != null) && (resourceUri.trim().length() != 0) )

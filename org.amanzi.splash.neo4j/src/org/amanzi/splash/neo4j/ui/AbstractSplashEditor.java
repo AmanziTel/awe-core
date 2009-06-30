@@ -101,8 +101,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * Class constructor
 	 */
 	public AbstractSplashEditor() {
-		IStorageEditorInput sei = (IStorageEditorInput) getEditorInput();
-		splashID = sei.getName();
+		//IStorageEditorInput sei = (IStorageEditorInput) getEditorInput();
+		//splashID = sei.getName();
+		splashID = "SP1";
 		Util.logn("splashID = " + splashID);
 		table = new SplashTable(splashID);
 		table.getModel().addTableModelListener(this);
