@@ -48,7 +48,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import java.util.zip.ZipException;
-
+//TODO: Find a way to get this FileLocator code to work without hard-coded dependency on org.eclipse.core.runtime
+//That will make it easier to merge this back into JRuby core.
 import org.eclipse.core.runtime.FileLocator;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
