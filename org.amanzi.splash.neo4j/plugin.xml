@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+     <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Amanzi: Mini-Spreadsheet"
+            icon="icons/spreadsheet.gif"
+            extensions="jrss"
+            contributorClass="org.amanzi.splash.ui.actions.JRSSEditorActionBarContributor"
+            class="org.amanzi.splash.neo4j.ui.SplashResourceEditor"
+            id="org.amanzi.splash.editor">
+      </editor>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            name="Amanzi"
+            id="com.amanzi">
+      </category>
+      <wizard
+            category="com.amanzi"
+            class="org.amanzi.splash.ui.neo4j.wizards.SplashNewSpreadsheetWizard"
+            icon="icons/spreadsheet.gif"
+            id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard"
+            name="Amanzi Neo4j Splash Spreadsheet">
+      </wizard>
+   </extension>
+   
+   	<extension point= "org.eclipse.ui.perspectiveExtensions">
+		<perspectiveExtension targetID= "org.eclipse.ui.resourcePerspective">
+		<actionSet id="org.eclipse.jdt.ui.JavaActionSet"/>
+		<viewShortcut id="org.eclipse.jdt.ui.PackageExplorer"/>
+		<newWizardShortcut id="org.amanzi.spreadsheet.jrss.editor.ui.wizards.newminispreadsheetwizard"/>
+		<perspectiveShortcut id="org.amanzi.awe.perspective"/>
+		<view id= "org.eclipse.jdt.ui.PackageExplorer" relative="org.eclipse.ui.views.ResourceNavigator" relationship="stack"/>
+		<view id= "org.eclipse.jdt.ui.TypeHierarchy" relative= "org.eclipse.ui.views.ResourceNavigator" relationship= "left" ratio= "0.50" />
+		</perspectiveExtension>
+	</extension>
+
+   
+   
+   
+   
+   
+  
+
+</plugin>
