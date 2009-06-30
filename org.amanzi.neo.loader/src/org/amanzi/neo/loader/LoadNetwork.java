@@ -15,8 +15,13 @@ public class LoadNetwork extends AbstractActionTool {
 		"Microsoft Excel Spreadsheet Files (*.xls)",
 		"All Files (*.*)" };
 	private static final String[] FILTER_EXTS = { "*.csv", "*.sxc", "*.xls", "*.*" };
+	private String directory = null;
 
 	public LoadNetwork() {
+	}
+	
+	public String getDirectory(){
+		return directory;
 	}
 
 	@Override
@@ -29,8 +34,10 @@ public class LoadNetwork extends AbstractActionTool {
 				dlg.setText("Select a file containing network information in CSV format");
 				dlg.setFilterNames(FILTER_NAMES);
 				dlg.setFilterExtensions(FILTER_EXTS);
+				dlg.setFilterPath(directory);
 				final String filename = dlg.open();
 				if (filename != null) {
+					directory = dlg.getFilterPath();
 					display.asyncExec(new Runnable() {
 						public void run() {
 							NetworkLoader networkLoader;

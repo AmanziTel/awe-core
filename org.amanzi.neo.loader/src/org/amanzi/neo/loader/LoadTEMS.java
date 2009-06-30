@@ -50,6 +50,11 @@ public class LoadTEMS extends AbstractActionTool {
 }
 
  class ShowTEMSFileDialog {
+		private String directory = null;
+		public String getDirectory(){
+			return directory;
+		}
+
 	 
 	 Hashtable hashdata;
 	 File[] files;
@@ -96,11 +101,14 @@ public class LoadTEMS extends AbstractActionTool {
       public void widgetSelected(SelectionEvent event) {
         // User has selected to open a single file
         FileDialog dlg = new FileDialog(shell, SWT.OPEN);
+		dlg.setText("Select a file containing TEMS drive test log data in FMT format");
         dlg.setFilterNames(FILTER_NAMES);
         dlg.setFilterExtensions(FILTER_EXTS);
+		dlg.setFilterPath(directory);
         String fn = dlg.open();
       
         if (fn != null) {
+        	directory = dlg.getFilterPath();
           fileName.setText(fn);
         }
         
