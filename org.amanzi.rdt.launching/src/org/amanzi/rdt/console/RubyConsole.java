@@ -25,7 +25,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.debug.core.model.IStreamsProxy;
-import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.ui.console.IConsole;
 import org.eclipse.debug.ui.console.IConsoleHyperlink;
 import org.eclipse.jface.text.BadLocationException;
@@ -193,17 +192,16 @@ public class RubyConsole extends IOConsole implements IConsole {
 	protected boolean initializeGlobalVariables() {
 		HashMap<String, Object> globals = new HashMap<String, Object>();
 		
-		try {
-			Class jsonReader = Class.forName("org.amanzi.awe.catalog.json.JSONReader");
-			Class neoReader = Class.forName("org.amanzi.awe.catalog.neo.actions.NeoReader");
-			
-			globals.put("json_reader_class", jsonReader);			
-			globals.put("neo_reader_class", neoReader);
-		}
-		catch (ClassNotFoundException e) {
-			//TODO: handle this exception
-			e.printStackTrace();
-			return false;
+		for(String className:new String[]{"org.amanzi.awe.catalog.json.JSONReader", "org.amanzi.awe.catalog.neo.actions.NeoReader"}){
+			try {
+				String[] fds = className.split("\\.");
+				String var = fds[fds.length-1].toLowerCase().replace("reader", "_reader_class");
+				globals.put(var, Class.forName(className));			
+			}
+			catch (ClassNotFoundException e) {
+				System.err.println("Error setting global Ruby variable for class '"+className+"': "+e.getMessage());
+				e.printStackTrace(System.err);
+			}
 		}
 		
 		globals.put("feature_source_class", org.geotools.data.FeatureSource.class);
