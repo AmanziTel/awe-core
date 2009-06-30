@@ -16,6 +16,8 @@ import org.eclipse.core.runtime.CoreException;
 import java.io.*;
 
 import org.eclipse.ui.*;
+import org.rubypeople.rdt.core.IRubyElement;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -29,10 +31,12 @@ import com.eteks.openjeks.format.CellFormat;
  * as a template) is registered for the same extension, it will
  * be able to open it.
  */
-
-public class SplashNewSpreadsheetWizard extends Wizard implements INewWizard {
+//Lagutko, 30.06.2009, this wizard extends from NewRubyElementCreationWizard to add functionality
+//for creating default AWE and Ruby Project
+public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard implements INewWizard {
 	private SplashNewSpreadsheetWizardPage page;
-	private ISelection selection;
+	//Lagutko, 30.06.2009, field for selection will come from NewRubyElementCreationWizard
+	//private ISelection selection;
 
 	/**
 	 * Constructor for SplashNewSpreadsheetWizard.
@@ -47,8 +51,8 @@ public class SplashNewSpreadsheetWizard extends Wizard implements INewWizard {
 	 */
 
 	public void addPages() {
-		Util.logn("selection: " + selection.toString());
-		page = new SplashNewSpreadsheetWizardPage(selection);
+		Util.logn("selection: " + getSelection().toString());
+		page = new SplashNewSpreadsheetWizardPage(getSelection());
 		addPage(page);
 	}
 
@@ -162,7 +166,19 @@ public class SplashNewSpreadsheetWizard extends Wizard implements INewWizard {
 	 * we can initialize from it.
 	 * @see IWorkbenchWizard#init(IWorkbench, IStructuredSelection)
 	 */
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		this.selection = selection;
+	//Lagutko, 30.06.2009, selection will be initialized in super.init so we don't need this method
+//	public void init(IWorkbench workbench, IStructuredSelection selection) {			
+//		this.selection = selection;
+//	}
+
+	@Override
+	protected void finishPage(IProgressMonitor monitor) {
+		//do nothing		
+	}
+
+	@Override
+	public IRubyElement getCreatedElement() {
+		//do nothing
+		return null;
 	}
 }

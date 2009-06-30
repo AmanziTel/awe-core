@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
+import org.rubypeople.rdt.internal.core.RubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.OpenNewRubyProjectWizardAction;
 
 import com.eteks.openjeks.format.CellFormat;
@@ -108,13 +109,14 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 			}
 		});
 		
-		Button button1 = new Button(container, SWT.PUSH);
-		button1.setText("New Ruby Project...");
-		button1.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				new OpenNewRubyProjectWizardAction().run();
-			}
-		});
+		//Lagutko, 30.06.2009, we don't need button for creating RubyProject
+//		Button button1 = new Button(container, SWT.PUSH);
+//		button1.setText("New Ruby Project...");
+//		button1.addSelectionListener(new SelectionAdapter() {
+//			public void widgetSelected(SelectionEvent e) {
+//				new OpenNewRubyProjectWizardAction().run();
+//			}
+//		});
 		
 
 		
@@ -180,6 +182,13 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 				RubyProjectImpl rpi = (RubyProjectImpl) obj;
 				if (!"".equals( rpi.getName()))
 					containerText.setText("/" + rpi.getName());
+			}
+			//Lagutko, 30.06.2009, selection also can contains object of RubyProject type
+			else if (obj instanceof RubyProject) {
+				RubyProject rdtProject = (RubyProject)obj;
+				if (!"".equals(rdtProject.getElementName())) {
+					containerText.setText("/" + rdtProject.getElementName());
+				}
 			}
 		}
 		fileText.setText("sheet" + nameCounter + ".jrss");
