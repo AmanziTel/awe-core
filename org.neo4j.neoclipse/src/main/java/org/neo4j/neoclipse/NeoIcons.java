@@ -152,7 +152,7 @@ public enum NeoIcons
     }
 
     private NeoIcons( final String key, final Image image )
-    {    	
+    {
         this.key = key;
         getRegistry().put( key, image );
     }
@@ -174,8 +174,7 @@ public enum NeoIcons
     private static ISharedImages getShared()
     {
         if ( sharedImages == null )
-        {	
-        	
+        {
             sharedImages = PlatformUI.getWorkbench().getSharedImages();
         }
         return sharedImages;
