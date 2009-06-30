@@ -118,6 +118,7 @@ public class SplashNeoManager{
 //			}
 			try
 			{
+				tx.finish();
 				neo.shutdown();
 				Util.logn("Neo Service Stopped");
 				// notify listeners
