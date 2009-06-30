@@ -2816,6 +2816,16 @@ public interface ProjectPackage extends EPackage {
 	 * @ordered
 	 */
 	int SPREADSHEET__RUBY_PROJECT_INTERNAL = ISPREADSHEET_FEATURE_COUNT + 2;
+	
+	/**
+	 * The feature id for the '<em><b>Spreadsheet File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SPREADSHEET__SPREADSHEET_FILE = ISPREADSHEET_FEATURE_COUNT + 3;
+
 
 	/**
 	 * The number of structural features of the '<em>Ruby Class</em>' class.
@@ -2824,7 +2834,7 @@ public interface ProjectPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int SPREADSHEET_FEATURE_COUNT = ISPREADSHEET_FEATURE_COUNT + 3;
+	int SPREADSHEET_FEATURE_COUNT = ISPREADSHEET_FEATURE_COUNT + 4;
 
 
 	/**
@@ -2930,5 +2940,16 @@ public interface ProjectPackage extends EPackage {
 	 * @generated
 	 */
 	EClass getSpreadsheet();
+	
+	/**
+	 * Returns the meta object for the attribute '{@link net.refractions.udig.project.internal.Spreadsheet#getSpreadsheetFile <em>Spreadsheet File</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Spreadsheet File</em>'.
+	 * @see net.refractions.udig.project.internal.Spreadsheet#getSpreadsheetFile()
+	 * @see #getSpreadsheet()
+	 * @generated
+	 */
+	EAttribute getSpreadsheet_SpreadsheetFile();
 
 } // ProjectPackage
