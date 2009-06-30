@@ -1510,6 +1510,15 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 	public EClass getSpreadsheet() {
 		return spreadsheetEClass;
 	}
+	
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSpreadsheet_SpreadsheetFile() {
+		return (EAttribute) spreadsheetEClass.getEStructuralFeatures().get(0);
+	}
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -1689,6 +1698,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 		rubyFileEClass = createEClass(RUBY_FILE);
 
 		spreadsheetEClass = createEClass(SPREADSHEET);
+		createEAttribute(spreadsheetEClass, SPREADSHEET__SPREADSHEET_FILE);
 
         projectEClass = createEClass(PROJECT);
         createEAttribute(projectEClass, PROJECT__NAME);
@@ -2110,6 +2120,10 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 
 		initEClass(spreadsheetEClass, Spreadsheet.class,
 				"Spreadsheet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+		initEAttribute(
+				getSpreadsheet_SpreadsheetFile(),
+				ecorePackage.getEString(),
+				"spreadsheetFile", "", 0, 1, Spreadsheet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$ //$NON-NLS-2$
 		
 		initEClass(projectEClass, Project.class,
                 "Project", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$

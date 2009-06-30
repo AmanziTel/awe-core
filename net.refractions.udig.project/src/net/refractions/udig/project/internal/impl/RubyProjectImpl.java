@@ -5,21 +5,25 @@
  */
 package net.refractions.udig.project.internal.impl;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.internal.Project;
+import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
 import net.refractions.udig.project.internal.Spreadsheet;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
+import org.eclipse.emf.common.util.URI;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -29,6 +33,8 @@ import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.impl.EObjectImpl;
 
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
@@ -101,17 +107,16 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
          * @see org.eclipse.emf.common.notify.impl.AdapterImpl#notifyChanged(org.eclipse.emf.common.notify.Notification)
          */
         public void notifyChanged( Notification msg ) {
-            switch( msg.getFeatureID(Project.class) ) {           
+            switch( msg.getFeatureID(RubyProject.class) ) {        
+            case ProjectPackage.RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL:
             case ProjectPackage.RUBY_PROJECT__NAME:
-            case ProjectPackage.RUBY_PROJECT__PROJECT_INTERNAL:
+            case ProjectPackage.RUBY_PROJECT__PROJECT_INTERNAL:                     	
                 if (RubyProjectImpl.this.eResource() != null)
                     RubyProjectImpl.this.eResource().setModified(true);
             }
         }
     };
-
-	private List<Spreadsheet> spreadsheetsInternal;
-
+    
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -253,15 +258,142 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 	 * @generated not
 	 */
 	@SuppressWarnings("unchecked")
-	public List<RubyProjectElement> getRubyElementsInternal() {		
+	public List getRubyElementsInternal() {		
 		if (rubyElementsInternal == null) {
 			rubyElementsInternal = new SynchronizedEObjectWithInverseResolvingEList(
 					RubyProjectElement.class, this,
 					ProjectPackage.RUBY_PROJECT__RUBY_ELEMENTS_INTERNAL,
-					ProjectPackage.RUBY_PROJECT_ELEMENT__RUBY_PROJECT_INTERNAL);
+					ProjectPackage.RUBY_PROJECT_ELEMENT__RUBY_PROJECT_INTERNAL) {
+				
+				@Override
+				protected void didAdd(int index, Object newObject) {
+					createResourceAndAddElement(RubyProjectImpl.this, (RubyProjectElement) newObject);
+					super.didAdd(index, newObject);
+				}
+
+				@Override
+				protected void didSet(int index, Object newObject, Object oldObject) {
+					createResourceAndAddElement(RubyProjectImpl.this, (RubyProjectElement) newObject);
+					super.didSet(index, newObject, oldObject);
+				}
+			};
 		}		
 		return rubyElementsInternal;
 	}
+	
+	/**
+	 * Creates a new Resource from map.  The new Resource will be in the same directory as the project's
+	 * resource.  The Resource will start with map appended with a number that will make the name unique.
+	 * The resource will end in .umap.
+	 */
+	private void createResourceAndAddElement(RubyProject value, RubyProjectElement projectElement) {
+        if( projectElement==null || projectElement.eIsProxy() )
+            return;
+        if (!(projectElement instanceof Spreadsheet)) {
+        	return;
+        }
+		Resource projectResource = eResource();
+		if (projectResource != null) {
+			URI projectURI = projectResource.getURI();
+			String elementPath = null;
+			elementPath = findElementResourcePath(projectElement, elementPath);
+
+			String projectPath = findProjectResourcePath(projectURI);
+
+            if (!projectPath.equals(elementPath)) 
+                doCreation(projectElement, projectResource, elementPath, projectPath);
+                
+		}
+	}
+	
+	 private static URI generateResourceName(String projectPath,
+	            RubyProjectElement projectElement, int i) {
+	        URI uri;
+	        String resourceName = (projectElement.getName()==null?"element":projectElement.getName())+i; //$NON-NLS-1$
+	        resourceName = resourceName.replaceAll("[/\\\\]", ""); //$NON-NLS-1$ //$NON-NLS-2$
+	        resourceName = resourceName.replaceAll("\\s", "_"); //$NON-NLS-1$ //$NON-NLS-2$
+	        resourceName = resourceName.replaceAll("_+", "_"); //$NON-NLS-1$ //$NON-NLS-2$
+	        String extension = projectElement.getFileExtension();
+	        if( !extension.startsWith(".") ) //$NON-NLS-1$
+	            extension="."+extension; //$NON-NLS-1$
+	        String tempPath = "file://" + projectPath + File.separator + resourceName + extension; //$NON-NLS-1$  
+	        uri = URI.createURI(tempPath);
+	        return uri;
+	    }
+	
+	@SuppressWarnings("unchecked")
+	private static URI createNewResource(Resource projectResource, String projectPath, RubyProjectElement projectElement) {
+		int i = 0;
+		List<Resource> list = projectResource.getResourceSet().getResources();
+		URIConverter uriConverter = projectResource.getResourceSet()
+				.getURIConverter();
+		URI uri = null;
+		boolean found = false;
+		do {
+			found = false;
+			i++;
+			//TODO Add file extension name to ProjectElement
+			uri = generateResourceName(projectPath, projectElement, i);
+			
+			URI normalizedURI = uriConverter.normalize(uri);
+			for (Resource resource2 : list) {
+				if (uriConverter.normalize(resource2.getURI()).equals(
+						normalizedURI)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				File file = new File(uri.toFileString());
+				if (file.exists())
+					found = true;
+			}
+		} while (found);
+		uri.deresolve(projectResource.getURI(), true, true, true);
+		return uri;
+	}
+	
+	@SuppressWarnings("unchecked")
+    private static void doCreation(RubyProjectElement projectElement, Resource projectResource, String elementPath, String projectPath ) {
+        	Resource resource = null;
+
+        	URI uri = createNewResource(projectResource, projectPath, projectElement);
+        	resource = projectResource.getResourceSet().createResource(uri);
+        	resource.getContents().add(projectElement);
+            resource.setTrackingModification(true);
+            resource.setModified(true);
+    }
+	
+	private static String findProjectResourcePath( URI projectURI ) {
+        String projectPath = projectURI.toFileString();
+        projectPath = projectPath.substring(0, projectPath
+        		.lastIndexOf(File.separatorChar));
+        while (projectPath.startsWith(File.separator + File.separator)) { 
+        	projectPath = projectPath.substring(1);
+        }
+        if (Platform.getOS().equals(Platform.OS_WIN32)
+        		&& projectPath.startsWith(File.separator)) { 
+        	projectPath = projectPath.substring(1);
+        }
+        return projectPath;
+    }
+	
+	private String findElementResourcePath( RubyProjectElement projectElement, String elementPath2 ) {
+        String elementPath=elementPath2;
+        if (projectElement.eResource() != null) {
+        	elementPath = projectElement.eResource().getURI().toFileString();
+            elementPath = elementPath.substring(0, elementPath
+                    .lastIndexOf(File.separatorChar));
+            while (elementPath.startsWith(File.separator + File.separator)) { 
+                elementPath = elementPath.substring(1);
+            }
+            if (Platform.getOS().equals(Platform.OS_WIN32)
+                    && elementPath.startsWith(File.separator)) { 
+                elementPath = elementPath.substring(1);
+            }
+        }
+        return elementPath;
+    }
 	
 	/**
 	 * <!-- begin-user-doc -->
@@ -269,8 +401,8 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 	 * @generated
 	 */
 	public NotificationChain eInverseAdd(InternalEObject otherEnd,
-			int featureID, NotificationChain msgs) {
-		switch (featureID) {
+			int featureID, Class baseClass, NotificationChain msgs) {
+		switch (eDerivedStructuralFeatureID(featureID, baseClass)) {
 		case ProjectPackage.RUBY_PROJECT__PROJECT_INTERNAL:
 			if (projectInternal != null)
 				msgs = ((InternalEObject) projectInternal).eInverseRemove(this,
@@ -281,7 +413,7 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 			return ((InternalEList) getRubyElementsInternal()).basicAdd(
 					otherEnd, msgs);
 		}
-		return super.eInverseAdd(otherEnd, featureID, msgs);
+		return eBasicSetContainer(otherEnd, featureID, msgs);
 	}
 
 	/**

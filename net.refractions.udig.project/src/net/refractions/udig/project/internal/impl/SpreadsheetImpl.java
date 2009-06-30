@@ -19,10 +19,14 @@ import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Path;
 
+import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
+import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -43,6 +47,7 @@ import org.eclipse.ui.model.WorkbenchAdapter;
  *   <li>{@link net.refractions.udig.project.internal.impl.SpreadsheetImpl#getName <em>Name</em>}</li>
  *   <li>{@link net.refractions.udig.project.internal.impl.SpreadsheetImpl#getProjectInternal <em>Project Internal</em>}</li>
  *   <li>{@link net.refractions.udig.project.internal.impl.SpreadsheetImpl#getRubyProjectInternal <em>Ruby Project Internal</em>}</li>
+ *   <li>{@link net.refractions.udig.project.internal.impl.SpreadsheetImpl#getSpreadsheetFile <em>Spreadsheet File</em>}</li>
  * </ul>
  * </p>
  *
@@ -95,14 +100,50 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 	 * @ordered
 	 */
 	protected RubyProject rubyProjectInternal;
-	
+
+	/**
+	 * The default value of the '{@link #getSpreadsheetFile() <em>Spreadsheet File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getSpreadsheetFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String SPREADSHEET_FILE_EDEFAULT = ""; //$NON-NLS-1$
+
+	/**
+	 * The cached value of the '{@link #getSpreadsheetFile() <em>Spreadsheet File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getSpreadsheetFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected String spreadsheetFile = SPREADSHEET_FILE_EDEFAULT;
+
 	/**
 	 * Field for Resource of file
 	 * 
 	 * @author Lagutko_N
 	 */
-	
+
 	private IResource resource;
+	
+	private Adapter spreadsheetPersistenceListener = new AdapterImpl(){
+        /**
+         * @see org.eclipse.emf.common.notify.impl.AdapterImpl#notifyChanged(org.eclipse.emf.common.notify.Notification)
+         */
+        public void notifyChanged( Notification msg ) {
+            switch( msg.getFeatureID(Spreadsheet.class) ) {        
+            case ProjectPackage.SPREADSHEET__NAME:
+            case ProjectPackage.SPREADSHEET__PROJECT_INTERNAL:
+            case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
+            case ProjectPackage.SPREADSHEET__SPREADSHEET_FILE:
+                if (SpreadsheetImpl.this.eResource() != null)
+                	SpreadsheetImpl.this.eResource().setModified(true);
+            }
+        }
+    };
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -111,6 +152,7 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 	 */
 	protected SpreadsheetImpl() {
 		super();
+		eAdapters().add(spreadsheetPersistenceListener);
 	}
 
 	/**
@@ -145,43 +187,43 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 	}
 
 	/**
-     * Retrieves this map's project, searching its parents until it finds one, or returns null if it
-     * can't find one.
-     *
-     * @uml.property name="projectInternal"
-     */
-    public Project getProjectInternal() {
-        Project genResult = getProjectInternalGen();
-        if (genResult == null) {
-            EObject parent = eContainer();
-            while( parent != null ) {
-                if (parent instanceof Project) {
-                    return (Project) parent;
-                }
+	 * Retrieves this map's project, searching its parents until it finds one, or returns null if it
+	 * can't find one.
+	 *
+	 * @uml.property name="projectInternal"
+	 */
+	public Project getProjectInternal() {
+		Project genResult = getProjectInternalGen();
+		if (genResult == null) {
+			EObject parent = eContainer();
+			while (parent != null) {
+				if (parent instanceof Project) {
+					return (Project) parent;
+				}
 
-                parent = parent.eContainer();
-            }
-        }
-        return genResult;
-    }
+				parent = parent.eContainer();
+			}
+		}
+		return genResult;
+	}
 
-    /**
-     * <!-- begin-user-doc --> <!-- end-user-doc -->
-     * @generated
-     */
-    public Project getProjectInternalGen() {
-        if (projectInternal != null && projectInternal.eIsProxy()) {
-            Project oldProjectInternal = projectInternal;
-            projectInternal = (Project) eResolveProxy((InternalEObject) projectInternal);
-            if (projectInternal != oldProjectInternal) {
-                if (eNotificationRequired())
-                    eNotify(new ENotificationImpl(this, Notification.RESOLVE,
-                            ProjectPackage.SPREADSHEET__PROJECT_INTERNAL, oldProjectInternal,
-                            projectInternal));
-            }
-        }
-        return projectInternal;
-    }
+	/**
+	 * <!-- begin-user-doc --> <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Project getProjectInternalGen() {
+		if (projectInternal != null && projectInternal.eIsProxy()) {
+			InternalEObject oldProjectInternal = (InternalEObject) projectInternal;
+			projectInternal = (Project) eResolveProxy(oldProjectInternal);
+			if (projectInternal != oldProjectInternal) {
+				if (eNotificationRequired())
+					eNotify(new ENotificationImpl(this, Notification.RESOLVE,
+							ProjectPackage.SPREADSHEET__PROJECT_INTERNAL,
+							oldProjectInternal, projectInternal));
+			}
+		}
+		return projectInternal;
+	}
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -321,6 +363,29 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public String getSpreadsheetFile() {
+		return spreadsheetFile;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setSpreadsheetFile(String newSpreadsheetFile) {
+		String oldSpreadsheetFile = spreadsheetFile;
+		spreadsheetFile = newSpreadsheetFile;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET,
+					ProjectPackage.SPREADSHEET__SPREADSHEET_FILE,
+					oldSpreadsheetFile, spreadsheetFile));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public NotificationChain eInverseAdd(InternalEObject otherEnd,
 			int featureID, NotificationChain msgs) {
 		switch (featureID) {
@@ -329,7 +394,7 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 				msgs = ((InternalEObject) projectInternal).eInverseRemove(this,
 						ProjectPackage.PROJECT__ELEMENTS_INTERNAL,
 						Project.class, msgs);
-			return basicSetProjectInternal((Project) otherEnd, msgs);
+			return basicSetProjectInternal((Project) otherEnd, msgs);	
 		case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 			if (rubyProjectInternal != null)
 				msgs = ((InternalEObject) rubyProjectInternal).eInverseRemove(
@@ -338,7 +403,7 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 						RubyProject.class, msgs);
 			return basicSetRubyProjectInternal((RubyProject) otherEnd, msgs);
 		}
-		return super.eInverseAdd(otherEnd, featureID, msgs);
+		return eBasicSetContainer(otherEnd, featureID, msgs);
 	}
 
 	/**
@@ -374,6 +439,8 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 			if (resolve)
 				return getRubyProjectInternal();
 			return basicGetRubyProjectInternal();
+		case ProjectPackage.SPREADSHEET__SPREADSHEET_FILE:
+			return getSpreadsheetFile();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -393,6 +460,9 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 			return;
 		case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 			setRubyProjectInternal((RubyProject) newValue);
+			return;
+		case ProjectPackage.SPREADSHEET__SPREADSHEET_FILE:
+			setSpreadsheetFile((String) newValue);
 			return;
 		}
 		super.eSet(featureID, newValue);
@@ -414,6 +484,9 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 		case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 			setRubyProjectInternal((RubyProject) null);
 			return;
+		case ProjectPackage.SPREADSHEET__SPREADSHEET_FILE:
+			setSpreadsheetFile(SPREADSHEET_FILE_EDEFAULT);
+			return;
 		}
 		super.eUnset(featureID);
 	}
@@ -432,6 +505,9 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 			return projectInternal != null;
 		case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
 			return rubyProjectInternal != null;
+		case ProjectPackage.SPREADSHEET__SPREADSHEET_FILE:
+			return SPREADSHEET_FILE_EDEFAULT == null ? spreadsheetFile != null
+					: !SPREADSHEET_FILE_EDEFAULT.equals(spreadsheetFile);
 		}
 		return super.eIsSet(featureID);
 	}
@@ -538,61 +614,71 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 		StringBuffer result = new StringBuffer(super.toString());
 		result.append(" (name: "); //$NON-NLS-1$
 		result.append(name);
+		result.append(", spreadsheetFile: "); //$NON-NLS-1$
+		result.append(spreadsheetFile);
 		result.append(')');
 		return result.toString();
 	}
 
 	/**
-     * @see net.refractions.udig.project.IProjectElement#getProject()
-     */
-    public IProject getProject() {
-        return getProjectInternal();
-    }
+	 * @see net.refractions.udig.project.IProjectElement#getProject()
+	 */
+	public IProject getProject() {
+		return getProjectInternal();
+	}
 
 	public String getFileExtension() {
 		return "uss";
 	}
 
 	/**
-     * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
-     */
-    @SuppressWarnings("unchecked")
-    public Object getAdapter( Class adapter ) {
-    	for( Iterator i = eAdapters().iterator(); i.hasNext(); ) {
-            Object o = i.next();
-            if (adapter.isAssignableFrom(o.getClass()))
-                return o;
-        }
-    	
-    	/*
-         * Adapt to an IWorkbenchAdapter. Other aspects of Eclipse can read the
-         * properties we provide access to. (example: Property page dialogs
-         * can read the label and display that in their title.)
-         */
-    	if (adapter.isAssignableFrom(IWorkbenchAdapter.class)) {
-    		return new WorkbenchAdapter() {
-			
+	 * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
+	 */
+	@SuppressWarnings("unchecked")
+	public Object getAdapter(Class adapter) {
+		for (Iterator i = eAdapters().iterator(); i.hasNext();) {
+			Object o = i.next();
+			if (adapter.isAssignableFrom(o.getClass()))
+				return o;
+		}
+
+		/*
+		 * Adapt to an IWorkbenchAdapter. Other aspects of Eclipse can read the
+		 * properties we provide access to. (example: Property page dialogs
+		 * can read the label and display that in their title.)
+		 */
+		if (adapter.isAssignableFrom(IWorkbenchAdapter.class)) {
+			return new WorkbenchAdapter() {
+
 				@Override
 				public String getLabel(Object object) {
 					return getName();
 				}
-			
+
 			};
-    	}
-        return null;
-    }
-    
-    /*
+		}
+		return null;
+	}
+
+	/*
 	 * Getter and setter for Resource
 	 * (non-Javadoc)
 	 * @see net.refractions.udig.project.IRubyFile#getResource()
 	 */
-	
+
 	public IResource getResource() {
+		if (resource == null) {
+			resource = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocation(new Path(spreadsheetFile))[0];
+		}
+		
 		return resource;
 	}
-	
+
 	public void setResource(IResource resource) {
+		if (resource != null) {
+			setSpreadsheetFile(resource.getLocation().toOSString());
+		}
+		
 		this.resource = resource;
 	}
 
