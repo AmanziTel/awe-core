@@ -16,11 +16,13 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
+import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.demo.TextAreaReadline;
 import org.jruby.internal.runtime.ValueAccessor;
+import org.jruby.runtime.load.LoadService;
 
 
 public class SwingIRBConsole extends JFrame {
@@ -85,6 +87,11 @@ public class SwingIRBConsole extends JFrame {
             setOutput(new PrintStream(tar.getOutputStream()));
             setError(new PrintStream(tar.getOutputStream()));
             setObjectSpaceEnabled(true); // useful for code completion inside the IRB
+            setLoadServiceCreator(new LoadServiceCreator() {
+                public LoadService create(Ruby runtime) {
+                    return new EclipseLoadService(runtime);
+                }
+            });
             
             // The following modification forces IRB to ignore the fact that inside eclipse
             // the STDIN.tty? returns false, and IRB must continue to use a prompt

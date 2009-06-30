@@ -14,6 +14,7 @@ import net.refractions.udig.catalog.CatalogPlugin;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.rdt.internal.launching.AweLaunchingPlugin;
+import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -35,8 +36,10 @@ import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
+import org.jruby.RubyInstanceConfig.LoadServiceCreator;
 import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.runtime.load.LoadService;
 import org.rubypeople.rdt.internal.launching.StandardVMRunner;
 import org.rubypeople.rdt.launching.IRubyLaunchConfigurationConstants;
 import org.rubypeople.rdt.launching.IVMInstall;
@@ -179,7 +182,12 @@ public class RubyConsole extends IOConsole implements IConsole {
 			setJRubyHome(jRubyInstall.getInstallLocation().getAbsolutePath());
 			setOutput(outputStream);
 			setError(outputStream);			
-			setInput(getInputStream());			
+			setInput(getInputStream());
+            setLoadServiceCreator(new LoadServiceCreator() {
+                public LoadService create(Ruby runtime) {
+                    return new EclipseLoadService(runtime);
+                }
+            });
 		}};
 	}
 	
@@ -191,19 +199,7 @@ public class RubyConsole extends IOConsole implements IConsole {
 	
 	protected boolean initializeGlobalVariables() {
 		HashMap<String, Object> globals = new HashMap<String, Object>();
-		
-		for(String className:new String[]{"org.amanzi.awe.catalog.json.JSONReader", "org.amanzi.awe.catalog.neo.actions.NeoReader"}){
-			try {
-				String[] fds = className.split("\\.");
-				String var = fds[fds.length-1].toLowerCase().replace("reader", "_reader_class");
-				globals.put(var, Class.forName(className));			
-			}
-			catch (ClassNotFoundException e) {
-				System.err.println("Error setting global Ruby variable for class '"+className+"': "+e.getMessage());
-				e.printStackTrace(System.err);
-			}
-		}
-		
+		ScriptUtils.makeGlobalsFromClassNames(globals,new String[]{"org.amanzi.awe.catalog.json.JSONReader", "org.amanzi.awe.catalog.neo.actions.NeoReader"});
 		globals.put("feature_source_class", org.geotools.data.FeatureSource.class);
 		globals.put("catalog", CatalogPlugin.getDefault());
 		globals.put("catalogs", CatalogPlugin.getDefault().getCatalogs());		
@@ -229,7 +225,7 @@ public class RubyConsole extends IOConsole implements IConsole {
 		
 		return true;
 	}
-	
+
 	private boolean runInitScript() {
 		try {
 			URL scriptUrl = FileLocator.toFileURL(AweLaunchingPlugin.getDefault().getBundle().getEntry("ruby/startScript.rb"));

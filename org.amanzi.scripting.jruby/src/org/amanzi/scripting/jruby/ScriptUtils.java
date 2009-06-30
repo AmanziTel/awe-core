@@ -5,6 +5,7 @@ import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -63,6 +64,27 @@ public class ScriptUtils {
     public static String getJRubyVersion(){
     	return instance.ensureJRubyVersion();
     }
+
+	/**
+	 * Utility method to add default ruby variable names for specified java class names.
+	 * This is used in some code to check dynamically the type of the class.
+	 * @param globals
+	 * @param classNames
+	 */
+    public static void makeGlobalsFromClassNames(HashMap<String, Object> globals, String[] classNames) {
+		for(String className:classNames){
+			try {
+				String[] fds = className.split("\\.");
+				//TODO: Rather have a proper Camel->Underscore conversion here (see if JRuby code has one we can use)
+				String var = fds[fds.length-1].toLowerCase().replace("reader", "_reader").concat("_class");
+				globals.put(var, Class.forName(className));			
+			}
+			catch (ClassNotFoundException e) {
+				System.err.println("Error setting global Ruby variable for class '"+className+"': "+e.getMessage());
+				e.printStackTrace(System.err);
+			}
+		}
+	}
 
     /**
      * Build a list of String paths to be added to the JRuby search paths

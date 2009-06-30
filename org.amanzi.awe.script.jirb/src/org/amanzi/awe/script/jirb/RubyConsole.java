@@ -3,6 +3,7 @@ package org.amanzi.awe.script.jirb;
 import org.amanzi.scripting.jirb.IRBConfigData;
 import org.amanzi.scripting.jirb.SWTIRBConsole;
 import org.amanzi.scripting.jirb.SwingIRBConsole;
+import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.console.SpreadsheetManager;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.action.Action;
@@ -55,18 +56,7 @@ public class RubyConsole extends ViewPart {
             addExtraGlobal("catalogs", net.refractions.udig.catalog.CatalogPlugin.getDefault().getCatalogs());
             addExtraGlobal("projects", net.refractions.udig.project.ui.ApplicationGIS.getProjects());
             addExtraGlobal("active_project", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
-    		for(String className:new String[]{"org.amanzi.awe.catalog.json.JSONReader", "org.amanzi.awe.catalog.neo.actions.NeoReader"}){
-    			try {
-    				String[] fds = className.split("\\.");
-    				String var = fds[fds.length-1].toLowerCase().replace("reader", "_reader_class");
-                	// TODO: Check if 'buddy class loading' is required for this, since the plugins are not explicitly specified as dependencies
-    				addExtraGlobal(var, Class.forName(className));			
-    			}
-    			catch (ClassNotFoundException e) {
-    				System.err.println("Error setting global Ruby variable for class '"+className+"': "+e.getMessage());
-    				e.printStackTrace(System.err);
-    			}
-    		}
+            ScriptUtils.makeGlobalsFromClassNames(this.getExtraGlobals(),new String[]{"org.amanzi.awe.catalog.json.JSONReader", "org.amanzi.awe.catalog.neo.actions.NeoReader"});
             addExtraGlobal("feature_source_class", org.geotools.data.FeatureSource.class);
             
             //manager of spreadsheets
