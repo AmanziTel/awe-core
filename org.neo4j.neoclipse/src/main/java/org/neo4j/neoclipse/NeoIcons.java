@@ -18,6 +18,7 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 
 /**
  * This enum manages neo icons.
@@ -29,7 +30,7 @@ public enum NeoIcons
     NEO( "small", path( "enabled/neo.gif" ) ),
     NEO_ROOT( "root", path( "enabled/home.gif" ) ),
     //HELP( "help", shared( ISharedImages.IMG_LCL_LINKTO_HELP ) ),
-    HELP( "help", shared( ISharedImages.IMG_OBJ_PROJECT ) ),
+    HELP( "help", shared( IDE.SharedImages.IMG_OBJ_PROJECT ) ),
     PREFERENCES_ENABLED( "preferences_enabled",
         path( "enabled/preferences.gif" ) ),
     PREFERENCES_DISABLED( "preferences_disabled",
@@ -151,7 +152,7 @@ public enum NeoIcons
     }
 
     private NeoIcons( final String key, final Image image )
-    {
+    {    	
         this.key = key;
         getRegistry().put( key, image );
     }
@@ -173,7 +174,8 @@ public enum NeoIcons
     private static ISharedImages getShared()
     {
         if ( sharedImages == null )
-        {
+        {	
+        	
             sharedImages = PlatformUI.getWorkbench().getSharedImages();
         }
         return sharedImages;
