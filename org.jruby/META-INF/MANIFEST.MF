@@ -518,25 +518,7 @@ Export-Package: org.jruby;version="1.2.0";
    org.jruby.exceptions,
    org.jruby.javasupport.util,
    org.jruby.runtime,
-   org.jruby",
- org.neo4j.api.core,
- org.neo4j.impl,
- org.neo4j.impl.cache,
- org.neo4j.impl.core,
- org.neo4j.impl.event,
- org.neo4j.impl.nioneo.store,
- org.neo4j.impl.nioneo.util,
- org.neo4j.impl.nioneo.xa,
- org.neo4j.impl.persistence,
- org.neo4j.impl.shell,
- org.neo4j.impl.shell.apps,
- org.neo4j.impl.transaction,
- org.neo4j.impl.transaction.xaframework,
- org.neo4j.impl.traversal,
- org.neo4j.impl.util,
- org.neo4j.util.shell,
- org.neo4j.util.shell.apps,
- org.neo4j.util.shell.apps.extra
+   org.jruby"
 Bundle-Version: 1.2.0
 Ignore-Package: org.jruby.ast.visitor.rewriter,org.jruby.javasupport,o
  rg.jruby.ast.executable,org.jruby.compiler,org.jruby.ast.visitor,org.

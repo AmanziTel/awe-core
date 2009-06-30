@@ -24,9 +24,6 @@
 	<classpathentry kind="lib" path="build_lib/yydebug.jar"/>
 	<classpathentry kind="lib" path="lib/bsf.jar"/>
 	<classpathentry kind="lib" path="lib/profile.jar"/>
-	<classpathentry kind="lib" path="lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/jta-spec1_0_1.jar"/>
-	<classpathentry kind="lib" path="lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/neo-1.0-b7.jar"/>
-	<classpathentry kind="lib" path="lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/shell-1.0-b7.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="build_lib/asm-util-3.0.jar"/>
 	<classpathentry kind="lib" path="build_lib/asm-commons-3.0.jar"/>

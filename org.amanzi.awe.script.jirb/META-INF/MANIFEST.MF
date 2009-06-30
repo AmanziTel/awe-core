@@ -15,8 +15,7 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Eclipse-BuddyPolicy: registered
 Eclipse-LazyStart: true
-Bundle-ClassPath: jruby.jar,
- .
+Bundle-ClassPath: .
 Bundle-Activator: org.amanzi.awe.script.jirb.Activator
 Export-Package: org.amanzi.awe.script.jirb;x-friends:="org.amanzi.rdt.launching"
 Eclipse-RegisterBuddy: org.amanzi.rdt.launching
