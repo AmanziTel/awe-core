@@ -103,6 +103,13 @@ public class SplashNeoManager{
 		try
 		{
 			n = this.splashIndexService.getSingleNode( "id", id );
+			if (n != null){
+			Util.logn("----------------------------------------------");
+			for (String s : n.getPropertyKeys()){
+				Util.logn ("Key: " + s + " - Value: " + n.getProperty(s));
+			}
+			Util.logn("----------------------------------------------");
+			}
 			tx.success();
 		}
 		finally
@@ -136,7 +143,7 @@ public class SplashNeoManager{
 						Util.getColumnIndexFromCellID(id),
 						"", 
 						"", new CellFormat());
-				//addCell(id, cell);
+				addCell(id, cell);
 			}
 		}else{
 			cell = new Cell(Util.getRowIndexFromCellID(id),
