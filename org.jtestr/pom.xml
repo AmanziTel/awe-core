@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.jtestr</groupId>
+  <artifactId>jtestr</artifactId>
+  <packaging>maven-plugin</packaging>
+  <version>0.4.1-SNAPSHOT</version>
+  <name>JtestR</name>
+  
+  <build>
+    <directory>target</directory>
+
+    <outputDirectory>target/classes</outputDirectory>
+    <sourceDirectory>src/java</sourceDirectory>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+    </plugins>
+
+    <resources>
+      <resource>
+        <directory>src/ruby</directory>
+        <includes recurse="true">
+          <include>**/*.rb</include>
+        </includes>
+      </resource>
+    </resources>
+
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-1</version>
+      </extension>
+    </extensions>
+  </build>
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <version>2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>5.8</version>
+      <classifier>jdk15</classifier>
+    </dependency>
+    <dependency>
+      <groupId>ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.6.5</version>
+    </dependency>   
+    <dependency>
+      <groupId>org.jtestr</groupId>
+      <artifactId>jruby-complete</artifactId>
+      <version>1.2.0</version>
+    </dependency>     
+  </dependencies> 
+
+  <!-- this is for deploying to codehouse -->
+  <distributionManagement>
+    <repository>
+      <id>codehaus.org</id>
+      <name>JtestR Central Repository</name>
+      <url>dav:https://dav.codehaus.org/repository/jtestr/</url>
+    </repository>
+    <snapshotRepository>
+      <id>codehaus.org</id>
+      <name>JtestR Dev Repository</name>
+      <url>dav:https://dav.codehaus.org/snapshots.repository/jtestr/</url>
+    </snapshotRepository>
+    <site>
+      <id>codehaus.org</id>
+      <url>dav:https://dav.codehaus.org/jtestr/</url>
+    </site>
+  </distributionManagement>
+</project>
