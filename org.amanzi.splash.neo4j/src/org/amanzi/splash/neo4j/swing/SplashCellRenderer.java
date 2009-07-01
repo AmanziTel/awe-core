@@ -73,6 +73,9 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 		Cell c = (Cell)value;
 		setValue(c.getValue());
 		setBackground(c.getCellFormat().getBackgroundColor());
+		
+		Util.printColor(c.getCellFormat().getBackgroundColor());
+		
 		setForeground(c.getCellFormat().getFontColor());
 		//setHorizontalAlignment(c.getCellFormat().getHorizontalAlignment());
 		//setVerticalAlignment(c.getCellFormat().getVerticalAlignment());

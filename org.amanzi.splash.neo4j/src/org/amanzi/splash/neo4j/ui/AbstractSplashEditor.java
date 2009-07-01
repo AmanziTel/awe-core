@@ -131,11 +131,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		//cellFormat = getTable().tableFormat.getFormatAt(firstRow, firstColumn , lastRow, lastColumn);
 		
 		
-		try {
-		      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		    } catch(Exception e) {
-		      System.out.println("Error setting Java LAF: " + e);
-		    }
+//		try {
+//		      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//		    } catch(Exception e) {
+//		      System.out.println("Error setting Java LAF: " + e);
+//		    }
 
 		
 		cellFormat = ((Cell)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn())).getCellFormat();
@@ -151,13 +151,25 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			//table.getValueAt(table.getsele, arg1)
 			for (int i=firstRow;i<=lastRow;i++){
 				for (int j=firstColumn;j<=lastColumn;j++){
-					((Cell)table.getValueAt(i, j)).setCellFormat(cellFormat);
+					updateCellFormat(i,j,cellFormat);
 				}
 			}
 			setIsDirty(true);
 		}
 		cellFormatPanel = null;
 		table.repaint();
+	}
+	
+	/**
+	 * Update cell format and save the new format in the Neo4j database
+	 * @param r
+	 * @param c
+	 * @param cf
+	 */
+	private void updateCellFormat(int r, int c, CellFormat cf){
+		Cell cell =(Cell)table.getValueAt(r, c); 
+		cell.setCellFormat(cf);
+		((SplashTableModel)(table.getModel())).getSplashNeoManager().updateCell(Util.getCellIDfromRowColumn(r, c), cell);
 	}
 
 	/**
@@ -499,10 +511,10 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 							
 							
 							cf.setFontStyle(fs);
-							table.tableFormat.setFormatAt(cf, row, column, row, column);
-							cell.setCellFormat(cf);
+							updateCellFormat(row, column, cf);
+							
 							table.repaint();
-							setIsDirty(true);
+							//setIsDirty(true);
 						}else if (e.isControlDown() && e.getKeyCode() == 73){
 							
 							Cell cell = (Cell)table.getValueAt(row, column);
@@ -527,10 +539,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 							
 							
 							cf.setFontStyle(fs);
-							table.tableFormat.setFormatAt(cf, row, column, row, column);
-							cell.setCellFormat(cf);
+							updateCellFormat(row, column, cf);
 							table.repaint();
-							setIsDirty(true);
+							//setIsDirty(true);
 						}else if (e.isControlDown() && e.getKeyCode() == 85){
 							
 							Cell cell = (Cell)table.getValueAt(row, column);

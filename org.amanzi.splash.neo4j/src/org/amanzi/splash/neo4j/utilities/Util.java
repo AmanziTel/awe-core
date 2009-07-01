@@ -65,6 +65,10 @@ public static final boolean enableNeo4j = true;
 		return s;
 	}
 	
+	public static void printColor(Color c){
+		Util.logn("R: " + c.getRed() + " - G: " + c.getGreen() + " - B: " + c.getBlue());
+	}
+	
 	public static void AddFileMenuItem(){
 //		MenuManager menu = 
 //		    new  MenuManager(ShowcasePlugin.getResourceString("menu.file"),

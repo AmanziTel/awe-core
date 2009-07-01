@@ -104,11 +104,11 @@ public class SplashNeoManager{
 		{
 			n = this.splashIndexService.getSingleNode( "id", id );
 			if (n != null){
-			Util.logn("----------------------------------------------");
-			for (String s : n.getPropertyKeys()){
-				Util.logn ("Key: " + s + " - Value: " + n.getProperty(s));
-			}
-			Util.logn("----------------------------------------------");
+				Util.logn("----------------------------------------------");
+				for (String s : n.getPropertyKeys()){
+					Util.logn ("Key: " + s + " - Value: " + n.getProperty(s));
+				}
+				Util.logn("----------------------------------------------");
 			}
 			tx.success();
 		}
@@ -120,21 +120,7 @@ public class SplashNeoManager{
 
 		if (n != null){
 			try{
-				String value = (String) n.getProperty("value");
-				String definition = (String) n.getProperty("definition");
-				CellFormat cf = new CellFormat();
-				cf.setFontName((String) n.getProperty("fontName"));
-				cf.setFontStyle((Integer) n.getProperty("fontStyle"));
-				cf.setFontSize((Integer) n.getProperty("fontSize"));
-				cf.setVerticalAlignment((Integer) n.getProperty("verticalAlignment"));
-				cf.setHorizontalAlignment((Integer) n.getProperty("horizontalAlignment"));
-
-				cell = new Cell(Util.getRowIndexFromCellID(id),
-						Util.getColumnIndexFromCellID(id),
-						definition, 
-						value, cf);
-
-
+				cell = NodeToCell(n);
 				Util.logn("cell.definition: " + cell.getDefinition());
 				Util.logn("cell.value: " + cell.getValue());
 
@@ -154,6 +140,37 @@ public class SplashNeoManager{
 		}
 
 		return cell;
+	}
+
+	public Cell NodeToCell(Node n){
+		String id = (String) n.getProperty("id");
+		String value = (String) n.getProperty("value");
+		String definition = (String) n.getProperty("definition");
+		CellFormat cf = new CellFormat();
+		cf.setFontName((String) n.getProperty("fontName"));
+		cf.setFontStyle((Integer) n.getProperty("fontStyle"));
+		cf.setFontSize((Integer) n.getProperty("fontSize"));
+		cf.setVerticalAlignment((Integer) n.getProperty("verticalAlignment"));
+		cf.setHorizontalAlignment((Integer) n.getProperty("horizontalAlignment"));
+		
+		int fontColorR =  (Integer) n.getProperty("fontColorR");
+		int fontColorG =  (Integer) n.getProperty("fontColorG");
+		int fontColorB =  (Integer) n.getProperty("fontColorB");
+		Color fontColor = new Color(fontColorR, fontColorG, fontColorB);
+		
+		cf.setFontColor(fontColor);
+		
+		int bgColorR =  (Integer) n.getProperty("bgColorR");
+		int bgColorG =  (Integer) n.getProperty("bgColorG");
+		int bgColorB =  (Integer) n.getProperty("bgColorB");
+		Color bgColor = new Color(bgColorR,bgColorG, bgColorB);
+		
+		cf.setBackgroundColor(bgColor);
+		
+		return new Cell(Util.getRowIndexFromCellID(id),
+				Util.getColumnIndexFromCellID(id),
+				definition, 
+				value, cf);
 	}
 
 	public ArrayList<String> findReferringCells(String id){
@@ -197,27 +214,40 @@ public class SplashNeoManager{
 		return retIDs;
 	}
 
+
+
+	public Node CellToNode (Node node, Cell c){
+		Node n = node;
+		n.setProperty("id", c.getCellID());
+		n.setProperty("value", c.getValue());
+		n.setProperty("definition", c.getDefinition());
+		n.setProperty("fontName", c.getCellFormat().getFontName());
+		n.setProperty("fontStyle", c.getCellFormat().getFontStyle());
+		n.setProperty("fontSize", c.getCellFormat().getFontSize());
+		n.setProperty("verticalAlignment", c.getCellFormat().getVerticalAlignment());
+		n.setProperty("horizontalAlignment", c.getCellFormat().getHorizontalAlignment());
+		int fontColorR = c.getCellFormat().getFontColor().getRed();
+		int fontColorG = c.getCellFormat().getFontColor().getGreen();
+		int fontColorB = c.getCellFormat().getFontColor().getBlue();
+		n.setProperty("fontColorR", fontColorR);
+		n.setProperty("fontColorG", fontColorG);
+		n.setProperty("fontColorB", fontColorB);
+		int bgColorR = c.getCellFormat().getBackgroundColor().getRed();
+		int bgColorG = c.getCellFormat().getBackgroundColor().getGreen();
+		int bgColorB = c.getCellFormat().getBackgroundColor().getBlue();
+		n.setProperty("bgColorR", bgColorR);
+		n.setProperty("bgColorG", bgColorG);
+		n.setProperty("bgColorB", bgColorB);
+
+		return n;
+	}
+
 	public void updateCell( String id, Cell updatedCell){
 		Transaction tx = neo.beginTx();// neo.beginTx();
 		try{
 			Node n = this.splashIndexService.getSingleNode( "id", id );
 
-			//Util.logn("Updating cell id=" + id + " - value=" + updatedCell.getValue());
-
-			n.setProperty("value", updatedCell.getValue());
-			n.setProperty("definition", updatedCell.getDefinition());
-			n.setProperty("fontName", updatedCell.getCellFormat().getFontName());
-			n.setProperty("fontStyle", updatedCell.getCellFormat().getFontStyle());
-			n.setProperty("fontSize", updatedCell.getCellFormat().getFontSize());
-			n.setProperty("verticalAlignment", updatedCell.getCellFormat().getVerticalAlignment());
-			n.setProperty("horizontalAlignment", updatedCell.getCellFormat().getHorizontalAlignment());
-			//n.setProperty("fontColor", updatedCell.getCellFormat().getFontColor());
-			//n.setProperty("backgroundColor", updatedCell.getCellFormat().getBackgroundColor());
-			//n.setProperty("cellBorder", updatedCell.getCellFormat().getCellBorder());
-
-			//Util.logn("Indexing cell ...");
-			this.splashIndexService.index( n, "id", id );
-			//Util.logn("Finished Indexing cell ...");
+			this.splashIndexService.index( CellToNode(n, updatedCell), "id", id );
 
 			//Util.logn("Finding cell IDs...");
 			List<String> rfdCellsIDs = Util.findComplexCellIDs((String) updatedCell.getDefinition());
@@ -252,38 +282,15 @@ public class SplashNeoManager{
 
 	public void addCell( String id, Cell new_cell)
 	{
-		//Util.logn("new_cell = " + new_cell);
 		Transaction tx = neo.beginTx();// neo.beginTx();
 		try{
 			Node n = this.splashIndexService.getSingleNode( "id", id );
 			if (n == null){
-				//Util.logn("Adding new cell id=" + id + " - value=" + new_cell.getValue());
 				Node newNode = neo.createNode();
-				newNode.setProperty( "id", id );
-				newNode.setProperty( "value", new_cell.getValue() );
-				newNode.setProperty("definition", new_cell.getDefinition());
-				newNode.setProperty("fontName", new_cell.getCellFormat().getFontName());
-				newNode.setProperty("fontStyle", new_cell.getCellFormat().getFontStyle());
-				newNode.setProperty("fontSize", new_cell.getCellFormat().getFontSize());
-				newNode.setProperty("verticalAlignment", new_cell.getCellFormat().getVerticalAlignment());
-				newNode.setProperty("horizontalAlignment", new_cell.getCellFormat().getHorizontalAlignment());
-				//newNode.setProperty("fontColor", new_cell.getCellFormat().getFontColor());
-				//newNode.setProperty("backgroundColor", new_cell.getCellFormat().getBackgroundColor());
-				//newNode.setProperty("cellBorder", new_cell.getCellFormat().getCellBorder());
-
-				this.splashIndexService.index( newNode, "id", id );
+				this.splashIndexService.index( CellToNode(newNode, new_cell), "id", id );
 			}else{
-				//Util.logn("Updating cell id=" + id + " - value=" + new_cell.getValue());
-				n.setProperty("value", new_cell.getValue());
-				n.setProperty("definition", new_cell.getDefinition());
-				n.setProperty("fontName", new_cell.getCellFormat().getFontName());
-				n.setProperty("fontStyle", new_cell.getCellFormat().getFontStyle());
-				n.setProperty("fontSize", new_cell.getCellFormat().getFontSize());
-				n.setProperty("verticalAlignment", new_cell.getCellFormat().getVerticalAlignment());
-				n.setProperty("horizontalAlignment", new_cell.getCellFormat().getHorizontalAlignment());
-				this.splashIndexService.index( n, "id", id );
+				this.splashIndexService.index( CellToNode(n, new_cell), "id", id );
 			}
-
 			tx.success();
 		}
 		finally
