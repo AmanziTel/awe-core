@@ -966,13 +966,15 @@ public class RubyModelManager implements IContentTypeChangeListener, ISavePartic
  					| IResourceChangeEvent.PRE_CLOSE);
 
  			
+ 			//Lagutko, 1.07.2009, load Messages class outside internal Thread
+ 			final String jobName = Messages.savedState_jobName;
  			job = new Job("Start Ruby Indexing") {
 
 				protected IStatus run(IProgressMonitor monitor) {
 					startIndexing();
 					// process deltas since last activated in indexer thread so that indexes are up-to-date.
 		 			// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=38658
-		 			Job processSavedState = new Job(Messages.savedState_jobName) { 
+		 			Job processSavedState = new Job(jobName) { 
 		 				protected IStatus run(IProgressMonitor monitor) {
 		 					try {
 		 						// add save participant and process delta atomically
