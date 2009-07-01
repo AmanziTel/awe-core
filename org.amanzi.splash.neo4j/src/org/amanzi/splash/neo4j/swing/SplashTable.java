@@ -1,8 +1,6 @@
 package org.amanzi.splash.neo4j.swing;
 
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JTable;

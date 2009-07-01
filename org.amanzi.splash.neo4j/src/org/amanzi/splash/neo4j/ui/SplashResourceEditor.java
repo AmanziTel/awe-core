@@ -11,12 +11,10 @@ package org.amanzi.splash.neo4j.ui;
  */
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.utilities.Util;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -91,19 +89,6 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 
     
     public void setContents(IEditorInput editorInput) throws CoreException {
-
-        IStorageEditorInput sei = (IStorageEditorInput) getEditorInput();
-        InputStream is;
-
-        is = sei.getStorage().getContents();
-        
-        Util.logn("sei.getName = " + sei.getName());
-        
-        //tableModel = new SplashTableModel();
-        //getTable().tableFormat = tableModel.tableFormat;
-        
-        setIsDirty(false);
-        //tableModel.addTableModelListener(this);
     }
     
     public boolean saveContents() throws CoreException {

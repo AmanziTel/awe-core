@@ -31,7 +31,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -917,6 +916,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			public void actionPerformed(ActionEvent e) {
 				int col = table.getSelectedColumn();
 				getTable().insertRow(rowIndex);
+				
 				table.setColumnSelectionInterval(col, col);
 				table.setRowSelectionInterval(0, rowIndex);
 				setIsDirty(true);

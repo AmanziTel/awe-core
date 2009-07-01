@@ -16,7 +16,6 @@ import org.amanzi.splash.neo4j.utilities.Util;
 public class Spreadsheet {
 	
 	private SplashTableModel model;
-	private String currentProject;
 	private String currentFile;
 	
 	/**
@@ -29,7 +28,6 @@ public class Spreadsheet {
 	
 	public Spreadsheet(SplashTableModel currentModel, String project, String name) {
 		model = currentModel;
-		currentProject = project;
 		currentFile = name;
 	}
 	

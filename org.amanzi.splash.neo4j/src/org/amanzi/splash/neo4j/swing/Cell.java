@@ -1,7 +1,6 @@
 package org.amanzi.splash.neo4j.swing;
 
 import java.net.URI;
-import java.util.ArrayList;
 
 import org.amanzi.splash.neo4j.utilities.Util;
 
@@ -17,8 +16,6 @@ public class Cell
 	private String cellID;
 	private int row;
 	private int column;
-	private ArrayList<Cell> rfdCells;
-	private ArrayList<Cell> rfgCells;
 	
 	//Lagutko: new attributes 
 	private URI scriptURI;
@@ -34,8 +31,6 @@ public class Cell
 	{
 		this.definition = definition;
 		this.value = value;
-		rfdCells = new ArrayList<Cell>();
-		rfgCells = new ArrayList<Cell>();
 		
 		cellFormat = new CellFormat();
 		//Lagutko: Cell hasn't reference to script on creation
@@ -49,30 +44,6 @@ public class Cell
 		setRow(Util.getRowIndexFromCellID(newCellID));
 		setColumn(Util.getColumnIndexFromCellID(newCellID));
 		
-		//Util.printTableModelStatus(model)
-		Util.printCellList("RFG List", rfgCells);
-		for (int i=0;i<rfgCells.size();i++)
-		{
-			
-			Cell c = rfgCells.get(i);
-			Util.printCell("processing RFG cell ", c);
-			ArrayList<Cell> rfd = c.getRfdCells();
-			Util.printCellList("RFD cells of cell " + c.getCellID(), rfd);
-			for (int j=0;j<rfd.size();j++)
-			{
-				Cell c1 = rfd.get(j);
-				Util.printCell("processing RFD cell ", c1);
-				
-				if (c1.getCellID().equals(newCellID))
-				{
-					String definition = (String) c.getDefinition();
-					Util.log("old definition: definition");
-					definition = definition.replace(oldCellID, newCellID);
-					Util.log("new definition: definition");
-					c.setDefinition(definition);
-				}
-			}
-		}
 	}
 	
 	/**
@@ -84,8 +55,6 @@ public class Cell
 	{
 		this.row    = row;
 		this.column = column;
-		rfdCells = new ArrayList<Cell>();
-		rfgCells = new ArrayList<Cell>();
 		cellFormat = new CellFormat();
 	}
 
@@ -100,9 +69,6 @@ public class Cell
 		
 		this.cellID = Util.getCellIDfromRowColumn(row, column);
 		
-		this.rfdCells = new ArrayList<Cell>();
-		this.rfgCells = new ArrayList<Cell>();
-		
 		cellFormat = c;
 	}
 	
@@ -116,9 +82,6 @@ public class Cell
 		cellFormat = new CellFormat();
 		
 		this.cellFormat = cellFormat;
-		
-		rfdCells = new ArrayList<Cell>();
-		rfgCells = new ArrayList<Cell>();
 	}
 
 	public Cell(Object value, Object definition,
@@ -128,8 +91,6 @@ public class Cell
 		this.definition = definition;
 		this.cellGraphInfo = cellGraphInfo;
 		cellFormat = new CellFormat();
-		rfdCells = new ArrayList<Cell>();
-		rfgCells = new ArrayList<Cell>();
 	}
 
 	/**
@@ -158,10 +119,6 @@ public class Cell
 		this.definition = definition;
 	}
 
-
-
-	
-
 	public Cell getCellGraphInfo() {
 		return cellGraphInfo;
 	}
@@ -182,57 +139,7 @@ public class Cell
 		this.value = value;
 	}
 	
-	/**
-	 * Add argument cell to referred cells
-	 * @param c
-	 */	
-	public void addRfdCell(Cell c)
-	{
-		//if (Util.isCellInList(c, rfdCells) == false)
-			rfdCells.add(c);
-	}
-	
-	/**
-	 * Add argument cell to referring cells
-	 * @param c
-	 */
-	public void addRfgCell(Cell c)
-	{
-		//if (Util.isCellInList(c, rfgCells) == false)
-			rfgCells.add(c);
-	}
-	
-	/**
-	 * Remove cell from referred cells
-	 * @param c
-	 */
-	public void removeRfdCell(Cell c)
-	{
-		for (int i=0;i<rfdCells.size();i++)
-		{
-			if (rfdCells.get(i).getCellID().equals(c.getCellID())  == true)
-			{
-				rfdCells.remove(i);
-				break;
-			}
-		}
-	}
-	
-	/**
-	 * remove cell from referring cells
-	 * @param c
-	 */
-	public void removeRfgCell(Cell c)
-	{
-		for (int i=0;i<rfgCells.size();i++)
-		{
-			if (rfgCells.get(i).getCellID().equals(c.getCellID())  == true)
-			{
-				rfgCells.remove(i);
-				break;
-			}
-		}
-	}
+
 
 	public String getCellID() {
 		return cellID;
@@ -258,56 +165,7 @@ public class Cell
 		this.column = column;
 	}
 
-	public ArrayList<Cell> getRfdCells() {
-		return rfdCells;
-	}
-
-	public void setRfdCells(ArrayList<Cell> rfdCells) {
-		this.rfdCells = rfdCells;
-	}
-
-	public ArrayList<Cell> getRfgCells() {
-		return rfgCells;
-	}
-
-	public void setRfgCells(ArrayList<Cell> rfgCells) {
-		this.rfgCells = rfgCells;
-	}
 	
-	/**
-	 * Update referred list
-	 * @param newList
-	 */
-	public void updateRfdCells(ArrayList<Cell> newList)
-	{
-		// first on new RFD list, add new entries to existing
-		for (int i=0;i<newList.size();i++)
-		{
-			if (rfdCells.contains(newList.get(i)) == false)
-				rfdCells.add(newList.get(i));
-		}
-		
-		// second, scan of existing, remove cells not found in the new list
-		for (int i=0;i<rfdCells.size();i++)
-		{
-			Cell c  = rfdCells.get(i);
-			if (newList.contains(c) == false)
-				rfdCells.remove(c);
-		}
-	}
-	
-	public void emptyRfdCells()
-	{
-		rfdCells.clear();
-	}
-	
-	public void emptyRfgCells()
-	{
-		rfgCells.clear();
-	}
-	
-	
-
 	/**
 	 * Check equality
 	 */

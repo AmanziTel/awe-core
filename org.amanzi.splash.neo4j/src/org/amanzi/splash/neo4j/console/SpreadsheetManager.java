@@ -1,7 +1,6 @@
 package org.amanzi.splash.neo4j.console;
 
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
-import org.amanzi.splash.neo4j.utilities.Util;
 
 /**
  * Spreadsheet Manager class

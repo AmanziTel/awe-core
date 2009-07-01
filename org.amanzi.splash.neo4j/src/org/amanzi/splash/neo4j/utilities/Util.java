@@ -3,7 +3,6 @@ package org.amanzi.splash.neo4j.utilities;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,7 +18,6 @@ import javax.script.ScriptEngineManager;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorPart;
@@ -104,8 +102,6 @@ public static final boolean enableNeo4j = true;
 					if (c != null)
 					{						
 						printCell("Cell", c);
-						printCellList("RFD List of Cell " + c.getCellID(), c.getRfdCells());
-						printCellList("RFG List of Cell " + c.getCellID(), c.getRfgCells());
 						Util.logn("--------------------------------------------");
 					}
 					else
@@ -173,7 +169,8 @@ public static final boolean enableNeo4j = true;
 
 	public static void listScriptingEngines() {
 		ScriptEngineManager mgr = new ScriptEngineManager();
-		for (ScriptEngineFactory factory : mgr.getEngineFactories()) {
+		for (@SuppressWarnings("unused")
+		ScriptEngineFactory factory : mgr.getEngineFactories()) {
 			Util.logn("ScriptEngineFactory Info");
 			//Util.log("\tScript Engine: %s (%s)\n", factory.getEngineName(), factory.getEngineVersion());
 			//Util.log("\tLanguage: %s (%s)\n", factory.getLanguageName(), factory.getLanguageVersion());

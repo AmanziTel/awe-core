@@ -1,45 +1,29 @@
 package org.amanzi.splash.neo4j.swing;
 
-import java.awt.Color;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.swing.JLabel;
 import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.neo4j.SplashNeoManager;
-import org.amanzi.splash.neo4j.console.SpreadsheetManager;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.Util;
 import org.eclipse.core.runtime.FileLocator;
-
-import com.eteks.openjeks.format.CellBorder;
-import com.eteks.openjeks.format.CellFormat;
-import com.eteks.openjeks.format.TableFormat;
 import org.jruby.Ruby;
 import org.jruby.javasupport.JavaEmbedUtils;
+
+import com.eteks.openjeks.format.CellFormat;
 
 public class SplashTableModel extends DefaultTableModel
 {
@@ -74,9 +58,12 @@ public class SplashTableModel extends DefaultTableModel
 		this.columnCount  = cols;
 		this.splashID = splash_id;
 		
-		initializeJRubyInterpreter();
+		
+		if (engine == null)
+			initializeJRubyInterpreter();
 
-		splashNeoManager = new SplashNeoManager(this.splashID);
+		if (splashNeoManager == null)
+			splashNeoManager = new SplashNeoManager(this.splashID);
 	}
 	
 
@@ -143,7 +130,7 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 
 	public void updateCellFromScript(Cell cell) {
-		String oldFormula = (String)cell.getDefinition();
+		
 
 		updateDefinitionFromScript(cell);
 
@@ -472,10 +459,7 @@ public class SplashTableModel extends DefaultTableModel
 		//Util.logExit("refreshCell");
 	}
 
-	private CellFormat getCellFormatAt(int row, int column)
-	{
-		return ((Cell)getValueAt(row, column)).getCellFormat();
-	}
+	
 
 
 	public Cell getCellByID(String cellID)
@@ -493,16 +477,7 @@ public class SplashTableModel extends DefaultTableModel
 	}
 
 
-	private ArrayList<Cell> findComplexCellIDs(String str)
-	{
-		ArrayList<String> tempList = Util.findComplexCellIDs(str);
-		ArrayList<Cell> retList = new ArrayList<Cell>();
-		for (int i=0;i<tempList.size();i++){
-			retList.add(getCellByID(tempList.get(i)));
-		}
-
-		return retList;
-	}
+	
 	public SplashNeoManager getSplashNeoManager() {
 		return splashNeoManager;
 	}

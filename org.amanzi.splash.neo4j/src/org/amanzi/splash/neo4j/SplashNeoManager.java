@@ -6,11 +6,7 @@ import java.util.List;
 
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.utilities.Util;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
@@ -19,7 +15,6 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
-import org.neo4j.remote.RemoteNeo;
 import org.neo4j.util.index.NeoIndexService;
 
 import com.eteks.openjeks.format.CellFormat;
@@ -68,7 +63,7 @@ public class SplashNeoManager{
 			Util.logn("location: " + location);
 
 			neo = new EmbeddedNeo( location );
-			this.splashIndexService = new NeoIndexService( neo );
+			splashIndexService = new NeoIndexService( neo );
 			System.out.println( "Splash: connected to embedded neo" );
 		}
 	}
@@ -102,7 +97,7 @@ public class SplashNeoManager{
 		Cell cell = null;
 		try
 		{
-			n = this.splashIndexService.getSingleNode( "id", id );
+			n = splashIndexService.getSingleNode( "id", id );
 			if (n != null){
 				Util.logn("----------------------------------------------");
 				for (String s : n.getPropertyKeys()){
@@ -141,6 +136,8 @@ public class SplashNeoManager{
 
 		return cell;
 	}
+	
+	
 
 	public Cell NodeToCell(Node n){
 		String id = (String) n.getProperty("id");
@@ -173,11 +170,12 @@ public class SplashNeoManager{
 				value, cf);
 	}
 
+	@SuppressWarnings("deprecation")
 	public ArrayList<String> findReferringCells(String id){
 		ArrayList<String> retIDs = new ArrayList<String>();
 		Transaction tx = neo.beginTx();//neo.beginTx();
 		try{
-			Node n = this.splashIndexService.getSingleNode( "id", id );
+			Node n = splashIndexService.getSingleNode( "id", id );
 			Traverser cellTraverser = n.traverse(
 					Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.END_OF_NETWORK,
@@ -214,7 +212,7 @@ public class SplashNeoManager{
 		return retIDs;
 	}
 
-
+	
 
 	public Node CellToNode (Node node, Cell c){
 		Node n = node;
@@ -243,11 +241,11 @@ public class SplashNeoManager{
 	}
 
 	public void updateCell( String id, Cell updatedCell){
-		Transaction tx = neo.beginTx();// neo.beginTx();
+		Transaction tx = neo.beginTx();
 		try{
-			Node n = this.splashIndexService.getSingleNode( "id", id );
+			Node n = splashIndexService.getSingleNode( "id", id );
 
-			this.splashIndexService.index( CellToNode(n, updatedCell), "id", id );
+			splashIndexService.index( CellToNode(n, updatedCell), "id", id );
 
 			//Util.logn("Finding cell IDs...");
 			List<String> rfdCellsIDs = Util.findComplexCellIDs((String) updatedCell.getDefinition());
@@ -256,7 +254,7 @@ public class SplashNeoManager{
 
 				String ID = rfdCellsIDs.get(i).toUpperCase();
 				//Util.logn("Cell ID: " + ID);
-				Node nc = this.splashIndexService.getSingleNode( "id", ID);
+				Node nc = splashIndexService.getSingleNode( "id", ID);
 				//Util.logn("nc = " + nc);
 
 				if (nc == null){
@@ -264,7 +262,7 @@ public class SplashNeoManager{
 					newNode.setProperty( "id", ID );
 					//newNode.setProperty( "value", new_cell.getValue() );
 					//newNode.setProperty("definition", new_cell.getDefinition());
-					this.splashIndexService.index( newNode, "id", ID );
+					splashIndexService.index( newNode, "id", ID );
 				}
 				//Util.logn("Creating relationship...");
 				n.createRelationshipTo(nc, CellRelationTypes.RFD);
@@ -282,14 +280,14 @@ public class SplashNeoManager{
 
 	public void addCell( String id, Cell new_cell)
 	{
-		Transaction tx = neo.beginTx();// neo.beginTx();
+		Transaction tx = neo.beginTx();
 		try{
-			Node n = this.splashIndexService.getSingleNode( "id", id );
+			Node n = splashIndexService.getSingleNode( "id", id );
 			if (n == null){
 				Node newNode = neo.createNode();
-				this.splashIndexService.index( CellToNode(newNode, new_cell), "id", id );
+				splashIndexService.index( CellToNode(newNode, new_cell), "id", id );
 			}else{
-				this.splashIndexService.index( CellToNode(n, new_cell), "id", id );
+				splashIndexService.index( CellToNode(n, new_cell), "id", id );
 			}
 			tx.success();
 		}
