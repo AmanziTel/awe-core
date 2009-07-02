@@ -13,10 +13,32 @@ import org.eclipse.debug.ui.console.IConsoleLineTracker;
 import org.rubypeople.rdt.internal.launching.LaunchingMessages;
 import org.rubypeople.rdt.internal.launching.LaunchingPlugin;
 
+/**
+ * Utility class for working with Ruby Console
+ * 
+ * @author Lagutko_N
+ *
+ */
+
 public class ConsoleRuntime {
 	
+	/**
+	 * Name of Process Type attribute
+	 */
 	private static final String PROCESS_TYPE_ATTRIBUTE = "processType";
+	
+	/**
+	 * ID of ConsoleLineTracker Extension Point
+	 * 
+	 */
 	private static final String CONSOLE_LINE_TRACKER_ID = "org.eclipse.debug.ui.consoleLineTrackers";
+	
+	/**
+	 * Returns all ConsoleLineTrackes by given process name
+	 * 
+	 * @param processType name of process
+	 * @return array of ConsoleLineTrackers
+	 */
 
 	public static IConsoleLineTracker[] getConsoleLineTrackers(String processType) {
 		IExtensionPoint extensionPoint= Platform.getExtensionRegistry().getExtensionPoint(CONSOLE_LINE_TRACKER_ID); //$NON-NLS-1$

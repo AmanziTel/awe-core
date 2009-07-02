@@ -8,7 +8,7 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class AweLaunchingPlugin extends Plugin implements IStartup {
+public class AweLaunchingPlugin extends Plugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.amanzi.rdt.launching";
@@ -50,14 +50,4 @@ public class AweLaunchingPlugin extends Plugin implements IStartup {
 	public static AweLaunchingPlugin getDefault() {
 		return plugin;
 	}
-	
-	/**
-	 * Actions on startup
-	 * 
-	 */
-
-	public void earlyStartup() {
-		
-	}
-
 }

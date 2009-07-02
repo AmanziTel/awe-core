@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -21,15 +22,20 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.debug.core.model.IStreamsProxy;
+import org.eclipse.debug.internal.core.commands.TerminateCommand;
+import org.eclipse.debug.internal.ui.views.console.ConsoleMessages;
 import org.eclipse.debug.ui.console.IConsole;
 import org.eclipse.debug.ui.console.IConsoleHyperlink;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.AbstractConsole;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IHyperlink;
 import org.eclipse.ui.console.IOConsole;
@@ -40,9 +46,13 @@ import org.jruby.RubyInstanceConfig.LoadServiceCreator;
 import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
+import org.rubypeople.rdt.core.RubyCore;
 import org.rubypeople.rdt.internal.launching.StandardVMRunner;
+import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.launching.IRubyLaunchConfigurationConstants;
 import org.rubypeople.rdt.launching.IVMInstall;
+import org.rubypeople.rdt.launching.PropertyChangeEvent;
+import org.rubypeople.rdt.ui.RubyUI;
 
 
 /**
@@ -90,7 +100,7 @@ public class RubyConsole extends IOConsole implements IConsole {
 	Ruby runtime;
 	
 	/**
-	 * Pulic constructor that creates console 
+	 * Public constructor that creates console 
 	 * 
 	 * @param configuration launch configuration
 	 * @param launch launch preferences
@@ -284,12 +294,25 @@ public class RubyConsole extends IOConsole implements IConsole {
 			e.printStackTrace(outputStream);
 		}
 		
+		setConsoleLabelTerminated();
+	}
+	
+	/**
+	 * Add prefix '<terminated>' to Console's label
+	 * 
+	 */
+	
+	private void setConsoleLabelTerminated() {
+		final String newName = MessageFormat.format(ConsoleMessages.ProcessConsole_0, new String [] { getName() });
 		
-		setName("<terminated> " + getName());
+		Runnable r = new Runnable() {
+			public void run() {
+				setName(newName);
+				ConsolePlugin.getDefault().getConsoleManager().warnOfContentChange(RubyConsole.this);
+			}
+		};
 		
-		ConsolePlugin.getDefault().getConsoleManager().removeConsoles(new RubyConsole[] {this});
-		ConsolePlugin.getDefault().getConsoleManager().addConsoles(new RubyConsole[] {this});
-		ConsolePlugin.getDefault().getConsoleManager().showConsoleView(this);
+		PlatformUI.getWorkbench().getDisplay().asyncExec(r);
 	}
 	
 	public void addLink(IConsoleHyperlink arg0, int arg1, int arg2) {

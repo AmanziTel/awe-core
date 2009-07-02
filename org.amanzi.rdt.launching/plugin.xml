@@ -10,10 +10,6 @@
       </vmInstallType>
     </extension>
 
-	<extension point="org.eclipse.ui.startup">
-		<startup class="org.amanzi.rdt.internal.launching.AweLaunchingPlugin"/>
-	</extension>
-
 	<extension point="org.eclipse.debug.ui.launchShortcuts">
 		<shortcut label="Ruby Script"
 			icon="icons/full/ctool16/run_ruby.gif"
