@@ -8,3 +8,4 @@ Bundle-Vendor: org.amanzi
 Export-Package: org.amanzi.scripting.jruby
 Require-Bundle: org.jruby,
  org.eclipse.core.runtime
+Eclipse-BuddyPolicy: registered
