@@ -57,14 +57,16 @@ public static final boolean enableNeo4j = true;
 	public static boolean isTesting = false;
 	public static String ColorToString (Color c)
 	{
-		String s = Integer.toString(c.getRed()) + ";" + Integer.toString(c.getGreen() )
-		+ ";" + Integer.toString(c.getBlue());
-
-		return s;
+//		String s = Integer.toString(c.getRed()) + ";" + Integer.toString(c.getGreen() )
+//		+ ";" + Integer.toString(c.getBlue());
+//
+//		return s;
+		
+		return "";
 	}
 	
 	public static void printColor(Color c){
-		Util.logn("R: " + c.getRed() + " - G: " + c.getGreen() + " - B: " + c.getBlue());
+		//Util.logn("R: " + c.getRed() + " - G: " + c.getGreen() + " - B: " + c.getBlue());
 	}
 	
 	public static void AddFileMenuItem(){

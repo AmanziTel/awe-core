@@ -2,6 +2,7 @@ package org.amanzi.splash.neo4j.swing;
 
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
+import java.util.Vector;
 
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -10,6 +11,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import org.amanzi.splash.neo4j.SplashNeoManager;
 import org.amanzi.splash.neo4j.utilities.Util;
 
 import com.eteks.openjeks.format.CellFormat;
@@ -119,7 +121,7 @@ public class SplashTable extends JTable
 		rowHeader.setDefaultRenderer(Object.class, _RowHeaderRenderer);
 		rowHeader.setRowHeight(getDefaultRowHeight());
 
-		tableFormat = new TableFormat();
+
 
 
 
@@ -167,58 +169,30 @@ public class SplashTable extends JTable
 	 */
 	private void swapCells(int x1,int y1, int x2, int y2)
 	{
-		Cell o1 = (Cell) getValueAt(x1,y1);
-		Cell o2 = (Cell) getValueAt(x2,y2);
-
-		String o1CellID = Util.getCellIDfromRowColumn(x1, y1);
-		String o2CellID = Util.getCellIDfromRowColumn(x2, y2);
-
-		if (o1 == null) { Util.logn("WARNING: o1 = null"); }
-		if (o2 == null) { Util.logn("WARNING: o2 = null"); }
-
-		Util.logn("before o1 renameCell");
-		o1.renameCell(o1CellID, o2CellID);
-		Util.logn("before o2 renameCell");
-		o2.renameCell(o2CellID, o1CellID);
-
-		Util.logn("before c1 getFormatAt");
-		CellFormat c1 = tableFormat.getFormatAt(x1, y1);
-
-		if (c1 == null) Util.logn("WARNING: c1 = null");
-
-		Util.logn("before c2 getFormatAt");
-		CellFormat c2 = tableFormat.getFormatAt(x2, y2);
-
-		if (c2 == null) Util.logn("WARNING: c2 = null");
-
-		tableFormat.setFormatAt(c1, x2, y2, x2, y2);
-		tableFormat.setFormatAt(c2, x1, y1, x1, y1);
-
-		Util.logn("before c1 setFormatAt");
-		o1.setCellFormat(c2);
-
-		Util.logn("before c2 setFormatAt");
-		o2.setCellFormat(c1);
-
-		Util.logn("before o1 setValueAt");
-		setValueAt(o1, x2, y2);
-
-		Util.logn("before o2 setValueAt");
-		setValueAt(o2, x1, y1);
+		String id1 = Util.getCellIDfromRowColumn(x1, y1);
+		String id2 = Util.getCellIDfromRowColumn(x2, y2);
+			
+		SplashTableModel model = (SplashTableModel)getModel();
+		SplashNeoManager manager = model.getSplashNeoManager();
+		
+		Cell c1 = manager.getCell(id1);
+		Cell c2 = manager.getCell(id2);
+		model.setValueAt(c1, x2, y2);
+		model.setValueAt(c2, x1, y1);
 	}
-
-	public TableFormat tableFormat = null;
-	CellFormatRenderer renderer = null;
-
-	public void setTableFormat(TableFormat tf)
+	
+	private void moveCell(int x1,int y1, int x2, int y2)
 	{
-		renderer = new CellFormatRenderer (tableFormat);
-		setDefaultRenderer(Object.class, renderer);
-		setDefaultRenderer(Long.class, renderer);
-		setDefaultRenderer(Double.class, renderer);
-		setDefaultRenderer(String.class, renderer);
-
-		repaint();
+		String id1 = Util.getCellIDfromRowColumn(x1, y1);
+		String id2 = Util.getCellIDfromRowColumn(x2, y2);
+			
+		SplashTableModel model = (SplashTableModel)getModel();
+		SplashNeoManager manager = model.getSplashNeoManager();
+		
+		Cell c1 = manager.getCell(id1);
+		//Cell c2 = manager.getCell(id2);
+		model.setValueAt(c1, x2, y2);
+		//model.setValueAt(c2, x1, y2);
 	}
 
 	/**
@@ -242,7 +216,7 @@ public class SplashTable extends JTable
 
 		Util.logn("I'm after loop");
 
-		setTableFormat(tableFormat);
+
 	}
 
 	/**
@@ -251,7 +225,6 @@ public class SplashTable extends JTable
 	 */
 	public void moveRowUp(int index)
 	{
-
 		int columnCount = getColumnCount();
 
 		if (index < 1) return;
@@ -261,7 +234,7 @@ public class SplashTable extends JTable
 			swapCells(index, j, index-1, j);
 		}
 
-		setTableFormat(tableFormat);
+
 	}
 
 	/**
@@ -278,7 +251,6 @@ public class SplashTable extends JTable
 		{
 			swapCells(i,index,i,index+1);
 		}
-		setTableFormat(tableFormat);
 	}
 
 	/**
@@ -404,6 +376,8 @@ public class SplashTable extends JTable
 		//setTableFormat(newModel.tableFormat);
 
 	}
+	
+		
 
 	/**
 	 * insert row at index
@@ -411,40 +385,41 @@ public class SplashTable extends JTable
 	 */
 	public void insertRow(int index)
 	{
-		int rowCount = getRowCount();
-		int columnCount = getColumnCount();
-
-		SplashTableModel newModel = new SplashTableModel(rowCount+1, columnCount, splashID);
-
-		for (int j=0;j<columnCount;j++)
-		{
-			newModel.setValueAt(new Cell(index, j, "", "", new CellFormat()), index, j);
-		}
-
-		for (int i=0;i<index;i++)
-			for (int j=0;j<columnCount;j++)
-			{
-				newModel.setValueAt(getValueAt(i,j), i, j);
-			}
-
-		for (int i=index+1;i<rowCount+1;i++)
-			for (int j=0;j<columnCount;j++)
-			{
-				Cell c = (Cell) getValueAt(i-1,j);
-				String oldCellID = Util.getCellIDfromRowColumn(i-1, j);
-				String newCellID = Util.getCellIDfromRowColumn(i, j);
-				c.renameCell(oldCellID, newCellID);
-				//c.setRow(i);
-
-				newModel.setValueAt(c, i, j);
-			}
+		Util.logn("Inserting a new row");
+		SplashTableModel model = (SplashTableModel)getModel();
+		SplashNeoManager manager = model.getSplashNeoManager();
+		int rowCount = model.getRowCount();
+		int columnCount = model.getColumnCount();
+		
+		SplashTableModel newModel = new SplashTableModel(rowCount+1, columnCount, splashID, manager, model.getEngine());
+			//model;
+		
+		
+//		Cell[] clist = new Cell[10];
+//		for (int i=0;i<10;i++)
+//			clist[i] = new Cell(10, i, "","", new CellFormat());
+		
+		//newModel.addRow(new Vector<Cell>());
+		
+	
+		for (int i=0;i<newModel.getColumnCount();i++)
+			newModel.setValueAt(new Cell(newModel.getRowCount()-1, i, "","", new CellFormat()), newModel.getRowCount()-1, i);
+		
+//		for (int i=newModel.getRowCount()-1;i>=index;i--){
+//			for (int j=0;j<newModel.getColumnCount();j++){
+//				moveCell(i,j, i+1,j);
+//			}
+//		}
+	    
+		
 		setModel(newModel);
-
-		//setTableFormat(newModel.tableFormat);
-
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
-
+		
+		rowHeader.repaint();
+		
+		repaint();
+		
 
 	}
 	/**

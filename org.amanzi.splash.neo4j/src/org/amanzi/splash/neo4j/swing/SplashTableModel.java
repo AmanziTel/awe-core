@@ -66,6 +66,23 @@ public class SplashTableModel extends DefaultTableModel
 			splashNeoManager = new SplashNeoManager(this.splashID);
 	}
 	
+	@SuppressWarnings("unchecked")
+	public SplashTableModel (int rows, int cols, String splash_id, SplashNeoManager manager, ScriptEngine rubyengine)
+	{
+		
+		this.rowCount     = rows;
+		this.columnCount  = cols;
+		this.splashID = splash_id;
+		
+		
+		if (engine == null)
+			this.engine = rubyengine;
+
+		if (splashNeoManager == null)
+			splashNeoManager = manager;
+	}
+
+	
 
 	public void initializeJRubyInterpreter(){
 		String path = "";
@@ -376,6 +393,7 @@ public class SplashTableModel extends DefaultTableModel
 	{
 		// row and column index are checked but storing in a Hashtable
 		// won't cause real problems
+		Util.logn("row = " + row + " - getRowCount () = " +getRowCount () );
 		if (row >= getRowCount ())
 			throw new ArrayIndexOutOfBoundsException (row);
 		if (column >= getColumnCount ()){
@@ -414,9 +432,54 @@ public class SplashTableModel extends DefaultTableModel
 		fireTableChanged (new TableModelEvent (this, row, row, column));
 		//Util.logExit("setValueAt (Object value, int row, int column, String oldDefinition)");
 	}
+	
+	public void refreshCell(String cellID) {
+		//Util.logEnter("refreshCell");
+		
+		Util.logEnter("interpret(String definition, String oldDefinition, int row, int column)");
+
+		//String cellID = cell.getCellID();
+
+		Util.logn("refreshCell: cellID = " + cellID);
+		Cell cell = splashNeoManager.getCell(cellID);
+
+		String definition = (String) cell.getDefinition();
+		String formula1 = (String) cell.getDefinition();
+		Cell se = cell;
+
+		if (se == null){
+			Util.logn("WARNING: se = null");
+		}
+
+		List<String> list = Util.findComplexCellIDs(definition);
+		for (int i=0;i<list.size();i++){
+			formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
+		}
+
+		Util.logn("Interpreting formula: " + formula1 + " at Cell " + cellID);
+
+		if (definition.startsWith("=") == false){
+			// This is normal text entered into cell, then
+			Util.logn("CASE 1: Formula not starting with =");
+		}
+		else{
+			Util.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
+			formula1 = "<%= " +formula1.replace("=", "") + " %>";
+		}
+
+		Util.logn("formula1 =" + formula1);
+
+		Object s1 = interpret_erb(cellID, formula1);
+		se.setDefinition(definition);
+		se.setValue((String)s1);
+
+		this.setValueAt(se, cell.getRow(), cell.getColumn());
+		//Util.logExit("refreshCell");
+	}
 
 
-	private void refreshCell(Cell cell) {
+
+	public void refreshCell(Cell cell) {
 		//Util.logEnter("refreshCell");
 		Util.printCell("Refreshing Cell", cell);
 		Util.logEnter("interpret(String definition, String oldDefinition, int row, int column)");
@@ -483,5 +546,11 @@ public class SplashTableModel extends DefaultTableModel
 	}
 	public void setSplashNeoManager(SplashNeoManager splashNeoManager) {
 		this.splashNeoManager = splashNeoManager;
+	}
+	public ScriptEngine getEngine() {
+		return engine;
+	}
+	public void setEngine(ScriptEngine engine) {
+		this.engine = engine;
 	}
 }

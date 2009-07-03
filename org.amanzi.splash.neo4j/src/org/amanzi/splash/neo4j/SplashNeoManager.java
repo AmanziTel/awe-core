@@ -60,7 +60,7 @@ public class SplashNeoManager{
 //			.getString( NeoPreferences.DATABASE_RESOURCE_URI );
 
 			String location = Platform.getLocation() + "/neo4j/" + splashID;
-			Util.logn("location: " + location);
+			//Util.logn("location: " + location);
 
 			neo = new EmbeddedNeo( location );
 			splashIndexService = new NeoIndexService( neo );
@@ -79,7 +79,7 @@ public class SplashNeoManager{
 			{
 				tx.finish();
 				neo.shutdown();
-				Util.logn("Neo Service Stopped");
+				//Util.logn("Neo Service Stopped");
 			}
 			finally
 			{
@@ -99,11 +99,11 @@ public class SplashNeoManager{
 		{
 			n = splashIndexService.getSingleNode( "id", id );
 			if (n != null){
-				Util.logn("----------------------------------------------");
+				//Util.logn("----------------------------------------------");
 				for (String s : n.getPropertyKeys()){
-					Util.logn ("Key: " + s + " - Value: " + n.getProperty(s));
+					//Util.logn ("Key: " + s + " - Value: " + n.getProperty(s));
 				}
-				Util.logn("----------------------------------------------");
+				//Util.logn("----------------------------------------------");
 			}
 			tx.success();
 		}
@@ -116,8 +116,8 @@ public class SplashNeoManager{
 		if (n != null){
 			try{
 				cell = NodeToCell(n);
-				Util.logn("cell.definition: " + cell.getDefinition());
-				Util.logn("cell.value: " + cell.getValue());
+				//Util.logn("cell.definition: " + cell.getDefinition());
+				//Util.logn("cell.value: " + cell.getValue());
 
 			}catch (Exception ex){
 				cell = new Cell(Util.getRowIndexFromCellID(id),
@@ -212,8 +212,6 @@ public class SplashNeoManager{
 		return retIDs;
 	}
 
-	
-
 	public Node CellToNode (Node node, Cell c){
 		Node n = node;
 		n.setProperty("id", c.getCellID());
@@ -239,6 +237,21 @@ public class SplashNeoManager{
 
 		return n;
 	}
+	
+	public void renameCell( String oldID, String newID){
+		Transaction tx = neo.beginTx();
+		try{
+			Node n = splashIndexService.getSingleNode( "id", oldID );
+			
+			n.setProperty("id", newID);
+
+			splashIndexService.index( n, "id", newID );
+		}
+		finally
+		{
+			tx.finish();
+		}
+	}
 
 	public void updateCell( String id, Cell updatedCell){
 		Transaction tx = neo.beginTx();
@@ -247,15 +260,15 @@ public class SplashNeoManager{
 
 			splashIndexService.index( CellToNode(n, updatedCell), "id", id );
 
-			//Util.logn("Finding cell IDs...");
+			////Util.logn("Finding cell IDs...");
 			List<String> rfdCellsIDs = Util.findComplexCellIDs((String) updatedCell.getDefinition());
 
 			for (int i=0;i<rfdCellsIDs.size();i++){
 
 				String ID = rfdCellsIDs.get(i).toUpperCase();
-				//Util.logn("Cell ID: " + ID);
+				////Util.logn("Cell ID: " + ID);
 				Node nc = splashIndexService.getSingleNode( "id", ID);
-				//Util.logn("nc = " + nc);
+				////Util.logn("nc = " + nc);
 
 				if (nc == null){
 					Node newNode = neo.createNode();
@@ -264,10 +277,10 @@ public class SplashNeoManager{
 					//newNode.setProperty("definition", new_cell.getDefinition());
 					splashIndexService.index( newNode, "id", ID );
 				}
-				//Util.logn("Creating relationship...");
+				////Util.logn("Creating relationship...");
 				n.createRelationshipTo(nc, CellRelationTypes.RFD);
 				nc.createRelationshipTo(n, CellRelationTypes.RFG);
-				//Util.logn("Finished");
+				////Util.logn("Finished");
 			}
 
 			tx.success();

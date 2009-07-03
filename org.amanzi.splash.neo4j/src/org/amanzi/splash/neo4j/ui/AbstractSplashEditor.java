@@ -284,7 +284,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowColumnPopup(MouseEvent e){
-		if (e.isPopupTrigger() && table.isEnabled()) {
+		/*if (e.isPopupTrigger() && table.isEnabled()) {*/
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -306,7 +306,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 					contextMenu.show(table, p.x, p.y);
 				}
 			}
-		}
+		//}
 	}
 
 	/**
@@ -314,7 +314,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowRowPopup(MouseEvent e){
-		if (e.isPopupTrigger() && table.isEnabled()) {
+		//if (e.isPopupTrigger() && table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -336,7 +336,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 					contextMenu.show(table, p.x, p.y);
 				}
 			}
-		}
+		//}
 	}
 
 	/**
@@ -344,7 +344,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param e
 	 */
 	private void maybeShowPopup(MouseEvent e) {
-		if (e.isPopupTrigger() && table.isEnabled()) {
+		//if (e.isPopupTrigger() && table.isEnabled()) {
 			Point p = new Point(e.getX(), e.getY());
 			int col = table.columnAtPoint(p);
 			int row = table.rowAtPoint(p);
@@ -365,7 +365,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 					contextMenu.show(table, p.x, p.y);
 				}
 			}
-		}
+		//}
 	}
 	// Returns the preferred height of a row.
     // The result is equal to the tallest cell in the row.
@@ -426,7 +426,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 					public void valueChanged(ListSelectionEvent e) {
 						// TODO Auto-generated method stub
 						
-						updateTableHeaderHighlights(table.getSelectedRow(), table.getSelectedColumn());
+						//TODO: updateTableHeaderHighlights(table.getSelectedRow(), table.getSelectedColumn());
 						
 //						for (int i=0;i<table.getSelectedRows().length;i++){
 //							for (int j=0;j<table.getSelectedColumns().length;j++){
