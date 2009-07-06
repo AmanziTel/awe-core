@@ -24,8 +24,30 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jruby,
  org.rubypeople.rdt.launching
 Eclipse-LazyStart: true
-export-package: org.amanzi.splash.console,
+export-package: com.eteks.openjeks;uses:="javax.swing",
+ com.eteks.openjeks.format;uses:="javax.swing.border,javax.swing,javax.swing.table",
+ com.eteks.openjeks.format.resources,
+ com.eteks.openjeks.resources,
+ org.amanzi.splash.console;uses:="org.amanzi.splash.swing",
  org.amanzi.splash.swing;x-friends:="org.amanzi.splash.testing",
- org.amanzi.splash.ui,
- org.amanzi.splash.utilities
+ org.amanzi.splash.ui;
+  uses:="org.eclipse.core.runtime,
+   org.eclipse.jface.resource,
+   org.eclipse.ui,
+   org.eclipse.ui.plugin,
+   org.eclipse.ui.part,
+   org.amanzi.splash.swing,
+   javax.swing,
+   org.eclipse.core.resources,
+   org.eclipse.jface.viewers,
+   org.osgi.framework,
+   javax.swing.event,
+   org.eclipse.swt.widgets,
+   com.eteks.openjeks.format",
+ org.amanzi.splash.utilities;
+  uses:="org.eclipse.ui,
+   org.eclipse.core.resources,
+   org.eclipse.swt.widgets,
+   org.amanzi.splash.swing,
+   com.eteks.openjeks.format"
 Bundle-Activator: org.amanzi.splash.ui.SplashPlugin

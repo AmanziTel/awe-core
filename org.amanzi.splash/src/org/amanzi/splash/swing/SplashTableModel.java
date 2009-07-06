@@ -8,19 +8,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -34,8 +28,6 @@ import org.amanzi.splash.utilities.Util;
 import org.eclipse.core.runtime.FileLocator;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.javasupport.JavaEmbedUtils;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
 
 import com.eteks.openjeks.format.CellBorder;
@@ -43,9 +35,6 @@ import com.eteks.openjeks.format.CellFormat;
 import com.eteks.openjeks.format.TableFormat;
 public class SplashTableModel extends DefaultTableModel
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2315033560766233243L;
 	private int    rowCount;
 	private int    columnCount;
@@ -59,8 +48,6 @@ public class SplashTableModel extends DefaultTableModel
 	public SplashTableModel ()
 	{
 		this (Short.MAX_VALUE, Short.MAX_VALUE);
-
-
 	}
 
 
@@ -74,88 +61,55 @@ public class SplashTableModel extends DefaultTableModel
 	{
 		this.rowCount     = rowCount;
 		this.columnCount  = columnCount;
-
-
-		
+		this.cellValues = new Hashtable ();
 
 		initializeJRubyInterpreter();
-
-
-
-		cellValues = new Hashtable ();
-
 		SpreadsheetManager.getInstance().setActiveModel(this);
 	}
 
 
+	/**
+	 * This is the method that starts up the JRuby runtime that will be used for
+	 * all parsing of cell contents, using ERB formula syntax.
+	 */
 	protected void initializeJRubyInterpreter() {
 		RubyInstanceConfig config = null;
 		config = new RubyInstanceConfig() {{
+			//TODO: See if the following two lines are actually needed for Splash (they were copied from AWEScript console originally)
 			setJRubyHome(ScriptUtils.getJRubyHome());	// this helps online help work
-			//setInput(tar.getInputStream());
-			//setOutput(new PrintStream(tar.getOutputStream()));
-			//setError(new PrintStream(tar.getOutputStream()));
-			setObjectSpaceEnabled(true); // useful for code completion inside the IRB
+			//setObjectSpaceEnabled(true); // useful for code completion inside the IRB
 			setLoadServiceCreator(new LoadServiceCreator() {
 				public LoadService create(Ruby runtime) {
 					return new EclipseLoadService(runtime);
 				}
 			});
-
-			// The following modification forces IRB to ignore the fact that inside eclipse
-			// the STDIN.tty? returns false, and IRB must continue to use a prompt
-			List<String> argList = new ArrayList<String>();
-			argList.add("--prompt-mode");
-			argList.add("default");
-			argList.add("--readline");
-			setArgv(argList.toArray(new String[0]));
 		}};
 		
-		runtime = Ruby.newInstance(config);		
+		runtime = Ruby.newInstance(config);
+		//TODO: See if this line is needed, since it passes nothing (and was copied from AWEScript console originally)
 		runtime.getLoadService().init(ScriptUtils.makeLoadPath(new String[] {}));
 
-		String path = "";
-		if (Util.isTesting == false){
-			URL scriptURL = null;
-			try {
-				scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry("jruby.rb"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			path = scriptURL.getPath();
-		}
-		else{
-			path ="D:/projects/AWE from SVN/org.amanzi.splash/jruby.rb";	
-		}
-
-		String input = "";
-		FileReader fr;
-
-		String line;
+		URL scriptURL = null;
 		try {
-			fr = new FileReader(path);
-			BufferedReader br = new BufferedReader(fr);
-			line = br.readLine();
-			while (line != null)
-			{
-				input += line + "\n";
-				line = br.readLine();
+			scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry("jruby.rb"));
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to find Splash initialization code",e);
+		}
+
+		StringBuffer input = new StringBuffer();
+		try {
+			String line;
+			BufferedReader br = new BufferedReader(new FileReader(scriptURL.getPath()));
+			while ((line = br.readLine()) != null) {
+				input.append(line).append("\n");
 			}
 		} catch (IOException e) {
-
 			e.printStackTrace();
 		}
 
-
-		runtime.evalScriptlet(input);
+		runtime.evalScriptlet(input.toString());
 		runtime.evalScriptlet("$sheet = Spreadsheet.new");				
-
-
-
 	}
-
-
 
 	/**
 	 * Constructor for class using RowCount and ColumnCount
@@ -167,14 +121,13 @@ public class SplashTableModel extends DefaultTableModel
 	{
 		this.rowCount     = rowCount;
 		this.columnCount  = columnCount;
-		Util.isTesting = isTesting;
 		Util.isDebug = true;
 		initializeJRubyInterpreter();
 
 		cellValues = new Hashtable ();
 
-
-		if (Util.isTesting){
+		//TODO: Find a better way - mock the data in the test cases
+		if (isTesting){
 			for (int i=0;i<rowCount;i++)
 				for (int j=0;j<columnCount;j++)
 				{
@@ -183,10 +136,6 @@ public class SplashTableModel extends DefaultTableModel
 
 		}
 	}
-
-
-
-
 
 	/**
 	 * Override for constructor to accept input stream
@@ -201,15 +150,12 @@ public class SplashTableModel extends DefaultTableModel
 		load(is);
 	}
 
-	
-
 	/**
 	 * Method that update Cell that has reference to Script
 	 * 
 	 * @param cell Cell
 	 * @author Lagutko_N
 	 */
-
 	public void updateCellFromScript(Cell cell) {
 		String oldFormula = (String)cell.getDefinition();
 
@@ -226,7 +172,6 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param cell Cell to update
 	 * @author Lagutko_N
 	 */
-
 	public void updateDefinitionFromScript(Cell cell) {
 		String content = Util.getScriptContent(cell.getScriptURI());
 		cell.setDefinition(content);

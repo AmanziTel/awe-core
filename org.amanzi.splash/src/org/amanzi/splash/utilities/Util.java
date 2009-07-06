@@ -54,7 +54,6 @@ public class Util {
 
 	public static boolean isDebug = true;
 
-	public static boolean isTesting = false;
 	public static String ColorToString (Color c)
 	{
 		String s = Integer.toString(c.getRed()) + ";" + Integer.toString(c.getGreen() )
