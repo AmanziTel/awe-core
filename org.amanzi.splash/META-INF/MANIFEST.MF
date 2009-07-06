@@ -25,7 +25,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.rubypeople.rdt.launching
 Eclipse-LazyStart: true
 export-package: org.amanzi.splash.console,
- org.amanzi.splash.swing,
+ org.amanzi.splash.swing;x-friends:="org.amanzi.splash.testing",
  org.amanzi.splash.ui,
  org.amanzi.splash.utilities
 Bundle-Activator: org.amanzi.splash.ui.SplashPlugin
