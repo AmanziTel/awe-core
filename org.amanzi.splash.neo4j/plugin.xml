@@ -11,7 +11,7 @@
             extensions="jrss"
             contributorClass="org.amanzi.splash.ui.actions.JRSSEditorActionBarContributor"
             class="org.amanzi.splash.neo4j.ui.SplashResourceEditor"
-            id="org.amanzi.splash.editor">
+            id="org.amanzi.splash.neo4j.editor">
       </editor>
    </extension>
    
@@ -19,13 +19,13 @@
          point="org.eclipse.ui.newWizards">
       <category
             name="Amanzi"
-            id="com.amanzi">
+            id="org.amanzi.splash">
       </category>
       <wizard
-            category="com.amanzi"
+            category="org.amanzi.splash"
             class="org.amanzi.splash.ui.neo4j.wizards.SplashNewSpreadsheetWizard"
             icon="icons/spreadsheet.gif"
-            id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard"
+            id="org.amanzi.splash.neo4j.wizards.SplashNewSpreadsheetWizard"
             name="Amanzi Neo4j Splash Spreadsheet">
       </wizard>
    </extension>

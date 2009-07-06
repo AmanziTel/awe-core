@@ -34,7 +34,7 @@ public class Util {
 	/*
 	 * Name of SplashResourceEditor
 	 */
-	public static final String AMANZI_SPLASH_EDITOR = "org.amanzi.splash.editor";
+	public static final String AMANZI_SPLASH_EDITOR = "org.amanzi.splash.neo4j.editor";
 
 	public static Color unselectedHeaderColor = new Color(239, 235, 231);
 	public static Color selectedHeaderColor = new Color(250, 209, 132);
