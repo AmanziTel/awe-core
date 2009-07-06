@@ -5,11 +5,9 @@ Bundle-SymbolicName: org.amanzi.splash.testing
 Bundle-Version: 1.0.0
 Bundle-Activator: org.amanzi.splash.testing.Activator
 Require-Bundle: org.eclipse.core.runtime,
- org.amanzi.splash,
- org.jtestr,
  org.junit,
- org.amanzi.splash,
- org.jtestr
+ org.jtestr,
+ org.amanzi.splash
 Eclipse-LazyStart: true
 Eclipse-RegisterBuddy: org.jtestr
 Export-Package: org.amanzi.splash.testing
