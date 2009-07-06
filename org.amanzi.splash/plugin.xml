@@ -19,14 +19,14 @@
          point="org.eclipse.ui.newWizards">
       <category
             name="Amanzi"
-            id="com.amanzi">
+            id="org.amanzi.splash">
       </category>
       <wizard
-            category="com.amanzi"
+            category="org.amanzi.splash"
             class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizard"
             icon="icons/spreadsheet.gif"
             id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard"
-            name="Amanzi Splash Spreadsheet">
+            name="Amanzi File-Based Splash Spreadsheet">
       </wizard>
    </extension>
    
