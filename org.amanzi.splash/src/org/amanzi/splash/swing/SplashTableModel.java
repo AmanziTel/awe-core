@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -15,31 +16,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.swing.JLabel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
+import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.console.SpreadsheetManager;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.Util;
 import org.eclipse.core.runtime.FileLocator;
+import org.jruby.Ruby;
+import org.jruby.RubyInstanceConfig;
+import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.runtime.load.LoadService;
 
 import com.eteks.openjeks.format.CellBorder;
 import com.eteks.openjeks.format.CellFormat;
 import com.eteks.openjeks.format.TableFormat;
-import org.jruby.Ruby;
-import org.jruby.javasupport.JavaEmbedUtils;
-
 public class SplashTableModel extends DefaultTableModel
 {
 	/**
@@ -50,8 +51,7 @@ public class SplashTableModel extends DefaultTableModel
 	private int    columnCount;
 	@SuppressWarnings("unchecked")
 	private Hashtable cellValues;
-	public TableFormat tableFormat = new TableFormat();
-	private ScriptEngine engine;
+	Ruby runtime;
 
 	/**
 	 * Creates a table model with <code>Short.MAX_VALUE</code> rows and columns.
@@ -62,6 +62,8 @@ public class SplashTableModel extends DefaultTableModel
 
 
 	}
+
+
 	/**
 	 * Constructor for class using RowCount and ColumnCount
 	 * @param rowCount
@@ -73,12 +75,88 @@ public class SplashTableModel extends DefaultTableModel
 		this.rowCount     = rowCount;
 		this.columnCount  = columnCount;
 
+
+		
+
 		initializeJRubyInterpreter();
 
+
+
 		cellValues = new Hashtable ();
-		
+
 		SpreadsheetManager.getInstance().setActiveModel(this);
 	}
+
+
+	protected void initializeJRubyInterpreter() {
+		RubyInstanceConfig config = null;
+		config = new RubyInstanceConfig() {{
+			setJRubyHome(ScriptUtils.getJRubyHome());	// this helps online help work
+			//setInput(tar.getInputStream());
+			//setOutput(new PrintStream(tar.getOutputStream()));
+			//setError(new PrintStream(tar.getOutputStream()));
+			setObjectSpaceEnabled(true); // useful for code completion inside the IRB
+			setLoadServiceCreator(new LoadServiceCreator() {
+				public LoadService create(Ruby runtime) {
+					return new EclipseLoadService(runtime);
+				}
+			});
+
+			// The following modification forces IRB to ignore the fact that inside eclipse
+			// the STDIN.tty? returns false, and IRB must continue to use a prompt
+			List<String> argList = new ArrayList<String>();
+			argList.add("--prompt-mode");
+			argList.add("default");
+			argList.add("--readline");
+			setArgv(argList.toArray(new String[0]));
+		}};
+		
+		runtime = Ruby.newInstance(config);		
+		runtime.getLoadService().init(ScriptUtils.makeLoadPath(new String[] {}));
+
+		String path = "";
+		if (Util.isTesting == false){
+			URL scriptURL = null;
+			try {
+				scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry("jruby.rb"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			path = scriptURL.getPath();
+		}
+		else{
+			path ="D:/projects/AWE from SVN/org.amanzi.splash/jruby.rb";	
+		}
+
+		String input = "";
+		FileReader fr;
+
+		String line;
+		try {
+			fr = new FileReader(path);
+			BufferedReader br = new BufferedReader(fr);
+			line = br.readLine();
+			while (line != null)
+			{
+				input += line + "\n";
+				line = br.readLine();
+			}
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+
+		runtime.evalScriptlet(input);
+		runtime.evalScriptlet("$sheet = Spreadsheet.new");				
+
+
+
+	}
+
+
+
 	/**
 	 * Constructor for class using RowCount and ColumnCount
 	 * @param rowCount
@@ -94,7 +172,7 @@ public class SplashTableModel extends DefaultTableModel
 		initializeJRubyInterpreter();
 
 		cellValues = new Hashtable ();
-		
+
 
 		if (Util.isTesting){
 			for (int i=0;i<rowCount;i++)
@@ -102,9 +180,10 @@ public class SplashTableModel extends DefaultTableModel
 				{
 					setValueAt(new Cell(i,j,"","",new CellFormat()),i,j);
 				}
-			
+
 		}
 	}
+
 
 
 
@@ -122,62 +201,7 @@ public class SplashTableModel extends DefaultTableModel
 		load(is);
 	}
 
-	public void initializeJRubyInterpreter(){
-
-		
-		String path = "";
-		if (Util.isTesting == false){
-			URL scriptURL = null;
-			try {
-				scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry("jruby.rb"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			path = scriptURL.getPath();
-		}
-		else{
-			path ="D:/projects/AWE from SVN/org.amanzi.splash/jruby.rb";	
-		}
-
-
-			ScriptEngineManager m = new ScriptEngineManager(getClass().getClassLoader());
-
-			m.registerEngineName("jruby", 
-					new com.sun.script.jruby.JRubyScriptEngineFactory());
-
-			engine = m.getEngineByName("jruby");
-
-			ScriptContext context = engine.getContext();
-
-
-			String input = "";
-			FileReader fr;
-
-			String line;
-			try {
-				fr = new FileReader(path);
-				BufferedReader br = new BufferedReader(fr);
-				line = br.readLine();
-				while (line != null)
-				{
-					input += line + "\n";
-					line = br.readLine();
-				}
-			} catch (IOException e) {
-
-				e.printStackTrace();
-			}
-
-			try {
-				engine.eval(input, context);
-				engine.eval("$sheet = Spreadsheet.new", context);				
-			} catch (ScriptException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
+	
 
 	/**
 	 * Method that update Cell that has reference to Script
@@ -185,33 +209,17 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param cell Cell
 	 * @author Lagutko_N
 	 */
-	
+
 	public void updateCellFromScript(Cell cell) {
 		String oldFormula = (String)cell.getDefinition();
-		
+
 		updateDefinitionFromScript(cell);
-		
+
 		interpret((String)cell.getDefinition(), cell.getRow(), cell.getColumn());
 		updateCellsAndTableModelReferences(cell.getRow(), cell.getColumn(), oldFormula, (String)cell.getDefinition());
 	}
 
-	public Object execJRubyCommand(String input){
-		Object ret = "";
-		if (Util.isTesting == true){
-			Ruby runtime = JavaEmbedUtils.initialize(Collections.EMPTY_LIST);
-			runtime.evalScriptlet(input);
-		}else{
-			try {
-				ret = engine.eval(input);
-			} catch (ScriptException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		return ret;
-	}
-
+	
 	/**
 	 * Function that updates definitiona of Cell from Script
 	 * 
@@ -269,26 +277,20 @@ public class SplashTableModel extends DefaultTableModel
 		Util.logn("path = " + path);
 		Util.logn("cellID.toLowerCase():" + cellID.toLowerCase());
 
-		try {
-			String input = "require" + "'" + path + "'" + "\n" +
-			"template = ERB.new <<-EOF" + "\n" +
-			formula + "\n" +
-			"EOF" + "\n" +
-			"$sheet.cells." + cellID.toLowerCase() + "=" +  "template.result(binding)" + "\n" + 
-			"return " + "$sheet.cells." + cellID.toLowerCase();
+		String input = "require" + "'" + path + "'" + "\n" +
+		"template = ERB.new <<-EOF" + "\n" +
+		formula + "\n" +
+		"EOF" + "\n" +
+		"$sheet.cells." + cellID.toLowerCase() + "=" +  "template.result(binding)" + "\n" +
+		"$sheet.cells." + cellID.toLowerCase();
 
-			Util.logn("ERB Input: " + input);
-			s = engine.eval(input, engine.getContext());
-			
-
-			Util.logn("ERB Output = " + s);
+		Util.logn("ERB Input: " + input);
 
 
-		} catch (ScriptException e) {
-			//s = "";
-			s = e.getMessage().replace("org.jruby.exceptions.RaiseException: ","");
-			e.printStackTrace();
-		}
+		s = runtime.evalScriptlet(input);
+
+		Util.logn("ERB Output = " + s);
+
 
 		if (s == null) s = "ERROR";
 
@@ -357,12 +359,12 @@ public class SplashTableModel extends DefaultTableModel
 						formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
 				}
 			}
-			
+
 			Util.displayStringList("list", list);
 
 			Util.logn("Formula starts with =, Converting formula to ERB format");
 			formula1 = "<%= " +formula1.replace("=", "") + " %>";
-		
+
 
 			Util.logn("Interpreting cell using ERB...");
 			Object s1 = interpret_erb(cellID, formula1);
@@ -614,7 +616,7 @@ public class SplashTableModel extends DefaultTableModel
 							se.setScriptURI(new URI(definition));							
 						}
 						catch (URISyntaxException e) {
-							
+
 						}
 						updateDefinitionFromScript(se);						
 					}
@@ -623,8 +625,8 @@ public class SplashTableModel extends DefaultTableModel
 					if (definition.length() > 0) {
 						interpret((String)se.getDefinition(), rowIndex, j);
 					}
-					
-					
+
+
 					//initCellReferences(rowIndex, j, definition);
 
 					//tableFormat.setFormatAt(c, rowIndex, j, rowIndex, j);
@@ -711,10 +713,7 @@ public class SplashTableModel extends DefaultTableModel
 		else
 			cellValues.put (cell, value);
 
-		if (value != null)
-		{
-			tableFormat.setFormatAt(((Cell)value).getCellFormat(), row, column, row, column);
-		}
+		
 
 		fireTableChanged (new TableModelEvent (this, row, row, column));
 	}
@@ -740,12 +739,12 @@ public class SplashTableModel extends DefaultTableModel
 		if (value != null)
 		{
 			CellFormat cf = ((Cell)value).getCellFormat();
-			
-			
+
+
 			((Cell)value).setCellFormat(cf);	
+
 			
-			tableFormat.setFormatAt(cf, row, column, row, column);
-			
+
 			updateCellsAndTableModelReferences(((Cell)value), oldDefinition, (String) ((Cell)value).getDefinition());
 		}
 
@@ -798,11 +797,11 @@ public class SplashTableModel extends DefaultTableModel
 		Util.logn("checking formulas...");
 		if (isInfiniteLoop(cell, newFormula) == false)
 		{
-			
+
 			Util.logn("No infinite loop found ");
 			if (cell != null)
 			{
-				
+
 				if (!newFormula.equals(oldFormula) && oldFormula != null)
 				{
 					Util.logn("!newFormula.equals(oldFormula) && oldFormula != null");
@@ -814,7 +813,7 @@ public class SplashTableModel extends DefaultTableModel
 					{
 						refreshCell(list.get(i));
 					}
-					
+
 				}
 			}
 		}else{
@@ -829,7 +828,7 @@ public class SplashTableModel extends DefaultTableModel
 		Util.logExit("updateCellsAndTableModelReferences");
 		return isInfLoop;
 	}
-	
+
 	/**
 	 * Update cell references and update table model with such references.
 	 * @param row
@@ -964,10 +963,10 @@ public class SplashTableModel extends DefaultTableModel
 		//Util.logn("row = " + row);
 		int column = Util.getColumnIndexFromCellID(cellID);
 		//Util.logn("column = " + column);
-		
+
 		//Util.logExit("getCellByID");
 		return (Cell)getValueAt(row, column);
-		
+
 	}
 
 	public boolean isInfiniteLoop(Cell c, String new_formula)
@@ -977,7 +976,7 @@ public class SplashTableModel extends DefaultTableModel
 
 		// find RFDs
 		List<Cell> idsList = findComplexCellIDs(new_formula);
-		
+
 		if (idsList.contains(c) == true){
 			ret = true;
 		}else{
@@ -1140,16 +1139,16 @@ class RowModel implements TableModel
 	{
 		return null;
 	}
-	
-	
+
+
 
 	public void addTableModelListener(TableModelListener arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void removeTableModelListener(TableModelListener arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

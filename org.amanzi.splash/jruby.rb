@@ -21,21 +21,11 @@ class Cells
       	b = a
       end	
       
-      #if (a =~ /\d+/ and a.include?"." and !a.include?"/[.]/")
-      #	puts "FLOAT DETECTED"
-      #	b = a.to_f
-      #elsif (a =~ /\d+/ and !a.include?"/[.]/")
-      #	puts "INTEGER DETECTED"
-      #	b = a.to_i
-      #else
-      #	b = a
-      #end
-      
       if (args.to_s.eql?"")
         #puts "value of "+ s + "= " + @cells[s]
         @cells[s]
       else
-        @cells[s] = b #args[0].to_i #.to_s
+        @cells[s] = b
 	  end
 	end
 	
@@ -47,7 +37,7 @@ end
 class Spreadsheet
   def initialize
     @cells = Cells.new
-    #puts "Spreadsheet has been initialized !!"
+    puts "Spreadsheet has been initialized !!"
   end
   
   def cells

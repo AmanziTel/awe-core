@@ -15,13 +15,17 @@ import javax.script.ScriptException;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 
+import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.neo4j.SplashNeoManager;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.Util;
 import org.eclipse.core.runtime.FileLocator;
 import org.jruby.Ruby;
+import org.jruby.RubyInstanceConfig;
+import org.jruby.RubyInstanceConfig.LoadServiceCreator;
 import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.runtime.load.LoadService;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -33,10 +37,10 @@ public class SplashTableModel extends DefaultTableModel
 	private static final long serialVersionUID = -2315033560766233243L;
 	private int    rowCount = 0;
 	private int    columnCount = 0;
-	private ScriptEngine engine;
+	
 	private SplashNeoManager splashNeoManager;
 	private String splashID = "";
-	
+	Ruby runtime;
 	/**
 	 * Creates a table model with <code>Short.MAX_VALUE</code> rows and columns.
 	 */
@@ -59,7 +63,7 @@ public class SplashTableModel extends DefaultTableModel
 		this.splashID = splash_id;
 		
 		
-		if (engine == null)
+		if (runtime == null)
 			initializeJRubyInterpreter();
 
 		if (splashNeoManager == null)
@@ -67,7 +71,7 @@ public class SplashTableModel extends DefaultTableModel
 	}
 	
 	@SuppressWarnings("unchecked")
-	public SplashTableModel (int rows, int cols, String splash_id, SplashNeoManager manager, ScriptEngine rubyengine)
+	public SplashTableModel (int rows, int cols, String splash_id, SplashNeoManager manager, Ruby rubyengine)
 	{
 		
 		this.rowCount     = rows;
@@ -75,8 +79,8 @@ public class SplashTableModel extends DefaultTableModel
 		this.splashID = splash_id;
 		
 		
-		if (engine == null)
-			this.engine = rubyengine;
+		if (runtime == null)
+			this.runtime = rubyengine;
 
 		if (splashNeoManager == null)
 			splashNeoManager = manager;
@@ -85,6 +89,31 @@ public class SplashTableModel extends DefaultTableModel
 	
 
 	public void initializeJRubyInterpreter(){
+		RubyInstanceConfig config = null;
+		config = new RubyInstanceConfig() {{
+			setJRubyHome(ScriptUtils.getJRubyHome());	// this helps online help work
+			//setInput(tar.getInputStream());
+			//setOutput(new PrintStream(tar.getOutputStream()));
+			//setError(new PrintStream(tar.getOutputStream()));
+			setObjectSpaceEnabled(true); // useful for code completion inside the IRB
+			setLoadServiceCreator(new LoadServiceCreator() {
+				public LoadService create(Ruby runtime) {
+					return new EclipseLoadService(runtime);
+				}
+			});
+
+			// The following modification forces IRB to ignore the fact that inside eclipse
+			// the STDIN.tty? returns false, and IRB must continue to use a prompt
+			List<String> argList = new ArrayList<String>();
+			argList.add("--prompt-mode");
+			argList.add("default");
+			argList.add("--readline");
+			setArgv(argList.toArray(new String[0]));
+		}};
+		
+		runtime = Ruby.newInstance(config);		
+		runtime.getLoadService().init(ScriptUtils.makeLoadPath(new String[] {}));
+
 		String path = "";
 		if (Util.isTesting == false){
 			URL scriptURL = null;
@@ -97,19 +126,8 @@ public class SplashTableModel extends DefaultTableModel
 			path = scriptURL.getPath();
 		}
 		else{
-			path ="/home/amabdelsalam/Desktop/amanzi/jrss/org.amanzi.splash/jruby.rb";	
+			path ="D:/projects/AWE from SVN/org.amanzi.splash/jruby.rb";	
 		}
-
-
-		ScriptEngineManager m = new ScriptEngineManager(getClass().getClassLoader());
-
-		m.registerEngineName("jruby", 
-				new com.sun.script.jruby.JRubyScriptEngineFactory());
-
-		engine = m.getEngineByName("jruby");
-
-		ScriptContext context = engine.getContext();
-
 
 		String input = "";
 		FileReader fr;
@@ -129,13 +147,11 @@ public class SplashTableModel extends DefaultTableModel
 			e.printStackTrace();
 		}
 
-		try {
-			engine.eval(input, context);
-			engine.eval("$sheet = Spreadsheet.new", context);				
-		} catch (ScriptException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
+		runtime.evalScriptlet(input);
+		runtime.evalScriptlet("$sheet = Spreadsheet.new");				
+
+
 	}
 
 
@@ -155,22 +171,7 @@ public class SplashTableModel extends DefaultTableModel
 
 	}
 
-	public Object execJRubyCommand(String input){
-		Object ret = "";
-		if (Util.isTesting == true){
-			Ruby runtime = JavaEmbedUtils.initialize(Collections.EMPTY_LIST);
-			runtime.evalScriptlet(input);
-		}else{
-			try {
-				ret = engine.eval(input);
-			} catch (ScriptException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		return ret;
-	}
+	
 
 	/**
 	 * Function that updates definitiona of Cell from Script
@@ -229,26 +230,20 @@ public class SplashTableModel extends DefaultTableModel
 		Util.logn("path = " + path);
 		Util.logn("cellID.toLowerCase():" + cellID.toLowerCase());
 
-		try {
-			String input = "require" + "'" + path + "'" + "\n" +
-			"template = ERB.new <<-EOF" + "\n" +
-			formula + "\n" +
-			"EOF" + "\n" +
-			"$sheet.cells." + cellID.toLowerCase() + "=" +  "template.result(binding)" + "\n" + 
-			"return " + "$sheet.cells." + cellID.toLowerCase();
+		String input = "require" + "'" + path + "'" + "\n" +
+		"template = ERB.new <<-EOF" + "\n" +
+		formula + "\n" +
+		"EOF" + "\n" +
+		"$sheet.cells." + cellID.toLowerCase() + "=" +  "template.result(binding)" + "\n" +
+		"$sheet.cells." + cellID.toLowerCase();
 
-			Util.logn("ERB Input: " + input);
-			s = engine.eval(input, engine.getContext());
+		Util.logn("ERB Input: " + input);
 
 
-			Util.logn("ERB Output = " + s);
+		s = runtime.evalScriptlet(input);
 
+		Util.logn("ERB Output = " + s);
 
-		} catch (ScriptException e) {
-			//s = "";
-			s = e.getMessage().replace("org.jruby.exceptions.RaiseException: ","");
-			e.printStackTrace();
-		}
 
 		if (s == null) s = "ERROR";
 
@@ -547,10 +542,10 @@ public class SplashTableModel extends DefaultTableModel
 	public void setSplashNeoManager(SplashNeoManager splashNeoManager) {
 		this.splashNeoManager = splashNeoManager;
 	}
-	public ScriptEngine getEngine() {
-		return engine;
+	public Ruby getEngine() {
+		return runtime;
 	}
-	public void setEngine(ScriptEngine engine) {
-		this.engine = engine;
+	public void setEngine(Ruby engine) {
+		this.runtime = engine;
 	}
 }

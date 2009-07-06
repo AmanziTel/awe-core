@@ -364,7 +364,7 @@ public class SplashTable extends JTable
 		setModel(newModel);
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
-		setTableFormat(newModel.tableFormat);
+		
 		
 	}
 	/**
@@ -395,7 +395,7 @@ public class SplashTable extends JTable
 		setModel(newModel);
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
-		setTableFormat(newModel.tableFormat);
+		
 		
 	}
 
@@ -434,7 +434,7 @@ public class SplashTable extends JTable
 			}
 		setModel(newModel);
 
-		setTableFormat(newModel.tableFormat);
+		
 
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
@@ -477,7 +477,7 @@ public class SplashTable extends JTable
 			}
 		setModel(newModel);
 
-		setTableFormat(newModel.tableFormat);
+		
 
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
@@ -525,7 +525,7 @@ public class SplashTable extends JTable
 
 		setModel(newModel);
 
-		setTableFormat(newModel.tableFormat);
+		
 
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
@@ -572,7 +572,7 @@ public class SplashTable extends JTable
 
 		setModel(newModel);
 
-		setTableFormat(newModel.tableFormat);
+		
 
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);

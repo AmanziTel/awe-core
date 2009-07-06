@@ -390,7 +390,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 				scrollPane.setRowHeaderView(getTable().rowHeader);
 				
-				table.setTableFormat(tableModel.tableFormat);
+				
 				table.setRowHeight(table.getDefaultRowHeight());
 				
 				//table.getColumnModel().getColumn(2).setCellRenderer(new BackgroundColumnCellRenderer(new java.awt.Color(255,255,204)));
