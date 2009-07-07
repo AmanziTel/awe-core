@@ -3,14 +3,11 @@ package org.amanzi.rdt.launching;
 import java.io.File;
 
 import org.amanzi.rdt.console.RubyConsole;
-import org.amanzi.rdt.internal.launching.AweLaunchingPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.ui.console.ConsolePlugin;
 import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.launching.AbstractRubyLaunchConfigurationDelegate;
 import org.rubypeople.rdt.launching.IRubyLaunchConfigurationConstants;
@@ -38,8 +35,6 @@ public class AweLaunchDelegate extends AbstractRubyLaunchConfigurationDelegate {
 		RubyConsole console = new RubyConsole(configuration, launch, monitor);
 		
 		console.init(verifyVMInstall(configuration));
-		
-		RubyPlugin.getDefault().getLaunchListener().launchAdded(launch);
 		
 		IPath workingDir = getWorkingDirectoryPath(configuration);
 		String scriptPath = null;

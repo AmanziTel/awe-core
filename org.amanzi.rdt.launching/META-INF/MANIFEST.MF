@@ -18,7 +18,8 @@ Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.catalog,
  org.amanzi.integrator.awe,
  org.rubypeople.rdt.core,
- org.eclipse.jface.text
+ org.eclipse.jface.text,
+ org.amanzi.splash
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.rdt.internal.launching,
  org.amanzi.rdt.internal.launching.launcher,

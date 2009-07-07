@@ -17,42 +17,35 @@ import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.rdt.internal.launching.AweLaunchingPlugin;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
+import org.amanzi.splash.console.SpreadsheetManager;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.debug.core.model.IStreamsProxy;
-import org.eclipse.debug.internal.core.commands.TerminateCommand;
 import org.eclipse.debug.internal.ui.views.console.ConsoleMessages;
 import org.eclipse.debug.ui.console.IConsole;
 import org.eclipse.debug.ui.console.IConsoleHyperlink;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.console.AbstractConsole;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IHyperlink;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.RubyInstanceConfig.LoadServiceCreator;
 import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
-import org.rubypeople.rdt.core.RubyCore;
 import org.rubypeople.rdt.internal.launching.StandardVMRunner;
-import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.launching.IRubyLaunchConfigurationConstants;
 import org.rubypeople.rdt.launching.IVMInstall;
-import org.rubypeople.rdt.launching.PropertyChangeEvent;
-import org.rubypeople.rdt.ui.RubyUI;
 
 
 /**
@@ -213,7 +206,7 @@ public class RubyConsole extends IOConsole implements IConsole {
 		globals.put("feature_source_class", org.geotools.data.FeatureSource.class);
 		globals.put("catalog", CatalogPlugin.getDefault());
 		globals.put("catalogs", CatalogPlugin.getDefault().getCatalogs());		
-		//globals.put("spreadsheet_manager", SpreadsheetManager.getInstance());
+		globals.put("spreadsheet_manager", SpreadsheetManager.getInstance());
 		globals.put("projects", AWEProjectManager.getGISProjects());
 		globals.put("active_project", AWEProjectManager.getActiveGISProject());
 		
@@ -286,12 +279,13 @@ public class RubyConsole extends IOConsole implements IConsole {
 	public void run(String filePath) {
 		try {
 			runtime.runFromMain(new FileInputStream(filePath), filePath);
-		
-			runtime.tearDown();
 		}
-		catch (Exception e) {
+		catch (Exception e) {			
 			//pring stack trace of any exception to output stream
 			e.printStackTrace(outputStream);
+		}
+		finally {
+			runtime.tearDown();
 		}
 		
 		setConsoleLabelTerminated();

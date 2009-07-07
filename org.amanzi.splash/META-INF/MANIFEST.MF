@@ -19,10 +19,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.rubypeople.rdt.core,
  org.eclipse.core.filesystem,
  net.refractions.udig.project,
- org.amanzi.rdt.launching,
  org.amanzi.integrator.awe,
- org.jruby,
- org.rubypeople.rdt.launching
+ org.jruby
 Eclipse-LazyStart: true
 export-package: com.eteks.openjeks;uses:="javax.swing",
  com.eteks.openjeks.format;uses:="javax.swing.border,javax.swing,javax.swing.table",

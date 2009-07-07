@@ -15,7 +15,7 @@ Require-Bundle: net.refractions.udig;bundle-version="1.1.0",
  org.amanzi.scripting.jruby
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Eclipse-RegisterBuddy: org.amanzi.awe.script.jirb, org.amanzi.scripting.jruby
+Eclipse-RegisterBuddy: org.amanzi.scripting.jruby
 Export-Package: org.amanzi.awe.catalog.neo,
  org.amanzi.awe.catalog.neo.actions,
  org.amanzi.awe.catalog.neo.beans
