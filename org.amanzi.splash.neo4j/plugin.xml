@@ -9,7 +9,6 @@
             name="Amanzi: Mini-Spreadsheet"
             icon="icons/spreadsheet.gif"
             extensions="jrss"
-            contributorClass="org.amanzi.splash.ui.actions.JRSSEditorActionBarContributor"
             class="org.amanzi.splash.neo4j.ui.SplashResourceEditor"
             id="org.amanzi.splash.neo4j.editor">
       </editor>
