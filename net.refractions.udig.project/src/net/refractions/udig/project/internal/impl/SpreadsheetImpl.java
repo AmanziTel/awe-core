@@ -682,4 +682,4 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
 		this.resource = resource;
 	}
 
-} //RubyClassImpl
+} //SpreadsheetImpl

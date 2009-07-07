@@ -59,4 +59,4 @@ public interface Spreadsheet extends ISpreadsheet, RubyProjectElement,
 	 */
 	void setSpreadsheetFile(String value);
 
-} // RubyClass
+} // Spreadsheet

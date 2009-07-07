@@ -223,25 +223,25 @@ public class ProjectSwitch {
         	return result;
         }        
         case ProjectPackage.SPREADSHEET: {
-        	Spreadsheet rubyClass = (Spreadsheet) theEObject;
-        	Object result = caseSpreadsheet(rubyClass);
+        	Spreadsheet Spreadsheet = (Spreadsheet) theEObject;
+        	Object result = caseSpreadsheet(Spreadsheet);
         	if (result == null) {
-        		result = caseRubyProjectElement(rubyClass);
+        		result = caseRubyProjectElement(Spreadsheet);
         	}
         	if (result == null) {
-        		result = caseProjectElement(rubyClass);
+        		result = caseProjectElement(Spreadsheet);
         	}
         	if (result == null) {
-        		result = caseISpreadsheet(rubyClass);
+        		result = caseISpreadsheet(Spreadsheet);
         	}
         	if (result == null) {
-        		result = caseIRubyProjectElement(rubyClass);
+        		result = caseIRubyProjectElement(Spreadsheet);
         	}
         	if (result == null) {
-        		result = caseIProjectElement(rubyClass);
+        		result = caseIProjectElement(Spreadsheet);
         	}
         	if (result == null) {
-        		result = caseIAdaptable(rubyClass);
+        		result = caseIAdaptable(Spreadsheet);
         	}
         	if (result == null) {
         		result = defaultCase(theEObject);
