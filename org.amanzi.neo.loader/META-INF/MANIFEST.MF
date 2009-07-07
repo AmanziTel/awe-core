@@ -7,9 +7,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  net.refractions.udig.project.ui,
  org.neo4j.neoclipse,
- org.eclipse.ui.console
+ org.eclipse.ui.console,
+ org.eclipse.ui.forms
 Eclipse-LazyStart: true
 Bundle-Vendor: AmanziTel AB
 Bundle-ClassPath: .
-Export-Package: org.amanzi.net.loader.internal
-Bundle-Activator: org.amanzi.net.loader.internal.NeoLoaderPlugin
+Export-Package: org.amanzi.neo.loader.internal
+Bundle-Activator: org.amanzi.neo.loader.internal.NeoLoaderPlugin
