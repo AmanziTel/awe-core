@@ -64,6 +64,12 @@ public class SplashTableModel extends DefaultTableModel
 		this.cellValues = new Hashtable ();
 
 		initializeJRubyInterpreter();
+		for (int i=0;i<Util.MAX_SPLASH_ROW_COUNT;i++)
+			for (int j=0;j<Util.MAX_SPLASH_COL_COUNT;j++)
+			{
+				setValueAt(new Cell(i,j,"","",new CellFormat()),i,j);
+				interpret("",i,j);
+			}
 		SpreadsheetManager.getInstance().setActiveModel(this);
 	}
 
@@ -279,6 +285,8 @@ public class SplashTableModel extends DefaultTableModel
 				Util.logn("The entered formula just text, not ERB and not Ruby");
 				Util.logn("Setting cell definition: "+ definition);
 				se.setDefinition(definition);
+				
+				interpret_erb(cellID, definition);
 
 				Util.logn("Setting cell value:" + definition);
 				se.setValue(definition);
