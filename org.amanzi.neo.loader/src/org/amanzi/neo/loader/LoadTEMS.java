@@ -29,11 +29,10 @@ public class LoadTEMS extends AbstractActionTool {
 	public LoadTEMS() {
 	}
 
-	@Override
 	public void run() {
 		final Display display = this.getContext().getViewportPane().getControl().getDisplay();
 		this.getContext().updateUI(new Runnable(){
-			@Override
+	
 			public void run() {
 				//(new ShowFileDialog("TEMS",FILTER_NAMES,FILTER_EXTS)).run();
 				(new ShowTEMSFileDialog()).run(display);
@@ -41,7 +40,6 @@ public class LoadTEMS extends AbstractActionTool {
 		});
 	}
 
-	@Override
 	public void dispose() {
 		// TODO Auto-generated method stub
 

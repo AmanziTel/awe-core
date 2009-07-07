@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.amanzi.net.loader.internal.NeoLoaderPlugin;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.EmbeddedNeo;
@@ -15,9 +16,7 @@ import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.Transaction;
 
-public class TEMSLoader {
-	private static boolean debug = false;
-	private static boolean verbose = true;
+public class TEMSLoader {	
 	public static enum MeasurementRelationshipTypes implements RelationshipType {
 		FIRST,
 		LAST,
@@ -83,19 +82,19 @@ public class TEMSLoader {
     }
 
     private void debug(String line){
-		if(debug) System.out.println("TEMS:"+basename+":"+status()+": "+line);
+		NeoLoaderPlugin.debug("TEMS:"+basename+":"+status()+": "+line);
 	}
 	
 	private void info(String line){
-		if(verbose||debug) System.out.println("TEMS:"+basename+":"+status()+": "+line);
+		NeoLoaderPlugin.info("TEMS:"+basename+":"+status()+": "+line);
 	}
 	
 	private void notify(String line){
-		System.out.println("TEMS:"+basename+":"+status()+": "+line);
+		NeoLoaderPlugin.notify("TEMS:"+basename+":"+status()+": "+line);
 	}
 	
 	private void error(String line){
-		System.err.println("TEMS:"+basename+":"+status()+": "+line);
+		NeoLoaderPlugin.error("TEMS:"+basename+":"+status()+": "+line);
 	}
 	
 	public int getLimit(){

@@ -24,11 +24,10 @@ public class LoadNetwork extends AbstractActionTool {
 		return directory;
 	}
 
-	@Override
 	public void run() {
 		final Display display = this.getContext().getViewportPane().getControl().getDisplay();
 		this.getContext().updateUI(new Runnable(){
-			@Override
+			
 			public void run() {
 				FileDialog dlg = new FileDialog(display.getActiveShell(), SWT.OPEN);
 				dlg.setText("Select a file containing network information in CSV format");
@@ -56,7 +55,6 @@ public class LoadNetwork extends AbstractActionTool {
 		});
 	}
 
-	@Override
 	public void dispose() {
 	}
 

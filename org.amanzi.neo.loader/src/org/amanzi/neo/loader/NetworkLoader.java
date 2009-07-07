@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.amanzi.net.loader.internal.NeoLoaderPlugin;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
@@ -26,7 +27,6 @@ import org.neo4j.api.core.Transaction;
  * @author craig
  */
 public class NetworkLoader {
-	private static boolean debug = false;
 	public static enum NetworkElementTypes {
 		NETWORK("Network"),
 		BSC("BSC"),
@@ -106,11 +106,11 @@ public class NetworkLoader {
 	}
 
 	private static void debug(String line){
-		if(debug) System.out.println(line);
+		NeoLoaderPlugin.debug(line);
 	}
 	
 	private static void info(String line){
-		System.out.println(line);
+		NeoLoaderPlugin.info(line);
 	}
 	
 	private static void error(String line){
