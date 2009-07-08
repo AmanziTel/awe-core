@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.CellEditor;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -56,13 +57,18 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -1028,6 +1034,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			contextMenu.add(updateCellMenu);
 		}
 		
+		contextMenu.add(createRunMenu());
+		
 		return contextMenu;
 	}
 
@@ -1150,6 +1158,89 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 	public void setCellFormat(CellFormat cellFormat) {
 		this.cellFormat = cellFormat;
+	}
+	
+	/**
+	 * Creates a menu for Launching
+	 * 
+	 * @return created menu
+	 * @author Lagutko_N
+	 */
+	
+	private JMenu createRunMenu() {
+		JMenu runMenu = new JMenu("Run as...");
+		
+		try {		
+			ILaunchConfiguration[] launchConfigurations = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations();
+		
+			for (final ILaunchConfiguration configuration : launchConfigurations) {
+				JMenuItem menuItem = new JMenuItem(configuration.getName());
+			
+				menuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {						
+						launch(configuration);
+					}
+				});
+				
+				runMenu.add(menuItem);
+			}		
+			
+			if (launchConfigurations.length > 0) {
+				runMenu.add(new JSeparator());
+			}
+		}
+		catch (CoreException e) {
+			DebugPlugin.log(e);
+		}		
+		JMenuItem openRunDialog = new JMenuItem("Open run dialog...");
+		openRunDialog.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				openLaunchDialog();
+			}
+		});
+		
+		runMenu.add(openRunDialog);
+		
+		return runMenu;
+	}
+	
+	/**
+	 * Launches chosen configuration
+	 * 
+	 * @param configuration launch configuration
+	 * @author Lagutko_N
+	 */
+	
+	private void launch(final ILaunchConfiguration configuration) {
+		//get Cell and Display
+		final Display display = swingControl.getDisplay();
+
+		//run ExportScriptWizard
+		ActionUtil.getInstance(display).runTask( new Runnable() {
+			public void run() {
+				DebugUITools.launch(configuration, "run");
+			}
+		});
+	}
+	
+	/**
+	 * Opens 'Open run dialog...' dialog
+	 * 
+	 * @author Lagutko_N
+	 */
+	
+	private void openLaunchDialog() {
+		//get Cell and Display
+		final Display display = swingControl.getDisplay();
+
+		//run ExportScriptWizard
+		ActionUtil.getInstance(display).runTask( new Runnable() {
+			public void run() {
+				Shell shell = display.getActiveShell();
+				StructuredSelection selection = StructuredSelection.EMPTY;
+				DebugUITools.openLaunchConfigurationDialogOnGroup(shell, selection, "org.eclipse.debug.ui.launchGroup.run");
+			}
+		});
 	}
 }
 

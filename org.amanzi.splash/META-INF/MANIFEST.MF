@@ -20,7 +20,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.filesystem,
  net.refractions.udig.project,
  org.amanzi.integrator.awe,
- org.jruby
+ org.jruby,
+ org.eclipse.debug.ui
 Eclipse-LazyStart: true
 export-package: com.eteks.openjeks;uses:="javax.swing",
  com.eteks.openjeks.format;uses:="javax.swing.border,javax.swing,javax.swing.table",
