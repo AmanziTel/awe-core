@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.amanzi.net.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.EmbeddedNeo;
