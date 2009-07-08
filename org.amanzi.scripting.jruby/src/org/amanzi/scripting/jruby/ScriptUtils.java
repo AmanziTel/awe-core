@@ -80,8 +80,8 @@ public class ScriptUtils {
 				globals.put(var, Class.forName(className));			
 			}
 			catch (ClassNotFoundException e) {
-				System.err.println("Error setting global Ruby variable for class '"+className+"': "+e.getMessage());
-				e.printStackTrace(System.err);
+				System.out.println("Error setting global Ruby variable for class '"+className+"': "+e.getMessage());
+				//e.printStackTrace(System.out);
 			}
 		}
 	}
