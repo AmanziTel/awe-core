@@ -1,6 +1,7 @@
 package org.amanzi.neo.loader.internal;
 
 import java.io.IOException;
+import java.io.PrintStream;
 
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -180,6 +181,18 @@ public class NeoLoaderPlugin extends Plugin {
 	}
 	
 	/**
+	 * Print an exception
+	 * 
+	 * @param line
+	 */
+	
+	public static void exception(Exception e) {
+		if (loggingPossible) {
+			getDefault().printException(e);
+		}
+	}
+	
+	/**
 	 * Print a message to Console
 	 * 
 	 * @param line
@@ -193,5 +206,22 @@ public class NeoLoaderPlugin extends Plugin {
 		}
 		
 		consoleStream.println(line);
+	}
+	
+	/**
+	 * Print a message to Console
+	 * 
+	 * @param line
+	 */
+	
+	public void printException(Exception e) {
+		if (!isVisible) {			
+			pluginConsole.activate();			
+			ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);
+			isVisible = true;
+		}
+		
+		PrintStream stream = new PrintStream(consoleStream);
+		e.printStackTrace(stream);
 	}
 }
