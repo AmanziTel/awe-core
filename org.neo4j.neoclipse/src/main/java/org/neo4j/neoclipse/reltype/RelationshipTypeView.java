@@ -50,7 +50,6 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.Page;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.GraphViewer;
 import org.neo4j.api.core.Direction;
@@ -147,8 +146,6 @@ public class RelationshipTypeView extends ViewPart implements
         	IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
             
         	graphView = (NeoGraphViewPart) page.findView( NeoGraphViewPart.ID );
-        	
-        	System.out.println(graphView);
         	
         	if ( graphView != null)
                  graphView.addRelColorChangeListener( new RelationshipColorChangeHandler() );
@@ -737,20 +734,26 @@ public class RelationshipTypeView extends ViewPart implements
         if ( part instanceof NeoGraphViewPart )
         {
             setGraphView( (NeoGraphViewPart) part );
-            List<Relationship> currentSelectedRels = getGraphView()
-                .getCurrentSelectedRels();
-            Set<RelationshipType> relTypes = new HashSet<RelationshipType>();
-            for ( Relationship rel : currentSelectedRels )
-            {
-                relTypes.add( rel.getType() );
-            }
-            if ( !relTypes.isEmpty() )
-            {
-                Collection<RelationshipTypeControl> relTypeCtrls = provider
-                    .getFilteredControls( relTypes );
-                viewer.setSelection( new StructuredSelection( relTypeCtrls
-                    .toArray() ) );
-                setEnableHighlightingActions( true );
+            
+            //Lagutko, 8.07.2009, getGraphView() can return null, next code will handle this situation
+            NeoGraphViewPart graphView = getGraphView();
+            
+            if (graphView != null) {
+            	List<Relationship> currentSelectedRels = getGraphView()
+                	.getCurrentSelectedRels();
+            	Set<RelationshipType> relTypes = new HashSet<RelationshipType>();
+            	for ( Relationship rel : currentSelectedRels )
+            	{
+            		relTypes.add( rel.getType() );
+            	}
+            	if ( !relTypes.isEmpty() )
+            	{
+            		Collection<RelationshipTypeControl> relTypeCtrls = provider
+                    	.getFilteredControls( relTypes );
+            		viewer.setSelection( new StructuredSelection( relTypeCtrls
+            				.toArray() ) );
+            		setEnableHighlightingActions( true );
+            	}
             }
         }
         else if ( this.equals( part ) )
@@ -784,6 +787,7 @@ public class RelationshipTypeView extends ViewPart implements
         setEnableAddNode( getCurrentSelectedRelTypes().size() == 1
             && !currentSelectedNodes.isEmpty() );
         setEnableSetIcon( !getCurrentSelectedRelTypes().isEmpty() );
+        
         getGraphView().updateMenuState();
         }
     }

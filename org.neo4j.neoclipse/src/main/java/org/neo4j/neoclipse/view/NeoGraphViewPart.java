@@ -120,8 +120,8 @@ public class NeoGraphViewPart extends ViewPart implements
         viewer.setLabelProvider( labelProvider );
         addListener( labelProvider );
 
-        getSite().getPage().addSelectionListener( ID,
-            new SelectionChangeHandler() );
+        //Lagutko, 8.07.2009, no need to add ID if we register listener for current ViewPart
+        getSite().getPage().addSelectionListener(new SelectionChangeHandler() );
         getSite().getPage().addSelectionListener( RelationshipTypeView.ID,
             new RelTypeSelectionChangeHandler() );
 
