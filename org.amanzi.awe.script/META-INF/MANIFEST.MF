@@ -8,6 +8,5 @@ Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  net.refractions.udig.ui,
- org.jruby;bundle-version="1.1.4";visibility:=reexport,
- com.sun.script.jruby;bundle-version="1.1.5"
+ org.jruby;bundle-version="1.1.4";visibility:=reexport
 Eclipse-LazyStart: true
