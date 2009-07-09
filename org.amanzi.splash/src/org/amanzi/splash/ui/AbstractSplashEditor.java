@@ -13,6 +13,7 @@ package org.amanzi.splash.ui;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -24,6 +25,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import javax.swing.CellEditor;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -32,6 +34,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
@@ -135,13 +138,13 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
 		//cellFormat = getTable().tableFormat.getFormatAt(firstRow, firstColumn , lastRow, lastColumn);
-		
+
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
 			System.out.println("Error setting Java LAF: " + e);
 		}
-		
+
 		cellFormat = ((Cell)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn())).getCellFormat();
 		cellFormatPanel = new CellFormatPanel(cellFormat);
 		if (JOptionPane.showConfirmDialog(null,
@@ -354,23 +357,23 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		}
 	}
 	// Returns the preferred height of a row.
-    // The result is equal to the tallest cell in the row.
-    public int getPreferredRowHeight(JTable table, int rowIndex, int margin) {
-        // Get the current default height for all rows
-        int height = table.getRowHeight();
-    
-        // Determine highest cell in the row
-        for (int c=0; c<table.getColumnCount(); c++) {
-            TableCellRenderer renderer = table.getCellRenderer(rowIndex, c);
-            Component comp = table.prepareRenderer(renderer, rowIndex, c);
-            int h = comp.getPreferredSize().height + 2*margin;
-            height = Math.max(height, h);
-        }
-        return height;
-    }
-    
-   
+	// The result is equal to the tallest cell in the row.
+	public int getPreferredRowHeight(JTable table, int rowIndex, int margin) {
+		// Get the current default height for all rows
+		int height = table.getRowHeight();
 
+		// Determine highest cell in the row
+		for (int c=0; c<table.getColumnCount(); c++) {
+			TableCellRenderer renderer = table.getCellRenderer(rowIndex, c);
+			Component comp = table.prepareRenderer(renderer, rowIndex, c);
+			int h = comp.getPreferredSize().height + 2*margin;
+			height = Math.max(height, h);
+		}
+		return height;
+	}
+
+
+	
 	/**
 	 * create Swing table
 	 * @param parent
@@ -391,19 +394,19 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				scrollPane.setBorder(new EmptyBorder(1,1,1,1));
 
 				scrollPane.setRowHeaderView(getTable().rowHeader);
-				
-				
+
+
 				table.setRowHeight(table.getDefaultRowHeight());
-				
+
 				//table.getColumnModel().getColumn(2).setCellRenderer(new BackgroundColumnCellRenderer(new java.awt.Color(255,255,204)));
-				
+
 				for (int i=0;i<table.getColumnCount();i++){
 					TableColumn col = table.getColumnModel().getColumn(i);
-				    col.setPreferredWidth(table.getDefaultColumnWidth());
-				    
-				    col.setHeaderRenderer(new ColumnHeaderRenderer(table.getDefaultColumnWidth(), 20));
+					col.setPreferredWidth(table.getDefaultColumnWidth());
+
+					col.setHeaderRenderer(new ColumnHeaderRenderer(table.getDefaultColumnWidth(), 20));
 				}
-				
+
 				// Handle the listener
 				ListSelectionModel selectionModel = table.getSelectionModel();
 				selectionModel.addListSelectionListener(new ListSelectionListener(){
@@ -411,22 +414,22 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 					//@Override
 					public void valueChanged(ListSelectionEvent e) {
 						// TODO Auto-generated method stub
-						
+
 						updateTableHeaderHighlights(table.getSelectedRow(), table.getSelectedColumn());
-						
+
 //						for (int i=0;i<table.getSelectedRows().length;i++){
-//							for (int j=0;j<table.getSelectedColumns().length;j++){
-//								updateTableHeaderHighlights(i,j);								
-//							}
+//						for (int j=0;j<table.getSelectedColumns().length;j++){
+//						updateTableHeaderHighlights(i,j);								
+//						}
 //						}
 					}
-					
+
 				});
 
-				
+
 				// set selection mode for contiguous  intervals
 				MouseListener ml = new HeaderMouseAdapter();
-					
+
 				// we don't allow reordering
 				table.getTableHeader().setReorderingAllowed(false);
 				table.getTableHeader().addMouseListener(ml);
@@ -434,7 +437,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				table.addKeyListener(new KeyListener(){
 
 					public void keyPressed(KeyEvent e) {
-						
+
 					}
 
 					@SuppressWarnings("static-access")
@@ -445,11 +448,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 						//Util.log("e.VK_ENTER = " + e.VK_ENTER);
 						if (e.getKeyCode() == e.VK_ENTER) /*ENTER*/
 						{
-							
+
 							int rdiff = table.getRowCount() - row;
 							int cdiff = table.getColumnCount() - column;
 
-							
+
 							if (rdiff < COLUMNS_EDGE_MARGIN)
 							{
 								getTable().insertRows(table.getRowCount()-1, COLUMNS_EDGE_MARGIN-rdiff);
@@ -463,10 +466,31 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 							}						
 						}
 						
+						if (e.getKeyCode() == 66 || e.getKeyCode() == 73 || e.getKeyCode() == 85){
+							if (table.isEditing() == false){
+							table.editCellAt(table.getSelectedRow(), table.getSelectedColumn());
+							DefaultCellEditor editor =
+								(DefaultCellEditor)table.getCellEditor();
+							JTextField textfield = (JTextField)editor.getComponent();
+							String s = textfield.getText();
+							if (Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK) == true){
+								s += e.getKeyText(e.getKeyCode()).toUpperCase();
+							}else{
+								s += e.getKeyText(e.getKeyCode()).toLowerCase();
+							}
+							textfield.setText(s);
+							textfield.setCaretPosition(textfield.getText().length());
+							textfield.getCaret().setVisible(true);
+							}
+						}
 						
+						if (e.getKeyCode() == 20){
+
+						}
+
 						if (e.isControlDown() && e.getKeyCode() == 67){
 							table.copyCell(row, column);
-							
+
 						}else if (e.isControlDown() && e.getKeyCode() == 88){
 							table.cutCell(row, column);
 						}
@@ -476,9 +500,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 							Util.logn("user pressed CTRL+B");
 							Cell cell = (Cell)table.getValueAt(row, column);
 							CellFormat cf = cell.getCellFormat();
-							
+
 							Integer fs = cf.getFontStyle().intValue();
-							
+
 							switch (fs){
 							case Font.PLAIN:
 								fs = Font.BOLD;
@@ -493,7 +517,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 								fs = Font.ITALIC;
 								break;
 							}
-							
+
 							Util.logn("fs: " + fs);
 							cf.setFontStyle(fs);
 							table.tableFormat.setFormatAt(cf, row, column, row, column);
@@ -504,7 +528,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 							Util.logn("user pressed CTRL+i");
 							Cell cell = (Cell)table.getValueAt(row, column);
 							CellFormat cf = cell.getCellFormat();
-							
+
 							Integer fs = cf.getFontStyle().intValue();
 							Util.logn("CTRL+B has been pressed ");
 							switch (fs){
@@ -521,7 +545,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 								fs = Font.BOLD;
 								break;
 							}
-							
+
 							Util.logn("fs: " + fs);
 							cf.setFontStyle(fs);
 							table.tableFormat.setFormatAt(cf, row, column, row, column);
@@ -531,7 +555,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 						}else if (e.isControlDown() && e.getKeyCode() == 85){
 							Util.logn("user pressed CTRL+U");
 							Cell cell = (Cell)table.getValueAt(row, column);
-							
+
 							String old_value = (String) cell.getValue();
 							String new_value = "";
 							if (old_value.contains("<HTML><U>") && old_value.contains("</U></HTML>")){
@@ -540,11 +564,15 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 							}else{
 								new_value = "<HTML><U>" + old_value + "</U></HTML>";
 							}
-							
+
 							cell.setValue(new_value);
 							table.setValueAt(cell, row, column);
 							setIsDirty(true);
 						}
+
+
+						
+						
 
 					}
 
@@ -584,8 +612,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 							//launchCellFormatPanel(table);
 						}else{
 							Util.logn("Cell clicked !!!");
-							
-							
+
+
 							//table.repaint();
 						}
 					}
@@ -606,29 +634,29 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 		};
 	}
-	
+
 	private void updateTableHeaderHighlights(int row, int column){
 		if (prev_selected_column != -1){
 			TableColumn tc = table.getColumnModel().getColumn(prev_selected_column);
-		    ((ColumnHeaderRenderer)tc.getHeaderRenderer()).selected = false;
+			((ColumnHeaderRenderer)tc.getHeaderRenderer()).selected = false;
 		}
-		
+
 		TableColumn tc = table.getColumnModel().getColumn(column);
-	    ((ColumnHeaderRenderer)tc.getHeaderRenderer()).selected = true;
-	    
-	    //table.rowHeader
-	    //table.rowHeader.repaint();
-	    
-		
+		((ColumnHeaderRenderer)tc.getHeaderRenderer()).selected = true;
+
+		//table.rowHeader
+		//table.rowHeader.repaint();
+
+
 		prev_selected_column = column;
-		
+
 		((RowHeaderRenderer)table.rowHeader.getCellRenderer(row, 0)).row = row;
 		//((RowHeaderRenderer)table.rowHeader.getCellRenderer(row, 0)).column = column;
-		
+
 		table.getTableHeader().resizeAndRepaint();
-	    table.rowHeader.repaint();
+		table.rowHeader.repaint();
 	}
-	
+
 	int prev_selected_column = -1;
 	int prev_selected_row = -1;
 
@@ -959,7 +987,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	private JPopupMenu createContextMenu(final int rowIndex,
 			final int columnIndex) {
 		JPopupMenu contextMenu = new JPopupMenu();
-		
+
 		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
 
 		JMenuItem cellCopyMenu = new JMenuItem();
@@ -970,7 +998,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 		contextMenu.add(cellCopyMenu);
-		
+
 		JMenuItem cellCutMenu = new JMenuItem();
 		cellCutMenu.setText("Cut \t\t Ctrl+X");
 		cellCutMenu.addActionListener(new ActionListener() {
@@ -979,7 +1007,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 		contextMenu.add(cellCutMenu);
-		
+
 		JMenuItem cellPasteMenu = new JMenuItem();
 		cellPasteMenu.setText("Paste \t\t Ctrl+V");
 		cellPasteMenu.addActionListener(new ActionListener() {
@@ -988,7 +1016,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 		contextMenu.add(cellPasteMenu);
-		
+
 		JMenuItem cellFormattingMenu = new JMenuItem();
 		cellFormattingMenu.setText("Cell Formatting");
 		cellFormattingMenu.addActionListener(new ActionListener() {
@@ -997,12 +1025,12 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 		contextMenu.add(cellFormattingMenu);
-		
+
 		//Lagutko, 16.06.2009, new menu items for integration with RDT
-		
+
 		JSeparator separator = new JSeparator();
 		contextMenu.add(separator);
-		
+
 		if (!cell.hasReference()) {
 			JMenuItem exportCellMenu = new JMenuItem();
 			exportCellMenu.setText("Export Cell");
@@ -1022,7 +1050,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				}
 			});
 			contextMenu.add(openCellMenu);
-		
+
 			JMenuItem updateCellMenu = new JMenuItem();
 			updateCellMenu.setText("Update Cell");
 			updateCellMenu.addActionListener(new ActionListener() {
@@ -1032,9 +1060,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			});
 			contextMenu.add(updateCellMenu);
 		}
-		
+
 		contextMenu.add(createRunMenu());
-		
+
 		return contextMenu;
 	}
 
@@ -1158,32 +1186,32 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	public void setCellFormat(CellFormat cellFormat) {
 		this.cellFormat = cellFormat;
 	}
-	
+
 	/**
 	 * Creates a menu for Launching
 	 * 
 	 * @return created menu
 	 * @author Lagutko_N
 	 */
-	
+
 	private JMenu createRunMenu() {
 		JMenu runMenu = new JMenu("Run as...");
-		
+
 		try {		
 			ILaunchConfiguration[] launchConfigurations = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations();
-		
+
 			for (final ILaunchConfiguration configuration : launchConfigurations) {
 				JMenuItem menuItem = new JMenuItem(configuration.getName());
-			
+
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {						
 						launch(configuration);
 					}
 				});
-				
+
 				runMenu.add(menuItem);
 			}		
-			
+
 			if (launchConfigurations.length > 0) {
 				runMenu.add(new JSeparator());
 			}
@@ -1197,19 +1225,19 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				openLaunchDialog();
 			}
 		});
-		
+
 		runMenu.add(openRunDialog);
-		
+
 		return runMenu;
 	}
-	
+
 	/**
 	 * Launches chosen configuration
 	 * 
 	 * @param configuration launch configuration
 	 * @author Lagutko_N
 	 */
-	
+
 	private void launch(final ILaunchConfiguration configuration) {
 		//get Cell and Display
 		final Display display = swingControl.getDisplay();
@@ -1221,13 +1249,13 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 	}
-	
+
 	/**
 	 * Opens 'Open run dialog...' dialog
 	 * 
 	 * @author Lagutko_N
 	 */
-	
+
 	private void openLaunchDialog() {
 		//get Cell and Display
 		final Display display = swingControl.getDisplay();

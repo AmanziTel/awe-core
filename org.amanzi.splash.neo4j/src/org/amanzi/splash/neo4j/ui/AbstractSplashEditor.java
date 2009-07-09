@@ -13,6 +13,7 @@ package org.amanzi.splash.neo4j.ui;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -24,12 +25,14 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import javax.swing.CellEditor;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -475,6 +478,24 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 								getTable().insertColumns(table.getColumnCount()-1,ROWS_EDGE_MARGIN-cdiff );
 								setIsDirty(true);
 							}						
+						}
+						
+						if (e.getKeyCode() == 66 || e.getKeyCode() == 73 || e.getKeyCode() == 85){
+							if (table.isEditing() == false){
+							table.editCellAt(table.getSelectedRow(), table.getSelectedColumn());
+							DefaultCellEditor editor =
+								(DefaultCellEditor)table.getCellEditor();
+							JTextField textfield = (JTextField)editor.getComponent();
+							String s = textfield.getText();
+							if (Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK) == true){
+								s += e.getKeyText(e.getKeyCode()).toUpperCase();
+							}else{
+								s += e.getKeyText(e.getKeyCode()).toLowerCase();
+							}
+							textfield.setText(s);
+							textfield.setCaretPosition(textfield.getText().length());
+							textfield.getCaret().setVisible(true);
+							}
 						}
 						
 						
