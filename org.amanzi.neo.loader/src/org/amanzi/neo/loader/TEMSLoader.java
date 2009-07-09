@@ -38,7 +38,6 @@ public class TEMSLoader {
     private String previous_ms = null;
     private String previous_time = null;
     private int previous_pn_code = -1;
-    private String previous_latlong = null;
     private String latlong = null;
     private long started = System.currentTimeMillis();
     private String time = null;
@@ -159,10 +158,10 @@ public class TEMSLoader {
 
         String latitude = fields[i_of("all_latitude")];
         String longitude = fields[i_of("all_longitude")];
-        this.latlong = latitude+"\t"+longitude;
-        if(!this.latlong.equals(this.previous_latlong)){
+        String thisLatLong = latitude+"\t"+longitude;
+        if(!thisLatLong.equals(this.latlong)){
           saveData();	// persist the current data to database
-          this.previous_latlong = this.latlong;
+          this.latlong = thisLatLong;
         }
         if(latitude.length()==0 || longitude.length()==0) return;
         this.count_valid_location += 1;
