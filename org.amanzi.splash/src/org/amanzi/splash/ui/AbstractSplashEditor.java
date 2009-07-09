@@ -136,13 +136,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
 		//cellFormat = getTable().tableFormat.getFormatAt(firstRow, firstColumn , lastRow, lastColumn);
 		
-		
 		try {
-		      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		    } catch(Exception e) {
-		      System.out.println("Error setting Java LAF: " + e);
-		    }
-
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			System.out.println("Error setting Java LAF: " + e);
+		}
 		
 		cellFormat = ((Cell)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn())).getCellFormat();
 		cellFormatPanel = new CellFormatPanel(cellFormat);
@@ -263,8 +261,6 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			ce.cancelCellEditing();
 		}
 	}
-
-
 
 	/**
 	 * show column menu pop up 
@@ -729,22 +725,18 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * indicator (*).
 	 */
 	protected void setIsDirty(final boolean is_dirty) {
-		Runnable r = new Runnable() {
+		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 			public void run() {
 				isDirty = is_dirty;
 				firePropertyChange(PROP_DIRTY);
-
 			}
-		};
-		
-		PlatformUI.getWorkbench().getDisplay().asyncExec(r);
-		
-			}
+		});
+	}
 
 	/**
 	 * Verify the editor input is valid (subclasses may transform it to another
-	 * implementator of <code>IEditorInput</code>), or null if the
-	 * input is unacceptable.
+	 * implementator of <code>IEditorInput</code>), or null if the input is
+	 * unacceptable.
 	 */
 	public abstract IEditorInput validateEditorInput(IEditorInput editorInput);
 
