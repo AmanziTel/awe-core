@@ -1232,7 +1232,9 @@ public class MapEditor extends EditorPart implements IDropTargetProvider, IAdapt
 	private class FlashFeatureListener implements ISelectionListener {
 
         public void selectionChanged( IWorkbenchPart part, final ISelection selection ) {
-            if (part == MapEditor.this || getSite().getPage().getActivePart() != part || selection instanceof IBlockingSelection)
+        	//Lagutko, 9.07.2009, selection can come from Console, in this case exit this method
+        	if (part == MapEditor.this || getSite().getPage().getActivePart() != part || selection instanceof IBlockingSelection
+        			|| (!(selection instanceof IStructuredSelection)))
                 return;
 
             ISafeRunnable sendAnimation=new ISafeRunnable(){
