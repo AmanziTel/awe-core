@@ -72,6 +72,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
@@ -727,12 +728,18 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * enable the <b>Save</b> options, an update the editor's modification
 	 * indicator (*).
 	 */
-	protected void setIsDirty(boolean isDirty) {
+	protected void setIsDirty(final boolean is_dirty) {
+		Runnable r = new Runnable() {
+			public void run() {
+				isDirty = is_dirty;
+				firePropertyChange(PROP_DIRTY);
 
-		this.isDirty = isDirty;
-
-		firePropertyChange(PROP_DIRTY);
-	}
+			}
+		};
+		
+		PlatformUI.getWorkbench().getDisplay().asyncExec(r);
+		
+			}
 
 	/**
 	 * Verify the editor input is valid (subclasses may transform it to another
