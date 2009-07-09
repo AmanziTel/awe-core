@@ -2,6 +2,7 @@ package org.amanzi.neo.loader;
 
 import java.io.IOException;
 
+import org.amanzi.neo.loader.dialogs.TEMSDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -15,13 +16,44 @@ public class LoadNetwork extends AbstractActionTool {
 		"Microsoft Excel Spreadsheet Files (*.xls)",
 		"All Files (*.*)" };
 	private static final String[] FILTER_EXTS = { "*.csv", "*.sxc", "*.xls", "*.*" };
-	private String directory = null;
+	private static String directory = null;
 
 	public LoadNetwork() {
 	}
 	
-	public String getDirectory(){
+	public static String getDirectory(){
+		//LN, 9.07.2009, if directory in LoadNetwork is null than get DefaultDirectory from TEMSDialog
+		if (directory == null) {
+			if (TEMSDialog.hasDefaultDirectory()) {
+				directory = TEMSDialog.getDefaultDirectory();
+			}
+		}
 		return directory;
+	}
+	
+	/**
+	 * Sets Default Directory path for file dialogs in TEMSLoad and NetworkLoad
+	 * 
+	 * @param newDirectory new default directory
+	 * @author Lagutko_N
+	 */
+	
+	public static void setDirectory(String newDirectory) {
+		if (!newDirectory.equals(directory)) {
+			directory = newDirectory;		
+			TEMSDialog.setDefaultDirectory(newDirectory);
+		}
+	}
+	
+	/**
+	 * Is DefaultDirectored set
+	 * 
+	 * @return 
+	 * @author Lagutko_N
+	 */
+	
+	public static boolean hasDirectory() {
+		return directory != null;
 	}
 
 	public void run() {
@@ -33,10 +65,10 @@ public class LoadNetwork extends AbstractActionTool {
 				dlg.setText("Select a file containing network information in CSV format");
 				dlg.setFilterNames(FILTER_NAMES);
 				dlg.setFilterExtensions(FILTER_EXTS);
-				dlg.setFilterPath(directory);
+				dlg.setFilterPath(getDirectory());
 				final String filename = dlg.open();
 				if (filename != null) {
-					directory = dlg.getFilterPath();
+					setDirectory(dlg.getFilterPath());
 					display.asyncExec(new Runnable() {
 						public void run() {
 							NetworkLoader networkLoader;

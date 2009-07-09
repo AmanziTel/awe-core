@@ -5,6 +5,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.SWT;
@@ -32,6 +33,8 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class TEMSDialog {
 	
+	private static final String LOAD_TEMS_DIALOG_TITLE = "Select a files containing information in TEMS format";
+
 	// These filter names are displayed to the user in the file dialog. Note that
 	// the inclusion of the actual extension in parentheses is optional, and
 	// doesn't have any effect on which files are displayed.
@@ -92,6 +95,12 @@ public class TEMSDialog {
 	 */
 	private HashMap<String, String> folderFiles = new HashMap<String, String>();
 	private HashMap<String, String> loadedFiles = new HashMap<String, String>();
+	
+	/* 
+	 * Default directory for file dialogs 
+	 */
+	
+	private static String defaultDirectory = null;
 
 	/**
 	 * Creates a Shell and add GUI elements
@@ -109,7 +118,7 @@ public class TEMSDialog {
 		}
 		temsShell.setMinimumSize(600, 400);
 		
-		temsShell.setText("Load TEMS data...");
+		temsShell.setText(LOAD_TEMS_DIALOG_TITLE);
 		
 		createControl(temsShell);
 		createActions(temsShell);
@@ -209,8 +218,8 @@ public class TEMSDialog {
 		Composite actionPanel = new Composite(panel, SWT.NONE);
 		actionPanel.setLayout(new GridLayout(1, false));
 		actionPanel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
-		addFilesToLoaded = createChooseButton(actionPanel, "Add to files to load -->", SWT.CENTER);
-		removeFilesFromLoaded = createChooseButton(actionPanel, "<-- Remove from files to load", SWT.CENTER);
+		addFilesToLoaded = createChooseButton(actionPanel, "Add", SWT.CENTER);
+		removeFilesFromLoaded = createChooseButton(actionPanel, "Remove", SWT.CENTER);
 	}
 	
 	/**
@@ -310,12 +319,17 @@ public class TEMSDialog {
 
 			public void widgetSelected(SelectionEvent e) {
 				DirectoryDialog dialog = new DirectoryDialog(parentShell);
+				dialog.setFilterPath(getDefaultDirectory());
 				
 				String path = dialog.open();
 				
-				File dir = new File(path);
-				for (File file : dir.listFiles(new TEMFFileFilter())) {					
-					addFileToChoose(file.getName(), path, true);
+				if (path != null) {
+					setDefaultDirectory(dialog.getFilterPath());
+					
+					File dir = new File(path);
+					for (File file : dir.listFiles(new TEMFFileFilter())) {					
+						addFileToChoose(file.getName(), path, true);
+					}
 				}
 			}
 		});
@@ -329,10 +343,13 @@ public class TEMSDialog {
 				dlg.setText("Select a file containing TEMS data in FMT format");
 		        dlg.setFilterNames(FILTER_NAMES);
 		        dlg.setFilterExtensions(FILTER_EXTS);
+		        dlg.setFilterPath(getDefaultDirectory());
 				
 		        String fn = dlg.open();
 		      
 		        if (fn != null) {
+		        	setDefaultDirectory(dlg.getFilterPath());
+		        	
 		        	for (String name : dlg.getFileNames()) {		        		
 		        		addFileToLoad(name, dlg.getFilterPath(), true);
 		        	}
@@ -505,5 +522,38 @@ public class TEMSDialog {
 	
 	private void checkLoadButton() {
 		loadButton.setEnabled(filesToLoadList.getItemCount() > 0);
+	}
+	
+	/**
+	 * Returns Default Directory path for file dialogs in TEMSLoad and NetworkLoad
+	 * 
+	 * @return default directory
+	 */
+	
+	public static String getDefaultDirectory() {
+		if (defaultDirectory == null) {	
+			if (LoadNetwork.hasDirectory()) {
+				defaultDirectory = LoadNetwork.getDirectory();
+			}
+		}
+		
+		return defaultDirectory;
+	}
+	
+	/**
+	 * Sets Default Directory path for file dialogs in TEMSLoad and NetworkLoad
+	 * 
+	 * @param newDirectory new default directory
+	 */
+	
+	public static void setDefaultDirectory(String newDirectory) {
+		if (!newDirectory.equals(defaultDirectory)) {
+			defaultDirectory = newDirectory;
+			LoadNetwork.setDirectory(newDirectory);
+		}
+	}
+	
+	public static boolean hasDefaultDirectory() {
+		return defaultDirectory != null;
 	}
 }
