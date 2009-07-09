@@ -14,6 +14,7 @@ import org.jruby.runtime.IAccessor;
 import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.util.KCode;
 import org.jruby.util.ClassCache;
+import org.jruby.RubyInstanceConfig.LoadServiceCreator;
 import org.jruby.ast.executable.Script;
 
 /**
@@ -26,6 +27,7 @@ public class RuntimeFactory {
     private boolean verbose;
     private boolean debug;
     ClassLoader loader;
+    LoadServiceCreator creator;
 
     public RuntimeFactory(String programName) {
         this(programName, RuntimeFactory.class.getClassLoader());
@@ -36,12 +38,17 @@ public class RuntimeFactory {
     }
 
     public RuntimeFactory(String programName, List loadPath, List<String> libraries, boolean verbose, boolean debug, ClassLoader loader) {
+        this(programName, new ArrayList(), new ArrayList<String>(), false, false, loader, null);
+    }
+
+    public RuntimeFactory(String programName, List loadPath, List<String> libraries, boolean verbose, boolean debug, ClassLoader loader, LoadServiceCreator creator) {
         this.programName = programName;
         this.loadPath = loadPath;
         this.libraries = libraries;
         this.verbose = verbose;
         this.debug = debug;
         this.loader = loader;
+        this.creator = creator;
     }
 
     public Ruby createRuntime() {
@@ -50,6 +57,7 @@ public class RuntimeFactory {
             setOutput(System.out);
             setError(System.err);
             setLoader(loader);
+            if(creator!=null) setLoadServiceCreator(creator);
         }};
 
         Ruby runtime = Ruby.newInstance(config);
