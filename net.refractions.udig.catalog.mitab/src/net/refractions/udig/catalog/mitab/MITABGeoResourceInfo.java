@@ -22,11 +22,10 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.geotools.data.FeatureSource;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.FeatureType;
+import org.geotools.feature.SimpleFeature;
+import org.geotools.feature.FeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 import net.refractions.udig.catalog.IGeoResourceInfo;
@@ -60,20 +59,20 @@ public class MITABGeoResourceInfo extends IGeoResourceInfo {
         try {
             fs = this.handle.resolve(FeatureSource.class, new NullProgressMonitor());
 
-            env0 = fs.getBounds();
+            env0 = (ReferencedEnvelope) fs.getBounds();
             bounds = (ReferencedEnvelope) env0;
 
             if (null == bounds) {
                 bounds = new ReferencedEnvelope(new Envelope(), this.getCRS());
 
-                FeatureIterator<SimpleFeature> iter = fs.getFeatures().features();
+                FeatureIterator iter = fs.getFeatures().features();
 
                 while( iter.hasNext() ) {
-                    SimpleFeature element = iter.next();
+                    SimpleFeature element = (SimpleFeature)iter.next();
                     if (bounds.isNull()) {
-                        bounds.init((Coordinate) element.getBounds());
+                        bounds.init(element.getBounds().centre());
                     } else {
-                        bounds.include(element.getBounds());
+                        bounds.expandToInclude(element.getBounds());
                     }
                 }
 
@@ -91,12 +90,12 @@ public class MITABGeoResourceInfo extends IGeoResourceInfo {
         CoordinateReferenceSystem crs;
 
         try {
-            FeatureSource< ? , ? > fs = this.handle.resolve(FeatureSource.class,
+            FeatureSource fs = this.handle.resolve(FeatureSource.class,
                     new NullProgressMonitor());
 
             FeatureType ft = fs.getSchema();
 
-            crs = ft.getCoordinateReferenceSystem();
+            crs = ft.getDefaultGeometry().getCoordinateSystem();
         } catch (Exception e) {
             crs = null;
         }

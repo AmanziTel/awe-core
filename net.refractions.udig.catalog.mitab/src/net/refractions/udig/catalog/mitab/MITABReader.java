@@ -97,13 +97,13 @@ public class MITABReader {
 
         try {
             CoordinateReferenceSystem crs  = CRS.parseWKT(wkt);
-            String                    code = CRS.lookupIdentifier(crs, true);
+//            String                    code = CRS.lookupIdentifier(crs, true);
+//
+//            if (null == code || "".equals(code)) {
+//                return;
+//            }
 
-            if (null == code || "".equals(code)) {
-                return;
-            }
-
-            crsPrime = CRS.decode(code);
+            crsPrime = crs; //CRS.decode(code);
         } catch(Exception e) {
             throw new IOException(e);
         }

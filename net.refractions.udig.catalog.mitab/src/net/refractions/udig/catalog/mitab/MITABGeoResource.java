@@ -22,8 +22,8 @@ import java.io.IOException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureSource;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.feature.SimpleFeature;
+import org.geotools.feature.SimpleFeatureType;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IGeoResourceInfo;
@@ -67,7 +67,7 @@ public class MITABGeoResource extends IGeoResource {
             String[] a = ds.getTypeNames();
             String featureName = a[0];
 
-            FeatureSource<SimpleFeatureType, SimpleFeature> fs = ds.getFeatureSource(featureName);
+            FeatureSource fs = ds.getFeatureSource(featureName);
 
             return adaptee.cast(fs);
         }
