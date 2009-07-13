@@ -18,12 +18,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 
 /**
@@ -54,11 +55,6 @@ public class TEMSDialog {
 	 * Button for FileDialog
 	 */
 	private Button chooseFileDialogButton;
-	
-	/*
-	 * Button for DirectoryDialog
-	 */
-	private Button chooseDirecotyDialogButton;
 	
 	/*
 	 * Button for adding to load files
@@ -148,7 +144,7 @@ public class TEMSDialog {
 	 * 
 	 */
 	
-	public void open() {
+	public void open() {		
 		temsShell.pack();
 		temsShell.open();
 	}
@@ -211,9 +207,8 @@ public class TEMSDialog {
 		
 		Composite choosePanel = new Composite(panel, SWT.NONE);
 		choosePanel.setLayout(new GridLayout(1, false));
-		choosePanel.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-		chooseDirecotyDialogButton = createChooseButton(choosePanel, "Choose directory...", SWT.TOP);
-		chooseFileDialogButton = createChooseButton(choosePanel, "Choose file...", SWT.TOP);
+		choosePanel.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));		
+		chooseFileDialogButton = createChooseButton(choosePanel, "Browse", SWT.TOP);
 		
 		Composite actionPanel = new Composite(panel, SWT.NONE);
 		actionPanel.setLayout(new GridLayout(1, false));
@@ -314,32 +309,12 @@ public class TEMSDialog {
 	
 	private void createActions(final Shell parentShell) {
 		
-		//opens dialog for choosing Directory
-		chooseDirecotyDialogButton.addSelectionListener(new SelectionAdapter() {
-
-			public void widgetSelected(SelectionEvent e) {
-				DirectoryDialog dialog = new DirectoryDialog(parentShell);
-				dialog.setFilterPath(getDefaultDirectory());
-				
-				String path = dialog.open();
-				
-				if (path != null) {
-					setDefaultDirectory(dialog.getFilterPath());
-					
-					File dir = new File(path);
-					for (File file : dir.listFiles(new TEMFFileFilter())) {					
-						addFileToChoose(file.getName(), path, true);
-					}
-				}
-			}
-		});
-		
 		//opens Dialog for choosing files
 		chooseFileDialogButton.addSelectionListener(new SelectionAdapter() {
 			
 			public void widgetSelected(SelectionEvent e) {
 				// User has selected to open a single file
-		        FileDialog dlg = new FileDialog(parentShell, SWT.OPEN);
+		        FileDialog dlg = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
 				dlg.setText("Select a file containing TEMS data in FMT format");
 		        dlg.setFilterNames(FILTER_NAMES);
 		        dlg.setFilterExtensions(FILTER_EXTS);
@@ -352,6 +327,10 @@ public class TEMSDialog {
 		        	
 		        	for (String name : dlg.getFileNames()) {		        		
 		        		addFileToLoad(name, dlg.getFilterPath(), true);
+		        	}
+		        	
+		        	for (File file : new File(getDefaultDirectory()).listFiles(new TEMFFileFilter())) {
+		        		addFileToChoose(file.getName(), getDefaultDirectory(), true);
 		        	}
 		        }
 			}
@@ -389,7 +368,16 @@ public class TEMSDialog {
 			
 		});
 		
-		//loads TEMS data from choosen files
+		loadButton.addListener(SWT.SELECTED, new Listener() {
+
+			public void handleEvent(Event event) {
+				System.out.println("Gera");
+				
+			}
+			
+		});
+		
+		//loads TEMS data from choosen files		
 		loadButton.addSelectionListener(new SelectionAdapter() {
 			
 			public void widgetSelected(SelectionEvent e) {
@@ -419,17 +407,18 @@ public class TEMSDialog {
 	 * 
 	 */
 	
-	private void loadTemsData() {
+	private void loadTemsData() {		
 		for (String filePath : loadedFiles.values()) {
 			try {
 				TEMSLoader temsLoader = new TEMSLoader(filePath);
 				temsLoader.run();
-				temsLoader.printStats();	// stats for this load
+				temsLoader.printStats();	// stats for this load						
 			}
 			catch (IOException e) {
 				NeoLoaderPlugin.exception(e);
 			}
 		}
+		loadButton.setEnabled(false);
 	}
 	
 	/**
@@ -448,7 +437,7 @@ public class TEMSDialog {
 		}
 		
 		//if list doesn't contain this item than add it
-		if (!folderFiles.containsKey(name)) {
+		if (!folderFiles.containsKey(name) && !loadedFiles.containsKey(name)) {
 			folderFiles.put(name, path);
 			
 			folderFilesList.add(name);
@@ -556,4 +545,5 @@ public class TEMSDialog {
 	public static boolean hasDefaultDirectory() {
 		return defaultDirectory != null;
 	}
+
 }
