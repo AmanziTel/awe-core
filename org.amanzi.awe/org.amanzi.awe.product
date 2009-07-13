@@ -4,7 +4,7 @@
 <product name="Amanzi Wireless Explorer" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" useFeatures="false">
 
    <aboutInfo>
-      <image path="/org.amanzi.awe/nl/en/about.gif"/>
+      <image path="nl/en/about.gif"/>
       <text>
          Amanzi Wireless Explorer
 
@@ -16,30 +16,15 @@ For more information and support visit http://www.amanzitel.com/page/AWE
    <configIni use="default"/>
 
    <launcherArgs>
-      <vmArgs>-Xmx512M -Dosgi.parentClassloader=ext</vmArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true</vmArgsMac>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="/org.amanzi.awe/icons/awe_icon_16.gif" i32="/org.amanzi.awe/icons/awe_icon_32.gif" i48="/org.amanzi.awe/icons/awe_icon_48.gif" i64="/org.amanzi.awe/icons/awe_icon_64.gif" i128="/org.amanzi.awe/icons/awe_icon_128.gif"/>
+   <windowImages i16="icons/awe_icon_16.gif" i32="icons/awe_icon_32.gif" i48="icons/awe_icon_48.gif" i64="icons/awe_icon_64.gif" i128="icons/awe_icon_128.gif"/>
 
    <splash
       startupProgressRect="0,312,500,18"
       startupMessageRect="7,230,445,16"
       startupForegroundColor="FFFFFF" />
-   <launcher name="awe">
-      <linux icon="/org.amanzi.awe/icons/awe_icon_128.xpm"/>
-      <solaris/>
-      <win useIco="true">
-         <ico path="/org.amanzi.awe/icons/awe.ico"/>
-         <bmp/>
-      </win>
-   </launcher>
-
-   <vm>
-      <linux type="jre">jre1.6.0_06_(64_JAI)</linux>
-      <windows type="jre">jre1.6.0_06</windows>
-   </vm>
-
    <plugins>
       <plugin id="com.cvsreader"/>
       <plugin id="com.ibm.icu"/>
@@ -210,17 +195,61 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.eclipse.pde.junit.runtime"/>
-      <plugin id="org.eclipse.platform.source.macosx.carbon.ppc"/>
-      <plugin id="org.eclipse.platform.source.solaris.gtk.sparc"/>
-      <plugin id="org.eclipse.platform.source.win32.win32.x86"/>
-      <plugin id="org.eclipse.platform.source.win32.wpf.x86"/>
       <plugin id="org.eclipse.rcp"/>
       <plugin id="org.eclipse.rcp.nl1" fragment="true"/>
       <plugin id="org.eclipse.rcp.source"/>
-      <plugin id="org.eclipse.rcp.source.aix.motif.ppc"/>
-      <plugin id="org.eclipse.rcp.source.linux.gtk.ppc"/>
-      <plugin id="org.eclipse.rcp.source.linux.gtk.x86"/>
-      <plugin id="org.eclipse.rcp.source.linux.gtk.x86_64"/>
+      <plugin id="org.eclipse.rcp.source.nl1" fragment="true"/>
+      <plugin id="org.eclipse.rcp.source.win32.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.search"/>
+      <plugin id="org.eclipse.swt"/>
+      <plugin id="org.eclipse.swt.nl1" fragment="true"/>
+      <plugin id="org.eclipse.swt.win32.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.team.core"/>
+      <plugin id="org.eclipse.team.ui"/>
+      <plugin id="org.eclipse.text"/>
+      <plugin id="org.eclipse.ui"/>
+      <plugin id="org.eclipse.ui.cheatsheets"/>
+      <plugin id="org.eclipse.ui.console"/>
+      <plugin id="org.eclipse.ui.editors"/>
+      <plugin id="org.eclipse.ui.forms"/>
+      <plugin id="org.eclipse.ui.ide"/>
+      <plugin id="org.eclipse.ui.intro"/>
+      <plugin id="org.eclipse.ui.intro.universal"/>
+      <plugin id="org.eclipse.ui.navigator"/>
+      <plugin id="org.eclipse.ui.navigator.resources"/>
+      <plugin id="org.eclipse.ui.nl1" fragment="true"/>
+      <plugin id="org.eclipse.ui.views"/>
+      <plugin id="org.eclipse.ui.views.properties.tabbed"/>
+      <plugin id="org.eclipse.ui.win32" fragment="true"/>
+      <plugin id="org.eclipse.ui.workbench"/>
+      <plugin id="org.eclipse.ui.workbench.nl1" fragment="true"/>
+      <plugin id="org.eclipse.ui.workbench.texteditor"/>
+      <plugin id="org.eclipse.update.configurator"/>
+      <plugin id="org.eclipse.update.configurator.nl1" fragment="true"/>
+      <plugin id="org.eclipse.update.core"/>
+      <plugin id="org.eclipse.update.core.win32" fragment="true"/>
+      <plugin id="org.eclipse.update.ui"/>
+      <plugin id="org.eclipse.update.ui.nl1" fragment="true"/>
+      <plugin id="org.epic.regexp_rdt"/>
+      <plugin id="org.gef"/>
+      <plugin id="org.jruby"/>
+      <plugin id="org.jtestr"/>
+      <plugin id="org.junit"/>
+      <plugin id="org.junit.source"/>
+      <plugin id="org.junit4"/>
+      <plugin id="org.kxml2"/>
+      <plugin id="org.mortbay.jetty"/>
+      <plugin id="org.neo4j"/>
+      <plugin id="org.neo4j.neoclipse"/>
+      <plugin id="org.rubypeople.rdt.core"/>
+      <plugin id="org.rubypeople.rdt.debug.core"/>
+      <plugin id="org.rubypeople.rdt.debug.ui"/>
+      <plugin id="org.rubypeople.rdt.install"/>
+      <plugin id="org.rubypeople.rdt.launching"/>
+      <plugin id="org.rubypeople.rdt.refactoring"/>
+      <plugin id="org.rubypeople.rdt.testunit"/>
+      <plugin id="org.rubypeople.rdt.ui"/>
+      <plugin id="org.tcat.citd.sim.udig.bookmarks"/>
    </plugins>
 
 </product>
