@@ -117,31 +117,21 @@ public class SplashTableModel extends DefaultTableModel
 		runtime.evalScriptlet("$sheet = Spreadsheet.new");				
 	}
 
-	/**
-	 * Constructor for class using RowCount and ColumnCount
-	 * @param rowCount
-	 * @param columnCount
-	 */
-	@SuppressWarnings("unchecked")
-	public SplashTableModel (int rowCount, int columnCount, boolean isTesting)
-	{
-		this.rowCount     = rowCount;
-		this.columnCount  = columnCount;
-		Util.isDebug = true;
-		initializeJRubyInterpreter();
-
-		cellValues = new Hashtable ();
-
-		//TODO: Find a better way - mock the data in the test cases
-		if (isTesting){
-			for (int i=0;i<rowCount;i++)
-				for (int j=0;j<columnCount;j++)
-				{
-					setValueAt(new Cell(i,j,"","",new CellFormat()),i,j);
-				}
-
-		}
-	}
+//	/**
+//	 * Constructor for class using RowCount and ColumnCount
+//	 * @param rowCount
+//	 * @param columnCount
+//	 */
+//	@SuppressWarnings("unchecked")
+//	public SplashTableModel (int rowCount, int columnCount)
+//	{
+//		this.rowCount     = rowCount;
+//		this.columnCount  = columnCount;
+//		Util.isDebug = true;
+//		initializeJRubyInterpreter();
+//
+//		cellValues = new Hashtable ();		
+//	}
 
 	/**
 	 * Override for constructor to accept input stream

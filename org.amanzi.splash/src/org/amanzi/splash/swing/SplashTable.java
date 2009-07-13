@@ -1,8 +1,6 @@
 package org.amanzi.splash.swing;
 
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JTable;
@@ -51,13 +49,6 @@ public class SplashTable extends JTable
 	{
 		this (new SplashTableModel (rowCount, columnCount));
 		tableFormat = new TableFormat();
-	}
-
-	public SplashTable (int rowCount, int columnCount, boolean isTesting)
-	{
-
-		this (new SplashTableModel (rowCount, columnCount, isTesting));
-		//tableFormat = new TableFormat();
 	}
 
 	/**
