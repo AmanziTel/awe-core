@@ -40,6 +40,7 @@ Import-Package: org.eclipse.core.commands.common,
  org.eclipse.zest.layouts.algorithms,
  org.junit;version="4.3.1",
  org.neo4j.api.core,
+ org.neo4j.neoclipse.preference,
  org.osgi.framework;version="1.4.0"
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -47,7 +48,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources,
  org.neo4j;visibility:=reexport,
  org.eclipse.ui.ide
-Export-Package: org.neo4j.neoclipse,
- org.neo4j.neoclipse.neo
+Export-Package: org.neo4j.neoclipse;x-friends:="org.amanzi.neo.loader",
+ org.neo4j.neoclipse.neo;x-internal:=true,
+ org.neo4j.neoclipse.preference;x-friends:="org.amanzi.neo.loader"
 Bundle-ClassPath: .
 Eclipse-LazyStart: true

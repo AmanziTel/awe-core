@@ -20,6 +20,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.neoclipse.neo.NeoServiceManager;
+import org.neo4j.neoclipse.preference.NeoPreferenceHelper;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -39,6 +40,10 @@ public class Activator extends AbstractUIPlugin
      * The shared instance.
      */
     private static Activator PLUGIN;
+    /**
+     * The helper to keep some default values for AWE
+     */
+    private static NeoPreferenceHelper helper=null;
 
     /**
      * Starts up the plug-in and initializes the neo service.
@@ -197,4 +202,12 @@ public class Activator extends AbstractUIPlugin
         // start the service using new location
         getNeoServiceSafely();
     }
+    public static NeoPreferenceHelper getHelper() {
+		return helper;
+	}
+
+	public void setHelper(NeoPreferenceHelper helper) {
+		Activator.helper = helper;
+	}
+
 }
