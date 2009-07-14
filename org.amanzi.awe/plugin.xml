@@ -87,6 +87,9 @@
          <viewShortcut id="net.refractions.udig.catalog.ui.Search"/>
          <viewShortcut id="net.refractions.udig.browser.ui.browserContainerView"/>
          <viewShortcut id="org.tcat.citd.sim.udig.bookmarks.internal.ui.BookmarksView"/>
+         <newWizardShortcut
+               id="org.amanzi.splash.neo4j.wizards.SplashNewSpreadsheetWizard">
+         </newWizardShortcut>
          <perspectiveShortcut id="org.amanzi.awe.perspective"/>
          <perspectiveShortcut id="org.neo4j.neoclipse.NeoPerspective"/>
          
@@ -154,6 +157,9 @@
                value="plugin_customization.ini">
          </property>
       </product>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
    </extension>
    <extension
          id="AWE"
