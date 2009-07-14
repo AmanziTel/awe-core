@@ -932,7 +932,7 @@ public class LoadService {
      * @param name the file to find, this is a path name
      * @return the correct file
      */
-    protected LoadServiceResource findFileInClasspath(String name) {
+    private LoadServiceResource findFileInClasspath(String name) {
         // Look in classpath next (we do not use File as a test since UNC names will match)
         // Note: Jar resources must NEVER begin with an '/'. (previous code said "always begin with a /")
         ClassLoader classLoader = runtime.getJRubyClassLoader();
@@ -950,6 +950,9 @@ public class LoadService {
             
             // otherwise, try to load from classpath (Note: Jar resources always uses '/')
             URL loc = classLoader.getResource(entry + "/" + name);
+
+            // Enable classpath URL re-writing hook
+            loc = resolveClassPathURL(loc);
             
             // Make sure this is not a directory or unavailable in some way
             if (isRequireable(loc)) {
@@ -963,10 +966,29 @@ public class LoadService {
         // Try to load from classpath without prefix. "A/b.rb" will not load as 
         // "./A/b.rb" in a jar file.
         URL loc = classLoader.getResource(name);
-        
+
+        // Enable classpath URL re-writing hook
+        loc = resolveClassPathURL(loc);
+
         return isRequireable(loc) ? new LoadServiceResource(loc, loc.getPath()) : null;
     }
-    
+
+    /**
+     * This method allows external applications to modify the abilities of the fileFileInClasspath() method.
+     * That method normally works with normal classpath URLs, but will not work in managed environments like
+     * OSGi or Equinox. For example, it will not handle classpath entries with URL protocol = 'bundleentry'.
+     * To support that kind of case, create a custom LoadService class that extends this class, and overrides
+     * the resolveClassPathURL(URL) method to convert the URL from the unusual protocol to a supported one.
+     * In the case of equinox, the method FileLocator.resolve(URL) does just that. Here in standard JRuby code,
+     * this method simply returns the URL unchanged.
+     * 
+     * @param loc URL pointing to classpath resource
+     * @return URL modified to use normal protocols
+     */
+    protected URL resolveClassPathURL(URL loc) {
+        return loc;
+    }
+
     /* Directories and unavailable resources are not able to open a stream. */
     private boolean isRequireable(URL loc) {
         if (loc != null) {
