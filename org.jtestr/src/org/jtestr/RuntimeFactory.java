@@ -40,6 +40,19 @@ public class RuntimeFactory {
     public RuntimeFactory(String programName, List loadPath, List<String> libraries, boolean verbose, boolean debug, ClassLoader loader) {
         this(programName, new ArrayList(), new ArrayList<String>(), false, false, loader, null);
     }
+    
+    /**
+     * Additional constructor that supports LoadServiceCreator
+     * 
+     * @param programName
+     * @param loader
+     * @param creator
+     * @author Lagutko_N
+     */
+    
+    public RuntimeFactory(String programName, ClassLoader loader, LoadServiceCreator creator) {
+    	this(programName, new ArrayList(), new ArrayList<String>(), false, false, loader, creator);
+    }
 
     public RuntimeFactory(String programName, List loadPath, List<String> libraries, boolean verbose, boolean debug, ClassLoader loader, LoadServiceCreator creator) {
         this.programName = programName;

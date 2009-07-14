@@ -11,7 +11,10 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 
+import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.jruby.Ruby;
+import org.jruby.RubyInstanceConfig.LoadServiceCreator;
+import org.jruby.runtime.load.LoadService;
 
 import org.jtestr.ant.JtestRAntClient;
 
@@ -80,7 +83,12 @@ public class JtestRRunner {
         } catch(IOException e) {}
         
         if(!ran) {
-            Ruby runtime = new RuntimeFactory("<test script>", this.getClass().getClassLoader()).createRuntime();
+        	LoadServiceCreator creator = new LoadServiceCreator() {
+        		public LoadService create(Ruby runtime) {
+                    return new EclipseLoadService(runtime);
+                }
+        	};
+            Ruby runtime = new RuntimeFactory("<test script>", this.getClass().getClassLoader(), creator).createRuntime();
             try {
                 TestRunner testRunner = new TestRunner(runtime, config.load());
                 boolean result = testRunner.run(config, new String[0]);

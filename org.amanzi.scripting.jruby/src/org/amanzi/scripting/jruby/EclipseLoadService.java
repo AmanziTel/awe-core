@@ -50,7 +50,7 @@ public class EclipseLoadService extends LoadService {
      * @param name the file to find, this is a path name
      * @return the correct file
      */
-    private LoadServiceResource findFileInClasspath(String name) {
+    protected LoadServiceResource findFileInClasspath(String name) {
         // Look in classpath next (we do not use File as a test since UNC names will match)
         // Note: Jar resources must NEVER begin with an '/'. (previous code said "always begin with a /")
         ClassLoader classLoader = runtime.getJRubyClassLoader();

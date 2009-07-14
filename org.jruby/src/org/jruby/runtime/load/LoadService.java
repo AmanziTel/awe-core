@@ -48,9 +48,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import java.util.zip.ZipException;
-//TODO: Find a way to get this FileLocator code to work without hard-coded dependency on org.eclipse.core.runtime
-//That will make it easier to merge this back into JRuby core.
-import org.eclipse.core.runtime.FileLocator;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyFile;
@@ -934,7 +931,8 @@ public class LoadService {
      * @param name the file to find, this is a path name
      * @return the correct file
      */
-    private LoadServiceResource findFileInClasspath(String name) {
+    //Lagutko 14.07.2009, make this method protected to be able to override it
+    protected LoadServiceResource findFileInClasspath(String name) {
         // Look in classpath next (we do not use File as a test since UNC names will match)
         // Note: Jar resources must NEVER begin with an '/'. (previous code said "always begin with a /")
         ClassLoader classLoader = runtime.getJRubyClassLoader();
@@ -953,16 +951,6 @@ public class LoadService {
             // otherwise, try to load from classpath (Note: Jar resources always uses '/')
             URL loc = classLoader.getResource(entry + "/" + name);
             
-            //Lagutko, 29.06.2009, compute full path from bundle-dependent path
-            if (loc != null) {
-            	try {
-            		loc = FileLocator.resolve(loc);
-            	}
-            	catch (IOException e) {
-            	
-            	}
-            }
-
             // Make sure this is not a directory or unavailable in some way
             if (isRequireable(loc)) {
                 return new LoadServiceResource(loc, loc.getPath());
@@ -976,16 +964,6 @@ public class LoadService {
         // "./A/b.rb" in a jar file.
         URL loc = classLoader.getResource(name);
         
-        //Lagutko, 29.06.2009, compute full path from bundle-dependent path
-        if (loc != null) {
-        	try {
-        		loc = FileLocator.resolve(loc);
-        	}
-        	catch (IOException e) {
-        	
-        	}
-        }
-
         return isRequireable(loc) ? new LoadServiceResource(loc, loc.getPath()) : null;
     }
     
