@@ -1,7 +1,17 @@
 
 class TestSplash < Test::Unit::TestCase
   def setup
-    @splashTable = Java::org.amanzi.splash.swing.SplashTable.new(10,10, true)
+    @splashTable = Java::org.amanzi.splash.swing.SplashTable.new()
+  end
+  
+  def initializeSplashTable(table)
+  	0.upto(table.getRowCount) do |i|
+  		0.upto(table.getColumnCount) do |j|
+  			cellFormat = Java::com.eteks.openjeks.format.CellFormat.new
+  			cell = Java::org.amanzi.splash.swing.Cell.new(i, j, "", "", cellFormat)
+  			table.setValueAt(cell, i, j)	
+  		end
+  	end   
   end
   
   def test01_display_plain_text_as_plain_text
