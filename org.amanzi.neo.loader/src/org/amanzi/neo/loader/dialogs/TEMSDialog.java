@@ -8,6 +8,11 @@ import java.util.HashMap;
 import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,6 +34,8 @@ import org.eclipse.swt.widgets.Shell;
 
 /**
  * Dialog for Loading TEMS data
+ * 
+ * //TODO
  * 
  * @author Lagutko_N
  */
@@ -54,7 +61,7 @@ public class TEMSDialog {
 	/*
 	 * Button for FileDialog
 	 */
-	private Button chooseFileDialogButton;
+	private Button browseDialogButton;
 	
 	/*
 	 * Button for adding to load files
@@ -208,7 +215,7 @@ public class TEMSDialog {
 		Composite choosePanel = new Composite(panel, SWT.NONE);
 		choosePanel.setLayout(new GridLayout(1, false));
 		choosePanel.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));		
-		chooseFileDialogButton = createChooseButton(choosePanel, "Browse", SWT.TOP);
+		browseDialogButton = createChooseButton(choosePanel, "Browse", SWT.TOP);
 		
 		Composite actionPanel = new Composite(panel, SWT.NONE);
 		actionPanel.setLayout(new GridLayout(1, false));
@@ -218,7 +225,7 @@ public class TEMSDialog {
 	}
 	
 	/**
-	 * Creates List for files to laod
+	 * Creates List for files to load
 	 * 
 	 * @param parent
 	 */
@@ -245,22 +252,22 @@ public class TEMSDialog {
 		
 		cancelButton = new Button(panel, SWT.CENTER);
 		cancelButton.setText("Cancel");
-		FormData formData = new FormData();
-		formData.right = new FormAttachment(100, -10);
-		formData.bottom = new FormAttachment(100, -10);
-		formData.top = new FormAttachment(0, 10);
-		formData.width = 100;
-		cancelButton.setLayoutData(formData);
+		FormData cancelButtonFormData = new FormData();
+		cancelButtonFormData.right = new FormAttachment(100, -10);
+		cancelButtonFormData.bottom = new FormAttachment(100, -10);
+		cancelButtonFormData.top = new FormAttachment(0, 10);
+		cancelButtonFormData.width = 100;
+		cancelButton.setLayoutData(cancelButtonFormData);
 		
 		loadButton = new Button(panel, SWT.CENTER);
 		loadButton.setText("Load");
 		loadButton.setEnabled(false);
-		FormData formData2 = new FormData();
-		formData2.right = new FormAttachment(cancelButton, -10);
-		formData2.bottom = new FormAttachment(100, -10);
-		formData2.top = new FormAttachment(0, 10);
-		formData2.width = 100;
-		loadButton.setLayoutData(formData2);
+		FormData loadButtonFormData = new FormData();
+		loadButtonFormData.right = new FormAttachment(cancelButton, -10);
+		loadButtonFormData.bottom = new FormAttachment(100, -10);
+		loadButtonFormData.top = new FormAttachment(0, 10);
+		loadButtonFormData.width = 100;
+		loadButton.setLayoutData(loadButtonFormData);
 	}
 	
 	/**
@@ -310,7 +317,7 @@ public class TEMSDialog {
 	private void createActions(final Shell parentShell) {
 		
 		//opens Dialog for choosing files
-		chooseFileDialogButton.addSelectionListener(new SelectionAdapter() {
+		browseDialogButton.addSelectionListener(new SelectionAdapter() {
 			
 			public void widgetSelected(SelectionEvent e) {
 				// User has selected to open a single file
@@ -368,20 +375,12 @@ public class TEMSDialog {
 			
 		});
 		
-		loadButton.addListener(SWT.SELECTED, new Listener() {
-
-			public void handleEvent(Event event) {
-				System.out.println("Gera");
-				
-			}
-			
-		});
-		
 		//loads TEMS data from choosen files		
 		loadButton.addSelectionListener(new SelectionAdapter() {
 			
 			public void widgetSelected(SelectionEvent e) {
-				loadTemsData();
+				LoadTEMSJob job = new LoadTEMSJob(temsShell.getDisplay());
+				job.schedule(50);				
 			}
 			
 		});
@@ -407,18 +406,34 @@ public class TEMSDialog {
 	 * 
 	 */
 	
-	private void loadTemsData() {		
+	private void loadTemsData(Display display, IProgressMonitor monitor) {
+		
+		display.asyncExec(new Runnable() {
+			public void run() {
+				temsShell.close();
+			}
+		});
+		
+		if (monitor == null) {
+			monitor = new NullProgressMonitor();
+		}
+		
+		monitor.beginTask("Load TEMS data", loadedFiles.values().size());
+		
 		for (String filePath : loadedFiles.values()) {
-			try {
-				TEMSLoader temsLoader = new TEMSLoader(filePath);
+			monitor.subTask("Load TEMS data from " + filePath);						
+			try {				
+				TEMSLoader temsLoader = new TEMSLoader(filePath, display);
 				temsLoader.run();
 				temsLoader.printStats();	// stats for this load						
 			}
 			catch (IOException e) {
 				NeoLoaderPlugin.exception(e);
 			}
+			monitor.worked(1);
 		}
-		loadButton.setEnabled(false);
+
+		monitor.done();		
 	}
 	
 	/**
@@ -545,5 +560,27 @@ public class TEMSDialog {
 	public static boolean hasDefaultDirectory() {
 		return defaultDirectory != null;
 	}
+	
+	/**
+	 * Job for loading TEMS data
+	 * 
+	 * @author Lagutko_N
+	 *
+	 */
 
+	private class LoadTEMSJob extends Job {
+		
+		public LoadTEMSJob(Display jobDisplay) {
+			super("Load TEMS");					
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			loadTemsData(temsShell.getDisplay(), monitor);
+			
+			return Status.OK_STATUS;
+		}
+
+				
+	}
 }

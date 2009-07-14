@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.EmbeddedNeo;
@@ -48,16 +50,62 @@ public class TEMSLoader {
     private int count_valid_changed = 0;
     private int limit = 0;
     private static int[] times = new int[2];
-
-	public TEMSLoader(String filename) {
+    
+    public TEMSLoader(String filename) {
 		this(null,filename);
+	}
+    
+    /**
+     * Additional constructor for starting neo from thread without Display 
+     * 
+     * @param filename
+     * @param display 
+     * @author Lagutko_N
+     */
+    
+    public TEMSLoader(String filename, Display display) {
+    	this(null, filename, display);
+    }
+    
+    /**
+     * Additional constructor for starting neo from thread without Display 
+     * 
+     * @param neo
+     * @param filename
+     * @param display
+     * @author Lagutko_N
+     */
+    
+    public TEMSLoader(NeoService neo, String filename, Display display) {
+		this.neo = neo;		
+		this.filename = filename;
+		this.basename = (new File(filename)).getName();
+		initializeNeo(display);
 	}
 
 	public TEMSLoader(NeoService neo, String filename) {
-		this.neo = neo;
-		if(this.neo == null) this.neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();
-		this.filename = filename;
-		this.basename = (new File(filename)).getName();
+		this(neo, filename, null);
+	}
+	
+	/**
+	 * Start Neo from given Display or given Thread 
+	 * 
+	 * @param display Display
+	 */
+	
+	private void initializeNeo(Display display) {
+		//if Display is given than start Neo using syncExec
+		if (display != null) {
+			display.syncExec(new Runnable() {
+				public void run() {
+					if(neo == null) neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();
+				}
+			});
+		}
+		//if Display is not given than initialize Neo as usual
+		else {
+			if(this.neo == null) this.neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();
+		}
 	}
 
 	public void run() throws IOException {
@@ -80,20 +128,37 @@ public class TEMSLoader {
         return (line_number>0 ? "line:"+line_number : ""+((System.currentTimeMillis()-started)/1000.0)+"s");
     }
 
-    private void debug(String line){
-		NeoLoaderPlugin.debug("TEMS:"+basename+":"+status()+": "+line);
+    private void debug(final String line){
+    	PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+			public void run() {
+				NeoLoaderPlugin.debug("TEMS:"+basename+":"+status()+": "+line);
+			}
+		});
 	}
 	
-	private void info(String line){
+	private void info(final String line){
+		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+			public void run() {
+				NeoLoaderPlugin.notify("TEMS:"+basename+":"+status()+": "+line);
+			}
+		});	
 		NeoLoaderPlugin.info("TEMS:"+basename+":"+status()+": "+line);
 	}
 	
-	private void notify(String line){
-		NeoLoaderPlugin.notify("TEMS:"+basename+":"+status()+": "+line);
+	private void notify(final String line){
+		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+			public void run() {
+				NeoLoaderPlugin.notify("TEMS:"+basename+":"+status()+": "+line);
+			}
+		});		
 	}
 	
-	private void error(String line){
-		NeoLoaderPlugin.error("TEMS:"+basename+":"+status()+": "+line);
+	private void error(final String line){
+		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+			public void run() {
+				NeoLoaderPlugin.notify("TEMS:"+basename+":"+status()+": "+line);
+			}
+		});	
 	}
 	
 	public int getLimit(){

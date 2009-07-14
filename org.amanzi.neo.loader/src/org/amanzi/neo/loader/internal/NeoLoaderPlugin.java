@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.MessageConsole;
@@ -206,7 +205,6 @@ public class NeoLoaderPlugin extends Plugin {
 			isVisible = true;
 		}		
 		consoleStream.println(line);
-		PlatformUI.getWorkbench().getDisplay().readAndDispatch();
 	}
 	
 	/**
@@ -222,8 +220,7 @@ public class NeoLoaderPlugin extends Plugin {
 			isVisible = true;
 		}
 				
-		PrintStream stream = new PrintStream(consoleStream);
-		PlatformUI.getWorkbench().getDisplay().readAndDispatch();
-		e.printStackTrace(stream);
+		PrintStream stream = new PrintStream(consoleStream);		
+		e.printStackTrace(stream);		
 	}
 }

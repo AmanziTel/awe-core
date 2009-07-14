@@ -65,7 +65,7 @@ public class NeoPreferencesInitializer extends AbstractPreferenceInitializer
 		neoclipsePlugin.setHelper(neoPreferenceHelper);
 	}
 
-	@Override
+
 	public void earlyStartup() {
 		initializeDefaultPreferences();
 	}
