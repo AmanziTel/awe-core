@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.StringTokenizer;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -38,14 +39,13 @@ public class NeoDecoratorPreferencePage extends AbstractPreferencePage {
 	// relationship label properties
 	private static final String RELATIONSHIP_LABEL_PROPERTIES_LABEL = "Relationship label properties:";
 	// icon locations
-	private static final String NODE_ICONS_LOCATION_LABEL = "Node icons location:";
+	static final String NODE_ICONS_LOCATION_LABEL = "Node icons location:";
 	private static final String NODE_ICONS_LOCATION_ERROR = "The Node icons location is invalid.";
-	private static final String ICON_LOCATION_NOTE = "the icon filenames should correspond to the settings for node icon filename properties";
+	static final String ICON_LOCATION_NOTE = "the icon filenames should correspond to the settings for node icon filename properties";
 	// node icon filename properties
 	private static final String NODE_ICON_FILENAME_PROPERTIES_LABEL = "Node icon filename properties:";
 	private static final String ICON_PROPERTY_NAMES_NOTE = "comma-separated list (see node labels); file EXTENSIONS are added automatically to the property values found";
-	private static final String ICON_LIST_LOCATION_NOTE = "the icon filenames should correspond to the settings for node icon filename properties";
-
+	
 	/**
 	 * Initializes the several input fields.
 	 */
@@ -69,10 +69,10 @@ public class NeoDecoratorPreferencePage extends AbstractPreferencePage {
 		if (helper != null) {// neoclipse runs in AWE
 			ComboFieldEditor iconLocationComboField = new ComboFieldEditor(
 					NeoDecoratorPreferences.NODE_ICON_LOCATION,
-					NODE_ICONS_LOCATION_LABEL,
-					convertDirectoriesToStringArray(helper.getIconDirectories()),
+					helper.getIconLocationLabel(),
+					convertDirectoriesToStringArray(helper.getIconLocations()),
 					getFieldEditorParent());
-			addField(iconLocationComboField, ICON_LOCATION_NOTE);
+			addField(iconLocationComboField, helper.getIconLocationNote());
 		} else {
 			DirectoryFieldEditor iconLocationField = new DirectoryFieldEditor(
 					NeoDecoratorPreferences.NODE_ICON_LOCATION,
@@ -98,12 +98,13 @@ public class NeoDecoratorPreferencePage extends AbstractPreferencePage {
 	 *            file array to be converted
 	 * @return array containing names and values for given File array
 	 */
-	private String[][] convertDirectoriesToStringArray(File[] files) {
-		int dirCount = files.length;
-		String[][] namesAndValues = new String[dirCount][2];
-		for (int i = 0; i <= dirCount - 1; i++) {
-			namesAndValues[i][0] = files[i].getName();
-			namesAndValues[i][1] = files[i].getPath();
+	private String[][] convertDirectoriesToStringArray(java.util.List<java.net.URL> dirs) {
+		String[][] namesAndValues = new String[dirs.size()][2];
+		for (int i=0;i<dirs.size();i++){
+		    java.net.URL dir = dirs.get(i);
+		    String path[] = dir.getPath().split("/");
+			namesAndValues[i][0] = path[path.length-1];
+			namesAndValues[i][1] = dir.getPath();
 		}
 		return namesAndValues;
 	}
