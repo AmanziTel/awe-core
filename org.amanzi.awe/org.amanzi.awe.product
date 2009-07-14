@@ -25,6 +25,17 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       startupProgressRect="0,312,500,18"
       startupMessageRect="7,230,445,16"
       startupForegroundColor="FFFFFF" />
+   <launcher>
+      <solaris/>
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+
+   <vm>
+   </vm>
+
    <plugins>
       <plugin id="com.cvsreader"/>
       <plugin id="com.ibm.icu"/>
@@ -32,7 +43,6 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <plugin id="com.ibm.icu.source"/>
       <plugin id="com.ibm.icu.source.nl1" fragment="true"/>
       <plugin id="com.lowagie.itext"/>
-      <plugin id="com.sun.script.jruby"/>
       <plugin id="javax.servlet"/>
       <plugin id="javax.servlet.jsp"/>
       <plugin id="net.refractions.udig"/>
@@ -44,6 +54,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <plugin id="net.refractions.udig.catalog.geotiff"/>
       <plugin id="net.refractions.udig.catalog.gml"/>
       <plugin id="net.refractions.udig.catalog.google2"/>
+      <plugin id="net.refractions.udig.catalog.mitab"/>
       <plugin id="net.refractions.udig.catalog.mysql"/>
       <plugin id="net.refractions.udig.catalog.oracle"/>
       <plugin id="net.refractions.udig.catalog.postgis"/>
@@ -114,6 +125,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <plugin id="org.amanzi.neo.loader"/>
       <plugin id="org.amanzi.neo4j.dbloader"/>
       <plugin id="org.amanzi.rdt.launching"/>
+      <plugin id="org.amanzi.rdt.testing"/>
       <plugin id="org.amanzi.scripting.jirb"/>
       <plugin id="org.amanzi.scripting.jirb.console"/>
       <plugin id="org.amanzi.scripting.jruby"/>
@@ -247,7 +259,6 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <plugin id="org.rubypeople.rdt.install"/>
       <plugin id="org.rubypeople.rdt.launching"/>
       <plugin id="org.rubypeople.rdt.refactoring"/>
-      <plugin id="org.rubypeople.rdt.testunit"/>
       <plugin id="org.rubypeople.rdt.ui"/>
       <plugin id="org.tcat.citd.sim.udig.bookmarks"/>
    </plugins>
