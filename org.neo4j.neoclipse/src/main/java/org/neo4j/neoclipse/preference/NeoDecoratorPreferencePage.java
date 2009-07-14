@@ -13,17 +13,9 @@
  */
 package org.neo4j.neoclipse.preference;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.util.StringTokenizer;
-
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
-import org.eclipse.jface.preference.PathEditor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Combo;
 import org.neo4j.neoclipse.Activator;
 
 /**
