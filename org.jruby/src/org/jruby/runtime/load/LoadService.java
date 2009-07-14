@@ -926,12 +926,12 @@ public class LoadService {
     /**
      * this method uses the appropriate lookup strategy to find a file.
      * It is used by Kernel#require.
+	 * NOTE: AmanziTel: Lagutko 14.07.2009, made this method protected to be able to override it, allowing for custom editors
      *
      * @mri rb_find_file
      * @param name the file to find, this is a path name
      * @return the correct file
      */
-    //Lagutko 14.07.2009, make this method protected to be able to override it
     protected LoadServiceResource findFileInClasspath(String name) {
         // Look in classpath next (we do not use File as a test since UNC names will match)
         // Note: Jar resources must NEVER begin with an '/'. (previous code said "always begin with a /")
