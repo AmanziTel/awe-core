@@ -15,6 +15,10 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.neoclipse.neo.NeoServiceEvent;
+import org.neo4j.neoclipse.neo.NeoServiceEventListener;
+import org.neo4j.neoclipse.neo.NeoServiceManager;
+import org.neo4j.neoclipse.neo.NeoServiceStatus;
 
 /**
  * This class was written to handle CSV (tab delimited) network data from ice.net in Sweden.
@@ -26,7 +30,7 @@ import org.neo4j.api.core.Transaction;
  * 
  * @author craig
  */
-public class NetworkLoader {
+public class NetworkLoader implements NeoServiceEventListener {
 	public static enum NetworkElementTypes {
 		NETWORK("Network"),
 		BSC("BSC"),
@@ -68,6 +72,7 @@ public class NetworkLoader {
 		}
 	}
 	private NeoService neo;
+	private NeoServiceManager neoManager;
 	private String siteName = null;
 	private String bscName = null;
 	private Node site = null;
@@ -88,22 +93,47 @@ public class NetworkLoader {
 
 	public NetworkLoader(NeoService neo, String filename) {
 		this.neo = neo;
-		if(this.neo == null) this.neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();
+		if(this.neo == null) {
+            this.neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();  // Call this first as it initializes everything
+            this.neoManager = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceManager();    // Initialized in above call
+            this.neoManager.addServiceEventListener(this);
+		}
 		this.filename = filename;
 		this.basename = (new File(filename)).getName();
 	}
-	
+
+    @Override
+    public void serviceChanged(NeoServiceEvent event) {
+        if (neoManager != null) {
+            // If Neoclipse no longer manages this database, stop listening to events
+            if (event.getStatus() == NeoServiceStatus.STOPPED) {
+                unregisterNeoManager();
+            }
+        }
+    }
+    
+    private void unregisterNeoManager(){
+        if (neoManager != null) {
+            neoManager.removeServiceEventListener(this);
+            neoManager = null;
+        }
+    }
+
 	public void run() throws IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(filename));
-		try{
-			String line;
-			while((line = reader.readLine())!=null) {
-				parseLine(line);
-			}
-		}finally{
-			reader.close();
-		}
-	}
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                parseLine(line);
+            }
+        } finally {
+            reader.close();
+            if (neoManager != null) {
+                neoManager.commit();
+                unregisterNeoManager();
+            }
+        }
+    }
 
 	private static void debug(String line){
 		NeoLoaderPlugin.debug(line);
