@@ -84,7 +84,7 @@ public class NeoGraphContentProvider implements
                 }
             }
         }
-        else
+        else if(start!=null)
         {
             for ( Relationship r : start.getRelationships( Direction.OUTGOING ) )
             {
