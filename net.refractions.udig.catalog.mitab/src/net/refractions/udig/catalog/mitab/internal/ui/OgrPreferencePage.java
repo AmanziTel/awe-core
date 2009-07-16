@@ -16,6 +16,7 @@
 package net.refractions.udig.catalog.mitab.internal.ui;
 
 import java.io.File;
+import java.io.FileFilter;
 
 import net.refractions.udig.catalog.mitab.internal.Activator;
 import net.refractions.udig.catalog.mitab.internal.Messages;
@@ -41,117 +42,185 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
  * Preference pane for ogr2ogr executable selection
- *
+ * 
  * @author Lucas Reed, (Refractions Research Inc)
  * @since 1.1.0
  */
 @SuppressWarnings("nls")
-public class OgrPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
-    public  static final String executablePathKey = "executable_path";
-    private              String executablePath    = null;
+public class OgrPreferencePage extends PreferencePage implements
+		IWorkbenchPreferencePage {
+	public static final String executablePathKey = "executable_path";
+	private String executablePath = null;
 
-    protected Control createContents(Composite parent) {
-        final Composite  comp   = new Composite(parent, SWT.NONE);
-        final GridLayout layout = new GridLayout(3, false);
+	protected Control createContents(Composite parent) {
+		final Composite comp = new Composite(parent, SWT.NONE);
+		final GridLayout layout = new GridLayout(3, false);
 
-        layout.marginBottom = 0;
-        layout.marginTop    = 0;
-        layout.marginRight  = 0;
-        layout.marginLeft   = 0;
+		layout.marginBottom = 0;
+		layout.marginTop = 0;
+		layout.marginRight = 0;
+		layout.marginLeft = 0;
 
-        comp.setLayout(layout);
+		comp.setLayout(layout);
 
-        // ---
+		// ---
 
-        Label label = new Label(comp, SWT.FLAT);
-        label.setText(Messages.Ogr2OgrPreference_selectExecutable);
-        GridData layoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
-        label.setLayoutData(layoutData);
+		Label label = new Label(comp, SWT.FLAT);
+		label.setText(Messages.Ogr2OgrPreference_selectExecutable);
+		GridData layoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
+		label.setLayoutData(layoutData);
 
-        final Text input = new Text(comp, SWT.SINGLE | SWT.BORDER);
+		final Text input = new Text(comp, SWT.SINGLE | SWT.BORDER);
 
-        input.addModifyListener(new ModifyListener() {
-            public void modifyText(org.eclipse.swt.events.ModifyEvent e) {
-                if ("".equals(input.getText())) {
-                    return;
-                }
+		input.addModifyListener(new ModifyListener() {
+			public void modifyText(org.eclipse.swt.events.ModifyEvent e) {
+				if ("".equals(input.getText())) {
+					return;
+				}
 
-                File executable = new File(input.getText());
+				File executable = new File(input.getText());
 
-                if (false == executable.exists()) {
-                    error(Messages.Ogr2OgrPreference_fileNotFound, input);
-                } else {
-                    clearError(input);
-                }
-            };
-        });
+				if (false == executable.exists()) {
+					error(Messages.Ogr2OgrPreference_fileNotFound, input);
+				} else {
+					clearError(input);
+				}
+			};
+		});
 
-        this.executablePath = getPreferenceStore().getString(OgrPreferencePage.executablePathKey);
-        if (0 == executablePath.trim().length()) {
-            this.executablePath = null;
-        }
-        input.setText(this.executablePath == null ? "" : this.executablePath);
+		this.executablePath = getPreferenceStore().getString(
+				OgrPreferencePage.executablePathKey);
+		if (0 == executablePath.trim().length()) {
+			this.executablePath = null;
+		}
+		this.executablePath = findOgr2ogr(this.executablePath);
+		input.setText(this.executablePath == null ? "" : this.executablePath);
 
-        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        input.setLayoutData(layoutData);
+		layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+		input.setLayoutData(layoutData);
 
-        // ----
+		// ----
 
-        Button browse = new Button(comp, SWT.PUSH);
-        browse.setText(Messages.Ogr2OgrPreference_browseButton);
+		Button browse = new Button(comp, SWT.PUSH);
+		browse.setText(Messages.Ogr2OgrPreference_browseButton);
 
-        browse.addSelectionListener(new SelectionListener() {
-            public void widgetSelected(SelectionEvent e) {
-                widgetDefaultSelected(e);
-            }
+		browse.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(SelectionEvent e) {
+				widgetDefaultSelected(e);
+			}
 
-            public void widgetDefaultSelected(SelectionEvent e) {
-                FileDialog fileDialog = new FileDialog(comp.getShell(), SWT.OPEN);
-                fileDialog.setFilterExtensions(new String[]{"*"});
-                fileDialog.setFilterNames(new String[]{Messages.Ogr2OgrPreference_execuables});
+			public void widgetDefaultSelected(SelectionEvent e) {
+				FileDialog fileDialog = new FileDialog(comp.getShell(),
+						SWT.OPEN);
+				fileDialog.setFilterExtensions(new String[] { "*" });
+				fileDialog
+						.setFilterNames(new String[] { Messages.Ogr2OgrPreference_execuables });
 
-                executablePath = fileDialog.open();
+				executablePath = fileDialog.open();
 
-                if (null != executablePath) {
-                    input.setText(executablePath);
-                }
-            }
-        });
+				if (null != executablePath) {
+					input.setText(executablePath);
+				}
+			}
+		});
 
-        layoutData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
-        browse.setLayoutData(layoutData);
+		layoutData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
+		browse.setLayoutData(layoutData);
 
-        return comp;
-    }
+		return comp;
+	}
 
-    private void error(String message, Text field) {
-        setMessage(message, IStatus.WARNING);
-        field.setForeground(new Color(getShell().getDisplay(), 255, 0, 0));
-        field.setToolTipText(message);
-    }
+	/**
+	 * Searches for ogr2ogr location, starting with passed value
+	 * 
+	 * @param suggested
+	 *            suggested ogr2ogr location
+	 * @return location found
+	 */
+	private String findOgr2ogr(String suggested) {
+		String ogr2ogr = null;
+		String userDir = System.getProperty("user.home");
+		for (String path : new String[] { suggested, ".", "C:/Program Files",
+				"/usr/lib", "/usr/local/lib", userDir, userDir + "/dev" }) {
+			String dir = findFWToolsDirectory(path);
+			try {
+				if (dir != null) {
+					path = path + "/" + dir;
+					// For linux
+					if ((new java.io.File(path + "/bin_safe")).isDirectory()
+							&& (new java.io.File(path + "/bin_safe/ogr2ogr"))
+									.exists()) {
+						ogr2ogr = path + "/bin_safe/ogr2ogr";
+						break;
+					}
+					// For windows
+					if ((new java.io.File(path + "/bin")).isDirectory()
+							&& (new java.io.File(path + "/bin/ogr2ogr.exe"))
+									.exists()) {
+						ogr2ogr = path + "/bin/ogr2ogr.exe";
+						break;
+					}
+				}
 
-    private void clearError(Text field) {
-        setMessage("", IStatus.OK);
-        field.setForeground(new Color(getShell().getDisplay(), 0, 0, 0));
-        field.setToolTipText("");
-    }
+			} catch (Exception e) {
+				System.err.println("Failed to process possible ogr2ogr path '"
+						+ path + "': " + e.getMessage());
+			}
+		}
+		return ogr2ogr;
+	}
 
-    public void init(IWorkbench workbench) {
-        // Intentionally blank
-    }
+	/**
+	 * Searches for FWTools directory location without regard for version
+	 * 
+	 * @param path
+	 *            path to find FWTools directory location
+	 * @return directory name if it was found, otherwise null
+	 */
+	private String findFWToolsDirectory(String path) {
+		FileFilter filter = new FileFilter() {
 
-    @Override
-    public boolean performOk() {
-        getPreferenceStore().putValue(OgrPreferencePage.executablePathKey, this.executablePath);
+			@Override
+			public boolean accept(File pathname) {
+				return pathname.isDirectory()
+						&& pathname.getName().startsWith("FWTools");
+			}
 
-        return true;
-    }
+		};
 
-    @Override
-    public IPreferenceStore getPreferenceStore() {
-        Activator        ac = Activator.getInstance();
-        IPreferenceStore ps = ac.getPreferenceStore();
+		File[] dirs = (new File(path)).listFiles(filter);
+		return dirs == null || dirs.length == 0 ? null : dirs[0].getName();
+	}
 
-        return ps;
-    }
+	private void error(String message, Text field) {
+		setMessage(message, IStatus.WARNING);
+		field.setForeground(new Color(getShell().getDisplay(), 255, 0, 0));
+		field.setToolTipText(message);
+	}
+
+	private void clearError(Text field) {
+		setMessage("", IStatus.OK);
+		field.setForeground(new Color(getShell().getDisplay(), 0, 0, 0));
+		field.setToolTipText("");
+	}
+
+	public void init(IWorkbench workbench) {
+		// Intentionally blank
+	}
+
+	@Override
+	public boolean performOk() {
+		getPreferenceStore().putValue(OgrPreferencePage.executablePathKey,
+				this.executablePath);
+
+		return true;
+	}
+
+	@Override
+	public IPreferenceStore getPreferenceStore() {
+		Activator ac = Activator.getInstance();
+		IPreferenceStore ps = ac.getPreferenceStore();
+
+		return ps;
+	}
 }
