@@ -33,8 +33,13 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 	 */
 	public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
 		Object selectedObject = null;
-		IStructuredSelection newSelection = currentSelection;
 		
+		//LN, 16.07.2009, if we call ExportScriptWizard from Splash than currentSelection will be empty
+		if (currentSelection == null) {
+		    currentSelection = StructuredSelection.EMPTY;
+		}
+		
+		IStructuredSelection newSelection = currentSelection;		
 		
 		selectedObject = currentSelection.getFirstElement();
 		

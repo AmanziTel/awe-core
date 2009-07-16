@@ -65,6 +65,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -77,6 +78,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.part.FileEditorInput;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 
@@ -248,9 +250,12 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 		//run ExportScriptWizard
 		ActionUtil.getInstance(display).runTask( new Runnable() {
-			public void run() {
-				WizardDialog dialog = new WizardDialog(display.getActiveShell(), new ExportScriptWizard(cell));
-				dialog.open();
+			public void run() {			  
+			    //Lagutko 16.07.2009, put parent project of spreadsheet to Selection
+			    FileEditorInput input = (FileEditorInput)getEditorInput();			    
+			    IStructuredSelection selection = new StructuredSelection(input.getFile().getProject());
+			    WizardDialog dialog = new WizardDialog(display.getActiveShell(), new ExportScriptWizard(cell, selection));
+			    dialog.open();
 			}
 		});
 	}

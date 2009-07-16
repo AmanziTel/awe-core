@@ -1,6 +1,7 @@
 package org.amanzi.splash.ui.wizards;
 
 import org.amanzi.splash.swing.Cell;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
 import org.rubypeople.rdt.internal.ui.wizards.NewFileCreationWizard;
 
@@ -16,10 +17,11 @@ public class ExportScriptWizard extends NewFileCreationWizard {
 	//Cell for export
 	private Cell cell;
 	
-	public ExportScriptWizard(Cell cell) {
+	//LN, 16.07.2009, we need to add selection to init method
+	public ExportScriptWizard(Cell cell, IStructuredSelection selection) {
 		super();
 		this.cell = cell;
-		init(PlatformUI.getWorkbench(), null);
+		init(PlatformUI.getWorkbench(), selection);
 	}
 	
 	
