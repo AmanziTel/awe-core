@@ -36,17 +36,12 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 		IStructuredSelection newSelection = currentSelection;
 		
 		
-		selectedObject = currentSelection.getFirstElement();		
-			
-		switch (AWEProjectManager.getType(selectedObject)) {
-		case AWEProjectManager.RUBY_PROJECT: 
-					break;
-		case AWEProjectManager.AWE_PROJECT:
-		case AWEProjectManager.NO_OBJECT:
-					newSelection = createRubyProject(selectedObject);
-					break;
-		}
+		selectedObject = currentSelection.getFirstElement();
 		
+		if (AWEProjectManager.getType(selectedObject) != AWEProjectManager.RUBY_PROJECT) {
+		    newSelection = createRubyProject(selectedObject);
+		}
+			
 		super.init(workbench, newSelection);
 	}
 	
