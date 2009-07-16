@@ -39,6 +39,19 @@
 		<view id= "org.eclipse.jdt.ui.TypeHierarchy" relative= "org.eclipse.ui.views.ResourceNavigator" relationship= "left" ratio= "0.50" />
 		</perspectiveExtension>
 	</extension>
+    <extension
+          point="org.eclipse.ui.popupMenus">
+       <objectContribution
+             id="org.amanzi.splash.neo4j.splashWizard"
+             objectClass="net.refractions.udig.project.IRubyProject">
+          <action
+                class="org.amanzi.splash.ui.neo4j.wizards.SplashNewSpreadsheetWizardAction"
+                icon="icons/spreadsheet.gif"
+                id="org.amanzi.splash.neo4j.action2"
+                label="Amanzi Neo4j Splash Spreadsheet">
+          </action>
+       </objectContribution>
+    </extension>
 
    
    

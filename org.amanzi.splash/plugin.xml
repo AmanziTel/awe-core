@@ -39,6 +39,19 @@
 		<view id= "org.eclipse.jdt.ui.TypeHierarchy" relative= "org.eclipse.ui.views.ResourceNavigator" relationship= "left" ratio= "0.50" />
 		</perspectiveExtension>
 	</extension>
+    <extension
+          point="org.eclipse.ui.popupMenus">
+       <objectContribution
+             id="org.amanzi.splash.splashWizard"
+             objectClass="net.refractions.udig.project.IRubyProject">
+          <action
+                class="org.amanzi.splash.ui.wizards.SplashNewFileBasedSpreadsheetWizardAction"
+                icon="icons/spreadsheet.gif"
+                id="org.amanzi.splash.action1"
+                label="Amanzi File-Based Splash Spreadsheet">
+          </action>
+       </objectContribution>
+    </extension>
 
    
    
