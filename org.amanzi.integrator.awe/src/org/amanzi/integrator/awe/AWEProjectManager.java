@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import net.refractions.udig.project.IRubyProject;
+import net.refractions.udig.project.internal.Map;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPlugin;
@@ -86,8 +87,9 @@ public class AWEProjectManager {
 				catch (CoreException e) {
 					//TODO: handle this exception
 				}
-			
-				rubyProjects.add(resourceProject);		
+				finally {			
+					rubyProjects.add(resourceProject);
+				}
 			}
 		}
 		
@@ -485,10 +487,13 @@ public class AWEProjectManager {
     	String rubyName = null;
     	
     	if (aweObject != null) {
-    		Project aweProject = (Project)aweObject;
-    		if (aweProject.getElements(RubyProject.class).size() > 0) {
-    			rubyName = aweProject.getElements(RubyProject.class).get(0).getName();
-    		}
+    	    //Lagutko 16.07.2009, aweObject can als be a Map, handle it
+    	    if (aweObject instanceof Project) {
+    	        Project aweProject = (Project)aweObject;
+    	        if (aweProject.getElements(RubyProject.class).size() > 0) {
+    	    	rubyName = aweProject.getElements(RubyProject.class).get(0).getName();
+    	        }
+    	    }    	    	
     	}
     	
     	return rubyName;
@@ -533,10 +538,18 @@ public class AWEProjectManager {
      */
     
     public static String getAWEProjectName(Object aweObject) {
+	//Lagutko 16.07.2009, aweObject can als be a Map, handle it
     	if (aweObject != null) {
+    	    if (aweObject instanceof Project) {
     		Project aweProject = (Project)aweObject;
     		
     		return aweProject.getName();
+    	    }
+    	    else if (aweObject instanceof Map) {
+    		Map map = (Map)aweObject;
+    		
+    		return map.getProjectInternal().getName();
+    	    }
     	}
     	
     	return getActiveProjectName();
