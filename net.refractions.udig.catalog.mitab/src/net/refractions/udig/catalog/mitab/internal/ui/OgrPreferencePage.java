@@ -146,8 +146,7 @@ public class OgrPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 if (dir != null) {
                     path = path + "/" + dir;
                     // For linux
-                    if ((new java.io.File(path + "/bin_safe")).isDirectory()
-                            && (new java.io.File(path + "/bin_safe/ogr2ogr")).exists()) {
+                    if ((new java.io.File(path + "/bin_safe")).isDirectory() && (new java.io.File(path + "/bin_safe/ogr2ogr")).exists()) {
                         ogr2ogr = path + "/bin_safe/ogr2ogr";
                         break;
                     }
