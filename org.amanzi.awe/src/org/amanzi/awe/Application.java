@@ -14,7 +14,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.model.WorkbenchAdapterBuilder;
 import org.osgi.framework.Bundle;
-
+import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 /**
  * This is the default application for the Amanzi Wireless Explorer.
  * It is based directly on uDIG, and uses its advisor.
@@ -59,10 +59,11 @@ public class Application extends UDIGApplication implements IApplication {
 		@Override
 	    public void initialize( IWorkbenchConfigurer configurer ) {
 			super.initialize(configurer);
-			
+			NeoLoaderPlugin.getDefault().getInitializer().initializeDefaultPreferences();
 			final String ICONS_PATH = "icons/full/";
 			final String PATH_OBJECT = ICONS_PATH + "obj16/";
 			Bundle ideBundle = Platform.getBundle(IDEWorkbenchPlugin.IDE_WORKBENCH);
+			
 			declareWorkbenchImage(configurer, ideBundle, IDE.SharedImages.IMG_OBJ_PROJECT,
 			    PATH_OBJECT + "prj_obj.gif", true);
 			declareWorkbenchImage(configurer, ideBundle, IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED,

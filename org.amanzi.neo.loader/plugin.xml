@@ -28,11 +28,5 @@
             class="org.amanzi.neo.loader.preferences.NeoPreferencesInitializer">
       </initializer>
    </extension>
-   <extension
-         point="org.eclipse.ui.startup">
-      <startup
-            class="org.amanzi.neo.loader.preferences.NeoPreferencesInitializer">
-      </startup>
-   </extension>
 
 </plugin>
