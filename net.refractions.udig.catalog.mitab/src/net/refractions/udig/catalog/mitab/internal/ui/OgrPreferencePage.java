@@ -42,23 +42,23 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
  * Preference pane for ogr2ogr executable selection
- * 
+ *
  * @author Lucas Reed, (Refractions Research Inc)
  * @since 1.1.0
  */
 @SuppressWarnings("nls")
 public class OgrPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
-    public static final String executablePathKey = "executable_path";
-    private String executablePath = null;
+    public  static final String executablePathKey = "executable_path";
+    private              String executablePath    = null;
 
     protected Control createContents(Composite parent) {
-        final Composite comp = new Composite(parent, SWT.NONE);
+        final Composite  comp   = new Composite(parent, SWT.NONE);
         final GridLayout layout = new GridLayout(3, false);
 
         layout.marginBottom = 0;
-        layout.marginTop = 0;
-        layout.marginRight = 0;
-        layout.marginLeft = 0;
+        layout.marginTop    = 0;
+        layout.marginRight  = 0;
+        layout.marginLeft   = 0;
 
         comp.setLayout(layout);
 
@@ -71,7 +71,7 @@ public class OgrPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
         final Text input = new Text(comp, SWT.SINGLE | SWT.BORDER);
 
-        input.addModifyListener(new ModifyListener(){
+        input.addModifyListener(new ModifyListener() {
             public void modifyText(org.eclipse.swt.events.ModifyEvent e) {
                 if ("".equals(input.getText())) {
                     return;
@@ -91,6 +91,7 @@ public class OgrPreferencePage extends PreferencePage implements IWorkbenchPrefe
         if (0 == executablePath.trim().length()) {
             this.executablePath = null;
         }
+        //Pechko: Find existing FWTools installation, if installed
         this.executablePath = findOgr2ogr(this.executablePath);
         input.setText(this.executablePath == null ? "" : this.executablePath);
 
@@ -102,15 +103,15 @@ public class OgrPreferencePage extends PreferencePage implements IWorkbenchPrefe
         Button browse = new Button(comp, SWT.PUSH);
         browse.setText(Messages.Ogr2OgrPreference_browseButton);
 
-        browse.addSelectionListener(new SelectionListener(){
+        browse.addSelectionListener(new SelectionListener() {
             public void widgetSelected(SelectionEvent e) {
                 widgetDefaultSelected(e);
             }
 
             public void widgetDefaultSelected(SelectionEvent e) {
                 FileDialog fileDialog = new FileDialog(comp.getShell(), SWT.OPEN);
-                fileDialog.setFilterExtensions(new String[] {"*"});
-                fileDialog.setFilterNames(new String[] {Messages.Ogr2OgrPreference_execuables});
+                fileDialog.setFilterExtensions(new String[]{"*"});
+                fileDialog.setFilterNames(new String[]{Messages.Ogr2OgrPreference_execuables});
 
                 executablePath = fileDialog.open();
 
@@ -127,14 +128,15 @@ public class OgrPreferencePage extends PreferencePage implements IWorkbenchPrefe
     }
 
     /**
-     * Searches for ogr2ogr location, starting with passed value
+     * Searches for ogr2ogr location, starting with suggested location or null.
+     * This could be a previous user choice of previously found location.
      * 
-     * @param suggested suggested ogr2ogr location
+     * @param suggested ogr2ogr location
      * @return location found
      */
     private String findOgr2ogr(String suggested) {
         String ogr2ogr = null;
-        if (suggested != null && suggested.matches(".*FWTools.*ogr2ogr.*")) {
+        if (suggested != null && suggested.matches(".*FWTools.*ogr2ogr.*") && (new File(suggested).exists())) {
             return suggested;
         }
         String userDir = System.getProperty("user.home");
@@ -208,7 +210,7 @@ public class OgrPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
     @Override
     public IPreferenceStore getPreferenceStore() {
-        Activator ac = Activator.getInstance();
+        Activator        ac = Activator.getInstance();
         IPreferenceStore ps = ac.getPreferenceStore();
 
         return ps;
