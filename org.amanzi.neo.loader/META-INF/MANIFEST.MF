@@ -12,6 +12,7 @@ Require-Bundle: org.eclipse.ui,
 Eclipse-LazyStart: true
 Bundle-Vendor: AmanziTel AB
 Bundle-ClassPath: .
-Export-Package: org.amanzi.neo.loader.internal;uses:="org.amanzi.neo.loader.preferences,org.eclipse.core.runtime,org.osgi.framework",
+Export-Package: org.amanzi.neo.loader,
+ org.amanzi.neo.loader.internal;uses:="org.amanzi.neo.loader.preferences,org.eclipse.core.runtime,org.osgi.framework",
  org.amanzi.neo.loader.preferences;x-friends:="org.amanzi.awe";uses:="org.eclipse.ui,org.eclipse.core.runtime.preferences"
 Bundle-Activator: org.amanzi.neo.loader.internal.NeoLoaderPlugin

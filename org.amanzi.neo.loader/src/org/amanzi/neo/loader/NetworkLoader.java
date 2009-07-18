@@ -4,10 +4,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
@@ -15,10 +22,12 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.neo.NeoServiceEvent;
 import org.neo4j.neoclipse.neo.NeoServiceEventListener;
 import org.neo4j.neoclipse.neo.NeoServiceManager;
 import org.neo4j.neoclipse.neo.NeoServiceStatus;
+import org.neo4j.neoclipse.preference.NeoPreferences;
 
 /**
  * This class was written to handle CSV (tab delimited) network data from ice.net in Sweden.
@@ -78,6 +87,7 @@ public class NetworkLoader implements NeoServiceEventListener {
 	private Node site = null;
 	private Node bsc = null;
 	private Node network = null;
+	private Node gis = null;
 	private CRS crs = null;
 	private String[] headers = null;
 	private HashMap<String,Integer> headerIndex = null;
@@ -86,6 +96,7 @@ public class NetworkLoader implements NeoServiceEventListener {
 	private int[] intIndexes = null;
 	private String filename;
 	private String basename;
+	private double[] bbox;
 
 	public NetworkLoader(String filename) {
 		this(null, filename);
@@ -127,11 +138,32 @@ public class NetworkLoader implements NeoServiceEventListener {
                 parseLine(line);
             }
         } finally {
+            // Close the file reader
             reader.close();
+            // Save the bounding box
+            if(gis!=null){
+                Transaction tx = neo.beginTx();
+                try {
+                    gis.setProperty("bbox", bbox);
+                    tx.success();
+                }finally{
+                    tx.finish();
+                }
+            }
+            // Unregister from the neoclipse services manager
             if (neoManager != null) {
                 neoManager.commit();
                 unregisterNeoManager();
             }
+            // Register the database in the uDIG catalog
+            IPreferenceStore pref = Activator.getDefault().getPreferenceStore();
+            String databaseLocation = pref.getString(NeoPreferences.DATABASE_LOCATION);
+            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+            List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(new URL("file://"+databaseLocation));
+            for(IService service:services){
+                System.out.println("Found catalog service: "+service);
+            }
+            if(services.size()>0) catalog.add(services.get(0));
         }
     }
 
@@ -184,6 +216,7 @@ public class NetworkLoader implements NeoServiceEventListener {
 						bscName = bscField;
 						debug("New BSC: " + bscName);
 						network = getNetwork(neo, basename);
+						gis = getGISNode(neo, network);
 						network.setProperty("filename", filename);
 						deleteTree(network);
 						bsc = addChild(network, NetworkElementTypes.BSC.toString(), bscName);
@@ -196,11 +229,21 @@ public class NetworkLoader implements NeoServiceEventListener {
 						float lon = Float.parseFloat(fields[mainIndexes[4]]);
 						if(crs==null){
 							crs = CRS.fromLocation(lat, lon);
-							network.setProperty("crs_type", crs.getType());
-							network.setProperty("crs", crs.toString());
+                            network.setProperty("crs_type", crs.getType());
+                            network.setProperty("crs", crs.toString());
+                            gis.setProperty("crs_type", crs.getType());
+                            gis.setProperty("crs", crs.toString());
 						}
 						site.setProperty("lat", lat);
 						site.setProperty("lon", lon);
+						if(bbox==null) {
+						    bbox = new double[]{lon,lon,lat,lat};
+						}else{
+                            if(bbox[0]>lon) bbox[0]=lon;
+                            if(bbox[1]<lon) bbox[1]=lon;
+                            if(bbox[2]>lat) bbox[2]=lat;
+                            if(bbox[3]<lat) bbox[3]=lat;
+						}
 					}
 					debug("New Sector: " + sectorField);
 					Node sector = addChild(site, NetworkElementTypes.SECTOR.toString(), sectorField);
@@ -247,9 +290,32 @@ public class NetworkLoader implements NeoServiceEventListener {
 		} finally {
 			tx.finish();
 		}
+		if(network!=null) getGISNode(neo,network);
 		return network;
 	}
-	
+
+	private static Node getGISNode(NeoService neo, Node network) {
+        Node gis = null;
+        Transaction tx = neo.beginTx();
+        try {
+            Node reference = neo.getReferenceNode();
+            for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                if (node.hasProperty("type") && node.getProperty("type").equals("gis") && node.hasProperty("name") && node.getProperty("name").toString().equals(network.getProperty("name").toString()))
+                    return node;
+            }
+            gis = neo.createNode();
+            gis.setProperty("type", "gis");
+            gis.setProperty("name", network.getProperty("name").toString());
+            reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
+            gis.createRelationshipTo(network, NetworkRelationshipTypes.CHILD);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        return gis;
+	}
+
 	/**
 	 * This code expects you to create a transaction around it, so don't forget to do that.
 	 * @param parent
