@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         id="org.amanzi.awe.catalog.neo.ServiceExtensions"
+         name="Neo4J Service Extensions"
+         point="net.refractions.udig.catalog.ServiceExtension">
+      <service
+            class="org.amanzi.awe.catalog.neo.NeoServiceExtension"
+            id="org.amanzi.awe.catalog.neo.service"
+            name="Neo4J Catalog Service Extension">
+      </service>
+   </extension>
+
+</plugin>
