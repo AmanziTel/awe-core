@@ -10,7 +10,6 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
-import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -106,28 +105,29 @@ public class NetworkRenderer extends RendererImpl {
                 renderSite(g, p);
                 double[] label_position_angles = new double[]{0,90};
                 try {
-                    for(Relationship relationship:node.getNode().getRelationships(NetworkLoader.NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+                    int s = 0;
+                    for(Relationship relationship:node.getNode().getRelationships(Direction.OUTGOING)){
+//                    for(Relationship relationship:node.getNode().getRelationships(NetworkLoader.NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
                         Node child = relationship.getEndNode();
-                        int s = 0;
                         if(child.hasProperty("type") && child.getProperty("type").toString().equals("sector")){
                             double azimuth = 0.0;
                             double beamwidth = 0.0;
                             for(String key:child.getPropertyKeys()){
                                 if(key.toLowerCase().contains("azimuth")){
-                                    azimuth = (Double)child.getProperty(key);
+                                    azimuth = (Integer)child.getProperty(key);
                                 }
                                 if(key.toLowerCase().contains("beamwidth")){
-                                    beamwidth = (Double)child.getProperty(key);
+                                    beamwidth = (Integer)child.getProperty(key);
                                 }
-                                renderSector(g, p, azimuth, beamwidth);
-                                if(s<label_position_angles.length){
-                                    label_position_angles[s] = azimuth;
-                                }
-                                //g.setColor(drawColor);
-                                //g.rotate(-Math.toRadians(beamwidth/2));
-                                //g.drawString(sector.getString("name"),20,0);
-                                s++;
                             }
+                            renderSector(g, p, azimuth, beamwidth);
+                            if(s<label_position_angles.length){
+                                label_position_angles[s] = azimuth;
+                            }
+                            //g.setColor(drawColor);
+                            //g.rotate(-Math.toRadians(beamwidth/2));
+                            //g.drawString(sector.getString("name"),20,0);
+                            s++;
                         }
                     }
                 } finally {

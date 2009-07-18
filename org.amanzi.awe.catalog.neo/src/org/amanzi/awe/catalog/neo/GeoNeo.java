@@ -9,10 +9,11 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
+import org.neo4j.neoclipse.GeoNeoRelationshipTypes;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -30,7 +31,7 @@ public class GeoNeo {
     private CoordinateReferenceSystem crs;
     private ReferencedEnvelope bounds;
     private String name;
-    private ArrayList<GeoNode> data;
+    private org.neo4j.api.core.NeoService neo;
     
     /**
      * A class representing a located Node in the database. By convention all GeoNodes
@@ -79,11 +80,11 @@ public class GeoNeo {
                 return (double[])next.getProperty("coords");
             }
             if(next.hasProperty("x") && next.hasProperty("y")){
-                return new double[]{(Double)next.getProperty("x"),(Double)next.getProperty("y")};
+                return new double[]{(Float)next.getProperty("x"),(Float)next.getProperty("y")};
             }
             if(next.hasProperty("lat")){
                 if(next.hasProperty("lon")){
-                    return new double[]{(Double)next.getProperty("lon"),(Double)next.getProperty("lat")};
+                    return new double[]{(Float)next.getProperty("lon"),(Float)next.getProperty("lat")};
                 }
                 if(next.hasProperty("long")){
                     return new double[]{(Double)next.getProperty("long"),(Double)next.getProperty("lat")};
@@ -94,21 +95,12 @@ public class GeoNeo {
     }
 
     /**
-     * Relationship types defined by the GeoNeo specification for traversing
-     * GIS data.
-     * @author craig
-     * @since 1.0.0
-     */
-    public enum GeoNeoRelationshipTypes implements RelationshipType {
-        NEXT;
-    }
-
-    /**
      * Create a GeoNeo reader for loading GIS data from the specified GIS root node.
      * 
      * @param gisNode
      */
-    public GeoNeo(Node gisNode){
+    public GeoNeo(org.neo4j.api.core.NeoService neo, Node gisNode){
+        this.neo = neo;
         this.gisNode = gisNode;
         this.name = this.gisNode.getProperty("name").toString();
     }
@@ -153,21 +145,6 @@ public class GeoNeo {
     }
     
     /**
-     * Fill the internal cache of GeoNode data
-     */
-    private void fillData() {
-        if (data == null) {
-            data = new ArrayList<GeoNode>();
-            for (Node next : makeGeoNeoTraverser()) {
-                GeoNode node = new GeoNode(next);
-                if (node.getCoords() != null) {
-                    data.add(node);
-                }
-            }
-        }
-    }
-    
-    /**
      * Find the bounding box for the data set as a ReferenceEnvelope. It uses the getCRS method to
      * find the reference system then looks for explicit "bbox" elements, and finally, if no bbox
      * was found, scans all feature geometries for coordinates and builds the bounds on those. The
@@ -178,7 +155,7 @@ public class GeoNeo {
     public ReferencedEnvelope getBounds(){
         if(bounds==null){
             // Create Null envelope
-            this.bounds = new ReferencedEnvelope(crs);
+            this.bounds = new ReferencedEnvelope(getCRS());
             // First try to find the BBOX definition in the gisNode directly
             try{
                 if(gisNode.hasProperty("bbox")){
@@ -195,8 +172,7 @@ public class GeoNeo {
             try{
                 if(this.bounds.isNull()){
                     // Try to create envelope from any data referenced by the gisNode
-                    fillData();
-                    for(GeoNode node:data){
+                    for(GeoNode node:getGeoNodes()){
                         //TODO: support high dimensions
                         this.bounds.expandToInclude(node.getCoords()[0], node.getCoords()[1]);
                     }
@@ -230,8 +206,10 @@ public class GeoNeo {
     private class GeoIterator implements Iterator<GeoNode>{
         private Iterator<Node> iterator;
         private GeoNode next;
+        private Transaction tx;
         private GeoIterator(Node gisNode){
             this.iterator = makeGeoNeoTraverser().iterator();
+            this.tx = neo.beginTx();
         }
         @Override
         public boolean hasNext() {
@@ -239,6 +217,10 @@ public class GeoNeo {
                 if(!iterator.hasNext()) break;
                 next = new GeoNode(iterator.next());
                 if(next.getCoords()==null) next = null;
+            }
+            if(next==null){
+                tx.success();
+                tx.finish();
             }
             return next!=null;
         }
@@ -256,15 +238,10 @@ public class GeoNeo {
     }
 
     public Iterable<GeoNode> getGeoNodes() {
-        if(data!=null) {
-            return data;
-        } else {
-            return new Iterable<GeoNode>(){
-                @Override
-                public Iterator<GeoNode> iterator() {
-                    return new GeoIterator(gisNode);
-                }};
-        }
+        return new Iterable<GeoNode>(){
+            @Override
+            public Iterator<GeoNode> iterator() {
+                return new GeoIterator(gisNode);
+            }};
     }
-    
 }

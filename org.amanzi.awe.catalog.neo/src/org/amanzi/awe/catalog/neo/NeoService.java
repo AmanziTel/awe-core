@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.Transaction;
 
 /**
  * This implementation of IService can resolve a File containing a Neo4j database.
@@ -89,12 +90,18 @@ public class NeoService extends IService {
             synchronized (this) {
                 if (members == null) {
                     checkNeo(); // check we have a connection to the database
-                    members = new ArrayList<NeoGeoResource>();
-                    for(Relationship relationship:neo.getReferenceNode().getRelationships(Direction.OUTGOING)){
-                        Node node = relationship.getEndNode();
-                        if(node.hasProperty("type") && node.hasProperty("name") && node.getProperty("type").toString().equalsIgnoreCase("gis")){
-                            members.add(new NeoGeoResource(this,node));
+                    Transaction tx = neo.beginTx();
+                    try {
+                        members = new ArrayList<NeoGeoResource>();
+                        for(Relationship relationship:neo.getReferenceNode().getRelationships(Direction.OUTGOING)){
+                            Node node = relationship.getEndNode();
+                            if(node.hasProperty("type") && node.hasProperty("name") && node.getProperty("type").toString().equalsIgnoreCase("gis")){
+                                members.add(new NeoGeoResource(this,neo,node));
+                            }
                         }
+                        tx.success();
+                    } finally {
+                        tx.finish();
                     }
                 }
             }

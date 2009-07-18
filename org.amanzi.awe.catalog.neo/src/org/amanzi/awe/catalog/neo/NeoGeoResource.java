@@ -22,10 +22,10 @@ public class NeoGeoResource extends IGeoResource {
     private Node gisNode;
     private GeoNeo geoNeo;
     
-    public NeoGeoResource( NeoService service, Node gisNode ) {
+    public NeoGeoResource( NeoService service, org.neo4j.api.core.NeoService neo, Node gisNode ) {
         this.service = service;
         this.gisNode = gisNode;
-        this.geoNeo = new GeoNeo(this.gisNode);
+        this.geoNeo = new GeoNeo(neo, this.gisNode);
         try {
             URL serviceUrl = service.getIdentifier();
             identifierUrl = new URL( serviceUrl+"#"+this.gisNode.getProperty("name") );

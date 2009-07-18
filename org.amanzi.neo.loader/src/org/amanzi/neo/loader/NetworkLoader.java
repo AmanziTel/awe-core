@@ -23,6 +23,7 @@ import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.neoclipse.Activator;
+import org.neo4j.neoclipse.GeoNeoRelationshipTypes;
 import org.neo4j.neoclipse.neo.NeoServiceEvent;
 import org.neo4j.neoclipse.neo.NeoServiceEventListener;
 import org.neo4j.neoclipse.neo.NeoServiceManager;
@@ -224,7 +225,13 @@ public class NetworkLoader implements NeoServiceEventListener {
 					if (!siteField.equals(siteName)) {
 						siteName = siteField;
 						debug("New site: " + siteName);
-						site = addChild(bsc, NetworkElementTypes.SITE.toString(), siteName);
+						Node newSite = addChild(bsc, NetworkElementTypes.SITE.toString(), siteName);
+				        if(site!=null){
+				            site.createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
+				        }else{
+				            network.createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
+				        }
+				        site = newSite;
 						float lat = Float.parseFloat(fields[mainIndexes[3]]);
 						float lon = Float.parseFloat(fields[mainIndexes[4]]);
 						if(crs==null){
@@ -308,7 +315,7 @@ public class NetworkLoader implements NeoServiceEventListener {
             gis.setProperty("type", "gis");
             gis.setProperty("name", network.getProperty("name").toString());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
-            gis.createRelationshipTo(network, NetworkRelationshipTypes.CHILD);
+            gis.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
             tx.success();
         } finally {
             tx.finish();

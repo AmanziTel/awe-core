@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  net.refractions.udig.project.ui,
- org.neo4j.neoclipse,
+ org.neo4j.neoclipse;visibility:=reexport,
  org.eclipse.ui.console,
  org.eclipse.ui.forms
 Eclipse-LazyStart: true
