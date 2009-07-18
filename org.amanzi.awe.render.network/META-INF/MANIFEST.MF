@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Network Rendering Plug-in
+Bundle-SymbolicName: org.amanzi.awe.render.network;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: org.amanzi.awe.render.network.Activator
+Bundle-Vendor: amanzi.org
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui,
+ net.refractions.udig.project,
+ org.amanzi.awe.catalog.neo,
+ org.amanzi.neo.loader
+Eclipse-LazyStart: true

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="net.refractions.udig.project.renderer">
+      <renderer
+            class="org.amanzi.awe.render.network.NetworkRenderMetricsFactory"
+            id="org.amanzi.awe.render.network.networkRenderer"
+            name="Amanzi Network Renderer">
+      </renderer>
+   </extension>
+
+</plugin>
