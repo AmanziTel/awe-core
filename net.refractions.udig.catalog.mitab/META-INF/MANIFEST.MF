@@ -10,3 +10,5 @@ Require-Bundle: net.refractions.udig.catalog.ui,
 Bundle-Activator: net.refractions.udig.catalog.mitab.internal.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: Amanzi.com
+Import-Package: org.eclipse.core.runtime.preferences,
+ org.eclipse.ui

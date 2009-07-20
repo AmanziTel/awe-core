@@ -51,6 +51,11 @@ public class OgrPreferencePage extends PreferencePage implements IWorkbenchPrefe
     public  static final String executablePathKey = "executable_path";
     private              String executablePath    = null;
 
+    public OgrPreferencePage() {
+        super();
+        setPreferenceStore( Activator.getInstance().getPreferenceStore() );
+    }
+
     protected Control createContents(Composite parent) {
         final Composite  comp   = new Composite(parent, SWT.NONE);
         final GridLayout layout = new GridLayout(3, false);

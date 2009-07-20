@@ -14,6 +14,12 @@
       <fileService fileExtension="*.TAB" name="Map Info TAB" />
    </extension>
    <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="net.refractions.udig.catalog.mitab.internal.ui.OgrPreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
          point="org.eclipse.ui.preferencePages">
       <page
             category="net.refractions.udig.catalog.ui.preferences.CatalogPreferencePage"

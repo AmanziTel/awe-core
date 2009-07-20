@@ -63,7 +63,7 @@ public class Activator extends AbstractUIPlugin {
     public IPreferenceStore getPreferenceStore() {
         if (null == this.preferenceStore) {
             this.preferenceStore = new ScopedPreferenceStore(new InstanceScope(),
-                    Plugin.PLUGIN_PREFERENCE_SCOPE);
+                    "net.refractions.udig.catalog.mitab");
         }
 
         return this.preferenceStore;
