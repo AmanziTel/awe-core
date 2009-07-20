@@ -147,7 +147,9 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RubyFile" eSuperTypes="#//IRubyFile #//ProjectElement #//RubyProjectElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="Spreadsheet" eSuperTypes="#//ISpreadsheet #//RubyProjectElement #//ProjectElement">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="spreadsheetFile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="spreadsheetPath" eType="#//URL"
+        defaultValueLiteral=""/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="spreadsheetType" eType="#//SpreadsheetType"
         defaultValueLiteral=""/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ProjectRegistry">
@@ -255,4 +257,5 @@
   <eClassifiers xsi:type="ecore:EDataType" name="BrewerPalette" instanceClassName="org.geotools.brewer.color.BrewerPalette"/>
   <eClassifiers xsi:type="ecore:EClass" name="IStyleBlackboard" instanceClassName="net.refractions.udig.project.IStyleBlackboard"
       abstract="true" interface="true"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="SpreadsheetType" instanceClassName="net.refractions.udig.project.internal.SpreadsheetType"/>
 </ecore:EPackage>

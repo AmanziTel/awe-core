@@ -190,12 +190,22 @@ public class RDTProjectManager {
 	}
 	
 	/**
-	 * Opens Spreadsheet in Editor
+	 * Opens File-based Spreadsheet in Editor
 	 * 
 	 * @param resource resource of Spreadsheet to open
 	 */
 	
 	public static void openSpreadsheet(IResource resource) {
 		Util.openSpreadsheet(PlatformUI.getWorkbench(), (IFile)resource);
+	}
+	
+	/**
+	 * Opens Neo4j-based Spreadsheet in Editor
+	 * 
+	 * @param spreadsheetURL URL of Neo4j Spradsheet
+	 */
+	
+	public static void openSpreadsheet(URL spreadsheetURL) {
+	    org.amanzi.splash.neo4j.utilities.Util.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL);
 	}
 }

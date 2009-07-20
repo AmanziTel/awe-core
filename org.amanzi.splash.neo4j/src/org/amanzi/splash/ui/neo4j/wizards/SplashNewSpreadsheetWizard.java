@@ -1,5 +1,6 @@
 package org.amanzi.splash.ui.neo4j.wizards;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.splash.neo4j.utilities.Util;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -8,6 +9,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.*;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.core.resources.*;
@@ -15,7 +19,6 @@ import org.eclipse.core.runtime.CoreException;
 import java.io.*;
 
 import org.eclipse.ui.*;
-import org.eclipse.ui.ide.IDE;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -109,7 +112,7 @@ public class SplashNewSpreadsheetWizard extends Wizard implements INewWizard {
 		// create a sample file
 		monitor.beginTask("Creating " + fileName, 2);
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		IResource resource = root.findMember(new Path(containerName));
+		final IResource resource = root.findMember(new Path(containerName));
 		if (!resource.exists() || !(resource instanceof IContainer)) {
 			throwCoreException("Container \"" + containerName + "\" does not exist.");
 		}
@@ -132,10 +135,36 @@ public class SplashNewSpreadsheetWizard extends Wizard implements INewWizard {
 				IWorkbenchPage page =
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 				//IDE.openEditor(page, file, Util.AMANZI_SPLASH_EDITOR);
-				Util.openSpreadsheet(PlatformUI.getWorkbench(), file);
+				
+				//Lagutko 20.07.2009, create Spreadsheet also for EMF structure		
+				URL spreadsheetURL = getSpreadsheetURL();
+				
+				AWEProjectManager.createNeoSpreadsheet(resource.getProject(), file.getName(), spreadsheetURL);
+				
+				Util.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL);
 			}
 		});
 		monitor.worked(1);
+	}
+	
+	/**
+	 * Method that computes URL of Neo4J Spreadsheet
+	 *
+	 * @return url of Spreadsheet
+	 * @author Lagutko_N
+	 */
+	
+	private URL getSpreadsheetURL() {
+	    //TODO: this method must return path to Neo4j database and node of created spreadsheet
+	    //if it must be computed in other place than we must replace creating EMF Spreadsheet
+	    
+	    //it's a fake
+	    try {
+	        return Platform.getLocation().toFile().toURI().toURL();
+	    }
+	    catch (MalformedURLException e) {
+	        return null;
+	    }
 	}
 	
 	/**

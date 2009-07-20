@@ -3,14 +3,15 @@ package org.amanzi.splash.ui.wizards;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.splash.utilities.Util;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.*;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import java.io.*;
@@ -137,7 +138,16 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 				//IDE.openEditor(page, file, Util.AMANZI_SPLASH_EDITOR);
 				
 				//Lagutko, 29.06.2009, create Spreadsheet also for uDIG project structure
-				AWEProjectManager.createSpreadsheet(resource, fileName, file);
+				//Lagutko, 21.07.2009, we need URL of resource instead of IResource
+				URL resourceURL = null;
+				try {
+				    resourceURL = file.getLocationURI().toURL();
+				}
+				catch (MalformedURLException e) {
+				    //TODO: handle this exception
+				    e.printStackTrace();
+				}
+				AWEProjectManager.createFileSpreadsheet(resource, fileName, resourceURL);
 				
 				Util.openSpreadsheet(PlatformUI.getWorkbench(), file);
 			}

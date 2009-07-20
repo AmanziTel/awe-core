@@ -39,6 +39,7 @@ import net.refractions.udig.project.internal.ProjectRegistry;
 import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.RubyFile;
 import net.refractions.udig.project.internal.RubyProject;
+import net.refractions.udig.project.internal.SpreadsheetType;
 import net.refractions.udig.project.internal.StyleBlackboard;
 import net.refractions.udig.project.internal.StyleEntry;
 import net.refractions.udig.project.internal.render.RenderFactory;
@@ -199,6 +200,8 @@ public class ProjectFactoryImpl extends EFactoryImpl implements ProjectFactory {
             return createReferencedEnvelopeFromString(eDataType, initialValue);
         case ProjectPackage.FEATURE_EVENT:
             return createFeatureEventFromString(eDataType, initialValue);
+        case ProjectPackage.SPREADSHEET_TYPE:
+            return createSpreadsheetTypeFromString(eDataType, initialValue);
         default:
             throw new IllegalArgumentException(
                     "The datatype '" + eDataType.getName() + "' is not a valid classifier"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -271,6 +274,8 @@ public class ProjectFactoryImpl extends EFactoryImpl implements ProjectFactory {
             return convertReferencedEnvelopeToString(eDataType, instanceValue);
         case ProjectPackage.FEATURE_EVENT:
             return convertFeatureEventToString(eDataType, instanceValue);
+        case ProjectPackage.SPREADSHEET_TYPE:
+            return convertSpreadsheetTypeToString(eDataType, instanceValue);
         default:
             throw new IllegalArgumentException(
                     "The datatype '" + eDataType.getName() + "' is not a valid classifier"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -600,7 +605,7 @@ public class ProjectFactoryImpl extends EFactoryImpl implements ProjectFactory {
      * <!-- begin-user-doc --> <!-- end-user-doc -->
      * @generated
      */
-    public String convertURLToString( EDataType eDataType, Object instanceValue ) {
+    public String convertURLToString( EDataType eDataType, Object instanceValue ) {        
         return ((URL)instanceValue).toExternalForm();
     }
 
@@ -871,6 +876,15 @@ public class ProjectFactoryImpl extends EFactoryImpl implements ProjectFactory {
     public String convertReferencedEnvelopeToString( EDataType eDataType, Object instanceValue ) {
         return super.convertToString(eDataType, instanceValue);
     }
+    
+    /**
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    public String convertSpreadsheetTypeToString(EDataType eDataType, Object instanceValue) {
+        return ((SpreadsheetType)instanceValue).toString();
+    }
 
     /**
      * <!-- begin-user-doc --> <!-- end-user-doc -->
@@ -1020,6 +1034,14 @@ public class ProjectFactoryImpl extends EFactoryImpl implements ProjectFactory {
 		SpreadsheetImpl spreadsheet = new SpreadsheetImpl();
 		return spreadsheet;
 	}
-
+	
+	/**
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    public SpreadsheetType createSpreadsheetTypeFromString(EDataType eDataType, String initialValue) {
+        return (SpreadsheetType)SpreadsheetType.valueOf(initialValue);
+    }
 
 } // ProjectFactoryImpl

@@ -47,6 +47,7 @@ import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.RubyFile;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
+import net.refractions.udig.project.internal.SpreadsheetType;
 import net.refractions.udig.project.internal.StyleBlackboard;
 import net.refractions.udig.project.internal.StyleEntry;
 import net.refractions.udig.project.internal.render.RenderPackage;
@@ -309,6 +310,13 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 	 * @generated
 	 */
 	private EClass spreadsheetEClass = null;
+	
+	/**
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    private EDataType spreadsheetTypeEDataType = null;
 	
 	/**
 	 * <!-- begin-user-doc -->
@@ -1516,9 +1524,27 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getSpreadsheet_SpreadsheetFile() {
+	public EAttribute getSpreadsheet_SpreadsheetPath() {
 		return (EAttribute) spreadsheetEClass.getEStructuralFeatures().get(0);
 	}
+	
+	/**
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    public EAttribute getSpreadsheet_SpreadsheetType() {
+        return (EAttribute) spreadsheetEClass.getEStructuralFeatures().get(1);
+    }
+	
+	/**
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    public EDataType getSpreadsheetType() {
+        return spreadsheetTypeEDataType;
+    }
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -1698,7 +1724,8 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 		rubyFileEClass = createEClass(RUBY_FILE);
 
 		spreadsheetEClass = createEClass(SPREADSHEET);
-		createEAttribute(spreadsheetEClass, SPREADSHEET__SPREADSHEET_FILE);
+		createEAttribute(spreadsheetEClass, SPREADSHEET__SPREADSHEET_PATH);
+		createEAttribute(spreadsheetEClass, SPREADSHEET__SPREADSHEET_TYPE);
 
         projectEClass = createEClass(PROJECT);
         createEAttribute(projectEClass, PROJECT__NAME);
@@ -1775,6 +1802,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
         mutablePicoContainerEDataType = createEDataType(MUTABLE_PICO_CONTAINER);
         referencedEnvelopeEDataType = createEDataType(REFERENCED_ENVELOPE);
         featureEventEDataType = createEDataType(FEATURE_EVENT);
+        spreadsheetTypeEDataType = createEDataType(SPREADSHEET_TYPE);
     }
 
     /**
@@ -2121,9 +2149,13 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 		initEClass(spreadsheetEClass, Spreadsheet.class,
 				"Spreadsheet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
 		initEAttribute(
-				getSpreadsheet_SpreadsheetFile(),
-				ecorePackage.getEString(),
-				"spreadsheetFile", "", 0, 1, Spreadsheet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$ //$NON-NLS-2$
+				getSpreadsheet_SpreadsheetPath(),
+				this.getURL(),
+				"spreadsheetPath", "", 0, 1, Spreadsheet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$ //$NON-NLS-2$
+		initEAttribute(
+		        getSpreadsheet_SpreadsheetType(),
+		        this.getSpreadsheetType(),
+		        "spreadsheetType", "", 0, 1, Spreadsheet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$ //$NON-NLS-2$
 		
 		initEClass(projectEClass, Project.class,
                 "Project", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
@@ -2330,6 +2362,8 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
                 "ReferencedEnvelope", IS_SERIALIZABLE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
         initEDataType(featureEventEDataType, FeatureEvent.class,
                 "FeatureEvent", IS_SERIALIZABLE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
+        initEDataType(spreadsheetTypeEDataType, SpreadsheetType.class,
+                "SpreadsheetType", IS_SERIALIZABLE, !IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
 
         // Create resource
         createResource(eNS_URI);

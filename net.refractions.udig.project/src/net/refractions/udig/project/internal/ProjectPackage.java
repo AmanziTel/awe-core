@@ -1418,6 +1418,16 @@ public interface ProjectPackage extends EPackage {
      * @generated
      */
     int DEFAULT_COLOR = 57;
+    
+    /**
+     * The meta object id for the '<em>Spreadsheet Type</em>' data type.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see net.refractions.udig.project.internal.SpreadsheetType
+     * @see net.refractions.udig.project.internal.impl.ProjectPackageImpl#getSpreadsheetType()
+     * @generated
+     */
+    int SPREADSHEET_TYPE = 58;
 
     /**
      * Returns the meta object for class '{@link Comparable <em>Comparable</em>}'. <!--
@@ -2818,13 +2828,22 @@ public interface ProjectPackage extends EPackage {
 	int SPREADSHEET__RUBY_PROJECT_INTERNAL = ISPREADSHEET_FEATURE_COUNT + 2;
 	
 	/**
-	 * The feature id for the '<em><b>Spreadsheet File</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int SPREADSHEET__SPREADSHEET_FILE = ISPREADSHEET_FEATURE_COUNT + 3;
+     * The feature id for the '<em><b>Spreadsheet Path</b></em>' attribute.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     * @ordered
+     */
+    int SPREADSHEET__SPREADSHEET_PATH = ISPREADSHEET_FEATURE_COUNT + 3;
+
+    /**
+     * The feature id for the '<em><b>Spreadsheet Type</b></em>' attribute.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     * @ordered
+     */
+    int SPREADSHEET__SPREADSHEET_TYPE = ISPREADSHEET_FEATURE_COUNT + 4;
 
 
 	/**
@@ -2834,7 +2853,7 @@ public interface ProjectPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int SPREADSHEET_FEATURE_COUNT = ISPREADSHEET_FEATURE_COUNT + 4;
+	int SPREADSHEET_FEATURE_COUNT = ISPREADSHEET_FEATURE_COUNT + 5;
 
 
 	/**
@@ -2942,14 +2961,35 @@ public interface ProjectPackage extends EPackage {
 	EClass getSpreadsheet();
 	
 	/**
-	 * Returns the meta object for the attribute '{@link net.refractions.udig.project.internal.Spreadsheet#getSpreadsheetFile <em>Spreadsheet File</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Spreadsheet File</em>'.
-	 * @see net.refractions.udig.project.internal.Spreadsheet#getSpreadsheetFile()
-	 * @see #getSpreadsheet()
-	 * @generated
-	 */
-	EAttribute getSpreadsheet_SpreadsheetFile();
+     * Returns the meta object for the attribute '{@link net.refractions.udig.project.internal.Spreadsheet#getSpreadsheetPath <em>Spreadsheet Path</em>}'.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @return the meta object for the attribute '<em>Spreadsheet Path</em>'.
+     * @see net.refractions.udig.project.internal.Spreadsheet#getSpreadsheetPath()
+     * @see #getSpreadsheet()
+     * @generated
+     */
+    EAttribute getSpreadsheet_SpreadsheetPath();
+
+    /**
+     * Returns the meta object for the attribute '{@link net.refractions.udig.project.internal.Spreadsheet#getSpreadsheetType <em>Spreadsheet Type</em>}'.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @return the meta object for the attribute '<em>Spreadsheet Type</em>'.
+     * @see net.refractions.udig.project.internal.Spreadsheet#getSpreadsheetType()
+     * @see #getSpreadsheet()
+     * @generated
+     */
+    EAttribute getSpreadsheet_SpreadsheetType();
+    
+    /**
+     * Returns the meta object for data type '{@link net.refractions.udig.project.internal.SpreadsheetType <em>Spreadsheet Type</em>}'.
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * @return the meta object for data type '<em>Spreadsheet Type</em>'.
+     * @see net.refractions.udig.project.internal.SpreadsheetType
+     * @model instanceClass="net.refractions.udig.project.internal.SpreadsheetType"
+     * @generated
+     */
+    EDataType getSpreadsheetType();
 
 } // ProjectPackage

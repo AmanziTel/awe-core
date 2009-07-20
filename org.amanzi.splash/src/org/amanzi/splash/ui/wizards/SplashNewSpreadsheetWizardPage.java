@@ -1,10 +1,5 @@
 package org.amanzi.splash.ui.wizards;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import net.refractions.udig.project.internal.impl.RubyProjectImpl;
 
@@ -21,21 +16,14 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.rubypeople.rdt.internal.core.RubyProject;
-import org.rubypeople.rdt.internal.ui.wizards.OpenNewRubyProjectWizardAction;
-
-import com.eteks.openjeks.format.CellFormat;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -21,11 +22,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.FileEditorInput;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -427,20 +424,9 @@ public static final boolean enableNeo4j = true;
 	 * @author Lagutko_N
 	 */
 
-	public static IEditorPart openSpreadsheet(IWorkbench workbench, IFile file) {
-		IEditorPart result = null;
-		try {
-			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
-			if (page != null) {
-				
-				IFileEditorInput fi = new FileEditorInput(file);				
-				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
-			}
-
-		} catch (PartInitException e) {
-			result = null;
-		}
-		return result;
+	public static IEditorPart openSpreadsheet(IWorkbench workbench, URL spreadsheetURL) {
+	    //TODO: Lagutko 21.07.2009, this method must be re-written to support Neo4j-based Spreadsheet
+		return null;
 	}
 
 	/**

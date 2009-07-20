@@ -1,5 +1,7 @@
 package org.amanzi.integrator.awe;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,6 +15,7 @@ import net.refractions.udig.project.internal.RubyFile;
 import net.refractions.udig.project.internal.RubyProjectElement;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.Spreadsheet;
+import net.refractions.udig.project.internal.SpreadsheetType;
 import net.refractions.udig.project.internal.impl.ProjectFactoryImpl;
 
 import org.eclipse.core.resources.IProject;
@@ -375,21 +378,39 @@ public class AWEProjectManager {
 	}
 	
 	/**
-	 * Creates Spreadsheet
+	 * Creates File-based Spreadsheet
 	 * 
 	 * @param rubyProject RubyProject that contain's Spreadsheet
 	 * @param sheetName name of Spreadsheet
-	 * @param resource resource of Spreadsheet
+	 * @param resourcePath URL of Spreadsheet resource
 	 */
 	
-	public static void createSpreadsheet(IProject rubyProject, String sheetName, IResource resource) {
+	public static void createFileSpreadsheet(IProject rubyProject, String sheetName, URL resourcePath) {
 		String aweProjectName = getAWEprojectNameFromResource(rubyProject);
 		Project project = findProject(aweProjectName);
 		
 		RubyProject ruby = findRubyProject(project, rubyProject.getName());
 		if (ruby != null) {
-			createSpreadsheetIfNotExist(ruby, sheetName, resource);
+			createSpreadsheetIfNotExist(ruby, sheetName, resourcePath, SpreadsheetType.FILE_SPREADSHEET);
 		}
+	}
+	
+	/**
+	 * Creates Neo4J-based Spreadsheet
+	 *
+	 * @param rubyProject RubyProject that contain's Spreadsheet
+     * @param sheetName name of Spreadsheet
+     * @param resourcePath URL of Spreadsheet resource
+	 */
+	
+	public static void createNeoSpreadsheet(IProject rubyProject, String sheetName, URL resourcePath) {
+	    String aweProjectName = getAWEprojectNameFromResource(rubyProject);
+        Project project = findProject(aweProjectName);
+        
+        RubyProject ruby = findRubyProject(project, rubyProject.getName());
+        if (ruby != null) {
+            createSpreadsheetIfNotExist(ruby, sheetName, resourcePath, SpreadsheetType.NEO4J_SPREADSHEET);
+        }
 	}
 	
 	/**
@@ -400,19 +421,14 @@ public class AWEProjectManager {
 	 * @param sheetResource resource for Spreadsheet
 	 */
 	
-	private static void createSpreadsheetIfNotExist(RubyProject rubyProject, String sheetName, IResource sheetResource) {
-		boolean exist = false;
-		
+	private static void createSpreadsheetIfNotExist(RubyProject rubyProject, String sheetName, URL resourceURL, SpreadsheetType type) {
 		RubyProjectElement element = findSpreadsheet(rubyProject, sheetName);
-		if (element != null) {
-			exist = true;
-		}
-		
-		if (!exist) {
+		if (element == null) {
 			Spreadsheet spreadsheet = ProjectFactoryImpl.eINSTANCE.createSpreadsheet();
 			spreadsheet.setName(sheetName);
-			spreadsheet.setResource(sheetResource);
-			spreadsheet.setRubyProjectInternal(rubyProject);
+			spreadsheet.setSpreadsheetPath(resourceURL);
+			spreadsheet.setRubyProjectInternal(rubyProject);	
+			spreadsheet.setSpreadsheetType(type);
 		}
 	}
 	
@@ -468,7 +484,8 @@ public class AWEProjectManager {
     	if (object instanceof net.refractions.udig.project.IProject) {
     		return AWE_PROJECT;
     	}
-    	else if (object instanceof IRubyProject) {
+    	//Lagutko 16.07.2009, object can be RubyProject also in the case if it's IProject (from org.eclipse.core.resources)
+    	else if ((object instanceof IRubyProject) || (object instanceof IProject)) {
     		return RUBY_PROJECT; 
     	}
     	else {

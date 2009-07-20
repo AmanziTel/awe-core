@@ -11,5 +11,6 @@ Require-Bundle: org.rubypeople.rdt.core,
  org.eclipse.ui,
  org.amanzi.rdt.launching,
  org.rubypeople.rdt.debug.ui,
- org.amanzi.splash
+ org.amanzi.splash,
+ org.amanzi.splash.neo4j
 Export-Package: org.amanzi.integrator.rdt
