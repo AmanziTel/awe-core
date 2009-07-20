@@ -8,6 +8,7 @@ import java.util.Map;
 
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.catalog.ServiceExtension;
+import net.refractions.udig.catalog.URLUtils;
 
 public class NeoServiceExtension implements ServiceExtension {
     /* Neo4J service key, URL to the Neo4J database and gis node */
@@ -19,7 +20,7 @@ public class NeoServiceExtension implements ServiceExtension {
         try {
             if (url.getProtocol().equals("file")) {
                 // the URL represent a normal file or directory on disk
-                File path = new File(url.toURI());
+                File path = URLUtils.urlToFile(url);
                 if (path.exists() && path.isDirectory()) {
                     // check the directory, does it contain a neo4j database
                     File neostore = new File(path,"neostore");
