@@ -308,12 +308,12 @@ public class NetworkLoader implements NeoServiceEventListener {
             Node reference = neo.getReferenceNode();
             for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
-                if (node.hasProperty("type") && node.getProperty("type").equals("gis") && node.hasProperty("name") && node.getProperty("name").toString().equals(network.getProperty("name").toString()))
+                if (node.hasProperty("type") && node.getProperty("type").equals("gis") && node.hasProperty("name") && node.getProperty("name").toString().equals("gis: "+network.getProperty("name").toString()))
                     return node;
             }
             gis = neo.createNode();
             gis.setProperty("type", "gis");
-            gis.setProperty("name", network.getProperty("name").toString());
+            gis.setProperty("name", "gis: "+network.getProperty("name").toString());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
             gis.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
             tx.success();
