@@ -47,6 +47,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import org.amanzi.splash.jfreechart.JFreeBarChartWindow;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.ColumnHeaderRenderer;
 import org.amanzi.splash.swing.RowHeaderRenderer;
@@ -55,6 +56,7 @@ import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.wizards.ExportScriptWizard;
 import org.amanzi.splash.utilities.ActionUtil;
 import org.amanzi.splash.utilities.Util;
+import org.amanzi.splash.views.SplashChartsView;
 import org.eclipse.albireo.core.SwingControl;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -75,6 +77,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
@@ -610,13 +614,13 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 						int row = table.rowAtPoint(e.getPoint());
 						if(e.getButton()==3)
 						{
-							table.setColumnSelectionInterval(column, column);
-							table.setRowSelectionInterval(row, row);
+							//table.setColumnSelectionInterval(column, column);
+							//table.setRowSelectionInterval(row, row);
 
 							maybeShowPopup(e);
 							//launchCellFormatPanel(table);
 						}else{
-							Util.logn("Cell clicked !!!");
+							//Util.logn("Cell clicked !!!");
 
 
 							//table.repaint();
@@ -1030,6 +1034,50 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 		contextMenu.add(cellFormattingMenu);
+		
+		
+		JMenuItem chartsMenu = new JMenuItem();
+		chartsMenu.setText("Plot Cells");
+		chartsMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				int firstRow, firstColumn, lastRow, lastColumn;
+				firstRow = table.getSelectedRow();
+				firstColumn = table.getSelectedColumn();
+				lastRow = firstRow + table.getSelectedRowCount() - 1;
+				lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
+				
+				Util.logn("firstRow: " + firstRow);
+				Util.logn("firstColumn: " + firstColumn);
+				Util.logn("lastRow: " + lastRow);
+				Util.logn("lastColumn: " + lastColumn);
+				Util.logn("lastColumn-firstColumn: " + (lastColumn-firstColumn));
+				
+				String[] Categories = new String[lastColumn-firstColumn+1];
+				Double[] Values = new Double[lastColumn-firstColumn+1];
+				int m = 0;
+				for (int j=firstColumn;j<=lastColumn;j++){
+					
+					Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, j);
+					
+					Categories[m] =  (String) c.getValue();
+					Values[m] = Double.parseDouble((String) ((Cell)table.getValueAt(lastRow, j)).getValue());
+					//Values[m] = 10.0;
+					
+					m++;
+				}
+	
+				JFreeBarChartWindow j = new JFreeBarChartWindow(Categories, Values);
+				j.setTitle("Example Chart...");
+				j.setSize(640, 430);
+				
+				j.setChar();
+				
+				j.Show();
+			}
+		});
+		contextMenu.add(chartsMenu);
+		
 
 		//Lagutko, 16.06.2009, new menu items for integration with RDT
 

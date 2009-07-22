@@ -4,7 +4,17 @@
 	<classpathentry kind="src" path="openjeks"/>
 	<classpathentry kind="src" path="ruby"/>
 	<classpathentry kind="src" path="ext"/>
+	<classpathentry exported="true" kind="lib" path="jfreecharts/gnujaxp.jar"/>
+	<classpathentry exported="true" kind="lib" path="jfreecharts/iText-2.1.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="jfreecharts/jcommon-1.0.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="jfreecharts/jfreechart-1.0.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="jfreecharts/jfreechart-1.0.13-experimental.jar"/>
+	<classpathentry exported="true" kind="lib" path="jfreecharts/jfreechart-1.0.13-swt.jar"/>
+	<classpathentry exported="true" kind="lib" path="jfreecharts/junit.jar"/>
+	<classpathentry exported="true" kind="lib" path="jfreecharts/servlet.jar"/>
+	<classpathentry exported="true" kind="lib" path="jfreecharts/swtgraphics2d.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.jfreechart"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

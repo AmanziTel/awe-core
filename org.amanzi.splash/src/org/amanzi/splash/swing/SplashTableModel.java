@@ -488,14 +488,19 @@ public class SplashTableModel extends DefaultTableModel
 				for (j=0;j<columnCount;j++)
 				{
 					definition = list.get(m++);
-					////Util.log("definition:" + definition);
+					Util.logn("definition:" + definition);
 					value = list.get(m++);
-					////Util.log("value:" + value);
+					Util.logn("value:" + value);
 					// Load cell formatting
 					CellFormat c = new CellFormat();
 					String o1= list.get(m++);
+					Util.logn("o1: " + o1);
+					
 					String o2= list.get(m++);
+					Util.logn("o2: " + o2);
+					
 					String o3= list.get(m++);
+					Util.logn("o3: " + o3);
 
 					if (!"".equals(o1) && !"".equals(o2) && !"".equals(o3))
 					{
@@ -509,10 +514,13 @@ public class SplashTableModel extends DefaultTableModel
 					}
 
 					String o4= list.get(m++);
+					Util.logn("o4: " + o4);
 
 					String o5= list.get(m++);
+					Util.logn("o5: " + o5);
 
 					String o6= list.get(m++);
+					Util.logn("o6: " + o6);
 
 					if (!"".equals(o4) && !"".equals(o5) && !"".equals(o6))
 					{
@@ -525,26 +533,31 @@ public class SplashTableModel extends DefaultTableModel
 					}
 
 					String str = list.get(m++);
+					Util.logn("str: " + str);
 
 					if (!"".equals(str))
 						c.setFontName(str);
 
 					str = list.get(m++);
+					Util.logn("str: " + str);
 
 					if (!"".equals(str))
 						c.setFontSize(Integer.parseInt(str));
 
 					str = list.get(m++);
+					Util.logn("str: " + str);
 
 					if (!"".equals(str))
 						c.setFontStyle(Integer.parseInt(str));
 
 					str = list.get(m++);
+					Util.logn("str: " + str);
 
 					if (!"".equals(str))
 						c.setHorizontalAlignment(Integer.parseInt(str));
 
 					str = list.get(m++);
+					Util.logn("str: " + str);
 
 					if (!"".equals(str))
 						c.setVerticalAlignment(Integer.parseInt(str));
