@@ -22,7 +22,7 @@ class Cells
       end	
       
       if (args.to_s.eql?"")
-        puts "value of "+ s + "= " + @cells[s]
+        #puts "value of "+ s + "= " + @cells[s]
         puts "I'm here 1"
         @cells[s]
       else
