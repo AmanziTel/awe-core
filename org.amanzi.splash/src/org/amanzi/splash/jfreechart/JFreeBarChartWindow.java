@@ -33,8 +33,26 @@ public class JFreeBarChartWindow extends JFrame
 
 	public JFreeBarChartWindow(String[] Categories, Double[] Values)
 	{
+		this.Categories = Categories;
 		dataset = createDataset(Categories, Values);
 	}
+	
+	String[] Categories;
+	
+	
+	private int firstRow;
+	private int lastRow;
+	private int firstColumn;
+	private int lastColumn;
+	
+	public void setDimensions(int firstRow, int lastRow, int firstColumn, int lastColumn){
+		this.firstRow = firstRow;
+		this.lastRow = lastRow;
+		this.firstColumn = firstColumn;
+		this.lastColumn = lastColumn;
+	}
+	
+	String series = "First";
 	
 	/**
 	 * In this method an instance of JSONObject is created and allocate the
@@ -48,7 +66,7 @@ public class JFreeBarChartWindow extends JFrame
 	 */
 	private DefaultCategoryDataset createDataset(String[] Categories, Double[] Values) {
 		// row keys...
-        String series1 = "First";
+        
 //        String series2 = "Second";
 //        String series3 = "Third";
 //
@@ -62,7 +80,7 @@ public class JFreeBarChartWindow extends JFrame
         // create the dataset...
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (int i=0;i<Categories.length;i++){
-        	dataset.addValue(Values[i], series1, Categories[i]);
+        	dataset.addValue(Values[i], series, Categories[i]);
         }
 //        dataset.addValue(1.0, series1, category1);
 //        dataset.addValue(4.0, series1, category2);
@@ -96,8 +114,8 @@ public class JFreeBarChartWindow extends JFrame
 
 		 // create the chart...
         JFreeChart chart = ChartFactory.createBarChart(
-            "Bar Chart Demo 1",       // chart title
-            "Category",               // domain axis label
+            "",       // chart title
+            "",               // domain axis label
             "Value",                  // range axis label
             dataset,                  // data
             PlotOrientation.VERTICAL, // orientation
@@ -151,9 +169,10 @@ public class JFreeBarChartWindow extends JFrame
 	}
 
 	
-	public void setValue(String title, Double numDouble)
+	public void setValue(int index, Double numDouble)
 	{
-		//dataset.setValue(title, numDouble);
+		String title = Categories[index]; 
+		dataset.setValue(numDouble, series, title);
 	}
 	
 	public void setChar()
@@ -170,6 +189,38 @@ public class JFreeBarChartWindow extends JFrame
 	{
 		setContentPane(createPanel());
 		setVisible(true);
+	}
+
+	public int getFirstRow() {
+		return firstRow;
+	}
+
+	public void setFirstRow(int firstRow) {
+		this.firstRow = firstRow;
+	}
+
+	public int getLastRow() {
+		return lastRow;
+	}
+
+	public void setLastRow(int lastRow) {
+		this.lastRow = lastRow;
+	}
+
+	public int getFirstColumn() {
+		return firstColumn;
+	}
+
+	public void setFirstColumn(int firstColumn) {
+		this.firstColumn = firstColumn;
+	}
+
+	public int getLastColumn() {
+		return lastColumn;
+	}
+
+	public void setLastColumn(int lastColumn) {
+		this.lastColumn = lastColumn;
 	}
 	
 	

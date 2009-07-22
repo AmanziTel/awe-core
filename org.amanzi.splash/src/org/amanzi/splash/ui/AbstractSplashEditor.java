@@ -22,6 +22,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import javax.swing.CellEditor;
@@ -102,7 +103,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	private TableViewer tableViewer;
 	CellFormatPanel cellFormatPanel = null;
 	CellFormat cellFormat = null;
-	SplashTableModel tableModel; 
+	SplashTableModel tableModel;
+	ArrayList watchedCharts = new ArrayList<JFreeBarChartWindow>();
 
 	private ResourceBundle resourceBundle = ResourceBundle.getBundle ("com.eteks.openjeks.resources.openjeks");
 	private String selectCellValue = "";
@@ -181,6 +183,20 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		int column = e.getColumn();
 		TableModel model = (TableModel)e.getSource();
 		if (!selectCellValue.equals(model.getValueAt(row, column))) setIsDirty(true);
+		
+		for (int i=0;i<watchedCharts.size();i++){
+			JFreeBarChartWindow j = (JFreeBarChartWindow) watchedCharts.get(i);
+			if (row >= j.getFirstRow() && 
+					row <= j.getLastRow() &&
+					column >= j.getFirstColumn() &&
+					column <= j.getLastColumn()){
+				
+				Cell c = (Cell)model.getValueAt(row, column);
+				j.setValue(column, Double.parseDouble(c.getValue().toString()));
+				j.Show();
+				Util.logn("Chart " + j.getTitle() + " updated...");
+			}
+		}
 	}
 
 
@@ -986,6 +1002,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 		return contextMenu;
 	}
+	
+	
 
 	/**
 	 * 
@@ -1057,23 +1075,23 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				Double[] Values = new Double[lastColumn-firstColumn+1];
 				int m = 0;
 				for (int j=firstColumn;j<=lastColumn;j++){
-					
 					Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, j);
-					
 					Categories[m] =  (String) c.getValue();
 					Values[m] = Double.parseDouble((String) ((Cell)table.getValueAt(lastRow, j)).getValue());
-					//Values[m] = 10.0;
-					
 					m++;
 				}
 	
 				JFreeBarChartWindow j = new JFreeBarChartWindow(Categories, Values);
+				j.setDimensions(firstRow, lastRow, firstColumn, lastColumn);
 				j.setTitle("Example Chart...");
 				j.setSize(640, 430);
 				
 				j.setChar();
 				
 				j.Show();
+				
+				
+				watchedCharts.add(j);
 			}
 		});
 		contextMenu.add(chartsMenu);
