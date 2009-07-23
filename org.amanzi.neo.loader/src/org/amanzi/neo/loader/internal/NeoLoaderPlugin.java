@@ -3,7 +3,7 @@ package org.amanzi.neo.loader.internal;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.amanzi.neo.loader.preferences.NeoPreferencesInitializer;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
@@ -18,8 +18,8 @@ import org.osgi.framework.BundleContext;
  */
 
 public class NeoLoaderPlugin extends Plugin {
-	
-	/*
+    
+    /*
 	 * Name of console
 	 */
 	
@@ -59,8 +59,7 @@ public class NeoLoaderPlugin extends Plugin {
 	 * Logging properties
 	 */
 	private static boolean debug = false;
-	private static boolean verbose = true;
-	private NeoPreferencesInitializer initializer = new NeoPreferencesInitializer();
+	private static boolean verbose = true;	
 	
 	/**
 	 * Constructor for SplashPlugin.
@@ -121,7 +120,7 @@ public class NeoLoaderPlugin extends Plugin {
 			consoleStream.close();
 		}
 		catch (IOException e) {
-			e.printStackTrace();
+			NeoCorePlugin.error(NeoLoaderPluginMessages.Console_ErrorOnClose, e);
 		}
 		
 		pluginConsole.destroy();
@@ -221,14 +220,5 @@ public class NeoLoaderPlugin extends Plugin {
 				
 		PrintStream stream = new PrintStream(consoleStream);		
 		e.printStackTrace(stream);		
-	}
-
-    public NeoPreferencesInitializer getInitializer() {
-        return initializer;
-    }
-
-    public void setInitializer(NeoPreferencesInitializer initializer) {
-        this.initializer = initializer;
-    }
-
+	}    
 }

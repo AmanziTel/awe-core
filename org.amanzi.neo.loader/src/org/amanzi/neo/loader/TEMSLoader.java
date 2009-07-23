@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -15,18 +18,9 @@ import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.Transaction;
 
 public class TEMSLoader {	
-	public static enum MeasurementRelationshipTypes implements RelationshipType {
-		FIRST,
-		LAST,
-		NEXT,
-		CHILD,
-		SOURCE,
-		POINT
-	}
 	private NeoService neo;
 	private String filename = null;
 	private String basename = null;
@@ -98,13 +92,13 @@ public class TEMSLoader {
 		if (display != null) {
 			display.syncExec(new Runnable() {
 				public void run() {
-					if(neo == null) neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();
+					if(neo == null) neo = NeoServiceProvider.getProvider().getService();
 				}
 			});
 		}
 		//if Display is not given than initialize Neo as usual
 		else {
-			if(this.neo == null) this.neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();
+			if(this.neo == null) this.neo = NeoServiceProvider.getProvider().getService();
 		}
 	}
 
@@ -207,12 +201,12 @@ public class TEMSLoader {
 		String fields[] = line.split("\\t");
 		if(fields.length<2) return;
 
-        this.time = fields[i_of("time")];
-        String ms = fields[i_of("ms")];
-        String event = fields[i_of("event")];    // currently only getting this as a change marker
-        String message_type = fields[i_of("message_type")];    // need this to filter for only relevant messages
+        this.time = fields[i_of(INeoConstants.PROPERTY_TIME_NAME)];
+        String ms = fields[i_of(INeoConstants.HEADER_MS)];
+        String event = fields[i_of(INeoConstants.HEADER_EVENT)];    // currently only getting this as a change marker
+        String message_type = fields[i_of(INeoConstants.HEADER_MESSAGE_TYPE)];    // need this to filter for only relevant messages
         //message_id = fields[i_of("message_id")];    // parsing this is not faster
-        if(!"EV-DO Pilot Sets Ver2".equals(message_type)) return;
+        if(!INeoConstants.MESSAGE_TYPE_EV_DO.equals(message_type)) return;
         this.count_valid_message += 1;
         //return unless message_id == '27019'    // not faster
         //return unless message_id.to_i == 27019    // not faster
@@ -221,8 +215,8 @@ public class TEMSLoader {
         // TODO: Also be careful of any All-RX-Power of -63 (since it is most often invalid data)
         // TODO: If number of PN codes does not match number of EC-IO make sure to align correct values to PNs
 
-        String latitude = fields[i_of("all_latitude")];
-        String longitude = fields[i_of("all_longitude")];
+        String latitude = fields[i_of(INeoConstants.HEADER_ALL_LATITUDE)];
+        String longitude = fields[i_of(INeoConstants.HEADER_ALL_LONGITUDE)];
         String thisLatLong = latitude+"\t"+longitude;
         if(!thisLatLong.equals(this.latlong)){
           saveData();	// persist the current data to database
@@ -236,13 +230,12 @@ public class TEMSLoader {
         int ec_io = 0;
         int measurement_count = 0;
         try{
-        channel = Integer.parseInt(fields[i_of("all_active_set_channel_1")]);
-        pn_code = Integer.parseInt(fields[i_of("all_active_set_pn_1")]);
-        ec_io = Integer.parseInt(fields[i_of("all_active_set_ec_io_1")]);
-        measurement_count = Integer.parseInt(fields[i_of("all_pilot_set_count")]);
+        channel = Integer.parseInt(fields[i_of(INeoConstants.HEADER_ALL_ACTIVE_SET_CHANNEL_1)]);
+        pn_code = Integer.parseInt(fields[i_of(INeoConstants.HEADER_ALL_ACTIVE_SET_PN_1)]);
+        ec_io = Integer.parseInt(fields[i_of(INeoConstants.HEADER_ALL_ACTIVE_SET_EC_IO_1)]);
+        measurement_count = Integer.parseInt(fields[i_of(INeoConstants.HEADER_ALL_PILOT_SET_COUNT)]);
         }catch(NumberFormatException e){
-        	error("Failed to parse a field on line "+line_number+": "+e.getMessage());
-        	e.printStackTrace(System.err);
+        	error("Failed to parse a field on line "+line_number+": "+e.getMessage());        	
         }
         if(measurement_count > 12){
             error("Measurement count "+measurement_count+" > 12");
@@ -274,9 +267,9 @@ public class TEMSLoader {
             // Delete invalid data, as you can have empty ec_io
             // zero ec_io is correct, but empty ec_io is not
         	try{
-        		ec_io = Integer.parseInt(fields[i_of("all_pilot_set_ec_io_"+i)]);
-	            channel = Integer.parseInt(fields[i_of("all_pilot_set_channel_"+i)]);
-	            pn_code = Integer.parseInt(fields[i_of("all_pilot_set_pn_"+i)]);
+        		ec_io = Integer.parseInt(fields[i_of(INeoConstants.HEADER_PREFIX_ALL_PILOT_SET_EC_IO + i)]);
+	            channel = Integer.parseInt(fields[i_of(INeoConstants.HEADER_PREFIX_ALL_PILOT_SET_CHANNEL + i)]);
+	            pn_code = Integer.parseInt(fields[i_of(INeoConstants.HEADER_PREFIX_ALL_PILOT_SET_PN+i)]);
 	            debug("\tchannel["+channel+"] pn["+pn_code+"] Ec/Io["+ec_io+"]");
 	            if(!stats.containsKey(pn_code)) this.stats.put(pn_code,new int[2]);
 	            stats.get(pn_code)[0]+=1;
@@ -302,31 +295,31 @@ public class TEMSLoader {
 			Transaction tx = neo.beginTx();
 			try {
 				Node mp = neo.createNode();
-				mp.setProperty("type", "mp");
-				mp.setProperty("time", this.time);
-				mp.setProperty("first_line", first_line);
-				mp.setProperty("last_line", last_line);
+				mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+				mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
+				mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
+				mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
 				String[] ll = latlong.split("\\t");
-				mp.setProperty("lat", ll[0]);
-				mp.setProperty("long", ll[1]);
+				mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, ll[0]);
+				mp.setProperty(INeoConstants.PROPERTY_LONG_NAME, ll[1]);
 				if (file == null) {
 					Node reference = neo.getReferenceNode();
 					for (Relationship relationship : reference.getRelationships(MeasurementRelationshipTypes.CHILD,
 							Direction.OUTGOING)) {
 						Node node = relationship.getEndNode();
-						if (node.hasProperty("type") && node.getProperty("type").equals("file") && node.hasProperty("name")
-								&& node.getProperty("name").equals(basename))
+						if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.FILE_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+								&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename))
 							file = node;
 					}
 					if (file == null) {
 						file = neo.createNode();
-						file.setProperty("type", "file");
-						file.setProperty("name", basename);
-						file.setProperty("filename", filename);
+						file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
+						file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
+						file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
 						reference.createRelationshipTo(file, MeasurementRelationshipTypes.CHILD);
 					}
 					file.createRelationshipTo(mp, MeasurementRelationshipTypes.FIRST);
-					debug("Added '" + mp.getProperty("time") + "' as first measurement of '" + file.getProperty("filename"));
+					debug("Added '" + mp.getProperty(INeoConstants.PROPERTY_TIME_NAME) + "' as first measurement of '" + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
 				}
 				debug("Added measurement point: " + propertiesString(mp));
 				if (point != null) {
@@ -338,11 +331,11 @@ public class TEMSLoader {
 					double mw = signal[0] / signal[1];
 					Node ms = neo.createNode();
 					String[] cc = chanCode.split("\\t");
-					ms.setProperty("type", "ms");
-					ms.setProperty("channel", cc[0]);
-					ms.setProperty("code", cc[1]);
-					ms.setProperty("dbm", mw2dbm(mw));
-					ms.setProperty("mw", mw);
+					ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
+					ms.setProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME, cc[0]);
+					ms.setProperty(INeoConstants.PROPERTY_CODE_NAME, cc[1]);
+					ms.setProperty(INeoConstants.PROPERTY_DBM_NAME, mw2dbm(mw));
+					ms.setProperty(INeoConstants.PROPERTY_MW_NAME, mw);
 					debug("\tAdded measurement: " + propertiesString(ms));
 					point.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
 				}
@@ -405,9 +398,9 @@ public class TEMSLoader {
 		for(Relationship relationship:node.getRelationships(MeasurementRelationshipTypes.CHILD,Direction.OUTGOING)){
 			if(sb.length()>0) sb.append(", ");
 			Node ms = relationship.getEndNode();
-			sb.append(ms.getProperty("channel")).append(":");
-			sb.append(ms.getProperty("code")).append("=");
-			sb.append((ms.getProperty("dbm").toString()+"000000").substring(0,6));
+			sb.append(ms.getProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME)).append(":");
+			sb.append(ms.getProperty(INeoConstants.PROPERTY_CODE_NAME)).append("=");
+			sb.append((ms.getProperty(INeoConstants.PROPERTY_DBM_NAME).toString()+"000000").substring(0,6));
 		}
 		return sb.toString();		
 	}
@@ -435,6 +428,7 @@ public class TEMSLoader {
 		}
 	}
 	
+	//TODO: Lagutko: is this methor required?
 	/**
 	 * @param args
 	 */

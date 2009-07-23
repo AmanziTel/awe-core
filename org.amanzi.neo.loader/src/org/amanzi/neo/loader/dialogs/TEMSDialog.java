@@ -5,9 +5,11 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -24,34 +26,33 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 
 /**
  * Dialog for Loading TEMS data
  * 
- * //TODO
- * 
  * @author Lagutko_N
  */
 public class TEMSDialog {
 	
-	private static final String LOAD_TEMS_DIALOG_TITLE = "Select a files containing information in TEMS format";
+    /*
+     * Minimum height of Shell
+     */
+    private static final int MINIMUM_HEIGHT = 400;
+    
+    /*
+     * Minimum width of Shell
+     */
+    private static final int MINIMUM_WIDTH = 600;
 
-	// These filter names are displayed to the user in the file dialog. Note that
-	// the inclusion of the actual extension in parentheses is optional, and
-	// doesn't have any effect on which files are displayed.
-	private static final String[] FILTER_NAMES = {
-	      " (*.FMT)"
-	};
-
-	// These filter extensions are used to filter which files are displayed.
-	private static final String[] FILTER_EXTS = { "*.FMT"};
+    /*
+     * Layout for One column and Fixed Width
+     */
+    private final static GridLayout layoutOneColumnNotFixedWidth = new GridLayout(1, false); 
 	
 	/*
 	 * Shell of this Dialog
@@ -94,7 +95,7 @@ public class TEMSDialog {
 	private Button loadButton;
 	
 	/*
-	 * Maps for storing name of file and path to files
+	 * Maps for storing name of file and path to file
 	 */
 	private HashMap<String, String> folderFiles = new HashMap<String, String>();
 	private HashMap<String, String> loadedFiles = new HashMap<String, String>();
@@ -102,7 +103,6 @@ public class TEMSDialog {
 	/* 
 	 * Default directory for file dialogs 
 	 */
-	
 	private static String defaultDirectory = null;
 
 	/**
@@ -119,9 +119,11 @@ public class TEMSDialog {
 		else {
 			temsShell = shell;
 		}
-		temsShell.setMinimumSize(600, 400);
 		
-		temsShell.setText(LOAD_TEMS_DIALOG_TITLE);
+		//TODO move to constants
+		temsShell.setMinimumSize(MINIMUM_WIDTH, MINIMUM_HEIGHT);
+		
+		temsShell.setText(NeoLoaderPluginMessages.TEMSDialog_DialogTitle);
 		
 		createControl(temsShell);
 		createActions(temsShell);
@@ -163,7 +165,7 @@ public class TEMSDialog {
 	 */
 	
 	private void createControl(Composite parent) {
-		GridLayout layout = new GridLayout(1, false);
+		GridLayout layout = layoutOneColumnNotFixedWidth;
 		parent.setLayout(layout);
 		parent.setLayoutData(new GridData(SWT.FILL));
 		
@@ -195,10 +197,10 @@ public class TEMSDialog {
 	
 	private void createFolderSelectionComposite(Composite parent) {
 		Composite panel = new Composite(parent, SWT.NONE);
-		panel.setLayout(new GridLayout(1, false));		
+		panel.setLayout(layoutOneColumnNotFixedWidth);		
 		panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		folderFilesList = createSelectionList(panel, "Files to choose:");
+		folderFilesList = createSelectionList(panel, NeoLoaderPluginMessages.TEMSDialog_FilesToChooseListLabel);
 	}
 	
 	/**
@@ -209,19 +211,20 @@ public class TEMSDialog {
 	
 	private void createManipulationComposite(Composite parent) {
 		Composite panel = new Composite(parent, SWT.NONE);
-		panel.setLayout(new GridLayout(1, false));
+		panel.setLayout(layoutOneColumnNotFixedWidth);
 		panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
 		
 		Composite choosePanel = new Composite(panel, SWT.NONE);
-		choosePanel.setLayout(new GridLayout(1, false));
+		choosePanel.setLayout(layoutOneColumnNotFixedWidth);
 		choosePanel.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));		
-		browseDialogButton = createChooseButton(choosePanel, "Browse", SWT.TOP);
+		browseDialogButton = createChooseButton(choosePanel, NeoLoaderPluginMessages.TEMSDialog_BrowseButtonText, SWT.TOP);
 		
 		Composite actionPanel = new Composite(panel, SWT.NONE);
-		actionPanel.setLayout(new GridLayout(1, false));
+		actionPanel.setLayout(layoutOneColumnNotFixedWidth);
 		actionPanel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
-		addFilesToLoaded = createChooseButton(actionPanel, "Add", SWT.CENTER);
-		removeFilesFromLoaded = createChooseButton(actionPanel, "Remove", SWT.CENTER);
+		
+		addFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.TEMSDialog_AddButtonText, SWT.CENTER);
+		removeFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.TEMSDialog_RemoveButtonText, SWT.CENTER);
 	}
 	
 	/**
@@ -232,10 +235,10 @@ public class TEMSDialog {
 	
 	private void createFileToLoadComposite(Composite parent) {
 		Composite panel = new Composite(parent, SWT.NONE);
-		panel.setLayout(new GridLayout(1, false));		
+		panel.setLayout(layoutOneColumnNotFixedWidth);		
 		panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		filesToLoadList = createSelectionList(panel, "Files to load:");
+		filesToLoadList = createSelectionList(panel, NeoLoaderPluginMessages.TEMSDialog_FilesToLoadListLabel);
 	}
 	
 	/**
@@ -251,7 +254,7 @@ public class TEMSDialog {
 		panel.setLayoutData(data);
 		
 		cancelButton = new Button(panel, SWT.CENTER);
-		cancelButton.setText("Cancel");
+		cancelButton.setText(NeoLoaderPluginMessages.TEMSDialog_CancelButtonText);
 		FormData cancelButtonFormData = new FormData();
 		cancelButtonFormData.right = new FormAttachment(100, -10);
 		cancelButtonFormData.bottom = new FormAttachment(100, -10);
@@ -260,7 +263,7 @@ public class TEMSDialog {
 		cancelButton.setLayoutData(cancelButtonFormData);
 		
 		loadButton = new Button(panel, SWT.CENTER);
-		loadButton.setText("Load");
+		loadButton.setText(NeoLoaderPluginMessages.TEMSDialog_LoadButtonText);
 		loadButton.setEnabled(false);
 		FormData loadButtonFormData = new FormData();
 		loadButtonFormData.right = new FormAttachment(cancelButton, -10);
@@ -322,9 +325,9 @@ public class TEMSDialog {
 			public void widgetSelected(SelectionEvent e) {
 				// User has selected to open a single file
 		        FileDialog dlg = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
-				dlg.setText("Select a file containing TEMS data in FMT format");
-		        dlg.setFilterNames(FILTER_NAMES);
-		        dlg.setFilterExtensions(FILTER_EXTS);
+				dlg.setText(NeoLoaderPluginMessages.TEMSDialog_FileDialogTitle);
+		        dlg.setFilterNames(INeoConstants.TEMS_FILE_NAMES);
+		        dlg.setFilterExtensions(INeoConstants.TEMS_FILE_EXTENSIONS);
 		        dlg.setFilterPath(getDefaultDirectory());
 				
 		        String fn = dlg.open();
@@ -375,7 +378,7 @@ public class TEMSDialog {
 			
 		});
 		
-		//loads TEMS data from choosen files		
+		//loads TEMS data from chosen files		
 		loadButton.addSelectionListener(new SelectionAdapter() {
 			
 			public void widgetSelected(SelectionEvent e) {
@@ -397,7 +400,12 @@ public class TEMSDialog {
 	private class TEMFFileFilter implements FileFilter {
 
 		public boolean accept(File pathname) {
-			return pathname.getName().endsWith(".FMT");
+		    for (String extension : INeoConstants.TEMS_FILE_EXTENSIONS) {
+		        if (pathname.getName().endsWith(extension)) {
+		            return true;
+		        }
+		    }
+		    return false;
 		}				
 	}
 	
@@ -418,10 +426,7 @@ public class TEMSDialog {
 			monitor = new NullProgressMonitor();
 		}
 		
-		monitor.beginTask("Load TEMS data", loadedFiles.values().size());
-		
 		for (String filePath : loadedFiles.values()) {
-			monitor.subTask("Load TEMS data from " + filePath);						
 			try {				
 				TEMSLoader temsLoader = new TEMSLoader(filePath, display);
 				temsLoader.run();
@@ -430,7 +435,6 @@ public class TEMSDialog {
 			catch (IOException e) {
 				NeoLoaderPlugin.exception(e);
 			}
-			monitor.worked(1);
 		}
 
 		monitor.done();		
@@ -557,6 +561,11 @@ public class TEMSDialog {
 		}
 	}
 	
+	/**
+	 * Is DefaultDirectory set?
+	 *
+	 * @return is default directory set?
+	 */
 	public static boolean hasDefaultDirectory() {
 		return defaultDirectory != null;
 	}
@@ -571,7 +580,7 @@ public class TEMSDialog {
 	private class LoadTEMSJob extends Job {
 		
 		public LoadTEMSJob(Display jobDisplay) {
-			super("Load TEMS");					
+			super(NeoLoaderPluginMessages.TEMSDialog_MonitorName);					
 		}
 
 		@Override

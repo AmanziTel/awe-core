@@ -2,7 +2,10 @@ package org.amanzi.neo.loader;
 
 import java.io.IOException;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.dialogs.TEMSDialog;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -10,12 +13,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
 public class LoadNetwork extends AbstractActionTool {
-	private static final String[] FILTER_NAMES = {
-		"Comma Separated Values Files (*.csv)",
-		"OpenOffice.org Spreadsheet Files (*.sxc)",
-		"Microsoft Excel Spreadsheet Files (*.xls)",
-		"All Files (*.*)" };
-	private static final String[] FILTER_EXTS = { "*.csv", "*.sxc", "*.xls", "*.*" };
+	
 	private static String directory = null;
 
 	public LoadNetwork() {
@@ -62,9 +60,9 @@ public class LoadNetwork extends AbstractActionTool {
 			
 			public void run() {
 				FileDialog dlg = new FileDialog(display.getActiveShell(), SWT.OPEN);
-				dlg.setText("Select a file containing network information in CSV format");
-				dlg.setFilterNames(FILTER_NAMES);
-				dlg.setFilterExtensions(FILTER_EXTS);
+				dlg.setText(NeoLoaderPluginMessages.NetworkDialog_DialogTitle);
+				dlg.setFilterNames(INeoConstants.NETWORK_FILE_NAMES);
+				dlg.setFilterExtensions(INeoConstants.NETWORK_FILE_EXTENSIONS);
 				dlg.setFilterPath(getDirectory());
 				final String filename = dlg.open();
 				if (filename != null) {
@@ -76,9 +74,8 @@ public class LoadNetwork extends AbstractActionTool {
 								networkLoader = new NetworkLoader(filename);
 								networkLoader.run();
 								networkLoader.printStats();
-							} catch (IOException e) {
-								System.err.println("Error loading file: " + e.getMessage());
-								e.printStackTrace(System.err);
+							} catch (IOException e) {								
+								NeoCorePlugin.error("Error loading Network file", e);
 							}
 						}
 					});

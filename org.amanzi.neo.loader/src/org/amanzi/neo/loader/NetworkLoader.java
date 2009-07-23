@@ -13,22 +13,23 @@ import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
 
+import org.amanzi.awe.networktree.views.NetworkTreeView;
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkElementTypes;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.Transaction;
-import org.neo4j.neoclipse.Activator;
-import org.neo4j.neoclipse.GeoNeoRelationshipTypes;
-import org.neo4j.neoclipse.neo.NeoServiceEvent;
-import org.neo4j.neoclipse.neo.NeoServiceEventListener;
-import org.neo4j.neoclipse.neo.NeoServiceManager;
-import org.neo4j.neoclipse.neo.NeoServiceStatus;
-import org.neo4j.neoclipse.preference.NeoPreferences;
 
 /**
  * This class was written to handle CSV (tab delimited) network data from ice.net in Sweden.
@@ -40,24 +41,7 @@ import org.neo4j.neoclipse.preference.NeoPreferences;
  * 
  * @author craig
  */
-public class NetworkLoader implements NeoServiceEventListener {
-	public static enum NetworkElementTypes {
-		NETWORK("Network"),
-		BSC("BSC"),
-		SITE("Name"),
-		SECTOR("Cell");
-		private String header = null;
-		private NetworkElementTypes(String header){
-			this.header = header;
-		}
-		public String getHeader(){return header;}
-		public String toString(){return super.toString().toLowerCase();}
-	}
-	public static enum NetworkRelationshipTypes implements RelationshipType {
-		CHILD,
-		SIBLING,
-		INTERFERS
-	}
+public class NetworkLoader extends NeoServiceProviderListener {
 	/**
 	 * This class handles the CRS specification.
 	 * Currently it is hard coded to return WGS84 (EPSG:4326) for data that looks like lat/long
@@ -72,17 +56,17 @@ public class NetworkLoader implements NeoServiceEventListener {
 		public String toString(){return epsg;}
 		public static CRS fromLocation(float lat, float lon){
 			CRS crs = new CRS();
-			crs.type = "geographic";
-			crs.epsg = "EPSG:4326";
+			crs.type = INeoConstants.CRS_TYPE_GEOGRAPHIC;
+			crs.epsg = INeoConstants.CRS_EPSG_4326;
 			if((lat>90 || lat<-90) && (lon>180 || lon<-180)) {
-				crs.type="projected";
-				crs.epsg = "EPSG:3021";
+				crs.type=INeoConstants.CRS_TYPE_PROJECTED;
+				crs.epsg = INeoConstants.CRS_EPSG_3021;
 			}
 			return crs;
 		}
 	}
 	private NeoService neo;
-	private NeoServiceManager neoManager;
+	private NeoServiceProvider neoProvider;
 	private String siteName = null;
 	private String bscName = null;
 	private Node site = null;
@@ -106,29 +90,24 @@ public class NetworkLoader implements NeoServiceEventListener {
 	public NetworkLoader(NeoService neo, String filename) {
 		this.neo = neo;
 		if(this.neo == null) {
-            this.neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();  // Call this first as it initializes everything
-            this.neoManager = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceManager();    // Initialized in above call
-            this.neoManager.addServiceEventListener(this);
+		    //Lagutko 21.07.2009, using of neo.core plugin
+		    neoProvider = NeoServiceProvider.getProvider();
+            this.neo = neoProvider.getService();  // Call this first as it initializes everything
+            neoProvider.addServiceProviderListener(this);
 		}
 		this.filename = filename;
 		this.basename = (new File(filename)).getName();
 	}
 
-    @Override
-    public void serviceChanged(NeoServiceEvent event) {
-        if (neoManager != null) {
-            // If Neoclipse no longer manages this database, stop listening to events
-            if (event.getStatus() == NeoServiceStatus.STOPPED) {
-                unregisterNeoManager();
-            }
-        }
+	//Lagutko 21.07.2009, using of neo.core plugin
+    public void onNeoStop(Object source) {        
+        unregisterNeoManager();        
     }
     
-    private void unregisterNeoManager(){
-        if (neoManager != null) {
-            neoManager.removeServiceEventListener(this);
-            neoManager = null;
-        }
+    //Lagutko 21.07.2009, using of neo.core plugin
+    private void unregisterNeoManager(){        
+        neoProvider.commit();
+        neoProvider.removeServiceProviderListener(this);        
     }
 
 	public void run() throws IOException {
@@ -145,26 +124,31 @@ public class NetworkLoader implements NeoServiceEventListener {
             if(gis!=null){
                 Transaction tx = neo.beginTx();
                 try {
-                    gis.setProperty("bbox", bbox);
+                    gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
                     tx.success();
                 }finally{
                     tx.finish();
                 }
             }
-            // Unregister from the neoclipse services manager
-            if (neoManager != null) {
-                neoManager.commit();
-                unregisterNeoManager();
-            }
-            // Register the database in the uDIG catalog
-            IPreferenceStore pref = Activator.getDefault().getPreferenceStore();
-            String databaseLocation = pref.getString(NeoPreferences.DATABASE_LOCATION);
+            //Lagutko 21.07.2009, using of neo.core plugin
+            unregisterNeoManager();
+            // Register the database in the uDIG catalog            
+            String databaseLocation = neoProvider.getDefaultDatabaseLocation();
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+            
             List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(new URL("file://"+databaseLocation));
             for(IService service:services){
                 System.out.println("Found catalog service: "+service);
-            }
+            }            
             if(services.size()>0) catalog.add(services.get(0));
+            
+            //Lagutko, 21.07.2009, show NeworkTree
+            try {
+                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NetworkTreeView.NETWORK_TREE_VIEW_ID);
+            }
+            catch (PartInitException e) {
+                NeoCorePlugin.error(null, e);
+            }
         }
     }
 
@@ -196,10 +180,10 @@ public class NetworkLoader implements NeoServiceEventListener {
 					if(header.equals(NetworkElementTypes.BSC.getHeader())) mainIndexes[0]=index;
 					else if(header.equals(NetworkElementTypes.SITE.getHeader())) mainIndexes[1]=index;
 					else if(header.equals(NetworkElementTypes.SECTOR.getHeader())) mainIndexes[2]=index;
-					else if(header.toLowerCase().startsWith("lat")) mainIndexes[3]=index;
-					else if(header.toLowerCase().startsWith("long")) mainIndexes[4]=index;
-					else if(header.toLowerCase().contains("type")) strings.add(index);
-					else if(header.toLowerCase().contains("status")) strings.add(index);
+					else if(header.toLowerCase().startsWith(INeoConstants.PROPERTY_LAT_NAME)) mainIndexes[3]=index;
+					else if(header.toLowerCase().startsWith(INeoConstants.PROPERTY_LONG_NAME)) mainIndexes[4]=index;
+					else if(header.toLowerCase().contains(INeoConstants.PROPERTY_TYPE_NAME)) strings.add(index);
+					else if(header.toLowerCase().contains(INeoConstants.NETWORK_HEADER_STATUS_NAME)) strings.add(index);
 					else ints.add(index);
 					headerIndex.put(header,index++);
 				}
@@ -218,7 +202,7 @@ public class NetworkLoader implements NeoServiceEventListener {
 						debug("New BSC: " + bscName);
 						network = getNetwork(neo, basename);
 						gis = getGISNode(neo, network);
-						network.setProperty("filename", filename);
+						network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
 						deleteTree(network);
 						bsc = addChild(network, NetworkElementTypes.BSC.toString(), bscName);
 					}
@@ -236,13 +220,13 @@ public class NetworkLoader implements NeoServiceEventListener {
 						float lon = Float.parseFloat(fields[mainIndexes[4]]);
 						if(crs==null){
 							crs = CRS.fromLocation(lat, lon);
-                            network.setProperty("crs_type", crs.getType());
-                            network.setProperty("crs", crs.toString());
-                            gis.setProperty("crs_type", crs.getType());
-                            gis.setProperty("crs", crs.toString());
+                            network.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
+                            network.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
+                            gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
+                            gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
 						}
-						site.setProperty("lat", lat);
-						site.setProperty("lon", lon);
+						site.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
+						site.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
 						if(bbox==null) {
 						    bbox = new double[]{lon,lon,lat,lat};
 						}else{
@@ -285,13 +269,13 @@ public class NetworkLoader implements NeoServiceEventListener {
 			Node reference = neo.getReferenceNode();
 			for (Relationship relationship : reference.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
 				Node node = relationship.getEndNode();
-				if (node.hasProperty("type") && node.getProperty("type").equals(NetworkElementTypes.NETWORK.toString()) && node.hasProperty("name")
-						&& node.getProperty("name").equals(basename))
+				if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NetworkElementTypes.NETWORK.toString()) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+						&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename))
 					return node;
 			}
 			network = neo.createNode();
-			network.setProperty("type", NetworkElementTypes.NETWORK.toString());
-			network.setProperty("name", basename);
+			network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementTypes.NETWORK.toString());
+			network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
 			reference.createRelationshipTo(network, NetworkRelationshipTypes.CHILD);
 			tx.success();
 		} finally {
@@ -308,12 +292,12 @@ public class NetworkLoader implements NeoServiceEventListener {
             Node reference = neo.getReferenceNode();
             for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
-                if (node.hasProperty("type") && node.getProperty("type").equals("gis") && node.hasProperty("name") && node.getProperty("name").toString().equals("gis: "+network.getProperty("name").toString()))
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME) && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().equals(INeoConstants.GIS_PREFIX+network.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()))
                     return node;
             }
             gis = neo.createNode();
-            gis.setProperty("type", "gis");
-            gis.setProperty("name", "gis: "+network.getProperty("name").toString());
+            gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
+            gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.GIS_PREFIX + network.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
             gis.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
             tx.success();
@@ -333,11 +317,11 @@ public class NetworkLoader implements NeoServiceEventListener {
 	private Node addChild(Node parent, String type, String name) {
 		Node child = null;
 		child = neo.createNode();
-		child.setProperty("type", type);
-		child.setProperty("name", name);
+		child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, type);
+		child.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
 		if (parent != null) {
 			parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
-			debug("Added '" + name + "' as child of '" + parent.getProperty("name"));
+			debug("Added '" + name + "' as child of '" + parent.getProperty(INeoConstants.PROPERTY_NAME_NAME));
 		}
 		return child;
 	}
@@ -351,20 +335,21 @@ public class NetworkLoader implements NeoServiceEventListener {
 	}
 
 	public static void printChildren(Node node, int depth){
-		if(node==null || depth > 4 || !node.hasProperty("name")) return;
+		if(node==null || depth > 4 || !node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) return;
 		StringBuffer tab = new StringBuffer();
 		for(int i=0;i<depth;i++) tab.append("    ");
 		StringBuffer properties = new StringBuffer();
 		for(String property:node.getPropertyKeys()) {
-			if(!property.equals("name")) properties.append(" - ").append(property).append(" => ").append(node.getProperty(property));
+			if(!property.equals(INeoConstants.PROPERTY_NAME_NAME)) properties.append(" - ").append(property).append(" => ").append(node.getProperty(property));
 		}
-		info(tab.toString()+node.getProperty("name")+properties);
+		info(tab.toString()+node.getProperty(INeoConstants.PROPERTY_NAME_NAME)+properties);
 		for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.CHILD,Direction.OUTGOING)){
 			//debug(tab.toString()+"("+relationship.toString()+") - "+relationship.getStartNode().getProperty("name")+" -("+relationship.getType()+")-> "+relationship.getEndNode().getProperty("name"));
 			printChildren(relationship.getEndNode(),depth+1);
 		}
 	}
 	
+	//TODO: Lagutko: is this method required?
 	/**
 	 * @param args
 	 */
