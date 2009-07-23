@@ -1,9 +1,10 @@
 package org.amanzi.awe.catalog.neo;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -13,7 +14,6 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
-import org.neo4j.neoclipse.GeoNeoRelationshipTypes;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -67,27 +67,27 @@ public class GeoNeo {
             return node;
         }
         public String getType(){
-            return node.getProperty("type").toString();
+            return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString();
         }
         public String getName(){
-            return node.getProperty("name").toString();
+            return node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
         }
         public String toString(){
             return getName();
         }
         private static double[] getCoords(Node next) {
-            if(next.hasProperty("coords")){
-                return (double[])next.getProperty("coords");
+            if(next.hasProperty(INeoConstants.PROPERTY_COORDS_NAME)){
+                return (double[])next.getProperty(INeoConstants.PROPERTY_COORDS_NAME);
             }
-            if(next.hasProperty("x") && next.hasProperty("y")){
-                return new double[]{(Float)next.getProperty("x"),(Float)next.getProperty("y")};
+            if(next.hasProperty(INeoConstants.PROPERTY_X_NAME) && next.hasProperty(INeoConstants.PROPERTY_Y_NAME)){
+                return new double[]{(Float)next.getProperty(INeoConstants.PROPERTY_X_NAME),(Float)next.getProperty(INeoConstants.PROPERTY_Y_NAME)};
             }
-            if(next.hasProperty("lat")){
-                if(next.hasProperty("lon")){
-                    return new double[]{(Float)next.getProperty("lon"),(Float)next.getProperty("lat")};
+            if(next.hasProperty(INeoConstants.PROPERTY_LAT_NAME)){
+                if(next.hasProperty(INeoConstants.PROPERTY_LON_NAME)){
+                    return new double[]{(Float)next.getProperty(INeoConstants.PROPERTY_LON_NAME),(Float)next.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
                 }
-                if(next.hasProperty("long")){
-                    return new double[]{(Double)next.getProperty("long"),(Double)next.getProperty("lat")};
+                if(next.hasProperty(INeoConstants.PROPERTY_LONG_NAME)){
+                    return new double[]{(Double)next.getProperty(INeoConstants.PROPERTY_LONG_NAME),(Double)next.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
                 }
             }
             return null;
@@ -102,7 +102,7 @@ public class GeoNeo {
     public GeoNeo(org.neo4j.api.core.NeoService neo, Node gisNode){
         this.neo = neo;
         this.gisNode = gisNode;
-        this.name = this.gisNode.getProperty("name").toString();
+        this.name = this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
     }
     
     /**
@@ -123,12 +123,13 @@ public class GeoNeo {
         if(crs==null){
             crs = defaultCRS; // default if crs cannot be found below
             try{
-                if(gisNode.hasProperty("crs")){
+                if(gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)){
                     // The simple approach is to name the CRS, eg. EPSG:4326 (GeoNeo spec prefers a new naming standard, but I'm not sure geotools knows it)
-                    crs = CRS.decode(gisNode.getProperty("crs").toString());
-                }else if(gisNode.hasProperty("crs_href")){
+                    crs = CRS.decode(gisNode.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
+                }else if(gisNode.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)){
                     // TODO: This type is specified in GeoNeo spec, but what the HREF means is not, so we assume it is a live URL that will feed a CRS specification directly
-                    URL crsURL = new URL(gisNode.getProperty("href").toString());
+                    // TODO: Lagutko: gisNode.hasProperty() has 'crs_href' as parameter, but gisNode.getProperty() has only 'href'. What is right?
+                    URL crsURL = new URL(gisNode.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
                     crs = CRS.decode(crsURL.getContent().toString());
                 }
             }catch(Exception crs_e){
@@ -158,8 +159,8 @@ public class GeoNeo {
             this.bounds = new ReferencedEnvelope(getCRS());
             // First try to find the BBOX definition in the gisNode directly
             try{
-                if(gisNode.hasProperty("bbox")){
-                    double[] bbox = (double[])gisNode.getProperty("bbox");
+                if(gisNode.hasProperty(INeoConstants.PROPERTY_BBOX_NAME)){
+                    double[] bbox = (double[])gisNode.getProperty(INeoConstants.PROPERTY_BBOX_NAME);
                     this.bounds = new ReferencedEnvelope(bbox[0],bbox[1],bbox[2],bbox[3],crs);
                 }else{
                     System.err.println("No BBox defined in the GeoNeo object");
@@ -211,7 +212,6 @@ public class GeoNeo {
             this.iterator = makeGeoNeoTraverser().iterator();
             this.tx = neo.beginTx();
         }
-        @Override
         public boolean hasNext() {
             while(next==null){
                 if(!iterator.hasNext()) break;
@@ -225,13 +225,11 @@ public class GeoNeo {
             return next!=null;
         }
 
-        @Override
         public GeoNode next() {
             GeoNode toReturn = next;
             next = null;
             return toReturn;
         }
-        @Override
         public void remove() {
             throw new RuntimeException("Unimplemented");
         }
@@ -239,7 +237,6 @@ public class GeoNeo {
 
     public Iterable<GeoNode> getGeoNodes() {
         return new Iterable<GeoNode>(){
-            @Override
             public Iterator<GeoNode> iterator() {
                 return new GeoIterator(gisNode);
             }};

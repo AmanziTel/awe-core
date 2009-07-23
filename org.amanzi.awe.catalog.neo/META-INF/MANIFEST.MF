@@ -6,7 +6,8 @@ Bundle-Version: 1.0.0
 Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.catalog.ui,
- org.neo4j.neoclipse
+ org.amanzi.neo.core,
+ org.neo4j
 Export-Package: org.amanzi.awe.catalog.neo;
   uses:="org.geotools.geometry.jts,
    org.eclipse.core.runtime,

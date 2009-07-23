@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import net.refractions.udig.catalog.IGeoResourceInfo;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.api.core.Node;
 
@@ -23,8 +24,8 @@ public class NeoGeoResourceInfo extends IGeoResourceInfo {
         this.title = handle.getIdentifier().toString();
         GeoNeo geoNeo = handle.getGeoNeo(monitor);
         try {
-            this.name = gisNode.getProperty("name").toString();
-            this.description = gisNode.hasProperty("description") ? gisNode.getProperty("description").toString() : "GeoNeo Data";
+            this.name = gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            this.description = gisNode.hasProperty(INeoConstants.PROPERTY_DESCRIPTION_NAME) ? gisNode.getProperty(INeoConstants.PROPERTY_DESCRIPTION_NAME).toString() : "GeoNeo Data";
             this.bounds = geoNeo.getBounds();
         } catch (Exception e) {
             System.err.println("Failed to determine GeoResourceInfo: "+e.getMessage());

@@ -9,6 +9,8 @@ import java.util.Map;
 
 import net.refractions.udig.catalog.IService;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
@@ -95,7 +97,7 @@ public class NeoService extends IService {
                         members = new ArrayList<NeoGeoResource>();
                         for(Relationship relationship:neo.getReferenceNode().getRelationships(Direction.OUTGOING)){
                             Node node = relationship.getEndNode();
-                            if(node.hasProperty("type") && node.hasProperty("name") && node.getProperty("type").toString().equalsIgnoreCase("gis")){
+                            if(node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(INeoConstants.GIS_TYPE_NAME)){
                                 members.add(new NeoGeoResource(this,neo,node));
                             }
                         }
@@ -111,23 +113,23 @@ public class NeoService extends IService {
 
     private void checkNeo() {
         if(neo == null) {
-            neo = org.neo4j.neoclipse.Activator.getDefault().getNeoServiceSafely();
+            neo = NeoServiceProvider.getProvider().getService();
             //TODO: Support actual URL
             //neo = new EmbeddedNeo(url.getPath());
         }
     }
     
-    @Override
+    
     public URL getIdentifier() {
 		return url;
 	}
 
-    @Override
+    
 	public Throwable getMessage() {
 		return msg;
 	}
 
-    @Override
+    
     public Status getStatus() {
         // did an error occur
         if (msg != null)

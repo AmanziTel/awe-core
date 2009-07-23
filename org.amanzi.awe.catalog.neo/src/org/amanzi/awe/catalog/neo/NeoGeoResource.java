@@ -6,6 +6,7 @@ import java.net.URL;
 
 import net.refractions.udig.catalog.IGeoResource;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.api.core.Node;
 
@@ -28,7 +29,7 @@ public class NeoGeoResource extends IGeoResource {
         this.geoNeo = new GeoNeo(neo, this.gisNode);
         try {
             URL serviceUrl = service.getIdentifier();
-            identifierUrl = new URL( serviceUrl+"#"+this.gisNode.getProperty("name") );
+            identifierUrl = new URL( serviceUrl+"#"+this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME) );
         } catch (MalformedURLException e) {            
         }
     }
