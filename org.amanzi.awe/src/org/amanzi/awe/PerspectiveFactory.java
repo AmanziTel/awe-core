@@ -36,26 +36,17 @@ public class PerspectiveFactory implements IPerspectiveFactory {
         
         layout.addView(CATALOG, IPageLayout.BOTTOM, 0.65f, editorArea);
         
-        //Below code is commented by Sachin P 
-//      layout.addView(LAYERS, IPageLayout.BOTTOM, 0.25f, PROJECTS);
-        //Below code is added by Sachin P 
         //Here we are making folder layout to show two views side by side
         IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, 0.25f,PROJECTS);
-        bottomLeft.addView(LAYERS);
-        //TODO: Uncomment and edit the next line once the network tree view is working again
-        //bottomLeft.addView(NETWORK_VIEW_ID);
-        // TODO: This code seems redundant with the perspectiveExtensions in plugin.xml
+        bottomLeft.addView(LAYERS);  
+        //Lagutko, 22.07.2009, add Network view to Perspective
+        bottomLeft.addView(NETWORK_VIEW_ID);
+
         layout.addPerspectiveShortcut(AWE_PERSPECTIVE);
         layout.addPerspectiveShortcut(MapPerspective.ID_PERSPECTIVE);
         
         //Lagutko, 15.06.2009, add launch action set
         layout.addActionSet(IDebugUIConstants.LAUNCH_ACTION_SET);
     }
-
-//	public void createInitialLayout(IPageLayout layout) {
-//		layout.addFastView(PROJECTS);
-//		layout.addView(LAYERS, IPageLayout.LEFT, 0.3f, IPageLayout.ID_EDITOR_AREA);
-//		layout.addView(BOOKMARKS, IPageLayout.BOTTOM, 0.7f, LAYERS);
-//	}
 
 }

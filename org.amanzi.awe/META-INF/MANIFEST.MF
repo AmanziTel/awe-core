@@ -12,7 +12,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.rubypeople.rdt.ui,
  org.eclipse.debug.ui,
- org.amanzi.integrator.awe
+ org.amanzi.integrator.awe,
+ org.amanzi.awe.networktree,
+ org.amanzi.neo.core
 Eclipse-LazyStart: true
-Import-Package: org.amanzi.neo.loader.internal,
- org.amanzi.neo.loader.preferences
