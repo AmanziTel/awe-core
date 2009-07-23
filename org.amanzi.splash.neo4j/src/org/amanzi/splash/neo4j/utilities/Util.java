@@ -41,7 +41,7 @@ public class Util {
 	/*
 	 * Default extenstion for Spreadsheet file
 	 */
-	public static final String DEFAULT_SPREADSHEET_EXTENSION = ".jrss";
+	public static final String DEFAULT_SPREADSHEET_EXTENSION = ".splash";
 
 	public static final int MAX_SPLASH_ROW_COUNT = 30;
 

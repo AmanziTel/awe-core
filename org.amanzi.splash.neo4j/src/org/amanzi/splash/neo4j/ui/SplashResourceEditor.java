@@ -75,9 +75,9 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
             return null;
         } else {
             String ext = path.getFileExtension();
-            if (ext == null || !ext.equalsIgnoreCase("jrss")) {
+            if (ext == null || !ext.equalsIgnoreCase("splash")) {
                 throw new CoreException(new Status(IStatus.ERROR, SplashPlugin
-                        .getId(), 0, "File extension must be 'jrss'.", null));
+                        .getId(), 0, "File extension must be 'splash'.", null));
             }
             IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
             if (!file.exists())

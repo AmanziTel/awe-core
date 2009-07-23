@@ -174,7 +174,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 					containerText.setText("/" + rpi.getName());
 			}
 		}
-		fileText.setText("sheet" + nameCounter + ".jrss");
+		fileText.setText("sheet" + nameCounter + ".splash");
 		nameCounter++;
 	}
 
@@ -241,8 +241,8 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		int dotLoc = fileName.lastIndexOf('.');
 		if (dotLoc != -1) {
 			String ext = fileName.substring(dotLoc + 1);
-			if (ext.equalsIgnoreCase("jrss") == false) {
-				updateStatus("File extension must be \"jrss\"");
+			if (ext.equalsIgnoreCase("splash") == false) {
+				updateStatus("File extension must be \"splash\"");
 				return;
 			}
 		}

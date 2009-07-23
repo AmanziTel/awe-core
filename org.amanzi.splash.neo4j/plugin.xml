@@ -8,7 +8,7 @@
       <editor
             name="Amanzi: Mini-Spreadsheet"
             icon="icons/spreadsheet.gif"
-            extensions="jrss"
+            extensions="splash"
             class="org.amanzi.splash.neo4j.ui.SplashResourceEditor"
             id="org.amanzi.splash.neo4j.editor">
       </editor>

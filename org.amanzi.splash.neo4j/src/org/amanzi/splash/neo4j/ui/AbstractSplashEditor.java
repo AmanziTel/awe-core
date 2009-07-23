@@ -671,7 +671,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 */
 	public void createPartControl(final Composite parent) {
 		IStorageEditorInput sei = (IStorageEditorInput) getEditorInput();
-		splashID = sei.getName().replace(".jrss", "");
+		splashID = sei.getName().replace(".splash", "");
 		Util.logn("splashID = " + splashID);
 		table = new SplashTable(splashID);
 		table.getModel().addTableModelListener(this);

@@ -173,7 +173,7 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 
 	private InputStream openContentStream() {
 		String contents =
-			"This is the initial file contents for *.jrss file that should be word-sorted in the Preview page of the multi-page editor";
+			"This is the initial file contents for *.splash file that should be word-sorted in the Preview page of the multi-page editor";
 		return new ByteArrayInputStream(contents.getBytes());
 	}
 
