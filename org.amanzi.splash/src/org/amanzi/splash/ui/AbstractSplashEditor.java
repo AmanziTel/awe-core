@@ -49,6 +49,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.amanzi.splash.jfreechart.JFreeBarChartWindow;
+import org.amanzi.splash.jfreechart.JFreePieChartWindow;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.ColumnHeaderRenderer;
 import org.amanzi.splash.swing.RowHeaderRenderer;
@@ -104,7 +105,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	CellFormatPanel cellFormatPanel = null;
 	CellFormat cellFormat = null;
 	SplashTableModel tableModel;
-	ArrayList watchedCharts = new ArrayList<JFreeBarChartWindow>();
+	ArrayList watchedBarCharts = new ArrayList<JFreeBarChartWindow>();
+	ArrayList watchedPieCharts = new ArrayList<JFreePieChartWindow>();
 
 	private ResourceBundle resourceBundle = ResourceBundle.getBundle ("com.eteks.openjeks.resources.openjeks");
 	private String selectCellValue = "";
@@ -184,8 +186,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		TableModel model = (TableModel)e.getSource();
 		if (!selectCellValue.equals(model.getValueAt(row, column))) setIsDirty(true);
 		
-		for (int i=0;i<watchedCharts.size();i++){
-			JFreeBarChartWindow j = (JFreeBarChartWindow) watchedCharts.get(i);
+		for (int i=0;i<watchedBarCharts.size();i++){
+			JFreeBarChartWindow j = (JFreeBarChartWindow) watchedBarCharts.get(i);
 			if (row >= j.getFirstRow() && 
 					row <= j.getLastRow() &&
 					column >= j.getFirstColumn() &&
@@ -197,6 +199,21 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				Util.logn("Chart " + j.getTitle() + " updated...");
 			}
 		}
+		
+		for (int i=0;i<watchedPieCharts.size();i++){
+			JFreePieChartWindow j = (JFreePieChartWindow) watchedPieCharts.get(i);
+			if (row >= j.getFirstRow() && 
+					row <= j.getLastRow() &&
+					column >= j.getFirstColumn() &&
+					column <= j.getLastColumn()){
+				
+				Cell c = (Cell)model.getValueAt(row, column);
+				j.setValue(column, Double.parseDouble(c.getValue().toString()));
+				j.Show();
+				Util.logn("Chart " + j.getTitle() + " updated...");
+			}
+		}
+		
 	}
 
 
@@ -1003,6 +1020,81 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		return contextMenu;
 	}
 	
+	public void plotCellsBarChart(){
+		int firstRow, firstColumn, lastRow, lastColumn;
+		firstRow = table.getSelectedRow();
+		firstColumn = table.getSelectedColumn();
+		lastRow = firstRow + table.getSelectedRowCount() - 1;
+		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
+		
+		Util.logn("firstRow: " + firstRow);
+		Util.logn("firstColumn: " + firstColumn);
+		Util.logn("lastRow: " + lastRow);
+		Util.logn("lastColumn: " + lastColumn);
+		Util.logn("lastColumn-firstColumn: " + (lastColumn-firstColumn));
+		
+		String[] Categories = new String[lastColumn-firstColumn+1];
+		Double[] Values = new Double[lastColumn-firstColumn+1];
+		int m = 0;
+		for (int j=firstColumn;j<=lastColumn;j++){
+			Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, j);
+			Categories[m] =  (String) c.getValue();
+			Values[m] = Double.parseDouble((String) ((Cell)table.getValueAt(lastRow, j)).getValue());
+			m++;
+		}
+
+		JFreeBarChartWindow j = new JFreeBarChartWindow(Categories, Values);
+		j.setDimensions(firstRow, lastRow, firstColumn, lastColumn);
+		j.setTitle("Example Chart...");
+		j.setSize(640, 430);
+		
+		j.setChar();
+		
+		j.Show();
+		
+		
+		watchedBarCharts.add(j);
+
+	}
+	
+	public void plotCellsPieChart(){
+		int firstRow, firstColumn, lastRow, lastColumn;
+		firstRow = table.getSelectedRow();
+		firstColumn = table.getSelectedColumn();
+		lastRow = firstRow + table.getSelectedRowCount() - 1;
+		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
+		
+		Util.logn("firstRow: " + firstRow);
+		Util.logn("firstColumn: " + firstColumn);
+		Util.logn("lastRow: " + lastRow);
+		Util.logn("lastColumn: " + lastColumn);
+		Util.logn("lastColumn-firstColumn: " + (lastColumn-firstColumn));
+		
+		String[] Categories = new String[lastColumn-firstColumn+1];
+		Double[] Values = new Double[lastColumn-firstColumn+1];
+		int m = 0;
+		for (int j=firstColumn;j<=lastColumn;j++){
+			Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, j);
+			Categories[m] =  (String) c.getValue();
+			Values[m] = Double.parseDouble((String) ((Cell)table.getValueAt(lastRow, j)).getValue());
+			m++;
+		}
+
+		JFreePieChartWindow j = new JFreePieChartWindow(Categories, Values);
+		j.setDimensions(firstRow, lastRow, firstColumn, lastColumn);
+		j.setTitle("Example Chart...");
+		j.setSize(640, 430);
+		
+		j.setChar();
+		
+		j.Show();
+		
+		
+		watchedPieCharts.add(j);
+
+	}
+
+	
 	
 
 	/**
@@ -1058,40 +1150,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		chartsMenu.setText("Plot Cells");
 		chartsMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
-				int firstRow, firstColumn, lastRow, lastColumn;
-				firstRow = table.getSelectedRow();
-				firstColumn = table.getSelectedColumn();
-				lastRow = firstRow + table.getSelectedRowCount() - 1;
-				lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
-				
-				Util.logn("firstRow: " + firstRow);
-				Util.logn("firstColumn: " + firstColumn);
-				Util.logn("lastRow: " + lastRow);
-				Util.logn("lastColumn: " + lastColumn);
-				Util.logn("lastColumn-firstColumn: " + (lastColumn-firstColumn));
-				
-				String[] Categories = new String[lastColumn-firstColumn+1];
-				Double[] Values = new Double[lastColumn-firstColumn+1];
-				int m = 0;
-				for (int j=firstColumn;j<=lastColumn;j++){
-					Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, j);
-					Categories[m] =  (String) c.getValue();
-					Values[m] = Double.parseDouble((String) ((Cell)table.getValueAt(lastRow, j)).getValue());
-					m++;
-				}
-	
-				JFreeBarChartWindow j = new JFreeBarChartWindow(Categories, Values);
-				j.setDimensions(firstRow, lastRow, firstColumn, lastColumn);
-				j.setTitle("Example Chart...");
-				j.setSize(640, 430);
-				
-				j.setChar();
-				
-				j.Show();
-				
-				
-				watchedCharts.add(j);
+				plotCellsBarChart();
 			}
 		});
 		contextMenu.add(chartsMenu);

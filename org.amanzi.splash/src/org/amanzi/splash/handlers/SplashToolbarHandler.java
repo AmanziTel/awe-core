@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
 
+import org.amanzi.splash.ui.AbstractSplashEditor;
+import org.amanzi.splash.utilities.Util;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -48,6 +50,15 @@ public class SplashToolbarHandler extends AbstractHandler {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		Util.logn("Title: " + window.getActivePage().getActiveEditor().getTitle());
+		
+		AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
+		
+		editor.plotCellsBarChart();
+		
+		
+		
 		
 		return null;
 	}

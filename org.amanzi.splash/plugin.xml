@@ -70,7 +70,12 @@
        <command
              categoryId="org.amanzi.splash.commands.category"
              id="org.amanzi.splash.commands.sampleCommand"
-             name="Sample Command">
+             name="barchart">
+       </command>
+       <command
+             categoryId="org.amanzi.splash.commands.category"
+             id="org.amanzi.splash.pieChartcommand"
+             name="piechart">
        </command>
     </extension>
     <extension
@@ -78,6 +83,10 @@
        <handler
              class="org.amanzi.splash.handlers.SplashToolbarHandler"
              commandId="org.amanzi.splash.commands.sampleCommand">
+       </handler>
+       <handler
+             class="org.amanzi.splash.handlers.PieChartCommandHandler"
+             commandId="org.amanzi.splash.pieChartcommand">
        </handler>
     </extension>
     <extension
@@ -110,9 +119,15 @@
                 id="org.amanzi.splash.toolbars.sampleToolbar">
              <command
                    commandId="org.amanzi.splash.commands.sampleCommand"
-                   icon="icons/sample.gif"
-                   id="org.amanzi.splash.toolbars.sampleCommand"
-                   tooltip="Say hello world">
+                   icon="icons/barchart.ico"
+                   id="org.amanzi.splash.toolbars.barChartCommand"
+                   tooltip="Plot Bar Chart">
+             </command>
+             <command
+                   commandId="org.amanzi.splash.pieChartcommand"
+                   icon="icons/piechart.ico"
+                   id="org.amanzi.splash.toolbars.pieChartCommand"
+                   tooltip="Plot Pie Chart">
              </command>
           </toolbar>
        </menuContribution>
