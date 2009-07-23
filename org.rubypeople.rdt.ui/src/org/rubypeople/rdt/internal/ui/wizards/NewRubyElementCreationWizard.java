@@ -34,7 +34,7 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 	public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
 		Object selectedObject = null;
 		
-		//LN, 16.07.2009, if we call ExportScriptWizard from Splash than currentSelection will be empty
+		//Lagutko, 16.07.2009, if we call ExportScriptWizard from Splash than currentSelection will be empty
 		if (currentSelection == null) {
 		    currentSelection = StructuredSelection.EMPTY;
 		}
@@ -43,6 +43,7 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 		
 		selectedObject = currentSelection.getFirstElement();
 		
+		//Lagutko 16.07.2009, create default Ruby and AWE projects if not a RubyProject selected
 		if (AWEProjectManager.getType(selectedObject) != AWEProjectManager.RUBY_PROJECT) {
 		    newSelection = createRubyProject(selectedObject);
 		}
@@ -86,10 +87,8 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 	
 	private IRubyProject configureRubyProject(String rubyProjectName, String aweProjectName) throws CoreException {
 		if (rubyProjectName == null) {
-			rubyProjectName = DEFAULT_RUBY_PROJECT_NAME;
+			rubyProjectName = aweProjectName + "." + DEFAULT_RUBY_PROJECT_NAME;
 		}
-		
-		rubyProjectName = aweProjectName + "." + rubyProjectName;
 		
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(rubyProjectName);		
 		

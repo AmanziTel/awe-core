@@ -3,7 +3,6 @@ package org.amanzi.splash.ui.neo4j.wizards;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.splash.neo4j.utilities.Util;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.core.runtime.*;
@@ -13,12 +12,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import java.io.*;
 
 import org.eclipse.ui.*;
+import org.rubypeople.rdt.core.IRubyElement;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -33,10 +33,9 @@ import com.eteks.openjeks.format.CellFormat;
  * be able to open it.
  */
 
-public class SplashNewSpreadsheetWizard extends Wizard implements INewWizard {
+public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard implements INewWizard {
 	private SplashNewSpreadsheetWizardPage page;
-	private ISelection selection;
-
+	
 	/**
 	 * Constructor for SplashNewSpreadsheetWizard.
 	 */
@@ -50,8 +49,9 @@ public class SplashNewSpreadsheetWizard extends Wizard implements INewWizard {
 	 */
 
 	public void addPages() {
-		Util.logn("selection: " + selection.toString());
-		page = new SplashNewSpreadsheetWizardPage(selection);
+	    //Lagutko, 22.07.2009, use selection from parent class
+		Util.logn("selection: " + getSelection().toString());
+		page = new SplashNewSpreadsheetWizardPage(getSelection());
 		addPage(page);
 	}
 
@@ -189,6 +189,18 @@ public class SplashNewSpreadsheetWizard extends Wizard implements INewWizard {
 	 * @see IWorkbenchWizard#init(IWorkbench, IStructuredSelection)
 	 */
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		this.selection = selection;
+	    //Lagutko, 22.07.2009, call init method from parent class to simplify Spreadsheet creation
+		super.init(workbench, selection);
 	}
+
+	@Override
+    protected void finishPage(IProgressMonitor monitor) {
+        //do nothing        
+    }
+
+    @Override
+    public IRubyElement getCreatedElement() {
+        //do nothing
+        return null;
+    }
 }
