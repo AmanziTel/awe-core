@@ -13,10 +13,12 @@ import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
 import net.refractions.udig.project.IRubyProjectElement;
 
+import net.refractions.udig.project.internal.Messages;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectFactory;
 import net.refractions.udig.project.internal.ProjectPackage;
+import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.SpreadsheetType;
 import net.refractions.udig.project.internal.RubyProject;
@@ -712,7 +714,7 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
             try {
                 setSpreadsheetPath(resource.getLocationURI().toURL());
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                ProjectPlugin.log(Messages.Spreadsheet_UncorrectResource, e);
             }
         }
 

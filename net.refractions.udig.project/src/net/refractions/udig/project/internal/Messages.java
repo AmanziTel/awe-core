@@ -114,6 +114,10 @@ public class Messages extends NLS {
 	public static String DeleteFeatureCommand_deleteFeature;
 	public static String RenderExecutorImpl_1;
 	public static String RenderExecutorImpl_2;
+	
+	//Lagutko, 21.07.2009, additional messages
+	public static String Spreadsheet_UncorrectResource;
+	
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
