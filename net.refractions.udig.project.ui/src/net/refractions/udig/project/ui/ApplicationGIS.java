@@ -51,6 +51,7 @@ import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectFactory;
 import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.internal.Spreadsheet;
+import net.refractions.udig.project.internal.SpreadsheetType;
 import net.refractions.udig.project.internal.commands.AddLayersCommand;
 import net.refractions.udig.project.internal.commands.CreateMapCommand;
 import net.refractions.udig.project.internal.impl.ProjectRegistryImpl;
@@ -554,7 +555,12 @@ public class ApplicationGIS {
      */
     
     private static void openSpreadsheet(Spreadsheet element) {
-    	RDTProjectManager.openSpreadsheet(element.getResource());
+        if (element.getSpreadsheetType().equals(SpreadsheetType.FILE_SPREADSHEET)) {
+            RDTProjectManager.openSpreadsheet(element.getResource());
+        }
+        else if (element.getSpreadsheetType().equals(SpreadsheetType.NEO4J_SPREADSHEET)) {
+            RDTProjectManager.openSpreadsheet(element.getSpreadsheetPath());
+        }
     }
 
     /**
