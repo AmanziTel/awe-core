@@ -26,12 +26,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
+import org.rubypeople.rdt.internal.core.RubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.OpenNewRubyProjectWizardAction;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
  * as the file name. The page will only accept file name without the extension
- * OR with the extension that matches the expected one (jrss).
+ * OR with the extension that matches the expected one (splash).
  */
 
 public class SplashNewSpreadsheetWizardPage extends WizardPage {
@@ -53,7 +54,6 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		this.selection = selection;
 	}
 	private int rowCount = 30, columnCount = 30;
-	private Text rowText, columnText;
 
 	/**
 	 * @see IDialogPage#createControl(Composite)
@@ -173,6 +173,13 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 				if (!"".equals( rpi.getName()))
 					containerText.setText("/" + rpi.getName());
 			}
+			//Lagutko, 23.06.2009, selection also can contains object of RubyProject type
+            else if (obj instanceof RubyProject) {
+                RubyProject rdtProject = (RubyProject)obj;
+                if (!"".equals(rdtProject.getElementName())) {
+                    containerText.setText("/" + rdtProject.getElementName());
+                }
+            }
 		}
 		fileText.setText("sheet" + nameCounter + ".splash");
 		nameCounter++;
