@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Core Plug-in
+Bundle-SymbolicName: org.amanzi.neo.core;singleton:=true
+Bundle-Version: 1.0.0
+Require-Bundle: org.neo4j.neoclipse,
+ org.eclipse.ui,
+ org.eclipse.core.runtime
+Export-Package: org.amanzi.neo.core,
+ org.amanzi.neo.core.enums,
+ org.amanzi.neo.core.icons,
+ org.amanzi.neo.core.preferences,
+ org.amanzi.neo.core.service,
+ org.amanzi.neo.core.service.listener
+Eclipse-LazyStart: true
+Bundle-Activator: org.amanzi.neo.core.NeoCorePlugin
