@@ -260,5 +260,75 @@ public class INeoConstants {
      * ED-VO Message Type
      */    
     public static final String MESSAGE_TYPE_EV_DO = "EV-DO Pilot Sets Ver2";
+
+    /*
+     * Name of Background Color (Blue) property
+     */
+    public static final String RPOPERTY_BG_COLOR_B_NAME = "bgColorB";
+
+    /*
+     * Name of Background Color (Green) property
+     */
+    public static final String PROPERTY_BG_COLOR_G_NAME = "bgColorG";
+
+    /*
+     * Name of Background Color (Red) property
+     */
+    public static final String PROPERTY_BG_COLOR_R_NAME = "bgColorR";
+
+    /*
+     * Name of Font Color (Blue) property
+     */
+    public static final String PROPERTY_FONT_COLOR_B_NAME = "fontColorB";
+
+    /*
+     * Name of Font Color (Green) property
+     */
+    public static final String PROPERTY_FONT_COLOR_G_NAME = "fontColorG";
+
+    /*
+     * Name of Font Color (Red) property
+     */
+    public static final String PROPERTY_FONT_COLOR_R_NAME = "fontColorR";
+
+    /*
+     * Name of Horizontal Allignment property
+     */
+    public static final String PROPERTY_HORIZONTAL_ALIGNMENT_NAME = "horizontalAlignment";
+
+    /*
+     * Name of Vertical Allignment property
+     */
+    public static final String PROPERT_VERTICAL_ALIGNMENT_NAME = "verticalAlignment";
+
+    /*
+     * Name of Font Size property
+     */
+    public static final String RPOPERTY_FONT_SIZE_NAME = "fontSize";
+
+    /*
+     * Name of Font Style property
+     */
+    public static final String PROPERTY_FONT_STYLE_NAME = "fontStyle";
+
+    /*
+     * Name of Font Name property
+     */
+    public static final String PROPERTY_FONT_NAME_NAME = "fontName";
+
+    /*
+     * Name of Definition property
+     */
+    public static final String PROPERTY_DEFINITION_NAME = "definition";
+
+    /*
+     * Name of Value property
+     */
+    public static final String PROPERTY_VALUE_NAME = "value";
+
+    /*
+     * Name of Id property
+     */
+    public static final String PROPERTY_ID_NAME = "id";
    
 }
