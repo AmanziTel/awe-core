@@ -1,8 +1,8 @@
-package org.amanzi.awe.networktree.views;
+package org.amanzi.awe.views.network.view;
 
-import org.amanzi.awe.networktree.property.NetworkPropertySheetPage;
-import org.amanzi.awe.networktree.views.provider.NetworkTreeContentProvider;
-import org.amanzi.awe.networktree.views.provider.NetworkTreeLabelProvider;
+import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
+import org.amanzi.awe.awe.views.view.provider.NetworkTreeLabelProvider;
+import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
 import org.eclipse.swt.widgets.Composite;
@@ -77,7 +77,7 @@ public class NetworkTreeView extends ViewPart {
 	
 	private void setProviders(NeoServiceProvider neoServiceProvider) {	    
 	    viewer.setContentProvider(new NetworkTreeContentProvider(neoServiceProvider));
-	    viewer.setLabelProvider(new NetworkTreeLabelProvider());
+	    viewer.setLabelProvider(new NetworkTreeLabelProvider(viewer));
 	}
 	
 	/**

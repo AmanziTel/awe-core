@@ -1,4 +1,4 @@
-package org.amanzi.awe.networktree;
+package org.amanzi.awe.views.network;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;

@@ -1,6 +1,6 @@
-package org.amanzi.awe.networktree.property;
+package org.amanzi.awe.views.network.property;
 
-import org.amanzi.awe.networktree.NetworkTreePluginMessages;
+import org.amanzi.awe.views.network.NetworkTreePluginMessages;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.TextCellEditor;

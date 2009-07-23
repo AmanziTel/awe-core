@@ -1,6 +1,6 @@
-package org.amanzi.awe.networktree.property;
+package org.amanzi.awe.views.network.property;
 
-import org.amanzi.awe.networktree.views.NetworkTreeView;
+import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.views.properties.PropertySheetPage;

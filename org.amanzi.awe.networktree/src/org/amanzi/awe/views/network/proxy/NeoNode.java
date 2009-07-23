@@ -1,4 +1,4 @@
-package org.amanzi.awe.networktree.proxy;
+package org.amanzi.awe.views.network.proxy;
 
 import java.util.ArrayList;
 

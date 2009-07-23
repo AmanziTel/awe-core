@@ -1,14 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Networktree Plug-in
-Bundle-SymbolicName: org.amanzi.awe.networktree; singleton:=true
+Bundle-SymbolicName: org.amanzi.awe.views.network;singleton:=true
 Bundle-Version: 1.0.0
-Bundle-Activator: org.amanzi.awe.networktree.NetworkTreePlugin
+Bundle-Activator: org.amanzi.awe.views.network.NetworkTreePlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.neo4j,
  org.amanzi.neo.core,
  org.eclipse.ui.views
 Eclipse-LazyStart: true
-Export-Package: org.amanzi.awe.networktree,
- org.amanzi.awe.networktree.views
+Export-Package: org.amanzi.awe.views.network,
+ org.amanzi.awe.views.network.view

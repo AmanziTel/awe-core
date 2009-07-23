@@ -1,7 +1,7 @@
-package org.amanzi.awe.networktree.views.provider;
+package org.amanzi.awe.awe.views.view.provider;
 
-import org.amanzi.awe.networktree.proxy.NeoNode;
-import org.amanzi.awe.networktree.proxy.Root;
+import org.amanzi.awe.views.network.proxy.NeoNode;
+import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;

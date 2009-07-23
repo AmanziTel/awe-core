@@ -1,6 +1,6 @@
-package org.amanzi.awe.networktree.property;
+package org.amanzi.awe.views.network.property;
 
-import org.amanzi.awe.networktree.proxy.NeoNode;
+import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
 

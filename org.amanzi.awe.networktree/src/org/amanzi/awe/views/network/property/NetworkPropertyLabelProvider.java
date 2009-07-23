@@ -1,4 +1,4 @@
-package org.amanzi.awe.networktree.property;
+package org.amanzi.awe.views.network.property;
 
 import org.amanzi.neo.core.icons.IconManager;
 import org.eclipse.jface.viewers.LabelProvider;

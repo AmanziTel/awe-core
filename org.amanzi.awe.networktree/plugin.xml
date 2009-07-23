@@ -12,7 +12,7 @@
             name="Network Tree"
             icon="icons/sample.gif"
             category="org.amanzi.awe.networktree"
-            class="org.amanzi.awe.networktree.views.NetworkTreeView"
+            class="org.amanzi.awe.views.network.view.NetworkTreeView"
             id="org.amanzi.awe.networktree.views.NetworkTreeView">
       </view>
    </extension>

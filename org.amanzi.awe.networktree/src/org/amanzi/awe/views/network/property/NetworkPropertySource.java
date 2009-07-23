@@ -1,10 +1,10 @@
-package org.amanzi.awe.networktree.property;
+package org.amanzi.awe.views.network.property;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.awe.networktree.proxy.NeoNode;
-import org.amanzi.awe.networktree.proxy.Root;
+import org.amanzi.awe.views.network.proxy.NeoNode;
+import org.amanzi.awe.views.network.proxy.Root;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.neo4j.api.core.Node;

@@ -1,9 +1,10 @@
-package org.amanzi.awe.networktree.views.provider;
+package org.amanzi.awe.awe.views.view.provider;
 
-import org.amanzi.awe.networktree.proxy.NeoNode;
-import org.amanzi.awe.networktree.proxy.Root;
+import org.amanzi.awe.views.network.proxy.NeoNode;
+import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.icons.IconManager;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -23,9 +24,11 @@ public class NetworkTreeLabelProvider extends LabelProvider {
     /**
      * Constructor. Gets an instance of IconManager
      * 
+     * @param viewer of this LabelProvider
      */
-    public NetworkTreeLabelProvider() {
+    public NetworkTreeLabelProvider(Viewer viewer) {        
         manager = IconManager.getIconManager();
+        manager.addViewer(viewer);
     }
     
     /**

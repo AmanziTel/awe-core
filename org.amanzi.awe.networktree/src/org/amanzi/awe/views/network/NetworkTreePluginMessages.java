@@ -1,4 +1,4 @@
-package org.amanzi.awe.networktree;
+package org.amanzi.awe.views.network;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
