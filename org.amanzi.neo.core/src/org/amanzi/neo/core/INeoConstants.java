@@ -115,6 +115,11 @@ public class INeoConstants {
     public static final String PROPERTY_DESCRIPTION_NAME = "description";
     
     /*
+     * Name of 'project' property of Node
+     */    
+    public static final String PROPERTY_PROJECT_NAME = "project";
+    
+    /*
      * Status header
      */
     public static final String NETWORK_HEADER_STATUS_NAME = "status";   
@@ -218,6 +223,11 @@ public class INeoConstants {
      * Type Map
      */
     public static final String MP_TYPE_NAME = "mp";
+    
+    /*
+     * Type Splash
+     */
+    public static final String SPLASH_TYPE_NAME = "splash";
 
     
     /*
@@ -249,6 +259,6 @@ public class INeoConstants {
     /*
      * ED-VO Message Type
      */    
-    public static final String MESSAGE_TYPE_EV_DO = "EV-DO Pilot Sets Ver2";    
+    public static final String MESSAGE_TYPE_EV_DO = "EV-DO Pilot Sets Ver2";
    
 }

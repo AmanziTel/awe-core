@@ -1,8 +1,11 @@
 package org.amanzi.neo.core.icons;
 
+import java.util.ArrayList;
+
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.NeoIcons;
@@ -37,6 +40,8 @@ public class IconManager implements IPropertyChangeListener {
      * User specific Neo Icons
      */
     private UserIcons icons = null;
+    
+    private ArrayList<Viewer> viewers = new ArrayList<Viewer>();
     
     /**
      * Creates IconManager instance
@@ -85,7 +90,23 @@ public class IconManager implements IPropertyChangeListener {
         //if location of icons was changes than we must re-initialize UserIcons
         if (event.getProperty().equals(NeoDecoratorPreferences.NODE_ICON_LOCATION)) {        
             updateUserIcons((String)event.getNewValue());
+            
+            for (Viewer singleViewer : viewers) {
+                singleViewer.refresh();
+            }
         }        
+    }
+    
+    /**
+     * Add Viewer for IconManager
+     * 
+     * All Viewer will be refreshed if icon location was changed
+     *
+     * @param viewer
+     */
+    
+    public void addViewer(Viewer viewer) {
+        viewers.add(viewer);
     }
     
     /**
