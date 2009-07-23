@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="General"
+            id="org.amanzi.awe.networktree">
+      </category>
+      <view
+            name="Network Tree"
+            icon="icons/sample.gif"
+            category="org.amanzi.awe.networktree"
+            class="org.amanzi.awe.networktree.views.NetworkTreeView"
+            id="org.amanzi.awe.networktree.views.NetworkTreeView">
+      </view>
+   </extension>
+
+</plugin>
