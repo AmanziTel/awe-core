@@ -1,21 +1,12 @@
 package org.amanzi.integrator.rdt;
 
-import java.io.File;
-import java.net.URI;
 import java.net.URL;
 
-import org.amanzi.rdt.internal.launching.launcher.RubyLaunchShortcut;
 import org.amanzi.rdt.launching.util.LaunchUtils;
 import org.amanzi.splash.utilities.Util;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
@@ -202,7 +193,7 @@ public class RDTProjectManager {
 	/**
 	 * Opens Neo4j-based Spreadsheet in Editor
 	 * 
-	 * @param spreadsheetURL URL of Neo4j Spradsheet
+	 * @param spreadsheetURL URL of Neo4j Spreadsheet
 	 */
 	
 	public static void openSpreadsheet(URL spreadsheetURL) {

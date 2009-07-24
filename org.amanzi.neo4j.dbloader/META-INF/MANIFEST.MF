@@ -10,7 +10,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.neo4j
 Eclipse-LazyStart: true
-Bundle-ClassPath: ./,
+Bundle-ClassPath: .,
  neo-1.0-b8.jar,
  index-util-0.6.jar,
  lucene-core-2.4.0.jar
