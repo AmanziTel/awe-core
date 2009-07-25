@@ -49,4 +49,27 @@ class Spreadsheet
   
 end
 
-
+require 'java'
+require '
+class Charts
+	def initialize
+	
+	end
+	
+	def self.create
+		puts "chart has been created..."
+		frame = javax.swing.JFrame.new("Chart");
+		frame.setDefaultCloseOperation javax.swing.JFrame::EXIT_ON_CLOSE
+		frame.content_pane.add(panel=javax.swing.JPanel.new)
+		panel.setPreferredSize(java.awt.Dimension.new(700,450))
+		
+		series = "series"
+		dataset = org.jfree.data.category.DefaulyCategory.new
+		(0..32).each{|i| dataset.setValue(0,series,i)}
+		chart = org.jfree.chart.ChartFactory.createBarChart3D(nil, "neighbors", "servers", dataset, org.jfree.chart.plot.PlotOrientation::VERTICAL, true, true, false)
+		
+		panel.add org.jfree.chart.ChartPanel.new(chart)
+		frame.pack
+		frame.setVisible true
+	end
+end
