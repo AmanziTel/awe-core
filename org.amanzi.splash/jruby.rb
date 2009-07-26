@@ -50,7 +50,7 @@ class Spreadsheet
 end
 
 require 'java'
-require '
+
 class Charts
 	def initialize
 	
