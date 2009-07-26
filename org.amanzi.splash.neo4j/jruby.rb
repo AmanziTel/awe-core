@@ -21,24 +21,16 @@ class Cells
       	b = a
       end	
       
-      #if (a =~ /\d+/ and a.include?"." and !a.include?"/[.]/")
-      #	puts "FLOAT DETECTED"
-      #	b = a.to_f
-      #elsif (a =~ /\d+/ and !a.include?"/[.]/")
-      #	puts "INTEGER DETECTED"
-      #	b = a.to_i
-      #else
-      #	b = a
-      #end
-      
       if (args.to_s.eql?"")
         #puts "value of "+ s + "= " + @cells[s]
+        puts "I'm here 1"
         @cells[s]
       else
-        @cells[s] = b #args[0].to_i #.to_s
+      	puts "I'm here 2"
+        @cells[s] = b
 	  end
 	end
-	
+	puts "I'm here 3"
 	
 end
 
@@ -47,7 +39,7 @@ end
 class Spreadsheet
   def initialize
     @cells = Cells.new
-    #puts "Spreadsheet has been initialized !!"
+    puts "Spreadsheet has been initialized !!"
   end
   
   def cells
@@ -57,4 +49,27 @@ class Spreadsheet
   
 end
 
+require 'java'
 
+class Charts
+	def initialize
+	
+	end
+	
+	def self.create
+		puts "chart has been created..."
+		frame = javax.swing.JFrame.new("Chart");
+		frame.setDefaultCloseOperation javax.swing.JFrame::EXIT_ON_CLOSE
+		frame.content_pane.add(panel=javax.swing.JPanel.new)
+		panel.setPreferredSize(java.awt.Dimension.new(700,450))
+		
+		series = "series"
+		dataset = org.jfree.data.category.DefaulyCategory.new
+		(0..32).each{|i| dataset.setValue(0,series,i)}
+		chart = org.jfree.chart.ChartFactory.createBarChart3D(nil, "neighbors", "servers", dataset, org.jfree.chart.plot.PlotOrientation::VERTICAL, true, true, false)
+		
+		panel.add org.jfree.chart.ChartPanel.new(chart)
+		frame.pack
+		frame.setVisible true
+	end
+end

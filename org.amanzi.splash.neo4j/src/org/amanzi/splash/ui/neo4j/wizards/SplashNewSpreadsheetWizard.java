@@ -62,6 +62,9 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 	 */
 	public boolean performFinish() {
 		final String containerName = page.getContainerName();
+		
+		Util.logn("containerName: " + containerName);
+		
 		final String fileName = page.getFileName();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
 			public void run(IProgressMonitor monitor) throws InvocationTargetException {
@@ -106,7 +109,7 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 
 	private void doFinish(
 		String containerName,
-		String fileName,
+		final String fileName,
 		IProgressMonitor monitor)
 		throws CoreException {
 		// create a sample file
@@ -136,12 +139,14 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 				//IDE.openEditor(page, file, Util.AMANZI_SPLASH_EDITOR);
 				
+				splashID = fileName.replaceAll(".splash", "");
+				
 				//Lagutko 20.07.2009, create Spreadsheet also for EMF structure		
 				URL spreadsheetURL = getSpreadsheetURL();
 				
 				AWEProjectManager.createNeoSpreadsheet(resource.getProject(), file.getName(), spreadsheetURL);
 				
-				Util.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL);
+				Util.openSpreadsheet(PlatformUI.getWorkbench(), file);
 			}
 		});
 		monitor.worked(1);
@@ -154,13 +159,18 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 	 * @author Lagutko_N
 	 */
 	
+	
+	String splashID = "";
 	private URL getSpreadsheetURL() {
 	    //TODO: this method must return path to Neo4j database and node of created spreadsheet
 	    //if it must be computed in other place than we must replace creating EMF Spreadsheet
 	    
 	    //it's a fake
 	    try {
-	        return Platform.getLocation().toFile().toURI().toURL();
+	    	IPath path = new Path(Platform.getLocation() + "/neo4j/" + splashID);
+	    	return (path.toFile().toURI().toURL());
+	    	
+	        //return Platform.getLocation().toFile().toURI().toURL();
 	    }
 	    catch (MalformedURLException e) {
 	        return null;

@@ -3,10 +3,12 @@ package org.amanzi.splash.neo4j.utilities;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +20,20 @@ import javax.script.ScriptEngineManager;
 
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.FileEditorInput;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -424,10 +435,55 @@ public static final boolean enableNeo4j = true;
 	 * @author Lagutko_N
 	 */
 
-	public static IEditorPart openSpreadsheet(IWorkbench workbench, URL spreadsheetURL) {
+	public static IEditorPart openSpreadsheet(IWorkbench workbench, IFile file) {
+		
+		Util.logn("file.getFullPath(): " + file.getFullPath());
+		
 	    //TODO: Lagutko 21.07.2009, this method must be re-written to support Neo4j-based Spreadsheet
-		return null;
+		IEditorPart result = null;
+		try {
+			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
+			if (page != null) {
+				
+				IFileEditorInput fi = new FileEditorInput(file);				
+				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
+			}
+
+		} catch (PartInitException e) {
+			result = null;
+		}
+		return result;
+		
 	}
+	
+	public static IEditorPart openSpreadsheet(IWorkbench workbench, URL spreadsheetURL) {
+		final String containerName = "/project.AWEScript";
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		final IResource resource = root.findMember(new Path(containerName));
+		IContainer container = (IContainer) resource;
+		String s = spreadsheetURL.toString().replaceAll(Platform.getLocation() + "/neo4j", "");
+		s = s + ".splash";
+		Util.logn("s = " + s);
+		final IFile file = container.getFile(new Path(s));
+		
+		Util.logn("file.getFullPath(): " + file.getFullPath());
+		
+	    //TODO: Lagutko 21.07.2009, this method must be re-written to support Neo4j-based Spreadsheet
+		IEditorPart result = null;
+		try {
+			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
+			if (page != null) {
+				
+				IFileEditorInput fi = new FileEditorInput(file);				
+				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
+			}
+
+		} catch (PartInitException e) {
+			result = null;
+		}
+		return result;
+	}
+
 
 	/**
 	 * Returns content of script
