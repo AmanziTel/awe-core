@@ -14,6 +14,7 @@ public class SplashDatabaseExceptionMessages extends NLS {
     public static String Not_Single_Column_by_ID;
     public static String Not_Single_Cell_by_ID;
     public static String Service_Method_Exception;
+    public static String Duplicate_Spreadsheet;
     
     private SplashDatabaseExceptionMessages() {
     }
