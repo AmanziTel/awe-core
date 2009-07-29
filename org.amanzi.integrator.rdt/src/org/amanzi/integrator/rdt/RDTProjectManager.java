@@ -197,6 +197,6 @@ public class RDTProjectManager {
 	 */
 	
 	public static void openSpreadsheet(URL spreadsheetURL) {
-	    org.amanzi.splash.neo4j.utilities.Util.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL);
+	    org.amanzi.splash.neo4j.utilities.NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, null);
 	}
 }
