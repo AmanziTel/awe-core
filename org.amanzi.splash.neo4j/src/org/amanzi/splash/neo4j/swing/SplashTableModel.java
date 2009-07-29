@@ -410,12 +410,9 @@ public class SplashTableModel extends DefaultTableModel
 		    }
 		    
 		    public void run() {
-		        NeoSplashUtil.logn("run for getValueAt " + NeoSplashUtil.getCellIDfromRowColumn(row, column));
 		        result = service.getCell(spreadsheet, new CellID(row, column));
 		    }
 		});
-		
-		NeoSplashUtil.logn("getValueAt " + NeoSplashUtil.getCellIDfromRowColumn(row, column) + ": value = " + result.getValue());
 		
 		return result;
 

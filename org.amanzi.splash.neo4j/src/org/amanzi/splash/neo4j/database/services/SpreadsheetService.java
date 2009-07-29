@@ -264,8 +264,6 @@ public class SpreadsheetService {
         CellNode node = getCellNode(sheet, id);
         
         if (node != null) {
-            NeoSplashUtil.logn("getCell for " + id + " returns " + node.getValue() + " in " + node.getColumn().getColumnName() + node.getRow().getRowIndex());
-            
             return convertNodeToCell(node);
         }
         
