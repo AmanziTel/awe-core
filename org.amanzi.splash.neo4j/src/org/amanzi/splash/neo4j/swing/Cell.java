@@ -8,6 +8,16 @@ import com.eteks.openjeks.format.CellFormat;
 
 public class Cell
 {
+    /*
+     * Default value of Cell
+     */
+    public static final String DEFAULT_VALUE = "";
+    
+    /*
+     * Default definition of Cell
+     */
+    public static final String DEFAULT_DEFINITION = "";
+    
 	private transient Object value;
 	private Object definition;
 	private Cell cellGraphInfo;

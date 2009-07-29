@@ -5,96 +5,144 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
-import org.amanzi.splash.neo4j.SplashNeoManager;
+import org.amanzi.splash.neo4j.database.nodes.RootNode;
+import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
+import org.amanzi.splash.neo4j.database.services.CellID;
+import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
+import org.amanzi.splash.neo4j.utilities.ActionUtil;
+import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.neo4j.utilities.Util;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.ui.PlatformUI;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.RubyInstanceConfig.LoadServiceCreator;
-import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.load.LoadService;
 
 import com.eteks.openjeks.format.CellFormat;
 
 public class SplashTableModel extends DefaultTableModel
 {
-	/**
-	 * 
+    private static final String ERB_PATH = "/lib/ruby/1.8/erb";
+
+    private static final String EMPTY_STRING = "";
+
+    private static final String JRUBY_SCRIPT = "jruby.rb";
+
+    /*
+     * Arguments for IRB 
+     */
+	private static final String[] IRB_ARGS_LIST = {"--prompt-mode",  "default", "--readline"};
+
+    /*
+	 * UID
 	 */
 	private static final long serialVersionUID = -2315033560766233243L;
+	
+	/*
+	 * Row count
+	 */
 	private int    rowCount = 0;
+	
+	/*
+	 * Column Count
+	 */
 	private int    columnCount = 0;
 	
-	private SplashNeoManager splashNeoManager;
-	private String splashID = "";
-	Ruby runtime;
-	/**
-	 * Creates a table model with <code>Short.MAX_VALUE</code> rows and columns.
+	/*
+	 * Ruby Runtime
 	 */
-	public SplashTableModel (String splash_id)
+	Ruby runtime;
+	
+	/*
+	 * Spreadsheet for this Model 
+	 */
+	private SpreadsheetNode spreadsheet;
+	
+	/*
+	 * Spreadsheet Service
+	 */
+	private SpreadsheetService service;
+		
+	/**
+	 * Creates a table model with 10 rows and columns.
+	 *
+	 * @param splash_name name of Spreadsheet
+	 * @param root root node of Spreadsheet
+	 */
+	public SplashTableModel (String splash_name, RootNode root)
 	{
-		//this (Util.MAX_SPLASH_ROW_COUNT, Util.MAX_SPLASH_COL_COUNT);
-		this (10, 10, splash_id);
+		this (10, 10, splash_name, root);
 	}
 	/**
 	 * Constructor for class using RowCount and ColumnCount
 	 * @param rowCount
 	 * @param columnCount
+	 * @param splash_name name of Spreadsheet
+     * @param root root node of Spreadsheet
 	 */
 	@SuppressWarnings("unchecked")
-	public SplashTableModel (int rows, int cols, String splash_id)
+	public SplashTableModel (int rows, int cols, String splash_name, RootNode root)
 	{
 		
 		this.rowCount     = rows;
 		this.columnCount  = cols;
-		this.splashID = splash_id;
-		
 		
 		if (runtime == null)
-			initializeJRubyInterpreter();
-
-		if (splashNeoManager == null)
-			splashNeoManager = new SplashNeoManager(this.splashID);
+			initializeJRubyInterpreter();	
+		
+		initializeSpreadsheet(splash_name, root);
 	}
 	
+	/**
+     * Constructor for class using RowCount, ColumnCount and Ruby Runtime
+     * @param rowCount
+     * @param columnCount
+     * @param splash_name name of Spreadsheet
+     * @param rubyengine Ruby Runtime
+     * @param root root node of Spreadsheet
+     */
 	@SuppressWarnings("unchecked")
-	public SplashTableModel (int rows, int cols, String splash_id, SplashNeoManager manager, Ruby rubyengine)
+	public SplashTableModel (int rows, int cols, String splash_id, Ruby rubyengine, RootNode root)
 	{
 		
 		this.rowCount     = rows;
-		this.columnCount  = cols;
-		this.splashID = splash_id;
-		
+		this.columnCount  = cols;		
 		
 		if (runtime == null)
 			this.runtime = rubyengine;
 
-		if (splashNeoManager == null)
-			splashNeoManager = manager;
+		initializeSpreadsheet(splash_id, root);
+	}
+	
+	/**
+	 * Initializes Spreadsheet for this model
+	 *
+	 * @param sheetName name of Spreadsheet
+	 * @param root root node of Spreadsheet
+	 * @author Lagutko_N
+	 */
+	private void initializeSpreadsheet(String sheetName, RootNode root) {
+	    service = SplashPlugin.getDefault().getSpreadsheetService();
+        
+	    //don't need to check that spreadsheet exists because it was checked in SplashEditorInput
+	    spreadsheet = service.findSpreadsheet(root, sheetName);
 	}
 
-	
-
+	/**
+	 * Initializes Ruby Runtime
+	 */
 	public void initializeJRubyInterpreter(){
 		RubyInstanceConfig config = null;
 		config = new RubyInstanceConfig() {{
 			setJRubyHome(ScriptUtils.getJRubyHome());	// this helps online help work
-			//setInput(tar.getInputStream());
-			//setOutput(new PrintStream(tar.getOutputStream()));
-			//setError(new PrintStream(tar.getOutputStream()));
 			setObjectSpaceEnabled(true); // useful for code completion inside the IRB
 			setLoadServiceCreator(new LoadServiceCreator() {
 				public LoadService create(Ruby runtime) {
@@ -105,20 +153,20 @@ public class SplashTableModel extends DefaultTableModel
 			// The following modification forces IRB to ignore the fact that inside eclipse
 			// the STDIN.tty? returns false, and IRB must continue to use a prompt
 			List<String> argList = new ArrayList<String>();
-			argList.add("--prompt-mode");
-			argList.add("default");
-			argList.add("--readline");
+			for (String arg : IRB_ARGS_LIST) {
+			    argList.add(arg);
+			}
 			setArgv(argList.toArray(new String[0]));
 		}};
 		
 		runtime = Ruby.newInstance(config);		
 		runtime.getLoadService().init(ScriptUtils.makeLoadPath(new String[] {}));
 
-		String path = "";
+		String path = EMPTY_STRING;
 		if (Util.isTesting == false){
 			URL scriptURL = null;
 			try {
-				scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry("jruby.rb"));
+				scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry(JRUBY_SCRIPT));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -129,7 +177,7 @@ public class SplashTableModel extends DefaultTableModel
 			path ="D:/projects/AWE from SVN/org.amanzi.splash/jruby.rb";	
 		}
 
-		String input = "";
+		String input = EMPTY_STRING;
 		FileReader fr;
 
 		String line;
@@ -149,9 +197,8 @@ public class SplashTableModel extends DefaultTableModel
 
 
 		runtime.evalScriptlet(input);
-		runtime.evalScriptlet("$sheet = Spreadsheet.new");				
-
-
+		//TODO: Lagutko: extract scripts to files
+		runtime.evalScriptlet("$sheet = Spreadsheet.new");
 	}
 
 
@@ -163,18 +210,16 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 
 	public void updateCellFromScript(Cell cell) {
-		
-
 		updateDefinitionFromScript(cell);
 
-		interpret((String)cell.getDefinition(), "", cell.getRow(), cell.getColumn());
+		interpret((String)cell.getDefinition(), Cell.DEFAULT_DEFINITION, cell.getRow(), cell.getColumn());
 
 	}
 
 	
 
 	/**
-	 * Function that updates definitiona of Cell from Script
+	 * Function that updates definition of Cell from Script
 	 * 
 	 * @param cell Cell to update
 	 * @author Lagutko_N
@@ -185,51 +230,58 @@ public class SplashTableModel extends DefaultTableModel
 		cell.setDefinition(content);
 	}
 
+	/**
+	 * Interprets a definition of Cell by row and column 
+	 *
+	 * @param definition definition of Cell
+	 * @param row row index of Cell
+	 * @param column column index of Cell
+	 * @return Cell with updated value
+	 */
 	public Cell interpret(String definition, int row, int column){
-		//Util.logEnter("interpret");
-
 		String cellID = Util.getCellIDfromRowColumn(row, column);
 		String formula1 = definition;
 		Cell se = getCellByID(cellID);
-		////Util.logn("Interpreting formula: " + formula1 + " at Cell " + cellID);
+		
 		List<String> list = Util.findComplexCellIDs(definition);
 
+		//TODO: Lagutko: extract scripts to files
 		for (int i=0;i<list.size();i++){
 			if (formula1.contains("$sheet.cells." + list.get(i)) == false)
 				formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
 		}
 
-		////Util.logn("Interpreting formula: " + formula1 + " at Cell " + cellID);
-
 		if (definition.startsWith("=") == false){
-			// This is normal text entered into cell, then
-			////Util.logn("CASE 1: Formula not starting with =");
 		}
 		else{
-			////Util.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
-			formula1 = "<%= " +formula1.replace("=", "") + " %>";
+			formula1 = "<%= " +formula1.replace("=", EMPTY_STRING) + " %>";
 		}
 
 		Object s1 = interpret_erb(cellID, formula1);
-		//Util.log("definition = " + definition);
 
 		se.setDefinition(definition);
 		se.setValue((String)s1);
 
 		this.setValueAt(se, row, column);
-		//Util.logExit("interpret");
 		return se;
 	}
-
+	
+	/**
+	 * Interprets a formula using ERB
+	 *
+	 * @param cellID id of Cell
+	 * @param formula formula of Cell
+	 * @return interpreted value
+	 */
 	public String interpret_erb(String cellID, String formula) {
-		Object s = "";
-		//Util.logEnter("interpret_erb");
-		String path = ScriptUtils.getJRubyHome() + "/lib/ruby/1.8" + "/erb";
+		Object s = EMPTY_STRING;
+		String path = ScriptUtils.getJRubyHome() + ERB_PATH;
 
 		Util.logn("interpret_erb: formula = " + formula + " - cellID:" + cellID);
 		Util.logn("path = " + path);
 		Util.logn("cellID.toLowerCase():" + cellID.toLowerCase());
 
+		//TODO: Lagutko: extract script to file
 		String input = "require" + "'" + path + "'" + "\n" +
 		"template = ERB.new <<-EOF" + "\n" +
 		formula + "\n" +
@@ -244,16 +296,22 @@ public class SplashTableModel extends DefaultTableModel
 
 		Util.logn("ERB Output = " + s);
 
-
 		if (s == null) s = "ERROR";
 
-		//Util.logExit("interpret_erb");
 		return s.toString();
 	}
 
+	/**
+	 * Interprets a Definition of cell by row and column
+	 *
+	 * @param definition new formula of cell
+	 * @param oldDefinition old formula of cell
+	 * @param row row of Cell
+	 * @param column column of Cell
+	 * @return Cell with interpeted values
+	 */
+	//TODO: Lagutko: do we need oldDefinition param?
 	public Cell interpret(String definition, String oldDefinition, int row, int column){
-		//Util.logEnter("interpret(String definition, String oldDefinition, int row, int column)");
-
 		String cellID = Util.getCellIDfromRowColumn(row, column);
 		String formula1 = definition;
 		Util.logn("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
@@ -265,7 +323,7 @@ public class SplashTableModel extends DefaultTableModel
 		if (se == null)
 		{
 			Util.logn("WARNING: se = null");
-			se = new Cell(row, column, "","", new CellFormat());
+			se = new Cell(row, column, Cell.DEFAULT_VALUE, Cell.DEFAULT_DEFINITION, new CellFormat());
 		}
 
 		List<String> list = null; 
@@ -316,7 +374,7 @@ public class SplashTableModel extends DefaultTableModel
 			Util.displayStringList("list", list);
 
 			Util.logn("Formula starts with =, Converting formula to ERB format");
-			formula1 = "<%= " +formula1.replace("=", "") + " %>";
+			formula1 = "<%= " +formula1.replace("=", EMPTY_STRING) + " %>";
 
 
 			Util.logn("Interpreting cell using ERB...");
@@ -353,8 +411,9 @@ public class SplashTableModel extends DefaultTableModel
 
 	/**
 	 * return model value at certain location
+	 * 
 	 */
-	public Object getValueAt (int row, int column)
+	public Object getValueAt (final int row, final int column)
 	{
 		// row and column index are checked but storing in a Hashtable
 		// won't cause real problems
@@ -363,7 +422,22 @@ public class SplashTableModel extends DefaultTableModel
 		if (column >= getColumnCount ())
 			throw new ArrayIndexOutOfBoundsException (column);
 
-		return splashNeoManager.getCell(Util.getCellIDfromRowColumn(row, column));
+		Cell result = (Cell)ActionUtil.getInstance(PlatformUI.getWorkbench().getDisplay()).runTaskWithResult(new RunnableWithResult() {
+		    private Cell result = null;
+		    
+		    public Object getValue() {
+		        return result;
+		    }
+		    
+		    public void run() {
+		        Util.logn("run for getValueAt " + Util.getCellIDfromRowColumn(row, column));
+		        result = service.getCell(spreadsheet, new CellID(row, column));
+		    }
+		});
+		
+		Util.logn("getValueAt " + Util.getCellIDfromRowColumn(row, column) + ": value = " + result.getValue());
+		
+		return result;
 
 	}
 
@@ -375,16 +449,11 @@ public class SplashTableModel extends DefaultTableModel
 		return true;
 	}
 
-	public String getPlainText(){
-		return "PLAINTEXT";
-	}
-
-
 	/**
 	 * set model data with a certain value
 	 */
 	@SuppressWarnings("unchecked")
-	public void setValueAt (Object value, int row, int column)
+	public void setValueAt (final Object value, int row, int column)
 	{
 		// row and column index are checked but storing in a Hashtable
 		// won't cause real problems
@@ -394,17 +463,29 @@ public class SplashTableModel extends DefaultTableModel
 		if (column >= getColumnCount ()){
 			Util.logn("column: " + column + " - getColumnCount: " + getColumnCount());
 			throw new ArrayIndexOutOfBoundsException (column);
-		}
-
-		String id = Util.getCellIDfromRowColumn(row, column);
-		splashNeoManager.addCell(id, (Cell) value);
+		}		
+		
+		ActionUtil.getInstance(PlatformUI.getWorkbench().getDisplay()).runTask(new Runnable() {
+            public void run() {
+                service.updateCell(spreadsheet, (Cell)value);
+            }
+        }, false);
+		
 		fireTableChanged (new TableModelEvent (this, row, row, column));
 	}
 
+	/**
+	 * Sets the Cell to given row and column
+	 *
+	 * @param value Cell
+	 * @param row row index
+	 * @param column column index
+	 * @param oldDefinition oldDefinition
+	 */
 	@SuppressWarnings("unchecked")
-	public void setValueAt (Object value, int row, int column, String oldDefinition)
+	//TODO: Lagutko: do we need oldDefinition param?
+	public void setValueAt (final Object value, final int row, final int column, String oldDefinition)
 	{
-		//Util.logEnter("setValueAt (Object value, int row, int column, String oldDefinition)");
 		// row and column index are checked but storing in a Hashtable
 		// won't cause real problems
 		if (row >= getRowCount ())
@@ -412,31 +493,27 @@ public class SplashTableModel extends DefaultTableModel
 		if (column >= getColumnCount ())
 			throw new ArrayIndexOutOfBoundsException (column);
 
-
-		String id = Util.getCellIDfromRowColumn(row, column);
-		splashNeoManager.updateCell(id, (Cell) value);
-
-		Util.logn("Cells to be updated: ");
-		ArrayList<String> cellsToUpdate = splashNeoManager.findReferringCells(id);
-
-		for (int i=0;i<cellsToUpdate.size();i++){
-			Cell c = splashNeoManager.getCell(cellsToUpdate.get(i));
-			refreshCell(c);
-		}
+		ActionUtil.getInstance(PlatformUI.getWorkbench().getDisplay()).runTask(new Runnable() {
+		    public void run() {
+		        service.updateCellWithReferences(spreadsheet, (Cell)value);
+		        
+		        for (Cell c : service.getRFDCells(spreadsheet, new CellID(row, column))) {
+		            refreshCell(c);
+		        }
+		    }
+		}, false);
 
 		fireTableChanged (new TableModelEvent (this, row, row, column));
-		//Util.logExit("setValueAt (Object value, int row, int column, String oldDefinition)");
 	}
 	
+	/**
+	 * Refreshes Cell with given ID
+	 *
+	 * @param cellID id of Cell to refresh
+	 */
 	public void refreshCell(String cellID) {
-		//Util.logEnter("refreshCell");
-		
-		Util.logEnter("interpret(String definition, String oldDefinition, int row, int column)");
-
-		//String cellID = cell.getCellID();
-
 		Util.logn("refreshCell: cellID = " + cellID);
-		Cell cell = splashNeoManager.getCell(cellID);
+		Cell cell = service.getCell(spreadsheet, new CellID(cellID));
 
 		String definition = (String) cell.getDefinition();
 		String formula1 = (String) cell.getDefinition();
@@ -448,6 +525,7 @@ public class SplashTableModel extends DefaultTableModel
 
 		List<String> list = Util.findComplexCellIDs(definition);
 		for (int i=0;i<list.size();i++){
+		    //TODO: Lagutko, extract script
 			formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
 		}
 
@@ -459,7 +537,7 @@ public class SplashTableModel extends DefaultTableModel
 		}
 		else{
 			Util.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
-			formula1 = "<%= " +formula1.replace("=", "") + " %>";
+			formula1 = "<%= " +formula1.replace("=", EMPTY_STRING) + " %>";
 		}
 
 		Util.logn("formula1 =" + formula1);
@@ -469,16 +547,17 @@ public class SplashTableModel extends DefaultTableModel
 		se.setValue((String)s1);
 
 		this.setValueAt(se, cell.getRow(), cell.getColumn());
-		//Util.logExit("refreshCell");
 	}
 
-
+	/**
+	 * Refreshes given Cell
+	 *
+	 * @param cell Cell
+	 */
 
 	public void refreshCell(Cell cell) {
-		//Util.logEnter("refreshCell");
 		Util.printCell("Refreshing Cell", cell);
-		Util.logEnter("interpret(String definition, String oldDefinition, int row, int column)");
-
+		
 		String cellID = cell.getCellID();
 
 		Util.logn("refreshCell: cellID = " + cellID);
@@ -493,6 +572,7 @@ public class SplashTableModel extends DefaultTableModel
 
 		List<String> list = Util.findComplexCellIDs(definition);
 		for (int i=0;i<list.size();i++){
+		    //TODO: Lagutko, extract script
 			formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
 		}
 
@@ -504,7 +584,7 @@ public class SplashTableModel extends DefaultTableModel
 		}
 		else{
 			Util.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
-			formula1 = "<%= " +formula1.replace("=", "") + " %>";
+			formula1 = "<%= " +formula1.replace("=", EMPTY_STRING) + " %>";
 		}
 
 		Util.logn("formula1 =" + formula1);
@@ -514,38 +594,38 @@ public class SplashTableModel extends DefaultTableModel
 		se.setValue((String)s1);
 
 		this.setValueAt(se, cell.getRow(), cell.getColumn());
-		//Util.logExit("refreshCell");
 	}
 
-	
-
-
+	/**
+	 * Returns the Cell by ID
+	 *
+	 * @param cellID ID of Cell
+	 * @return Cell
+	 */
 	public Cell getCellByID(String cellID)
 	{
-		//Util.logEnter("getCellByID");
-		//Util.logn("cellID = " + cellID);
 		int row = Util.getRowIndexFromCellID(cellID);
-		//Util.logn("row = " + row);
 		int column = Util.getColumnIndexFromCellID(cellID);
-		//Util.logn("column = " + column);
-
-		//Util.logExit("getCellByID");
-		return (Cell)getValueAt(row, column);
-
-	}
-
-
 	
-	public SplashNeoManager getSplashNeoManager() {
-		return splashNeoManager;
+		return (Cell)getValueAt(row, column);
 	}
-	public void setSplashNeoManager(SplashNeoManager splashNeoManager) {
-		this.splashNeoManager = splashNeoManager;
-	}
+	
+	/**
+	 * Returns Ruby Engine of this Model
+	 *
+	 * @return Ruby Engine
+	 */
 	public Ruby getEngine() {
 		return runtime;
 	}
-	public void setEngine(Ruby engine) {
-		this.runtime = engine;
+	
+	/**
+	 * Updates Format of Cell
+	 *
+	 * @param cell cell
+	 * @author Lagutko_N
+	 */
+	public void updateCellFormat(Cell cell) {
+	    service.updateCell(spreadsheet, cell);
 	}
 }

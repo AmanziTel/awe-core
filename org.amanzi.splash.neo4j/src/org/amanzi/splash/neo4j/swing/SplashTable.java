@@ -2,7 +2,6 @@ package org.amanzi.splash.neo4j.swing;
 
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.util.Vector;
 
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -11,52 +10,80 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import org.amanzi.splash.neo4j.SplashNeoManager;
+import org.amanzi.splash.neo4j.database.nodes.RootNode;
 import org.amanzi.splash.neo4j.utilities.Util;
 
 import com.eteks.openjeks.format.CellFormat;
-import com.eteks.openjeks.format.CellFormatRenderer;
-import com.eteks.openjeks.format.TableFormat;
 
 public class SplashTable extends JTable
 {
+    /*
+     * Row Header
+     */
 	public JTable rowHeader;
+	
+	/*
+	 * Default Width of Column
+	 */
 	private int defaultColumnWidth = 150;
+	
+	/*
+	 * Default Height of Row
+	 */
 	private int defaultRowHeight = 20; 
+	
 	/**
-	 * 
+	 * UID
 	 */
 	private static final long serialVersionUID = 1232338822L;
+	
+	/*
+	 * Editor of Cell
+	 */
 	private TableCellEditor        editor;
-	private String splashID = "";	
-
+	
+	/*
+	 * Id of Spreadsheet
+	 */
+	private String splashName = "";
+	
+	/*
+	 * Root Node for current Spreadsheet
+	 */
+	private RootNode root;
+	
 	/**
 	 * Initialize table with 500x200
+	 * 
+	 * @param splash_name name of Spreadsheet
+	 * @param root Root node of Spreadsheet
 	 */
-	public SplashTable (String splash_id)
+	public SplashTable (String splash_name, RootNode root)
 	{
-		this (10, 10, splash_id);
+		this (10, 10, splash_name, root);
 
 	}
 
-
 	/**
 	 * called by previous function to set model
-	 * @param model
+	 * 
+	 * @param rowCount number of Rows
+	 * @param columnCount number of Columns
+	 * @param splash_name name of Spreadsheet
+	 * @param root root node of Spreadsheet
 	 */
-	public SplashTable (int rowCount, int columnCount, String splash_id)
+	public SplashTable (int rowCount, int columnCount, String splash_name, RootNode root)
 	{
 		super();
 		
-		splashID = splash_id;
+		splashName = splash_name;
+		this.root = root;
 		
-			setModel(new SplashTableModel (rowCount, columnCount, splashID));
+		setModel(new SplashTableModel (rowCount, columnCount, splashName, root));
 	
 		editor = new SplashCellEditor ();
 
-		setDefaultRenderer (		Cell.class,
-				new SplashCellRenderer (null,
-						null));
+		setDefaultRenderer(Cell.class, new SplashCellRenderer (null, null));
 
 		setSelectionMode (ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		setRowSelectionAllowed (false);
@@ -72,7 +99,6 @@ public class SplashTable extends JTable
 		Dimension d = rowHeader.getPreferredScrollableViewportSize();
 		d.width = rowHeader.getPreferredSize().width/2;
 		rowHeader.setPreferredScrollableViewportSize(d);
-		//rowHeader.setRowHeight(getRowHeight());
 		rowHeader.setDefaultRenderer(Object.class, _RowHeaderRenderer);
 		rowHeader.setRowHeight(getDefaultRowHeight());
 
@@ -82,26 +108,23 @@ public class SplashTable extends JTable
 
 	/**
 	 * Called by previous function to define the parser
-	 * @param model
-	 * @param expressionParser
-	 * @param editable
+	 * 
+	 * @param model TalbeModel
+	 * @param editable is table editable
 	 */
-	public SplashTable (TableModel           model,
-			boolean              editable)
+	public SplashTable (TableModel model, boolean editable)
 	{
 		super ();
-
 
 		// Set model afterwards because expressionParser needs to be set,
 		// thus addColumn () and getColumnName () can work and columns can be created
 		setModel (model);
 
-		if (editable)
+		if (editable) {
 			editor = new SplashCellEditor ();
+		}
 
-		setDefaultRenderer (Cell.class,
-				new SplashCellRenderer (null,
-						null));
+		setDefaultRenderer (Cell.class, new SplashCellRenderer (null, null));
 
 		setSelectionMode (ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		setRowSelectionAllowed (false);
@@ -120,84 +143,77 @@ public class SplashTable extends JTable
 		//rowHeader.setRowHeight(getRowHeight());
 		rowHeader.setDefaultRenderer(Object.class, _RowHeaderRenderer);
 		rowHeader.setRowHeight(getDefaultRowHeight());
-
-
-
-
-
-
 	}
 
 	/**
 	 * Get cell renderer object
+	 * 
+	 * @param row row index
+	 * @param column column index
+	 * @return CellRenderer by given row and column
 	 */
-	public TableCellRenderer getCellRenderer (int row,
-			int column)
+	public TableCellRenderer getCellRenderer (int row, int column)
 	{
 		Object value = getValueAt (row, column);
-		if (value != null)
+		if (value != null) {
 			return getDefaultRenderer (getValueAt (row, column).getClass ());
-		else
+		}
+		else {
 			return super.getCellRenderer (row, column);
+		}
 	}
 
 	/**
 	 * Get Cell Editor object
+	 * 
+	 * @param row row index
+	 * @param column column index
+	 * @return cell editor by given row and column
 	 */
-	public TableCellEditor getCellEditor (int row,
-			int column)
+	public TableCellEditor getCellEditor (int row, int column)
 	{
-		if (editor != null)
+		if (editor != null) {
 			return editor;
-		else
+		}
+		else {
 			return super.getCellEditor (row, column);
+		}
 	}
 
 	/**
 	 * Get column name
+	 * 
+	 * @param column
+	 * @return name of column
 	 */
 	public String getColumnName (int column)
 	{
 		return super.getColumnName (column);
 	}
+	
 	/**
 	 * utility function for swapping cell contents
-	 * @param x1
-	 * @param y1
-	 * @param x2
-	 * @param y2
+	 * @param firstCellRow row index of first cell
+	 * @param firstCellColumn column index of first cell
+	 * @param secondCellRow row index of second cell
+	 * @param secondCellColumn column index of second cell
 	 */
-	private void swapCells(int x1,int y1, int x2, int y2)
+	private void swapCells(int firstCellRow,int firstCellColumn, int secondCellRow, int secondCellColumn)
 	{
-		String id1 = Util.getCellIDfromRowColumn(x1, y1);
-		String id2 = Util.getCellIDfromRowColumn(x2, y2);
+		String firstCellId = Util.getCellIDfromRowColumn(firstCellRow, firstCellColumn);
+		String secondCellId = Util.getCellIDfromRowColumn(secondCellRow, secondCellColumn);
 			
-		SplashTableModel model = (SplashTableModel)getModel();
-		SplashNeoManager manager = model.getSplashNeoManager();
+		SplashTableModel model = (SplashTableModel)getModel();		
 		
-		Cell c1 = manager.getCell(id1);
-		Cell c2 = manager.getCell(id2);
-		model.setValueAt(c1, x2, y2);
-		model.setValueAt(c2, x1, y1);
+		Cell firstCell = model.getCellByID(firstCellId);
+		Cell secondCell = model.getCellByID(secondCellId);
+		model.setValueAt(firstCell, secondCellRow, secondCellColumn);
+		model.setValueAt(secondCell, firstCellRow, firstCellColumn);
 	}
 	
-	private void moveCell(int x1,int y1, int x2, int y2)
-	{
-		String id1 = Util.getCellIDfromRowColumn(x1, y1);
-		String id2 = Util.getCellIDfromRowColumn(x2, y2);
-			
-		SplashTableModel model = (SplashTableModel)getModel();
-		SplashNeoManager manager = model.getSplashNeoManager();
-		
-		Cell c1 = manager.getCell(id1);
-		//Cell c2 = manager.getCell(id2);
-		model.setValueAt(c1, x2, y2);
-		//model.setValueAt(c2, x1, y2);
-	}
-
 	/**
 	 * move row down
-	 * @param index
+	 * @param index index of Row to move
 	 */
 	public void moveRowDown(int index)
 	{
@@ -221,7 +237,7 @@ public class SplashTable extends JTable
 
 	/**
 	 * move row up
-	 * @param index
+	 * @param index index of row to move
 	 */
 	public void moveRowUp(int index)
 	{
@@ -233,13 +249,11 @@ public class SplashTable extends JTable
 		{
 			swapCells(index, j, index-1, j);
 		}
-
-
 	}
 
 	/**
 	 * move column contents to right
-	 * @param index
+	 * @param index index of column to move
 	 */
 	public void moveColumnRight(int index) {
 		int rowCount = getRowCount();
@@ -255,7 +269,7 @@ public class SplashTable extends JTable
 
 	/**
 	 * move volumn contents to left
-	 * @param index
+	 * @param index index of column to move
 	 */
 	public void moveColumnLeft(int index) {
 		int rowCount = getRowCount();
@@ -272,7 +286,7 @@ public class SplashTable extends JTable
 	}
 
 	/**
-	 * 
+	 * Adds a new Row
 	 */
 	@SuppressWarnings("unused")
 	private void addRow()
@@ -280,7 +294,7 @@ public class SplashTable extends JTable
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount+1, columnCount, splashID);
+		SplashTableModel newModel = new SplashTableModel(rowCount+1, columnCount, splashName, root);
 
 		for (int i=0;i<rowCount;i++)
 			for (int j=0;j<columnCount;j++)
@@ -294,7 +308,7 @@ public class SplashTable extends JTable
 	}
 
 	/**
-	 * 
+	 * Adds a new Column
 	 */
 	@SuppressWarnings("unused")
 	private void addColumn()
@@ -302,7 +316,7 @@ public class SplashTable extends JTable
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount+1, splashID);
+		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount+1, splashName, root);
 
 		for (int i=0;i<rowCount;i++)
 			for (int j=0;j<columnCount;j++)
@@ -311,19 +325,20 @@ public class SplashTable extends JTable
 		setModel(newModel);
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
-
-
 	}
 
 	/**
 	 * delete a complete row
+	 * 
+	 * @param index of Row
 	 */
+	//TODO: Lagutko: deleted only from TableModel but not from Database
 	public void deleteRow(int index)
 	{
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount-1, columnCount, splashID);
+		SplashTableModel newModel = new SplashTableModel(rowCount-1, columnCount, splashName, root);
 
 		for (int i=0;i<index;i++)
 			for (int j=0;j<columnCount;j++)
@@ -342,19 +357,21 @@ public class SplashTable extends JTable
 		setModel(newModel);
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
-		//setTableFormat(newModel.tableFormat);
-
 	}
+	
 	/**
 	 * delete a complete column
-	 * @param index
+	 * 
+	 * @param index column index
 	 */
+	//TODO: Lagutko: deleted only from TableModel but not from Database
 	public void deleteColumn(int index)
 	{
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount-1, splashID);
+		//TODO: Lagutko: why here Constructor without RubyEngine and in insertRow RubyEngine exists
+		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount-1, splashName, root);
 
 		for (int i=0;i<rowCount;i++)
 			for (int j=0;j<index;j++)
@@ -373,44 +390,25 @@ public class SplashTable extends JTable
 		setModel(newModel);
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
-		//setTableFormat(newModel.tableFormat);
-
 	}
 	
 		
 
 	/**
-	 * insert row at index
-	 * @param index
+	 * insert row at the end of Table
+	 * @param index index of Row
 	 */
 	public void insertRow(int index)
 	{
 		Util.logn("Inserting a new row");
-		SplashTableModel model = (SplashTableModel)getModel();
-		SplashNeoManager manager = model.getSplashNeoManager();
+		SplashTableModel model = (SplashTableModel)getModel();		
 		int rowCount = model.getRowCount();
 		int columnCount = model.getColumnCount();
 		
-		SplashTableModel newModel = new SplashTableModel(rowCount+1, columnCount, splashID, manager, model.getEngine());
-			//model;
-		
-		
-//		Cell[] clist = new Cell[10];
-//		for (int i=0;i<10;i++)
-//			clist[i] = new Cell(10, i, "","", new CellFormat());
-		
-		//newModel.addRow(new Vector<Cell>());
-		
+		SplashTableModel newModel = new SplashTableModel(rowCount+1, columnCount, splashName, model.getEngine(), root);
 	
 		for (int i=0;i<newModel.getColumnCount();i++)
 			newModel.setValueAt(new Cell(newModel.getRowCount()-1, i, "","", new CellFormat()), newModel.getRowCount()-1, i);
-		
-//		for (int i=newModel.getRowCount()-1;i>=index;i--){
-//			for (int j=0;j<newModel.getColumnCount();j++){
-//				moveCell(i,j, i+1,j);
-//			}
-//		}
-	    
 		
 		setModel(newModel);
 		RowModel r = new RowModel(getModel());
@@ -419,19 +417,18 @@ public class SplashTable extends JTable
 		rowHeader.repaint();
 		
 		repaint();
-		
-
 	}
 	/**
-	 * insert row at index
-	 * @param index
+	 * insert rows at index
+	 * @param index index of Row
+	 * @param count number of Rows
 	 */
 	public void insertRows(int index, int count)
 	{
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount+count, columnCount, splashID);
+		SplashTableModel newModel = new SplashTableModel(rowCount+count, columnCount, splashName, root);
 
 		for (int i=index;i<index+count;i++)
 			for (int j=0;j<columnCount;j++)
@@ -452,29 +449,24 @@ public class SplashTable extends JTable
 				String oldCellID = Util.getCellIDfromRowColumn(i-count, j);
 				String newCellID = Util.getCellIDfromRowColumn(i, j);
 				c.renameCell(oldCellID, newCellID);
-				//c.setRow(i);
 
 				newModel.setValueAt(c, i, j);
 			}
 		setModel(newModel);
 
-		//setTableFormat(newModel.tableFormat);
-
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
-
-
 	}
 	/**
-	 * insert a column at index
-	 * @param index
+	 * insert a column at the end of Table
+	 * @param index index of Column
 	 */
 	public void insertColumn(int index)
 	{
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount+1, splashID);
+		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount+1, splashName, root);
 
 		for (int i=0;i<rowCount;i++)
 		{
@@ -491,39 +483,28 @@ public class SplashTable extends JTable
 				Cell c = (Cell) getValueAt(i,j-1);
 				String oldCellID = Util.getCellIDfromRowColumn(i, j-1);
 				String newCellID = Util.getCellIDfromRowColumn(i, j);
-				//c.setCellID(Util.getCellIDfromRowColumn(i, j));
-				//c.setColumn(j);
 				c.renameCell(oldCellID, newCellID);
-				newModel.setValueAt(c, i, j);
-				//newModel.updateCellReferences(Util.getCellIDfromRowColumn(i, j-1),"");
-				//newModel.updateCellReferences(Util.getCellIDfromRowColumn(i, j), (String) c.getDefinition());
+				newModel.setValueAt(c, i, j);				
 			}
-
-
-
-
-		//Util.printTableModelStatus(newModel);
-
+		
 		setModel(newModel);
-
-		//setTableFormat(newModel.tableFormat);
 
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
-
-
 	}
 
 	/**
 	 * insert a column at index
-	 * @param index
+	 * 
+	 * @param index index of Column
+	 * @param count number of Columns
 	 */
 	public void insertColumns(int index, int count)
 	{
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount+count, splashID);
+		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount+count, splashName, root);
 
 		for (int i=0;i<rowCount;i++)
 		{
@@ -541,32 +522,47 @@ public class SplashTable extends JTable
 				Cell c = (Cell) getValueAt(i,j-count);
 				String oldCellID = Util.getCellIDfromRowColumn(i, j-count);
 				String newCellID = Util.getCellIDfromRowColumn(i, j);
-				//c.setCellID(Util.getCellIDfromRowColumn(i, j));
-				//c.setColumn(j);
 				c.renameCell(oldCellID, newCellID);
-				newModel.setValueAt(c, i, j);
-				//newModel.updateCellReferences(Util.getCellIDfromRowColumn(i, j-1),"");
-				//newModel.updateCellReferences(Util.getCellIDfromRowColumn(i, j), (String) c.getDefinition());
+				newModel.setValueAt(c, i, j);				
 			}
 
-		//Util.printTableModelStatus(newModel);
-
 		setModel(newModel);
-
-		//setTableFormat(newModel.tableFormat);
 
 		RowModel r = new RowModel(getModel());
 		rowHeader.setModel(r);
 	}
 
-	private String copiedCellID = ""; 
+	/*
+	 * Id of Copied Cell 
+	 */
+	private String copiedCellID = "";
+	
+	/*
+	 * Id of cut Cell
+	 */
 	private String cutCellID = ""; 
 
+	/*
+	 * Definition of cut Cell
+	 */
 	private String cutDefinition = "";
+	
+	/*
+	 * Value of cut Cell
+	 */
 	private String cutValue="";
 
+	/*
+	 * Is Copy
+	 */
 	private boolean isCopy;
 
+	/**
+	 * Copies cell to buffer
+	 * 
+	 * @param row row index of Cell to Copy
+	 * @param column column index of Cell to Copy
+	 */
 	public void copyCell(int row, int column){
 		Util.logn("Copy pressed !!!");
 		copiedCellID = Util.getCellIDfromRowColumn(row, column);
@@ -574,6 +570,12 @@ public class SplashTable extends JTable
 		isCopy = true;
 	}
 
+	/**
+     * Cuts cell to buffer
+     * 
+     * @param row row index of Cell to Cut
+     * @param column column index of Cell to Cut
+     */
 	public void cutCell(int row, int column){
 		Util.logn("Cut pressed !!!");
 		cutCellID = Util.getCellIDfromRowColumn(row, column);
@@ -584,6 +586,12 @@ public class SplashTable extends JTable
 		isCopy = false;
 	}
 
+	/**
+     * Paste cell from buffer
+     * 
+     * @param row row index of Cell to Paste
+     * @param column column index of Cell to Paste
+     */
 	public void pasteCell(int row, int column){
 		Util.logn("Paste pressed !!!");
 		if (isCopy){
@@ -614,7 +622,9 @@ public class SplashTable extends JTable
 		}
 	}
 
-
+	/**
+	 * Handles hot keys
+	 */
 	protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed){
 		int row = getSelectedRow();
 		int column = getSelectedColumn();
@@ -645,38 +655,52 @@ public class SplashTable extends JTable
 		//return false;
 	}
 
+	/**
+	 * Deletes the Cell
+	 *
+	 * @param row row index of Cell to Delete
+	 * @param column column index of Cell to Delete
+	 */
+	//TODO: Lagutko: cell will be deleted only from Model but not from Database
 	public void deleteCell(int row, int column){
 		Util.logn("DELETE has been pressed ");
 		Cell c = new Cell(row, column, "","",new CellFormat());
 		String oldDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
 		((SplashTableModel)getModel()).setValueAt(c, row, column, oldDefinition);
-
 	}
 
-
-
-
+	/**
+	 * Returns Default width of Column
+	 *
+	 * @return default column width
+	 */
 	public int getDefaultColumnWidth() {
 		return defaultColumnWidth;
 	}
 
-
-
-
+	/**
+	 * Sets default width of Column
+	 *
+	 * @param defaultColumnWidth default width for Column
+	 */
 	public void setDefaultColumnWidth(int defaultColumnWidth) {
 		this.defaultColumnWidth = defaultColumnWidth;
 	}
 
-
-
-
+	/**
+     * Returns Default height of Row
+     *
+     * @return default row height
+     */
 	public int getDefaultRowHeight() {
 		return defaultRowHeight;
 	}
 
-
-
-
+	/**
+     * Sets default height of Row
+     *
+     * @param defaultRowHeight default height for Row
+     */
 	public void setDefaultRowHeight(int defaultRowHeight) {
 		this.defaultRowHeight = defaultRowHeight;
 	}
