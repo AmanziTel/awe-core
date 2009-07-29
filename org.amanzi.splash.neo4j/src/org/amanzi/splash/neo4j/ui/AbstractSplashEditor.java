@@ -44,6 +44,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import org.amanzi.splash.neo4j.database.nodes.RootNode;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.ColumnHeaderRenderer;
 import org.amanzi.splash.neo4j.swing.RowHeaderRenderer;
@@ -93,7 +94,6 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	private ResourceBundle resourceBundle = ResourceBundle.getBundle ("com.eteks.openjeks.resources.openjeks");
 	private String selectCellValue = "";
 	SplashTable table;
-	private Thread thread;
 	private SwingControl swingControl; 
 	private int ROWS_EDGE_MARGIN = 5;
 	private int COLUMNS_EDGE_MARGIN = 5;
@@ -130,16 +130,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		firstColumn = table.getSelectedColumn();
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
-		//cellFormat = getTable().tableFormat.getFormatAt(firstRow, firstColumn , lastRow, lastColumn);
-		
-		
-//		try {
-//		      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//		    } catch(Exception e) {
-//		      System.out.println("Error setting Java LAF: " + e);
-//		    }
-
-		
+				
 		cellFormat = ((Cell)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn())).getCellFormat();
 		cellFormatPanel = new CellFormatPanel(cellFormat);
 		if (JOptionPane.showConfirmDialog(null,
@@ -148,9 +139,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				JOptionPane.OK_CANCEL_OPTION ,
 				JOptionPane.PLAIN_MESSAGE) == 0)
 		{
-			cellFormat = cellFormatPanel.getCellFormat();
-			//getTable().tableFormat.setFormatAt(cellFormat, firstRow, firstColumn , lastRow, lastColumn);
-			//table.getValueAt(table.getsele, arg1)
+			cellFormat = cellFormatPanel.getCellFormat();			
 			for (int i=firstRow;i<=lastRow;i++){
 				for (int j=firstColumn;j<=lastColumn;j++){
 					updateCellFormat(i,j,cellFormat);
@@ -171,7 +160,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	private void updateCellFormat(int r, int c, CellFormat cf){
 		Cell cell =(Cell)table.getValueAt(r, c); 
 		cell.setCellFormat(cf);
-		((SplashTableModel)(table.getModel())).getSplashNeoManager().updateCell(Util.getCellIDfromRowColumn(r, c), cell);
+		((SplashTableModel)(table.getModel())).updateCellFormat(cell);
 	}
 
 	/**
@@ -245,7 +234,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 					//TODO: handle this situation
 				}
 			}
-		});
+		}, true);
 	}
 
 	/**
@@ -267,7 +256,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				WizardDialog dialog = new WizardDialog(display.getActiveShell(), new ExportScriptWizard(cell));
 				dialog.open();
 			}
-		});
+		}, true);
 	}
 
 	/**
@@ -670,14 +659,18 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @see org.eclipse.ui.IWorkbenchPart#createPartControl(Composite)
 	 */
 	public void createPartControl(final Composite parent) {
-		IStorageEditorInput sei = (IStorageEditorInput) getEditorInput();
+	    //Lagutko, 28.07.2009, we use SplashEditorInput 
+	    SplashEditorInput sei = (SplashEditorInput) getEditorInput();
+	    
 		splashID = sei.getName().replace(".splash", "");
+		RootNode root = sei.getRoot();
+		
 		Util.logn("splashID = " + splashID);
-		table = new SplashTable(splashID);
+		
+		table = new SplashTable(splashID, root);
 		table.getModel().addTableModelListener(this);
 		
 		createTable(parent);
-		//table.setModel(tableModel);
 	}
 
 	/**

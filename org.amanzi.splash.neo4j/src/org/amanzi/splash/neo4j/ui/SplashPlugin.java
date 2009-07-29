@@ -10,6 +10,9 @@ package org.amanzi.splash.neo4j.ui;
  * Code or samples provided herein are provided without warranty of any kind.
  */
 
+import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -19,20 +22,27 @@ import org.osgi.framework.BundleContext;
 public class SplashPlugin extends AbstractUIPlugin {
 	static private SplashPlugin plugin;
 	
+	//Lagutko, 29.07.2009, additional field
+	/*
+	 * Field for Spreadsheet service
+	 */
+	private SpreadsheetService spreadsheetService;
+	
 	/**
 	 * Constructor for SplashPlugin.
 	 */
 	public SplashPlugin() {
 		super();
 		plugin = this;
-		//Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 		
-
 	}
 	
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		
+		//Lagutko, 29.07.2009, initialize SpreadsheetService
+		spreadsheetService = new SpreadsheetService();
 	}
 
 	/*
@@ -57,4 +67,19 @@ public class SplashPlugin extends AbstractUIPlugin {
 	public static SplashPlugin getDefault() {
 		return plugin;
 	}	
+	
+	public SpreadsheetService getSpreadsheetService() {
+	    return spreadsheetService;
+	}
+	
+	/**
+     * Print a message and information about exception to Log
+     *
+     * @param message message
+     * @param e exception
+     */
+
+    public static void error(String message, Throwable e) {
+        getDefault().getLog().log(new Status(IStatus.ERROR, getId(), 0, message == null ? "" : message, e)); //$NON-NLS-1$
+    }
 }

@@ -12,7 +12,6 @@ package org.amanzi.splash.neo4j.ui;
 
 import java.io.ByteArrayInputStream;
 
-import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.utilities.Util;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -28,9 +27,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -115,7 +112,6 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
         super.dispose();
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         Util.logn("Closing the spreadsheet");
-        ((SplashTableModel)(getTable().getModel())).getSplashNeoManager().stopNeoService();
     }
 
 	/*
@@ -248,9 +244,8 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
      * @see org.amanzi.splash.neo4j.ui.AbstractSplashEditor#validateEditorInput(IEditorInput)
      */
     public IEditorInput validateEditorInput(IEditorInput editorInput) {
-        if (editorInput instanceof IStorageEditorInput)
-            return editorInput;
-        if (editorInput instanceof IFileEditorInput)
+        //Lagutko, 28.07.2009, SplashResourceEditor supports only SplashEditorInput
+        if (editorInput instanceof SplashEditorInput)
             return editorInput;
         
         return null;
