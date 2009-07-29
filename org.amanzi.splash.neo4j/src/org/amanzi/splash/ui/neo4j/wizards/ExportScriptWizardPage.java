@@ -6,7 +6,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.rubypeople.rdt.core.ISourceFolder;
 import org.rubypeople.rdt.core.RubyModelException;
-import org.rubypeople.rdt.internal.corext.codemanipulation.StubUtility;
 import org.rubypeople.rdt.internal.ui.wizards.NewWizardMessages;
 import org.rubypeople.rdt.ui.wizards.NewFileWizardPage;
 
@@ -55,8 +54,6 @@ public class ExportScriptWizardPage extends NewFileWizardPage {
 		monitor.worked(1);
 		
 		try {				
-			String lineDelimiter= StubUtility.getLineDelimiterUsed(pack.getRubyProject());
-				
 			String cuName= getRubyScriptName();
 			//set definition of cell as content of script
 			String contents = cell.getDefinition().toString();
