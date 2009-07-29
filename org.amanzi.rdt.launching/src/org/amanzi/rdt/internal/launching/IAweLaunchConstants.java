@@ -14,5 +14,6 @@ public class IAweLaunchConstants {
 	 */
 	
 	public static final String ID_RUBY_SCRIPT = "org.amanzi.rdt.launching.LaunchConfigurationTypeRubyApplication";
+    public static final String RUN_MODE = "run";
 
 }

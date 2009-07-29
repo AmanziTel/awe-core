@@ -1,13 +1,12 @@
 package org.amanzi.rdt.console;
 
+import org.amanzi.rdt.internal.launching.AweLaunchingPlugin;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.console.IHyperlink;
 import org.rubypeople.rdt.internal.debug.ui.console.RubyConsoleTracker;
-import org.rubypeople.rdt.internal.debug.ui.console.RubyStackTraceHyperlink;
-import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.internal.ui.util.StackTraceLine;
 import org.rubypeople.rdt.launching.IRubyLaunchConfigurationConstants;
 
@@ -31,7 +30,7 @@ public class AweConsoleTracker extends RubyConsoleTracker {
 			}
 			catch (Exception e)
 			{
-				RubyPlugin.log(e);
+				AweLaunchingPlugin.log(null, e);
 			}
 			if (projectName == null)
 				return null;
@@ -78,6 +77,7 @@ public class AweConsoleTracker extends RubyConsoleTracker {
 		}
 		catch (BadLocationException e)
 		{
+		    AweLaunchingPlugin.log(null, e);
 		}
 	}
 }

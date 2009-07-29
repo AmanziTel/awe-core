@@ -1,8 +1,8 @@
 package org.amanzi.rdt.internal.launching;
 
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.ui.IStartup;
+import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -27,8 +27,6 @@ public class AweLaunchingPlugin extends Plugin {
 	 * @see org.eclipse.core.runtime.Plugins#start(org.osgi.framework.BundleContext)
 	 */
 	public void start(BundleContext context) throws Exception {
-		//ResourcesPlugin.getWorkspace().getRoot().getpr
-		
 		super.start(context);
 		plugin = this;
 	}
@@ -50,4 +48,15 @@ public class AweLaunchingPlugin extends Plugin {
 	public static AweLaunchingPlugin getDefault() {
 		return plugin;
 	}
+	
+	/**
+     * Print a message and information about exception to Log
+     *
+     * @param message message
+     * @param e exception
+     */
+
+    public static void log(String message, Throwable e) {
+        getDefault().getLog().log(new Status(IStatus.INFO, PLUGIN_ID, 0, message == null ? "" : message, e)); //$NON-NLS-1$
+    }
 }

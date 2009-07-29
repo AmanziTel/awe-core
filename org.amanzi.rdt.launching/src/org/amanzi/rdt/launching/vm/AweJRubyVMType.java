@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import org.amanzi.rdt.internal.launching.AweLaunchingPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -23,16 +24,17 @@ import org.rubypeople.rdt.internal.launching.LaunchingPlugin;
 
 public class AweJRubyVMType extends JRubyVMType {
 
-	public File detectInstallLocation() {
+	private static final String ORG_JRUBY_PLUGIN = "org.jruby";
+
+    public File detectInstallLocation() {
 		try {
-			Bundle bundle = Platform.getBundle("org.jruby");
+			Bundle bundle = Platform.getBundle(ORG_JRUBY_PLUGIN);
 			URL url = FileLocator.find(bundle, new Path(""), null);
 			url = FileLocator.toFileURL(url);
 			
 			return new File(url.getPath()); 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			AweLaunchingPlugin.log(null, e);
 		}
 		return null;
 	}

@@ -3,6 +3,7 @@ package org.amanzi.rdt.console;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.rdt.internal.launching.AweLaunchingPlugin;
 import org.eclipse.debug.ui.console.IConsoleLineTracker;
 import org.eclipse.debug.ui.console.IConsoleLineTrackerExtension;
 import org.eclipse.jface.text.BadLocationException;
@@ -27,9 +28,9 @@ public class AweConsoleLineNotfier implements IPatternMatchListener,
 		IPropertyChangeListener {
 	
 	/**
-	 * Listeners for notifer
+	 * Listeners for notifier
 	 */
-	private List fListeners = new ArrayList(2);
+	private List<IConsoleLineTracker> fListeners = new ArrayList<IConsoleLineTracker>(2);
 	
 	/**
 	 * Console of this notifier
@@ -92,6 +93,7 @@ public class AweConsoleLineNotfier implements IPatternMatchListener,
 				}
 			}
 		} catch (BadLocationException e) {
+		    AweLaunchingPlugin.log(null, e);
 		}		
 	}
 	
@@ -119,7 +121,7 @@ public class AweConsoleLineNotfier implements IPatternMatchListener,
 			lineAppended(region);
 		} 
 		catch (BadLocationException e) {
-			
+		    AweLaunchingPlugin.log(null, e);
 		}
 	}
 

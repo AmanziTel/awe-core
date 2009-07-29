@@ -1,13 +1,9 @@
 package org.amanzi.rdt.console;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.StringWriter;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -15,9 +11,12 @@ import net.refractions.udig.catalog.CatalogPlugin;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.rdt.internal.launching.AweLaunchingPlugin;
+import org.amanzi.rdt.internal.launching.AweLaunchingPluginMessages;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.console.SpreadsheetManager;
+import org.amanzi.splash.neo4j.console.NeoSplashManager;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
@@ -28,7 +27,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.debug.core.model.IStreamsProxy;
-import org.eclipse.debug.internal.ui.views.console.ConsoleMessages;
 import org.eclipse.debug.ui.console.IConsole;
 import org.eclipse.debug.ui.console.IConsoleHyperlink;
 import org.eclipse.jface.text.BadLocationException;
@@ -57,7 +55,67 @@ import org.rubypeople.rdt.launching.IVMInstall;
 
 public class RubyConsole extends IOConsole implements IConsole {
 	
+    /*
+     * Path to Start Script
+     */
+	private static final String START_SCRIPT = "ruby/startScript.rb";
+
 	/*
+	 * ID of AWEScript Console plugin
+	 */
+    private static final String ORG_AMANZI_AWE_SCRIPT_JIRB_PLUGIN = "org.amanzi.awe.script.jirb";
+
+    /*
+     * Name of variable for path to AWEScript Console plugin
+     */
+    private static final String AWE_CONSOLE_PATH_PARAM = "awe_console_path";
+
+    /*
+     * Name of variable for Active Project
+     */
+    private static final String ACTIVE_PROJECT_PARAM = "active_project";
+
+    /*
+     * Name of Variable for all projects
+     */
+    private static final String PROJECTS_PARAM = "projects";
+
+    /*
+     * Name of Variable for Spreadsheet Manager
+     */
+    private static final String SPREADSHEET_MANAGER_PARAM = "spreadsheet_manager";
+    
+    /*
+     * Name of Variable for Neo Spreadsheet Manager
+     */
+    private static final String NEO_SPREADSHEET_MANAGER_PARAM = "splash_manager";
+
+    /*
+     * Name of Variable for Catalogs
+     */
+    private static final String CATALOGS_PARAM = "catalogs";
+
+    /*
+     * Name of Variable for active catalog
+     */
+    private static final String CATALOG_PARAM = "catalog";
+
+    /*
+     * Name of Variable for Feature Source class
+     */
+    private static final String FEATURE_SOURCE_CLASS_PARAM = "feature_source_class";
+
+    /*
+     * Name of NeoReader class
+     */
+    private static final String NEO_READER_CLASS = "org.amanzi.awe.catalog.neo.actions.NeoReader";
+
+    /*
+     * Name of JSON Reader class
+     */
+    private static final String JSONREADER_CLASS = "org.amanzi.awe.catalog.json.JSONReader";
+
+    /*
 	 * Name of Process
 	 */
 	private static final String PROCESS_NAME = "AWE";
@@ -202,20 +260,20 @@ public class RubyConsole extends IOConsole implements IConsole {
 	
 	protected boolean initializeGlobalVariables() {
 		HashMap<String, Object> globals = new HashMap<String, Object>();
-		ScriptUtils.makeGlobalsFromClassNames(globals,new String[]{"org.amanzi.awe.catalog.json.JSONReader", "org.amanzi.awe.catalog.neo.actions.NeoReader"});
-		globals.put("feature_source_class", org.geotools.data.FeatureSource.class);
-		globals.put("catalog", CatalogPlugin.getDefault());
-		globals.put("catalogs", CatalogPlugin.getDefault().getCatalogs());		
-		globals.put("spreadsheet_manager", SpreadsheetManager.getInstance());
-		globals.put("projects", AWEProjectManager.getGISProjects());
-		globals.put("active_project", AWEProjectManager.getActiveGISProject());
+		ScriptUtils.makeGlobalsFromClassNames(globals,new String[]{JSONREADER_CLASS, NEO_READER_CLASS});
+		globals.put(FEATURE_SOURCE_CLASS_PARAM, org.geotools.data.FeatureSource.class);
+		globals.put(CATALOG_PARAM, CatalogPlugin.getDefault());
+		globals.put(CATALOGS_PARAM, CatalogPlugin.getDefault().getCatalogs());		
+		globals.put(SPREADSHEET_MANAGER_PARAM, SpreadsheetManager.getInstance());
+		globals.put(NEO_SPREADSHEET_MANAGER_PARAM, NeoSplashManager.getInstance());
+		globals.put(PROJECTS_PARAM, AWEProjectManager.getGISProjects());
+		globals.put(ACTIVE_PROJECT_PARAM, AWEProjectManager.getActiveGISProject());
 		
 		try {			
-			globals.put("awe_console_path", FileLocator.toFileURL(Platform.getBundle("org.amanzi.awe.script.jirb").getEntry("")).getPath());			
+			globals.put(AWE_CONSOLE_PATH_PARAM, FileLocator.toFileURL(Platform.getBundle(ORG_AMANZI_AWE_SCRIPT_JIRB_PLUGIN).getEntry("")).getPath());			
 		}
 		catch (IOException e) {
-			//TODO: handle this exception
-			e.printStackTrace();
+			AweLaunchingPlugin.log(null, e);
 			return false;
 		}
 		
@@ -231,43 +289,17 @@ public class RubyConsole extends IOConsole implements IConsole {
 
 	private boolean runInitScript() {
 		try {
-			URL scriptUrl = FileLocator.toFileURL(AweLaunchingPlugin.getDefault().getBundle().getEntry("ruby/startScript.rb"));
+			URL scriptUrl = FileLocator.toFileURL(AweLaunchingPlugin.getDefault().getBundle().getEntry(START_SCRIPT));
 		
-			String script = loadScript(scriptUrl.getPath());
+			String script = NeoSplashUtil.getScriptContent(scriptUrl.getPath());
 		
 			runtime.evalScriptlet(script);
 		}
 		catch (IOException e) {
-			//TODO: handle this exception
-			e.printStackTrace();
+			AweLaunchingPlugin.log(null, e);
 			return false;
 		}
 		return true;
-	}
-	
-	/**
-	 * Utility function that load script from file
-	 * 
-	 * @param scriptPath path to file
-	 * @return text of script
-	 */
-	
-	private String loadScript(String scriptPath){
-        StringWriter sw = new StringWriter();
-        BufferedReader br = null;
-	    try{
-            br = new BufferedReader(new FileReader(scriptPath));            
-            String line;
-            while((line=br.readLine())!=null) {sw.write(line);sw.append('\n');}
-	    }catch(Exception e){
-	        System.err.println("Failed to load script '"+scriptPath+"': "+e);
-	        e.printStackTrace(System.err);
-	    }finally{
-	        try{
-	            if(br!=null) br.close();
-	        }catch(IOException ee){}
-	    }
-	    return sw.toString();
 	}
 	
 	/**
@@ -297,7 +329,8 @@ public class RubyConsole extends IOConsole implements IConsole {
 	 */
 	
 	private void setConsoleLabelTerminated() {
-		final String newName = MessageFormat.format(ConsoleMessages.ProcessConsole_0, new String [] { getName() });
+	    final String newName = AweLaunchingPluginMessages.getFormattedString(AweLaunchingPluginMessages.Console_Terminated, getName());
+		
 		
 		Runnable r = new Runnable() {
 			public void run() {
@@ -314,8 +347,7 @@ public class RubyConsole extends IOConsole implements IConsole {
 			addHyperlink(arg0, arg1, arg2);
 		}
 		catch (BadLocationException e) {
-			//TODO: handle this exception
-			e.printStackTrace();
+			AweLaunchingPlugin.log(null, e);
 		}
 	}
 

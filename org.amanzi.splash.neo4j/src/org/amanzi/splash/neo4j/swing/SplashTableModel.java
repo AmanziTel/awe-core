@@ -67,6 +67,23 @@ public class SplashTableModel extends DefaultTableModel
 	 * Spreadsheet Service
 	 */
 	private SpreadsheetService service;
+	
+	/**
+	 * Creates a SplashTableModel by given SpreadsheetNode
+	 * 
+	 * @param spreadsheet Spreadsheet Node
+	 * @author Lagutko_N
+	 */
+	public SplashTableModel(SpreadsheetNode spreadsheet) {
+	    this.spreadsheet = spreadsheet;
+	    
+	    this.service = SplashPlugin.getDefault().getSpreadsheetService();
+	    
+	    this.rowCount = Short.MAX_VALUE;
+	    this.columnCount = Short.MAX_VALUE;
+	    
+	    initializeJRubyInterpreter();
+	}
 		
 	/**
 	 * Creates a table model with 10 rows and columns.

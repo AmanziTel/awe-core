@@ -5,6 +5,7 @@ import org.amanzi.scripting.jirb.SWTIRBConsole;
 import org.amanzi.scripting.jirb.SwingIRBConsole;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.console.SpreadsheetManager;
+import org.amanzi.splash.neo4j.console.NeoSplashManager;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -34,11 +35,37 @@ import org.eclipse.ui.part.ViewPart;
  * @see org.amanzi.scripting.jirb.IRBConfigData
  */
 public class RubyConsole extends ViewPart {
-	private SWTIRBConsole ex;
+    
+    /*
+     * Postfix for Lib extra load path
+     */
+	private static final String AWE_LIB_EXTRA_LOAD_PATH = "/.awe/lib";
+	
+	/*
+	 * Postfix for script extra load path
+	 */
+    private static final String AWE_SCRIPT_EXTRA_LOAD_PATH = "/.awe/script";
+    
+    /*
+     * Name of user.home system property
+     */
+    private static final String USER_HOME_PROPERTY = "user.home";
+    
+    private SWTIRBConsole ex;
 	private Action action0;
 	private Action action1;
 	private Action action2;
 
+	/*
+	 * Classes for Data Readers
+	 */
+	private static final String[] DATA_READERS_CLASSES = {"org.amanzi.awe.catalog.json.JSONReader", "org.amanzi.awe.catalog.neo.actions.NeoReader"};
+	
+	/*
+	 * Array of Extra Scripts for Ruby Console 
+	 */
+	private static final String[] EXTRA_SCRIPTS = {"gisCommands.rb", "awescript.rb", "spreadsheet.rb", "neoSpreadsheet.rb"};
+	
 	/**
 	 * The constructor.
 	 */
@@ -50,25 +77,28 @@ public class RubyConsole extends ViewPart {
      */
 	public void createPartControl(Composite parent) {
         ex = new SWTIRBConsole(parent, new IRBConfigData(){{
-            setTitle(" Welcome to the AWEScript Console \n\n");
+            setTitle(AweScriptConsoleMessages.Welcome);
             addExtraGlobal("view", RubyConsole.this);
             addExtraGlobal("catalog", net.refractions.udig.catalog.CatalogPlugin.getDefault());
             addExtraGlobal("catalogs", net.refractions.udig.catalog.CatalogPlugin.getDefault().getCatalogs());
             addExtraGlobal("projects", net.refractions.udig.project.ui.ApplicationGIS.getProjects());
             addExtraGlobal("active_project", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
-            ScriptUtils.makeGlobalsFromClassNames(this.getExtraGlobals(),new String[]{"org.amanzi.awe.catalog.json.JSONReader", "org.amanzi.awe.catalog.neo.actions.NeoReader"});
+            ScriptUtils.makeGlobalsFromClassNames(this.getExtraGlobals(), DATA_READERS_CLASSES);
             addExtraGlobal("feature_source_class", org.geotools.data.FeatureSource.class);
             
             //manager of spreadsheets
-            addExtraGlobal("spreadsheet_manager", SpreadsheetManager.getInstance());          
+            addExtraGlobal("spreadsheet_manager", SpreadsheetManager.getInstance());
+            //Lagutko, 29.07.2009, manager for Neo4j-based spreadsheet
+            addExtraGlobal("splash_manager", NeoSplashManager.getInstance());
             
-            String userDir = System.getProperty("user.home");
-            setExtraLoadPath(new String[]{userDir+"/.awe/script",userDir+"/.awe/lib"});
+            String userDir = System.getProperty(USER_HOME_PROPERTY);
+            setExtraLoadPath(new String[]{userDir+AWE_SCRIPT_EXTRA_LOAD_PATH,userDir+AWE_LIB_EXTRA_LOAD_PATH});
             try{
                 // Add the code from the internal plugin awescript.rb to the startup
-            	addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("gisCommands.rb")));
-                addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("awescript.rb")));
-                addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("spreadsheet.rb")));                
+                //Lagutko, 29.07.2009, putting all extra scripts to array
+                for (String extraScript : EXTRA_SCRIPTS) {
+                    addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry(extraScript)));
+                }
                 
             }catch(Exception e){
                 System.err.println("Failed to add internal awescript startup: "+e);
@@ -136,8 +166,8 @@ public class RubyConsole extends ViewPart {
 				}
 			}
 		};
-		action0.setText("Restart IRB Session");
-		action0.setToolTipText("Restart IRB Session");
+		action0.setText(AweScriptConsoleMessages.Restart_IRB);
+		action0.setToolTipText(AweScriptConsoleMessages.Restart_IRB);
 		action0.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 			getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
 		
@@ -153,8 +183,8 @@ public class RubyConsole extends ViewPart {
 				}
 			}
 		};
-		action1.setText("Swing-based IRBConsole");
-		action1.setToolTipText("Start a Swing-based IRBConsole");
+		action1.setText(AweScriptConsoleMessages.Swing_based_Console_Text);
+		action1.setToolTipText(AweScriptConsoleMessages.Swing_based_Console_Tooltip);
 		action1.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 			getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
 		
@@ -169,8 +199,8 @@ public class RubyConsole extends ViewPart {
 				}
 			}
 		};
-		action2.setText("SWT/AWT based IRBConsole");
-		action2.setToolTipText("Start an SWT/AWT based IRBConsole");
+		action2.setText(AweScriptConsoleMessages.SWT_based_Console_Text);
+		action2.setToolTipText(AweScriptConsoleMessages.SWT_based_Console_Tooltip);
 		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
 	}

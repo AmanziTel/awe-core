@@ -40,10 +40,10 @@ public class RubyLaunchShortcut extends RubyApplicationShortcut {
 	
 	public void launch(String fileName) {
 		try {
-			ILaunchConfiguration config = findOrCreateLaunchConfiguration(fileName, "run");
+			ILaunchConfiguration config = findOrCreateLaunchConfiguration(fileName, IAweLaunchConstants.RUN_MODE);
 			if (config != null)
 			{
-				DebugUITools.launch(config, "run");
+				DebugUITools.launch(config, IAweLaunchConstants.RUN_MODE);
 			}
 		}
 		catch (CoreException e) {
@@ -70,10 +70,10 @@ public class RubyLaunchShortcut extends RubyApplicationShortcut {
 	protected ILaunchConfiguration findOrCreateLaunchConfiguration(String fileName, String mode) throws CoreException {
 		IFile rubyFile = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(fileName));
 		ILaunchConfigurationType configType = getRubyLaunchConfigType();
-		List candidateConfigs = null;
+		List<ILaunchConfiguration> candidateConfigs = null;
 
 		ILaunchConfiguration[] configs = getLaunchManager().getLaunchConfigurations(configType);
-		candidateConfigs = new ArrayList(configs.length);
+		candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
 		for (int i = 0; i < configs.length; i++)
 		{
 			ILaunchConfiguration config = configs[i];

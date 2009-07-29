@@ -10,13 +10,11 @@ import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
  * Provides access to Cells
  * 
  * @author Lagutko_N
- *
  */
 
 public class Spreadsheet {
 	
-	private SplashTableModel model;
-	private String currentFile;
+	private SplashTableModel  model;
 	
 	/**
 	 * Constructor for Spreadsheet
@@ -24,11 +22,9 @@ public class Spreadsheet {
 	 * @param currentModel table model
 	 * @param project name of project
 	 * @param name naem of spreadsheet
-	 */
-	
+	 */	
 	public Spreadsheet(SplashTableModel currentModel, String project, String name) {
 		model = currentModel;
-		currentFile = name;
 	}
 	
 	/**
@@ -61,17 +57,7 @@ public class Spreadsheet {
 		
 		model.interpret(newFormula, oldFormula, row, column);
 		
-		
+		//TODO: Lagutko: is it needs?
+		//model.updateCellsAndTableModelReferences(row, column, oldFormula, newFormula);
 	}
-	
-	/**
-	 * Saves content of spreadsheet to file
-	 */
-	
-	public void save() {	
-		if (currentFile != null) {
-			//Util.saveTable(model, currentProject, currentFile);
-		}
-	}
-
 }

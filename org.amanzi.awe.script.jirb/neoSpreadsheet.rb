@@ -23,7 +23,7 @@ end
 #
 # Ruby Class for access to Spreadsheet
 #
-class Spreadsheet
+class Splash
   def initialize(model)
     @cells = Cells.new(model)
     @model = model
@@ -38,17 +38,12 @@ class Spreadsheet
   	rdtName = options[:rdt]
   	udigName = options[:udig]
   	
-  	Spreadsheet.new($spreadsheet_manager.getSpreadsheet(name, rdtName, udigName))  	  
+  	Splash.new($splash_manager.getSpreadsheet(name, rdtName, udigName))  	  
   end
   
   #returns Active Spreadsheet
   def self.findActive()    
-    Spreadsheet.new($spreadsheet_manager.getActiveSpreadsheet)
-  end
-  
-  #saves content of this Spreadsheet
-  def save
-    @model.save
+    Splash.new($splash_manager.getActiveSpreadsheet)
   end
 
 end

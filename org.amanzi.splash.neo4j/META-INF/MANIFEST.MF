@@ -29,4 +29,5 @@ Require-Bundle: org.eclipse.core.runtime,
  org.neo4j;visibility:=reexport
 Eclipse-LazyStart: true
 Bundle-Activator: org.amanzi.splash.neo4j.ui.SplashPlugin
-Export-Package: org.amanzi.splash.neo4j.utilities
+Export-Package: org.amanzi.splash.neo4j.console,
+ org.amanzi.splash.neo4j.utilities

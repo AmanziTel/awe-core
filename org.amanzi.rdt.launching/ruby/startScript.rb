@@ -1,5 +1,6 @@
 require $awe_console_path + 'spreadsheet.rb'
 require $awe_console_path + 'gisCommands.rb'
+require $awe_console_path + 'neoSpreadsheet.rb'
 
 # Some utilities for setting up AWE, including paths to uDIG jars
 module AWE

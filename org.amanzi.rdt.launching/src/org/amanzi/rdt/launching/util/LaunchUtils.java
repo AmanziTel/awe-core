@@ -1,5 +1,6 @@
 package org.amanzi.rdt.launching.util;
 
+import org.amanzi.rdt.internal.launching.IAweLaunchConstants;
 import org.amanzi.rdt.internal.launching.launcher.RubyLaunchShortcut;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.rubypeople.rdt.core.IRubyScript;
@@ -23,7 +24,7 @@ public class LaunchUtils {
 		StructuredSelection selection = new StructuredSelection(script);
 			
 		RubyLaunchShortcut shortcut = new RubyLaunchShortcut();
-		shortcut.launch(selection, "run");		
+		shortcut.launch(selection, IAweLaunchConstants.RUN_MODE);		
 	}
 	
 	/**
