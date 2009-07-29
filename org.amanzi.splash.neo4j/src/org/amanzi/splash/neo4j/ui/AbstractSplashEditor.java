@@ -51,7 +51,7 @@ import org.amanzi.splash.neo4j.swing.RowHeaderRenderer;
 import org.amanzi.splash.neo4j.swing.SplashTable;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.amanzi.splash.ui.neo4j.wizards.ExportScriptWizard;
 import org.eclipse.albireo.core.SwingControl;
 import org.eclipse.core.resources.IFile;
@@ -213,7 +213,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		}
 
 		//run open action
-		ActionUtil.getInstance(display).runTask(new Runnable() {
+		ActionUtil.getInstance().runTask(new Runnable() {
 			public void run() {
 				//find file by URI
 				IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(cell.getScriptURI());
@@ -250,7 +250,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		final Display display = swingControl.getDisplay();
 
 		//run ExportScriptWizard
-		ActionUtil.getInstance(display).runTask( new Runnable() {
+		ActionUtil.getInstance().runTask( new Runnable() {
 			public void run() {
 				WizardDialog dialog = new WizardDialog(display.getActiveShell(), new ExportScriptWizard(cell));
 				dialog.open();
@@ -664,7 +664,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		splashID = sei.getName().replace(".splash", "");
 		RootNode root = sei.getRoot();
 		
-		Util.logn("splashID = " + splashID);
+		NeoSplashUtil.logn("splashID = " + splashID);
 		
 		table = new SplashTable(splashID, root);
 		table.getModel().addTableModelListener(this);

@@ -1,26 +1,26 @@
 package org.amanzi.splash.ui.neo4j.wizards;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.database.exception.SplashDatabaseException;
+import org.amanzi.splash.neo4j.database.nodes.RootNode;
+import org.amanzi.splash.neo4j.ui.SplashPlugin;
+import org.amanzi.splash.neo4j.utilities.ActionUtil;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.*;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
-import java.io.*;
 
 import org.eclipse.ui.*;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
-
-import com.eteks.openjeks.format.CellFormat;
 
 /**
  * This is a sample new wizard. Its role is to create a new file 
@@ -50,7 +50,7 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 
 	public void addPages() {
 	    //Lagutko, 22.07.2009, use selection from parent class
-		Util.logn("selection: " + getSelection().toString());
+		NeoSplashUtil.logn("selection: " + getSelection().toString());
 		page = new SplashNewSpreadsheetWizardPage(getSelection());
 		addPage(page);
 	}
@@ -63,7 +63,7 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 	public boolean performFinish() {
 		final String containerName = page.getContainerName();
 		
-		Util.logn("containerName: " + containerName);
+		NeoSplashUtil.logn("containerName: " + containerName);
 		
 		final String fileName = page.getFileName();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
@@ -88,19 +88,7 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 		}
 		return true;
 	}
-	protected InputStream getInitialContents() {
-		int rowCount = Util.MAX_SPLASH_ROW_COUNT; //page.getRowCount();
-		int columnCount = Util.MAX_SPLASH_COL_COUNT; //page.getColumnCount();
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < rowCount; i++) {
-			for (int j = 0; j < columnCount; j++) {
-				sb.append(";" + "" + ";" + Util.getFormatString(new CellFormat()) + ";");
-			}
-			sb.append("\n");
-		}
-
-		return new ByteArrayInputStream(sb.toString().getBytes());
-	}
+	
 	/**
 	 * The worker method. It will find the container, create the
 	 * file if missing or just replace its contents, and open
@@ -118,75 +106,37 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 		final IResource resource = root.findMember(new Path(containerName));
 		if (!resource.exists() || !(resource instanceof IContainer)) {
 			throwCoreException("Container \"" + containerName + "\" does not exist.");
-		}
-		IContainer container = (IContainer) resource;
-		final IFile file = container.getFile(new Path(fileName));
-		try {
-			InputStream stream = getInitialContents();
-			if (file.exists()) {
-				file.setContents(stream, true, true, monitor);
-			} else {
-				file.create(stream, true, monitor);
-			}
-			stream.close();
-		} catch (IOException e) {
-		}
+		}		
 		monitor.worked(1);
-		monitor.setTaskName("Opening file for editing...");
+		
+		//TODO: Lagutko: must be added computing for Root Node of Spreadsheet
+        //Lagutko: it's a fake because for now Root Node is a Reference Node
+		ActionUtil.getInstance().runTask(new Runnable() {
+		    public void run() {
+		        RootNode rootNode = SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
+		        try {
+		            SplashPlugin.getDefault().getSpreadsheetService().createSpreadsheet(rootNode, fileName);
+		        }
+		        catch (SplashDatabaseException e) {
+		            //cannot be, we check that there are no such Spreadsheet before
+		        }
+		    }
+		}, false);        
+		
+		monitor.setTaskName("Opening spreadsheet for editing...");
 		getShell().getDisplay().asyncExec(new Runnable() {
 			public void run() {
-				IWorkbenchPage page =
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-				//IDE.openEditor(page, file, Util.AMANZI_SPLASH_EDITOR);
-				
-				splashID = fileName.replaceAll(".splash", "");
-				
 				//Lagutko 20.07.2009, create Spreadsheet also for EMF structure		
-				URL spreadsheetURL = getSpreadsheetURL();
+				URL spreadsheetURL = NeoSplashUtil.getSpeadsheetURL(fileName);
 				
-				AWEProjectManager.createNeoSpreadsheet(resource.getProject(), file.getName(), spreadsheetURL);
+				AWEProjectManager.createNeoSpreadsheet(resource.getProject(), fileName, spreadsheetURL);
 				
-				Util.openSpreadsheet(PlatformUI.getWorkbench(), file);
+				NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, null);
 			}
 		});
 		monitor.worked(1);
 	}
 	
-	/**
-	 * Method that computes URL of Neo4J Spreadsheet
-	 *
-	 * @return url of Spreadsheet
-	 * @author Lagutko_N
-	 */
-	
-	
-	String splashID = "";
-	private URL getSpreadsheetURL() {
-	    //TODO: this method must return path to Neo4j database and node of created spreadsheet
-	    //if it must be computed in other place than we must replace creating EMF Spreadsheet
-	    
-	    //it's a fake
-	    try {
-	    	IPath path = new Path(Platform.getLocation() + "/neo4j/" + splashID);
-	    	return (path.toFile().toURI().toURL());
-	    	
-	        //return Platform.getLocation().toFile().toURI().toURL();
-	    }
-	    catch (MalformedURLException e) {
-	        return null;
-	    }
-	}
-	
-	/**
-	 * We will initialize file contents with a sample text.
-	 */
-
-	private InputStream openContentStream() {
-		String contents =
-			"This is the initial file contents for *.splash file that should be word-sorted in the Preview page of the multi-page editor";
-		return new ByteArrayInputStream(contents.getBytes());
-	}
-
 	private void throwCoreException(String message) throws CoreException {
 		IStatus status =
 			new Status(IStatus.ERROR, "org.amanzi.splash", IStatus.OK, message, null);

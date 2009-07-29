@@ -1,6 +1,6 @@
 package org.amanzi.splash.neo4j.database.services;
 
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 
 /**
  * Utility class that wraps ID of Cell and provides it in different forms
@@ -47,8 +47,8 @@ public class CellID {
         
         fullID = column + row;
         
-        columnIndex = Util.getColumnIndexFromCellID(fullID);
-        rowIndex = Util.getRowIndexFromCellID(fullID);
+        columnIndex = NeoSplashUtil.getColumnIndexFromCellID(fullID);
+        rowIndex = NeoSplashUtil.getRowIndexFromCellID(fullID);
     }
     
     /**
@@ -61,9 +61,9 @@ public class CellID {
         columnIndex = column;
         rowIndex = row;
         
-        fullID = Util.getCellIDfromRowColumn(row, column);
+        fullID = NeoSplashUtil.getCellIDfromRowColumn(row, column);
         
-        columnName = Util.getColumnLetter(column);
+        columnName = NeoSplashUtil.getColumnLetter(column);
         rowName = Integer.toString(row + 1);
     }
     
@@ -75,10 +75,10 @@ public class CellID {
     public CellID(String fullId) {
         fullID = fullId;
         
-        columnIndex = Util.getColumnIndexFromCellID(fullId);
-        rowIndex = Util.getRowIndexFromCellID(fullId);
+        columnIndex = NeoSplashUtil.getColumnIndexFromCellID(fullId);
+        rowIndex = NeoSplashUtil.getRowIndexFromCellID(fullId);
         
-        columnName = Util.getColumnLetter(columnIndex);
+        columnName = NeoSplashUtil.getColumnLetter(columnIndex);
         rowName = Integer.toString(rowIndex + 1);
     }
     

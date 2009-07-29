@@ -2,7 +2,7 @@ package org.amanzi.splash.neo4j.console;
 
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 
 /**
  * Spreadsheet class
@@ -39,8 +39,8 @@ public class Spreadsheet {
 	 */
 	
 	public String getValue(String cellID) {
-		int column = Util.getColumnIndexFromCellID(cellID);
-		int row = Util.getRowIndexFromCellID(cellID);
+		int column = NeoSplashUtil.getColumnIndexFromCellID(cellID);
+		int row = NeoSplashUtil.getRowIndexFromCellID(cellID);
 		Cell cell = (Cell)model.getValueAt(row, column);		
 		return (String)cell.getValue();
 	}
@@ -53,8 +53,8 @@ public class Spreadsheet {
 	 */
 	
 	public void setValue(String cellID, String newFormula) {
-		int column = Util.getColumnIndexFromCellID(cellID);
-		int row = Util.getRowIndexFromCellID(cellID);
+		int column = NeoSplashUtil.getColumnIndexFromCellID(cellID);
+		int row = NeoSplashUtil.getRowIndexFromCellID(cellID);
 		Cell cell = (Cell)model.getValueAt(row, column);
 		
 		String oldFormula = (String)cell.getDefinition();

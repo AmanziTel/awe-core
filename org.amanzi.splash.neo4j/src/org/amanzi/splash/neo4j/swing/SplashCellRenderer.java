@@ -12,7 +12,7 @@ import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 
 public class SplashCellRenderer extends DefaultTableCellRenderer
 {
@@ -74,8 +74,6 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 		setValue(c.getValue());
 		setBackground(c.getCellFormat().getBackgroundColor());
 		
-		Util.printColor(c.getCellFormat().getBackgroundColor());
-		
 		setForeground(c.getCellFormat().getFontColor());
 		//setHorizontalAlignment(c.getCellFormat().getHorizontalAlignment());
 		//setVerticalAlignment(c.getCellFormat().getVerticalAlignment());
@@ -99,7 +97,7 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 		}
 		
 		if (isSelected){
-			setBackground(Util.selectedCellColor);
+			setBackground(NeoSplashUtil.selectedCellColor);
 			Border b = new MatteBorder(1,1,1,1,Color.decode("#000000"));
 			setBorder(b);
 

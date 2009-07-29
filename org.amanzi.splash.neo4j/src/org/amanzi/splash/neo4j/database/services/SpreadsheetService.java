@@ -15,7 +15,7 @@ import org.amanzi.splash.neo4j.database.nodes.RowNode;
 import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Transaction;
 
@@ -182,7 +182,7 @@ public class SpreadsheetService {
         Transaction tx = neoService.beginTx();
         
         try {
-            List<String> rfdCellsIDs = Util.findComplexCellIDs((String) cell.getDefinition());
+            List<String> rfdCellsIDs = NeoSplashUtil.findComplexCellIDs((String) cell.getDefinition());
             
             for (int i=0;i < rfdCellsIDs.size();i++){
                 String ID = rfdCellsIDs.get(i);
@@ -264,7 +264,7 @@ public class SpreadsheetService {
         CellNode node = getCellNode(sheet, id);
         
         if (node != null) {
-            Util.logn("getCell for " + id + " returns " + node.getValue() + " in " + node.getColumn().getColumnName() + node.getRow().getRowIndex());
+            NeoSplashUtil.logn("getCell for " + id + " returns " + node.getValue() + " in " + node.getColumn().getColumnName() + node.getRow().getRowIndex());
             
             return convertNodeToCell(node);
         }

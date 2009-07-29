@@ -11,7 +11,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 import org.amanzi.splash.neo4j.database.nodes.RootNode;
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -200,8 +200,8 @@ public class SplashTable extends JTable
 	 */
 	private void swapCells(int firstCellRow,int firstCellColumn, int secondCellRow, int secondCellColumn)
 	{
-		String firstCellId = Util.getCellIDfromRowColumn(firstCellRow, firstCellColumn);
-		String secondCellId = Util.getCellIDfromRowColumn(secondCellRow, secondCellColumn);
+		String firstCellId = NeoSplashUtil.getCellIDfromRowColumn(firstCellRow, firstCellColumn);
+		String secondCellId = NeoSplashUtil.getCellIDfromRowColumn(secondCellRow, secondCellColumn);
 			
 		SplashTableModel model = (SplashTableModel)getModel();		
 		
@@ -222,15 +222,15 @@ public class SplashTable extends JTable
 
 		if (index >= rowCount-1) return;
 
-		Util.logn("I'm before loop");
+		NeoSplashUtil.logn("I'm before loop");
 
 		for (int j=0;j<columnCount;j++)
 		{
-			Util.logn("loop index = " + j);
+			NeoSplashUtil.logn("loop index = " + j);
 			swapCells(index, j, index+1, j);
 		}
 
-		Util.logn("I'm after loop");
+		NeoSplashUtil.logn("I'm after loop");
 
 
 	}
@@ -348,8 +348,8 @@ public class SplashTable extends JTable
 			for (int j=0;j<columnCount;j++)
 			{
 				Cell c = (Cell) getValueAt(i,j);
-				String oldCellID = Util.getCellIDfromRowColumn(i, j);
-				String newCellID = Util.getCellIDfromRowColumn(i-1, j);
+				String oldCellID = NeoSplashUtil.getCellIDfromRowColumn(i, j);
+				String newCellID = NeoSplashUtil.getCellIDfromRowColumn(i-1, j);
 				c.renameCell(oldCellID, newCellID);
 				newModel.setValueAt(getValueAt(i,j), i-1, j);
 			}
@@ -381,8 +381,8 @@ public class SplashTable extends JTable
 			for (int j=index+1;j<columnCount;j++)
 			{
 				Cell c = (Cell) getValueAt(i,j);
-				String oldCellID = Util.getCellIDfromRowColumn(i, j);
-				String newCellID = Util.getCellIDfromRowColumn(i, j-1);
+				String oldCellID = NeoSplashUtil.getCellIDfromRowColumn(i, j);
+				String newCellID = NeoSplashUtil.getCellIDfromRowColumn(i, j-1);
 				c.renameCell(oldCellID, newCellID);
 				newModel.setValueAt(getValueAt(i,j), i, j-1);
 			}
@@ -400,7 +400,7 @@ public class SplashTable extends JTable
 	 */
 	public void insertRow(int index)
 	{
-		Util.logn("Inserting a new row");
+		NeoSplashUtil.logn("Inserting a new row");
 		SplashTableModel model = (SplashTableModel)getModel();		
 		int rowCount = model.getRowCount();
 		int columnCount = model.getColumnCount();
@@ -446,8 +446,8 @@ public class SplashTable extends JTable
 			for (int j=0;j<columnCount;j++)
 			{
 				Cell c = (Cell) getValueAt(i-count,j);
-				String oldCellID = Util.getCellIDfromRowColumn(i-count, j);
-				String newCellID = Util.getCellIDfromRowColumn(i, j);
+				String oldCellID = NeoSplashUtil.getCellIDfromRowColumn(i-count, j);
+				String newCellID = NeoSplashUtil.getCellIDfromRowColumn(i, j);
 				c.renameCell(oldCellID, newCellID);
 
 				newModel.setValueAt(c, i, j);
@@ -481,8 +481,8 @@ public class SplashTable extends JTable
 			for (int j=index+1;j<columnCount+1;j++)
 			{
 				Cell c = (Cell) getValueAt(i,j-1);
-				String oldCellID = Util.getCellIDfromRowColumn(i, j-1);
-				String newCellID = Util.getCellIDfromRowColumn(i, j);
+				String oldCellID = NeoSplashUtil.getCellIDfromRowColumn(i, j-1);
+				String newCellID = NeoSplashUtil.getCellIDfromRowColumn(i, j);
 				c.renameCell(oldCellID, newCellID);
 				newModel.setValueAt(c, i, j);				
 			}
@@ -520,8 +520,8 @@ public class SplashTable extends JTable
 			for (int j=index+count;j<columnCount+count;j++)
 			{
 				Cell c = (Cell) getValueAt(i,j-count);
-				String oldCellID = Util.getCellIDfromRowColumn(i, j-count);
-				String newCellID = Util.getCellIDfromRowColumn(i, j);
+				String oldCellID = NeoSplashUtil.getCellIDfromRowColumn(i, j-count);
+				String newCellID = NeoSplashUtil.getCellIDfromRowColumn(i, j);
 				c.renameCell(oldCellID, newCellID);
 				newModel.setValueAt(c, i, j);				
 			}
@@ -564,9 +564,9 @@ public class SplashTable extends JTable
 	 * @param column column index of Cell to Copy
 	 */
 	public void copyCell(int row, int column){
-		Util.logn("Copy pressed !!!");
-		copiedCellID = Util.getCellIDfromRowColumn(row, column);
-		Util.logn("Copied cell at: " + copiedCellID);
+		NeoSplashUtil.logn("Copy pressed !!!");
+		copiedCellID = NeoSplashUtil.getCellIDfromRowColumn(row, column);
+		NeoSplashUtil.logn("Copied cell at: " + copiedCellID);
 		isCopy = true;
 	}
 
@@ -577,12 +577,12 @@ public class SplashTable extends JTable
      * @param column column index of Cell to Cut
      */
 	public void cutCell(int row, int column){
-		Util.logn("Cut pressed !!!");
-		cutCellID = Util.getCellIDfromRowColumn(row, column);
+		NeoSplashUtil.logn("Cut pressed !!!");
+		cutCellID = NeoSplashUtil.getCellIDfromRowColumn(row, column);
 		cutDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
 		cutValue = (String) ((Cell) getModel().getValueAt(row, column)).getValue();
 		deleteCell(row, column);
-		Util.logn("Cut cell at: " + copiedCellID);
+		NeoSplashUtil.logn("Cut cell at: " + copiedCellID);
 		isCopy = false;
 	}
 
@@ -593,13 +593,13 @@ public class SplashTable extends JTable
      * @param column column index of Cell to Paste
      */
 	public void pasteCell(int row, int column){
-		Util.logn("Paste pressed !!!");
+		NeoSplashUtil.logn("Paste pressed !!!");
 		if (isCopy){
-			Util.logn("Pasting cell " + copiedCellID + " at " + Util.getCellIDfromRowColumn(row, column));
-			int srcColumn = Util.getColumnIndexFromCellID(copiedCellID);
-			int srcRow = Util.getRowIndexFromCellID(copiedCellID);
-			Util.logn("srcColumn: " + srcColumn);
-			Util.logn("srcRow: " + srcRow);
+			NeoSplashUtil.logn("Pasting cell " + copiedCellID + " at " + NeoSplashUtil.getCellIDfromRowColumn(row, column));
+			int srcColumn = NeoSplashUtil.getColumnIndexFromCellID(copiedCellID);
+			int srcRow = NeoSplashUtil.getRowIndexFromCellID(copiedCellID);
+			NeoSplashUtil.logn("srcColumn: " + srcColumn);
+			NeoSplashUtil.logn("srcRow: " + srcRow);
 			String srcDefinition = (String) ((Cell) getModel().getValueAt(srcRow, srcColumn)).getDefinition();
 			String srcValue = (String) ((Cell) getModel().getValueAt(srcRow, srcColumn)).getValue();
 			Cell dstCell = new Cell(row, column, srcDefinition, srcValue, new CellFormat());
@@ -609,11 +609,11 @@ public class SplashTable extends JTable
 			getModel().setValueAt(dstCell, row, column);
 
 		}else{		
-			Util.logn("Pasting cell " + cutCellID + " at " + Util.getCellIDfromRowColumn(row, column));
-			int srcColumn = Util.getColumnIndexFromCellID(cutCellID);
-			int srcRow = Util.getRowIndexFromCellID(cutCellID);
-			Util.logn("srcColumn: " + srcColumn);
-			Util.logn("srcRow: " + srcRow);
+			NeoSplashUtil.logn("Pasting cell " + cutCellID + " at " + NeoSplashUtil.getCellIDfromRowColumn(row, column));
+			int srcColumn = NeoSplashUtil.getColumnIndexFromCellID(cutCellID);
+			int srcRow = NeoSplashUtil.getRowIndexFromCellID(cutCellID);
+			NeoSplashUtil.logn("srcColumn: " + srcColumn);
+			NeoSplashUtil.logn("srcRow: " + srcRow);
 			Cell dstCell = new Cell(row, column, cutDefinition, cutValue, new CellFormat());
 			String oldDstDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
 			((SplashTableModel)getModel()).interpret(cutDefinition, oldDstDefinition, row, column);
@@ -635,12 +635,12 @@ public class SplashTable extends JTable
 
 			return false;
 		case 73:
-			Util.logn("CTRL+i has been pressed ");
+			NeoSplashUtil.logn("CTRL+i has been pressed ");
 
 			return false;
 
 		case 85:
-			Util.logn("CTRL+U has been pressed ");
+			NeoSplashUtil.logn("CTRL+U has been pressed ");
 			return false;
 
 		case 127:
@@ -663,7 +663,7 @@ public class SplashTable extends JTable
 	 */
 	//TODO: Lagutko: cell will be deleted only from Model but not from Database
 	public void deleteCell(int row, int column){
-		Util.logn("DELETE has been pressed ");
+		NeoSplashUtil.logn("DELETE has been pressed ");
 		Cell c = new Cell(row, column, "","",new CellFormat());
 		String oldDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
 		((SplashTableModel)getModel()).setValueAt(c, row, column, oldDefinition);

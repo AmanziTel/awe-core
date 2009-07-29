@@ -2,7 +2,7 @@ package org.amanzi.splash.neo4j.swing;
 
 import java.net.URI;
 
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -51,8 +51,8 @@ public class Cell
 	{
 		//Cell c = getCellByID(oldCellID);
 		setCellID(newCellID);
-		setRow(Util.getRowIndexFromCellID(newCellID));
-		setColumn(Util.getColumnIndexFromCellID(newCellID));
+		setRow(NeoSplashUtil.getRowIndexFromCellID(newCellID));
+		setColumn(NeoSplashUtil.getColumnIndexFromCellID(newCellID));
 		
 	}
 	
@@ -77,7 +77,7 @@ public class Cell
 		//SplashJRubyInterpreter s = new SplashJRubyInterpreter();
 		this.value = value;
 		
-		this.cellID = Util.getCellIDfromRowColumn(row, column);
+		this.cellID = NeoSplashUtil.getCellIDfromRowColumn(row, column);
 		
 		cellFormat = c;
 	}

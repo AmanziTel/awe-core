@@ -4,40 +4,38 @@ import java.awt.Color;
 import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
+import net.refractions.udig.catalog.URLUtils;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.splash.neo4j.database.nodes.RootNode;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
-import org.eclipse.core.resources.IContainer;
+import org.amanzi.splash.neo4j.ui.SplashEditorInput;
+import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.FileEditorInput;
 
-import com.eteks.openjeks.format.CellFormat;
-
-public class Util {
+public class NeoSplashUtil {
 
 	/*
 	 * Name of SplashResourceEditor
@@ -63,48 +61,18 @@ public static final boolean enableNeo4j = true;
 	public static boolean isDebug = true;
 
 	public static boolean isTesting = false;
-	public static String ColorToString (Color c)
-	{
-//		String s = Integer.toString(c.getRed()) + ";" + Integer.toString(c.getGreen() )
-//		+ ";" + Integer.toString(c.getBlue());
-//
-//		return s;
-		
-		return "";
-	}
 	
-	public static void printColor(Color c){
-		//Util.logn("R: " + c.getRed() + " - G: " + c.getGreen() + " - B: " + c.getBlue());
-	}
-	
-	public static void AddFileMenuItem(){
-//		MenuManager menu = 
-//		    new  MenuManager(ShowcasePlugin.getResourceString("menu.file"),
-//		IWorkbenchActionConstants.M_FILE);
-//		menu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
-//		String newId = ActionFactory.NEW.getId();
-//		MenuManager newMenu =
-//		    new MenuManager(ShowcasePlugin.getResourceString("menu.file.new"),
-//		newId);
-//		newMenu.add(new Separator(newId));
-//		IContributionItem newWizards =
-//		ContributionItemFactory.NEW_WIZARD_SHORTLIST.create(window);
-//		newMenu.add(newWizards);
-//		       newMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-//		menu.add(newMenu);
-
-	}
 
 	public static void logNullAtCell(String func, String value, int row, int column){
 		if (isDebug == true){
-			Util.logn(func + ":Null value ("+value+ ") at " + Util.getCellIDfromRowColumn(row, column));
+			NeoSplashUtil.logn(func + ":Null value ("+value+ ") at " + NeoSplashUtil.getCellIDfromRowColumn(row, column));
 		}
 	}
 
 	public static void printTableModelStatus(SplashTableModel model)
 	{
 		if (isDebug == true){
-			Util.logn("Model Status:");
+			NeoSplashUtil.logn("Model Status:");
 			for (int i=0;i<5/*model.getRowCount()*/;i++){
 				for (int j=0;j<model.getColumnCount();j++)
 				{
@@ -112,11 +80,11 @@ public static final boolean enableNeo4j = true;
 					if (c != null)
 					{						
 						printCell("Cell", c);
-						Util.logn("--------------------------------------------");
+						NeoSplashUtil.logn("--------------------------------------------");
 					}
 					else
 					{
-						Util.logn("NULL cell at row="+i+",column="+j);
+						NeoSplashUtil.logn("NULL cell at row="+i+",column="+j);
 					}
 				}
 			}
@@ -125,19 +93,10 @@ public static final boolean enableNeo4j = true;
 
 	public static int tab = 0;
 
-	public static void addtab()
-	{
-//		for (int i=0;i<tab;i++)	System.out.print(" ");
-//		if (tab == 0)
-//		System.out.print("\n<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
-	}
-
 	public static void logEnter(String fn)
 	{
 		if (isDebug == true){
-			addtab();
-
-			Util.logn("---------------- ENTER: " + fn + "----------------");
+			NeoSplashUtil.logn("---------------- ENTER: " + fn + "----------------");
 
 			tab += 1;
 		}
@@ -146,8 +105,7 @@ public static final boolean enableNeo4j = true;
 	public static void logExit(String fn)
 	{
 		if (isDebug == true){
-			addtab();
-			Util.logn("---------------- EXIT: " + fn + "----------------");
+			NeoSplashUtil.logn("---------------- EXIT: " + fn + "----------------");
 
 			tab -= 1;
 		}
@@ -156,42 +114,23 @@ public static final boolean enableNeo4j = true;
 	public static void printTableModelStatus(SplashTableModel model, int rowCount, int columnCount)
 	{
 		if (isDebug == true){
-			Util.logn("Model Status:");
+			NeoSplashUtil.logn("Model Status:");
 			for (int i=0;i<rowCount;i++){
 				for (int j=0;j<columnCount;j++)
 				{
 					Cell c = (Cell) model.getValueAt(i, j);
 					if (c != null)
 					{
-						printCell("Cell", c);
-						//printCellList("RFD List of Cell " + c.getCellID(), c.getRfdCells());
-						//printCellList("RFG List of Cell " + c.getCellID(), c.getRfgCells());
-						//Util.logn("--------------------------------------------");
+						printCell("Cell", c);						
 					}
 					else
 					{
-						Util.logn("NULL cell at row="+i+",column="+j);
+						NeoSplashUtil.logn("NULL cell at row="+i+",column="+j);
 					}
 				}
 			}
 		}
 	}
-
-	public static void listScriptingEngines() {
-		ScriptEngineManager mgr = new ScriptEngineManager();
-		for (@SuppressWarnings("unused")
-		ScriptEngineFactory factory : mgr.getEngineFactories()) {
-			Util.logn("ScriptEngineFactory Info");
-			//Util.log("\tScript Engine: %s (%s)\n", factory.getEngineName(), factory.getEngineVersion());
-			//Util.log("\tLanguage: %s (%s)\n", factory.getLanguageName(), factory.getLanguageVersion());
-//			for (String name : factory.getNames()) {
-//			Util.logf("\tEngine Alias: %s\n", name);
-//			}
-		}
-
-	}
-	
-	
 
 	public static ArrayList<String> findComplexCellIDs(String content) {
 		ArrayList<String> list = new ArrayList<String>();
@@ -228,27 +167,6 @@ public static final boolean enableNeo4j = true;
 	}
 
 
-	public static String getFormatString(CellFormat c)
-	{
-		Color bgColor = c.getBackgroundColor();
-
-		Color fontColor = c.getFontColor();
-		String fontName = c.getFontName();
-		int fontSize = c.getFontSize();
-		int fontStyle = c.getFontStyle();
-		int horizontalAlignment = c.getHorizontalAlignment();
-		int verticalAlignment = c.getVerticalAlignment();
-
-		return 
-		ColorToString(bgColor) + ";" + 
-		ColorToString(fontColor) + ";" +
-		fontName + ";" +
-		Integer.toString(fontSize) + ";" +
-		Integer.toString(fontStyle) + ";" +
-		Integer.toString(horizontalAlignment) + ";" +
-		Integer.toString(verticalAlignment);
-	}
-
 	public static void displayStringList(String title, List<String> list)
 	{
 		if (isDebug == true){
@@ -257,26 +175,25 @@ public static final boolean enableNeo4j = true;
 				//Util.log("NULL List !!!\n");
 				return;
 			}
-			Util.logn(title + ":");
+			NeoSplashUtil.logn(title + ":");
 			for (int i=0;i<list.size();i++)
 			{
-				Util.logn(list.get(i) + ";");
+				NeoSplashUtil.logn(list.get(i) + ";");
 			}
 
-			Util.logn("\n");
+			NeoSplashUtil.logn("\n");
 		}
 	}
 	public static void printCell(String title, Cell c)
 	{
 		if (isDebug == true){
-			addtab();
 			System.out.print(title + ": ");
 
 			System.out.print(c.getCellID() + "\n");
 			//printCellList(c.getCellID() + " RFG list:", c.getRfgCells());
 			//printCellList(c.getCellID() + " RFD list:", c.getRfdCells());
 
-			Util.logn("=================================================\n");
+			NeoSplashUtil.logn("=================================================\n");
 		}
 	}
 
@@ -294,7 +211,6 @@ public static final boolean enableNeo4j = true;
 	public static void printCellList(String title, ArrayList<Cell> list)
 	{
 		if (isDebug == true){
-			addtab();
 			System.out.print(title + ": ");
 
 			for (int i=0;i<list.size();i++)
@@ -309,7 +225,6 @@ public static final boolean enableNeo4j = true;
 	public static void log(String s)
 	{
 		if (isDebug){
-			addtab();
 			System.out.print(s);
 		}
 
@@ -318,7 +233,6 @@ public static final boolean enableNeo4j = true;
 	public static void logn(String s)
 	{
 		if (isDebug){
-			addtab();
 			System.out.println(s);
 		}
 
@@ -326,58 +240,37 @@ public static final boolean enableNeo4j = true;
 
 	public static String getCellIDfromRowColumn(int row, int column)
 	{
-		//JTable t = new JTable(row+1,column+1);
-		//return t.getColumnName(column);
-
-		//String cc = (String) t.getColumnModel().getColumn(column).getHeaderValue();
-		
-		//Lagutko,  4.06.2009, correct bug with columns more than 26
-		String STD_HEADINGS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		StringBuilder letterIndex = new StringBuilder();		
-		int iColumn = column;
-		
-		letterIndex.insert(0, STD_HEADINGS.charAt(column % 26));
-		
-		iColumn = iColumn / 26;
-		
-		STD_HEADINGS = "AABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		
-		while (iColumn > 0) {
-			int index = iColumn % 27;
-			
-			letterIndex.insert(0, STD_HEADINGS.charAt(index));
-			
-			iColumn = iColumn / 27;
-		}		
+		String letterIndex = getColumnLetter(column);
 		
 		return letterIndex + Integer.toString(row+1);
+	}
+	
+	public static String getColumnLetter(int columnIndex) {
+	    //Lagutko,  4.06.2009, correct bug with columns more than 26
+        String STD_HEADINGS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        StringBuilder letterIndex = new StringBuilder();        
+        int iColumn = columnIndex;
+        
+        letterIndex.insert(0, STD_HEADINGS.charAt(columnIndex % 26));
+        
+        iColumn = iColumn / 26;
+        
+        STD_HEADINGS = "AABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        
+        while (iColumn > 0) {
+            int index = iColumn % 27;
+            
+            letterIndex.insert(0, STD_HEADINGS.charAt(index));
+            
+            iColumn = iColumn / 27;
+        }     
+        
+        return letterIndex.toString();
 	}
 
 	public static boolean isCellInList(Cell c, ArrayList<Cell> list)
 	{
-//		boolean ret = false;
-
-//		Util.logn("isCellInList: Cell " + c.getCellID());
-//		Util.printCellList("isCellInList: ", list);
-
-//		if (c == null || list == null) return false;
-
-//		for (int i=0;i<list.size();i++)
-//		{
-//		String s1 = list.get(i).getCellID();
-//		Util.logn("isCellInList: s1 = " + s1);
-//		String s2 = c.getCellID();
-//		Util.logn("isCellInList: s2 = " + s2);
-//		if (s1.equals(s2));
-//		{
-//		return true;
-//		}
-//		}
-
-//		return false;
-
 		return list.contains(c);
-
 	}
 
 	public static int getRowIndexFromCellID(String cellID) {
@@ -430,22 +323,21 @@ public static final boolean enableNeo4j = true;
 	 * Utility function that opens file in SplashResourceEditor
 	 * 
 	 * @param workbench platform workbench
-	 * @param file file to open	
+	 * @param spreadsheetName file to open	
+	 * @param rdgProjectName name of RDT Project
 	 * @return opened editor
 	 * @author Lagutko_N
 	 */
 
-	public static IEditorPart openSpreadsheet(IWorkbench workbench, IFile file) {
-		
-		Util.logn("file.getFullPath(): " + file.getFullPath());
-		
-	    //TODO: Lagutko 21.07.2009, this method must be re-written to support Neo4j-based Spreadsheet
+	public static IEditorPart openSpreadsheet(IWorkbench workbench, URL spreadsheetURL, String rdgProjectName) {
 		IEditorPart result = null;
 		try {
 			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
 			if (page != null) {
-				
-				IFileEditorInput fi = new FileEditorInput(file);				
+				//TODO: Lagutko: must be added computing for Root Node of Spreadsheet
+			    //Lagutko: it's a fake because for now Root Node is a Reference Node
+			    RootNode root = SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
+				IEditorInput fi = new SplashEditorInput(getSpreadsheetName(spreadsheetURL), root);				
 				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
 			}
 
@@ -455,35 +347,6 @@ public static final boolean enableNeo4j = true;
 		return result;
 		
 	}
-	
-	public static IEditorPart openSpreadsheet(IWorkbench workbench, URL spreadsheetURL) {
-		final String containerName = "/project.AWEScript";
-		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		final IResource resource = root.findMember(new Path(containerName));
-		IContainer container = (IContainer) resource;
-		String s = spreadsheetURL.toString().replaceAll(Platform.getLocation() + "/neo4j", "");
-		s = s + ".splash";
-		Util.logn("s = " + s);
-		final IFile file = container.getFile(new Path(s));
-		
-		Util.logn("file.getFullPath(): " + file.getFullPath());
-		
-	    //TODO: Lagutko 21.07.2009, this method must be re-written to support Neo4j-based Spreadsheet
-		IEditorPart result = null;
-		try {
-			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
-			if (page != null) {
-				
-				IFileEditorInput fi = new FileEditorInput(file);				
-				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
-			}
-
-		} catch (PartInitException e) {
-			result = null;
-		}
-		return result;
-	}
-
 
 	/**
 	 * Returns content of script
@@ -492,7 +355,6 @@ public static final boolean enableNeo4j = true;
 	 * @return string with content of file
 	 * @author Lagutko_N
 	 */
-
 	public static String getScriptContent(URI scriptURI) {
 		if (scriptURI == null) {
 			//TODO: handle this situation
@@ -518,6 +380,29 @@ public static final boolean enableNeo4j = true;
 	}
 	
 	/**
+     * Returns content of script
+     * 
+     * @param scriptPath Path of script
+     * @return string with content of file
+     * @author Lagutko_N
+     */
+    public static String getScriptContent(String scriptPath) {
+        if (scriptPath == null) {
+            //TODO: handle this situation
+            return null;
+        }                
+        String content = null;
+        try {
+            content = inputStreamToString(new FileInputStream(scriptPath));
+        }        
+        catch (IOException e) {
+            //TODO: handle exception
+        }
+
+        return content;
+    }
+	
+	/**
 	 * Utility function that converts input stream to String
 	 * 
 	 * @param stream InputStream
@@ -537,5 +422,52 @@ public static final boolean enableNeo4j = true;
 		return buffer.toString();
 	}
 	
+	/**
+	 * Computes name of Spreadsheet by given URL
+	 *
+	 * @param url URL of Spreadsheet
+	 * @return name of Spreadsheet
+	 */
 	
+	public static String getSpreadsheetName(URL url) {
+		String result = null;
+		
+		String spreadsheetPath = URLUtils.urlToString(url, true);
+		
+		int paramSection = spreadsheetPath.lastIndexOf("?");
+		String params = spreadsheetPath.substring(paramSection + 1, spreadsheetPath.length());
+		
+		StringTokenizer paramTokenizer = new StringTokenizer(params, "&");
+		while (paramTokenizer.hasMoreTokens()) {
+			String param = paramTokenizer.nextToken();
+			
+			StringTokenizer valueTokenizer = new StringTokenizer(param, "=");
+			while (valueTokenizer.hasMoreTokens()) {
+				if (valueTokenizer.nextToken().equals(INeoConstants.PROPERTY_NAME_NAME)) {
+					result = valueTokenizer.nextToken();
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Converts name of Spreadsheet to URL
+	 *
+	 * @param name name of spreadsheet
+	 * @return url of spreadsheet
+	 */
+	public static URL getSpeadsheetURL(String name) {
+	    String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+	    String fullPath = databaseLocation + "?" + INeoConstants.PROPERTY_NAME_NAME + "=" + name;
+	    
+	    try {
+	        return URLUtils.constructURL(new File("."), fullPath);
+	    }
+	    catch (MalformedURLException e) {
+	        SplashPlugin.error(null, e);
+	        return null;
+	    }
+	}
 }

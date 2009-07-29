@@ -1,7 +1,5 @@
 package org.amanzi.splash.neo4j.swing;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -19,9 +17,8 @@ import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.ui.PlatformUI;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.runtime.load.LoadService;
@@ -163,7 +160,7 @@ public class SplashTableModel extends DefaultTableModel
 		runtime.getLoadService().init(ScriptUtils.makeLoadPath(new String[] {}));
 
 		String path = EMPTY_STRING;
-		if (Util.isTesting == false){
+		if (NeoSplashUtil.isTesting == false){
 			URL scriptURL = null;
 			try {
 				scriptURL = FileLocator.toFileURL(SplashPlugin.getDefault().getBundle().getEntry(JRUBY_SCRIPT));
@@ -177,24 +174,7 @@ public class SplashTableModel extends DefaultTableModel
 			path ="D:/projects/AWE from SVN/org.amanzi.splash/jruby.rb";	
 		}
 
-		String input = EMPTY_STRING;
-		FileReader fr;
-
-		String line;
-		try {
-			fr = new FileReader(path);
-			BufferedReader br = new BufferedReader(fr);
-			line = br.readLine();
-			while (line != null)
-			{
-				input += line + "\n";
-				line = br.readLine();
-			}
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		}
-
+		String input = NeoSplashUtil.getScriptContent(path);
 
 		runtime.evalScriptlet(input);
 		//TODO: Lagutko: extract scripts to files
@@ -226,7 +206,7 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 
 	public void updateDefinitionFromScript(Cell cell) {
-		String content = Util.getScriptContent(cell.getScriptURI());
+		String content = NeoSplashUtil.getScriptContent(cell.getScriptURI());
 		cell.setDefinition(content);
 	}
 
@@ -239,11 +219,11 @@ public class SplashTableModel extends DefaultTableModel
 	 * @return Cell with updated value
 	 */
 	public Cell interpret(String definition, int row, int column){
-		String cellID = Util.getCellIDfromRowColumn(row, column);
+		String cellID = NeoSplashUtil.getCellIDfromRowColumn(row, column);
 		String formula1 = definition;
 		Cell se = getCellByID(cellID);
 		
-		List<String> list = Util.findComplexCellIDs(definition);
+		List<String> list = NeoSplashUtil.findComplexCellIDs(definition);
 
 		//TODO: Lagutko: extract scripts to files
 		for (int i=0;i<list.size();i++){
@@ -277,9 +257,9 @@ public class SplashTableModel extends DefaultTableModel
 		Object s = EMPTY_STRING;
 		String path = ScriptUtils.getJRubyHome() + ERB_PATH;
 
-		Util.logn("interpret_erb: formula = " + formula + " - cellID:" + cellID);
-		Util.logn("path = " + path);
-		Util.logn("cellID.toLowerCase():" + cellID.toLowerCase());
+		NeoSplashUtil.logn("interpret_erb: formula = " + formula + " - cellID:" + cellID);
+		NeoSplashUtil.logn("path = " + path);
+		NeoSplashUtil.logn("cellID.toLowerCase():" + cellID.toLowerCase());
 
 		//TODO: Lagutko: extract script to file
 		String input = "require" + "'" + path + "'" + "\n" +
@@ -289,12 +269,12 @@ public class SplashTableModel extends DefaultTableModel
 		"$sheet.cells." + cellID.toLowerCase() + "=" +  "template.result(binding)" + "\n" +
 		"$sheet.cells." + cellID.toLowerCase();
 
-		Util.logn("ERB Input: " + input);
+		NeoSplashUtil.logn("ERB Input: " + input);
 
 
 		s = runtime.evalScriptlet(input);
 
-		Util.logn("ERB Output = " + s);
+		NeoSplashUtil.logn("ERB Output = " + s);
 
 		if (s == null) s = "ERROR";
 
@@ -312,17 +292,17 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 	//TODO: Lagutko: do we need oldDefinition param?
 	public Cell interpret(String definition, String oldDefinition, int row, int column){
-		String cellID = Util.getCellIDfromRowColumn(row, column);
+		String cellID = NeoSplashUtil.getCellIDfromRowColumn(row, column);
 		String formula1 = definition;
-		Util.logn("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
-		Util.logn("Start interpreting a cell...");
-		Util.logn("CellID = " + cellID);
+		NeoSplashUtil.logn("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
+		NeoSplashUtil.logn("Start interpreting a cell...");
+		NeoSplashUtil.logn("CellID = " + cellID);
 
 		Cell se = getCellByID(cellID);
 
 		if (se == null)
 		{
-			Util.logn("WARNING: se = null");
+			NeoSplashUtil.logn("WARNING: se = null");
 			se = new Cell(row, column, Cell.DEFAULT_VALUE, Cell.DEFAULT_DEFINITION, new CellFormat());
 		}
 
@@ -330,40 +310,40 @@ public class SplashTableModel extends DefaultTableModel
 
 
 		if (definition.startsWith("=") == false){
-			Util.logn("Formula not starting with =, dealing as normal text");
+			NeoSplashUtil.logn("Formula not starting with =, dealing as normal text");
 			if (definition.startsWith("<%=") && definition.endsWith("%>")){
-				Util.logn("The entered formula is already ERB");
-				Util.logn("Interpreting cell using ERB...");
+				NeoSplashUtil.logn("The entered formula is already ERB");
+				NeoSplashUtil.logn("Interpreting cell using ERB...");
 				Object s1 = interpret_erb(cellID, formula1);
 
-				Util.logn("Setting cell definition: "+ definition);
+				NeoSplashUtil.logn("Setting cell definition: "+ definition);
 				se.setDefinition(definition);
 
-				Util.logn("Setting cell value:" + (String)s1);
+				NeoSplashUtil.logn("Setting cell value:" + (String)s1);
 				se.setValue((String)s1);
 			}else{
-				Util.logn("The entered formula just text, not ERB and not Ruby");
-				Util.logn("Setting cell definition: "+ definition);
+				NeoSplashUtil.logn("The entered formula just text, not ERB and not Ruby");
+				NeoSplashUtil.logn("Setting cell definition: "+ definition);
 				se.setDefinition(definition);
 
-				Util.logn("Setting cell value:" + definition);
+				NeoSplashUtil.logn("Setting cell value:" + definition);
 				se.setValue(definition);
 			}
 		}
 		else{
-			Util.logn("definition = " + definition);
+			NeoSplashUtil.logn("definition = " + definition);
 
 			if (definition.startsWith("='")){
-				Util.logn("definition started with ='");
-				list = Util.findComplexCellIDsInRubyText(definition);
+				NeoSplashUtil.logn("definition started with ='");
+				list = NeoSplashUtil.findComplexCellIDsInRubyText(definition);
 
 				for (int i=0;i<list.size();i++){
 					if (formula1.contains("$sheet.cells." + list.get(i)) == false)
 						formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
 				}
 			}else{
-				Util.logn("definition NOT started with ='");
-				list = Util.findComplexCellIDs(definition);
+				NeoSplashUtil.logn("definition NOT started with ='");
+				list = NeoSplashUtil.findComplexCellIDs(definition);
 
 				for (int i=0;i<list.size();i++){
 					if (formula1.contains("$sheet.cells." + list.get(i)) == false)
@@ -371,19 +351,19 @@ public class SplashTableModel extends DefaultTableModel
 				}
 			}
 
-			Util.displayStringList("list", list);
+			NeoSplashUtil.displayStringList("list", list);
 
-			Util.logn("Formula starts with =, Converting formula to ERB format");
+			NeoSplashUtil.logn("Formula starts with =, Converting formula to ERB format");
 			formula1 = "<%= " +formula1.replace("=", EMPTY_STRING) + " %>";
 
 
-			Util.logn("Interpreting cell using ERB...");
+			NeoSplashUtil.logn("Interpreting cell using ERB...");
 			Object s1 = interpret_erb(cellID, formula1);
 
-			Util.logn("Setting cell definition: "+ definition);
+			NeoSplashUtil.logn("Setting cell definition: "+ definition);
 			se.setDefinition(definition);
 
-			Util.logn("Setting cell value:" + (String)s1);
+			NeoSplashUtil.logn("Setting cell value:" + (String)s1);
 			se.setValue((String)s1);
 
 		}
@@ -422,7 +402,7 @@ public class SplashTableModel extends DefaultTableModel
 		if (column >= getColumnCount ())
 			throw new ArrayIndexOutOfBoundsException (column);
 
-		Cell result = (Cell)ActionUtil.getInstance(PlatformUI.getWorkbench().getDisplay()).runTaskWithResult(new RunnableWithResult() {
+		Cell result = (Cell)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
 		    private Cell result = null;
 		    
 		    public Object getValue() {
@@ -430,12 +410,12 @@ public class SplashTableModel extends DefaultTableModel
 		    }
 		    
 		    public void run() {
-		        Util.logn("run for getValueAt " + Util.getCellIDfromRowColumn(row, column));
+		        NeoSplashUtil.logn("run for getValueAt " + NeoSplashUtil.getCellIDfromRowColumn(row, column));
 		        result = service.getCell(spreadsheet, new CellID(row, column));
 		    }
 		});
 		
-		Util.logn("getValueAt " + Util.getCellIDfromRowColumn(row, column) + ": value = " + result.getValue());
+		NeoSplashUtil.logn("getValueAt " + NeoSplashUtil.getCellIDfromRowColumn(row, column) + ": value = " + result.getValue());
 		
 		return result;
 
@@ -457,15 +437,15 @@ public class SplashTableModel extends DefaultTableModel
 	{
 		// row and column index are checked but storing in a Hashtable
 		// won't cause real problems
-		Util.logn("row = " + row + " - getRowCount () = " +getRowCount () );
+		NeoSplashUtil.logn("row = " + row + " - getRowCount () = " +getRowCount () );
 		if (row >= getRowCount ())
 			throw new ArrayIndexOutOfBoundsException (row);
 		if (column >= getColumnCount ()){
-			Util.logn("column: " + column + " - getColumnCount: " + getColumnCount());
+			NeoSplashUtil.logn("column: " + column + " - getColumnCount: " + getColumnCount());
 			throw new ArrayIndexOutOfBoundsException (column);
 		}		
 		
-		ActionUtil.getInstance(PlatformUI.getWorkbench().getDisplay()).runTask(new Runnable() {
+		ActionUtil.getInstance().runTask(new Runnable() {
             public void run() {
                 service.updateCell(spreadsheet, (Cell)value);
             }
@@ -493,7 +473,7 @@ public class SplashTableModel extends DefaultTableModel
 		if (column >= getColumnCount ())
 			throw new ArrayIndexOutOfBoundsException (column);
 
-		ActionUtil.getInstance(PlatformUI.getWorkbench().getDisplay()).runTask(new Runnable() {
+		ActionUtil.getInstance().runTask(new Runnable() {
 		    public void run() {
 		        service.updateCellWithReferences(spreadsheet, (Cell)value);
 		        
@@ -512,7 +492,7 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param cellID id of Cell to refresh
 	 */
 	public void refreshCell(String cellID) {
-		Util.logn("refreshCell: cellID = " + cellID);
+		NeoSplashUtil.logn("refreshCell: cellID = " + cellID);
 		Cell cell = service.getCell(spreadsheet, new CellID(cellID));
 
 		String definition = (String) cell.getDefinition();
@@ -520,27 +500,27 @@ public class SplashTableModel extends DefaultTableModel
 		Cell se = cell;
 
 		if (se == null){
-			Util.logn("WARNING: se = null");
+			NeoSplashUtil.logn("WARNING: se = null");
 		}
 
-		List<String> list = Util.findComplexCellIDs(definition);
+		List<String> list = NeoSplashUtil.findComplexCellIDs(definition);
 		for (int i=0;i<list.size();i++){
 		    //TODO: Lagutko, extract script
 			formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
 		}
 
-		Util.logn("Interpreting formula: " + formula1 + " at Cell " + cellID);
+		NeoSplashUtil.logn("Interpreting formula: " + formula1 + " at Cell " + cellID);
 
 		if (definition.startsWith("=") == false){
 			// This is normal text entered into cell, then
-			Util.logn("CASE 1: Formula not starting with =");
+			NeoSplashUtil.logn("CASE 1: Formula not starting with =");
 		}
 		else{
-			Util.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
+			NeoSplashUtil.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
 			formula1 = "<%= " +formula1.replace("=", EMPTY_STRING) + " %>";
 		}
 
-		Util.logn("formula1 =" + formula1);
+		NeoSplashUtil.logn("formula1 =" + formula1);
 
 		Object s1 = interpret_erb(cellID, formula1);
 		se.setDefinition(definition);
@@ -556,38 +536,38 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 
 	public void refreshCell(Cell cell) {
-		Util.printCell("Refreshing Cell", cell);
+		NeoSplashUtil.printCell("Refreshing Cell", cell);
 		
 		String cellID = cell.getCellID();
 
-		Util.logn("refreshCell: cellID = " + cellID);
+		NeoSplashUtil.logn("refreshCell: cellID = " + cellID);
 
 		String definition = (String) cell.getDefinition();
 		String formula1 = (String) cell.getDefinition();
 		Cell se = cell;
 
 		if (se == null){
-			Util.logn("WARNING: se = null");
+			NeoSplashUtil.logn("WARNING: se = null");
 		}
 
-		List<String> list = Util.findComplexCellIDs(definition);
+		List<String> list = NeoSplashUtil.findComplexCellIDs(definition);
 		for (int i=0;i<list.size();i++){
 		    //TODO: Lagutko, extract script
 			formula1 = formula1.replace(list.get(i), "$sheet.cells." + list.get(i).toLowerCase());
 		}
 
-		Util.logn("Interpreting formula: " + formula1 + " at Cell " + cellID);
+		NeoSplashUtil.logn("Interpreting formula: " + formula1 + " at Cell " + cellID);
 
 		if (definition.startsWith("=") == false){
 			// This is normal text entered into cell, then
-			Util.logn("CASE 1: Formula not starting with =");
+			NeoSplashUtil.logn("CASE 1: Formula not starting with =");
 		}
 		else{
-			Util.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
+			NeoSplashUtil.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
 			formula1 = "<%= " +formula1.replace("=", EMPTY_STRING) + " %>";
 		}
 
-		Util.logn("formula1 =" + formula1);
+		NeoSplashUtil.logn("formula1 =" + formula1);
 
 		Object s1 = interpret_erb(cellID, formula1);
 		se.setDefinition(definition);
@@ -604,8 +584,8 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 	public Cell getCellByID(String cellID)
 	{
-		int row = Util.getRowIndexFromCellID(cellID);
-		int column = Util.getColumnIndexFromCellID(cellID);
+		int row = NeoSplashUtil.getRowIndexFromCellID(cellID);
+		int column = NeoSplashUtil.getColumnIndexFromCellID(cellID);
 	
 		return (Cell)getValueAt(row, column);
 	}

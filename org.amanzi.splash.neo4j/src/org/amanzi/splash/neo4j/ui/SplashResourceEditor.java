@@ -12,7 +12,7 @@ package org.amanzi.splash.neo4j.ui;
 
 import java.io.ByteArrayInputStream;
 
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -111,7 +111,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
     public void dispose() {
         super.dispose();
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-        Util.logn("Closing the spreadsheet");
+        NeoSplashUtil.logn("Closing the spreadsheet");
     }
 
 	/*
@@ -173,7 +173,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
                     // for more details).
                     Display.getDefault().syncExec(new Runnable() {
                         public void run() {
-                            Util.logn("spreadsheet has been deleted !!!");
+                            NeoSplashUtil.logn("spreadsheet has been deleted !!!");
                         	//setIsDirty(true);
                             IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
                             

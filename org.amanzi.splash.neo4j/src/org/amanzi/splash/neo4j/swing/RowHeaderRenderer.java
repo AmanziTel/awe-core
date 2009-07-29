@@ -6,7 +6,7 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 
 public class RowHeaderRenderer extends DefaultTableCellRenderer
 {
@@ -31,12 +31,12 @@ public class RowHeaderRenderer extends DefaultTableCellRenderer
 		setHorizontalAlignment(CENTER);
 		
 		if (this.row == row){
-			setFont(Util.selectedHeaderFont);
-			setBackground(Util.selectedHeaderColor);
+			setFont(NeoSplashUtil.selectedHeaderFont);
+			setBackground(NeoSplashUtil.selectedHeaderColor);
 		}
 		else{
-			setFont(Util.unselectedHeaderFont);
-			setBackground(Util.unselectedHeaderColor);
+			setFont(NeoSplashUtil.unselectedHeaderFont);
+			setBackground(NeoSplashUtil.unselectedHeaderColor);
 		}
 		setValue(String.valueOf(row + 1));
 

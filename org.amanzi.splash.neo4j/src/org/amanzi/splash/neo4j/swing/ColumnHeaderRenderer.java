@@ -8,7 +8,7 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 
 public class ColumnHeaderRenderer extends DefaultTableCellRenderer
 {
@@ -41,13 +41,13 @@ public class ColumnHeaderRenderer extends DefaultTableCellRenderer
 		
 		
 		if (selected == true){
-			setFont(Util.selectedHeaderFont);
-			setBackground(Util.selectedHeaderColor);
+			setFont(NeoSplashUtil.selectedHeaderFont);
+			setBackground(NeoSplashUtil.selectedHeaderColor);
 			//selected = false;
 		}
 		else{
-			setFont(Util.unselectedHeaderFont);
-			setBackground(Util.unselectedHeaderColor);
+			setFont(NeoSplashUtil.unselectedHeaderFont);
+			setBackground(NeoSplashUtil.unselectedHeaderColor);
 		}
 			
 		setValue(value.toString());

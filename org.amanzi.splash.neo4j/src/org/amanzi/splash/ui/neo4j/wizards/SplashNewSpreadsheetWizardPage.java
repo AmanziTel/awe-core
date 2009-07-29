@@ -1,10 +1,12 @@
 package org.amanzi.splash.ui.neo4j.wizards;
 
-import java.io.File;
-
 import net.refractions.udig.project.internal.impl.RubyProjectImpl;
 
-import org.amanzi.splash.neo4j.utilities.Util;
+import org.amanzi.splash.neo4j.database.nodes.RootNode;
+import org.amanzi.splash.neo4j.ui.SplashPlugin;
+import org.amanzi.splash.neo4j.utilities.ActionUtil;
+import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -76,8 +78,6 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 			}
 		});
 		
-		//containerText.setText(this.selection.)
-
 		Button button = new Button(container, SWT.PUSH);
 		button.setText("Browse...");
 		button.addSelectionListener(new SelectionAdapter() {
@@ -86,10 +86,8 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 			}
 		});
 		
-		
-		
 		label = new Label(container, SWT.NULL);
-		label.setText("&File name:");
+		label.setText("&Spreadsheet name:");
 
 		fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -107,8 +105,6 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 				new OpenNewRubyProjectWizardAction().run();
 			}
 		});
-		
-
 		
 		initialize();
 		dialogChanged();
@@ -150,12 +146,12 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 				&& selection instanceof IStructuredSelection) {
 			IStructuredSelection ssel = (IStructuredSelection) selection;
 			
-			Util.logn("ssel: "+ ssel.toString());
+			NeoSplashUtil.logn("ssel: "+ ssel.toString());
 			
 			if (ssel.size() > 1)
 				return;
 			Object obj = ssel.getFirstElement();
-			Util.logn("obj: "+ obj.toString());
+			NeoSplashUtil.logn("obj: "+ obj.toString());
 			
 			if (obj instanceof IResource) {
 				IContainer container;
@@ -164,7 +160,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 				else
 					container = ((IResource) obj).getParent();
 				
-				Util.logn("container: "+ container.getName());
+				NeoSplashUtil.logn("container: "+ container.getName());
 				
 				
 				containerText.setText(container.getFullPath().toString());
@@ -181,7 +177,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
                 }
             }
 		}
-		fileText.setText("sheet" + nameCounter + ".splash");
+		fileText.setText("sheet" + nameCounter);
 		nameCounter++;
 	}
 
@@ -191,7 +187,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 	 */
 
 	private void handleBrowse() {
-		Util.logn("ResourcesPlugin.getWorkspace().getRoot(): " + ResourcesPlugin.getWorkspace().getRoot().toString());
+		NeoSplashUtil.logn("ResourcesPlugin.getWorkspace().getRoot(): " + ResourcesPlugin.getWorkspace().getRoot().toString());
 		ContainerSelectionDialog dialog = new ContainerSelectionDialog(
 				getShell(), ResourcesPlugin.getWorkspace().getRoot(), true,
 				"Select new file container");
@@ -212,47 +208,47 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		IResource container = ResourcesPlugin.getWorkspace().getRoot()
 				.findMember(new Path(getContainerName()));
 		
-		String fileName = getFileName();
+		final String fileName = getFileName();
 		
-		Util.logn(Platform.getLocation() + "/" + getContainerName() + "/" + fileName);
-		File f = new File(Platform.getLocation() + "/" + getContainerName() + "/" + fileName);
-		
-		if (f.exists()){
-			updateStatus("File already exists...");
-			return;
-		}
+		NeoSplashUtil.logn(Platform.getLocation() + "/" + getContainerName() + "/" + fileName);
 
 		if (getContainerName().length() == 0) {
 			updateStatus("File container must be specified");
 			return;
 		}
-		
-		
+				
 		if (container == null
 				|| (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
 			updateStatus("File container must exist");
 			return;
 		}
+		
 		if (!container.isAccessible()) {
 			updateStatus("Project must be writable");
 			return;
 		}
-		if (fileName.length() == 0) {
-			updateStatus("File name must be specified");
-			return;
-		}
-		if (fileName.replace('\\', '/').indexOf('/', 1) > 0) {
-			updateStatus("File name must be valid");
-			return;
-		}
-		int dotLoc = fileName.lastIndexOf('.');
-		if (dotLoc != -1) {
-			String ext = fileName.substring(dotLoc + 1);
-			if (ext.equalsIgnoreCase("splash") == false) {
-				updateStatus("File extension must be \"splash\"");
-				return;
-			}
-		}
+		
+		//TODO: Lagutko: must be added computing for Root Node of Spreadsheet
+        //Lagutko: it's a fake because for now Root Node is a Reference Node
+        final RootNode root = SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
+        boolean isExist = (Boolean)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+
+            private boolean result;
+            
+            public Object getValue() {
+                return result;
+            }
+
+            public void run() {
+                result = SplashPlugin.getDefault().getSpreadsheetService().findSpreadsheet(root, fileName) != null;
+            }
+            
+        });
+        if (isExist) {
+            updateStatus("Spreadsheet already exists");
+            return;
+        }
+		
 		updateStatus(null);
 	}
 
