@@ -213,8 +213,8 @@ public class SpreadsheetService {
                                 
                 CellNode node = getCellNode(sheet, id);
                 
-                if (node == null) {
-                    node = createCell(sheet, id);
+                if (node == null) {                             
+                    node = updateCell(sheet, new Cell(id.getRowIndex(), id.getColumnIndex(), DEFAULT_VALUE, DEFAULT_DEFINITION, new CellFormat()));
                 }
                 
                 updatedNode.addDependedNode(node);                
