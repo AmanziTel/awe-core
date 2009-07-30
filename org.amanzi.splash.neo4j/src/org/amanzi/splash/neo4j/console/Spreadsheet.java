@@ -7,7 +7,7 @@ import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 /**
  * Spreadsheet class
  * 
- * Provides access to Cells
+ * Provides access to Cells from AWE Script Console and Ruby Scripts
  * 
  * @author Lagutko_N
  */
@@ -37,7 +37,7 @@ public class Spreadsheet {
 	public String getValue(String cellID) {
 		int column = NeoSplashUtil.getColumnIndexFromCellID(cellID);
 		int row = NeoSplashUtil.getRowIndexFromCellID(cellID);
-		Cell cell = (Cell)model.getValueAt(row, column);		
+		Cell cell = (Cell)model.getValueAt(row, column);	
 		return (String)cell.getValue();
 	}
 	
