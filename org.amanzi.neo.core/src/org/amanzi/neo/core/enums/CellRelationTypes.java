@@ -8,6 +8,6 @@ import org.neo4j.api.core.RelationshipType;
 
 public enum CellRelationTypes implements RelationshipType
 {
-    RFD,
+	REFERENCED,
     RFG
 }
