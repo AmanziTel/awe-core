@@ -85,4 +85,12 @@ public abstract class AbstractNode {
     public String getName() {
         return (String)getParameter(INeoConstants.PROPERTY_NAME_NAME);
     }
+    
+    /**
+     * Deletes this Node
+     * 
+     */
+    public void delete() {
+        node.delete();
+    }
 }

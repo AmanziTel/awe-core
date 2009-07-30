@@ -1,8 +1,12 @@
 package org.amanzi.splash.neo4j.database.nodes;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 
 /**
  * Wrapper of Spreadsheet Column
@@ -64,5 +68,18 @@ public class ColumnNode extends AbstractNode {
     public void addCell(CellNode cell) {
         addRelationship(SplashRelationshipTypes.COLUMN_CELL, cell.getUnderlyingNode());
     }
-
+    
+    /**
+     * Returns number of Cells in this Row
+     *
+     * @return number of Cells
+     */
+    public int getCellCount() {        
+        Iterator<Relationship> iterator = node.getRelationships(SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
+        int result = 0;
+        while (iterator.hasNext()) {
+            result++;
+        }        
+        return result;
+    }
 }

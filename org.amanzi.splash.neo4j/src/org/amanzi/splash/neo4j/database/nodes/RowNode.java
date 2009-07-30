@@ -8,6 +8,7 @@ import org.amanzi.splash.neo4j.database.exception.SplashDatabaseException;
 import org.amanzi.splash.neo4j.database.exception.SplashDatabaseExceptionMessages;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
@@ -130,6 +131,19 @@ public class RowNode extends AbstractNode {
         protected CellNode wrapNode(Node node) {            
             return new CellNode(node);
         }
-        
+    }
+    
+    /**
+     * Returns number of Cells in this Column
+     *
+     * @return number of Cells
+     */
+    public int getCellCount() {        
+        Iterator<Relationship> iterator = node.getRelationships(SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
+        int result = 0;
+        while (iterator.hasNext()) {
+            result++;
+        }        
+        return result;
     }
 }

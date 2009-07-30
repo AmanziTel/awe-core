@@ -177,6 +177,14 @@ public class SpreadsheetService {
      * @param cell Cell for update
      */
     public void updateCellWithReferences(SpreadsheetNode sheet, Cell cell) {
+        //if Cell has no Script and have empty Value and Definition than delete it
+        if (!cell.hasReference() && cell.getValue().equals(Cell.DEFAULT_VALUE)
+                                 && cell.getDefinition().equals(Cell.DEFAULT_DEFINITION)) {
+            if (deleteCell(sheet, new CellID(cell.getCellID()))) {
+                return;
+            }
+        }
+        
         CellNode updatedNode = updateCell(sheet, cell);
         
         Transaction tx = neoService.beginTx();
@@ -184,9 +192,23 @@ public class SpreadsheetService {
         try {
             List<String> rfdCellsIDs = NeoSplashUtil.findComplexCellIDs((String) cell.getDefinition());
             
-            for (int i=0;i < rfdCellsIDs.size();i++){
-                String ID = rfdCellsIDs.get(i);
+            Iterator<CellNode> dependentCells = updatedNode.getReferencedNodes();
+            
+            ArrayList<CellNode> nodesToDelete = new ArrayList<CellNode>(0);
+            
+            while (dependentCells.hasNext()) {
+                CellNode dependentCell = dependentCells.next();
+                CellID id = new CellID(dependentCell.getRow().getRowIndex(), dependentCell.getColumn().getColumnName());
                 
+                if (!rfdCellsIDs.contains(id)) {
+                    nodesToDelete.add(dependentCell);                    
+                    rfdCellsIDs.remove(id);
+                }
+            }
+            
+            updatedNode.deleteReferenceFromNode(nodesToDelete);
+            
+            for (String ID : rfdCellsIDs){
                 CellID id = new CellID(ID);
                                 
                 CellNode node = getCellNode(sheet, id);
@@ -195,8 +217,7 @@ public class SpreadsheetService {
                     node = createCell(sheet, id);
                 }
                 
-                updatedNode.addRFDNode(node);
-                node.addRFGNode(updatedNode);
+                updatedNode.addDependedNode(node);                
             }
             
             tx.success();
@@ -363,10 +384,10 @@ public class SpreadsheetService {
      * @param cellID id of Cell
      * @return RFD cells of Cell
      */
-    public ArrayList<Cell> getRFDCells(SpreadsheetNode sheet, CellID cellID) {
+    public ArrayList<Cell> getDependentCells(SpreadsheetNode sheet, CellID cellID) {
         CellNode currentNode = getCellNode(sheet, cellID);
         
-        Iterator<CellNode> rfdNodes = currentNode.getRFDNodes();
+        Iterator<CellNode> rfdNodes = currentNode.getDependedNodes();
         
         ArrayList<Cell> result = new ArrayList<Cell>(0);
         
@@ -396,5 +417,41 @@ public class SpreadsheetService {
         finally {
             tx.finish();
         }
+    }
+    
+    /**
+     * Deletes the Cell from Spreadsheet
+     *
+     * @param sheet Spreadsheet Node
+     * @param id ID of Cell to delete
+     * @return is Cell was successfully deleted
+     */    
+    public boolean deleteCell(SpreadsheetNode sheet, CellID id) {
+        CellNode cell = getCellNode(sheet, id);
+        
+        if (cell != null) {
+            //check if there are cells that are dependent on this cell
+            if (cell.getDependedNodes().hasNext()) {
+                //we can't delete Cell on which other Cell depends
+                return false;
+            }
+            
+            //delete Column if it has only this Cell
+            ColumnNode column = cell.getColumn();
+            if (column.getCellCount() == 1) {
+                column.delete();
+            }
+            
+            RowNode row = cell.getRow();
+            
+            cell.delete();
+            
+            //delete Row if it has no Cells
+            if (row.getCellCount() == 0) {
+                row.delete();
+            }            
+        }
+        
+        return true;
     }
 }

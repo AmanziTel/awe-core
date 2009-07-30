@@ -2,7 +2,9 @@ package org.amanzi.splash.neo4j.database.nodes;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CellRelationTypes;
@@ -10,6 +12,7 @@ import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Traverser;
@@ -101,7 +104,7 @@ public class CellNode extends AbstractNode {
     /*
      * Name of this Node
      */
-    private static final String CELL_NODE_NAME = "Spreadsheet Cell";
+    private static final String CELL_NODE_NAME = "Spreadsheet Cell";    
     
     /**
      * Constructor. Wraps a Node from database and sets type and name of Node
@@ -401,26 +404,48 @@ public class CellNode extends AbstractNode {
      *
      * @param rfdNode wrapped RFD Cell
      */    
-    public void addRFDNode(CellNode rfdNode) {
-        addRelationship(CellRelationTypes.RFD, rfdNode.getUnderlyingNode());
+    public void addDependedNode(CellNode rfdNode) {
+        addRelationship(CellRelationTypes.REFERENCED, rfdNode.getUnderlyingNode());
     }
     
     /**
-     * Adds a RFG Cell
+     * Delete a list of Cells from dependent
      *
-     * @param rfgNode wrapped RFG Cell
-     */    
-    public void addRFGNode(CellNode rfgNode) {
-        addRelationship(CellRelationTypes.RFG, rfgNode.getUnderlyingNode());
-    }
-    
-    /**
-     * Returns Iterator for RFD Cells of this Cell
-     *
-     * @return
+     * @param rfdNodes list of Cells
      */
-    public Iterator<CellNode> getRFDNodes() {
-        return new RFDNodeIterator();
+    public void deleteReferenceFromNode(List<CellNode> rfdNodes) {
+        ArrayList<Node> underlyingNodes = new ArrayList<Node>(rfdNodes.size());
+        for (CellNode node : rfdNodes) {
+            underlyingNodes.add(node.getUnderlyingNode());
+        }
+        
+        Iterator<Relationship> relationships = node.getRelationships(CellRelationTypes.REFERENCED, Direction.OUTGOING).iterator();
+        
+        while (relationships.hasNext()) {
+            Relationship relationship = relationships.next();
+            
+            if (underlyingNodes.contains(relationship.getEndNode())) {
+                relationship.delete();
+            }
+        }
+    }
+    
+    /**
+     * Returns Iterator for Cells that depended on this Cell
+     *
+     * @return iterator of depended Cells
+     */
+    public Iterator<CellNode> getDependedNodes() {        
+        return new DependedNodesIterator();
+    }
+    
+    /**
+     * Returns Iterator for Cells that references on this Cell
+     *
+     * @return iterator of referenced Cells
+     */
+    public Iterator<CellNode> getReferencedNodes() {        
+        return new ReferencedNodesIterator();
     }
     
     /**
@@ -428,13 +453,34 @@ public class CellNode extends AbstractNode {
      * 
      * @author Lagutko_N
      */
-    private class RFDNodeIterator extends AbstractIterator<CellNode> {
+    private class DependedNodesIterator extends AbstractIterator<CellNode> {
         
-        public RFDNodeIterator() {
+        public DependedNodesIterator() {
             this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
-                                          StopEvaluator.END_OF_GRAPH,
+                                          StopEvaluator.DEPTH_ONE,
                                           ReturnableEvaluator.ALL_BUT_START_NODE,
-                                          CellRelationTypes.RFD,
+                                          CellRelationTypes.REFERENCED,
+                                          Direction.INCOMING).iterator();
+        }
+
+        @Override
+        protected CellNode wrapNode(Node node) {
+            return new CellNode(node);
+        }
+    }
+    
+    /**
+     * Iterator for RFD cells;
+     * 
+     * @author Lagutko_N
+     */
+    private class ReferencedNodesIterator extends AbstractIterator<CellNode> {
+        
+        public ReferencedNodesIterator() {
+            this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
+                                          StopEvaluator.DEPTH_ONE,
+                                          ReturnableEvaluator.ALL_BUT_START_NODE,
+                                          CellRelationTypes.REFERENCED,
                                           Direction.OUTGOING).iterator();
         }
 
@@ -442,6 +488,5 @@ public class CellNode extends AbstractNode {
         protected CellNode wrapNode(Node node) {
             return new CellNode(node);
         }
-        
     }
 }

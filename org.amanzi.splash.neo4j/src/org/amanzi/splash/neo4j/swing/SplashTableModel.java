@@ -342,6 +342,8 @@ public class SplashTableModel extends DefaultTableModel
 				NeoSplashUtil.logn("The entered formula just text, not ERB and not Ruby");
 				NeoSplashUtil.logn("Setting cell definition: "+ definition);
 				se.setDefinition(definition);
+				
+				interpret_erb(cellID, definition);
 
 				NeoSplashUtil.logn("Setting cell value:" + definition);
 				se.setValue(definition);
@@ -489,15 +491,26 @@ public class SplashTableModel extends DefaultTableModel
 
 		ActionUtil.getInstance().runTask(new Runnable() {
 		    public void run() {
-		        service.updateCellWithReferences(spreadsheet, (Cell)value);
-		        
-		        for (Cell c : service.getRFDCells(spreadsheet, new CellID(row, column))) {
-		            refreshCell(c);
-		        }
+		        updateCellWithReferences((Cell)value);
 		    }
 		}, false);
 
 		fireTableChanged (new TableModelEvent (this, row, row, column));
+	}
+	
+	/**
+	 * Recursively updates Cell Values by References
+	 *
+	 * @param rootCell Cell for update
+	 */
+	
+	private void updateCellWithReferences(Cell rootCell) {
+	    service.updateCellWithReferences(spreadsheet, rootCell);
+	    
+	    for (Cell c : service.getDependentCells(spreadsheet, new CellID(rootCell.getCellID()))) {
+	        refreshCell(c);
+	        updateCellWithReferences(c);
+	    }
 	}
 	
 	/**
