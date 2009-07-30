@@ -39,7 +39,7 @@ public class NeoPreferencesInitializer extends AbstractPreferenceInitializer
         pref.setDefault(NeoPreferences.DATABASE_LOCATION, checkDirs(
                 new String[] {System.getProperty("user.home"), ".amanzi", "neo"}).getPath());
 
-        ArrayList<URL> iconDirs = new ArrayList<URL>();
+        ArrayList<URL> iconDirs = new ArrayList<URL>(0);
         for (Object found : Collections.list(Platform.getBundle("org.amanzi.neo.loader").findEntries("/icons", "*", false))) {
             if (found instanceof URL) {
                 URL dir = (URL)found;
@@ -59,14 +59,15 @@ public class NeoPreferencesInitializer extends AbstractPreferenceInitializer
         Collections.sort(iconDirs, new Comparator<URL>(){
             
             public int compare(URL a, URL b) {
+                // TODO check maybe this will work: return a.toString().compareTo(b.toString());
+                String ap[] = a.getPath().split("/");
+                String bp[] = b.getPath().split("/");
                 try {
-                    String ap[] = a.getPath().split("/");
                     int x = Integer.parseInt(ap[ap.length-1]);
-                    String bp[] = b.getPath().split("/");
                     int y = Integer.parseInt(bp[bp.length-1]);
                     return x-y;
                 }catch(NumberFormatException e){
-                    return 0;
+                    return ap[ap.length-1].compareTo(bp[bp.length-1]);
                 }
             }
         });
@@ -77,6 +78,7 @@ public class NeoPreferencesInitializer extends AbstractPreferenceInitializer
         neoclipsePlugin.setHelper(neoPreferenceHelper);
 	}
 
+	// todo checl if this method is actually needed
 	private File checkDirs(String[] path) {
         File dir = new File(path[0]);
         for (int i = 1; i < path.length; i++) {
@@ -90,6 +92,7 @@ public class NeoPreferencesInitializer extends AbstractPreferenceInitializer
         if (!dir.exists()) {
             dir.mkdirs();
         } else if (!dir.isDirectory()) {
+            //TODO system.err shouldn't be used!
             System.err.println(dir.getPath() + " is not a directory");
         }
         return dir;

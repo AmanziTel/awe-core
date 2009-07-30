@@ -11,7 +11,6 @@ import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.neo.NeoServiceEvent;
 import org.neo4j.neoclipse.neo.NeoServiceEventListener;
 import org.neo4j.neoclipse.neo.NeoServiceManager;
-import org.neo4j.neoclipse.neo.NeoServiceStatus;
 import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 import org.neo4j.neoclipse.preference.NeoPreferences;
 
@@ -47,7 +46,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     /*
      * Listeners of NeoServiceProvider
      */
-    private ArrayList<INeoServiceProviderListener> listeners = new ArrayList<INeoServiceProviderListener>();
+    private ArrayList<INeoServiceProviderListener> listeners = new ArrayList<INeoServiceProviderListener>(0);
     
     /*
      * Location of Neo-database
@@ -112,7 +111,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
         if (databaseLocation == null) {
             IPreferenceStore store = Activator.getDefault().getPreferenceStore();
             databaseLocation = store.getString(NeoPreferences.DATABASE_RESOURCE_URI);
-            if ((databaseLocation == null) || (databaseLocation.trim().length() == 0)) {
+            if ((databaseLocation == null) || (databaseLocation.trim().isEmpty())) {
                 databaseLocation = store.getString(NeoPreferences.DATABASE_LOCATION);
             }
         }
@@ -172,18 +171,22 @@ public class NeoServiceProvider implements IPropertyChangeListener{
 
         public void serviceChanged(NeoServiceEvent event) {
             for (INeoServiceProviderListener listener : listeners) {
-                if (event.getStatus() == NeoServiceStatus.STOPPED) {
+                Object source = event.getSource();
+                switch (event.getStatus()) {
+                case STOPPED:
+                    listener.onNeoStop(source);
                     shutdown();
-                }
-                else if (event.getStatus() == NeoServiceStatus.STARTED) {
-                    listener.onNeoStart(event.getSource());
-                }
-                else if (event.getStatus() == NeoServiceStatus.COMMIT) {
-                    listener.onNeoCommit(event.getSource());
-                }
-                else if (event.getStatus() == NeoServiceStatus.ROLLBACK) {
-                    listener.onNeoRollback(event.getSource());
-                }
+                    break;
+                case STARTED:
+                    listener.onNeoStart(source);
+                    break;
+                case COMMIT:
+                    listener.onNeoCommit(source);
+                    break;
+                case ROLLBACK:
+                    listener.onNeoRollback(source);
+                    break;
+                }                    
             }
         }
         
@@ -202,6 +205,22 @@ public class NeoServiceProvider implements IPropertyChangeListener{
             Activator.getDefault().restartNeo();
             databaseLocation = null;
         }        
+    }
+    
+    /**
+     * Stops Neo Service 
+     * 
+     */
+    
+    public void stopNeo() {
+    	if (neoManager != null) {
+    		neoManager.stopNeoService();
+    	}
+    	else if (neoService != null) {
+    		neoService.shutdown();
+    	}
+    	neoManager = null;
+    	neoService = null;
     }
 
 }

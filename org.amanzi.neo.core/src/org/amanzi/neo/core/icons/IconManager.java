@@ -41,7 +41,7 @@ public class IconManager implements IPropertyChangeListener {
      */
     private UserIcons icons = null;
     
-    private ArrayList<Viewer> viewers = new ArrayList<Viewer>();
+    private ArrayList<Viewer> viewers = new ArrayList<Viewer>(0);
     
     /**
      * Creates IconManager instance
