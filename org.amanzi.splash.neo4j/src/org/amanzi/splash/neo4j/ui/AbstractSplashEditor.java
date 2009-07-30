@@ -31,6 +31,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -47,7 +48,6 @@ import javax.swing.table.TableModel;
 import org.amanzi.splash.neo4j.database.nodes.RootNode;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.ColumnHeaderRenderer;
-import org.amanzi.splash.neo4j.swing.RowHeaderRenderer;
 import org.amanzi.splash.neo4j.swing.SplashTable;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
@@ -181,37 +181,20 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @author Lagutko_N
 	 */
 
-	private void updateCell(int rowIndex, int columnIndex) {
+	private void updateCell(final Cell cell) {
 		//get selected cell and update value of cell
-		Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
-
-		//if Cell has no reference script than it cannot be update
-		if (!cell.hasReference()) {
-			//TODO: add error message
-			return;
-		}
-
-		//tableModel.updateCellFromScript(cell);
+		
+		((SplashTableModel)table.getModel()).updateCellFromScript(cell);
 	}
 
 	/**
 	 * Opens referenced script in editor
 	 * 
-	 * @param rowIndex row index
-	 * @param columnIndex column index
+	 * @param cell cell to open
 	 * @author Lagutko_N
 	 */
 
-	private void openCell(int rowIndex, int columnIndex) {
-		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
-		final Display display = swingControl.getDisplay();
-
-		//if Cell has no references to script than it cannot be open
-		if (!cell.hasReference()) {
-			//TODO: add error message
-			return;
-		}
-
+	private void openCell(final Cell cell) {
 		//run open action
 		ActionUtil.getInstance().runTask(new Runnable() {
 			public void run() {
@@ -223,10 +206,10 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 						EditorUtility.openInEditor(files[0]);
 					}
 					catch (RubyModelException e) {
-						//TODO: handle excpetion
+						SplashPlugin.error(null, e);
 					}
 					catch (PartInitException e) {
-						//TODO: handle excpetion
+					    SplashPlugin.error(null, e);
 					}
 				}
 				else {
@@ -239,23 +222,26 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	/**
 	 * Method that exports cell to script 
 	 * 
-	 * @param rowIndex row index of cell
-	 * @param columnIndex column index of cell
+	 * @param cell cell to export
 	 * @author Lagutko_N
 	 */
 
-	private void exportCell(int rowIndex, int columnIndex) {		
-		//get Cell and Display
-		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);		
+	private void exportCell(final Cell cell) {		
+		//get Cell and Display		
 		final Display display = swingControl.getDisplay();
 
 		//run ExportScriptWizard
 		ActionUtil.getInstance().runTask( new Runnable() {
 			public void run() {
+			    //TODO: put a project for script to wizard's selection
+			    //Lagutko, 30.07.2009, for now Spreadsheet node is a child of a Reference Node, but not of a 
+			    //Project Node and it means that it's impossible to find a project in which Spreadsheet stored
 				WizardDialog dialog = new WizardDialog(display.getActiveShell(), new ExportScriptWizard(cell));
 				dialog.open();
 			}
-		}, true);
+		}, false);
+		
+		((SplashTableModel)table.getModel()).refreshCell(cell);
 	}
 
 	/**
@@ -629,28 +615,6 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		};
 	}
 	
-	private void updateTableHeaderHighlights(int row, int column){
-		if (prev_selected_column != -1){
-			TableColumn tc = table.getColumnModel().getColumn(prev_selected_column);
-		    ((ColumnHeaderRenderer)tc.getHeaderRenderer()).selected = false;
-		}
-		
-		TableColumn tc = table.getColumnModel().getColumn(column);
-	    ((ColumnHeaderRenderer)tc.getHeaderRenderer()).selected = true;
-	    
-	    //table.rowHeader
-	    //table.rowHeader.repaint();
-	    
-		
-		prev_selected_column = column;
-		
-		((RowHeaderRenderer)table.rowHeader.getCellRenderer(row, 0)).row = row;
-		//((RowHeaderRenderer)table.rowHeader.getCellRenderer(row, 0)).column = column;
-		
-		table.getTableHeader().resizeAndRepaint();
-	    table.rowHeader.repaint();
-	}
-	
 	int prev_selected_column = -1;
 	int prev_selected_row = -1;
 
@@ -826,9 +790,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		// log an error and provide a helpful, friendly message.
 		if (ei == null)
 			throw new PartInitException(MessageFormat.format("Invalid input.\n\n({0} is not a valid input for {1})",
-					new String[] {editorInput.getClass().getName(),
-					this.getClass().getName()
-			}));
+					                    editorInput.getClass().getName(),
+					                    this.getClass().getName()));
 
 		try {
 
@@ -1025,6 +988,44 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				launchCellFormatPanel(table);
 			}
 		});
+		
+		//Lagutko, 30.07.2009, new menu items for integration with RDT
+
+		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
+        JSeparator separator = new JSeparator();
+        contextMenu.add(separator);
+
+        if (!cell.hasReference()) {
+            JMenuItem exportCellMenu = new JMenuItem();
+            exportCellMenu.setText("Export Cell");
+            exportCellMenu.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    exportCell(cell);
+                }
+            });
+            contextMenu.add(exportCellMenu);
+        }
+        else {      
+            JMenuItem openCellMenu = new JMenuItem();
+            openCellMenu.setText("Open Cell");
+            openCellMenu.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    openCell(cell);
+                }
+            });
+            contextMenu.add(openCellMenu);
+
+            JMenuItem updateCellMenu = new JMenuItem();
+            updateCellMenu.setText("Update Cell");
+            updateCellMenu.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    updateCell(cell);
+                }
+            });
+            contextMenu.add(updateCellMenu);
+        }
+        
+        contextMenu.add(new JSeparator());
 		contextMenu.add(cellFormattingMenu);
 		return contextMenu;
 	}
@@ -1127,22 +1128,6 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 		}
 	}
-
-
-
-	private class SelectionAdapter implements ListSelectionListener
-	{
-		public void valueChanged(ListSelectionEvent e)
-		{
-//			int c = listenerList.getListenerCount(SpreadsheetSelectionListener.class);
-//			if (c > 0)
-//			{
-//			//fireSelectionChanged();
-//			}
-		}
-	}
-
-
 
 	public CellFormat getCellFormat() {
 		return cellFormat;

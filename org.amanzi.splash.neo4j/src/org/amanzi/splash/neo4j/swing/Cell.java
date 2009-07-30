@@ -211,7 +211,7 @@ public class Cell
 	 */
 	public void setScriptURI(URI newScriptName) {
 		scriptURI = newScriptName;
-		hasReference = true;		
+		hasReference = scriptURI != null;		
 	}
 	
 	/**

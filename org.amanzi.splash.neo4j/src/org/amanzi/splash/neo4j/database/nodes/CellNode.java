@@ -1,10 +1,13 @@
 package org.amanzi.splash.neo4j.database.nodes;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CellRelationTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
+import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.ReturnableEvaluator;
@@ -83,6 +86,12 @@ public class CellNode extends AbstractNode {
      * Name of Value property
      */    
     private static final String CELL_VALUE = "value";
+    
+    /*
+     * Name of Script URI property
+     */
+    
+    private static final String SCRIPT_URI = "script_uri";
     
     /*
      * Type of this Node
@@ -355,6 +364,36 @@ public class CellNode extends AbstractNode {
      */
     public void setBackgroundColorB(Integer backgroundColorB) {
         setParameter(CELL_BG_COLOR_B, backgroundColorB);
+    }
+    
+    /**
+     * Sets Script URI of Cell
+     *
+     * @param scriptURI
+     */    
+    public void setScriptURI(URI scriptURI) {
+        if (scriptURI != null) {
+            setParameter(SCRIPT_URI, scriptURI.toString());
+        }
+    }
+    
+    /**
+     * Returns Script URI for Cell
+     *
+     * @return cell's script URI
+     */
+    public URI getScriptURI() {
+        String uri = (String)getParameter(SCRIPT_URI);
+        if (uri != null) {
+            try {
+                return new URI(uri);
+            }
+            catch (URISyntaxException e) {
+                SplashPlugin.error(null, e);
+                return null;
+            }
+        }
+        return null;
     }
     
     /**

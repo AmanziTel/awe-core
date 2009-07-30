@@ -228,6 +228,10 @@ public class SpreadsheetService {
             node.setValue((String)cell.getValue());
             node.setDefinition((String)cell.getDefinition());
             
+            if (cell.hasReference()) {
+                node.setScriptURI(cell.getScriptURI());
+            }
+            
             CellFormat format = cell.getCellFormat();
             
             if (format != null) {
@@ -346,7 +350,10 @@ public class SpreadsheetService {
             definition = DEFAULT_DEFINITION;
         }
         
-        return new Cell(id.getRowIndex(), id.getColumnIndex(), definition, value, cellFormat);
+        Cell result = new Cell(id.getRowIndex(), id.getColumnIndex(), definition, value, cellFormat);
+        result.setScriptURI(node.getScriptURI());
+        
+        return result;
     }
     
     /**
