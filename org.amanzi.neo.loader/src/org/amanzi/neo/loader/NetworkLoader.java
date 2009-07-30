@@ -20,7 +20,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
+import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -41,7 +41,7 @@ import org.neo4j.api.core.Transaction;
  * 
  * @author craig
  */
-public class NetworkLoader extends NeoServiceProviderListener {
+public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	/**
 	 * This class handles the CRS specification.
 	 * Currently it is hard coded to return WGS84 (EPSG:4326) for data that looks like lat/long

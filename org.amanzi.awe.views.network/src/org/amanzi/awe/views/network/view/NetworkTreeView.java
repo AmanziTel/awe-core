@@ -2,9 +2,10 @@ package org.amanzi.awe.views.network.view;
 
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeLabelProvider;
+import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
+import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.PartInitException;
@@ -109,8 +110,7 @@ public class NetworkTreeView extends ViewPart {
 		        try {		            
 		            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
 		        } catch (PartInitException e) {
-		            // TODO Auto-generated catch block
-		            e.printStackTrace();
+		            NetworkTreePlugin.error(null, e);
 		        }
 		    }   
 		});
@@ -169,7 +169,7 @@ public class NetworkTreeView extends ViewPart {
      * @since 1.1.0
      */
     
-    private class NeoServiceEventListener extends NeoServiceProviderListener {
+    private class NeoServiceEventListener extends NeoServiceProviderEventAdapter {
         
         public void onNeoStop(Object source) {
             neoServiceProvider.shutdown();

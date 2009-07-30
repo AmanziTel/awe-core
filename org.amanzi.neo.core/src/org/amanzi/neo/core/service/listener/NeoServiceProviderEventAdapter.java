@@ -6,7 +6,7 @@ package org.amanzi.neo.core.service.listener;
  * @author Lagutko_N
  */
 
-public class NeoServiceProviderAdapter implements INeoServiceProviderListener {
+public class NeoServiceProviderEventAdapter implements INeoServiceProviderListener {
 
     public void onNeoStop(Object source) { 
         
