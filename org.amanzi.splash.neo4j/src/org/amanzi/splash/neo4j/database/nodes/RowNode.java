@@ -146,4 +146,37 @@ public class RowNode extends AbstractNode {
         }        
         return result;
     }
+    
+    /**
+     * Returns Iterator with all Cells of this Row 
+     *
+     * @return all Cells of this Row
+     */    
+    public Iterator<CellNode> getAllCells() {
+        return new AllCellsIterator();
+    }
+    
+    /**
+     * Iterator for searching all Cells in this Row
+     * 
+     * @author Lagutko_N 
+     */
+    
+    private class AllCellsIterator extends AbstractIterator<CellNode> {
+        
+        public AllCellsIterator() {
+            this.iterator = node.traverse(Order.BREADTH_FIRST,
+                                          StopEvaluator.DEPTH_ONE,
+                                          ReturnableEvaluator.ALL_BUT_START_NODE,
+                                          SplashRelationshipTypes.ROW_CELL,
+                                          Direction.OUTGOING,
+                                          SplashRelationshipTypes.COLUMN_CELL,
+                                          Direction.INCOMING).iterator();
+        }
+
+        @Override
+        protected CellNode wrapNode(Node node) {            
+            return new CellNode(node);
+        }
+    }
 }

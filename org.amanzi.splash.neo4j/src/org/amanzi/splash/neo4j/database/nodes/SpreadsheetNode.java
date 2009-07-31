@@ -137,6 +137,10 @@ public class SpreadsheetNode extends AbstractNode {
         }
     }
     
+    public Iterator<RowNode> getAllRows() {
+        return new AllRowIterator();
+    }
+    
     /**
      * Iterator that computes Rows by given Index
      * 
@@ -157,6 +161,27 @@ public class SpreadsheetNode extends AbstractNode {
                         }
                 
                     },
+                    SplashRelationshipTypes.ROW,
+                    Direction.OUTGOING).iterator();
+        }
+
+        @Override
+        protected RowNode wrapNode(Node node) {            
+            return new RowNode(node);
+        }
+    }
+    
+    /**
+     * Iterator that computes all Rows in Spreadsheet
+     * 
+     * @author Lagutko_N
+     */    
+    private class AllRowIterator extends AbstractIterator<RowNode> {
+        
+        public AllRowIterator() {            
+            this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST, 
+                    StopEvaluator.DEPTH_ONE, 
+                    ReturnableEvaluator.ALL_BUT_START_NODE,
                     SplashRelationshipTypes.ROW,
                     Direction.OUTGOING).iterator();
         }

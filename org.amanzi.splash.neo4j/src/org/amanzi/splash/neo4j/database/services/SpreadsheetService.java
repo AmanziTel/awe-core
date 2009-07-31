@@ -289,7 +289,7 @@ public class SpreadsheetService {
         CellNode node = getCellNode(sheet, id);
         
         if (node != null) {
-            return convertNodeToCell(node);
+            return convertNodeToCell(node, id.getRowName(), id.getColumnName());
         }
         
         return new Cell(id.getRowIndex(), id.getColumnIndex(), DEFAULT_DEFINITION, DEFAULT_VALUE, new CellFormat());
@@ -329,11 +329,18 @@ public class SpreadsheetService {
      * @param node CellNode 
      * @return Cell
      */
-    private Cell convertNodeToCell(CellNode node) {
-        RowNode row = node.getRow();
-        ColumnNode column = node.getColumn();
+    private Cell convertNodeToCell(CellNode node, String rowIndex, String columnName) {
+        if (rowIndex == null) {
+            RowNode row = node.getRow();
+            rowIndex = row.getRowIndex();
+        }        
         
-        CellID id = new CellID(row.getRowIndex(), column.getColumnName());
+        if (columnName == null) {
+            ColumnNode column = node.getColumn();
+            columnName = column.getColumnName();
+        }
+        
+        CellID id = new CellID(rowIndex, columnName);
         
         CellFormat cellFormat = new CellFormat();
         
@@ -392,7 +399,7 @@ public class SpreadsheetService {
         ArrayList<Cell> result = new ArrayList<Cell>(0);
         
         while (rfdNodes.hasNext()) {            
-            result.add(convertNodeToCell(rfdNodes.next()));
+            result.add(convertNodeToCell(rfdNodes.next(), null, null));
         }
         
         return result;
@@ -453,5 +460,32 @@ public class SpreadsheetService {
         }
         
         return true;
+    }
+    
+    /**
+     * Returns all Cells of Spreadsheet
+     *
+     * @param sheet Spreadsheet
+     * @return all Cells of given Spreadsheet
+     */
+    
+    public List<Cell> getAllCells(SpreadsheetNode sheet) {
+        ArrayList<Cell> cellsList = new ArrayList<Cell>(0);
+        
+        Iterator<RowNode> rows = sheet.getAllRows();
+        
+        while (rows.hasNext()) {
+            RowNode row = rows.next();
+            String rowIndex = row.getRowIndex();
+            
+            Iterator<CellNode> cellsIterator = row.getAllCells();
+            
+            while (cellsIterator.hasNext()) {
+                Cell cell = convertNodeToCell(cellsIterator.next(), rowIndex, null);
+                cellsList.add(cell);
+            }
+        }
+        
+        return cellsList;
     }
 }

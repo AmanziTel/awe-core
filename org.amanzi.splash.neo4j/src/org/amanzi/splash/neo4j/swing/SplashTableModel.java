@@ -109,10 +109,7 @@ public class SplashTableModel extends DefaultTableModel
 		this.rowCount     = rows;
 		this.columnCount  = cols;
 		
-		if (runtime == null)
-			initializeJRubyInterpreter();	
-		
-		initializeSpreadsheet(splash_name, root);
+		initialize(splash_name, root);
 	}
 	
 	/**
@@ -124,7 +121,7 @@ public class SplashTableModel extends DefaultTableModel
      * @param root root node of Spreadsheet
      */
 	@SuppressWarnings("unchecked")
-	public SplashTableModel (int rows, int cols, String splash_id, Ruby rubyengine, RootNode root)
+	public SplashTableModel (int rows, int cols, String splash_name, Ruby rubyengine, RootNode root)
 	{
 		
 		this.rowCount     = rows;
@@ -133,7 +130,7 @@ public class SplashTableModel extends DefaultTableModel
 		if (runtime == null)
 			this.runtime = rubyengine;
 
-		initializeSpreadsheet(splash_id, root);
+		initialize(splash_name, root);
 	}
 	
 	/**
@@ -148,6 +145,32 @@ public class SplashTableModel extends DefaultTableModel
         
 	    //don't need to check that spreadsheet exists because it was checked in SplashEditorInput
 	    spreadsheet = service.findSpreadsheet(root, sheetName);
+	}
+	
+	/**
+	 * Initializes Spreadsheet
+	 *
+	 * @param splash_name name of Spreadsheet
+	 * @param root RootNode of Spreadsheet
+	 */
+	
+	private void initialize(String splash_name, RootNode root) {
+	    if (runtime == null)
+            initializeJRubyInterpreter();   
+        
+        initializeSpreadsheet(splash_name, root);
+        
+        initializeCells();
+	}
+	
+	/**
+	 * Initializes values of Spreadsheet in Ruby
+	 */
+	
+	private void initializeCells() {
+	    for (Cell cell : service.getAllCells(spreadsheet)) {
+	        interpret((String)cell.getDefinition(), null, cell.getRow(), cell.getColumn());
+	    }
 	}
 
 	/**
