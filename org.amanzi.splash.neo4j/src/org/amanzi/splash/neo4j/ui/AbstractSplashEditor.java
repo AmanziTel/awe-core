@@ -21,6 +21,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
@@ -45,6 +48,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+
 import org.amanzi.splash.neo4j.database.nodes.RootNode;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.ColumnHeaderRenderer;
@@ -53,11 +57,15 @@ import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.amanzi.splash.ui.neo4j.wizards.ExportScriptWizard;
+
 import org.eclipse.albireo.core.SwingControl;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -67,8 +75,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.part.FileEditorInput;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 
@@ -1136,5 +1148,71 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	public void setCellFormat(CellFormat cellFormat) {
 		this.cellFormat = cellFormat;
 	}
+	
+	
+protected InputStream getJFreeBarChartInitialContents() {
+		
+		int firstRow, firstColumn, lastRow, lastColumn;
+		firstRow = table.getSelectedRow();
+		firstColumn = table.getSelectedColumn();
+		lastRow = firstRow + table.getSelectedRowCount() - 1;
+		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
+		NeoSplashUtil.logn("firstRow: " + firstRow);
+		NeoSplashUtil.logn("firstColumn: " + firstColumn);
+		NeoSplashUtil.logn("lastRow: " + lastRow);
+		NeoSplashUtil.logn("lastColumn: " + lastColumn);
+		NeoSplashUtil.logn("lastColumn-firstColumn: " + (lastColumn-firstColumn));
+		
+		StringBuffer sb = new StringBuffer();
+		for (int j=firstColumn;j<=lastColumn;j++){
+		Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, j);
+		sb.append((String) c.getValue()+";"+(String) ((Cell)table.getValueAt(lastRow, j)).getValue()+";");
+		
+		}
+		return new ByteArrayInputStream(sb.toString().getBytes());
+	}
+	
+	public void plotCellsBarChart(){
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		final IProject resource = root.getProject("project.AWEScript");
+		IFile file =  resource.getFile(new Path("test.spchart"));
+		InputStream stream = getJFreeBarChartInitialContents();
+		if (file.exists()) {
+			try {
+				file.setContents(stream, true, true, null);
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			try {
+				file.create(stream, true, null);
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		try {
+			stream.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		IEditorInput editorInput = new FileEditorInput(file);
+		IWorkbenchWindow window=PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		IWorkbenchPage page = window.getActivePage();
+		try {
+			page.openEditor(editorInput, "org.amanzi.splash.editors.SplashJFreeChartEditor");
+		} catch (PartInitException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+
+	
 }
 

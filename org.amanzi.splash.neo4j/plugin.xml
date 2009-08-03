@@ -54,7 +54,77 @@
     </extension>
 
    
-   
+   <extension
+          point="org.eclipse.ui.commands">
+       <category
+             id="org.amanzi.splash.neo4j.commands.category"
+             name="Sample Category">
+       </category>
+       <command
+             categoryId="org.amanzi.splash.neo4j.commands.category"
+             id="org.amanzi.splash.neo4j.commands.sampleCommand"
+             name="barchart">
+       </command>
+       <command
+             categoryId="org.amanzi.splash.neo4j.commands.category"
+             id="org.amanzi.splash.neo4j.pieChartcommand"
+             name="piechart">
+       </command>
+    </extension>
+    <extension
+          point="org.eclipse.ui.handlers">
+       <handler
+             class="org.amanzi.splash.neo4j.handlers.SplashToolbarHandler"
+             commandId="org.amanzi.splash.neo4j.commands.sampleCommand">
+       </handler>
+       <handler
+             class="org.amanzi.splash.neo4j.handlers.PieChartCommandHandler"
+             commandId="org.amanzi.splash.neo4j.pieChartcommand">
+       </handler>
+    </extension>
+    <extension
+          point="org.eclipse.ui.bindings">
+       <key
+             commandId="org.amanzi.splash.neo4j.commands.sampleCommand"
+             contextId="org.eclipse.ui.contexts.window"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M1+6">
+       </key>
+    </extension>
+    <extension
+          point="org.eclipse.ui.menus">
+       <menuContribution
+             locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+          <menu
+                id="org.amanzi.splash.neo4j.menus.sampleMenu"
+                label="Sample Menu"
+                mnemonic="M">
+             <command
+                   commandId="org.amanzi.splash.neo4j.commands.sampleCommand"
+                   id="org.amanzi.splash.neo4j.menus.sampleCommand"
+                   mnemonic="S">
+             </command>
+          </menu>
+       </menuContribution>
+       <menuContribution
+             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+          <toolbar
+                id="org.amanzi.splash.neo4j.toolbars.sampleToolbar">
+             <command
+                   commandId="org.amanzi.splash.neo4j.commands.sampleCommand"
+                   icon="icons/barchart.ico"
+                   id="org.amanzi.splash.neo4j.toolbars.barChartCommand"
+                   tooltip="Plot Bar Chart">
+             </command>
+             <command
+                   commandId="org.amanzi.splash.neo4j.pieChartcommand"
+                   icon="icons/piechart.ico"
+                   id="org.amanzi.splash.neo4j.toolbars.pieChartCommand"
+                   tooltip="Plot Pie Chart">
+             </command>
+          </toolbar>
+       </menuContribution>
+    </extension>
    
    
    
