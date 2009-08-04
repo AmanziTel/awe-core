@@ -8,6 +8,8 @@ import org.eclipse.osgi.util.NLS;
 public class SplashDatabaseExceptionMessages extends NLS {
     
     private static final String BUNDLE_NAME = SplashDatabaseExceptionMessages.class.getName();
+	public static final String Not_Single_Chart_by_ID = null;
+	public static final String Not_Single_Chart_Item_by_ID = null;
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
     
     public static String Not_Single_Row_by_ID;

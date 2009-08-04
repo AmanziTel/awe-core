@@ -704,4 +704,20 @@ public class SplashTable extends JTable
 	public void setDefaultRowHeight(int defaultRowHeight) {
 		this.defaultRowHeight = defaultRowHeight;
 	}
+
+	public String getSplashName() {
+		return splashName;
+	}
+
+	public void setSplashName(String splashName) {
+		this.splashName = splashName;
+	}
+
+	public RootNode getRoot() {
+		return root;
+	}
+
+	public void setRoot(RootNode root) {
+		this.root = root;
+	}
 }

@@ -49,7 +49,13 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.splash.neo4j.database.exception.SplashDatabaseException;
+import org.amanzi.splash.neo4j.database.nodes.ChartItemNode;
+import org.amanzi.splash.neo4j.database.nodes.ChartNode;
 import org.amanzi.splash.neo4j.database.nodes.RootNode;
+import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
+import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.ColumnHeaderRenderer;
 import org.amanzi.splash.neo4j.swing.SplashTable;
@@ -81,6 +87,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
+import org.neo4j.api.core.NeoService;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 
@@ -109,13 +116,13 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	private int ROWS_EDGE_MARGIN = 5;
 	private int COLUMNS_EDGE_MARGIN = 5;
 	private String splashID;
-	
+
 	/**
 	 * Class constructor
 	 */
 	public AbstractSplashEditor() {
-		
-		
+
+
 	}
 
 	public SplashTable getTable(){
@@ -141,7 +148,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		firstColumn = table.getSelectedColumn();
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
-				
+
 		cellFormat = ((Cell)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn())).getCellFormat();
 		cellFormatPanel = new CellFormatPanel(cellFormat);
 		if (JOptionPane.showConfirmDialog(null,
@@ -161,7 +168,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		cellFormatPanel = null;
 		table.repaint();
 	}
-	
+
 	/**
 	 * Update cell format and save the new format in the Neo4j database
 	 * @param r
@@ -195,7 +202,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 	private void updateCell(final Cell cell) {
 		//get selected cell and update value of cell
-		
+
 		((SplashTableModel)table.getModel()).updateCellFromScript(cell);
 	}
 
@@ -221,7 +228,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 						SplashPlugin.error(null, e);
 					}
 					catch (PartInitException e) {
-					    SplashPlugin.error(null, e);
+						SplashPlugin.error(null, e);
 					}
 				}
 				else {
@@ -245,14 +252,14 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		//run ExportScriptWizard
 		ActionUtil.getInstance().runTask( new Runnable() {
 			public void run() {
-			    //TODO: put a project for script to wizard's selection
-			    //Lagutko, 30.07.2009, for now Spreadsheet node is a child of a Reference Node, but not of a 
-			    //Project Node and it means that it's impossible to find a project in which Spreadsheet stored
+				//TODO: put a project for script to wizard's selection
+				//Lagutko, 30.07.2009, for now Spreadsheet node is a child of a Reference Node, but not of a 
+				//Project Node and it means that it's impossible to find a project in which Spreadsheet stored
 				WizardDialog dialog = new WizardDialog(display.getActiveShell(), new ExportScriptWizard(cell));
 				dialog.open();
 			}
 		}, false);
-		
+
 		((SplashTableModel)table.getModel()).refreshCell(cell);
 	}
 
@@ -274,27 +281,27 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 */
 	private void maybeShowColumnPopup(MouseEvent e){
 		/*if (e.isPopupTrigger() && table.isEnabled()) {*/
-			Point p = new Point(e.getX(), e.getY());
-			int col = table.columnAtPoint(p);
-			int row = table.rowAtPoint(p);
+		Point p = new Point(e.getX(), e.getY());
+		int col = table.columnAtPoint(p);
+		int row = table.rowAtPoint(p);
 
-//			translate table index to model index
-			int mcol = table.getColumn(
-					table.getColumnName(col)).getModelIndex();
+//		translate table index to model index
+		int mcol = table.getColumn(
+				table.getColumnName(col)).getModelIndex();
 
-			if (row >= 0 && row < table.getRowCount()) {
-				cancelCellEditing();
+		if (row >= 0 && row < table.getRowCount()) {
+			cancelCellEditing();
 
-//				create popup menu...
-				JPopupMenu contextMenu = createColumnContextMenu(row,
-						mcol);
+//			create popup menu...
+			JPopupMenu contextMenu = createColumnContextMenu(row,
+					mcol);
 
-//				... and show it
-				if (contextMenu != null
-						&& contextMenu.getComponentCount() > 0) {
-					contextMenu.show(table, p.x, p.y);
-				}
+//			... and show it
+			if (contextMenu != null
+					&& contextMenu.getComponentCount() > 0) {
+				contextMenu.show(table, p.x, p.y);
 			}
+		}
 		//}
 	}
 
@@ -304,27 +311,27 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 */
 	private void maybeShowRowPopup(MouseEvent e){
 		//if (e.isPopupTrigger() && table.isEnabled()) {
-			Point p = new Point(e.getX(), e.getY());
-			int col = table.columnAtPoint(p);
-			int row = table.rowAtPoint(p);
+		Point p = new Point(e.getX(), e.getY());
+		int col = table.columnAtPoint(p);
+		int row = table.rowAtPoint(p);
 
-//			translate table index to model index
-			int mcol = table.getColumn(
-					table.getColumnName(col)).getModelIndex();
+//		translate table index to model index
+		int mcol = table.getColumn(
+				table.getColumnName(col)).getModelIndex();
 
-			if (row >= 0 && row < table.getRowCount()) {
-				cancelCellEditing();
+		if (row >= 0 && row < table.getRowCount()) {
+			cancelCellEditing();
 
-//				create popup menu...
-				JPopupMenu contextMenu = createRowContextMenu(row,
-						mcol);
+//			create popup menu...
+			JPopupMenu contextMenu = createRowContextMenu(row,
+					mcol);
 
-//				... and show it
-				if (contextMenu != null
-						&& contextMenu.getComponentCount() > 0) {
-					contextMenu.show(table, p.x, p.y);
-				}
+//			... and show it
+			if (contextMenu != null
+					&& contextMenu.getComponentCount() > 0) {
+				contextMenu.show(table, p.x, p.y);
 			}
+		}
 		//}
 	}
 
@@ -334,45 +341,45 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 */
 	private void maybeShowPopup(MouseEvent e) {
 		//if (e.isPopupTrigger() && table.isEnabled()) {
-			Point p = new Point(e.getX(), e.getY());
-			int col = table.columnAtPoint(p);
-			int row = table.rowAtPoint(p);
+		Point p = new Point(e.getX(), e.getY());
+		int col = table.columnAtPoint(p);
+		int row = table.rowAtPoint(p);
 
-//			translate table index to model index
-			int mcol = table.getColumn(
-					table.getColumnName(col)).getModelIndex();
+//		translate table index to model index
+		int mcol = table.getColumn(
+				table.getColumnName(col)).getModelIndex();
 
-			if (row >= 0 && row < table.getRowCount()) {
-				cancelCellEditing();
+		if (row >= 0 && row < table.getRowCount()) {
+			cancelCellEditing();
 
-//				create popup menu...
-				JPopupMenu contextMenu = createContextMenu(row,	mcol);
+//			create popup menu...
+			JPopupMenu contextMenu = createContextMenu(row,	mcol);
 
-//				... and show it
-				if (contextMenu != null
-						&& contextMenu.getComponentCount() > 0) {
-					contextMenu.show(table, p.x, p.y);
-				}
+//			... and show it
+			if (contextMenu != null
+					&& contextMenu.getComponentCount() > 0) {
+				contextMenu.show(table, p.x, p.y);
 			}
+		}
 		//}
 	}
 	// Returns the preferred height of a row.
-    // The result is equal to the tallest cell in the row.
-    public int getPreferredRowHeight(JTable table, int rowIndex, int margin) {
-        // Get the current default height for all rows
-        int height = table.getRowHeight();
-    
-        // Determine highest cell in the row
-        for (int c=0; c<table.getColumnCount(); c++) {
-            TableCellRenderer renderer = table.getCellRenderer(rowIndex, c);
-            Component comp = table.prepareRenderer(renderer, rowIndex, c);
-            int h = comp.getPreferredSize().height + 2*margin;
-            height = Math.max(height, h);
-        }
-        return height;
-    }
-    
-   
+	// The result is equal to the tallest cell in the row.
+	public int getPreferredRowHeight(JTable table, int rowIndex, int margin) {
+		// Get the current default height for all rows
+		int height = table.getRowHeight();
+
+		// Determine highest cell in the row
+		for (int c=0; c<table.getColumnCount(); c++) {
+			TableCellRenderer renderer = table.getCellRenderer(rowIndex, c);
+			Component comp = table.prepareRenderer(renderer, rowIndex, c);
+			int h = comp.getPreferredSize().height + 2*margin;
+			height = Math.max(height, h);
+		}
+		return height;
+	}
+
+
 
 	/**
 	 * create Swing table
@@ -394,19 +401,19 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				scrollPane.setBorder(new EmptyBorder(1,1,1,1));
 
 				scrollPane.setRowHeaderView(getTable().rowHeader);
-				
+
 				//table.setTableFormat(tableModel.tableFormat);
 				table.setRowHeight(table.getDefaultRowHeight());
-				
+
 				//table.getColumnModel().getColumn(2).setCellRenderer(new BackgroundColumnCellRenderer(new java.awt.Color(255,255,204)));
-				
+
 				for (int i=0;i<table.getColumnCount();i++){
 					TableColumn col = table.getColumnModel().getColumn(i);
-				    col.setPreferredWidth(table.getDefaultColumnWidth());
-				    
-				    col.setHeaderRenderer(new ColumnHeaderRenderer(table.getDefaultColumnWidth(), 20));
+					col.setPreferredWidth(table.getDefaultColumnWidth());
+
+					col.setHeaderRenderer(new ColumnHeaderRenderer(table.getDefaultColumnWidth(), 20));
 				}
-				
+
 				// Handle the listener
 				ListSelectionModel selectionModel = table.getSelectionModel();
 				selectionModel.addListSelectionListener(new ListSelectionListener(){
@@ -414,22 +421,22 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 					//@Override
 					public void valueChanged(ListSelectionEvent e) {
 						// TODO Auto-generated method stub
-						
+
 						//TODO: updateTableHeaderHighlights(table.getSelectedRow(), table.getSelectedColumn());
-						
+
 //						for (int i=0;i<table.getSelectedRows().length;i++){
-//							for (int j=0;j<table.getSelectedColumns().length;j++){
-//								updateTableHeaderHighlights(i,j);								
-//							}
+//						for (int j=0;j<table.getSelectedColumns().length;j++){
+//						updateTableHeaderHighlights(i,j);								
+//						}
 //						}
 					}
-					
+
 				});
 
-				
+
 				// set selection mode for contiguous  intervals
 				MouseListener ml = new HeaderMouseAdapter();
-					
+
 				// we don't allow reordering
 				table.getTableHeader().setReorderingAllowed(false);
 				table.getTableHeader().addMouseListener(ml);
@@ -437,7 +444,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				table.addKeyListener(new KeyListener(){
 
 					public void keyPressed(KeyEvent e) {
-						
+
 					}
 
 					@SuppressWarnings("static-access")
@@ -448,11 +455,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 						//Util.log("e.VK_ENTER = " + e.VK_ENTER);
 						if (e.getKeyCode() == e.VK_ENTER) /*ENTER*/
 						{
-							
+
 							int rdiff = table.getRowCount() - row;
 							int cdiff = table.getColumnCount() - column;
 
-							
+
 							if (rdiff < COLUMNS_EDGE_MARGIN)
 							{
 								getTable().insertRows(table.getRowCount()-1, COLUMNS_EDGE_MARGIN-rdiff);
@@ -465,41 +472,41 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 								setIsDirty(true);
 							}						
 						}
-						
+
 						if (e.getKeyCode() == 66 || e.getKeyCode() == 73 || e.getKeyCode() == 85){
 							if (table.isEditing() == false){
-							table.editCellAt(table.getSelectedRow(), table.getSelectedColumn());
-							DefaultCellEditor editor =
-								(DefaultCellEditor)table.getCellEditor();
-							JTextField textfield = (JTextField)editor.getComponent();
-							String s = textfield.getText();
-							if (Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK) == true){
-								s += e.getKeyText(e.getKeyCode()).toUpperCase();
-							}else{
-								s += e.getKeyText(e.getKeyCode()).toLowerCase();
-							}
-							textfield.setText(s);
-							textfield.setCaretPosition(textfield.getText().length());
-							textfield.getCaret().setVisible(true);
+								table.editCellAt(table.getSelectedRow(), table.getSelectedColumn());
+								DefaultCellEditor editor =
+									(DefaultCellEditor)table.getCellEditor();
+								JTextField textfield = (JTextField)editor.getComponent();
+								String s = textfield.getText();
+								if (Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK) == true){
+									s += e.getKeyText(e.getKeyCode()).toUpperCase();
+								}else{
+									s += e.getKeyText(e.getKeyCode()).toLowerCase();
+								}
+								textfield.setText(s);
+								textfield.setCaretPosition(textfield.getText().length());
+								textfield.getCaret().setVisible(true);
 							}
 						}
-						
-						
+
+
 						if (e.isControlDown() && e.getKeyCode() == 67){
 							table.copyCell(row, column);
-							
+
 						}else if (e.isControlDown() && e.getKeyCode() == 88){
 							table.cutCell(row, column);
 						}
 						else if (e.isControlDown() && e.getKeyCode() == 86){
 							table.pasteCell(row, column);
 						}else if (e.isControlDown() && e.getKeyCode() == 66){
-							
+
 							Cell cell = (Cell)table.getValueAt(row, column);
 							CellFormat cf = cell.getCellFormat();
-							
+
 							Integer fs = cf.getFontStyle().intValue();
-							
+
 							switch (fs){
 							case Font.PLAIN:
 								fs = Font.BOLD;
@@ -514,20 +521,20 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 								fs = Font.ITALIC;
 								break;
 							}
-							
-							
+
+
 							cf.setFontStyle(fs);
 							updateCellFormat(row, column, cf);
-							
+
 							table.repaint();
 							//setIsDirty(true);
 						}else if (e.isControlDown() && e.getKeyCode() == 73){
-							
+
 							Cell cell = (Cell)table.getValueAt(row, column);
 							CellFormat cf = cell.getCellFormat();
-							
+
 							Integer fs = cf.getFontStyle().intValue();
-							
+
 							switch (fs){
 							case Font.PLAIN:
 								fs = Font.ITALIC;
@@ -542,16 +549,16 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 								fs = Font.BOLD;
 								break;
 							}
-							
-							
+
+
 							cf.setFontStyle(fs);
 							updateCellFormat(row, column, cf);
 							table.repaint();
 							//setIsDirty(true);
 						}else if (e.isControlDown() && e.getKeyCode() == 85){
-							
+
 							Cell cell = (Cell)table.getValueAt(row, column);
-							
+
 							String old_value = (String) cell.getValue();
 							String new_value = "";
 							if (old_value.contains("<HTML><U>") && old_value.contains("</U></HTML>")){
@@ -560,7 +567,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 							}else{
 								new_value = "<HTML><U>" + old_value + "</U></HTML>";
 							}
-							
+
 							cell.setValue(new_value);
 							table.setValueAt(cell, row, column);
 							setIsDirty(true);
@@ -603,9 +610,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 							maybeShowPopup(e);
 							//launchCellFormatPanel(table);
 						}else{
-							
-							
-							
+
+
+
 							//table.repaint();
 						}
 					}
@@ -626,7 +633,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 		};
 	}
-	
+
 	int prev_selected_column = -1;
 	int prev_selected_row = -1;
 
@@ -634,17 +641,17 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @see org.eclipse.ui.IWorkbenchPart#createPartControl(Composite)
 	 */
 	public void createPartControl(final Composite parent) {
-	    //Lagutko, 28.07.2009, we use SplashEditorInput 
-	    SplashEditorInput sei = (SplashEditorInput) getEditorInput();
-	    
+		//Lagutko, 28.07.2009, we use SplashEditorInput 
+		SplashEditorInput sei = (SplashEditorInput) getEditorInput();
+
 		splashID = sei.getName().replace(".splash", "");
 		RootNode root = sei.getRoot();
-		
+
 		NeoSplashUtil.logn("splashID = " + splashID);
-		
+
 		table = new SplashTable(splashID, root);
 		table.getModel().addTableModelListener(this);
-		
+
 		createTable(parent);
 	}
 
@@ -802,12 +809,12 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		// log an error and provide a helpful, friendly message.
 		if (ei == null)
 			throw new PartInitException(MessageFormat.format("Invalid input.\n\n({0} is not a valid input for {1})",
-					                    editorInput.getClass().getName(),
-					                    this.getClass().getName()));
+					editorInput.getClass().getName(),
+					this.getClass().getName()));
 
 		try {
 
-			
+
 			setInput(ei);
 			setContents(ei);
 			setSite(site);
@@ -904,7 +911,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			public void actionPerformed(ActionEvent e) {
 				int col = table.getSelectedColumn();
 				getTable().insertRow(rowIndex);
-				
+
 				table.setColumnSelectionInterval(col, col);
 				table.setRowSelectionInterval(0, rowIndex);
 				setIsDirty(true);
@@ -974,7 +981,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 		contextMenu.add(cellCopyMenu);
-		
+
 		JMenuItem cellCutMenu = new JMenuItem();
 		cellCutMenu.setText("Cut \t\t Ctrl+X");
 		cellCutMenu.addActionListener(new ActionListener() {
@@ -983,7 +990,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 		contextMenu.add(cellCutMenu);
-		
+
 		JMenuItem cellPasteMenu = new JMenuItem();
 		cellPasteMenu.setText("Paste \t\t Ctrl+V");
 		cellPasteMenu.addActionListener(new ActionListener() {
@@ -992,7 +999,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			}
 		});
 		contextMenu.add(cellPasteMenu);
-		
+
 		JMenuItem cellFormattingMenu = new JMenuItem();
 		cellFormattingMenu.setText("Cell Formatting");
 		cellFormattingMenu.addActionListener(new ActionListener() {
@@ -1000,44 +1007,44 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 				launchCellFormatPanel(table);
 			}
 		});
-		
+
 		//Lagutko, 30.07.2009, new menu items for integration with RDT
 
 		final Cell cell = (Cell)table.getValueAt(rowIndex, columnIndex);
-        JSeparator separator = new JSeparator();
-        contextMenu.add(separator);
+		JSeparator separator = new JSeparator();
+		contextMenu.add(separator);
 
-        if (!cell.hasReference()) {
-            JMenuItem exportCellMenu = new JMenuItem();
-            exportCellMenu.setText("Export Cell");
-            exportCellMenu.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    exportCell(cell);
-                }
-            });
-            contextMenu.add(exportCellMenu);
-        }
-        else {      
-            JMenuItem openCellMenu = new JMenuItem();
-            openCellMenu.setText("Open Cell");
-            openCellMenu.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    openCell(cell);
-                }
-            });
-            contextMenu.add(openCellMenu);
+		if (!cell.hasReference()) {
+			JMenuItem exportCellMenu = new JMenuItem();
+			exportCellMenu.setText("Export Cell");
+			exportCellMenu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					exportCell(cell);
+				}
+			});
+			contextMenu.add(exportCellMenu);
+		}
+		else {      
+			JMenuItem openCellMenu = new JMenuItem();
+			openCellMenu.setText("Open Cell");
+			openCellMenu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					openCell(cell);
+				}
+			});
+			contextMenu.add(openCellMenu);
 
-            JMenuItem updateCellMenu = new JMenuItem();
-            updateCellMenu.setText("Update Cell");
-            updateCellMenu.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    updateCell(cell);
-                }
-            });
-            contextMenu.add(updateCellMenu);
-        }
-        
-        contextMenu.add(new JSeparator());
+			JMenuItem updateCellMenu = new JMenuItem();
+			updateCellMenu.setText("Update Cell");
+			updateCellMenu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					updateCell(cell);
+				}
+			});
+			contextMenu.add(updateCellMenu);
+		}
+
+		contextMenu.add(new JSeparator());
 		contextMenu.add(cellFormattingMenu);
 		return contextMenu;
 	}
@@ -1148,10 +1155,10 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	public void setCellFormat(CellFormat cellFormat) {
 		this.cellFormat = cellFormat;
 	}
-	
-	
-protected InputStream getJFreeBarChartInitialContents() {
-		
+
+
+	protected InputStream getJFreeBarChartInitialContents() {
+
 		int firstRow, firstColumn, lastRow, lastColumn;
 		firstRow = table.getSelectedRow();
 		firstColumn = table.getSelectedColumn();
@@ -1162,20 +1169,34 @@ protected InputStream getJFreeBarChartInitialContents() {
 		NeoSplashUtil.logn("lastRow: " + lastRow);
 		NeoSplashUtil.logn("lastColumn: " + lastColumn);
 		NeoSplashUtil.logn("lastColumn-firstColumn: " + (lastColumn-firstColumn));
-		
+
 		StringBuffer sb = new StringBuffer();
 		for (int j=firstColumn;j<=lastColumn;j++){
-		Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, j);
-		sb.append((String) c.getValue()+";"+(String) ((Cell)table.getValueAt(lastRow, j)).getValue()+";");
-		
+			Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, j);
+			sb.append((String) c.getValue()+";"+(String) ((Cell)table.getValueAt(lastRow, j)).getValue()+";");
+
 		}
 		return new ByteArrayInputStream(sb.toString().getBytes());
 	}
-	
+
 	public void plotCellsBarChart(){
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		final IProject resource = root.getProject("project.AWEScript");
-		IFile file =  resource.getFile(new Path("test.spchart"));
+		
+
+		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
+		SplashTableModel model = (SplashTableModel)table.getModel();
+
+		//SpreadsheetNode sRoot = model.getSpreadsheet();
+		//String name = table.getName();
+
+		SpreadsheetNode spreadsheet = model.getSpreadsheet();
+
+		NeoSplashUtil.logn("spreadsheet.getChartsCount(): " + spreadsheet.getChartsCount());
+		//int chartsCount = spreadsheet.getChartsCount();
+		ChartNode chartNode = service.createChart(spreadsheet, "Chart1");
+		
+		IFile file =  resource.getFile(new Path("Chart1"));
 		InputStream stream = getJFreeBarChartInitialContents();
 		if (file.exists()) {
 			try {
@@ -1199,20 +1220,49 @@ protected InputStream getJFreeBarChartInitialContents() {
 			e1.printStackTrace();
 		}
 		
+
+		int firstRow, firstColumn, lastRow, lastColumn;
+		firstRow = table.getSelectedRow();
+		firstColumn = table.getSelectedColumn();
+		lastRow = firstRow + table.getSelectedRowCount() - 1;
+		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
+		NeoSplashUtil.logn("firstRow: " + firstRow);
+		NeoSplashUtil.logn("firstColumn: " + firstColumn);
+		NeoSplashUtil.logn("lastRow: " + lastRow);
+		NeoSplashUtil.logn("lastColumn: " + lastColumn);
+		NeoSplashUtil.logn("lastColumn-firstColumn: " + (lastColumn-firstColumn));
+		
+		ChartItemNode[] items = new ChartItemNode[lastColumn-firstColumn+1];
+
+
+		for (int i=firstColumn;i<=lastColumn;i++){
+			Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, i);
+			
+			try {
+				items[i] = service.createChartItem(chartNode, "item" + i);
+			} catch (SplashDatabaseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			items[i].setChartItemCategory((String) c.getValue());
+			items[i].setChartItemValue((String) ((Cell)table.getValueAt(lastRow, i)).getValue());
+
+		}
+
 		IEditorInput editorInput = new FileEditorInput(file);
 		IWorkbenchWindow window=PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		IWorkbenchPage page = window.getActivePage();
 		try {
-			page.openEditor(editorInput, "org.amanzi.splash.editors.SplashJFreeChartEditor");
+			page.openEditor(editorInput, NeoSplashUtil.AMANZI_NEO4J_SPLASH_CHART_EDITOR);
 		} catch (PartInitException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
 
-	
+
+
+
+
 }
 

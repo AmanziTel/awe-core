@@ -14,9 +14,15 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 
 
+import org.amanzi.splash.neo4j.database.exception.SplashDatabaseException;
+import org.amanzi.splash.neo4j.database.nodes.ChartItemNode;
+import org.amanzi.splash.neo4j.database.nodes.ChartNode;
+import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
+import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.SplashTable;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
+import org.amanzi.splash.neo4j.ui.AbstractSplashEditor;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.eclipse.albireo.core.SwingControl;
@@ -104,62 +110,74 @@ public class SplashJFreeChartEditor extends EditorPart implements
 	 * @param line
 	 * @return
 	 */
-	private ArrayList<String> readLine(String line)
-	{
-		ArrayList<String> list = new ArrayList<String>();
-		String s = "";
-		for (int i=0;i<line.length();i++)
-		{
-			if (line.charAt(i) == ';')
-			{
-				list.add(s);
-				s = "";
-			}
-			else
-			{
-				s += line.charAt(i);
-			}
-		}
-		return list;
-	}
+//	private ArrayList<String> readLine(String line)
+//	{
+//		ArrayList<String> list = new ArrayList<String>();
+//		String s = "";
+//		for (int i=0;i<line.length();i++)
+//		{
+//			if (line.charAt(i) == ';')
+//			{
+//				list.add(s);
+//				s = "";
+//			}
+//			else
+//			{
+//				s += line.charAt(i);
+//			}
+//		}
+//		return list;
+//	}
 	
 	
 	private DefaultCategoryDataset createDataset() {
-
-		final IFile file = ((FileEditorInput) getEditorInput()).getFile();
-		InputStream is = null;
+		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
+		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		SplashTable table = ((AbstractSplashEditor)editor).getTable();
+		SplashTableModel model = (SplashTableModel)table.getModel(); 
+		
+		SpreadsheetNode spreadsheet = model.getSpreadsheet();
+		
+		ChartNode chartNode = null;
 		try {
-			is = file.getContents();
-		} catch (CoreException e) {
+			chartNode = spreadsheet.getChart("Chart1");
+		} catch (SplashDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
-		String line = null;
-		try {
-			line = lnr.readLine();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		ArrayList<String> list = readLine(line);
-		String[] Categories = new String[list.size()/2+1];
-		Double[] Values = new Double[list.size()/2+1];
+		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		
-		int m = 0;
-		for (int i=0;i<list.size();i+=2){
-			Categories[m] = list.get(i);
-			NeoSplashUtil.logn("Categories[" + m + "] = " + Categories[m]);
-			Values[m] = Double.parseDouble(list.get(i+1));
-			NeoSplashUtil.logn("Values[" + m + "] = " + Values[m]);
-			m++;
+		for (ChartItemNode node : service.getAllChartItems(chartNode)){
+			NeoSplashUtil.logn("node.getChartItemValue(): " + node.getChartItemValue());
+			
+			
+			dataset.addValue(Double.parseDouble(node.getChartItemValue()), "Series", node.getChartItemCategory());
 		}
 		
-        // create the dataset...
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        for (int i=0;i<list.size()/2;i++){
-        	dataset.addValue(Values[i], "Series", Categories[i]);
-        }
+		
+		
+//		final IFile file = ((FileEditorInput) getEditorInput()).getFile();
+//		InputStream is = null;
+//		try {
+//			is = file.getContents();
+//		} catch (CoreException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
+//		String line = null;
+//		try {
+//			line = lnr.readLine();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//        // create the dataset...
+//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+//        for (int i=0;i<list.size()/2;i++){
+//        	dataset.addValue(Values[i], "Series", Categories[i]);
+//        }
 
         return dataset;
 	}

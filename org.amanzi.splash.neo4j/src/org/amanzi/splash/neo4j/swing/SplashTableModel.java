@@ -658,4 +658,20 @@ public class SplashTableModel extends DefaultTableModel
 	public void updateCellFormat(Cell cell) {
 	    service.updateCell(spreadsheet, cell);
 	}
+
+	public SpreadsheetService getService() {
+		return service;
+	}
+
+	public void setService(SpreadsheetService service) {
+		this.service = service;
+	}
+
+	public SpreadsheetNode getSpreadsheet() {
+		return spreadsheet;
+	}
+
+	public void setSpreadsheet(SpreadsheetNode spreadsheet) {
+		this.spreadsheet = spreadsheet;
+	}
 }

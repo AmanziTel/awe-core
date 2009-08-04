@@ -41,6 +41,7 @@ public class NeoSplashUtil {
 	 * Name of SplashResourceEditor
 	 */
 	public static final String AMANZI_SPLASH_EDITOR = "org.amanzi.splash.neo4j.editor";
+	public static final String AMANZI_NEO4J_SPLASH_CHART_EDITOR = "org.amanzi.splash.editors.neo4j.SplashJFreeChartEditor";
 
 	public static Color unselectedHeaderColor = new Color(239, 235, 231);
 	public static Color selectedHeaderColor = new Color(250, 209, 132);

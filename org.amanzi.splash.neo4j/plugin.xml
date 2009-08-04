@@ -12,6 +12,14 @@
             class="org.amanzi.splash.neo4j.ui.SplashResourceEditor"
             id="org.amanzi.splash.neo4j.editor">
       </editor>
+      <editor
+            class="org.amanzi.splash.neo4j.editors.SplashJFreeChartEditor"
+            contributorClass="org.amanzi.splash.neo4j.editors.SplashJFreeChartEditorContributor"
+            extensions="mpe"
+            icon="icons/barchart.ico"
+            id="org.amanzi.splash.editors.neo4j.SplashJFreeChartEditor"
+            name="Neo4j Splash JFreeChart Bars Editor">
+      </editor>
    </extension>
    
    <extension

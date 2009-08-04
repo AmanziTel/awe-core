@@ -9,6 +9,8 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.neo4j.database.exception.SplashDatabaseException;
 import org.amanzi.splash.neo4j.database.exception.SplashDatabaseExceptionMessages;
 import org.amanzi.splash.neo4j.database.nodes.CellNode;
+import org.amanzi.splash.neo4j.database.nodes.ChartItemNode;
+import org.amanzi.splash.neo4j.database.nodes.ChartNode;
 import org.amanzi.splash.neo4j.database.nodes.ColumnNode;
 import org.amanzi.splash.neo4j.database.nodes.RootNode;
 import org.amanzi.splash.neo4j.database.nodes.RowNode;
@@ -124,6 +126,70 @@ public class SpreadsheetService {
             }
         }
     }
+    
+    /**
+     * Creates a Cell in Spreadsheet by given ID 
+     *
+     * @param spreadsheet spreadsheet
+     * @param id id of Cell
+     * @return created Cell
+     */
+    public ChartNode createChart(SpreadsheetNode spreadsheet, String id) {
+        Transaction tx = neoService.beginTx();
+        
+        try {        
+            ChartNode chartNode = spreadsheet.getChart(id);
+        
+            if (chartNode == null) {
+            	chartNode = new ChartNode(neoService.createNode());
+            	chartNode.setChartIndex(id);
+                spreadsheet.addChart(chartNode);
+            }
+            
+            tx.success();
+            
+            return chartNode;
+        }
+        catch (SplashDatabaseException e) {
+            tx.failure();
+            String message = SplashDatabaseExceptionMessages.getFormattedString(SplashDatabaseExceptionMessages.Service_Method_Exception, "createChart");
+            SplashPlugin.error(message, e);
+            return null;
+        }
+        finally {
+            tx.finish();
+        }
+    }
+    
+    /**
+     * Creates a Cell in Spreadsheet by given ID 
+     *
+     * @param chartNode spreadsheet
+     * @param id id of Cell
+     * @return created Cell
+     * @throws SplashDatabaseException 
+     */
+    public ChartItemNode createChartItem(ChartNode chartNode, String id) throws SplashDatabaseException {
+        Transaction tx = neoService.beginTx();
+        
+        try {        
+            ChartItemNode ChartItemNode = chartNode.getChartItem(id);
+        
+            if (ChartItemNode == null) {
+            	ChartItemNode = new ChartItemNode(neoService.createNode());
+            	ChartItemNode.setChartItemIndex(id);
+                chartNode.addChartItem(ChartItemNode);
+            }
+            
+            tx.success();
+            
+            return ChartItemNode;
+        }
+        finally {
+            tx.finish();
+        }
+    }
+    
     
     /**
      * Creates a Cell in Spreadsheet by given ID 
@@ -324,6 +390,28 @@ public class SpreadsheetService {
     }
     
     /**
+     * Returns CellNode by given ID
+     *
+     * @param sheet spreadsheet
+     * @param id id of Cell
+     * @return CellNode by ID or null if Cell doesn't exists
+     */
+    private ChartNode getChartNode(SpreadsheetNode sheet, String id) {
+        Transaction tx = neoService.beginTx();
+        
+        try {            
+        	ChartNode result = sheet.getChartNode(id);
+            
+            tx.success();
+            
+            return result;
+        }
+        finally {
+            tx.finish();
+        }
+    }
+    
+    /**
      * Converts CellNode to Cell
      *
      * @param node CellNode 
@@ -487,5 +575,28 @@ public class SpreadsheetService {
         }
         
         return cellsList;
+    }
+    
+    /**
+     * Returns all Cells of Spreadsheet
+     *
+     * @param sheet Spreadsheet
+     * @return all Cells of given Spreadsheet
+     */
+    
+    public List<ChartItemNode> getAllChartItems(ChartNode chartNode) {
+        ArrayList<ChartItemNode> chartItemsList = new ArrayList<ChartItemNode>(0);
+        
+        Iterator<ChartItemNode> chartItems = chartNode.getAllChartItems();
+        
+        while (chartItems.hasNext()) {
+        	ChartItemNode chartItem = chartItems.next();
+            String chartItemIndex = chartItem.getChartItemIndex();
+            
+            
+            chartItemsList.add(chartItem);
+        }
+        
+        return chartItemsList;
     }
 }
