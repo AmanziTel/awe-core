@@ -23,6 +23,7 @@ import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.SplashTable;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.ui.AbstractSplashEditor;
+import org.amanzi.splash.neo4j.ui.ChartEditorInput;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.eclipse.albireo.core.SwingControl;
@@ -140,7 +141,11 @@ public class SplashJFreeChartEditor extends EditorPart implements
 		
 		ChartNode chartNode = null;
 		try {
-			chartNode = spreadsheet.getChart("Chart1");
+			//int chartsCount = spreadsheet.getChartsCount();
+			
+			//NeoSplashUtil.logn("spreadsheet.getChartsCount()2: " + chartsCount);
+			
+			chartNode = spreadsheet.getChart(((ChartEditorInput) getEditorInput()).getChartName());
 		} catch (SplashDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

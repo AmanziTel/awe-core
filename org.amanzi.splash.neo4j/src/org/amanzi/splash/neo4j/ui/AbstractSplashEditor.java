@@ -1178,8 +1178,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		}
 		return new ByteArrayInputStream(sb.toString().getBytes());
 	}
+	
+	
 
 	public void plotCellsBarChart(){
+		String chartName = "";
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		final IProject resource = root.getProject("project.AWEScript");
 		
@@ -1192,11 +1195,14 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 
 		SpreadsheetNode spreadsheet = model.getSpreadsheet();
 
-		NeoSplashUtil.logn("spreadsheet.getChartsCount(): " + spreadsheet.getChartsCount());
-		//int chartsCount = spreadsheet.getChartsCount();
-		ChartNode chartNode = service.createChart(spreadsheet, "Chart1");
 		
-		IFile file =  resource.getFile(new Path("Chart1"));
+		int chartsCount = spreadsheet.getChartsCount();
+		chartsCount++;
+		//NeoSplashUtil.logn("spreadsheet.getChartsCount(): " + chartsCount);
+		chartName = "Chart" + chartsCount;
+		ChartNode chartNode = service.createChart(spreadsheet, chartName);
+		
+		IFile file =  resource.getFile(new Path(chartName));
 		InputStream stream = getJFreeBarChartInitialContents();
 		if (file.exists()) {
 			try {
@@ -1226,6 +1232,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		firstColumn = table.getSelectedColumn();
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
+		
 		NeoSplashUtil.logn("firstRow: " + firstRow);
 		NeoSplashUtil.logn("firstColumn: " + firstColumn);
 		NeoSplashUtil.logn("lastRow: " + lastRow);
@@ -1234,6 +1241,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		
 		ChartItemNode[] items = new ChartItemNode[lastColumn-firstColumn+1];
 
+		NeoSplashUtil.logn("A01");
 
 		for (int i=firstColumn;i<=lastColumn;i++){
 			Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, i);
@@ -1248,12 +1256,19 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			items[i].setChartItemValue((String) ((Cell)table.getValueAt(lastRow, i)).getValue());
 
 		}
+		NeoSplashUtil.logn("A02");
 
-		IEditorInput editorInput = new FileEditorInput(file);
+		//IEditorInput editorInput = new FileEditorInput(file);
+		IEditorInput editorInput = new ChartEditorInput(file);
+		((ChartEditorInput) editorInput).setChartName(chartName);
+		
 		IWorkbenchWindow window=PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		IWorkbenchPage page = window.getActivePage();
 		try {
+			NeoSplashUtil.logn("A03");
+			
 			page.openEditor(editorInput, NeoSplashUtil.AMANZI_NEO4J_SPLASH_CHART_EDITOR);
+			NeoSplashUtil.logn("A04");
 		} catch (PartInitException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
