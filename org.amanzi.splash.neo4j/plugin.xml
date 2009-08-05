@@ -102,19 +102,6 @@
     <extension
           point="org.eclipse.ui.menus">
        <menuContribution
-             locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-          <menu
-                id="org.amanzi.splash.neo4j.menus.sampleMenu"
-                label="Sample Menu"
-                mnemonic="M">
-             <command
-                   commandId="org.amanzi.splash.neo4j.commands.sampleCommand"
-                   id="org.amanzi.splash.neo4j.menus.sampleCommand"
-                   mnemonic="S">
-             </command>
-          </menu>
-       </menuContribution>
-       <menuContribution
              locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
           <toolbar
                 id="org.amanzi.splash.neo4j.toolbars.sampleToolbar">

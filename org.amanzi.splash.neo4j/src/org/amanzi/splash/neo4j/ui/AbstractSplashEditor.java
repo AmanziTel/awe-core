@@ -121,7 +121,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * Class constructor
 	 */
 	public AbstractSplashEditor() {
-
+		
 
 	}
 
@@ -653,6 +653,13 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		table.getModel().addTableModelListener(this);
 
 		createTable(parent);
+		
+		IWorkspaceRoot root1 = ResourcesPlugin.getWorkspace().getRoot();
+		final IProject resource = root1.getProject("project.AWEScript");
+		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
+		SplashTableModel model = (SplashTableModel)table.getModel();
+		SpreadsheetNode spreadsheet = model.getSpreadsheet();
+		int chartsCount = spreadsheet.getChartsCount();
 	}
 
 	/**
@@ -1179,29 +1186,21 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		return new ByteArrayInputStream(sb.toString().getBytes());
 	}
 	
-	
+	private static int chartCounter = 0;
 
 	public void plotCellsBarChart(){
 		String chartName = "";
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		final IProject resource = root.getProject("project.AWEScript");
-		
-
 		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
 		SplashTableModel model = (SplashTableModel)table.getModel();
-
-		//SpreadsheetNode sRoot = model.getSpreadsheet();
-		//String name = table.getName();
-
 		SpreadsheetNode spreadsheet = model.getSpreadsheet();
-
+		//int chartsCount = spreadsheet.getChartsCount();
 		
-		int chartsCount = spreadsheet.getChartsCount();
-		chartsCount++;
-		//NeoSplashUtil.logn("spreadsheet.getChartsCount(): " + chartsCount);
-		chartName = "Chart" + chartsCount;
+		chartName = "Chart" + chartCounter;
+		NeoSplashUtil.log("chartName = " + chartName);
+		chartCounter++;
 		ChartNode chartNode = service.createChart(spreadsheet, chartName);
-		
 		IFile file =  resource.getFile(new Path(chartName));
 		InputStream stream = getJFreeBarChartInitialContents();
 		if (file.exists()) {
@@ -1225,24 +1224,13 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
 
 		int firstRow, firstColumn, lastRow, lastColumn;
 		firstRow = table.getSelectedRow();
 		firstColumn = table.getSelectedColumn();
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
-		
-		NeoSplashUtil.logn("firstRow: " + firstRow);
-		NeoSplashUtil.logn("firstColumn: " + firstColumn);
-		NeoSplashUtil.logn("lastRow: " + lastRow);
-		NeoSplashUtil.logn("lastColumn: " + lastColumn);
-		NeoSplashUtil.logn("lastColumn-firstColumn: " + (lastColumn-firstColumn));
-		
 		ChartItemNode[] items = new ChartItemNode[lastColumn-firstColumn+1];
-
-		NeoSplashUtil.logn("A01");
-
 		for (int i=firstColumn;i<=lastColumn;i++){
 			Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, i);
 			
@@ -1256,19 +1244,12 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			items[i].setChartItemValue((String) ((Cell)table.getValueAt(lastRow, i)).getValue());
 
 		}
-		NeoSplashUtil.logn("A02");
-
-		//IEditorInput editorInput = new FileEditorInput(file);
 		IEditorInput editorInput = new ChartEditorInput(file);
 		((ChartEditorInput) editorInput).setChartName(chartName);
-		
 		IWorkbenchWindow window=PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		IWorkbenchPage page = window.getActivePage();
 		try {
-			NeoSplashUtil.logn("A03");
-			
 			page.openEditor(editorInput, NeoSplashUtil.AMANZI_NEO4J_SPLASH_CHART_EDITOR);
-			NeoSplashUtil.logn("A04");
 		} catch (PartInitException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

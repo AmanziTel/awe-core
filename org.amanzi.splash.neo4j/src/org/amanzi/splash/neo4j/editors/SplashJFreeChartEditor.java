@@ -132,6 +132,8 @@ public class SplashJFreeChartEditor extends EditorPart implements
 	
 	
 	private DefaultCategoryDataset createDataset() {
+		DefaultCategoryDataset dataset = null;
+		try{
 		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
 		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		SplashTable table = ((AbstractSplashEditor)editor).getTable();
@@ -150,7 +152,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+		dataset = new DefaultCategoryDataset();
 		
 		for (ChartItemNode node : service.getAllChartItems(chartNode)){
 			NeoSplashUtil.logn("node.getChartItemValue(): " + node.getChartItemValue());
@@ -183,8 +185,14 @@ public class SplashJFreeChartEditor extends EditorPart implements
 //        for (int i=0;i<list.size()/2;i++){
 //        	dataset.addValue(Values[i], "Series", Categories[i]);
 //        }
+		
+		}catch(Exception ex){
+			
+			ex.printStackTrace();
+			dataset = new DefaultCategoryDataset();
+		}
 
-        return dataset;
+		return dataset;
 	}
 	
 	

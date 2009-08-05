@@ -1,6 +1,8 @@
 package org.amanzi.splash.neo4j.handlers;
 
 import org.amanzi.splash.neo4j.ui.AbstractSplashEditor;
+import org.amanzi.splash.neo4j.ui.SplashPlugin;
+import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -16,6 +18,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
+import org.rubypeople.rdt.core.RubyModelException;
+import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -34,17 +38,10 @@ public class SplashToolbarHandler extends AbstractHandler {
 	 * from the application context.
 	 */
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		
-		//Util.logn("Title: " + window.getActivePage().getActiveEditor().getTitle());
-		
-		AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
-		
-		editor.plotCellsBarChart();
-		
-		
-		
-		
+				AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
+				editor.plotCellsBarChart();
 		
 		return null;
 	}
