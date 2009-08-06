@@ -60,9 +60,9 @@ public class ChartNode extends AbstractNode {
 	}
 	
 	/**
-	 * Iterator that computes all Rows in Spreadsheet
+	 * Iterator that computes all Charts in Spreadsheet
 	 * 
-	 * @author Lagutko_N
+	 * @author amabdelsalam
 	 */    
 	private class AllChartItemNodeIterator extends AbstractIterator<ChartItemNode> {
 
@@ -81,16 +81,12 @@ public class ChartNode extends AbstractNode {
 	}
 
 
-	/**
-	 * Iterator for searching Cells of this Row by given column
-	 * 
-	 * @author Lagutko_N 
-	 */
+	
 
 	/**
-	 * Iterator that computes Rows by given Index
+	 * Iterator that computes Charts by given Index
 	 * 
-	 * @author Lagutko_N
+	 * @author amabdelsalam
 	 */    
 	private class ChartItemIterator extends AbstractIterator<ChartItemNode> {
 

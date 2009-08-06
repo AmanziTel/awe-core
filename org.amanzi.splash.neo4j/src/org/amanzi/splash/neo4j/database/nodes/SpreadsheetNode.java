@@ -76,6 +76,11 @@ public class SpreadsheetNode extends AbstractNode {
 		addRelationship(SplashRelationshipTypes.ROW, row.getUnderlyingNode());
 	}
 
+	/**
+	 * Add chart to Spreadsheet
+	 * 
+	 * @param chart
+	 */
 	public void addChart(ChartNode chart) {
 		addRelationship(SplashRelationshipTypes.CHART, chart.getUnderlyingNode());
 	}
@@ -83,10 +88,10 @@ public class SpreadsheetNode extends AbstractNode {
 	
 
 	/**
-	 * Returns a Row by given index
+	 * Returns a Chart by given index
 	 *
-	 * @param rowIndex index of row
-	 * @return row by index
+	 * @param chartIndex index of chart
+	 * @return chart by index
 	 * @throws SplashDatabaseException if was founded more than one row by given index
 	 */     
 	public ChartNode getChart(final String chartIndex) throws SplashDatabaseException {
@@ -212,9 +217,9 @@ public class SpreadsheetNode extends AbstractNode {
 	}
 
 	/**
-	 * Iterator that computes Rows by given Index
+	 * Iterator that computes Charts by given Index
 	 * 
-	 * @author Lagutko_N
+	 * @author amabdelsalam
 	 */    
 	private class ChartIterator extends AbstractIterator<ChartNode> {
 
