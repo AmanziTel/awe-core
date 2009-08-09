@@ -14,5 +14,5 @@ public enum SplashRelationshipTypes implements RelationshipType {
 	SPREADSHEET,
 	ROW,
 	ROW_CELL,
-	COLUMN_CELL, CHART_ITEM, CHART
+	COLUMN_CELL, CHART_ITEM, CHART, PIE_CHART_ITEM, PIE_CHART
 }

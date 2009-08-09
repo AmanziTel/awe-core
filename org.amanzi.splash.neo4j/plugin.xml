@@ -20,6 +20,13 @@
             id="org.amanzi.splash.editors.neo4j.SplashJFreeChartEditor"
             name="Neo4j Splash JFreeChart Bars Editor">
       </editor>
+      <editor
+            class="org.amanzi.splash.neo4j.editors.SplashJFreePieChartEditor"
+            contributorClass="org.amanzi.splash.neo4j.editors.SplashJFreePieChartEditorContributor"
+            icon="icons/piechart.ico"
+            id="org.amanzi.splash.editors.neo4j.SplashJFreePieChartEditor"
+            name="Neo4j Splash JFreeChart Pie Editor">
+      </editor>
    </extension>
    
    <extension

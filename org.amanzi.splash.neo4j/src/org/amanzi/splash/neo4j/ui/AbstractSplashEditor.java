@@ -53,6 +53,8 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.neo4j.database.exception.SplashDatabaseException;
 import org.amanzi.splash.neo4j.database.nodes.ChartItemNode;
 import org.amanzi.splash.neo4j.database.nodes.ChartNode;
+import org.amanzi.splash.neo4j.database.nodes.PieChartItemNode;
+import org.amanzi.splash.neo4j.database.nodes.PieChartNode;
 import org.amanzi.splash.neo4j.database.nodes.RootNode;
 import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
@@ -1254,6 +1256,74 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public void plotCellsPieChart() {
+		String chartName = "";
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		final IProject resource = root.getProject("project.AWEScript");
+		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
+		SplashTableModel model = (SplashTableModel)table.getModel();
+		SpreadsheetNode spreadsheet = model.getSpreadsheet();
+		//int chartsCount = spreadsheet.getChartsCount();
+		
+		chartName = "PieChart" + chartCounter;
+		NeoSplashUtil.log("chartName = " + chartName);
+		chartCounter++;
+		PieChartNode chartNode = service.createPieChart(spreadsheet, chartName);
+		IFile file =  resource.getFile(new Path(chartName));
+		InputStream stream = getJFreeBarChartInitialContents();
+		if (file.exists()) {
+			try {
+				file.setContents(stream, true, true, null);
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			try {
+				file.create(stream, true, null);
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		try {
+			stream.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		int firstRow, firstColumn, lastRow, lastColumn;
+		firstRow = table.getSelectedRow();
+		firstColumn = table.getSelectedColumn();
+		lastRow = firstRow + table.getSelectedRowCount() - 1;
+		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
+		PieChartItemNode[] items = new PieChartItemNode[lastColumn-firstColumn+1];
+		for (int i=firstColumn;i<=lastColumn;i++){
+			Cell c = (Cell) ((SplashTableModel)table.getModel()).getValueAt(firstRow, i);
+			
+			try {
+				items[i] = service.createPieChartItem(chartNode, "item" + i);
+			} catch (SplashDatabaseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			items[i].setPieChartItemCategory((String) c.getValue());
+			items[i].setPieChartItemValue((String) ((Cell)table.getValueAt(lastRow, i)).getValue());
+		}
+		IEditorInput editorInput = new PieChartEditorInput(file);
+		((PieChartEditorInput) editorInput).setPieChartName(chartName);
+		IWorkbenchWindow window=PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		IWorkbenchPage page = window.getActivePage();
+		try {
+			page.openEditor(editorInput, NeoSplashUtil.AMANZI_NEO4J_SPLASH_PIE_CHART_EDITOR);
+		} catch (PartInitException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 

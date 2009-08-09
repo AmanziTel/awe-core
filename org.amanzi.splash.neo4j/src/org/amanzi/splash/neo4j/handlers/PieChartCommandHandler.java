@@ -42,24 +42,11 @@ public class PieChartCommandHandler extends AbstractHandler {
 	 * from the application context.
 	 */
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		
-		try {
-			window.getActivePage().showView("org.amanzi.splash.views.SplashChartsView");
-		} catch (PartInitException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		NeoSplashUtil.logn("Title: " + window.getActivePage().getActiveEditor().getTitle());
+		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		
 		AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
-		
-		//editor.plotCellsPieChart();
-		
-		
-		
-		
+		editor.plotCellsPieChart();
+
 		return null;
 	}
 	 

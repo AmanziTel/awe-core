@@ -12,6 +12,8 @@ import org.amanzi.splash.neo4j.database.nodes.CellNode;
 import org.amanzi.splash.neo4j.database.nodes.ChartItemNode;
 import org.amanzi.splash.neo4j.database.nodes.ChartNode;
 import org.amanzi.splash.neo4j.database.nodes.ColumnNode;
+import org.amanzi.splash.neo4j.database.nodes.PieChartItemNode;
+import org.amanzi.splash.neo4j.database.nodes.PieChartNode;
 import org.amanzi.splash.neo4j.database.nodes.RootNode;
 import org.amanzi.splash.neo4j.database.nodes.RowNode;
 import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
@@ -128,11 +130,9 @@ public class SpreadsheetService {
     }
     
     /**
-     * Creates a Cell in Spreadsheet by given ID 
+     * Creates a Chart in Spreadsheet by given ID 
      *
-     * @param spreadsheet spreadsheet
-     * @param id id of Cell
-     * @return created Cell
+     *
      */
     public ChartNode createChart(SpreadsheetNode spreadsheet, String id) {
         Transaction tx = neoService.beginTx();
@@ -162,12 +162,41 @@ public class SpreadsheetService {
     }
     
     /**
-     * Creates a Cell in Spreadsheet by given ID 
+     * Creates a Chart in Spreadsheet by given ID 
      *
-     * @param chartNode spreadsheet
-     * @param id id of Cell
-     * @return created Cell
-     * @throws SplashDatabaseException 
+     *
+     */
+    public PieChartNode createPieChart(SpreadsheetNode spreadsheet, String id) {
+        Transaction tx = neoService.beginTx();
+        
+        try {        
+            PieChartNode chartNode = spreadsheet.getPieChart(id);
+        
+            if (chartNode == null) {
+            	chartNode = new PieChartNode(neoService.createNode());
+            	chartNode.setPieChartIndex(id);
+                spreadsheet.addPieChart(chartNode);
+            }
+            
+            tx.success();
+            
+            return chartNode;
+        }
+        catch (SplashDatabaseException e) {
+            tx.failure();
+            String message = SplashDatabaseExceptionMessages.getFormattedString(SplashDatabaseExceptionMessages.Service_Method_Exception, "createChart");
+            SplashPlugin.error(message, e);
+            return null;
+        }
+        finally {
+            tx.finish();
+        }
+    }
+    
+    /**
+     * Creates a Chart in Spreadsheet by given ID 
+     *
+     *
      */
     public ChartItemNode createChartItem(ChartNode chartNode, String id) throws SplashDatabaseException {
         Transaction tx = neoService.beginTx();
@@ -189,7 +218,31 @@ public class SpreadsheetService {
             tx.finish();
         }
     }
-    
+    /**
+     * Creates a Pie Chart in Spreadsheet by given ID 
+     *
+     * 
+     */
+    public PieChartItemNode createPieChartItem(PieChartNode chartNode, String id) throws SplashDatabaseException {
+        Transaction tx = neoService.beginTx();
+        
+        try {        
+            PieChartItemNode ChartItemNode = chartNode.getPieChartItem(id);
+        
+            if (ChartItemNode == null) {
+            	ChartItemNode = new PieChartItemNode(neoService.createNode());
+            	ChartItemNode.setPieChartItemIndex(id);
+                chartNode.addPieChartItem(ChartItemNode);
+            }
+            
+            tx.success();
+            
+            return ChartItemNode;
+        }
+        finally {
+            tx.finish();
+        }
+    }
     
     /**
      * Creates a Cell in Spreadsheet by given ID 
@@ -390,7 +443,7 @@ public class SpreadsheetService {
     }
     
     /**
-     * Returns CellNode by given ID
+     * Returns ChartNode by given ID
      *
      * @param sheet spreadsheet
      * @param id id of Cell
@@ -401,6 +454,27 @@ public class SpreadsheetService {
         
         try {            
         	ChartNode result = sheet.getChartNode(id);
+            
+            tx.success();
+            
+            return result;
+        }
+        finally {
+            tx.finish();
+        }
+    }
+    
+    /**
+     * Returns Pie Chart Node by given ID
+     *
+     * @param sheet spreadsheet
+     * 
+     */
+    private PieChartNode getPieChartNode(SpreadsheetNode sheet, String id) {
+        Transaction tx = neoService.beginTx();
+        
+        try {            
+        	PieChartNode result = sheet.getPieChartNode(id);
             
             tx.success();
             
@@ -578,7 +652,7 @@ public class SpreadsheetService {
     }
     
     /**
-     * Returns all Cells of Spreadsheet
+     * Returns all Charts of Spreadsheet
      *
      * @param sheet Spreadsheet
      * @return all Cells of given Spreadsheet
@@ -599,4 +673,31 @@ public class SpreadsheetService {
         
         return chartItemsList;
     }
+    
+    /**
+     * Returns all Pie Charts of Spreadsheet
+     *
+     * @param sheet Spreadsheet
+     * @return all Cells of given Spreadsheet
+     */
+    
+    public List<PieChartItemNode> getAllPieChartItems(PieChartNode chartNode) {
+        ArrayList<PieChartItemNode> chartItemsList = new ArrayList<PieChartItemNode>(0);
+        
+        Iterator<PieChartItemNode> chartItems = chartNode.getAllPieChartItems();
+        
+        while (chartItems.hasNext()) {
+        	PieChartItemNode chartItem = chartItems.next();
+            String chartItemIndex = chartItem.getPieChartItemIndex();
+            
+            
+            chartItemsList.add(chartItem);
+        }
+        
+        return chartItemsList;
+    }
+
+	
+
+	
 }
