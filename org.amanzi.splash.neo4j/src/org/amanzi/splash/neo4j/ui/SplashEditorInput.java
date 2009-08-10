@@ -1,6 +1,6 @@
 package org.amanzi.splash.neo4j.ui;
 
-import org.amanzi.splash.neo4j.database.nodes.RootNode;
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
@@ -29,7 +29,7 @@ public class SplashEditorInput implements IEditorInput {
     /**
      * Root node of Spreadsheet
      */
-    private RootNode root;
+    private RubyProjectNode root;
     
     /**
      * Constructor.
@@ -37,7 +37,7 @@ public class SplashEditorInput implements IEditorInput {
      * @param sheetName name of Spreadsheet
      * @param root root node of Spreadsheet
      */
-    public SplashEditorInput(String sheetName, RootNode root) {
+    public SplashEditorInput(String sheetName, RubyProjectNode root) {
         service = SplashPlugin.getDefault().getSpreadsheetService();
         this.root = root;
         
@@ -86,7 +86,7 @@ public class SplashEditorInput implements IEditorInput {
      *
      * @return root Node
      */
-    public RootNode getRoot() {
+    public RubyProjectNode getRoot() {
         return root;
     }
 }

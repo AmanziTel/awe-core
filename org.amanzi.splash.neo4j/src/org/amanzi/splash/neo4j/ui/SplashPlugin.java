@@ -11,6 +11,7 @@ package org.amanzi.splash.neo4j.ui;
  */
 
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
+import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -40,7 +41,8 @@ public class SplashPlugin extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		
+		//Tsinkel, add resource listener
+		org.eclipse.core.resources.ResourcesPlugin.getWorkspace().addResourceChangeListener(new EditorListener(),IResourceChangeEvent.POST_CHANGE);
 		//Lagutko, 29.07.2009, initialize SpreadsheetService
 		spreadsheetService = new SpreadsheetService();
 	}

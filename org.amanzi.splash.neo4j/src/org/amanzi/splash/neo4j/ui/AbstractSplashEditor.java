@@ -49,14 +49,15 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 
+import org.amanzi.neo.core.database.exception.SplashDatabaseException;
+import org.amanzi.neo.core.database.nodes.ChartItemNode;
+import org.amanzi.neo.core.database.nodes.ChartNode;
+import org.amanzi.neo.core.database.nodes.PieChartItemNode;
+import org.amanzi.neo.core.database.nodes.PieChartNode;
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.splash.neo4j.database.exception.SplashDatabaseException;
-import org.amanzi.splash.neo4j.database.nodes.ChartItemNode;
-import org.amanzi.splash.neo4j.database.nodes.ChartNode;
-import org.amanzi.splash.neo4j.database.nodes.PieChartItemNode;
-import org.amanzi.splash.neo4j.database.nodes.PieChartNode;
-import org.amanzi.splash.neo4j.database.nodes.RootNode;
-import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.ColumnHeaderRenderer;
@@ -647,7 +648,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		SplashEditorInput sei = (SplashEditorInput) getEditorInput();
 
 		splashID = sei.getName().replace(".splash", "");
-		RootNode root = sei.getRoot();
+		RubyProjectNode root = sei.getRoot();
 
 		NeoSplashUtil.logn("splashID = " + splashID);
 
