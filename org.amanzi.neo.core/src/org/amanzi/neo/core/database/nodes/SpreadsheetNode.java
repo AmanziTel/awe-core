@@ -17,7 +17,7 @@ import org.neo4j.api.core.Traverser;
 /**
  * Wrapper class for Spreadsheet
  * 
- * @author Lagutko_N 
+ * @author Lagutko_N
  */
 
 public class SpreadsheetNode extends AbstractNode {
@@ -40,7 +40,8 @@ public class SpreadsheetNode extends AbstractNode {
 	/**
 	 * Constructor. Wraps a Node from database and sets type and name of Node
 	 * 
-	 * @param node database node
+	 * @param node
+	 *            database node
 	 */
 	public SpreadsheetNode(Node node) {
 		super(node);
@@ -50,8 +51,9 @@ public class SpreadsheetNode extends AbstractNode {
 
 	/**
 	 * Sets name of Spreadsheet
-	 *
-	 * @param newName name of Spreadsheet
+	 * 
+	 * @param newName
+	 *            name of Spreadsheet
 	 */
 
 	public void setSpreadsheetName(String newName) {
@@ -60,18 +62,19 @@ public class SpreadsheetNode extends AbstractNode {
 
 	/**
 	 * Returns name of Spreadsheet
-	 *
+	 * 
 	 * @return name of Spreadsheet
 	 */
 	public String getSpreadsheetName() {
-		return (String)getParameter(SPREADSHEET_NAME);
+		return (String) getParameter(SPREADSHEET_NAME);
 	}
 
 	/**
 	 * Adds a Row to Spreadsheet
-	 *
-	 * @param row row wrapper
-	 */    
+	 * 
+	 * @param row
+	 *            row wrapper
+	 */
 	public void addRow(RowNode row) {
 		addRelationship(SplashRelationshipTypes.ROW, row.getUnderlyingNode());
 	}
@@ -82,32 +85,40 @@ public class SpreadsheetNode extends AbstractNode {
 	 * @param chart
 	 */
 	public void addChart(ChartNode chart) {
-		addRelationship(SplashRelationshipTypes.CHART, chart.getUnderlyingNode());
+		addRelationship(SplashRelationshipTypes.CHART, chart
+				.getUnderlyingNode());
 	}
-	
+
 	/**
 	 * Add pie chart to Spreadsheet
 	 * 
 	 * @param chart
 	 */
 	public void addPieChart(PieChartNode chart) {
-		addRelationship(SplashRelationshipTypes.PIE_CHART, chart.getUnderlyingNode());
+		addRelationship(SplashRelationshipTypes.PIE_CHART, chart
+				.getUnderlyingNode());
 	}
 
 	/**
 	 * Returns a Chart by given index
-	 *
-	 * @param chartIndex index of chart
+	 * 
+	 * @param chartIndex
+	 *            index of chart
 	 * @return chart by index
-	 * @throws SplashDatabaseException if was founded more than one row by given index
-	 */     
-	public ChartNode getChart(final String chartIndex) throws SplashDatabaseException {
+	 * @throws SplashDatabaseException
+	 *             if was founded more than one row by given index
+	 */
+	public ChartNode getChart(final String chartIndex)
+			throws SplashDatabaseException {
 		Iterator<ChartNode> iterator = new ChartIterator(chartIndex);
 
 		if (iterator.hasNext()) {
 			ChartNode result = iterator.next();
 			if (iterator.hasNext()) {
-				String message = SplashDatabaseExceptionMessages.getFormattedString(SplashDatabaseExceptionMessages.Not_Single_Chart_by_ID, chartIndex);
+				String message = SplashDatabaseExceptionMessages
+						.getFormattedString(
+								SplashDatabaseExceptionMessages.Not_Single_Chart_by_ID,
+								chartIndex);
 				throw new SplashDatabaseException(message);
 			}
 			return result;
@@ -115,21 +126,27 @@ public class SpreadsheetNode extends AbstractNode {
 
 		return null;
 	}
-	
+
 	/**
 	 * Returns a Pie Chart by given index
-	 *
-	 * @param chartIndex index of chart
+	 * 
+	 * @param chartIndex
+	 *            index of chart
 	 * @return chart by index
-	 * @throws SplashDatabaseException if was founded more than one row by given index
-	 */     
-	public PieChartNode getPieChart(final String chartIndex) throws SplashDatabaseException {
+	 * @throws SplashDatabaseException
+	 *             if was founded more than one row by given index
+	 */
+	public PieChartNode getPieChart(final String chartIndex)
+			throws SplashDatabaseException {
 		Iterator<PieChartNode> iterator = new PieChartIterator(chartIndex);
 
 		if (iterator.hasNext()) {
 			PieChartNode result = iterator.next();
 			if (iterator.hasNext()) {
-				String message = SplashDatabaseExceptionMessages.getFormattedString(SplashDatabaseExceptionMessages.Not_Single_Chart_by_ID, chartIndex);
+				String message = SplashDatabaseExceptionMessages
+						.getFormattedString(
+								SplashDatabaseExceptionMessages.Not_Single_Chart_by_ID,
+								chartIndex);
 				throw new SplashDatabaseException(message);
 			}
 			return result;
@@ -140,18 +157,23 @@ public class SpreadsheetNode extends AbstractNode {
 
 	/**
 	 * Returns a Row by given index
-	 *
-	 * @param rowIndex index of row
+	 * 
+	 * @param rowIndex
+	 *            index of row
 	 * @return row by index
-	 * @throws SplashDatabaseException if was founded more than one row by given index
-	 */     
+	 * @throws SplashDatabaseException
+	 *             if was founded more than one row by given index
+	 */
 	public RowNode getRow(final String rowIndex) throws SplashDatabaseException {
 		Iterator<RowNode> iterator = new RowIterator(rowIndex);
 
 		if (iterator.hasNext()) {
 			RowNode result = iterator.next();
 			if (iterator.hasNext()) {
-				String message = SplashDatabaseExceptionMessages.getFormattedString(SplashDatabaseExceptionMessages.Not_Single_Row_by_ID, rowIndex);
+				String message = SplashDatabaseExceptionMessages
+						.getFormattedString(
+								SplashDatabaseExceptionMessages.Not_Single_Row_by_ID,
+								rowIndex);
 				throw new SplashDatabaseException(message);
 			}
 			return result;
@@ -159,23 +181,27 @@ public class SpreadsheetNode extends AbstractNode {
 
 		return null;
 	}
-	
-	
 
 	/**
 	 * Returns a Column by given name
-	 *
-	 * @param columnName name of Column
+	 * 
+	 * @param columnName
+	 *            name of Column
 	 * @return column by name
-	 * @throws SplashDatabaseException if was founded more than one column by given name
+	 * @throws SplashDatabaseException
+	 *             if was founded more than one column by given name
 	 */
-	public ColumnNode getColumn(String columnName) throws SplashDatabaseException {
+	public ColumnNode getColumn(String columnName)
+			throws SplashDatabaseException {
 		Iterator<ColumnNode> iterator = new ColumnInterator(columnName);
 
 		if (iterator.hasNext()) {
 			ColumnNode result = iterator.next();
 			if (iterator.hasNext()) {
-				String message = SplashDatabaseExceptionMessages.getFormattedString(SplashDatabaseExceptionMessages.Not_Single_Column_by_ID, columnName);
+				String message = SplashDatabaseExceptionMessages
+						.getFormattedString(
+								SplashDatabaseExceptionMessages.Not_Single_Column_by_ID,
+								columnName);
 				throw new SplashDatabaseException(message);
 			}
 			return result;
@@ -183,40 +209,46 @@ public class SpreadsheetNode extends AbstractNode {
 
 		return null;
 	}
-	
-	public int getChartsCount() {        
-        Iterator<Relationship> iterator = node.getRelationships(SplashRelationshipTypes.CHART, Direction.OUTGOING).iterator();
-        int result = 0;
-        while (iterator.hasNext()) {
-            result++;
-        }        
-        return result;
-    }
-	
 
-	public int getPieChartsCount() {        
-        Iterator<Relationship> iterator = node.getRelationships(SplashRelationshipTypes.PIE_CHART, Direction.OUTGOING).iterator();
-        int result = 0;
-        while (iterator.hasNext()) {
-            result++;
-        }        
-        return result;
-    }
+	public int getChartsCount() {
+		Iterator<Relationship> iterator = node.getRelationships(
+				SplashRelationshipTypes.CHART, Direction.OUTGOING).iterator();
+		int result = 0;
+		while (iterator.hasNext()) {
+			result++;
+		}
+		return result;
+	}
+
+	public int getPieChartsCount() {
+		Iterator<Relationship> iterator = node.getRelationships(
+				SplashRelationshipTypes.PIE_CHART, Direction.OUTGOING)
+				.iterator();
+		int result = 0;
+		while (iterator.hasNext()) {
+			result++;
+		}
+		return result;
+	}
 
 	/**
 	 * Returns a Cell by Column and Row
-	 *
-	 * @param rowIndex index of Row
-	 * @param columnName name of Column
+	 * 
+	 * @param rowIndex
+	 *            index of Row
+	 * @param columnName
+	 *            name of Column
 	 * @return cell by Column and Row
-	 * @throws SplashDatabaseException if was founded more than one row, or more than one column, or more than one cell
+	 * @throws SplashDatabaseException
+	 *             if was founded more than one row, or more than one column, or
+	 *             more than one cell
 	 */
-	public CellNode getCell(String rowIndex, String columnName) throws SplashDatabaseException {
+	public CellNode getCell(String rowIndex, String columnName)
+			throws SplashDatabaseException {
 		RowNode row = getRow(rowIndex);
 		if (row != null) {
 			return row.getCellByColumn(columnName);
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
@@ -229,28 +261,30 @@ public class SpreadsheetNode extends AbstractNode {
 	 * Iterator that computes Rows by given Index
 	 * 
 	 * @author Lagutko_N
-	 */    
+	 */
 	private class RowIterator extends AbstractIterator<RowNode> {
 
-		public RowIterator(final String rowIndex) {            
-			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST, 
-					StopEvaluator.DEPTH_ONE, 
-					new ReturnableEvaluator() {
+		public RowIterator(final String rowIndex) {
+			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
+					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-				public boolean isReturnableNode(TraversalPosition position) {
-					if (position.isStartNode()) {
-						return false;
-					}
-					return position.lastRelationshipTraversed().getEndNode().getProperty(RowNode.ROW_INDEX).equals(rowIndex);
-				}
+						public boolean isReturnableNode(
+								TraversalPosition position) {
+							if (position.isStartNode()) {
+								return false;
+							}
+							return position.lastRelationshipTraversed()
+									.getEndNode()
+									.getProperty(RowNode.ROW_INDEX).equals(
+											rowIndex);
+						}
 
-			},
-			SplashRelationshipTypes.ROW,
-			Direction.OUTGOING).iterator();
+					}, SplashRelationshipTypes.ROW, Direction.OUTGOING)
+					.iterator();
 		}
 
 		@Override
-		protected RowNode wrapNode(Node node) {            
+		protected RowNode wrapNode(Node node) {
 			return new RowNode(node);
 		}
 	}
@@ -259,28 +293,30 @@ public class SpreadsheetNode extends AbstractNode {
 	 * Iterator that computes Charts by given Index
 	 * 
 	 * @author amabdelsalam
-	 */    
+	 */
 	private class ChartIterator extends AbstractIterator<ChartNode> {
 
-		public ChartIterator(final String chartIndex) {            
-			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST, 
-					StopEvaluator.DEPTH_ONE, 
-					new ReturnableEvaluator() {
+		public ChartIterator(final String chartIndex) {
+			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
+					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-				public boolean isReturnableNode(TraversalPosition position) {
-					if (position.isStartNode()) {
-						return false;
-					}
-					return position.lastRelationshipTraversed().getEndNode().getProperty(ChartNode.CHART_INDEX).equals(chartIndex);
-				}
+						public boolean isReturnableNode(
+								TraversalPosition position) {
+							if (position.isStartNode()) {
+								return false;
+							}
+							return position.lastRelationshipTraversed()
+									.getEndNode().getProperty(
+											ChartNode.CHART_INDEX).equals(
+											chartIndex);
+						}
 
-			},
-			SplashRelationshipTypes.CHART,
-			Direction.OUTGOING).iterator();
+					}, SplashRelationshipTypes.CHART, Direction.OUTGOING)
+					.iterator();
 		}
 
 		@Override
-		protected ChartNode wrapNode(Node node) {            
+		protected ChartNode wrapNode(Node node) {
 			return new ChartNode(node);
 		}
 	}
@@ -289,28 +325,30 @@ public class SpreadsheetNode extends AbstractNode {
 	 * Iterator that computes Pie Charts by given Index
 	 * 
 	 * @author amabdelsalam
-	 */    
+	 */
 	private class PieChartIterator extends AbstractIterator<PieChartNode> {
 
-		public PieChartIterator(final String chartIndex) {            
-			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST, 
-					StopEvaluator.DEPTH_ONE, 
-					new ReturnableEvaluator() {
+		public PieChartIterator(final String chartIndex) {
+			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
+					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-				public boolean isReturnableNode(TraversalPosition position) {
-					if (position.isStartNode()) {
-						return false;
-					}
-					return position.lastRelationshipTraversed().getEndNode().getProperty(PieChartNode.PIE_CHART_INDEX).equals(chartIndex);
-				}
+						public boolean isReturnableNode(
+								TraversalPosition position) {
+							if (position.isStartNode()) {
+								return false;
+							}
+							return position.lastRelationshipTraversed()
+									.getEndNode().getProperty(
+											PieChartNode.PIE_CHART_INDEX)
+									.equals(chartIndex);
+						}
 
-			},
-			SplashRelationshipTypes.PIE_CHART,
-			Direction.OUTGOING).iterator();
+					}, SplashRelationshipTypes.PIE_CHART, Direction.OUTGOING)
+					.iterator();
 		}
 
 		@Override
-		protected PieChartNode wrapNode(Node node) {            
+		protected PieChartNode wrapNode(Node node) {
 			return new PieChartNode(node);
 		}
 	}
@@ -319,19 +357,18 @@ public class SpreadsheetNode extends AbstractNode {
 	 * Iterator that computes all Rows in Spreadsheet
 	 * 
 	 * @author Lagutko_N
-	 */    
+	 */
 	private class AllRowIterator extends AbstractIterator<RowNode> {
 
-		public AllRowIterator() {            
-			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST, 
-					StopEvaluator.DEPTH_ONE, 
+		public AllRowIterator() {
+			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
+					StopEvaluator.DEPTH_ONE,
 					ReturnableEvaluator.ALL_BUT_START_NODE,
-					SplashRelationshipTypes.ROW,
-					Direction.OUTGOING).iterator();
+					SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
 		}
 
 		@Override
-		protected RowNode wrapNode(Node node) {            
+		protected RowNode wrapNode(Node node) {
 			return new RowNode(node);
 		}
 	}
@@ -346,32 +383,33 @@ public class SpreadsheetNode extends AbstractNode {
 
 		private static final int COLUMN_NODE_DEPTH = 3;
 
-		public ColumnInterator(final String columnName) {    
+		public ColumnInterator(final String columnName) {
 
-			this.iterator = node.traverse(Traverser.Order.DEPTH_FIRST,
+			this.iterator = node.traverse(
+					Traverser.Order.DEPTH_FIRST,
 					new StopEvaluator() {
 
-				public boolean isStopNode(TraversalPosition position) {                                                
-					return position.depth() > COLUMN_NODE_DEPTH;
-				}
+						public boolean isStopNode(TraversalPosition position) {
+							return position.depth() > COLUMN_NODE_DEPTH;
+						}
 
-			},
-			new ReturnableEvaluator() {
+					},
+					new ReturnableEvaluator() {
 
-				public boolean isReturnableNode(TraversalPosition position) {
-					if (position.depth() == COLUMN_NODE_DEPTH) {                                                    
-						return position.currentNode().getProperty(ColumnNode.COLUMN_NAME).equals(columnName);
-					}
-					return false;
-				}
+						public boolean isReturnableNode(
+								TraversalPosition position) {
+							if (position.depth() == COLUMN_NODE_DEPTH) {
+								return position.currentNode().getProperty(
+										ColumnNode.COLUMN_NAME).equals(
+										columnName);
+							}
+							return false;
+						}
 
-			},
-			SplashRelationshipTypes.ROW,
-			Direction.OUTGOING,
-			SplashRelationshipTypes.ROW_CELL,
-			Direction.OUTGOING,
-			SplashRelationshipTypes.COLUMN_CELL,
-			Direction.INCOMING).iterator();
+					}, SplashRelationshipTypes.ROW, Direction.OUTGOING,
+					SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING,
+					SplashRelationshipTypes.COLUMN_CELL, Direction.INCOMING)
+					.iterator();
 
 		}
 
@@ -392,7 +430,6 @@ public class SpreadsheetNode extends AbstractNode {
 		return chart;
 	}
 
-	
 	public PieChartNode getPieChartNode(String id) {
 		PieChartNode chart = null;
 		try {
@@ -403,5 +440,16 @@ public class SpreadsheetNode extends AbstractNode {
 		}
 		return chart;
 	}
-	
+
+	/**
+	 * Adds a Column to Spreadsheet
+	 * 
+	 * @param Column
+	 *            wrapper
+	 */
+	public void addColumn(ColumnNode column) {
+		addRelationship(SplashRelationshipTypes.COLUMN, column
+				.getUnderlyingNode());
+	}
+
 }
