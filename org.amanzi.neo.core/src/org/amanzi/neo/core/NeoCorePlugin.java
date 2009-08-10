@@ -42,7 +42,6 @@ public class NeoCorePlugin extends Plugin {
     public NeoCorePlugin() {
         super();
         plugin = this;  
-        aweProjectService = new AweProjectService();
     }
     
     public void start(BundleContext context) throws Exception {
@@ -80,6 +79,9 @@ public class NeoCorePlugin extends Plugin {
      * @return awe project service
      */
 	public AweProjectService getProjectService() {
+		if (aweProjectService==null){
+	        aweProjectService = new AweProjectService();
+		}
 	    return aweProjectService;
 	}   
     /**
