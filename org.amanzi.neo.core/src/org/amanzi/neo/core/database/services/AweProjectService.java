@@ -1,13 +1,18 @@
 package org.amanzi.neo.core.database.services;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 
+import org.amanzi.neo.core.database.nodes.AbstractNode;
 import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.RootNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
+import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
 
 /**
@@ -216,5 +221,36 @@ public class AweProjectService {
 		} finally {
 			tx.finish();
 		}
+	}
+
+	/**
+	 * Delete Node and all depends nodes from bd
+	 * 
+	 * @param node
+	 *            node to delete
+	 */
+	public void deleteNode(AbstractNode node) {
+		Transaction tx = neoService.beginTx();
+		try {
+			LinkedList<Node> nodeToDelete = new LinkedList<Node>();
+			nodeToDelete.add(node.getUnderlyingNode());
+			for (int i = 0; i < nodeToDelete.size(); i++) {
+				Node deleteNode = nodeToDelete.get(i);
+				Iterator<Relationship> relations = deleteNode.getRelationships(
+						Direction.BOTH).iterator();
+				while (relations.hasNext()) {
+					Relationship relationship = relations.next();
+					if (relationship.getStartNode().equals(deleteNode)) {
+						nodeToDelete.addLast(relationship.getEndNode());
+					}
+					relationship.delete();
+				}
+				deleteNode.delete();
+				i++;
+			}
+		} finally {
+			tx.finish();
+		}
+
 	}
 }
