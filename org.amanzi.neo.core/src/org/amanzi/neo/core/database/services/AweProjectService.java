@@ -55,6 +55,11 @@ public class AweProjectService {
 		}
 	}
 
+	/**
+	 * 
+	 * @param rubyProjectName
+	 * @return
+	 */
 	public RubyProjectNode findRubyProject(String rubyProjectName) {
 		RootNode root = getRootNode();
 		Transaction tx = neoService.beginTx();
@@ -84,13 +89,14 @@ public class AweProjectService {
 	/**
 	 * Finds or Creates a Spreadsheet
 	 * 
-	 * @param root
-	 *            root node for Spreadsheet
-	 * @param name
-	 *            name of Spreadsheet
-	 * @return create Spreadsheet
+	 * @param aweProjectName
+	 *            awe project name
+	 * @param rubyProjectName
+	 *            ruby project name
+	 * @param spreadsheetName
+	 *            spreadsheet name
+	 * @return Spreadsheet
 	 */
-
 	public SpreadsheetNode findOrCreateSpreadsheet(String aweProjectName,
 			String rubyProjectName, String spreadsheetName) {
 		assert aweProjectName != null;
@@ -103,9 +109,13 @@ public class AweProjectService {
 	}
 
 	/**
+	 * Finds or Creates a Spreadsheet
+	 * 
 	 * @param rubyProject
+	 *            ruby project node
 	 * @param spreadsheetName
-	 * @return
+	 *            spreadsheet name
+	 * @return Spreadsheet
 	 */
 	public SpreadsheetNode findOrCreateSpreadSheet(RubyProjectNode rubyProject,
 			String spreadsheetName) {
@@ -137,9 +147,13 @@ public class AweProjectService {
 	}
 
 	/**
+	 * Find or create a RubyProject
+	 * 
 	 * @param project
+	 *            awe project node awe project node
 	 * @param rubyProjectName
-	 * @return
+	 *            ruby project name ruby project name
+	 * @return RubyProjectNode
 	 */
 	public RubyProjectNode findOrCreateRubyProject(AweProjectNode project,
 			String rubyProjectName) {
@@ -173,6 +187,7 @@ public class AweProjectService {
 	 * Find or create Awe Project
 	 * 
 	 * @param aweProjectName
+	 *            Awe project name
 	 * @return
 	 */
 	public AweProjectNode findOrCreateAweProject(String aweProjectName) {
