@@ -20,8 +20,9 @@ import java.util.regex.Pattern;
 import net.refractions.udig.catalog.URLUtils;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.splash.neo4j.database.nodes.RootNode;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.ui.SplashEditorInput;
@@ -331,14 +332,14 @@ public static final boolean enableNeo4j = true;
 	 * @author Lagutko_N
 	 */
 
-	public static IEditorPart openSpreadsheet(IWorkbench workbench, URL spreadsheetURL, String rdgProjectName) {
+	public static IEditorPart openSpreadsheet(IWorkbench workbench, URL spreadsheetURL,  String rdgProjectName) {
 		IEditorPart result = null;
 		try {
 			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
 			if (page != null) {
 				//TODO: Lagutko: must be added computing for Root Node of Spreadsheet
 			    //Lagutko: it's a fake because for now Root Node is a Reference Node
-			    RootNode root = SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
+			    RubyProjectNode root = NeoCorePlugin.getDefault().getProjectService().findRubyProject(rdgProjectName);//SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
 				IEditorInput fi = new SplashEditorInput(getSpreadsheetName(spreadsheetURL), root);				
 				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
 			}

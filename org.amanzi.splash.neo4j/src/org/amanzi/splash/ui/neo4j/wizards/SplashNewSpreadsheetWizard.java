@@ -1,8 +1,9 @@
 package org.amanzi.splash.ui.neo4j.wizards;
 
+import net.refractions.udig.project.internal.Project;
+import net.refractions.udig.project.internal.RubyProject;
+
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.splash.neo4j.database.exception.SplashDatabaseException;
-import org.amanzi.splash.neo4j.database.nodes.RootNode;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
@@ -111,17 +112,21 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 		
 		//TODO: Lagutko: must be added computing for Root Node of Spreadsheet
         //Lagutko: it's a fake because for now Root Node is a Reference Node
-		ActionUtil.getInstance().runTask(new Runnable() {
-		    public void run() {
-		        RootNode rootNode = SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
-		        try {
-		            SplashPlugin.getDefault().getSpreadsheetService().createSpreadsheet(rootNode, fileName);
-		        }
-		        catch (SplashDatabaseException e) {
-		            //cannot be, we check that there are no such Spreadsheet before
-		        }
-		    }
-		}, false);        
+//		ActionUtil.getInstance().runTask(new Runnable() {
+//		    public void run() {
+//			    String aweProjectName = AWEProjectManagergetAWEprojectNameFromResource(resource.getProject());
+//		        Project project = findProject(aweProjectName);
+//		        
+//		        RubyProject ruby = findRubyProject(project, rubyProject.getName());
+//		        RubyProjectNode rootNode = SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
+//		        try {
+//		            SplashPlugin.getDefault().getSpreadsheetService().createSpreadsheet(rootNode, fileName);
+//		        }
+//		        catch (SplashDatabaseException e) {
+//		            //cannot be, we check that there are no such Spreadsheet before
+//		        }
+//		    }
+//		}, false);        
 		
 		monitor.setTaskName("Opening spreadsheet for editing...");
 		getShell().getDisplay().asyncExec(new Runnable() {
@@ -131,7 +136,7 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 				
 				AWEProjectManager.createNeoSpreadsheet(resource.getProject(), fileName, spreadsheetURL);
 				
-				NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, null);
+				NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, resource.getProject().getName());
 			}
 		});
 		monitor.worked(1);

@@ -2,7 +2,8 @@ package org.amanzi.splash.ui.neo4j.wizards;
 
 import net.refractions.udig.project.internal.impl.RubyProjectImpl;
 
-import org.amanzi.splash.neo4j.database.nodes.RootNode;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
@@ -230,7 +231,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		
 		//TODO: Lagutko: must be added computing for Root Node of Spreadsheet
         //Lagutko: it's a fake because for now Root Node is a Reference Node
-        final RootNode root = SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
+        final RubyProjectNode root = NeoCorePlugin.getDefault().getProjectService().findRubyProject(getContainerName().substring(1));//SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
         boolean isExist = (Boolean)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
 
             private boolean result;
@@ -240,7 +241,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
             }
 
             public void run() {
-                result = SplashPlugin.getDefault().getSpreadsheetService().findSpreadsheet(root, fileName) != null;
+                result = root!=null&&SplashPlugin.getDefault().getSpreadsheetService().findSpreadsheet(root, fileName) != null;
             }
             
         });
