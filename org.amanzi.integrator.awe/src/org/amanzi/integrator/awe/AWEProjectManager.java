@@ -17,6 +17,7 @@ import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.SpreadsheetType;
 import net.refractions.udig.project.internal.impl.ProjectFactoryImpl;
 
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -408,8 +409,11 @@ public class AWEProjectManager {
         
         RubyProject ruby = findRubyProject(project, rubyProject.getName());
         if (ruby != null) {
-            createSpreadsheetIfNotExist(ruby, sheetName, resourcePath, SpreadsheetType.NEO4J_SPREADSHEET);
+            if (createSpreadsheetIfNotExist(ruby, sheetName, resourcePath, SpreadsheetType.NEO4J_SPREADSHEET)){
+            	NeoCorePlugin.getDefault().getProjectService().findOrCreateSpreadsheet(aweProjectName, rubyProject.getName(), sheetName);
+            }
         }
+        
 	}
 	
 	/**
@@ -418,9 +422,10 @@ public class AWEProjectManager {
 	 * @param rubyProject name of RubyProject that will contain Spreadsheet
 	 * @param sheetName name of Spreadsheet
 	 * @param sheetResource resource for Spreadsheet
+	 * @return true if Spreadsheet was created
 	 */
 	
-	private static void createSpreadsheetIfNotExist(RubyProject rubyProject, String sheetName, URL resourceURL, SpreadsheetType type) {
+	private static boolean createSpreadsheetIfNotExist(RubyProject rubyProject, String sheetName, URL resourceURL, SpreadsheetType type) {
 		RubyProjectElement element = findSpreadsheet(rubyProject, sheetName);
 		if (element == null) {
 			Spreadsheet spreadsheet = ProjectFactoryImpl.eINSTANCE.createSpreadsheet();
@@ -428,7 +433,11 @@ public class AWEProjectManager {
 			spreadsheet.setSpreadsheetPath(resourceURL);
 			spreadsheet.setRubyProjectInternal(rubyProject);	
 			spreadsheet.setSpreadsheetType(type);
+			if (type==SpreadsheetType.NEO4J_SPREADSHEET){
+				 NeoCorePlugin.getDefault().getProjectService();
+			}
 		}
+		return element == null;
 	}
 	
 	/**
