@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Testing Plug-in
 Bundle-SymbolicName: org.amanzi.splash.neo4j.testing
 Bundle-Version: 1.0.0
-Bundle-Activator: org.amanzi.splash.testing.Activator
+Bundle-Activator: org.amanzi.splash.neo4j.testing.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.junit,
  org.jtestr,
@@ -11,4 +11,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.core;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Eclipse-RegisterBuddy: org.jtestr
-Export-Package: org.amanzi.splash.testing
+Export-Package: org.amanzi.splash.neo4j.testing
