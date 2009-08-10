@@ -13,7 +13,7 @@ import org.neo4j.api.core.Transaction;
 /**
  * Service class for working with Neo4j-Spreadsheet
  * 
- * @author Lagutko_N
+ * @author Tsinkel_A
  */
 
 public class AweProjectService {
@@ -55,30 +55,33 @@ public class AweProjectService {
 			tx.finish();
 		}
 	}
-public RubyProjectNode findRubyProject(String rubyProjectName){
-	RootNode root = getRootNode();
-	Transaction tx = neoService.beginTx();
-	//tofo rewrite metod
-	try {
-		Iterator<AweProjectNode> iterator = root.getAllProjects();
-		while (iterator.hasNext()){
-			AweProjectNode project = iterator.next();
-			Iterator<RubyProjectNode> itrRubyProject = project.getAllProjects();
-			while (itrRubyProject.hasNext()){
-				RubyProjectNode rubyProject = itrRubyProject.next();
-				if (rubyProjectName.equals(rubyProject.getName())){
-					tx.success();
-					return rubyProject;
+
+	public RubyProjectNode findRubyProject(String rubyProjectName) {
+		RootNode root = getRootNode();
+		Transaction tx = neoService.beginTx();
+		// tofo rewrite metod
+		try {
+			Iterator<AweProjectNode> iterator = root.getAllProjects();
+			while (iterator.hasNext()) {
+				AweProjectNode project = iterator.next();
+				Iterator<RubyProjectNode> itrRubyProject = project
+						.getAllProjects();
+				while (itrRubyProject.hasNext()) {
+					RubyProjectNode rubyProject = itrRubyProject.next();
+					if (rubyProjectName.equals(rubyProject.getName())) {
+						tx.success();
+						return rubyProject;
+					}
 				}
 			}
+			tx.success();
+			return null;
+
+		} finally {
+			tx.finish();
 		}
-		tx.success();
-		return null;
-		
-	} finally {
-		tx.finish();
-	}	
-}
+	}
+
 	/**
 	 * Finds or Creates a Spreadsheet
 	 * 
@@ -89,7 +92,8 @@ public RubyProjectNode findRubyProject(String rubyProjectName){
 	 * @return create Spreadsheet
 	 */
 
-	public SpreadsheetNode findOrCreateSpreadsheet(String aweProjectName, String rubyProjectName, String spreadsheetName)	{
+	public SpreadsheetNode findOrCreateSpreadsheet(String aweProjectName,
+			String rubyProjectName, String spreadsheetName) {
 		assert aweProjectName != null;
 		assert rubyProjectName != null;
 		assert spreadsheetName != null;
