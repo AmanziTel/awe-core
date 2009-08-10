@@ -248,6 +248,7 @@ public class AweProjectService {
 				deleteNode.delete();
 				i++;
 			}
+			tx.success();
 		} finally {
 			tx.finish();
 		}
