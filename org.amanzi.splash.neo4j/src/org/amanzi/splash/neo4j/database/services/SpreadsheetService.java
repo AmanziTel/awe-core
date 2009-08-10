@@ -5,18 +5,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.amanzi.neo.core.database.exception.SplashDatabaseException;
+import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
+import org.amanzi.neo.core.database.nodes.CellNode;
+import org.amanzi.neo.core.database.nodes.ChartItemNode;
+import org.amanzi.neo.core.database.nodes.ChartNode;
+import org.amanzi.neo.core.database.nodes.ColumnNode;
+import org.amanzi.neo.core.database.nodes.PieChartItemNode;
+import org.amanzi.neo.core.database.nodes.PieChartNode;
+import org.amanzi.neo.core.database.nodes.RowNode;
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.splash.neo4j.database.exception.SplashDatabaseException;
-import org.amanzi.splash.neo4j.database.exception.SplashDatabaseExceptionMessages;
-import org.amanzi.splash.neo4j.database.nodes.CellNode;
-import org.amanzi.splash.neo4j.database.nodes.ChartItemNode;
-import org.amanzi.splash.neo4j.database.nodes.ChartNode;
-import org.amanzi.splash.neo4j.database.nodes.ColumnNode;
-import org.amanzi.splash.neo4j.database.nodes.PieChartItemNode;
-import org.amanzi.splash.neo4j.database.nodes.PieChartNode;
-import org.amanzi.splash.neo4j.database.nodes.RootNode;
-import org.amanzi.splash.neo4j.database.nodes.RowNode;
-import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
@@ -70,7 +70,7 @@ public class SpreadsheetService {
      * @param name name of Spreadsheet
      * @return founded Spreadsheet or null if Spreadsheet was not found
      */
-    public SpreadsheetNode findSpreadsheet(RootNode root, String name) {
+    public SpreadsheetNode findSpreadsheet(RubyProjectNode root, String name) {
         SpreadsheetNode result = null;
         
         Transaction tx = neoService.beginTx();
@@ -104,7 +104,7 @@ public class SpreadsheetService {
      * @throws SplashDatabaseException if Spreadsheet with given name already exists
      */
     
-    public SpreadsheetNode createSpreadsheet(RootNode root, String name) throws SplashDatabaseException {
+    public SpreadsheetNode createSpreadsheet(RubyProjectNode root, String name) throws SplashDatabaseException {
         if (findSpreadsheet(root, name) != null) {
             String message = SplashDatabaseExceptionMessages.getFormattedString(SplashDatabaseExceptionMessages.Duplicate_Spreadsheet, name);
             throw new SplashDatabaseException(message);
@@ -567,26 +567,26 @@ public class SpreadsheetService {
         return result;
     }
     
-    /**
-     * Returns RootNode for Spreadsheets
-     *
-     * @return root node
-     */
-    //TODO: this method must be rewritten to support specification from comments in #564 to support
-    //Spreadsheets with same name in different Ruby and AWE projects
-    public RootNode getRootNode() {
-        Transaction tx = neoService.beginTx();
-        try {
-            
-            RootNode root = new RootNode(neoService.getReferenceNode());
-            tx.success();
-            
-            return root;
-        }
-        finally {
-            tx.finish();
-        }
-    }
+//    /**
+//     * Returns RootNode for Spreadsheets
+//     *
+//     * @return root node
+//     */
+//    //TODO: this method must be rewritten to support specification from comments in #564 to support
+//    //Spreadsheets with same name in different Ruby and AWE projects
+//    public RubyProjectNode getRootNode() {
+//        Transaction tx = neoService.beginTx();
+//        try {
+//            
+//        	RubyProjectNode root = new RubyProjectNode(neoService.getReferenceNode());
+//            tx.success();
+//            
+//            return root;
+//        }
+//        finally {
+//            tx.finish();
+//        }
+//    }
     
     /**
      * Deletes the Cell from Spreadsheet
