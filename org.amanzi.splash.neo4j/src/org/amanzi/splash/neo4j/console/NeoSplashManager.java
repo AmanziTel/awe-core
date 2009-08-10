@@ -1,8 +1,9 @@
 package org.amanzi.splash.neo4j.console;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.splash.neo4j.database.nodes.RootNode;
-import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
@@ -49,7 +50,7 @@ public class NeoSplashManager {
 	 * @return Spreadsheet
 	 */
 	
-	public Spreadsheet getSpreadsheet(final String name, String rdtName, String udigName) throws SpreadsheetManagerException {
+	public Spreadsheet getSpreadsheet(final String name,  String rdtName, String udigName) throws SpreadsheetManagerException {
 		final String realUdigName = resolveUDIGProjectName(udigName);
 		final String realRdtName = resolveRDTProjectName(realUdigName, rdtName);
 		
@@ -62,7 +63,7 @@ public class NeoSplashManager {
             }
 
             public void run() {
-                RootNode rootNode = getSpreadsheetRoot(realUdigName, realRdtName);
+                RubyProjectNode rootNode = NeoCorePlugin.getDefault().getProjectService().findRubyProject(realUdigName);//getSpreadsheetRoot(realUdigName, realRdtName);
                 result = SplashPlugin.getDefault().getSpreadsheetService().findSpreadsheet(rootNode, name);
             }		    
 		});
@@ -123,11 +124,11 @@ public class NeoSplashManager {
 	 * @return Root node of Spreadsheet
 	 */
 	
-	private RootNode getSpreadsheetRoot(String udigName, String rdtName) {
+	private RubyProjectNode getSpreadsheetRoot(String udigName, String rdtName) {
 	    //TODO: must compute a Root of Spreadsheet
 	    //for now root is a Reference Node
 	    
-	    return SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
+	    return NeoCorePlugin.getDefault().getProjectService().findRubyProject(rdtName);//SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
 	}
 	
 	
