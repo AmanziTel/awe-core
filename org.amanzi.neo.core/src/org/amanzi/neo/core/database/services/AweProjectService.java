@@ -49,7 +49,6 @@ public class AweProjectService {
 
 			RootNode root = new RootNode(neoService.getReferenceNode());
 			tx.success();
-
 			return root;
 		} finally {
 			tx.finish();
@@ -59,7 +58,7 @@ public class AweProjectService {
 	public RubyProjectNode findRubyProject(String rubyProjectName) {
 		RootNode root = getRootNode();
 		Transaction tx = neoService.beginTx();
-		// tofo rewrite metod
+		// TODO rewrite metod
 		try {
 			Iterator<AweProjectNode> iterator = root.getAllProjects();
 			while (iterator.hasNext()) {
