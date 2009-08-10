@@ -2,8 +2,6 @@ package org.amanzi.neo.core.database.services;
 
 import java.util.Iterator;
 
-import org.amanzi.neo.core.database.exception.SplashDatabaseException;
-import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
 import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.RootNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
