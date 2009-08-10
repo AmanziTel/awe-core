@@ -1,43 +1,49 @@
+require 'java'
+require $jrubyPath + "/lib/ruby/1.8/erb"
+
 class Cells
-  def initialize
-    @cells = {'a1' => ''};     
+  #
+  # Method that updates Cell by ID with new formula
+  #
+  def update(currentCellId, formula)      
+    #idArray contains IDs of referenced Cells
+    @idArray = []
+    if formula[0] == '='[0]        
+        display = ERB.new("<%= #{formula} %>").result
+    else        
+        display = ERB.new(formula).result
+    end
+    
+    #if the formula was interpreted than update References of Cell
+    $tableModel.updateCellReferences(currentCellId.to_s, @idArray)
+    display    
   end
   
-  	def method_missing(meth, *args)
-      s = "#{meth}"
-      s = s.gsub("=","")
-      puts "s = " + s
-      a = args.to_s
-      puts "a = " + a
-      
-      if (a =~ /\d+/ and a.include?"." and (not a.include?"/[a-z]/"))
-      	puts "Float detected"
-      	b = a.to_f
-      elsif (a =~ /\d+/ and (not a =~ /[a-z]/))
-      	puts "Integer detected"
-      	b = a.to_i
-      else
-      	puts "String detected"
-      	b = a
-      end	
-      
-      if (args.to_s.eql?"")
-        #puts "value of "+ s + "= " + @cells[s]
-        puts "I'm here 1"
-        @cells[s]
-      else
-      	puts "I'm here 2"
-        @cells[s] = b
-	  end
-	end
-	puts "I'm here 3"
-	
+  def method_missing(method_id, *args)
+    if method_id.to_s =~ /([a-z]{1,3})([0-9]+)/      
+      #if method_missing was called with ID of Cell than put this ID to array
+      @idArray << method_id
+      find_cell(method_id)
+    else
+      super.method_missing(method_id.to_s, *args)
+    end
+  end	
+  
+  private
+  
+  #
+  # Returns value of Cell by given ID
+  #
+  def find_cell(cell_id)    
+    cell = $tableModel.getCellByID(cell_id.to_s)    
+    cell.getValue
+  end
 end
 
 	
 
 class Spreadsheet
-  def initialize
+  def initialize()
     @cells = Cells.new
     puts "Spreadsheet has been initialized !!"
   end
@@ -46,10 +52,7 @@ class Spreadsheet
     @cells
   end
   
-  
 end
-
-require 'java'
 
 class Charts
 	def initialize

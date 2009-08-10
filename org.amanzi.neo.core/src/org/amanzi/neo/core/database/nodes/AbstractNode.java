@@ -2,6 +2,7 @@ package org.amanzi.neo.core.database.nodes;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.RelationshipType;
 
 /**
@@ -32,10 +33,11 @@ public abstract class AbstractNode {
      *
      * @param type type of Relationship
      * @param node related node
+     * @return created Relationship
      */
     
-    protected void addRelationship(RelationshipType type, Node node) {
-        this.node.createRelationshipTo(node, type);
+    protected Relationship addRelationship(RelationshipType type, Node node) {
+        return this.node.createRelationshipTo(node, type);
     }
     /**
      * Method that creates a relationship to other node

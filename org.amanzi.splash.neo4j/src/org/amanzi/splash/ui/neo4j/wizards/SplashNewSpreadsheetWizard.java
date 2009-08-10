@@ -1,11 +1,6 @@
 package org.amanzi.splash.ui.neo4j.wizards;
 
-import net.refractions.udig.project.internal.Project;
-import net.refractions.udig.project.internal.RubyProject;
-
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.splash.neo4j.ui.SplashPlugin;
-import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.INewWizard;

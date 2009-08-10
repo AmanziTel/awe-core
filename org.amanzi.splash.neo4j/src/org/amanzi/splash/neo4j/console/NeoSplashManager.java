@@ -117,22 +117,6 @@ public class NeoSplashManager {
 	}
 	
 	/**
-	 * Computes a RootNode for Spreadsheet
-	 *
-	 * @param udigName name of udig Project
-	 * @param rdtName name of rdt Project
-	 * @return Root node of Spreadsheet
-	 */
-	
-	private RubyProjectNode getSpreadsheetRoot(String udigName, String rdtName) {
-	    //TODO: must compute a Root of Spreadsheet
-	    //for now root is a Reference Node
-	    
-	    return NeoCorePlugin.getDefault().getProjectService().findRubyProject(rdtName);//SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
-	}
-	
-	
-	/**
 	 * Returns Spreadsheet that is currently opened
 	 * 
 	 * @return

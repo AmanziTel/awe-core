@@ -57,7 +57,6 @@ import org.amanzi.neo.core.database.nodes.PieChartNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.ColumnHeaderRenderer;
@@ -89,8 +88,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
-import org.eclipse.ui.part.FileEditorInput;
-import org.neo4j.api.core.NeoService;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 
@@ -644,7 +641,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @see org.eclipse.ui.IWorkbenchPart#createPartControl(Composite)
 	 */
 	public void createPartControl(final Composite parent) {
-		//Lagutko, 28.07.2009, we use SplashEditorInput 
+		//Lagutko, 28.07.2009, we use SplashEditorInput
 		SplashEditorInput sei = (SplashEditorInput) getEditorInput();
 
 		splashID = sei.getName().replace(".splash", "");

@@ -44,4 +44,5 @@ Export-Package: com.eteks.openjeks,
  org.amanzi.splash.neo4j.database.services,
  org.amanzi.splash.neo4j.swing,
  org.amanzi.splash.neo4j.ui,
+ org.amanzi.splash.neo4j.database.services,
  org.amanzi.splash.neo4j.utilities

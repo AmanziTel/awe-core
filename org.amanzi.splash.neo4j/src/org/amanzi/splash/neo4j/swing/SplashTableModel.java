@@ -3,16 +3,17 @@ package org.amanzi.splash.neo4j.swing;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 
+import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
-import org.amanzi.splash.neo4j.database.services.CellID;
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
@@ -20,17 +21,40 @@ import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
 import org.eclipse.core.runtime.FileLocator;
 import org.jruby.Ruby;
+import org.jruby.RubyArray;
 import org.jruby.RubyInstanceConfig;
+import org.jruby.internal.runtime.ValueAccessor;
+import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
 
 import com.eteks.openjeks.format.CellFormat;
 
 public class SplashTableModel extends DefaultTableModel
 {
+    /*
+     * Name of 'jrubyPath' Ruby Global Variable
+     */
+    private static final String JRUBY_PATH_RUBY_NAME = "jrubyPath";
+
+    /*
+     * Name of 'tableModel' Ruby Global Variable 
+     */
+    private static final String TABLE_MODEL_RUBY_NAME = "tableModel";
+
+    /*
+     * Path to ERB
+     */
     private static final String ERB_PATH = "/lib/ruby/1.8/erb";
 
+    /*
+     * Constant for Empty String
+     */
     private static final String EMPTY_STRING = "";
 
+    /*
+     * Script for initializing Spreadsheet
+     */
     private static final String JRUBY_SCRIPT = "jruby.rb";
 
     /*
@@ -102,7 +126,6 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param splash_name name of Spreadsheet
      * @param root root node of Spreadsheet
 	 */
-	@SuppressWarnings("unchecked")
 	public SplashTableModel (int rows, int cols, String splash_name, RubyProjectNode root)
 	{
 		
@@ -120,7 +143,6 @@ public class SplashTableModel extends DefaultTableModel
      * @param rubyengine Ruby Runtime
      * @param root root node of Spreadsheet
      */
-	@SuppressWarnings("unchecked")
 	public SplashTableModel (int rows, int cols, String splash_name, Ruby rubyengine, RubyProjectNode root)
 	{
 		
@@ -155,24 +177,12 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 	
 	private void initialize(String splash_name, RubyProjectNode root) {
+	    initializeSpreadsheet(splash_name, root);
+	    
 	    if (runtime == null)
-            initializeJRubyInterpreter();   
-        
-        initializeSpreadsheet(splash_name, root);
-        
-        initializeCells();
+            initializeJRubyInterpreter();
 	}
 	
-	/**
-	 * Initializes values of Spreadsheet in Ruby
-	 */
-	
-	private void initializeCells() {
-	    for (Cell cell : service.getAllCells(spreadsheet)) {
-	        interpret((String)cell.getDefinition(), null, cell.getRow(), cell.getColumn());
-	    }
-	}
-
 	/**
 	 * Initializes Ruby Runtime
 	 */
@@ -215,13 +225,31 @@ public class SplashTableModel extends DefaultTableModel
 		}
 
 		String input = NeoSplashUtil.getScriptContent(path);
-
+		
+		HashMap<String, Object> globals = new HashMap<String, Object>();
+		globals.put(TABLE_MODEL_RUBY_NAME, this);
+		globals.put(JRUBY_PATH_RUBY_NAME, ScriptUtils.getJRubyHome());
+		makeRubyGlobals(runtime, globals);
+		
 		runtime.evalScriptlet(input);
 		//TODO: Lagutko: extract scripts to files
 		runtime.evalScriptlet("$sheet = Spreadsheet.new");
 	}
+	
+	/**
+	 * Utility method that creates a Ruby Global Variables from Java Objects
+	 *
+	 * @param rubyRuntime Ruby Environment
+	 * @param globals Map with Names of Variables and Java Objects
+	 */
 
-
+	private void makeRubyGlobals(Ruby rubyRuntime, HashMap<String, Object> globals) {
+	    for (String name : globals.keySet()) {
+	        IRubyObject rubyObject = JavaEmbedUtils.javaToRuby(rubyRuntime, globals.get(name));
+	        rubyRuntime.getGlobalVariables().define("$" + name, new ValueAccessor(rubyObject));
+	    }
+	}
+	
 	/**
 	 * Method that update Cell that has reference to Script
 	 * 
@@ -233,10 +261,7 @@ public class SplashTableModel extends DefaultTableModel
 		updateDefinitionFromScript(cell);
 
 		interpret((String)cell.getDefinition(), Cell.DEFAULT_DEFINITION, cell.getRow(), cell.getColumn());
-
-	}
-
-	
+	}	
 
 	/**
 	 * Function that updates definition of Cell from Script
@@ -259,7 +284,7 @@ public class SplashTableModel extends DefaultTableModel
 	 * @return Cell with updated value
 	 */
 	public Cell interpret(String definition, int row, int column){
-		String cellID = NeoSplashUtil.getCellIDfromRowColumn(row, column);
+		String cellID = new CellID(row, column).getFullID();
 		String formula1 = definition;
 		Cell se = getCellByID(cellID);
 		
@@ -301,13 +326,7 @@ public class SplashTableModel extends DefaultTableModel
 		NeoSplashUtil.logn("path = " + path);
 		NeoSplashUtil.logn("cellID.toLowerCase():" + cellID.toLowerCase());
 
-		//TODO: Lagutko: extract script to file
-		String input = "require" + "'" + path + "'" + "\n" +
-		"template = ERB.new <<-EOF" + "\n" +
-		formula + "\n" +
-		"EOF" + "\n" +
-		"$sheet.cells." + cellID.toLowerCase() + "=" +  "template.result(binding)" + "\n" +
-		"$sheet.cells." + cellID.toLowerCase();
+		String input = "$sheet.cells.update('" + cellID.toLowerCase() + "', '" + formula + "')";
 
 		NeoSplashUtil.logn("ERB Input: " + input);
 
@@ -332,7 +351,7 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 	//TODO: Lagutko: do we need oldDefinition param?
 	public Cell interpret(String definition, String oldDefinition, int row, int column){
-		String cellID = NeoSplashUtil.getCellIDfromRowColumn(row, column);
+		String cellID = new CellID(row, column).getFullID();
 		String formula1 = definition;
 		NeoSplashUtil.logn("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
 		NeoSplashUtil.logn("Start interpreting a cell...");
@@ -471,7 +490,6 @@ public class SplashTableModel extends DefaultTableModel
 	/**
 	 * set model data with a certain value
 	 */
-	@SuppressWarnings("unchecked")
 	public void setValueAt (final Object value, int row, int column)
 	{
 //		if (true) return;
@@ -502,8 +520,6 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param column column index
 	 * @param oldDefinition oldDefinition
 	 */
-	@SuppressWarnings("unchecked")
-	//TODO: Lagutko: do we need oldDefinition param?
 	public void setValueAt (final Object value, final int row, final int column, String oldDefinition)
 	{
 		// row and column index are checked but storing in a Hashtable
@@ -515,11 +531,25 @@ public class SplashTableModel extends DefaultTableModel
 
 		ActionUtil.getInstance().runTask(new Runnable() {
 		    public void run() {
-		        updateCellWithReferences((Cell)value);
+		        updateCellWithDependencies((Cell)value);
 		    }
 		}, false);
 
 		fireTableChanged (new TableModelEvent (this, row, row, column));
+	}
+	
+	/**
+	 * Method that updates references of given Cell
+	 *
+	 * @param cellID ID of Cell to update
+	 * @param referencedIDs IDs of referenced cells
+	 */
+	public void updateCellReferences(final String cellID, final RubyArray referencedIDs) {	    
+	    ActionUtil.getInstance().runTask(new Runnable() {
+	        public void run() {	    
+	            service.updateCellReferences(spreadsheet, cellID, referencedIDs);	            
+	        }
+	    }, false);	    
 	}
 	
 	/**
@@ -528,12 +558,12 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param rootCell Cell for update
 	 */
 	
-	private void updateCellWithReferences(Cell rootCell) {
-	    service.updateCellWithReferences(spreadsheet, rootCell);
+	private void updateCellWithDependencies(Cell rootCell) {
+	    service.updateCell(spreadsheet, rootCell);
 	    
-	    for (Cell c : service.getDependentCells(spreadsheet, new CellID(rootCell.getCellID()))) {
+	    for (Cell c : service.getDependentCells(spreadsheet, rootCell.getCellID())) {
 	        refreshCell(c);
-	        updateCellWithReferences(c);
+	        updateCellWithDependencies(c);
 	    }
 	}
 	
@@ -589,7 +619,7 @@ public class SplashTableModel extends DefaultTableModel
 	public void refreshCell(Cell cell) {
 		NeoSplashUtil.printCell("Refreshing Cell", cell);
 		
-		String cellID = cell.getCellID();
+		String cellID = cell.getCellID().getFullID();
 
 		NeoSplashUtil.logn("refreshCell: cellID = " + cellID);
 
@@ -635,10 +665,9 @@ public class SplashTableModel extends DefaultTableModel
 	 */
 	public Cell getCellByID(String cellID)
 	{
-		int row = NeoSplashUtil.getRowIndexFromCellID(cellID);
-		int column = NeoSplashUtil.getColumnIndexFromCellID(cellID);
+		CellID id = new CellID(cellID);
 	
-		return (Cell)getValueAt(row, column);
+		return (Cell)getValueAt(id.getRowIndex(), id.getColumnIndex());
 	}
 	
 	/**
@@ -660,18 +689,38 @@ public class SplashTableModel extends DefaultTableModel
 	    service.updateCell(spreadsheet, cell);
 	}
 
+	/**
+	 * Returns Spreadsheet Service
+	 *
+	 * @return spreadsheet service
+	 */
 	public SpreadsheetService getService() {
 		return service;
 	}
 
+	/**
+	 * Sets Spreadsheet Service
+	 *
+	 * @param service spreadsheet service
+	 */
 	public void setService(SpreadsheetService service) {
 		this.service = service;
 	}
 
+	/**
+	 * Returns current Spreadsheet
+	 *
+	 * @return spreadsheet node
+	 */
 	public SpreadsheetNode getSpreadsheet() {
 		return spreadsheet;
 	}
 
+	/**
+	 * Sets current Spreadsheet
+	 *
+	 * @param spreadsheet spreadsheet node
+	 */
 	public void setSpreadsheet(SpreadsheetNode spreadsheet) {
 		this.spreadsheet = spreadsheet;
 	}

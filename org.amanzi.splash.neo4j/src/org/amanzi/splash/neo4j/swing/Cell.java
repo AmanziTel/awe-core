@@ -2,7 +2,7 @@ package org.amanzi.splash.neo4j.swing;
 
 import java.net.URI;
 
-import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
+import org.amanzi.neo.core.database.nodes.CellID;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -18,12 +18,14 @@ public class Cell
      */
     public static final String DEFAULT_DEFINITION = "";
     
+    public static final String CELL_CYLIC_ERROR = "ERROR:cyclic";
+    
 	private transient Object value;
 	private Object definition;
 	private Cell cellGraphInfo;
 	private CellFormat cellFormat;
 	
-	private String cellID;
+	private CellID cellID;
 	private int row;
 	private int column;
 	
@@ -49,10 +51,9 @@ public class Cell
 	
 	public void renameCell(String oldCellID, String newCellID)
 	{
-		//Cell c = getCellByID(oldCellID);
-		setCellID(newCellID);
-		setRow(NeoSplashUtil.getRowIndexFromCellID(newCellID));
-		setColumn(NeoSplashUtil.getColumnIndexFromCellID(newCellID));
+		setCellID(new CellID(newCellID));		
+		setRow(getCellID().getRowIndex());
+		setColumn(getCellID().getColumnIndex());
 		
 	}
 	
@@ -77,7 +78,7 @@ public class Cell
 		//SplashJRubyInterpreter s = new SplashJRubyInterpreter();
 		this.value = value;
 		
-		this.cellID = NeoSplashUtil.getCellIDfromRowColumn(row, column);
+		this.cellID = new CellID(row, column);
 		
 		cellFormat = c;
 	}
@@ -151,11 +152,11 @@ public class Cell
 	
 
 
-	public String getCellID() {
+	public CellID getCellID() {
 		return cellID;
 	}
 
-	public void setCellID(String cellID) {
+	public void setCellID(CellID cellID) {
 		this.cellID = cellID;
 	}
 

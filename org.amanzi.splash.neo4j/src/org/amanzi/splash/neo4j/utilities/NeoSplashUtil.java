@@ -21,6 +21,7 @@ import net.refractions.udig.catalog.URLUtils;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.neo4j.swing.Cell;
@@ -68,7 +69,7 @@ public static final boolean enableNeo4j = true;
 
 	public static void logNullAtCell(String func, String value, int row, int column){
 		if (isDebug == true){
-			NeoSplashUtil.logn(func + ":Null value ("+value+ ") at " + NeoSplashUtil.getCellIDfromRowColumn(row, column));
+			NeoSplashUtil.logn(func + ":Null value ("+value+ ") at " + new CellID(row, column));
 		}
 	}
 
@@ -241,73 +242,9 @@ public static final boolean enableNeo4j = true;
 
 	}
 
-	public static String getCellIDfromRowColumn(int row, int column)
-	{
-		String letterIndex = getColumnLetter(column);
-		
-		return letterIndex + Integer.toString(row+1);
-	}
-	
-	public static String getColumnLetter(int columnIndex) {
-	    //Lagutko,  4.06.2009, correct bug with columns more than 26
-        String STD_HEADINGS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        StringBuilder letterIndex = new StringBuilder();        
-        int iColumn = columnIndex;
-        
-        letterIndex.insert(0, STD_HEADINGS.charAt(columnIndex % 26));
-        
-        iColumn = iColumn / 26;
-        
-        STD_HEADINGS = "AABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        
-        while (iColumn > 0) {
-            int index = iColumn % 27;
-            
-            letterIndex.insert(0, STD_HEADINGS.charAt(index));
-            
-            iColumn = iColumn / 27;
-        }     
-        
-        return letterIndex.toString();
-	}
-
 	public static boolean isCellInList(Cell c, ArrayList<Cell> list)
 	{
 		return list.contains(c);
-	}
-
-	public static int getRowIndexFromCellID(String cellID) {
-		String regex = "\\d+";
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(cellID);
-
-		int ret = 0;
-		while (matcher.find()) {
-			ret = Integer.parseInt(matcher.group());
-		}
-
-		return ret-1;
-	}
-	
-	public static int getColumnIndexFromCellID(String cellID) {
-		String STD_HEADINGS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-		//Lagutko, 4.06.2009, CellId can contain more than one letter, so count ColumnIndex until we have letter in CellId
-		String id = cellID.toUpperCase();
-		int i = 0;
-		
-		char c;
-		int index = 0;
-		
-		while (!Character.isDigit(c = id.charAt(i))) {			
-			index = index * 26;
-			
-			index = index + (STD_HEADINGS.indexOf(c) + 1);
-			
-			i++;
-		}
-		
-		return index - 1;
 	}
 
 	/**

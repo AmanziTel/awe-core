@@ -11,7 +11,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
  */
 public class EditorListener implements IResourceChangeListener {
 
-	@Override
+	
 	public void resourceChanged(IResourceChangeEvent event) {
 		// TODO check script change
 	}

@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.exception.LoopInCellReferencesException;
 import org.amanzi.neo.core.enums.CellRelationTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Direction;
@@ -15,6 +16,7 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 
 /**
@@ -106,6 +108,11 @@ public class CellNode extends AbstractNode {
      */
     private static final String CELL_NODE_NAME = "Spreadsheet Cell";    
     
+    /*
+     * Name of Cyclic Dependencies property
+     */
+    private static final String CELL_CYCLIC = "Cell cyclic dependencies";
+    
     /**
      * Constructor. Wraps a Node from database and sets type and name of Node
      * 
@@ -114,7 +121,7 @@ public class CellNode extends AbstractNode {
     public CellNode(Node node) {
         super(node);
         setParameter(INeoConstants.PROPERTY_TYPE_NAME, CELL_NODE_TYPE);
-        setParameter(INeoConstants.PROPERTY_NAME_NAME, CELL_NODE_NAME);
+        setParameter(INeoConstants.PROPERTY_NAME_NAME, CELL_NODE_NAME);        
     }
     
     /**
@@ -257,6 +264,11 @@ public class CellNode extends AbstractNode {
         return (Integer)getParameter(CELL_HORIZONTAL_ALIGNMENT);
     }
     
+    /**
+     * Sets Horizontal Alignment for Cell
+     *
+     * @param horizontalAlignment cell's horizontal alignment
+     */
     public void setHorizontalAlignment(Integer horizontalAlignment) {
         setParameter(CELL_HORIZONTAL_ALIGNMENT, horizontalAlignment);
     }
@@ -376,8 +388,30 @@ public class CellNode extends AbstractNode {
      */    
     public void setScriptURI(URI scriptURI) {
         if (scriptURI != null) {
+            
             setParameter(SCRIPT_URI, scriptURI.toString());
         }
+    }
+    
+    /**
+     * Sets is this cell has cyclic dependencies
+     *
+     * @param isCyclic
+     */
+    public void setCyclic(boolean isCyclic) {
+        setParameter(CELL_CYCLIC, isCyclic);
+    }
+    
+    /**
+     * Is this Cell has Cyclic dependencies?
+     *
+     * @return
+     */
+    public boolean isCyclic() {
+        if (!(Boolean)node.hasProperty(CELL_CYCLIC)) {
+            return false;
+        }
+        return (Boolean)getParameter(CELL_CYCLIC);
     }
     
     /**
@@ -404,8 +438,36 @@ public class CellNode extends AbstractNode {
      *
      * @param rfdNode wrapped RFD Cell
      */    
-    public void addDependedNode(CellNode rfdNode) {
-        addRelationship(CellRelationTypes.REFERENCED, rfdNode.getUnderlyingNode());
+    public void addDependedNode(CellNode rfdNode) throws LoopInCellReferencesException {
+        Relationship relationship = null;
+        
+        try {
+            relationship = addRelationship(CellRelationTypes.REFERENCED, rfdNode.getUnderlyingNode());
+            checkLoops(rfdNode);
+        }
+        catch (IllegalArgumentException e) {
+            //Lagutko: the IllegalArgumentException will be thrown if we try to create Relationship to same Node
+            throw new LoopInCellReferencesException(new CellID(rfdNode.getRow().getRowIndex(), rfdNode.getColumn().getColumnName()));
+        }
+        catch (LoopInCellReferencesException e) {
+            //Lagutko: LoopInCellReferencesException will be thrown 
+            relationship.delete();
+            throw e;
+        }
+    }
+    
+    /**
+     * Checks a Loops in Cell's References
+     *
+     * @param newDependedNode
+     * @throws LoopInCellReferencesException
+     */
+    private void checkLoops(CellNode newDependedNode) throws LoopInCellReferencesException {
+        Iterator<CellNode> lastNode = new LoopDependencyIterator(newDependedNode);
+        
+        if (lastNode.hasNext()) {
+            throw new LoopInCellReferencesException(new CellID(newDependedNode.getRow().getRowIndex(), newDependedNode.getColumn().getColumnName()));
+        }
     }
     
     /**
@@ -488,5 +550,41 @@ public class CellNode extends AbstractNode {
         protected CellNode wrapNode(Node node) {
             return new CellNode(node);
         }
+    }
+    
+    /**
+     * Special Traverser for detecting Loops in Cell References
+     * 
+     * @author Lagutko_N
+     */
+    private class LoopDependencyIterator extends AbstractIterator<CellNode> {
+        
+        
+        public LoopDependencyIterator(CellNode endNode) {
+            final Node end = endNode.getUnderlyingNode();
+            
+            this.iterator = node.traverse(Traverser.Order.DEPTH_FIRST, 
+                                          StopEvaluator.END_OF_GRAPH,
+                                          new ReturnableEvaluator(){
+                                              
+                                            
+                                              public boolean isReturnableNode(TraversalPosition arg0) {
+                                                  if (arg0.depth() > 0) {
+                                                      return arg0.currentNode().equals(end);
+                                                  }
+                                                  else {
+                                                      return false;
+                                                  }
+                                              }
+                                          },
+                                          CellRelationTypes.REFERENCED,
+                                          Direction.INCOMING).iterator();
+        }
+
+        @Override
+        protected CellNode wrapNode(Node node) {
+            return new CellNode(node);
+        }
+        
     }
 }

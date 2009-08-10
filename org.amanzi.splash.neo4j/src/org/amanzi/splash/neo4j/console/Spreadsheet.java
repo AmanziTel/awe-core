@@ -1,8 +1,8 @@
 package org.amanzi.splash.neo4j.console;
 
+import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
-import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 
 /**
  * Spreadsheet class
@@ -35,9 +35,8 @@ public class Spreadsheet {
 	 */
 	
 	public String getValue(String cellID) {
-		int column = NeoSplashUtil.getColumnIndexFromCellID(cellID);
-		int row = NeoSplashUtil.getRowIndexFromCellID(cellID);
-		Cell cell = (Cell)model.getValueAt(row, column);	
+		CellID id = new CellID(cellID);
+		Cell cell = (Cell)model.getValueAt(id.getRowIndex(), id.getColumnIndex());	
 		return (String)cell.getValue();
 	}
 	
@@ -49,13 +48,12 @@ public class Spreadsheet {
 	 */
 	
 	public void setValue(String cellID, String newFormula) {
-		int column = NeoSplashUtil.getColumnIndexFromCellID(cellID);
-		int row = NeoSplashUtil.getRowIndexFromCellID(cellID);
-		Cell cell = (Cell)model.getValueAt(row, column);
+	    CellID id = new CellID(cellID);
+        Cell cell = (Cell)model.getValueAt(id.getRowIndex(), id.getColumnIndex());
 		
 		String oldFormula = (String)cell.getDefinition();
 		
-		model.interpret(newFormula, oldFormula, row, column);
+		model.interpret(newFormula, oldFormula, id.getRowIndex(), id.getColumnIndex());
 		
 		//TODO: Lagutko: is it needs?
 		//model.updateCellsAndTableModelReferences(row, column, oldFormula, newFormula);
