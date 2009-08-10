@@ -10,7 +10,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import org.amanzi.splash.neo4j.database.nodes.RootNode;
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 
 import com.eteks.openjeks.format.CellFormat;
@@ -50,7 +50,7 @@ public class SplashTable extends JTable
 	/*
 	 * Root Node for current Spreadsheet
 	 */
-	private RootNode root;
+	private RubyProjectNode root;
 	
 	/**
 	 * Initialize table with 500x200
@@ -58,7 +58,7 @@ public class SplashTable extends JTable
 	 * @param splash_name name of Spreadsheet
 	 * @param root Root node of Spreadsheet
 	 */
-	public SplashTable (String splash_name, RootNode root)
+	public SplashTable (String splash_name, RubyProjectNode root)
 	{
 		this (10, 10, splash_name, root);
 
@@ -72,7 +72,7 @@ public class SplashTable extends JTable
 	 * @param splash_name name of Spreadsheet
 	 * @param root root node of Spreadsheet
 	 */
-	public SplashTable (int rowCount, int columnCount, String splash_name, RootNode root)
+	public SplashTable (int rowCount, int columnCount, String splash_name, RubyProjectNode root)
 	{
 		super();
 		
@@ -713,11 +713,11 @@ public class SplashTable extends JTable
 		this.splashName = splashName;
 	}
 
-	public RootNode getRoot() {
+	public RubyProjectNode getRoot() {
 		return root;
 	}
 
-	public void setRoot(RootNode root) {
+	public void setRoot(RubyProjectNode root) {
 		this.root = root;
 	}
 }

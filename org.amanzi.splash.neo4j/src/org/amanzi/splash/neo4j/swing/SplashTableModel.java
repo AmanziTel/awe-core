@@ -8,16 +8,16 @@ import java.util.List;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
-import org.amanzi.splash.neo4j.database.nodes.RootNode;
-import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
 import org.amanzi.splash.neo4j.database.services.CellID;
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
-import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
+import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
 import org.eclipse.core.runtime.FileLocator;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
@@ -91,7 +91,7 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param splash_name name of Spreadsheet
 	 * @param root root node of Spreadsheet
 	 */
-	public SplashTableModel (String splash_name, RootNode root)
+	public SplashTableModel (String splash_name, RubyProjectNode root)
 	{
 		this (10, 10, splash_name, root);
 	}
@@ -103,7 +103,7 @@ public class SplashTableModel extends DefaultTableModel
      * @param root root node of Spreadsheet
 	 */
 	@SuppressWarnings("unchecked")
-	public SplashTableModel (int rows, int cols, String splash_name, RootNode root)
+	public SplashTableModel (int rows, int cols, String splash_name, RubyProjectNode root)
 	{
 		
 		this.rowCount     = rows;
@@ -121,7 +121,7 @@ public class SplashTableModel extends DefaultTableModel
      * @param root root node of Spreadsheet
      */
 	@SuppressWarnings("unchecked")
-	public SplashTableModel (int rows, int cols, String splash_name, Ruby rubyengine, RootNode root)
+	public SplashTableModel (int rows, int cols, String splash_name, Ruby rubyengine, RubyProjectNode root)
 	{
 		
 		this.rowCount     = rows;
@@ -140,7 +140,7 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param root root node of Spreadsheet
 	 * @author Lagutko_N
 	 */
-	private void initializeSpreadsheet(String sheetName, RootNode root) {
+	private void initializeSpreadsheet(String sheetName, RubyProjectNode root) {
 	    service = SplashPlugin.getDefault().getSpreadsheetService();
         
 	    //don't need to check that spreadsheet exists because it was checked in SplashEditorInput
@@ -154,7 +154,7 @@ public class SplashTableModel extends DefaultTableModel
 	 * @param root RootNode of Spreadsheet
 	 */
 	
-	private void initialize(String splash_name, RootNode root) {
+	private void initialize(String splash_name, RubyProjectNode root) {
 	    if (runtime == null)
             initializeJRubyInterpreter();   
         
@@ -474,6 +474,7 @@ public class SplashTableModel extends DefaultTableModel
 	@SuppressWarnings("unchecked")
 	public void setValueAt (final Object value, int row, int column)
 	{
+//		if (true) return;
 		// row and column index are checked but storing in a Hashtable
 		// won't cause real problems
 		NeoSplashUtil.logn("row = " + row + " - getRowCount () = " +getRowCount () );
