@@ -1,5 +1,6 @@
 package org.amanzi.neo.core;
 
+import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.preferences.NeoPreferencesInitializer;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
@@ -32,6 +33,8 @@ public class NeoCorePlugin extends Plugin {
      */
     
     private NeoPreferencesInitializer initializer = new NeoPreferencesInitializer();
+
+	private AweProjectService aweProjectService;
     
     /**
      * Constructor for SplashPlugin.
@@ -39,6 +42,7 @@ public class NeoCorePlugin extends Plugin {
     public NeoCorePlugin() {
         super();
         plugin = this;  
+        aweProjectService = new AweProjectService();
     }
     
     public void start(BundleContext context) throws Exception {
@@ -71,7 +75,13 @@ public class NeoCorePlugin extends Plugin {
     public NeoPreferencesInitializer getInitializer() {
         return initializer;
     }
-    
+    /**
+     * 
+     * @return awe project service
+     */
+	public AweProjectService getProjectService() {
+	    return aweProjectService;
+	}   
     /**
      * Sets initializer of NeoPreferences
      *
