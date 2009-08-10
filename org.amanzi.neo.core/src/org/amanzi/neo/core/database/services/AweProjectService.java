@@ -56,14 +56,15 @@ public class AweProjectService {
 	}
 
 	/**
+	 * Find ruby project
 	 * 
 	 * @param rubyProjectName
-	 * @return
+	 *            ruby project name
+	 * @return RubyProjectNode
 	 */
 	public RubyProjectNode findRubyProject(String rubyProjectName) {
 		RootNode root = getRootNode();
 		Transaction tx = neoService.beginTx();
-		// TODO rewrite metod
 		try {
 			Iterator<AweProjectNode> iterator = root.getAllProjects();
 			while (iterator.hasNext()) {
@@ -188,7 +189,7 @@ public class AweProjectService {
 	 * 
 	 * @param aweProjectName
 	 *            Awe project name
-	 * @return
+	 * @return AweProjectNode
 	 */
 	public AweProjectNode findOrCreateAweProject(String aweProjectName) {
 		assert aweProjectName != null;
