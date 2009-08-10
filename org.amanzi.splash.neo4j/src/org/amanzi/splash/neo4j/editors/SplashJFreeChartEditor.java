@@ -14,10 +14,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 
 
-import org.amanzi.splash.neo4j.database.exception.SplashDatabaseException;
-import org.amanzi.splash.neo4j.database.nodes.ChartItemNode;
-import org.amanzi.splash.neo4j.database.nodes.ChartNode;
-import org.amanzi.splash.neo4j.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.database.exception.SplashDatabaseException;
+import org.amanzi.neo.core.database.nodes.ChartItemNode;
+import org.amanzi.neo.core.database.nodes.ChartNode;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.SplashTable;
