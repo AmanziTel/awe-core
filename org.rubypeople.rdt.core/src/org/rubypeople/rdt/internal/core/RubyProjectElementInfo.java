@@ -10,9 +10,14 @@
  *******************************************************************************/
 package org.rubypeople.rdt.internal.core;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -149,6 +154,9 @@ class RubyProjectElementInfo extends OpenableElementInfo {
 			resources = NO_NON_RUBY_RESOURCES;
 			resourcesCounter = 0;
 		}
+		
+		resources = updateChildrenWithSpreadsheet(resources, project);
+		
 		return resources;
 	}
 
@@ -258,5 +266,26 @@ class RubyProjectElementInfo extends OpenableElementInfo {
 			System.arraycopy(name, 0, superName, 0, i);
 			set.put(superName, superName);
 		}
+	}
+	
+	/**
+	 * Updates Children of Ruby Project with Neo4j-based Spreadsheets
+	 *
+	 * @param children array of already computed children elements
+	 * @param project RubyProject
+	 * @return updated array of children
+	 * @author Lagutko_N
+	 */
+	private Object[] updateChildrenWithSpreadsheet(Object[] children, RubyProject project) {
+	    List<String> spreadsheetNames = AWEProjectManager.getSpreadsheetsOfRubyProject(project.getProject());
+	    
+	    int oldLength = children.length;
+	    System.arraycopy(children, 0, (children = new Object[children.length + spreadsheetNames.size()]), 0, children.length - 1);
+	    
+	    for (String name : spreadsheetNames) {
+	        children[oldLength++] = new Spreadsheet(project, name);
+	    }
+	    
+	    return children;
 	}
 }

@@ -3,6 +3,7 @@ package org.amanzi.integrator.awe;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import net.refractions.udig.project.IRubyProject;
@@ -18,6 +19,10 @@ import net.refractions.udig.project.internal.SpreadsheetType;
 import net.refractions.udig.project.internal.impl.ProjectFactoryImpl;
 
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.AweProjectNode;
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.database.services.AweProjectService;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -600,5 +605,30 @@ public class AWEProjectManager {
     	else {
     		return project.getName();
     	}
+    }
+    
+    /**
+     * Method that computes Spreadsheets of RubyProject
+     *
+     * @param rubyProjectResource Resource of Ruby Project
+     * @return List of Spreadsheets for given Ruby Project
+     */
+    public static List<String> getSpreadsheetsOfRubyProject(IProject rubyProjectResource) {
+        String rubyProjectName = rubyProjectResource.getName();
+        String aweProjectName = getAWEprojectNameFromResource(rubyProjectResource);
+        
+        AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+        
+        AweProjectNode aweProject = projectService.findOrCreateAweProject(aweProjectName);
+        RubyProjectNode rubyProject = projectService.findOrCreateRubyProject(aweProject, rubyProjectName);
+        
+        Iterator<SpreadsheetNode> spreadsheetIterator = rubyProject.getSpreadsheets();
+        
+        ArrayList<String> spreadsheets = new ArrayList<String>(0);
+        while (spreadsheetIterator.hasNext()) {
+            spreadsheets.add(spreadsheetIterator.next().getSpreadsheetName());
+        }
+        
+        return spreadsheets;
     }
 }
