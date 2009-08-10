@@ -13,7 +13,6 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
 
 public class PieChartNode extends AbstractNode {
 
