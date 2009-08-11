@@ -144,8 +144,9 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * Shutdown NeoServiceManager
      */
     
-    public void shutdown() {
-        if (neoManager != null) {        
+    public void shutdown() {        
+        if (neoManager != null) {
+            neoManager.commit();
             neoManager.removeServiceEventListener(defaultListener);            
             neoManager = null;            
         }
@@ -214,6 +215,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     
     public void stopNeo() {
     	if (neoManager != null) {
+    	    neoManager.commit();
     		neoManager.stopNeoService();
     	}
     	else if (neoService != null) {
