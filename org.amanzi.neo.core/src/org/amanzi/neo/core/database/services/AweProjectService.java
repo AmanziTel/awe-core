@@ -246,7 +246,6 @@ public class AweProjectService {
 					relationship.delete();
 				}
 				deleteNode.delete();
-				i++;
 			}
 			tx.success();
 		} finally {
