@@ -14,7 +14,7 @@
  */
 package org.rubypeople.rdt.internal.core;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
@@ -32,10 +32,14 @@ import org.rubypeople.rdt.internal.core.util.MementoTokenizer;
  * 
  * @author Lagutko_N
  */
-public class Spreadsheet extends RubyElement implements ISpreadsheet {
+public class Spreadsheet extends Openable implements ISpreadsheet {
+    
+    public class SpreadsheetElementInfo extends OpenableElementInfo {
+        
+    }
     
     protected String name;
-
+    
     /**
      * @param parent
      */
@@ -49,22 +53,32 @@ public class Spreadsheet extends RubyElement implements ISpreadsheet {
         return name;
     }
 
+    /**
+     * Returns true if this handle represents the same Spreadsheet element as the given
+     * handle.
+     * 
+     * @see Object#equals(java.lang.Object)
+     */
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Spreadsheet)) return false;
+        Spreadsheet other = (Spreadsheet) obj;
+        return this.parent.equals(other.parent) && super.equals(obj);
+    }
+
     @Override
-    protected void closing(Object info) throws RubyModelException {
+    protected boolean buildStructure(OpenableElementInfo info, IProgressMonitor pm, Map newElements, IResource underlyingResource)
+            throws RubyModelException {
+        return false;
     }
 
     @Override
     protected Object createElementInfo() {
-        return null;
-    }
-
-    @Override
-    protected void generateInfos(Object info, HashMap newElements, IProgressMonitor monitor) throws RubyModelException {
+        return new SpreadsheetElementInfo();
     }
 
     @Override
     public int getElementType() {
-        return 0;
+        return IRubyElement.SPREADSHEET;
     }
 
     @Override
@@ -77,36 +91,12 @@ public class Spreadsheet extends RubyElement implements ISpreadsheet {
         return 0;
     }
 
-    public IResource getCorrespondingResource() throws RubyModelException {
-        return null;
-    }
-
     public IPath getPath() {
         return null;
     }
 
     public IResource getResource() {
         return null;
-    }
-
-    public IResource getUnderlyingResource() throws RubyModelException {
-        return null;
-    }
-
-    public boolean isStructureKnown() throws RubyModelException {
-        return false;
-    }
-    
-    /**
-     * Returns true if this handle represents the same Spreadsheet element as the given
-     * handle.
-     * 
-     * @see Object#equals(java.lang.Object)
-     */
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Spreadsheet)) return false;
-        Spreadsheet other = (Spreadsheet) obj;
-        return this.parent.equals(other.parent) && super.equals(obj);
     }
 
 }

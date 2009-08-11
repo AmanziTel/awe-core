@@ -264,19 +264,17 @@ public static final boolean enableNeo4j = true;
 	 * 
 	 * @param workbench platform workbench
 	 * @param spreadsheetName file to open	
-	 * @param rdgProjectName name of RDT Project
+	 * @param rdtProjectName name of RDT Project
 	 * @return opened editor
 	 * @author Lagutko_N
 	 */
 
-	public static IEditorPart openSpreadsheet(IWorkbench workbench, URL spreadsheetURL,  String rdgProjectName) {
+	public static IEditorPart openSpreadsheet(IWorkbench workbench, URL spreadsheetURL,  String rdtProjectName) {
 		IEditorPart result = null;
 		try {
 			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
-			if (page != null) {
-				//TODO: Lagutko: must be added computing for Root Node of Spreadsheet
-			    //Lagutko: it's a fake because for now Root Node is a Reference Node
-			    RubyProjectNode root = NeoCorePlugin.getDefault().getProjectService().findRubyProject(rdgProjectName);//SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
+			if (page != null) {			    
+				RubyProjectNode root = NeoCorePlugin.getDefault().getProjectService().findRubyProject(rdtProjectName);
 				IEditorInput fi = new SplashEditorInput(getSpreadsheetName(spreadsheetURL), root);				
 				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
 			}

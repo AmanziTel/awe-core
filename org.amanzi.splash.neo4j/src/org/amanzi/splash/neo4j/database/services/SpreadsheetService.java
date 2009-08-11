@@ -646,7 +646,13 @@ public class SpreadsheetService {
         return chartItemsList;
     }
 
-    
+    /**
+     * Updates References of Cell
+     *
+     * @param sheet Spreadsheet of Cell
+     * @param cellID ID of Cell
+     * @param array Array with IDs of referenced Cells
+     */
     public void updateCellReferences(SpreadsheetNode sheet, String cellID, RubyArray array) {
         List<String> referencedIds = new ArrayList<String>(0);
         for (IRubyObject rubyString : array.toJavaArray()) {
@@ -701,5 +707,4 @@ public class SpreadsheetService {
             tx.finish();
         }
     }
-	
 }

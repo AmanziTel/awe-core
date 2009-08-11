@@ -559,7 +559,7 @@ public class ApplicationGIS {
             RDTProjectManager.openSpreadsheet(element.getResource());
         }
         else if (element.getSpreadsheetType().equals(SpreadsheetType.NEO4J_SPREADSHEET)) {
-            RDTProjectManager.openSpreadsheet(element.getSpreadsheetPath());
+            RDTProjectManager.openSpreadsheet(element.getSpreadsheetPath(), element.getRubyProjectInternal().getName());
         }
     }
 

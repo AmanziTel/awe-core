@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.rubypeople.rdt.internal.core;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,6 +152,7 @@ class RubyProjectElementInfo extends OpenableElementInfo {
 			resourcesCounter = 0;
 		}
 		
+		//Lagutko: 11.08.2009, update Children of RubyProject with Spreadsheets
 		resources = updateChildrenWithSpreadsheet(resources, project);
 		
 		return resources;
@@ -278,6 +276,11 @@ class RubyProjectElementInfo extends OpenableElementInfo {
 	 */
 	private Object[] updateChildrenWithSpreadsheet(Object[] children, RubyProject project) {
 	    List<String> spreadsheetNames = AWEProjectManager.getSpreadsheetsOfRubyProject(project.getProject());
+	    
+	    if (spreadsheetNames.isEmpty()) {
+	        //if no Spreadsheets than no need to re-create array of children
+	        return children;
+	    }
 	    
 	    int oldLength = children.length;
 	    System.arraycopy(children, 0, (children = new Object[children.length + spreadsheetNames.size()]), 0, children.length - 1);

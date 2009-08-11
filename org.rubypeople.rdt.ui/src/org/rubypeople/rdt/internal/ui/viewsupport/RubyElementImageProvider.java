@@ -247,7 +247,13 @@ public class RubyElementImageProvider {
 
             case IRubyElement.RUBY_MODEL:
                 return RubyPluginImages.DESC_OBJS_RUBY_MODEL;
+            //Lagutko, 11.08.2009 compute image for Spreadsheet
+            case IRubyElement.SPREADSHEET:
+                return RubyPluginImages.DESC_OBJS_SPREADSHEET;
             }
+            
+            
+                
 
             Assert.isTrue(false, RubyUIMessages.RubyImageLabelprovider_assert_wrongImage);
             return RubyPluginImages.DESC_OBJS_GHOST;

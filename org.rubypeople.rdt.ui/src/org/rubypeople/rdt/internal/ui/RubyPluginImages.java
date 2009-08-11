@@ -66,6 +66,9 @@ public class RubyPluginImages {
     public static final String IMG_OBJS_EXTJAR_WSRC= NAME_PREFIX + "jar_lsrc_obj.gif";	//$NON-NLS-1$
     public static final String IMG_OBJS_CORRECTION_CHANGE= NAME_PREFIX + "correction_change.gif";	//$NON-NLS-1$
     
+    //Lagutko, 11.08.2009, Image for Spreadsheet
+    public static final String IMG_OBJS_SPREADSHEET= NAME_PREFIX + "spreadsheet.gif";   //$NON-NLS-1$
+    
     public static final String IMG_OBJS_SEARCH_READACCESS= NAME_PREFIX + "occ_read.gif"; //$NON-NLS-1$
 	public static final String IMG_OBJS_SEARCH_WRITEACCESS= NAME_PREFIX + "occ_write.gif"; //$NON-NLS-1$
 	public static final String IMG_OBJS_SEARCH_OCCURRENCE= NAME_PREFIX + "occ_match.gif"; //$NON-NLS-1$
@@ -160,6 +163,9 @@ public class RubyPluginImages {
     public static final ImageDescriptor DESC_OBJS_ERB_SCRIPT= createManagedFromKey(T_OBJ, IMG_OBJS_ERB_SCRIPT);
     public static final ImageDescriptor DESC_OBJS_RUBY_RESOURCE= createManagedFromKey(T_OBJ, IMG_OBJS_RUBY_RESOURCE);
     public static final ImageDescriptor DESC_OBJS_UNKNOWN= createManagedFromKey(T_OBJ, IMG_OBJS_UNKNOWN);
+    
+    //Lagutko: 11.08.2009, ImageDescriptor for Spreadsheet
+    public static final ImageDescriptor DESC_OBJS_SPREADSHEET = createManagedFromKey(T_OBJ, IMG_OBJS_SPREADSHEET);
     
 	public static final ImageDescriptor DESC_OBJS_SEARCH_READACCESS= createManagedFromKey(T_OBJ, IMG_OBJS_SEARCH_READACCESS);
 	public static final ImageDescriptor DESC_OBJS_SEARCH_WRITEACCESS= createManagedFromKey(T_OBJ, IMG_OBJS_SEARCH_WRITEACCESS);

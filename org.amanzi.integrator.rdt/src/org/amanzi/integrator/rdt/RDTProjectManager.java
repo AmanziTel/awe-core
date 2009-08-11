@@ -196,7 +196,7 @@ public class RDTProjectManager {
 	 * @param spreadsheetURL URL of Neo4j Spreadsheet
 	 */
 	
-	public static void openSpreadsheet(URL spreadsheetURL) {
-	    org.amanzi.splash.neo4j.utilities.NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, null);
+	public static void openSpreadsheet(URL spreadsheetURL, String rubyProjectName) {
+	    org.amanzi.splash.neo4j.utilities.NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, rubyProjectName);
 	}
 }

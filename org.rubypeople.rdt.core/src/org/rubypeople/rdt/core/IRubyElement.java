@@ -56,6 +56,9 @@ public interface IRubyElement extends IAdaptable {
 	public static final int DYNAMIC_VAR = 14;
 	public static final int FIELD = 15;
 	public static final int IMPORT_CONTAINER = 16;
+	
+	//Lagutko, 11.08.2009, additional type for Spreadsheet
+	public static final int SPREADSHEET = 17;
 
 	/**
 	 * Returns the first ancestor of this Ruby element that has the given type.
