@@ -115,7 +115,9 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 	public void dispose() {
 		super.dispose();
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+		NeoCorePlugin.getDefault().getUpdateBDManager().removeListener(this);
 		NeoSplashUtil.logn("Closing the spreadsheet");
+
 	}
 
 	/*
