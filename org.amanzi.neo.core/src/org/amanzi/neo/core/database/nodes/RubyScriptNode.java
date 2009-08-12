@@ -1,36 +1,41 @@
 package org.amanzi.neo.core.database.nodes;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Node;
+
 /**
-* Wrapper of Ruby node
-* 
-* @author Cinkel_A
-* 
-*/
+ * Wrapper of Ruby script node
+ * 
+ * @author Cinkel_A
+ * 
+ */
 public class RubyScriptNode extends AbstractNode {
 	private static final String ATTR_NAME = "ATTR_NAME";
-	private static final String NODE_TYPE = "Script";
-	private static final String NODE_NAME = "Script";
 
+	private static final String SCRIPT_NAME = "Ruby Script";
+	private static final String SCRIPT_TYPE = "Ruby_Script";
+
+	/**
+	 * Constructor
+	 * 
+	 * @param node
+	 *            wrapped node
+	 */
 	public RubyScriptNode(Node node) {
-		super(node);
-		setParameter(INeoConstants.PROPERTY_TYPE_NAME, NODE_TYPE);
-		setParameter(INeoConstants.PROPERTY_NAME_NAME, NODE_NAME);
+		super(node, SCRIPT_NAME, SCRIPT_TYPE);
 	}
 
 	/**
-	 * Returns name of Ruby project
+	 * Returns name of Ruby script
 	 * 
-	 * @return name of Ruby project
+	 * @return name of Ruby script
 	 */
 	public String getName() {
 		return (String) getParameter(ATTR_NAME);
 	}
 
 	/**
-	 * Sets name of Ruby project
+	 * Sets name of Ruby script
 	 * 
 	 * @param projectName
 	 *            name of Ruby project
@@ -38,22 +43,15 @@ public class RubyScriptNode extends AbstractNode {
 	public void setName(String projectName) {
 		setParameter(ATTR_NAME, projectName);
 	}
+
 	/**
-	 * Adds a Spreadsheet Project to Spreadsheet
-	 *
-	 * @param spreadsheetNode  wrapper
-	 */ 
-	public void addSpreadsheet(SpreadsheetNode spreadsheetNode) {
-		addRelationship(SplashRelationshipTypes.RUBY_PROJECT, spreadsheetNode
+	 * Adds a Cell to Script
+	 * 
+	 * @param cellNode
+	 *            wrapper
+	 */
+	public void addCell(CellNode cellNode) {
+		addRelationship(SplashRelationshipTypes.SCRIPT_CELL, cellNode
 				.getUnderlyingNode());
 	}
-	/**
-	 * Adds a Spreadsheet Project to Spreadsheet
-	 *
-	 * @param scriptNode  wrapper
-	 */ 
-	public void addScript(RubyScriptNode scriptNode) {
-		addRelationship(SplashRelationshipTypes.RUBY_PROJECT, scriptNode
-				.getUnderlyingNode());
-	}	
 }
