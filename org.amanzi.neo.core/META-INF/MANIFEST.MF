@@ -8,6 +8,7 @@ Require-Bundle: org.neo4j.neoclipse,
  org.eclipse.core.runtime
 Export-Package: org.amanzi.neo.core,
  org.amanzi.neo.core.database.exception,
+ org.amanzi.neo.core.database.listener,
  org.amanzi.neo.core.database.nodes,
  org.amanzi.neo.core.database.services,
  org.amanzi.neo.core.enums,
