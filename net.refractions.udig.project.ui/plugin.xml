@@ -58,6 +58,7 @@
          	   class="net.refractions.udig.project.ui.internal.actions.CreateRubyProject"
          	   enablesFor="1"
          	   id="org.rubypeople.rdt.ui.actions.OpenProjectWizard"
+         	   icon="icons/etool16/newrprj_wiz.gif"
          	   label="New Ruby Project"/>         	   
       </objectContribution>     
       <objectContribution
@@ -68,12 +69,14 @@
       		   class="org.rubypeople.rdt.internal.ui.wizards.NewClassWizardAction"
       		   tooltip="NewClassWizardAction.tooltip"
       		   enablesFor="1"
+      		   icon="icons/etool16/newclass_wiz.gif"
       		   id="org.amanzi.rdt.ui.actions.NewClassWizard"
       		   label="New Ruby Class"/>
       	 <action
       		   class="org.rubypeople.rdt.internal.ui.wizards.NewScriptWizardAction"
       		   tooltip="NewClassWizardAction.tooltip"
       		   enablesFor="1"
+      		   icon="icons/etool16/newfile_wiz.png"
       		   id="org.amanzi.rdt.ui.actions.NewScriptWizard"
       		   label="New Ruby Script"/>
       </objectContribution>
