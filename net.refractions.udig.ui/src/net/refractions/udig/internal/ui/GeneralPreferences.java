@@ -21,42 +21,43 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
  * General uDig preferences
+ * 
  * @author Jesse
  * @since 1.1.0
  */
-public class GeneralPreferences extends FieldEditorPreferencePage
-        implements
-            IWorkbenchPreferencePage {
+public class GeneralPreferences extends FieldEditorPreferencePage implements
+		IWorkbenchPreferencePage {
 
-    /**
-     * @param style
-     */
-    public GeneralPreferences( ) {
-        super(GRID);
-    }
+	/**
+	 * @param style
+	 */
+	public GeneralPreferences() {
+		super(GRID);
+		setDescription("General configuration settings for AWE and the uDIG platform");
+	}
 
-    /**
-     * @param title
-     * @param style
-     */
-    public GeneralPreferences( String title, int style ) {
-        super(title, style);
-    }
+	/**
+	 * @param title
+	 * @param style
+	 */
+	public GeneralPreferences(String title, int style) {
+		super(title, style);
+	}
 
-    /**
-     * @param title
-     * @param image
-     * @param style
-     */
-    public GeneralPreferences( String title, ImageDescriptor image, int style ) {
-        super(title, image, style);
-    }
+	/**
+	 * @param title
+	 * @param image
+	 * @param style
+	 */
+	public GeneralPreferences(String title, ImageDescriptor image, int style) {
+		super(title, image, style);
+	}
 
-    @Override
-    protected void createFieldEditors() {
-    }
+	@Override
+	protected void createFieldEditors() {
+	}
 
-    public void init( IWorkbench workbench ) {
-    }
+	public void init(IWorkbench workbench) {
+	}
 
 }
