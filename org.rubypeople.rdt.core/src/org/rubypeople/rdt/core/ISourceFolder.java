@@ -137,4 +137,11 @@ public interface ISourceFolder extends IRubyElement, IParent, IOpenable  {
 	 */
 	boolean hasSubfolders() throws RubyModelException;
 
+	/**
+	 * Returns all Spreadsheets of SourceFolder
+	 *
+	 * @return Spreadsheets of SourceFolder
+	 * @throws RubyModelException
+	 */
+	public ISpreadsheet[] getSpreadsheets() throws RubyModelException;
 }

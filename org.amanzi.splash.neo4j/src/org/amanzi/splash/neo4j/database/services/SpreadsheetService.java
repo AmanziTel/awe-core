@@ -551,29 +551,6 @@ public class SpreadsheetService {
 		return result;
 	}
 
-	// /**
-	// * Returns RootNode for Spreadsheets
-	// *
-	// * @return root node
-	// */
-	// //TODO: this method must be rewritten to support specification from
-	// comments in #564 to support
-	// //Spreadsheets with same name in different Ruby and AWE projects
-	// public RubyProjectNode getRootNode() {
-	// Transaction tx = neoService.beginTx();
-	// try {
-	//            
-	// RubyProjectNode root = new
-	// RubyProjectNode(neoService.getReferenceNode());
-	// tx.success();
-	//            
-	// return root;
-	// }
-	// finally {
-	// tx.finish();
-	// }
-	// }
-
 	/**
 	 * Deletes the Cell from Spreadsheet
 	 * 

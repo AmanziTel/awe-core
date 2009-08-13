@@ -21,7 +21,6 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionGroup;
-import org.eclipse.ui.actions.DeleteResourceAction;
 import org.eclipse.ui.actions.MoveResourceAction;
 import org.eclipse.ui.actions.RenameResourceAction;
 import org.eclipse.ui.actions.SelectionListenerAction;
@@ -113,7 +112,9 @@ public class CCPActionGroup extends ActionGroup {
 		}
 		fRenameAction.setActionDefinitionId(IWorkbenchActionDefinitionIds.RENAME);
 		
-		fDeleteAction= new DeleteResourceAction(fSite.getShell());
+		//Lagutko, 11.07.2009, DeleteResourceAction was changed to DeleteElementAction
+		//to provide deleting of Spreadsheets
+		fDeleteAction= new DeleteElementAction(fSite.getShell());
 		fDeleteAction.setActionDefinitionId(IWorkbenchActionDefinitionIds.DELETE);
 		
 		fActions= new SelectionListenerAction[] { /*fCutAction,*/ fCopyAction, /*fCopyQualifiedNameAction,*/ fPasteAction, fDeleteAction, fRenameAction, fMoveAction };

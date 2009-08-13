@@ -43,7 +43,7 @@ public class Spreadsheet extends Openable implements ISpreadsheet {
     /**
      * @param parent
      */
-    public Spreadsheet(RubyElement parent, String spreadsheetName) {
+    public Spreadsheet(SourceFolder parent, String spreadsheetName) {
         super(parent);
         name = spreadsheetName;
     }
@@ -99,4 +99,11 @@ public class Spreadsheet extends Openable implements ISpreadsheet {
         return null;
     }
 
+    /**
+     * @see IRubyElement
+     */
+    public boolean exists() {
+        return true;
+    }    
+    
 }

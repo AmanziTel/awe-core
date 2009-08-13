@@ -47,7 +47,7 @@ public class AweProjectService {
 	 * 
 	 * Initializes NeoService and create a Root Element
 	 */
-	public AweProjectService() {
+	public AweProjectService() {	    
 		provider = NeoServiceProvider.getProvider();
 		neoService = provider.getService();
 	}
@@ -160,6 +160,28 @@ public class AweProjectService {
 			tx.finish();
 		}
 	}
+	
+	public RubyProjectNode findRubyProject(AweProjectNode project, String rubyProjectName) {
+	    assert project != null;
+        assert rubyProjectName != null;
+        RubyProjectNode result = null;
+        Transaction tx = neoService.beginTx();
+        try {
+            Iterator<RubyProjectNode> rubyProjects = project.getAllProjects();
+            while (rubyProjects.hasNext()) {
+                RubyProjectNode rubyProject = rubyProjects.next();
+
+                if (rubyProjectName.equals(rubyProject.getName())) {
+                    result = rubyProject;
+                    break;
+                }
+            }            
+            tx.success();
+            return result;
+        } finally {
+            tx.finish();
+        }
+	}
 
 	/**
 	 * Find or create a RubyProject
@@ -177,15 +199,7 @@ public class AweProjectService {
 		RubyProjectNode result = null;
 		Transaction tx = neoService.beginTx();
 		try {
-			Iterator<RubyProjectNode> rubyProjects = project.getAllProjects();
-			while (rubyProjects.hasNext()) {
-				RubyProjectNode rubyProject = rubyProjects.next();
-
-				if (rubyProjectName.equals(rubyProject.getName())) {
-					result = rubyProject;
-					break;
-				}
-			}
+			result = findRubyProject(project, rubyProjectName);
 			if (result == null) {
 				result = new RubyProjectNode(neoService.createNode());
 				result.setName(rubyProjectName);
@@ -208,28 +222,93 @@ public class AweProjectService {
 	public AweProjectNode findOrCreateAweProject(String aweProjectName) {
 		assert aweProjectName != null;
 		AweProjectNode result = null;
-		RootNode root = getRootNode();
 		Transaction tx = neoService.beginTx();
 		try {
-			Iterator<AweProjectNode> aweProjects = root.getAllProjects();
-			while (aweProjects.hasNext()) {
-				AweProjectNode aweProject = aweProjects.next();
-
-				if (aweProjectName.equals(aweProject.getName())) {
-					result = aweProject;
-					break;
-				}
-			}
+		    //Lagutko, 13.08.2009, use findAweProject() method to find an AWEProjectNode
+		    result = findAweProject(aweProjectName);
 			if (result == null) {
-				result = new AweProjectNode(neoService.createNode());
+				result = createEmptyAweProject();
 				result.setName(aweProjectName);
-				root.addProject(result);
 			}
 			tx.success();
 			return result;
 		} finally {
 			tx.finish();
 		}
+	}
+	
+	/**
+	 * Creates an AWE Project Node without Name
+	 *
+	 * @return created AWE ProjectNode
+	 */
+	public AweProjectNode createEmptyAweProject() {
+	    AweProjectNode result = null;
+	    RootNode root = getRootNode();
+	    
+	    Transaction tx = neoService.beginTx();
+	    try {
+	        result = new AweProjectNode(neoService.createNode());
+	        root.addProject(result);
+	        tx.success();
+	    }
+	    finally {
+	        tx.finish();
+	    }
+	    
+	    return result;
+	}
+	
+	/**
+	 * Creates a Ruby Project without parent AWE Project
+	 *
+	 * @param projectName name of Project 
+	 * @return created Ruby Project Node
+	 */
+	public RubyProjectNode createEmptyRubyProject(String projectName) {
+	    RubyProjectNode result = null;
+	    
+	    Transaction tx = neoService.beginTx();
+	    try {
+	        result = new RubyProjectNode(neoService.createNode());
+	        result.setName(projectName);
+	        
+	        tx.success();
+	    }
+	    finally {
+	        tx.finish();
+	    }
+	    
+	    return result;
+	}
+	
+	/**
+	 * Search for AWEProjectNode in database by given Name
+	 *
+	 * @param aweProjectName name of AWE Project
+	 * @return AWEProjectNode
+	 * @author lagutko_n
+	 */
+	public AweProjectNode findAweProject(String aweProjectName) {
+	    assert aweProjectName != null;
+        AweProjectNode result = null;
+        RootNode root = getRootNode();
+        Transaction tx = neoService.beginTx();
+        try {
+            Iterator<AweProjectNode> aweProjects = root.getAllProjects();
+            while (aweProjects.hasNext()) {
+                AweProjectNode aweProject = aweProjects.next();
+
+                if (aweProjectName.equals(aweProject.getName())) {
+                    result = aweProject;
+                    break;
+                }
+            }            
+            tx.success();
+            return result;
+        } finally {
+            tx.finish();
+        }
 	}
 
 	/**
@@ -404,5 +483,27 @@ public class AweProjectService {
 		} finally {
 			tx.finish();
 		}
+	}
+	
+	/**
+	 * Computes a Root Project of Spreadsheet
+	 *
+	 * @param spreadsheet spreadsheet Node
+	 * @return RubyProjectNode of this Spreadsheet
+	 */
+	
+	public RubyProjectNode getSpreadsheetRoot(SpreadsheetNode spreadsheet) {
+	    RubyProjectNode result = null;
+	    Transaction tx = neoService.beginTx();
+	    try {
+	        result = spreadsheet.getSpreadsheetRootProject();
+	        
+	        tx.success();
+	    } 
+	    finally {
+	        tx.finish();
+	    }
+	    
+	    return result;
 	}
 }

@@ -2,22 +2,34 @@ package org.amanzi.integrator.rdt;
 
 import java.net.URL;
 
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.rdt.launching.util.LaunchUtils;
+import org.amanzi.splash.neo4j.ui.SplashEditorInput;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.amanzi.splash.utilities.Util;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.core.IRubyScript;
+import org.rubypeople.rdt.core.ISourceFolder;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.core.ExternalSourceFolder;
 import org.rubypeople.rdt.internal.core.ExternalSourceFolderRoot;
 import org.rubypeople.rdt.internal.core.RubyElement;
+import org.rubypeople.rdt.internal.core.RubyElementDelta;
+import org.rubypeople.rdt.internal.core.RubyModel;
 import org.rubypeople.rdt.internal.core.RubyModelManager;
+import org.rubypeople.rdt.internal.core.SourceFolder;
+import org.rubypeople.rdt.internal.core.Spreadsheet;
+import org.rubypeople.rdt.internal.corext.util.RubyModelUtil;
 
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 
@@ -197,6 +209,32 @@ public class RDTProjectManager {
 	 */
 	
 	public static void openSpreadsheet(URL spreadsheetURL, String rubyProjectName) {
-	    org.amanzi.splash.neo4j.utilities.NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, rubyProjectName);
+	    NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, rubyProjectName);
+	}
+	
+	/**
+	 * Deletes the Spreadsheet from Ruby Project Tree and Database
+	 *
+	 * @param aweProjectName name of AWE Project that contain Spreadsheet
+	 * @param rubyProjectName name of Ruby Project that contain Spreadsheet
+	 * @param spreadsheetName name of Spreadsheet
+	 */
+	public static void deleteSpreadsheet(String aweProjectName, String rubyProjectName, String spreadsheetName) {
+	    IRubyProject parent = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(rubyProjectName);
+	    
+	    RubyModel model = RubyModelManager.getRubyModelManager().getRubyModel();
+	    RubyElementDelta delta = new RubyElementDelta(model);
+	    ISourceFolder folder = RubyModelUtil.getSourceFolder(parent);
+	    delta.removed(new Spreadsheet((SourceFolder)folder, spreadsheetName));
+	    RubyModelManager.getRubyModelManager().getDeltaProcessor().fire(delta, 0);
+	    
+	    AweProjectService service = NeoCorePlugin.getDefault().getProjectService();	   
+        SpreadsheetNode node = service.findOrCreateSpreadsheet(aweProjectName, rubyProjectName, spreadsheetName);
+        
+        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findEditor(new SplashEditorInput(node));
+        if (editor != null) {
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeEditor(editor, false);
+        }
+        service.deleteNode(node);
 	}
 }

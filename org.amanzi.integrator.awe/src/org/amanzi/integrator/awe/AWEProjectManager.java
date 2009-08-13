@@ -3,10 +3,13 @@ package org.amanzi.integrator.awe;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import net.refractions.udig.project.IRubyProject;
+import net.refractions.udig.project.IRubyProjectElement;
+import net.refractions.udig.project.ISpreadsheet;
 import net.refractions.udig.project.internal.Map;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
@@ -31,6 +34,8 @@ import org.eclipse.core.runtime.CoreException;
 
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.ui.IActionDelegate;
 
 /**
  * Class for integration functionality of AWE project to RDT plugin
@@ -44,7 +49,9 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 public class AWEProjectManager {
 	
-	/**
+	private static final String DELETE_ACTION_CLASS_NAME = "net.refractions.udig.project.ui.internal.actions.Delete";
+
+    /**
 	 * Constants for type of Object
 	 */
 	
@@ -93,7 +100,7 @@ public class AWEProjectManager {
 					resourceProject.setPersistentProperty(AWE_PROJECT_NAME, aweProject.getName());
 				}
 				catch (CoreException e) {
-					//TODO: handle this exception
+					ProjectPlugin.log(null, e);
 				}
 				finally {			
 					rubyProjects.add(resourceProject);
@@ -219,7 +226,7 @@ public class AWEProjectManager {
 	 */
 	
 	public static void createRubyProject(IProject rubyProject) {
-		String name = getAWEprojectNameFromResource(rubyProject);
+	    String name = getAWEprojectNameFromResource(rubyProject);
 		if (name != null) {
 			Project project = findProject(name);
 			if (project != null) {
@@ -464,7 +471,7 @@ public class AWEProjectManager {
      * 
      * @return all Projects.
      */
-    public static List getGISProjects() {
+    public static List<Project> getGISProjects() {
         return Collections.unmodifiableList(ProjectPlugin.getPlugin().getProjectRegistry()
                 .getProjects());
     }
@@ -630,5 +637,46 @@ public class AWEProjectManager {
         }
         
         return spreadsheets;
+    }
+    
+    /**
+     * Deletes a Spreadsheets
+     *
+     * @param spreadsheetsToDelete map of Spreadsheets to Delete
+     */
+    public static void deleteSpreadsheets(HashMap<IProject, List<String>> spreadsheetsToDelete) {
+        ArrayList<Spreadsheet> spreadsheets = new ArrayList<Spreadsheet>(0);
+        
+        for (IProject rubyProjectResource : spreadsheetsToDelete.keySet()) {
+            String rubyProjectName = rubyProjectResource.getName();
+            String aweProjectName = getAWEprojectNameFromResource(rubyProjectResource);
+        
+            Project aweProject = findProject(aweProjectName); 
+            RubyProject rubyProject = findRubyProject(aweProject, rubyProjectName);
+            
+            for (IRubyProjectElement element : rubyProject.getElements(ISpreadsheet.class)) {
+                if (spreadsheetsToDelete.get(rubyProjectResource).contains(element.getName())) {
+                    spreadsheets.add((Spreadsheet)element);
+                }
+            }
+        }
+        
+        try {
+            IActionDelegate deleteAction = (IActionDelegate)Class.forName(DELETE_ACTION_CLASS_NAME).newInstance();
+            deleteAction.selectionChanged(null, new StructuredSelection(spreadsheets));
+            deleteAction.run(null);            
+        }
+        catch (IllegalAccessException e) {
+            ProjectPlugin.log(null, e);
+            return;
+        }
+        catch (ClassNotFoundException e) {
+            ProjectPlugin.log(null, e);
+            return;
+        }
+        catch (InstantiationException e) {
+            ProjectPlugin.log(null, e);
+            return;
+        }
     }
 }

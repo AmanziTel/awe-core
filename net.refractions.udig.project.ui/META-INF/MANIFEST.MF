@@ -44,6 +44,7 @@ Require-Bundle: net.refractions.udig.style.sld,
  org.amanzi.integrator.rdt,
  org.eclipse.debug.ui,
  org.rubypeople.rdt.ui,
- org.amanzi.rdt.launching
+ org.amanzi.rdt.launching,
+ org.amanzi.integrator.awe;bundle-version="1.0.0"
 Eclipse-LazyStart: true
-
+Eclipse-RegisterBuddy: org.amanzi.integrator.awe

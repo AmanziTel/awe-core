@@ -12,7 +12,7 @@ import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.RubyScriptNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
-import org.eclipse.core.internal.resources.Project;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -23,7 +23,7 @@ import org.eclipse.core.resources.IResourceDelta;
  */
 public class EditorListener implements IResourceChangeListener {
 
-	public void resourceChanged(IResourceChangeEvent event) {
+	public void resourceChanged(IResourceChangeEvent event) {	    
 		IResourceDelta delta = event.getDelta();
 		LinkedList<IResourceDelta> listResourceDelta = new LinkedList<IResourceDelta>();
 		listResourceDelta.add(delta);
@@ -31,7 +31,7 @@ public class EditorListener implements IResourceChangeListener {
 		for (int i = 0; i < listResourceDelta.size(); i++) {
 			final IResourceDelta resourceDelta = listResourceDelta.get(i);
 			IResource resource = resourceDelta.getResource();
-			if (resource instanceof Project) {
+			if (resource instanceof IProject) {
 				projectName = resource.getName();
 			}
 			if ("rb".equals(resourceDelta.getFullPath().getFileExtension())

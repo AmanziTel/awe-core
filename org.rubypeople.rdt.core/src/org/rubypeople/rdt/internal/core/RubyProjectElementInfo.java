@@ -152,9 +152,6 @@ class RubyProjectElementInfo extends OpenableElementInfo {
 			resourcesCounter = 0;
 		}
 		
-		//Lagutko: 11.08.2009, update Children of RubyProject with Spreadsheets
-		resources = updateChildrenWithSpreadsheet(resources, project);
-		
 		return resources;
 	}
 
@@ -264,31 +261,5 @@ class RubyProjectElementInfo extends OpenableElementInfo {
 			System.arraycopy(name, 0, superName, 0, i);
 			set.put(superName, superName);
 		}
-	}
-	
-	/**
-	 * Updates Children of Ruby Project with Neo4j-based Spreadsheets
-	 *
-	 * @param children array of already computed children elements
-	 * @param project RubyProject
-	 * @return updated array of children
-	 * @author Lagutko_N
-	 */
-	private Object[] updateChildrenWithSpreadsheet(Object[] children, RubyProject project) {
-	    List<String> spreadsheetNames = AWEProjectManager.getSpreadsheetsOfRubyProject(project.getProject());
-	    
-	    if (spreadsheetNames.isEmpty()) {
-	        //if no Spreadsheets than no need to re-create array of children
-	        return children;
-	    }
-	    
-	    int oldLength = children.length;
-	    System.arraycopy(children, 0, (children = new Object[children.length + spreadsheetNames.size()]), 0, children.length - 1);
-	    
-	    for (String name : spreadsheetNames) {
-	        children[oldLength++] = new Spreadsheet(project, name);
-	    }
-	    
-	    return children;
 	}
 }

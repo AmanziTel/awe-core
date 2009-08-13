@@ -3,8 +3,10 @@ package org.rubypeople.rdt.internal.core;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -17,6 +19,7 @@ import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyScript;
 import org.rubypeople.rdt.core.ISourceFolder;
 import org.rubypeople.rdt.core.ISourceFolderRoot;
+import org.rubypeople.rdt.core.ISpreadsheet;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.core.WorkingCopyOwner;
 import org.rubypeople.rdt.internal.core.util.MementoTokenizer;
@@ -83,12 +86,35 @@ public class SourceFolder extends Openable implements ISourceFolder {
 			vChildren.add(primary);
 		}
 		
+		//Lagutko, 12.08.2009, add Spreadsheets to SourceFolder's Children
+		updateChildrenWithSpreadsheet(vChildren);		
 		
 		IRubyElement[] children = new IRubyElement[vChildren.size()];
 		vChildren.toArray(children);
 		info.setChildren(children);
 		return true;
 	}
+	
+	/**
+     * Updates Children of Ruby Project with Neo4j-based Spreadsheets
+     *
+     * @param children array of already computed children elements 
+     * @author Lagutko_N
+     */
+    private void updateChildrenWithSpreadsheet(HashSet children) {
+        List<String> spreadsheetNames = AWEProjectManager.getSpreadsheetsOfRubyProject(this.getRubyProject().getProject());
+        
+        if (spreadsheetNames.isEmpty()) {
+            //if no Spreadsheets than no need to re-create array of children
+            return;
+        }
+        
+        for (String name : spreadsheetNames) {
+            children.add(new Spreadsheet(this, name));
+        }
+        
+        return;
+    }
 
 	@Override
 	protected Object createElementInfo() {
@@ -135,6 +161,19 @@ public class SourceFolder extends Openable implements ISourceFolder {
 		IRubyScript[] array= new IRubyScript[list.size()];
 		list.toArray(array);
 		return array;
+	}
+	
+	/**
+	 * Returns all Spreadsheet element of this SourceFolder
+	 * 
+	 * @return array of Spreadsheets
+	 * @author lagutko_n
+	 */
+	public ISpreadsheet[] getSpreadsheets() throws RubyModelException {
+	    ArrayList<IRubyElement> list = getChildrenOfType(SPREADSHEET);
+	    ISpreadsheet[] array= new ISpreadsheet[list.size()];
+        list.toArray(array);
+        return array;
 	}
 
 	public IRubyScript[] getRubyScripts(WorkingCopyOwner owner)

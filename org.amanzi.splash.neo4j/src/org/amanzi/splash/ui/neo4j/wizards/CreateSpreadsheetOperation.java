@@ -15,14 +15,12 @@
 package org.amanzi.splash.ui.neo4j.wizards;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IStatus;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyElementDelta;
 import org.rubypeople.rdt.core.IRubyModel;
 import org.rubypeople.rdt.core.IRubyModelStatus;
-import org.rubypeople.rdt.core.IRubyModelStatusConstants;
+import org.rubypeople.rdt.core.ISourceFolder;
 import org.rubypeople.rdt.core.ISpreadsheet;
-import org.rubypeople.rdt.core.RubyConventions;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.core.RubyElementDelta;
 import org.rubypeople.rdt.internal.core.RubyModel;
@@ -30,8 +28,10 @@ import org.rubypeople.rdt.internal.core.RubyModelManager;
 import org.rubypeople.rdt.internal.core.RubyModelOperation;
 import org.rubypeople.rdt.internal.core.RubyModelStatus;
 import org.rubypeople.rdt.internal.core.RubyProject;
+import org.rubypeople.rdt.internal.core.SourceFolder;
 import org.rubypeople.rdt.internal.core.Spreadsheet;
 import org.rubypeople.rdt.internal.core.util.Messages;
+import org.rubypeople.rdt.internal.corext.util.RubyModelUtil;
 
 /**
  * RubyModelOperation for creation of Spreadsheet
@@ -73,7 +73,10 @@ public class CreateSpreadsheetOperation extends RubyModelOperation {
         try {
             beginTask(Messages.operation_createUnitProgress, 2); 
             RubyElementDelta delta = newRubyElementDelta();
-            ISpreadsheet unit = new Spreadsheet(rubyProject, spreadsheetName);
+            
+            ISourceFolder folder = RubyModelUtil.getSourceFolder(rubyProject);
+            
+            ISpreadsheet unit = new Spreadsheet((SourceFolder)folder, spreadsheetName);
             worked(1);            
             resultElements = new IRubyElement[] {unit};
             for (int i = 0; i < resultElements.length; i++) {

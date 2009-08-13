@@ -451,5 +451,15 @@ public class SpreadsheetNode extends AbstractNode {
 		addRelationship(SplashRelationshipTypes.COLUMN, column
 				.getUnderlyingNode());
 	}
+	
+	/**
+	 * Returns a RubyProjectNode of this Spreadsheet
+	 *
+	 * @return RubyProjectNode of Spreadsheet
+	 */
+	public RubyProjectNode getSpreadsheetRootProject() {
+	    Relationship relationship = getUnderlyingNode().getSingleRelationship(SplashRelationshipTypes.SPREADSHEET, Direction.INCOMING);
+	    return new RubyProjectNode(relationship.getStartNode());
+	}
 
 }

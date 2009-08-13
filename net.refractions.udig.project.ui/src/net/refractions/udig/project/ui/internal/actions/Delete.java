@@ -27,6 +27,8 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IRubyFile;
 import net.refractions.udig.project.IRubyProject;
+import net.refractions.udig.project.IRubyProjectElement;
+import net.refractions.udig.project.ISpreadsheet;
 import net.refractions.udig.project.command.MapCommand;
 import net.refractions.udig.project.command.UndoableMapCommand;
 import net.refractions.udig.project.command.factory.EditCommandFactory;
@@ -35,7 +37,9 @@ import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.internal.RubyFile;
-import net.refractions.udig.project.internal.impl.RubyProjectImpl;
+import net.refractions.udig.project.internal.RubyProject;
+import net.refractions.udig.project.internal.RubyProjectElement;
+import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.preferences.PreferenceConstants;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.UDIGGenericAction;
@@ -89,7 +93,7 @@ public class Delete extends UDIGGenericAction {
     protected void operate( Layer layer ) {
         if (layer == null || layer.getMap() == null)
             return;
-
+            
         UndoableMapCommand command = EditCommandFactory.getInstance().createDeleteLayers(
                 new ILayer[]{layer});
         // UndoableMapCommand command =
@@ -185,14 +189,8 @@ public class Delete extends UDIGGenericAction {
             if (element instanceof IRubyProject) {
             	RDTProjectManager.deleteProject(element.getName(), deleteFiles);
             }
-            //Lagutko: if ProjectElement is RubyFile than first delete it from RDT Project Structure
-            else if (element instanceof IRubyFile) {
-            	RubyFile file = (RubyFile)element;
-            	RubyProjectImpl project = (RubyProjectImpl)file.getRubyProjectInternal();
-            	RDTProjectManager.deleteScript(project.getName(), file.getName(), deleteFiles);
-            	
-            	//Lagutko: also delete this RubyFile from RubyProject InternalElements
-            	project.getRubyElementsInternal().remove(file);
+            if (element instanceof IRubyProjectElement) {
+                deleteRubyElement((RubyProjectElement)element, deleteFiles);
             }
             Project projectInternal = element.getProjectInternal();
             if (projectInternal != null)
@@ -420,6 +418,30 @@ public class Delete extends UDIGGenericAction {
     private void setDoDelete( boolean deleteFiles ) {
         ProjectPlugin.getPlugin().getPreferenceStore().setValue(
                 PreferenceConstants.P_PROJECT_DELETE_FILES, deleteFiles);
+    }
+    
+    /**
+     * Method that will remove a RubyProjectElement from AWE Project Structure
+     *
+     * @param rubyElement RubyProjectElement to delete
+     * @param deleteFiles is need to delete files from filesystem
+     * @author lagutko_n
+     */
+    private void deleteRubyElement(RubyProjectElement rubyElement, boolean deleteFiles) {
+        RubyProject project = rubyElement.getRubyProjectInternal();
+        
+        //Lagutko: if ProjectElement is RubyFile than first delete it from RDT Project Structure
+        if (rubyElement instanceof IRubyFile) {
+            RubyFile file = (RubyFile)rubyElement;            
+            RDTProjectManager.deleteScript(project.getName(), file.getName(), deleteFiles);
+        }
+        //Lagutko 11.08.2009 : if ProjectElement is Spreadsheet that first delete it from RDT Project Structure
+        else if (rubyElement instanceof ISpreadsheet) {
+            Spreadsheet spreadsheet = (Spreadsheet)rubyElement;
+            RDTProjectManager.deleteSpreadsheet(project.getProject().getName(), project.getName(), spreadsheet.getName());
+        }
+        //Lagutko: also delete this RubyFile from RubyProject InternalElements
+        project.getRubyElementsInternal().remove(rubyElement);
     }
 
 }

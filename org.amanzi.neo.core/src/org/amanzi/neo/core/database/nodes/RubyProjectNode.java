@@ -145,5 +145,13 @@ public class RubyProjectNode extends AbstractNode {
 		}
 
 	}
+	
+	@Override
+	public boolean equals(Object object) {
+	    if (object instanceof RubyProjectNode) {
+	        return ((RubyProjectNode)object).getUnderlyingNode().equals(getUnderlyingNode());
+	    }
+	    return false;
+	}
 
 }

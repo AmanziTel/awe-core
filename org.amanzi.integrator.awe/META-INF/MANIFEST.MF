@@ -10,3 +10,5 @@ Require-Bundle: org.eclipse.core.resources,
  net.refractions.udig.project,
  org.eclipse.ui,
  org.amanzi.neo.core;bundle-version="1.0.0"
+Eclipse-BuddyPolicy: registered
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -228,6 +228,8 @@ public class StandardRubyElementContentProvider implements ITreeContentProvider
 			if (folder.isDefaultPackage())
 			{
 				list.addAll(Arrays.asList(folder.getRubyScripts()));
+				//Lagutko, 12.08.2009, add also spreadsheets
+				list.addAll(Arrays.asList(folder.getSpreadsheets()));
 				continue;
 			}
 			String name = folder.getElementName();
@@ -298,7 +300,8 @@ public class StandardRubyElementContentProvider implements ITreeContentProvider
 		}
 		IRubyElement[] folders = new IRubyElement[list.size()];
 		folders = list.toArray(folders);
-		return concatenate(folders, concatenate(folder.getRubyScripts(), folder.getNonRubyResources()));
+		//Lagutko, 12.08.2009, add Spreadsheets to content of SourceFolder
+		return concatenate(folders, concatenate(concatenate(folder.getRubyScripts(), folder.getSpreadsheets()), folder.getNonRubyResources()));
 	}
 
 	/*

@@ -1,6 +1,7 @@
 package org.amanzi.splash.neo4j.ui;
 
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
@@ -42,6 +43,18 @@ public class SplashEditorInput implements IEditorInput {
         this.root = root;
         
         this.sheetName = sheetName;
+    }
+    
+    /**
+     * Constructor. 
+     * 
+     * @param spreadsheetNode Spreadsheet Node
+     */
+    public SplashEditorInput(SpreadsheetNode spreadsheetNode) {
+        service = SplashPlugin.getDefault().getSpreadsheetService();
+        this.sheetName = spreadsheetNode.getName();
+        
+        this.root = spreadsheetNode.getSpreadsheetRootProject();
     }
 
     public boolean exists() {
@@ -88,5 +101,18 @@ public class SplashEditorInput implements IEditorInput {
      */
     public RubyProjectNode getRoot() {
         return root;
+    }
+    
+    @Override
+    public boolean equals(Object object) {
+        if (object instanceof SplashEditorInput) {
+            SplashEditorInput otherInput = (SplashEditorInput)object;
+            if ((otherInput.getName() != null) && (otherInput.getRoot() != null) &&
+                (otherInput.getName().equals(getName())) &&
+                (otherInput.getRoot().equals(getRoot()))) {
+                    return true;
+                }
+        }
+        return false;
     }
 }

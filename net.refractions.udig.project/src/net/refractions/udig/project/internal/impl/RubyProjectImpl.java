@@ -6,13 +6,14 @@
 package net.refractions.udig.project.internal.impl;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import net.refractions.udig.project.IProject;
+import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.internal.Project;
-import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
@@ -563,6 +564,17 @@ public class RubyProjectImpl extends EObjectImpl implements RubyProject {
 			};
     	}
         return null;
-    }	
+    }
+    
+    @Override
+    public List<IRubyProjectElement> getElements(Class type ) {
+        List<IRubyProjectElement> lists = new ArrayList<IRubyProjectElement>();
+        for( Iterator<IRubyProjectElement> iter = getRubyElementsInternal().iterator(); iter.hasNext(); ) {
+            IRubyProjectElement obj = iter.next();
+            if (type.isAssignableFrom(obj.getClass()))
+                lists.add(obj);
+        }
+        return lists;
+    }
 
 } //RubyProjectImpl

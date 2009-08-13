@@ -12,5 +12,7 @@ Require-Bundle: org.rubypeople.rdt.core,
  org.amanzi.rdt.launching,
  org.rubypeople.rdt.debug.ui,
  org.amanzi.splash,
- org.amanzi.splash.neo4j
+ org.amanzi.splash.neo4j,
+ org.amanzi.neo.core;bundle-version="1.0.0"
 Export-Package: org.amanzi.integrator.rdt
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

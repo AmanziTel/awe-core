@@ -13,7 +13,6 @@ package org.rubypeople.rdt.internal.core;
 import java.util.ArrayList;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceDelta;
 import org.jruby.ast.Node;
 import org.rubypeople.rdt.core.IRubyElement;
@@ -630,7 +629,10 @@ public class RubyElementDelta extends SimpleDelta implements IRubyElementDelta {
             actualDelta.affectedChildren = EMPTY_DELTA;
         }
         //Lagutko: delete RubyScript also from AWE project structure
-        AWEProjectManager.deleteRubyScript(element.getResource().getName(), element.getRubyProject().getProject());
+        //Lagutko: 12.08.2009, call AWEProjectManager only if we delete a RubyScript
+        if (element.getElementType() == IRubyElement.SCRIPT) {
+            AWEProjectManager.deleteRubyScript(element.getResource().getName(), element.getRubyProject().getProject());
+        }
     }
 
     /**
