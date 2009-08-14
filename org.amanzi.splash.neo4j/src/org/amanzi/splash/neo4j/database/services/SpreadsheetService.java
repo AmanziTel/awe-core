@@ -781,7 +781,7 @@ public class SpreadsheetService {
 	                
 	                CellID id = new CellID(cellToCopy.getRow().getRowIndex(), cellToCopy.getColumn().getColumnName());
 	                CellNode newNode = createCell(result, id);
-	                cellToCopy.copy(newNode);
+	                //cellToCopy.copy(newNode);
 	            }
 	        }
 	        
