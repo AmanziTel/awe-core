@@ -334,11 +334,6 @@ public class SplashTableModel extends DefaultTableModel {
 						+ list.get(i).toLowerCase());
 		}
 
-		if (definition.startsWith("=") == false) {
-		} else {
-			formula1 = "<%= " + formula1.replace("=", EMPTY_STRING) + " %>";
-		}
-
 		Object s1 = interpret_erb(cellID, formula1);
 
 		se.setDefinition(definition);
@@ -414,69 +409,19 @@ public class SplashTableModel extends DefaultTableModel {
 
 		List<String> list = null;
 
-		if (definition.startsWith("=") == false) {
-			NeoSplashUtil
-					.logn("Formula not starting with =, dealing as normal text");
-			if (definition.startsWith("<%=") && definition.endsWith("%>")) {
-				NeoSplashUtil.logn("The entered formula is already ERB");
-				NeoSplashUtil.logn("Interpreting cell using ERB...");
-				Object s1 = interpret_erb(cellID, formula1);
+		list = NeoSplashUtil.findComplexCellIDs(definition);
+		for (int i = 0; i < list.size(); i++) {
+            if (formula1.contains("$sheet.cells." + list.get(i)) == false)
+                formula1 = formula1.replace(list.get(i),
+                        "$sheet.cells." + list.get(i).toLowerCase());
+        }
+		Object s1 = interpret_erb(cellID, formula1);
+		
+		NeoSplashUtil.logn("Setting cell definition: " + definition);
+        se.setDefinition(definition);
 
-				NeoSplashUtil.logn("Setting cell definition: " + definition);
-				se.setDefinition(definition);
-
-				NeoSplashUtil.logn("Setting cell value:" + (String) s1);
-				se.setValue((String) s1);
-			} else {
-				NeoSplashUtil
-						.logn("The entered formula just text, not ERB and not Ruby");
-				NeoSplashUtil.logn("Setting cell definition: " + definition);
-				se.setDefinition(definition);
-
-				interpret_erb(cellID, definition);
-
-				NeoSplashUtil.logn("Setting cell value:" + definition);
-				se.setValue(definition);
-			}
-		} else {
-			NeoSplashUtil.logn("definition = " + definition);
-
-			if (definition.startsWith("='")) {
-				NeoSplashUtil.logn("definition started with ='");
-				list = NeoSplashUtil.findComplexCellIDsInRubyText(definition);
-
-				for (int i = 0; i < list.size(); i++) {
-					if (formula1.contains("$sheet.cells." + list.get(i)) == false)
-						formula1 = formula1.replace(list.get(i),
-								"$sheet.cells." + list.get(i).toLowerCase());
-				}
-			} else {
-				NeoSplashUtil.logn("definition NOT started with ='");
-				list = NeoSplashUtil.findComplexCellIDs(definition);
-
-				for (int i = 0; i < list.size(); i++) {
-					if (formula1.contains("$sheet.cells." + list.get(i)) == false)
-						formula1 = formula1.replace(list.get(i),
-								"$sheet.cells." + list.get(i).toLowerCase());
-				}
-			}
-
-			NeoSplashUtil.displayStringList("list", list);
-
-			NeoSplashUtil
-					.logn("Formula starts with =, Converting formula to ERB format");
-			formula1 = "<%= " + formula1.replace("=", EMPTY_STRING) + " %>";
-
-			NeoSplashUtil.logn("Interpreting cell using ERB...");
-			Object s1 = interpret_erb(cellID, formula1);
-
-			NeoSplashUtil.logn("Setting cell definition: " + definition);
-			se.setDefinition(definition);
-
-			NeoSplashUtil.logn("Setting cell value:" + (String) s1);
-			se.setValue((String) s1);
-
-		}
+        NeoSplashUtil.logn("Setting cell value:" + (String) s1);
+        se.setValue((String) s1);
 
 		setValueAt(se, row, column, oldDefinition);
 
@@ -601,8 +546,7 @@ public class SplashTableModel extends DefaultTableModel {
 			final RubyArray referencedIDs) {
 		ActionUtil.getInstance().runTask(new Runnable() {
 			public void run() {
-				service
-						.updateCellReferences(spreadsheet, cellID,
+				service.updateCellReferences(spreadsheet, cellID,
 								referencedIDs);
 			}
 		}, false);

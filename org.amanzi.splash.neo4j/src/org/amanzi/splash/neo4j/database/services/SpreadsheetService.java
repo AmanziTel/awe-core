@@ -21,6 +21,10 @@ import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.ui.PlatformUI;
 import org.jruby.RubyArray;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.neo4j.api.core.NeoService;
@@ -280,7 +284,7 @@ public class SpreadsheetService {
 			}
 
 			ColumnNode columnNode = spreadsheet.getColumn(id.getColumnName());
-			;
+			
 			if (columnNode == null) {
 				columnNode = new ColumnNode(neoService.createNode());
 				columnNode.setColumnName(id.getColumnName());
@@ -685,12 +689,13 @@ public class SpreadsheetService {
 
 		CellID updatedId = new CellID(cellID);
 		CellNode updatedNode = getCellNode(sheet, updatedId);
-
+		
 		if (updatedNode == null) {
 			updatedNode = updateCell(sheet, new Cell(updatedId.getRowIndex(),
 					updatedId.getColumnIndex(), Cell.DEFAULT_DEFINITION,
 					Cell.DEFAULT_VALUE, new CellFormat()));
 		}
+		updatedNode.setCyclic(false);
 
 		Transaction tx = neoService.beginTx();
 		try {
@@ -724,10 +729,10 @@ public class SpreadsheetService {
 				}
 
 				try {
-					updatedNode.addDependedNode(node);
+					updatedNode.addDependedNode(node);					
 				} catch (LoopInCellReferencesException e) {
 					updatedNode.setCyclic(true);
-				}
+				}				
 			}
 
 			tx.success();
@@ -753,5 +758,41 @@ public class SpreadsheetService {
 		} finally {
 			tx.finish();
 		}
+	}
+	
+	/**
+	 * Copies a Given Spreadsheet
+	 *
+	 * @param spreadsheet spreadsheet to copy
+	 * @param newRoot root for new Spreadsheet
+	 * @param newName name of new Spreadsheet 
+	 * @return copied Spreadsheet
+	 */
+	public SpreadsheetNode copySpreadsheet(SpreadsheetNode spreadsheet, RubyProjectNode newRoot, String newName) {
+	    try {
+	        SpreadsheetNode result = createSpreadsheet(newRoot, newName);
+	        
+	        Iterator<RowNode> rows = spreadsheet.getAllRows();
+	        while (rows.hasNext()) {
+	            Iterator<CellNode> cells = rows.next().getAllCells();
+	            
+	            while (cells.hasNext()) {
+	                CellNode cellToCopy = cells.next();
+	                
+	                CellID id = new CellID(cellToCopy.getRow().getRowIndex(), cellToCopy.getColumn().getColumnName());
+	                CellNode newNode = createCell(result, id);
+	                cellToCopy.copy(newNode);
+	            }
+	        }
+	        
+	        return result;
+	    }
+	    catch (SplashDatabaseException e) {
+	        ErrorDialog.openError(PlatformUI.getWorkbench().getDisplay().getActiveShell(), 
+	                              Messages.Copy_Error_Title,
+	                              e.getMessage(),
+	                              new Status(IStatus.ERROR, SplashPlugin.getId(), e.getMessage()));
+	        return null;
+	    }
 	}
 }
