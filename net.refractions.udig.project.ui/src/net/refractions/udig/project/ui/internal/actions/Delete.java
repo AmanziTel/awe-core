@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IRubyFile;
-import net.refractions.udig.project.IRubyProject;
 import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.ISpreadsheet;
 import net.refractions.udig.project.command.MapCommand;
@@ -66,7 +65,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.geotools.feature.Feature;
 
-
 /**
  * Deletes the selected elements from a project.
  * 
@@ -75,373 +73,378 @@ import org.geotools.feature.Feature;
  */
 public class Delete extends UDIGGenericAction {
 
-    /**
-     * Indicates where the user should be queried
-     */
-    private boolean headless = false;
+	/**
+	 * Indicates where the user should be queried
+	 */
+	private boolean headless = false;
 
-    private boolean deleteAssumption = getDoDelete();
+	private boolean deleteAssumption = getDoDelete();
 
-    /**
-     * Indicates whether to run the commands synchronously or not.
-     */
-    private boolean runSync = false;
+	/**
+	 * Indicates whether to run the commands synchronously or not.
+	 */
+	private boolean runSync = false;
 
-    /**
-     * @see net.refractions.udig.project.ui.UDIGGenericAction#operate(net.refractions.udig.project.Layer)
-     */
-    protected void operate( Layer layer ) {
-        if (layer == null || layer.getMap() == null)
-            return;
-            
-        UndoableMapCommand command = EditCommandFactory.getInstance().createDeleteLayers(
-                new ILayer[]{layer});
-        // UndoableMapCommand command =
-        // EditCommandFactory.getInstance().createDeleteLayer((ILayer)layer);
-        executeCommand(command, layer.getMapInternal());
-    }
+	/**
+	 * @see net.refractions.udig.project.ui.UDIGGenericAction#operate(net.refractions.udig.project.Layer)
+	 */
+	protected void operate(Layer layer) {
+		if (layer == null || layer.getMap() == null)
+			return;
 
-    /**
-     * @see net.refractions.udig.project.ui.UDIGGenericAction#operate(net.refractions.udig.project.internal.Layer[])
-     */
-    @Override
-    protected void operate( Layer[] layers ) {
+		UndoableMapCommand command = EditCommandFactory.getInstance().createDeleteLayers(new ILayer[] { layer });
+		// UndoableMapCommand command =
+		// EditCommandFactory.getInstance().createDeleteLayer((ILayer)layer);
+		executeCommand(command, layer.getMapInternal());
+	}
 
-        if (layers != null && layers.length > 0) {
-            /*
-             * Layers can exist in different maps. For each map the standalone command should be
-             * used to remove only layers that are contained in this map.
-             */
+	/**
+	 * @see net.refractions.udig.project.ui.UDIGGenericAction#operate(net.refractions.udig.project.internal.Layer[])
+	 */
+	@Override
+	protected void operate(Layer[] layers) {
 
-            HashMap<IMap, List<Layer>> distributor = new HashMap<IMap, List<Layer>>();
+		if (layers != null && layers.length > 0) {
+			/*
+			 * Layers can exist in different maps. For each map the standalone
+			 * command should be used to remove only layers that are contained
+			 * in this map.
+			 */
 
-            for( Layer layer : layers ) {
-                IMap map = layer.getMap();
+			HashMap<IMap, List<Layer>> distributor = new HashMap<IMap, List<Layer>>();
 
-                if (distributor.containsKey(map)) {
-                    distributor.get(map).add(layer);
+			for (Layer layer : layers) {
+				IMap map = layer.getMap();
 
-                } else {
-                    List<Layer> list = new ArrayList<Layer>();
-                    list.add(layer);
-                    distributor.put(map, list);
-                }
-            }
-            for( Entry<IMap, List<Layer>> entry : distributor.entrySet() ) {
-                IMap map = entry.getKey();
-                Layer[] removedLayers = entry.getValue().toArray(new Layer[0]);
-                UndoableMapCommand command = EditCommandFactory.getInstance().createDeleteLayers(
-                        removedLayers);
-                executeCommand(command, map);
-            }
+				if (distributor.containsKey(map)) {
+					distributor.get(map).add(layer);
 
-        }
-    }
+				} else {
+					List<Layer> list = new ArrayList<Layer>();
+					list.add(layer);
+					distributor.put(map, list);
+				}
+			}
+			for (Entry<IMap, List<Layer>> entry : distributor.entrySet()) {
+				IMap map = entry.getKey();
+				Layer[] removedLayers = entry.getValue().toArray(new Layer[0]);
+				UndoableMapCommand command = EditCommandFactory.getInstance().createDeleteLayers(removedLayers);
+				executeCommand(command, map);
+			}
 
-    void executeCommand( MapCommand command, IMap map ) {
-        if (runSync) {
-            map.sendCommandSync(command);
-        } else {
-            map.sendCommandASync(command);
-        }
-    }
+		}
+	}
 
-    /**
-     * @see net.refractions.udig.project.ui.UDIGGenericAction#operate(net.refractions.udig.project.IProjectElement)
-     */
-    protected void operate( ProjectElement element ) {
-        if (element == null)
-            return;
-        boolean deleteFiles;
-        int returnCode;
-        if (headless) {
-            deleteFiles = deleteAssumption;
-            returnCode = Window.OK;
-        } else {
+	void executeCommand(MapCommand command, IMap map) {
+		if (runSync) {
+			map.sendCommandSync(command);
+		} else {
+			map.sendCommandASync(command);
+		}
+	}
 
-            MessageDialogWithToggle dialog = MessageDialogWithToggle.openOkCancelConfirm(Display
-                    .getCurrent().getActiveShell(), Messages.Delete_delete, Messages.Delete_delete
-                    + " \"" //$NON-NLS-1$
-                    + element.getName() + "\"?", //$NON-NLS-1$
-                    Messages.Delete_filesystem, getDoDelete(), null, null);
-            // note: we will do our own preference store persistence, since the built in one is
-            // backwards
-            deleteFiles = dialog.getToggleState();
-            returnCode = dialog.getReturnCode();
-            if (deleteFiles != getDoDelete()) {
-                setDoDelete(deleteFiles);
-            }
-        }
-        doDelete(element, deleteFiles, returnCode);
-    }
+	/**
+	 * @see net.refractions.udig.project.ui.UDIGGenericAction#operate(net.refractions.udig.project.IProjectElement)
+	 */
+	protected void operate(ProjectElement element) {
+		if (element == null)
+			return;
+		boolean deleteFiles;
+		int returnCode;
+		if (headless) {
+			deleteFiles = deleteAssumption;
+			returnCode = Window.OK;
+		} else {
 
-    protected final void doDelete( ProjectElement element, boolean deleteFiles, int returncode ) {
-        if (returncode != Window.CANCEL) {
-            for( UDIGEditorInputDescriptor desc : ApplicationGIS
-                    .getEditorInputs(element.getClass()) ) {
-                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                        .getActivePage();
-                IEditorPart editor = page.findEditor(desc.createInput(element));
-                if (editor != null)
-                    page.closeEditor(editor, false);
-            }
-            //Lagutko: if ProjectElement is RubyProject than first delete it from RDT Project Structure
-            if (element instanceof IRubyProject) {
-            	RDTProjectManager.deleteProject(element.getName(), deleteFiles);
-            }
-            if (element instanceof IRubyProjectElement) {
-                deleteRubyElement((RubyProjectElement)element, deleteFiles);
-            }
-            Project projectInternal = element.getProjectInternal();
-            if (projectInternal != null)
-                projectInternal.getElementsInternal().remove(element);
-            else {
-                Project project = findProject(element);
-                if (project != null)
-                    project.getElementsInternal().remove(element);
-            }            
-            Resource resource = element.eResource();
-            if (resource != null) {
-                resource.getContents().remove(element);
-                resource.unload();
-            }
-            if (deleteFiles) {
-                try {
-                    if( resource==null ){
-                        return;
-                    }
-                    String path = resource.getURI().toFileString();
-                    resource.unload();
-                    int lastIndexOf = path.lastIndexOf('/');
-                    if (lastIndexOf == -1)
-                        lastIndexOf = path.length();
-                    path = path.substring(0, lastIndexOf);
-                    final File file = new File(path);
-                    deleteFile(file);
-                } catch (Exception e) {
-                    ProjectUIPlugin.log("Error deleting project element file", e); //$NON-NLS-1$
-                }
-            }
-        }
-    }
+			MessageDialogWithToggle dialog = MessageDialogWithToggle.openOkCancelConfirm(Display.getCurrent().getActiveShell(),
+					Messages.Delete_delete, Messages.Delete_delete + " \"" //$NON-NLS-1$
+							+ element.getName() + "\"?", //$NON-NLS-1$
+					Messages.Delete_filesystem, getDoDelete(), null, null);
+			// note: we will do our own preference store persistence, since the
+			// built in one is
+			// backwards
+			deleteFiles = dialog.getToggleState();
+			returnCode = dialog.getReturnCode();
+			if (deleteFiles != getDoDelete()) {
+				setDoDelete(deleteFiles);
+			}
+		}
+		doDelete(element, deleteFiles, returnCode);
+	}
 
-    private Project findProject( ProjectElement element ) {
-        List< ? extends Project> projects = ApplicationGISInternal.getProjects();
-        for( Project project : projects ) {
-            if (project.getElements().contains(element))
-                return project;
-        }
-        return null;
-    }
+	protected final void doDelete(ProjectElement element, boolean deleteFiles, int returncode) {
+		if (returncode != Window.CANCEL) {
+			for (UDIGEditorInputDescriptor desc : ApplicationGIS.getEditorInputs(element.getClass())) {
+				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				IEditorPart editor = page.findEditor(desc.createInput(element));
+				if (editor != null)
+					page.closeEditor(editor, false);
+			}
+			// Lagutko: if ProjectElement is RubyProject than first delete it
+			// from RDT Project Structure
+			if (element instanceof RubyProject) {
+				List<RubyProjectElement> childs = new ArrayList<RubyProjectElement>(((RubyProject) element)
+						.getRubyElementsInternal());
+				for (RubyProjectElement rubyProjectElement : childs) {
+					doDelete(rubyProjectElement, deleteFiles, returncode);
+				}
+				RDTProjectManager.deleteProject(element.getName(), deleteFiles);
 
-    /**
-     * @see net.refractions.udig.project.ui.UDIGGenericAction#operate(net.refractions.udig.project.Project)
-     */
-    protected void operate( Project project ) {
-        if (project == null)
-            return;
+			}
+			if (element instanceof IRubyProjectElement) {
+				deleteRubyElement((RubyProjectElement) element, deleteFiles);
+			}
+			Project projectInternal = element.getProjectInternal();
+			if (projectInternal != null)
+				projectInternal.getElementsInternal().remove(element);
+			else {
+				Project project = findProject(element);
+				if (project != null)
+					project.getElementsInternal().remove(element);
+			}
+			Resource resource = element.eResource();
+			if (resource != null) {
+				resource.getContents().remove(element);
+				resource.unload();
+			}
+			if (deleteFiles) {
+				try {
+					if (resource == null) {
+						return;
+					}
+					String path = resource.getURI().toFileString();
+					resource.unload();
+					int lastIndexOf = path.lastIndexOf('/');
+					if (lastIndexOf == -1)
+						lastIndexOf = path.length();
+					path = path.substring(0, lastIndexOf);
+					final File file = new File(path);
+					deleteFile(file);
+				} catch (Exception e) {
+					ProjectUIPlugin.log("Error deleting project element file", e); //$NON-NLS-1$
+				}
+			}
+		}
+	}
 
-        boolean deleteProjectFiles;
-        int returnCode;
-        if (headless) {
-            deleteProjectFiles = deleteAssumption;
-            returnCode = Window.OK;
-        } else {
+	private Project findProject(ProjectElement element) {
+		List<? extends Project> projects = ApplicationGISInternal.getProjects();
+		for (Project project : projects) {
+			if (project.getElements().contains(element))
+				return project;
+		}
+		return null;
+	}
 
-            MessageDialogWithToggle dialog = MessageDialogWithToggle.openOkCancelConfirm(Display
-                    .getCurrent().getActiveShell(), Messages.Delete_deleteProject,
-                    Messages.Delete_delete + " \"" //$NON-NLS-1$
-                            + project.getName() + "\"?", //$NON-NLS-1$
-                    Messages.Delete_filesystem, getDoDelete(), null, null);
-            // note: we will do our own preference store persistence, since the built in one is
-            // backwards
-            deleteProjectFiles = dialog.getToggleState();
-            returnCode = dialog.getReturnCode();
-            if (deleteProjectFiles != getDoDelete()) {
-                setDoDelete(deleteProjectFiles);
-            }
-        }
-        doDelete(project, deleteProjectFiles, returnCode);
-    }
+	/**
+	 * @see net.refractions.udig.project.ui.UDIGGenericAction#operate(net.refractions.udig.project.Project)
+	 */
+	protected void operate(Project project) {
+		if (project == null)
+			return;
 
-    protected final void doDelete( Project project, boolean deleteProjectFiles, int returncode ) {
-        if (returncode != Window.CANCEL) {
-            Resource resource = project.eResource();
-            if (!deleteProjectFiles) {
-                try {
-                    resource.save(null);
-                    resource.getContents().remove(project);
-                } catch (IOException e) {
-                    ProjectUIPlugin.log(null, e);
-                }
-            }
+		boolean deleteProjectFiles;
+		int returnCode;
+		if (headless) {
+			deleteProjectFiles = deleteAssumption;
+			returnCode = Window.OK;
+		} else {
 
-            List<ProjectElement> toRemove = new ArrayList<ProjectElement>();
-            toRemove.addAll(project.getElementsInternal());
-            boolean oldHeadless = headless;
-            boolean oldrunSyn = runSync;
+			MessageDialogWithToggle dialog = MessageDialogWithToggle.openOkCancelConfirm(Display.getCurrent().getActiveShell(),
+					Messages.Delete_deleteProject, Messages.Delete_delete + " \"" //$NON-NLS-1$
+							+ project.getName() + "\"?", //$NON-NLS-1$
+					Messages.Delete_filesystem, getDoDelete(), null, null);
+			// note: we will do our own preference store persistence, since the
+			// built in one is
+			// backwards
+			deleteProjectFiles = dialog.getToggleState();
+			returnCode = dialog.getReturnCode();
+			if (deleteProjectFiles != getDoDelete()) {
+				setDoDelete(deleteProjectFiles);
+			}
+		}
+		doDelete(project, deleteProjectFiles, returnCode);
+	}
 
-            headless = true;
-            this.runSync = true;
-            for( ProjectElement element : toRemove ) {
-                operate(element);
-            }
-            headless = oldHeadless;
-            runSync = oldrunSyn;
+	protected final void doDelete(Project project, boolean deleteProjectFiles, int returncode) {
+		if (returncode != Window.CANCEL) {
+			Resource resource = project.eResource();
+			if (!deleteProjectFiles) {
+				try {
+					resource.save(null);
+					resource.getContents().remove(project);
+				} catch (IOException e) {
+					ProjectUIPlugin.log(null, e);
+				}
+			}
 
-            resource.setModified(false);
-            if (ApplicationGIS.getActiveProject() == project)
-                ProjectPlugin.getPlugin().getProjectRegistry().setCurrentProject(null);
+			List<ProjectElement> toRemove = new ArrayList<ProjectElement>();
+			toRemove.addAll(project.getElementsInternal());
+			boolean oldHeadless = headless;
+			boolean oldrunSyn = runSync;
 
-            ProjectPlugin.getPlugin().getProjectRegistry().getProjects().remove(project);
-            resource.getContents().clear();
-            ResourceSet resourceSet = resource.getResourceSet();
-            String path = resource.getURI().toFileString();
+			headless = true;
+			this.runSync = true;
+			for (ProjectElement element : toRemove) {
+				operate(element);
+			}
+			headless = oldHeadless;
+			runSync = oldrunSyn;
 
-            resource.unload();
+			resource.setModified(false);
+			if (ApplicationGIS.getActiveProject() == project)
+				ProjectPlugin.getPlugin().getProjectRegistry().setCurrentProject(null);
 
-            if (deleteProjectFiles) {
-                try {
-                    resourceSet.getResources().remove(resource);
-                    resource.unload();
-                    int lastIndexOf = path.lastIndexOf('/');
-                    if (lastIndexOf == -1)
-                        lastIndexOf = path.length();
-                    path = path.substring(0, lastIndexOf);
-                    final File file = new File(path);
-                    deleteFile(file);
-                } catch (Exception e) {
-                    ProjectUIPlugin.log("Error deleting project file", e); //$NON-NLS-1$
-                }
-            }
-        }
-    }
+			ProjectPlugin.getPlugin().getProjectRegistry().getProjects().remove(project);
+			resource.getContents().clear();
+			ResourceSet resourceSet = resource.getResourceSet();
+			String path = resource.getURI().toFileString();
 
-    private void deleteFile( File file ) {
-        if (!file.exists())
-            return;
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            for( File file2 : files ) {
-                deleteFile(file2);
-            }
-        }
+			resource.unload();
 
-        file.delete();
+			if (deleteProjectFiles) {
+				try {
+					resourceSet.getResources().remove(resource);
+					resource.unload();
+					int lastIndexOf = path.lastIndexOf('/');
+					if (lastIndexOf == -1)
+						lastIndexOf = path.length();
+					path = path.substring(0, lastIndexOf);
+					final File file = new File(path);
+					deleteFile(file);
+				} catch (Exception e) {
+					ProjectUIPlugin.log("Error deleting project file", e); //$NON-NLS-1$
+				}
+			}
+		}
+	}
 
-    }
+	private void deleteFile(File file) {
+		if (!file.exists())
+			return;
+		if (file.isDirectory()) {
+			File[] files = file.listFiles();
+			for (File file2 : files) {
+				deleteFile(file2);
+			}
+		}
 
-    /**
-     * @see net.refractions.udig.project.ui.UDIGGenericAction#operate(org.geotools.feature.Feature)
-     */
-    protected void operate( final Feature feature ) {
-        IAdaptable adaptableFeature = null;
-        if (feature instanceof IAdaptable) {
-            adaptableFeature = (IAdaptable) feature;
-        }
-        if (adaptableFeature == null) {
-            adaptableFeature = (IAdaptable) Platform.getAdapterManager().getAdapter(feature,
-                    IAdaptable.class);
-        }
-        if (adaptableFeature == null)
-            return;
+		file.delete();
 
-        final Layer layer = (Layer) adaptableFeature.getAdapter(Layer.class);
+	}
 
-        IDrawCommand command = DrawCommandFactory.getInstance().createDrawFeatureCommand(feature,
-                layer);
+	/**
+	 * @see net.refractions.udig.project.ui.UDIGGenericAction#operate(org.geotools.feature.Feature)
+	 */
+	protected void operate(final Feature feature) {
+		IAdaptable adaptableFeature = null;
+		if (feature instanceof IAdaptable) {
+			adaptableFeature = (IAdaptable) feature;
+		}
+		if (adaptableFeature == null) {
+			adaptableFeature = (IAdaptable) Platform.getAdapterManager().getAdapter(feature, IAdaptable.class);
+		}
+		if (adaptableFeature == null)
+			return;
 
-        ViewportPane pane = (ViewportPane) layer.getMapInternal().getRenderManager()
-                .getMapDisplay();
-        pane.addDrawCommand(command);
+		final Layer layer = (Layer) adaptableFeature.getAdapter(Layer.class);
 
-        PlatformGIS.syncInDisplayThread(PlatformUI.getWorkbench().getDisplay(), new Runnable(){
-            public void run() {
+		IDrawCommand command = DrawCommandFactory.getInstance().createDrawFeatureCommand(feature, layer);
 
-                boolean result;
-                if (headless) {
-                    result = getDoDelete();
-                } else {
-                    result = MessageDialog.openConfirm(PlatformUI.getWorkbench().getDisplay()
-                            .getActiveShell(), Messages.DeleteFeature_confirmation_title,
-                            Messages.DeleteFeature_confirmation_text);
-                }
+		ViewportPane pane = (ViewportPane) layer.getMapInternal().getRenderManager().getMapDisplay();
+		pane.addDrawCommand(command);
 
-                if (result) {
-                    UndoableMapCommand c = EditCommandFactory.getInstance().createDeleteFeature(
-                            feature, layer);
-                    executeCommand(c, layer.getMap());
-                }
-            }
-        });
-        command.setValid(false);
-        pane.repaint();
+		PlatformGIS.syncInDisplayThread(PlatformUI.getWorkbench().getDisplay(), new Runnable() {
+			public void run() {
 
-    }
+				boolean result;
+				if (headless) {
+					result = getDoDelete();
+				} else {
+					result = MessageDialog.openConfirm(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+							Messages.DeleteFeature_confirmation_title, Messages.DeleteFeature_confirmation_text);
+				}
 
-    /**
-     * Sets whether the methods should be ran headless or not. (IE whether the user should be
-     * asked).
-     * 
-     * @param headless whether to query user
-     */
-    public void setRunHeadless( boolean headless ) {
-        this.headless = headless;
-    }
+				if (result) {
+					UndoableMapCommand c = EditCommandFactory.getInstance().createDeleteFeature(feature, layer);
+					executeCommand(c, layer.getMap());
+				}
+			}
+		});
+		command.setValid(false);
+		pane.repaint();
 
-    /**
-     * Sets whether the methods should be ran headless or not. (IE whether the user should be
-     * asked).
-     * 
-     * @param headless whether to query user
-     * @param doDelete whether to delete the file if headless == true
-     */
-    public void setRunHeadless( boolean headless, boolean doDelete ) {
-        this.headless = headless;
-        this.deleteAssumption = doDelete;
-    }
+	}
 
-    /**
-     * Determines whether the command executions should happen synchronously or not.
-     * 
-     * @param runSync
-     */
-    public void setRunSync( boolean runSync ) {
-        this.runSync = runSync;
-    }
+	/**
+	 * Sets whether the methods should be ran headless or not. (IE whether the
+	 * user should be asked).
+	 * 
+	 * @param headless
+	 *            whether to query user
+	 */
+	public void setRunHeadless(boolean headless) {
+		this.headless = headless;
+	}
 
-    private boolean getDoDelete() {
-        return ProjectPlugin.getPlugin().getPreferenceStore().getBoolean(
-                PreferenceConstants.P_PROJECT_DELETE_FILES);
-    }
+	/**
+	 * Sets whether the methods should be ran headless or not. (IE whether the
+	 * user should be asked).
+	 * 
+	 * @param headless
+	 *            whether to query user
+	 * @param doDelete
+	 *            whether to delete the file if headless == true
+	 */
+	public void setRunHeadless(boolean headless, boolean doDelete) {
+		this.headless = headless;
+		this.deleteAssumption = doDelete;
+	}
 
-    private void setDoDelete( boolean deleteFiles ) {
-        ProjectPlugin.getPlugin().getPreferenceStore().setValue(
-                PreferenceConstants.P_PROJECT_DELETE_FILES, deleteFiles);
-    }
-    
-    /**
-     * Method that will remove a RubyProjectElement from AWE Project Structure
-     *
-     * @param rubyElement RubyProjectElement to delete
-     * @param deleteFiles is need to delete files from filesystem
-     * @author lagutko_n
-     */
-    private void deleteRubyElement(RubyProjectElement rubyElement, boolean deleteFiles) {
-        RubyProject project = rubyElement.getRubyProjectInternal();
-        
-        //Lagutko: if ProjectElement is RubyFile than first delete it from RDT Project Structure
-        if (rubyElement instanceof IRubyFile) {
-            RubyFile file = (RubyFile)rubyElement;            
-            RDTProjectManager.deleteScript(project.getName(), file.getName(), deleteFiles);
-        }
-        //Lagutko 11.08.2009 : if ProjectElement is Spreadsheet that first delete it from RDT Project Structure
-        else if (rubyElement instanceof ISpreadsheet) {
-            Spreadsheet spreadsheet = (Spreadsheet)rubyElement;
-            RDTProjectManager.deleteSpreadsheet(project.getProject().getName(), project.getName(), spreadsheet.getName());
-        }
-        //Lagutko: also delete this RubyFile from RubyProject InternalElements
-        project.getRubyElementsInternal().remove(rubyElement);
-    }
+	/**
+	 * Determines whether the command executions should happen synchronously or
+	 * not.
+	 * 
+	 * @param runSync
+	 */
+	public void setRunSync(boolean runSync) {
+		this.runSync = runSync;
+	}
+
+	private boolean getDoDelete() {
+		return ProjectPlugin.getPlugin().getPreferenceStore().getBoolean(PreferenceConstants.P_PROJECT_DELETE_FILES);
+	}
+
+	private void setDoDelete(boolean deleteFiles) {
+		ProjectPlugin.getPlugin().getPreferenceStore().setValue(PreferenceConstants.P_PROJECT_DELETE_FILES, deleteFiles);
+	}
+
+	/**
+	 * Method that will remove a RubyProjectElement from AWE Project Structure
+	 * 
+	 * @param rubyElement
+	 *            RubyProjectElement to delete
+	 * @param deleteFiles
+	 *            is need to delete files from filesystem
+	 * @author lagutko_n
+	 */
+	private void deleteRubyElement(RubyProjectElement rubyElement, boolean deleteFiles) {
+		RubyProject project = rubyElement.getRubyProjectInternal();
+
+		// Lagutko: if ProjectElement is RubyFile than first delete it from RDT
+		// Project Structure
+		if (rubyElement instanceof IRubyFile) {
+			RubyFile file = (RubyFile) rubyElement;
+			RDTProjectManager.deleteScript(project.getName(), file.getName(), deleteFiles);
+		}
+		// Lagutko 11.08.2009 : if ProjectElement is Spreadsheet that first
+		// delete it from RDT Project Structure
+		else if (rubyElement instanceof ISpreadsheet) {
+			Spreadsheet spreadsheet = (Spreadsheet) rubyElement;
+			RDTProjectManager.deleteSpreadsheet(project.getProject().getName(), project.getName(), spreadsheet.getName());
+		}
+		// Lagutko: also delete this RubyFile from RubyProject InternalElements
+		project.getRubyElementsInternal().remove(rubyElement);
+	}
 
 }
