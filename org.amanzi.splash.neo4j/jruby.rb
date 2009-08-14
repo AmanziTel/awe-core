@@ -1,57 +1,37 @@
 require 'java'
 require $jrubyPath + "/lib/ruby/1.8/erb"
 
-class Cells
-  #
-  # Method that updates Cell by ID with new formula
-  #
-  def update(currentCellId, formula)      
-    #idArray contains IDs of referenced Cells
-    @idArray = []
-    if formula[0] == '='[0]        
-        display = ERB.new("<%= #{formula} %>").result
-    else        
-        display = ERB.new(formula).result
-    end
-    
-    #if the formula was interpreted than update References of Cell
-    $tableModel.updateCellReferences(currentCellId.to_s, @idArray)
-    display    
-  end
-  
-  def method_missing(method_id, *args)
-    if method_id.to_s =~ /([a-z]{1,3})([0-9]+)/      
-      #if method_missing was called with ID of Cell than put this ID to array
-      @idArray << method_id
-      find_cell(method_id)
-    else
-      super.method_missing(method_id.to_s, *args)
-    end
-  end	
-  
-  private
-  
-  #
-  # Returns value of Cell by given ID
-  #
-  def find_cell(cell_id)    
-    cell = $tableModel.getCellByID(cell_id.to_s)    
-    cell.getValue
+def method_missing(method_id, *args)
+  if method_id.to_s =~ /([a-z]{1,3})([0-9]+)/      
+    #if method_missing was called with ID of Cell than put this ID to array
+    @idArray << method_id
+    find_cell(method_id)
+  else
+    super.method_missing(method_id.to_s, *args)
   end
 end
 
-	
+#
+# Returns value of Cell by given ID
+#
+def find_cell(cell_id)    
+  cell = $tableModel.getCellByID(cell_id.to_s)    
+  cell.getValue
+end
 
-class Spreadsheet
-  def initialize()
-    @cells = Cells.new
-    puts "Spreadsheet has been initialized !!"
+def update(currentCellId, formula)      
+  #idArray contains IDs of referenced Cells
+  @idArray = []
+  if formula[0] == '='[0]    
+    formula = formula[1..formula.length]
+    display = ERB.new("<%= #{formula} %>").result
+  else        
+    display = ERB.new(formula).result
   end
-  
-  def cells
-    @cells
-  end
-  
+    
+  #if the formula was interpreted than update References of Cell
+  $tableModel.updateCellReferences(currentCellId.to_s, @idArray)
+  display    
 end
 
 class Charts
@@ -76,3 +56,4 @@ class Charts
 		frame.setVisible true
 	end
 end
+

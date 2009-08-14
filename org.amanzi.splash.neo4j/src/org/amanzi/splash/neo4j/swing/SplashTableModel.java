@@ -23,10 +23,14 @@ import org.eclipse.core.runtime.FileLocator;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyInstanceConfig;
+import org.jruby.ast.Node;
+import org.jruby.ast.RootNode;
 import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
+import org.rubypeople.rdt.internal.codeassist.ASTSourceRequestor;
+import org.rubypeople.rdt.internal.core.SourceElementParser;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -164,9 +168,9 @@ public class SplashTableModel extends DefaultTableModel {
 		if (runtime == null)
 			this.runtime = rubyengine;
 
-		initialize(splash_name, root);
+		initialize(splash_name, root);	
 	}
-
+	
 	/**
 	 * Initializes Spreadsheet for this model
 	 * 
@@ -258,8 +262,6 @@ public class SplashTableModel extends DefaultTableModel {
 		makeRubyGlobals(runtime, globals);
 
 		runtime.evalScriptlet(input);
-		// TODO: Lagutko: extract scripts to files
-		runtime.evalScriptlet("$sheet = Spreadsheet.new");
 	}
 
 	/**
@@ -325,15 +327,6 @@ public class SplashTableModel extends DefaultTableModel {
 		String formula1 = definition;
 		Cell se = getCellByID(cellID);
 
-		List<String> list = NeoSplashUtil.findComplexCellIDs(definition);
-
-		// TODO: Lagutko: extract scripts to files
-		for (int i = 0; i < list.size(); i++) {
-			if (formula1.contains("$sheet.cells." + list.get(i)) == false)
-				formula1 = formula1.replace(list.get(i), "$sheet.cells."
-						+ list.get(i).toLowerCase());
-		}
-
 		Object s1 = interpret_erb(cellID, formula1);
 
 		se.setDefinition(definition);
@@ -361,7 +354,7 @@ public class SplashTableModel extends DefaultTableModel {
 		NeoSplashUtil.logn("path = " + path);
 		NeoSplashUtil.logn("cellID.toLowerCase():" + cellID.toLowerCase());
 
-		String input = "$sheet.cells.update('" + cellID.toLowerCase() + "', '"
+		String input = "update('" + cellID.toLowerCase() + "', '"
 				+ formula + "')";
 
 		NeoSplashUtil.logn("ERB Input: " + input);
@@ -407,14 +400,6 @@ public class SplashTableModel extends DefaultTableModel {
 					Cell.DEFAULT_DEFINITION, new CellFormat());
 		}
 
-		List<String> list = null;
-
-		list = NeoSplashUtil.findComplexCellIDs(definition);
-		for (int i = 0; i < list.size(); i++) {
-            if (formula1.contains("$sheet.cells." + list.get(i)) == false)
-                formula1 = formula1.replace(list.get(i),
-                        "$sheet.cells." + list.get(i).toLowerCase());
-        }
 		Object s1 = interpret_erb(cellID, formula1);
 		
 		NeoSplashUtil.logn("Setting cell definition: " + definition);
@@ -587,27 +572,6 @@ public class SplashTableModel extends DefaultTableModel {
 			NeoSplashUtil.logn("WARNING: se = null");
 		}
 
-		List<String> list = NeoSplashUtil.findComplexCellIDs(definition);
-		for (int i = 0; i < list.size(); i++) {
-			// TODO: Lagutko, extract script
-			formula1 = formula1.replace(list.get(i), "$sheet.cells."
-					+ list.get(i).toLowerCase());
-		}
-
-		NeoSplashUtil.logn("Interpreting formula: " + formula1 + " at Cell "
-				+ cellID);
-
-		if (definition.startsWith("=") == false) {
-			// This is normal text entered into cell, then
-			NeoSplashUtil.logn("CASE 1: Formula not starting with =");
-		} else {
-			NeoSplashUtil
-					.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
-			formula1 = "<%= " + formula1.replace("=", EMPTY_STRING) + " %>";
-		}
-
-		NeoSplashUtil.logn("formula1 =" + formula1);
-
 		Object s1 = interpret_erb(cellID, formula1);
 		se.setDefinition(definition);
 		se.setValue((String) s1);
@@ -636,27 +600,6 @@ public class SplashTableModel extends DefaultTableModel {
 		if (se == null) {
 			NeoSplashUtil.logn("WARNING: se = null");
 		}
-
-		List<String> list = NeoSplashUtil.findComplexCellIDs(definition);
-		for (int i = 0; i < list.size(); i++) {
-			// TODO: Lagutko, extract script
-			formula1 = formula1.replace(list.get(i), "$sheet.cells."
-					+ list.get(i).toLowerCase());
-		}
-
-		NeoSplashUtil.logn("Interpreting formula: " + formula1 + " at Cell "
-				+ cellID);
-
-		if (definition.startsWith("=") == false) {
-			// This is normal text entered into cell, then
-			NeoSplashUtil.logn("CASE 1: Formula not starting with =");
-		} else {
-			NeoSplashUtil
-					.logn("CASE 2: Formula starting with =, performing ERB Wrapping");
-			formula1 = "<%= " + formula1.replace("=", EMPTY_STRING) + " %>";
-		}
-
-		NeoSplashUtil.logn("formula1 =" + formula1);
 
 		Object s1 = interpret_erb(cellID, formula1);
 		se.setDefinition(definition);
