@@ -23,14 +23,10 @@ import org.eclipse.core.runtime.FileLocator;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.ast.Node;
-import org.jruby.ast.RootNode;
 import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
-import org.rubypeople.rdt.internal.codeassist.ASTSourceRequestor;
-import org.rubypeople.rdt.internal.core.SourceElementParser;
 
 import com.eteks.openjeks.format.CellFormat;
 
