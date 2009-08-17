@@ -10,6 +10,12 @@
  *******************************************************************************/
 package org.rubypeople.rdt.ui.actions;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.AweProjectService;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelection;
@@ -106,7 +112,8 @@ public class CCPActionGroup extends ActionGroup {
 		fMoveAction = new MoveResourceAction(fSite.getShell());
 		
 		if (fTreeViewer != null) {
-			fRenameAction = new ResourceNavigatorRenameAction(fSite.getShell(), fTreeViewer);
+		    //Lagutko, 17.08.2009, use new Action that will rename elements in Database and AWE Project Structure
+			fRenameAction = new RenameElementInNavigatorAction(fSite.getShell(), fTreeViewer);
 		} else {
 			fRenameAction = new RenameResourceAction(fSite.getShell());
 		}

@@ -19,9 +19,14 @@ package net.refractions.udig.project.ui.internal.actions;
 import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
+import net.refractions.udig.project.internal.RubyProject;
+import net.refractions.udig.project.internal.RubyProjectElement;
 import net.refractions.udig.project.ui.UDIGGenericAction;
 import net.refractions.udig.project.ui.internal.Messages;
 
+import org.amanzi.integrator.rdt.RDTProjectManager;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.AweProjectService;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.widgets.Display;
@@ -52,13 +57,41 @@ public class Rename extends UDIGGenericAction {
     }
 
     protected void operate( ProjectElement element ) {
-        element.setName(getNewName(element.getName()));
-        element.getProjectInternal().eResource().setModified(true);
+        //Lagutko, 14.08.2009, additional operate for RubyProjectElements
+        if (element instanceof RubyProjectElement) {
+            operate((RubyProjectElement)element);
+        }
+        //Lagutko, 17.08.2009, renaming of RubyProject
+        else if (element instanceof RubyProject) {
+            String oldName = element.getName();
+            element.setName(getNewName(oldName));
+            element.eResource().setModified(true);            
+            RDTProjectManager.renameRubyProject(element.getProjectInternal().getName(), oldName, element.getName());
+        }
+        else {
+            element.setName(getNewName(element.getName()));
+            element.getProjectInternal().eResource().setModified(true);
+        }
     }
 
     protected void operate( Project project ) {
-        project.setName(getNewName(project.getName()));
+        String oldName = project.getName();
+        String newName = getNewName(oldName);
+        project.setName(newName);
         project.eResource().setModified(true);
+        
+        //Lagutko, 17.08.2009, rename AWE Project in Database
+        AweProjectService service = NeoCorePlugin.getDefault().getProjectService();
+        service.renameAweProject(oldName, newName);
+    }
+    
+    /**
+     * Operates with RubyProjectElement
+     *
+     * @param element RubyProjectElement
+     */
+    protected void operate(RubyProjectElement element) {        
+        RDTProjectManager.renameRubyScript(element.getRubyProjectInternal().getName(), element.getName());
     }
 
     /**

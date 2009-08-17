@@ -1616,6 +1616,10 @@ public class DeltaProcessor {
             }
         } else {
             // element is moved
+            //Lagutko: 12.08.2009, call AWEProjectManager only if we delete a RubyScript
+            if (elementType == IRubyElement.SCRIPT) {
+                AWEProjectManager.deleteRubyScript(element.getResource().getName(), element.getRubyProject().getProject());
+            }
             close(element);
             removeFromParentInfo(element);
             IPath movedToPath = delta.getMovedToPath();

@@ -12,10 +12,14 @@ import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.amanzi.splash.utilities.Util;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.IEditorPart;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.RenameResourceAction;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.core.IRubyScript;
@@ -30,7 +34,9 @@ import org.rubypeople.rdt.internal.core.RubyModelManager;
 import org.rubypeople.rdt.internal.core.SourceFolder;
 import org.rubypeople.rdt.internal.core.Spreadsheet;
 import org.rubypeople.rdt.internal.corext.util.RubyModelUtil;
+import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
+import org.rubypeople.rdt.ui.actions.RenameElementAction;
 
 /**
  * Class for integration functionality of RDT project to uDIG/AWE plugin
@@ -148,15 +154,17 @@ public class RDTProjectManager {
 	 * @param name
 	 */
 
-	public static void loadProject(String name) {
-		IRubyProject parent = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(name);
-
-		try {
-			parent.getOpenable().open(null);
-			loadScripts((RubyElement) parent);
-		} catch (RubyModelException e) {
-			// TODO: handle this exception
-		}
+	public static void loadProject(String name) {	    
+	    IResource projectResource = ResourcesPlugin.getWorkspace().getRoot().findMember(name);
+	    if (projectResource != null){
+	        try {
+	            IRubyProject parent = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(projectResource);
+	            parent.getOpenable().open(null);
+	            loadScripts((RubyElement) parent);
+	        } catch (RubyModelException e) {
+	            RubyPlugin.log(e);	            
+	        }
+	    }
 	}
 
 	/**
@@ -169,10 +177,12 @@ public class RDTProjectManager {
 	public static void openScript(IResource resource) {
 		try {
 			EditorUtility.openInEditor(resource);
-		} catch (PartInitException e) {
-			// TODO: handle this exception
-		} catch (RubyModelException e) {
-			// TODO: handle this exception
+		}
+		catch (PartInitException e) {
+			RubyPlugin.log(e);
+		}
+		catch (RubyModelException e) {
+		    RubyPlugin.log(e);
 		}
 	}
 
@@ -230,22 +240,62 @@ public class RDTProjectManager {
 	 *            name of Spreadsheet
 	 */
 	public static void deleteSpreadsheet(String aweProjectName, String rubyProjectName, String spreadsheetName) {
-		IRubyProject parent = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(rubyProjectName);
+	    IRubyProject parent = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(rubyProjectName);
+	    
+	    RubyModel model = RubyModelManager.getRubyModelManager().getRubyModel();
+	    RubyElementDelta delta = new RubyElementDelta(model);
+	    ISourceFolder folder = RubyModelUtil.getSourceFolder(parent);
+	    delta.removed(new Spreadsheet((SourceFolder)folder, spreadsheetName));
+	    RubyModelManager.getRubyModelManager().getDeltaProcessor().fire(delta, 0);
+	    
+	    AweProjectService service = NeoCorePlugin.getDefault().getProjectService();	   
+        SpreadsheetNode node = service.findOrCreateSpreadsheet(aweProjectName, rubyProjectName, spreadsheetName);
+        
+        IEditorReference[] editors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findEditors(new SplashEditorInput(node), NeoSplashUtil.AMANZI_SPLASH_EDITOR, IWorkbenchPage.MATCH_INPUT);
+        if (editors != null) {            
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeEditors(editors, false);
+        }
+        service.deleteNode(node);
+	}
+	
+	/**
+	 * Calls action for renaming script
+	 *
+	 * @param rubyProjectName Ruby Project of script for Renaming
+	 * @param oldScriptName current name of Script
+	 * @author Lagutko_N
+	 */
+	public static void renameRubyScript(String rubyProjectName, String oldScriptName) {	    
+	    IRubyProject parent = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(rubyProjectName);
+	    
+	    try {
+            IRubyScript script = getScriptByName((RubyElement)parent, oldScriptName);
+            RenameResourceAction action = new RenameResourceAction(PlatformUI.getWorkbench().getDisplay().getActiveShell());
+            action.selectionChanged(new StructuredSelection(script.getResource()));
+            action.run();
+            
+            //TODO: script can be exported from Spreadsheet and in this case we must update references and properties of Cell and Script in database
+        }
+        catch (RubyModelException e) {
+            RubyPlugin.log(e);
+        }
+	}
 
-		RubyModel model = RubyModelManager.getRubyModelManager().getRubyModel();
-		RubyElementDelta delta = new RubyElementDelta(model);
-		ISourceFolder folder = RubyModelUtil.getSourceFolder(parent);
-		delta.removed(new Spreadsheet((SourceFolder) folder, spreadsheetName));
-		RubyModelManager.getRubyModelManager().getDeltaProcessor().fire(delta, 0);
-
-		AweProjectService service = NeoCorePlugin.getDefault().getProjectService();
-		SpreadsheetNode node = service.findOrCreateSpreadsheet(aweProjectName, rubyProjectName, spreadsheetName);
-
-		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findEditor(
-				new SplashEditorInput(node));
-		if (editor != null) {
-			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeEditor(editor, false);
-		}
-		service.deleteNode(node);
+	/**
+	 * Renames Ruby Project in RDT Project Structure
+	 *
+	 * @param aweProjectName name of parent AWE Project
+	 * @param rubyProjectName old name of Ruby Project
+	 * @param newRubyProjectName new name of Ruby Project
+	 * @author Lagutko_N
+	 */
+	public static void renameRubyProject(String aweProjectName, String rubyProjectName, String newRubyProjectName) {
+	    if (!rubyProjectName.equals(newRubyProjectName)) {
+	        IRubyProject project = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(rubyProjectName);
+	    
+	        RenameElementAction action = new RenameElementAction(PlatformUI.getWorkbench().getDisplay().getActiveShell(), newRubyProjectName);
+	        action.selectionChanged(new StructuredSelection(project));	    
+	        action.run();
+	    }
 	}
 }

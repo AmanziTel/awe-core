@@ -15,7 +15,7 @@ Export-Package: org.rubypeople.rdt.internal.corext;x-internal:=true,
  org.rubypeople.rdt.internal.corext.refactoring.changes;x-friends:="org.rubypeople.rdt.refactoring",
  org.rubypeople.rdt.internal.corext.template.ruby;x-internal:=true,
  org.rubypeople.rdt.internal.corext.util;x-friends:="org.amanzi.splash.neo4j,org.amanzi.integrator.rdt",
- org.rubypeople.rdt.internal.ui;x-friends:="org.amanzi.awe,org.amanzi.rdt.launching",
+ org.rubypeople.rdt.internal.ui;x-friends:="org.amanzi.awe,org.amanzi.integrator.rdt,org.amanzi.rdt.launching",
  org.rubypeople.rdt.internal.ui.actions;x-internal:=true,
  org.rubypeople.rdt.internal.ui.browsing;x-internal:=true,
  org.rubypeople.rdt.internal.ui.callhierarchy;x-internal:=true,
@@ -88,6 +88,7 @@ Require-Bundle: org.eclipse.ui.ide,
  org.eclipse.debug.core,
  org.eclipse.team.core,
  org.amanzi.integrator.awe,
- org.jruby;visibility:=reexport
+ org.jruby;visibility:=reexport,
+ org.amanzi.neo.core;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: J2SE-1.5

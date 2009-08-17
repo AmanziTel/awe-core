@@ -506,4 +506,53 @@ public class AweProjectService {
 	    
 	    return result;
 	}
+	
+	/**
+	 * Renames AWE Project Node
+	 *
+	 * @param aweProjectName old Name of AWE Project
+	 * @param newName new Name of AWE Project
+	 * @author Lagutko_N
+	 */
+	public void renameAweProject(String aweProjectName, String newName) {
+	    Transaction transaction = neoService.beginTx();
+	    
+	    try {
+	        AweProjectNode aweProject = findAweProject(aweProjectName);
+	        
+	        if (aweProject != null) {
+	            aweProject.setName(newName);
+	        }
+	        
+	        transaction.success();
+	    }
+	    finally {
+	        transaction.finish();
+	    }
+	}
+	
+	/**
+	 * Renames Ruby Project Node
+	 *
+	 * @param aweProjectName name of AWE Project that contains Ruby Project
+	 * @param oldName old Name of Ruby Project
+	 * @param newName new Name of Ruby Project
+	 * @author Lagutko_N
+	 */
+	public void renameRubyProject(String aweProjectName, String oldName, String newName) {
+	    Transaction transacation = neoService.beginTx();
+	    
+	    try {
+	        AweProjectNode aweProject = findAweProject(aweProjectName);
+	        if (aweProject != null) {
+	            RubyProjectNode rubyProject = findRubyProject(aweProject, oldName);
+	            
+	            rubyProject.setName(newName);
+	        }
+	        transacation.success();
+	    }
+	    finally {
+	        transacation.finish();
+	    }
+	}
 }

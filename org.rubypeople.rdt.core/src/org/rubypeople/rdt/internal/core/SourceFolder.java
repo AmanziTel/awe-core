@@ -87,7 +87,7 @@ public class SourceFolder extends Openable implements ISourceFolder {
 		}
 		
 		//Lagutko, 12.08.2009, add Spreadsheets to SourceFolder's Children
-		updateChildrenWithSpreadsheet(vChildren);		
+		updateChildrenWithSpreadsheets(vChildren);		
 		
 		IRubyElement[] children = new IRubyElement[vChildren.size()];
 		vChildren.toArray(children);
@@ -101,7 +101,7 @@ public class SourceFolder extends Openable implements ISourceFolder {
      * @param children array of already computed children elements 
      * @author Lagutko_N
      */
-    private void updateChildrenWithSpreadsheet(HashSet children) {
+    private void updateChildrenWithSpreadsheets(HashSet children) {
         List<String> spreadsheetNames = AWEProjectManager.getSpreadsheetsOfRubyProject(this.getRubyProject().getProject());
         
         if (spreadsheetNames.isEmpty()) {
@@ -112,8 +112,6 @@ public class SourceFolder extends Openable implements ISourceFolder {
         for (String name : spreadsheetNames) {
             children.add(new Spreadsheet(this, name));
         }
-        
-        return;
     }
 
 	@Override

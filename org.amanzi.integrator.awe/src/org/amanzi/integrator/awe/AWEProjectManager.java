@@ -208,7 +208,7 @@ public class AWEProjectManager {
 	 * @return name of AWE project
 	 */
 	
-	private static String getAWEprojectNameFromResource(IProject rubyProject) {
+	public static String getAWEprojectNameFromResource(IProject rubyProject) {
 		String name = null;
 		try {
 			name = rubyProject.getPersistentProperty(AWE_PROJECT_NAME);
@@ -248,6 +248,8 @@ public class AWEProjectManager {
         projectInternal.getElementsInternal().remove(element);
                     
         deleteResource(element);   
+        
+        projectInternal.eResource().setModified(true);
 	}
 	
 	/**
@@ -678,5 +680,31 @@ public class AWEProjectManager {
             ProjectPlugin.log(null, e);
             return;
         }
+    }
+    
+    /**
+     * Renames RubyProject in AWE Project Structure and Database
+     *
+     * @param rubyProjectResource Resource of Ruby Project to Rename
+     * @param newName new Name of Ruby Project
+     * @author Lagutko_N
+     */
+    public static void renameRubyProject(IProject rubyProjectResource, String newName) {
+        //computes names of AWE and Ruby Project
+        String rubyProjectName = rubyProjectResource.getName();
+        String aweProjectName = getAWEprojectNameFromResource(rubyProjectResource);
+    
+        //get AWE and Ruby Elements from EMF structure
+        Project aweProject = findProject(aweProjectName);
+        RubyProject rubyProject = findRubyProject(aweProject, rubyProjectName);
+        
+        //create a new Ruby Project with a newName
+        createProjectIfNotExist(aweProject, newName);
+        RubyProject newProject = findRubyProject(aweProject, newName);
+        //add elements to new Ruby Project
+        newProject.getRubyElementsInternal().addAll(rubyProject.getRubyElementsInternal());
+        
+        AweProjectService service = NeoCorePlugin.getDefault().getProjectService();
+        service.renameRubyProject(aweProjectName, rubyProjectName, newName);
     }
 }
