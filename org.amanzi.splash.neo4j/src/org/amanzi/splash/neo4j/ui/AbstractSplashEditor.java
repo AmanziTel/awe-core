@@ -96,8 +96,7 @@ import com.eteks.openjeks.format.CellFormatPanel;
  * editor whose input is based on either resources from the workspace (IDE) or
  * directly from the file system (RCP).
  */
-public abstract class AbstractSplashEditor extends EditorPart implements
-		TableModelListener {
+public abstract class AbstractSplashEditor extends EditorPart implements TableModelListener {
 	static final String STD_HEADINGS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private int defaultAlignment;
 	private boolean isDirty = false;
@@ -106,8 +105,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	CellFormatPanel cellFormatPanel = null;
 	CellFormat cellFormat = null;
 
-	private ResourceBundle resourceBundle = ResourceBundle
-			.getBundle("com.eteks.openjeks.resources.openjeks");
+	private ResourceBundle resourceBundle = ResourceBundle.getBundle("com.eteks.openjeks.resources.openjeks");
 	private String selectCellValue = "";
 	SplashTable table;
 	private SwingControl swingControl;
@@ -131,8 +129,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	 * implementation (e.g., by opening a "new dialog" or launching a creation
 	 * wizard).
 	 */
-	public abstract IEditorInput createNewInput(String message)
-			throws CoreException;
+	public abstract IEditorInput createNewInput(String message) throws CoreException;
 
 	/**
 	 * 
@@ -145,12 +142,10 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
 
-		cellFormat = ((Cell) table.getValueAt(table.getSelectedRow(), table
-				.getSelectedColumn())).getCellFormat();
+		cellFormat = ((Cell) table.getValueAt(table.getSelectedRow(), table.getSelectedColumn())).getCellFormat();
 		cellFormatPanel = new CellFormatPanel(cellFormat);
-		if (JOptionPane.showConfirmDialog(null, cellFormatPanel, resourceBundle
-				.getString("FORMAT_PANEL_TITLE"), JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.PLAIN_MESSAGE) == 0) {
+		if (JOptionPane.showConfirmDialog(null, cellFormatPanel, resourceBundle.getString("FORMAT_PANEL_TITLE"),
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == 0) {
 			cellFormat = cellFormatPanel.getCellFormat();
 			for (int i = firstRow; i <= lastRow; i++) {
 				for (int j = firstColumn; j <= lastColumn; j++) {
@@ -216,8 +211,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		ActionUtil.getInstance().runTask(new Runnable() {
 			public void run() {
 				// find file by URI
-				IFile[] files = ResourcesPlugin.getWorkspace().getRoot()
-						.findFilesForLocationURI(cell.getScriptURI());
+				IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(cell.getScriptURI());
 				if (files.length == 1) {
 					try {
 						// open file in editor
@@ -243,8 +237,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	 * @param spreadsheetNode
 	 */
 
-	private void exportCell(final SpreadsheetNode spreadsheetNode,
-			final Cell cell) {
+	private void exportCell(final SpreadsheetNode spreadsheetNode, final Cell cell) {
 		// get Cell and Display
 		final Display display = swingControl.getDisplay();
 
@@ -256,12 +249,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 				// Reference Node, but not of a
 				// Project Node and it means that it's impossible to find a
 				// project in which Spreadsheet stored
-				WizardDialog dialog = new WizardDialog(
-						display.getActiveShell(), new ExportScriptWizard(
-								spreadsheetNode, cell));
+				WizardDialog dialog = new WizardDialog(display.getActiveShell(), new ExportScriptWizard(spreadsheetNode, cell));
 				dialog.open();
-				SplashPlugin.getDefault().getSpreadsheetService().updateCell(
-						spreadsheetNode, cell);
+				SplashPlugin.getDefault().getSpreadsheetService().updateCell(spreadsheetNode, cell);
 			}
 		}, false);
 
@@ -414,33 +404,31 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 					TableColumn col = table.getColumnModel().getColumn(i);
 					col.setPreferredWidth(table.getDefaultColumnWidth());
 
-					col.setHeaderRenderer(new ColumnHeaderRenderer(table
-							.getDefaultColumnWidth(), 20));
+					col.setHeaderRenderer(new ColumnHeaderRenderer(table.getDefaultColumnWidth(), 20));
 				}
 
 				// Handle the listener
 				ListSelectionModel selectionModel = table.getSelectionModel();
-				selectionModel
-						.addListSelectionListener(new ListSelectionListener() {
+				selectionModel.addListSelectionListener(new ListSelectionListener() {
 
-							// @Override
-							public void valueChanged(ListSelectionEvent e) {
-								// TODO Auto-generated method stub
+					// @Override
+					public void valueChanged(ListSelectionEvent e) {
+						// TODO Auto-generated method stub
 
-								// TODO:
-								// updateTableHeaderHighlights(table.getSelectedRow(),
-								// table.getSelectedColumn());
+						// TODO:
+						// updateTableHeaderHighlights(table.getSelectedRow(),
+						// table.getSelectedColumn());
 
-								// for (int
-								// i=0;i<table.getSelectedRows().length;i++){
-								// for (int
-								// j=0;j<table.getSelectedColumns().length;j++){
-								// updateTableHeaderHighlights(i,j);
-								// }
-								// }
-							}
+						// for (int
+						// i=0;i<table.getSelectedRows().length;i++){
+						// for (int
+						// j=0;j<table.getSelectedColumns().length;j++){
+						// updateTableHeaderHighlights(i,j);
+						// }
+						// }
+					}
 
-						});
+				});
 
 				// set selection mode for contiguous intervals
 				MouseListener ml = new HeaderMouseAdapter();
@@ -468,41 +456,29 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 							int cdiff = table.getColumnCount() - column;
 
 							if (rdiff < COLUMNS_EDGE_MARGIN) {
-								getTable().insertRows(table.getRowCount() - 1,
-										COLUMNS_EDGE_MARGIN - rdiff);
+								getTable().insertRows(table.getRowCount() - 1, COLUMNS_EDGE_MARGIN - rdiff);
 								setIsDirty(true);
 							}
 
 							if (cdiff < ROWS_EDGE_MARGIN) {
-								getTable().insertColumns(
-										table.getColumnCount() - 1,
-										ROWS_EDGE_MARGIN - cdiff);
+								getTable().insertColumns(table.getColumnCount() - 1, ROWS_EDGE_MARGIN - cdiff);
 								setIsDirty(true);
 							}
 						}
 
-						if (e.getKeyCode() == 66 || e.getKeyCode() == 73
-								|| e.getKeyCode() == 85) {
+						if (e.getKeyCode() == 66 || e.getKeyCode() == 73 || e.getKeyCode() == 85) {
 							if (table.isEditing() == false) {
-								table.editCellAt(table.getSelectedRow(), table
-										.getSelectedColumn());
-								DefaultCellEditor editor = (DefaultCellEditor) table
-										.getCellEditor();
-								JTextField textfield = (JTextField) editor
-										.getComponent();
+								table.editCellAt(table.getSelectedRow(), table.getSelectedColumn());
+								DefaultCellEditor editor = (DefaultCellEditor) table.getCellEditor();
+								JTextField textfield = (JTextField) editor.getComponent();
 								String s = textfield.getText();
-								if (Toolkit.getDefaultToolkit()
-										.getLockingKeyState(
-												KeyEvent.VK_CAPS_LOCK) == true) {
-									s += e.getKeyText(e.getKeyCode())
-											.toUpperCase();
+								if (Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK) == true) {
+									s += e.getKeyText(e.getKeyCode()).toUpperCase();
 								} else {
-									s += e.getKeyText(e.getKeyCode())
-											.toLowerCase();
+									s += e.getKeyText(e.getKeyCode()).toLowerCase();
 								}
 								textfield.setText(s);
-								textfield.setCaretPosition(textfield.getText()
-										.length());
+								textfield.setCaretPosition(textfield.getText().length());
 								textfield.getCaret().setVisible(true);
 							}
 						}
@@ -573,14 +549,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
 							String old_value = (String) cell.getValue();
 							String new_value = "";
-							if (old_value.contains("<HTML><U>")
-									&& old_value.contains("</U></HTML>")) {
+							if (old_value.contains("<HTML><U>") && old_value.contains("</U></HTML>")) {
 								new_value = old_value.replace("<HTML><U>", "");
-								new_value = new_value
-										.replace("</U></HTML>", "");
+								new_value = new_value.replace("</U></HTML>", "");
 							} else {
-								new_value = "<HTML><U>" + old_value
-										+ "</U></HTML>";
+								new_value = "<HTML><U>" + old_value + "</U></HTML>";
 							}
 
 							cell.setValue(new_value);
@@ -664,8 +637,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
 		IWorkspaceRoot root1 = ResourcesPlugin.getWorkspace().getRoot();
 		final IProject resource = root1.getProject("project.AWEScript");
-		SpreadsheetService service = SplashPlugin.getDefault()
-				.getSpreadsheetService();
+		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
 		SplashTableModel model = (SplashTableModel) table.getModel();
 		SpreadsheetNode spreadsheet = model.getSpreadsheet();
 		int chartsCount = spreadsheet.getChartsCount();
@@ -680,16 +652,14 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 				if (getEditorInput().exists())
 					saveContents();
 				else
-					doSaveAs(MessageFormat.format(
-							"The original input ''{0}'' has been deleted.",
-							new Object[] { getEditorInput().getName() }));
+					doSaveAs(MessageFormat.format("The original input ''{0}'' has been deleted.", new Object[] { getEditorInput()
+							.getName() }));
 			} else {
 				doSaveAs();
 			}
 		} catch (CoreException e) {
 			monitor.setCanceled(true);
-			MessageDialog.openError(null, "Unable to Save Changes", e
-					.getLocalizedMessage());
+			MessageDialog.openError(null, "Unable to Save Changes", e.getLocalizedMessage());
 			return;
 		}
 	}
@@ -729,8 +699,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	 * <code>IEditorInput</code> (subclasses can assume it has previously been
 	 * validated by <code>validateEditorInput</code>.
 	 */
-	public abstract void setContents(IEditorInput editorInput)
-			throws CoreException;
+	public abstract void setContents(IEditorInput editorInput) throws CoreException;
 
 	/**
 	 * Passing the focus request to the viewer's control.
@@ -780,8 +749,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 				firePropertyChange(PROP_INPUT);
 			}
 		} catch (CoreException e) {
-			MessageDialog.openError(null, "Unable to Save Changes", e
-					.getLocalizedMessage());
+			MessageDialog.openError(null, "Unable to Save Changes", e.getLocalizedMessage());
 			return;
 		}
 	}
@@ -796,12 +764,10 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	/**
 	 * @see org.eclipse.ui.IEditorPart#init(IEditorSite, IEditorInput)
 	 */
-	public void init(IEditorSite site, IEditorInput editorInput)
-			throws PartInitException {
+	public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
 
 		if (!editorInput.exists())
-			throw new PartInitException(editorInput.getName()
-					+ "does not exist.");
+			throw new PartInitException(editorInput.getName() + "does not exist.");
 
 		IEditorInput ei = validateEditorInput(editorInput);
 
@@ -809,12 +775,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		// the programmer / reader; production code would instead
 		// log an error and provide a helpful, friendly message.
 		if (ei == null)
-			throw new PartInitException(
-					MessageFormat
-							.format(
-									"Invalid input.\n\n({0} is not a valid input for {1})",
-									editorInput.getClass().getName(), this
-											.getClass().getName()));
+			throw new PartInitException(MessageFormat.format("Invalid input.\n\n({0} is not a valid input for {1})", editorInput
+					.getClass().getName(), this.getClass().getName()));
 
 		try {
 
@@ -834,8 +796,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	 * @param columnIndex
 	 * @return
 	 */
-	private JPopupMenu createColumnContextMenu(final int rowIndex,
-			final int columnIndex) {
+	private JPopupMenu createColumnContextMenu(final int rowIndex, final int columnIndex) {
 		JPopupMenu contextMenu = new JPopupMenu();
 
 		JMenuItem columnInsertMenu = new JMenuItem();
@@ -865,9 +826,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		moveColumnLeftMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				getTable().moveColumnLeft(columnIndex);
-
-				table.setColumnSelectionInterval(columnIndex - 1,
-						columnIndex - 1);
+				if (columnIndex > 0) {
+					table.setColumnSelectionInterval(columnIndex - 1, columnIndex - 1);
+				}
 				setIsDirty(true);
 			}
 
@@ -879,8 +840,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		moveColumnRightMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				getTable().moveColumnRight(columnIndex);
-				table.setColumnSelectionInterval(columnIndex + 1,
-						columnIndex + 1);
+				table.setColumnSelectionInterval(columnIndex + 1, columnIndex + 1);
 				setIsDirty(true);
 			}
 		});
@@ -905,8 +865,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	 * @param columnIndex
 	 * @return
 	 */
-	private JPopupMenu createRowContextMenu(final int rowIndex,
-			final int columnIndex) {
+	private JPopupMenu createRowContextMenu(final int rowIndex, final int columnIndex) {
 		JPopupMenu contextMenu = new JPopupMenu();
 
 		JMenuItem rowInsertMenu = new JMenuItem();
@@ -974,8 +933,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	 * @param columnIndex
 	 * @return
 	 */
-	private JPopupMenu createContextMenu(final int rowIndex,
-			final int columnIndex) {
+	private JPopupMenu createContextMenu(final int rowIndex, final int columnIndex) {
 		JPopupMenu contextMenu = new JPopupMenu();
 
 		JMenuItem cellCopyMenu = new JMenuItem();
@@ -1024,8 +982,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 			exportCellMenu.setText("Export Cell");
 			exportCellMenu.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					exportCell(((SplashTableModel) table.getModel())
-							.getSpreadsheet(), cell);
+					exportCell(((SplashTableModel) table.getModel()).getSpreadsheet(), cell);
 				}
 			});
 			contextMenu.add(exportCellMenu);
@@ -1154,16 +1111,12 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		NeoSplashUtil.logn("firstColumn: " + firstColumn);
 		NeoSplashUtil.logn("lastRow: " + lastRow);
 		NeoSplashUtil.logn("lastColumn: " + lastColumn);
-		NeoSplashUtil.logn("lastColumn-firstColumn: "
-				+ (lastColumn - firstColumn));
+		NeoSplashUtil.logn("lastColumn-firstColumn: " + (lastColumn - firstColumn));
 
 		StringBuffer sb = new StringBuffer();
 		for (int j = firstColumn; j <= lastColumn; j++) {
-			Cell c = (Cell) ((SplashTableModel) table.getModel()).getValueAt(
-					firstRow, j);
-			sb.append((String) c.getValue() + ";"
-					+ (String) ((Cell) table.getValueAt(lastRow, j)).getValue()
-					+ ";");
+			Cell c = (Cell) ((SplashTableModel) table.getModel()).getValueAt(firstRow, j);
+			sb.append((String) c.getValue() + ";" + (String) ((Cell) table.getValueAt(lastRow, j)).getValue() + ";");
 
 		}
 		return new ByteArrayInputStream(sb.toString().getBytes());
@@ -1175,8 +1128,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		String chartName = "";
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		final IProject resource = root.getProject("project.AWEScript");
-		SpreadsheetService service = SplashPlugin.getDefault()
-				.getSpreadsheetService();
+		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
 		SplashTableModel model = (SplashTableModel) table.getModel();
 		SpreadsheetNode spreadsheet = model.getSpreadsheet();
 		// int chartsCount = spreadsheet.getChartsCount();
@@ -1216,8 +1168,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
 		ChartItemNode[] items = new ChartItemNode[lastColumn - firstColumn + 1];
 		for (int i = firstColumn; i <= lastColumn; i++) {
-			Cell c = (Cell) ((SplashTableModel) table.getModel()).getValueAt(
-					firstRow, i);
+			Cell c = (Cell) ((SplashTableModel) table.getModel()).getValueAt(firstRow, i);
 
 			try {
 				items[i] = service.createChartItem(chartNode, "item" + i);
@@ -1226,18 +1177,15 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 				e.printStackTrace();
 			}
 			items[i].setChartItemCategory((String) c.getValue());
-			items[i].setChartItemValue((String) ((Cell) table.getValueAt(
-					lastRow, i)).getValue());
+			items[i].setChartItemValue((String) ((Cell) table.getValueAt(lastRow, i)).getValue());
 
 		}
 		IEditorInput editorInput = new ChartEditorInput(file);
 		((ChartEditorInput) editorInput).setChartName(chartName);
-		IWorkbenchWindow window = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow();
+		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		IWorkbenchPage page = window.getActivePage();
 		try {
-			page.openEditor(editorInput,
-					NeoSplashUtil.AMANZI_NEO4J_SPLASH_CHART_EDITOR);
+			page.openEditor(editorInput, NeoSplashUtil.AMANZI_NEO4J_SPLASH_CHART_EDITOR);
 		} catch (PartInitException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1248,8 +1196,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		String chartName = "";
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		final IProject resource = root.getProject("project.AWEScript");
-		SpreadsheetService service = SplashPlugin.getDefault()
-				.getSpreadsheetService();
+		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
 		SplashTableModel model = (SplashTableModel) table.getModel();
 		SpreadsheetNode spreadsheet = model.getSpreadsheet();
 		// int chartsCount = spreadsheet.getChartsCount();
@@ -1287,11 +1234,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		firstColumn = table.getSelectedColumn();
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
-		PieChartItemNode[] items = new PieChartItemNode[lastColumn
-				- firstColumn + 1];
+		PieChartItemNode[] items = new PieChartItemNode[lastColumn - firstColumn + 1];
 		for (int i = firstColumn; i <= lastColumn; i++) {
-			Cell c = (Cell) ((SplashTableModel) table.getModel()).getValueAt(
-					firstRow, i);
+			Cell c = (Cell) ((SplashTableModel) table.getModel()).getValueAt(firstRow, i);
 
 			try {
 				items[i] = service.createPieChartItem(chartNode, "item" + i);
@@ -1300,17 +1245,14 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 				e.printStackTrace();
 			}
 			items[i].setPieChartItemCategory((String) c.getValue());
-			items[i].setPieChartItemValue((String) ((Cell) table.getValueAt(
-					lastRow, i)).getValue());
+			items[i].setPieChartItemValue((String) ((Cell) table.getValueAt(lastRow, i)).getValue());
 		}
 		IEditorInput editorInput = new PieChartEditorInput(file);
 		((PieChartEditorInput) editorInput).setPieChartName(chartName);
-		IWorkbenchWindow window = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow();
+		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		IWorkbenchPage page = window.getActivePage();
 		try {
-			page.openEditor(editorInput,
-					NeoSplashUtil.AMANZI_NEO4J_SPLASH_PIE_CHART_EDITOR);
+			page.openEditor(editorInput, NeoSplashUtil.AMANZI_NEO4J_SPLASH_PIE_CHART_EDITOR);
 		} catch (PartInitException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

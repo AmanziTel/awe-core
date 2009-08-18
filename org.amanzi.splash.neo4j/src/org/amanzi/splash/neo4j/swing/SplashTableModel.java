@@ -80,7 +80,7 @@ public class SplashTableModel extends DefaultTableModel {
 	/*
 	 * Ruby Runtime
 	 */
-	Ruby runtime;
+	private Ruby runtime;
 
 	/*
 	 * Spreadsheet for this Model
@@ -121,7 +121,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 *            root node of Spreadsheet
 	 */
 	public SplashTableModel(String splash_name, RubyProjectNode root) {
-		this(10, 10, splash_name, root);
+		this(Short.MAX_VALUE, Short.MAX_VALUE, splash_name, root);
 	}
 
 	/**
@@ -167,6 +167,28 @@ public class SplashTableModel extends DefaultTableModel {
 		initialize(splash_name, root);	
 	}
 	
+	/**
+	 * Constructor for class using RowCount, ColumnCount and Ruby Runtime
+	 * 
+	 * @param rowCount
+	 * @param columnCount
+	 * @param splash_name
+	 *            name of Spreadsheet
+	 * @param rubyengine
+	 *            Ruby Runtime
+	 * @param root
+	 *            root node of Spreadsheet
+	 */
+	public SplashTableModel(SpreadsheetNode spreadsheet, Ruby rubyengine,
+			RubyProjectNode root) {
+
+		this.spreadsheet = spreadsheet;
+		this.service = SplashPlugin.getDefault().getSpreadsheetService();
+		this.rowCount = Short.MAX_VALUE;
+		this.columnCount = Short.MAX_VALUE;
+		this.runtime = rubyengine;
+	}
+
 	/**
 	 * Initializes Spreadsheet for this model
 	 * 
@@ -680,5 +702,12 @@ public class SplashTableModel extends DefaultTableModel {
 	 */
 	public RubyProjectNode getRubyProjectNode() {
 		return rubyProjectNode;
+	}
+
+	/**
+	 * @return the runtime
+	 */
+	public Ruby getRubyRuntime() {
+		return runtime;
 	}
 }
