@@ -136,7 +136,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 	 * @param table
 	 */
 	private void launchCellFormatPanel(SplashTable table) {
-		int firstRow, firstColumn, lastRow, lastColumn;
+        final int firstRow, firstColumn, lastRow, lastColumn;
 		firstRow = table.getSelectedRow();
 		firstColumn = table.getSelectedColumn();
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
@@ -147,11 +147,17 @@ public abstract class AbstractSplashEditor extends EditorPart implements TableMo
 		if (JOptionPane.showConfirmDialog(null, cellFormatPanel, resourceBundle.getString("FORMAT_PANEL_TITLE"),
 				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == 0) {
 			cellFormat = cellFormatPanel.getCellFormat();
-			for (int i = firstRow; i <= lastRow; i++) {
-				for (int j = firstColumn; j <= lastColumn; j++) {
-					updateCellFormat(i, j, cellFormat);
-				}
-			}
+            ActionUtil.getInstance().runTask(new Runnable() {
+
+                @Override
+                public void run() {
+                    for (int i = firstRow; i <= lastRow; i++) {
+                        for (int j = firstColumn; j <= lastColumn; j++) {
+                            updateCellFormat(i, j, cellFormat);
+                        }
+                    }
+                }
+            }, false);
 			setIsDirty(true);
 		}
 		cellFormatPanel = null;

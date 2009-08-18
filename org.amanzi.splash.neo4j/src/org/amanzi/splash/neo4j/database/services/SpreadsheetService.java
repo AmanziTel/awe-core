@@ -362,6 +362,8 @@ public class SpreadsheetService {
 				node.setFontName(format.getFontName());
 				node.setFontSize(format.getFontSize());
 				node.setFontStyle(format.getFontStyle());
+                node.setVerticalAlignment(format.getVerticalAlignment());
+                node.setHorizontalAlignment(format.getHorizontalAlignment());
 			}
 
 			tx.success();
