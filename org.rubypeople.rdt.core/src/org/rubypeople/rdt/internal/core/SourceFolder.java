@@ -101,17 +101,25 @@ public class SourceFolder extends Openable implements ISourceFolder {
      * @param children array of already computed children elements 
      * @author Lagutko_N
      */
-    private void updateChildrenWithSpreadsheets(HashSet children) {
+    private void updateChildrenWithSpreadsheets(HashSet children) {        
+        children.addAll(getSpreadsheetsFromDatabase());        
+    }
+    
+    /**
+     * Returns a List of Spreadsheets stored in Database for current Ruby Project
+     *
+     * @return list of Spreadsheets
+     * @author Lagutko_N
+     */
+    public List<ISpreadsheet> getSpreadsheetsFromDatabase() {        
+        ArrayList<ISpreadsheet> spreadsheets = new ArrayList<ISpreadsheet>();
         List<String> spreadsheetNames = AWEProjectManager.getSpreadsheetsOfRubyProject(this.getRubyProject().getProject());
         
-        if (spreadsheetNames.isEmpty()) {
-            //if no Spreadsheets than no need to re-create array of children
-            return;
+        for (String name : spreadsheetNames) {
+            spreadsheets.add(new Spreadsheet(this, name));
         }
         
-        for (String name : spreadsheetNames) {
-            children.add(new Spreadsheet(this, name));
-        }
+        return spreadsheets;
     }
 
 	@Override
@@ -167,7 +175,7 @@ public class SourceFolder extends Openable implements ISourceFolder {
 	 * @return array of Spreadsheets
 	 * @author lagutko_n
 	 */
-	public ISpreadsheet[] getSpreadsheets() throws RubyModelException {
+	public ISpreadsheet[] getSpreadsheets() throws RubyModelException {	    
 	    ArrayList<IRubyElement> list = getChildrenOfType(SPREADSHEET);
 	    ISpreadsheet[] array= new ISpreadsheet[list.size()];
         list.toArray(array);

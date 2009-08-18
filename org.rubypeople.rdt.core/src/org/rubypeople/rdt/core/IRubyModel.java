@@ -83,4 +83,15 @@ public interface IRubyModel extends IParent, IRubyElement, IOpenable {
 	boolean contains(IResource resource);
 
 	void refreshExternalArchives(IRubyElement[] elements, IProgressMonitor monitor) throws RubyModelException;
+	
+	
+	/**
+	 * Refreshes Spreadsheets for parent Ruby Elements
+	 *
+	 * @param elementsScope array of parent elements for refresh
+	 * @param monitor monitor
+	 * @throws RubyModelException 
+	 * @author Lagutko_N
+	 */
+	void refreshSpreadsheets(IRubyElement[] elementsScope, IProgressMonitor monitor) throws RubyModelException;
 }

@@ -5,7 +5,6 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
-import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
 
@@ -81,9 +80,7 @@ public class NeoSplashManager {
 					}
 
 					public void run() {
-						result = SplashPlugin.getDefault()
-								.getSpreadsheetService().findSpreadsheet(
-										rootNode, name);
+						result = NeoCorePlugin.getDefault().getProjectService().findSpreadsheet(rootNode, name);
 					}
 				});
 

@@ -241,7 +241,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
             }
 
             public void run() {
-                result = root!=null&&SplashPlugin.getDefault().getSpreadsheetService().findSpreadsheet(root, fileName) != null;
+                result = root!=null&&NeoCorePlugin.getDefault().getProjectService().findSpreadsheet(root, fileName) != null;
             }
             
         });

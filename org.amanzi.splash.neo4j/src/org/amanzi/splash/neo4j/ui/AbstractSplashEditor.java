@@ -55,6 +55,7 @@ import org.amanzi.neo.core.database.nodes.PieChartItemNode;
 import org.amanzi.neo.core.database.nodes.PieChartNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.ColumnHeaderRenderer;
@@ -96,7 +97,9 @@ import com.eteks.openjeks.format.CellFormatPanel;
  * editor whose input is based on either resources from the workspace (IDE) or
  * directly from the file system (RCP).
  */
-public abstract class AbstractSplashEditor extends EditorPart implements TableModelListener {
+
+public abstract class AbstractSplashEditor extends EditorPart implements
+		TableModelListener, INeoServiceProviderListener {
 	static final String STD_HEADINGS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private int defaultAlignment;
 	private boolean isDirty = false;

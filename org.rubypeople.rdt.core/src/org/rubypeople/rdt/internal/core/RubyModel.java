@@ -7,6 +7,7 @@ package org.rubypeople.rdt.internal.core;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
@@ -24,6 +25,9 @@ import org.rubypeople.rdt.core.IOpenable;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyModel;
 import org.rubypeople.rdt.core.IRubyProject;
+import org.rubypeople.rdt.core.ISourceFolder;
+import org.rubypeople.rdt.core.ISourceFolderRoot;
+import org.rubypeople.rdt.core.ISpreadsheet;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.core.WorkingCopyOwner;
 import org.rubypeople.rdt.internal.core.util.MementoTokenizer;
@@ -333,5 +337,53 @@ public boolean contains(IResource resource) {
 			elementsScope = new IRubyElement[] { this };
 		}
 		RubyModelManager.getRubyModelManager().getDeltaProcessor().checkExternalArchiveChanges(elementsScope, monitor);
+	}
+	
+	/**
+	 * @see IRubyModel#refreshSpreadsheets(IRubyElement[], IProgressMonitor)
+	 */
+	public void refreshSpreadsheets(IRubyElement[] elementsScope, IProgressMonitor monitor) throws RubyModelException {
+	    RubyElementDelta delta = new RubyElementDelta(this);
+	    List<SourceFolder> folders = new ArrayList<SourceFolder>();
+	    for (IRubyElement element : elementsScope) {
+	        if (element.getElementType() == IRubyElement.SOURCE_FOLDER) {
+	            folders.add((SourceFolder)element);
+	        }
+	        else if (element.getElementType() == IRubyElement.RUBY_PROJECT) {
+	            RubyProject project = (RubyProject)element;
+	            ArrayList<ISourceFolderRoot> rootFolders = new ArrayList<ISourceFolderRoot>();
+	            for (ISourceFolderRoot root : project.getSourceFolderRoots()) {	                
+	                if (!root.isExternal()) {
+	                    rootFolders.add(root);
+	                }
+	            }
+	            for (ISourceFolder folder : project.getSourceFoldersInRoots(rootFolders.toArray(new ISourceFolderRoot[0]))) {
+                    folders.add((SourceFolder)folder);
+                }            
+	        }
+	    }
+	    
+	    for (SourceFolder singleFolder : folders) {
+	        ISpreadsheet[] folderSpreadsheets = singleFolder.getSpreadsheets();
+	        
+	        List<ISpreadsheet> spreadsheetsFromDatabase = singleFolder.getSpreadsheetsFromDatabase();
+	        
+	        for (ISpreadsheet sheet : folderSpreadsheets) {
+	            if (!spreadsheetsFromDatabase.contains(sheet)) {
+	                delta.removed(sheet);	                
+	            }
+	            else {
+	                spreadsheetsFromDatabase.remove(sheet);
+	            }
+	        }
+	        
+	        for (ISpreadsheet sheet : spreadsheetsFromDatabase) {
+	            delta.added(sheet);
+	        }
+	    }
+	    
+	    RubyModelManager.getRubyModelManager().getDeltaProcessor().updateRubyModel(delta);
+	    RubyModelManager.getRubyModelManager().getDeltaProcessor().fire(delta, DeltaProcessor.DEFAULT_CHANGE_EVENT);
+	    
 	}
 }

@@ -122,6 +122,40 @@ public class AweProjectService {
 				rubyProjectName);
 		return findOrCreateSpreadSheet(rubyProject, spreadsheetName);
 	}
+	
+	/**
+     * Searches for Spreadsheets by given name
+     * 
+     * @param root
+     *            root node of Spreadsheet
+     * @param name
+     *            name of Spreadsheet
+     * @return founded Spreadsheet or null if Spreadsheet was not found
+     */
+    public SpreadsheetNode findSpreadsheet(RubyProjectNode root, String name) {
+        SpreadsheetNode result = null;
+
+        Transaction tx = neoService.beginTx();
+
+        try {
+            Iterator<SpreadsheetNode> spreadsheetIterator = root
+                    .getSpreadsheets();
+
+            while (spreadsheetIterator.hasNext()) {
+                SpreadsheetNode spreadsheet = spreadsheetIterator.next();
+
+                if (spreadsheet.getSpreadsheetName().equals(name)) {
+                    result = spreadsheet;
+                    break;
+                }
+            }
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+
+        return result;
+    }
 
 	/**
 	 * Finds or Creates a Spreadsheet
@@ -554,5 +588,31 @@ public class AweProjectService {
 	    finally {
 	        transacation.finish();
 	    }
+	}
+
+	/**
+	 * Renames Spreadsheet Node in Database
+	 *
+	 * @param rubyProjectNode node of parent Ruby Project
+	 * @param oldName old Name of Spreadsheet
+	 * @param newName new Name of Spreadsheet
+	 */
+	public void renameSpreadsheet(RubyProjectNode rubyProjectNode, String oldName, String newName) {
+	    Transaction transacation = neoService.beginTx();
+        
+        try {
+            SpreadsheetNode spreadsheet = findSpreadsheet(rubyProjectNode, oldName);
+            if (spreadsheet != null) {
+                spreadsheet.setSpreadsheetName(newName);
+            }
+            transacation.success();
+        }
+        finally {
+            transacation.finish();
+        }
+
+        //commit changes after renaming. Commit creates an event that will be catched in 
+        //Splash Editor and Editor will change its name
+        provider.commit();
 	}
 }

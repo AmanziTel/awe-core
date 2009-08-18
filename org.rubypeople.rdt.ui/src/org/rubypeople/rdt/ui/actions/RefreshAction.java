@@ -35,9 +35,11 @@ import org.eclipse.ui.PlatformUI;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyModel;
 import org.rubypeople.rdt.core.RubyCore;
+import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.corext.util.Messages;
 import org.rubypeople.rdt.internal.corext.util.Resources;
 import org.rubypeople.rdt.internal.ui.IRubyHelpContextIds;
+import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.internal.ui.RubyPluginImages;
 import org.rubypeople.rdt.internal.ui.actions.ActionMessages;
 import org.rubypeople.rdt.internal.ui.actions.WorkbenchRunnableAdapter;
@@ -110,7 +112,7 @@ public class RefreshAction extends SelectionDispatchAction {
 			public void run(IProgressMonitor monitor) throws CoreException {
 				monitor.beginTask(ActionMessages.RefreshAction_progressMessage, resources.length * 2); 
 				monitor.subTask(""); //$NON-NLS-1$
-				List javaElements= new ArrayList(5);
+				final List javaElements= new ArrayList(5);
 				for (int r= 0; r < resources.length; r++) {
 					IResource resource= resources[r];
 					if (resource.getType() == IResource.PROJECT) {
@@ -126,10 +128,21 @@ public class RefreshAction extends SelectionDispatchAction {
 					if (jElement != null && jElement.exists())
 						javaElements.add(jElement);
 				}
-				IRubyModel model= RubyCore.create(ResourcesPlugin.getWorkspace().getRoot());
+				final IRubyModel model= RubyCore.create(ResourcesPlugin.getWorkspace().getRoot());
 				model.refreshExternalArchives(
 					(IRubyElement[]) javaElements.toArray(new IRubyElement[javaElements.size()]),
 					new SubProgressMonitor(monitor, resources.length));
+				//Lagutko, 18.08.2009, refresh Spreadsheets elements				
+				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+				    public void run() {
+				        try {
+				            model.refreshSpreadsheets((IRubyElement[]) javaElements.toArray(new IRubyElement[javaElements.size()]), null);				            
+				        }
+				        catch (RubyModelException e) {
+				            RubyPlugin.log(e);
+				        }
+				    }
+				});
 			}
 		};
 		

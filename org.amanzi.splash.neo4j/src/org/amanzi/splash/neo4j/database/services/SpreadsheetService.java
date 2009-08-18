@@ -16,6 +16,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.exception.LoopInCellReferencesException;
 import org.amanzi.neo.core.database.exception.SplashDatabaseException;
 import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
@@ -29,6 +30,7 @@ import org.amanzi.neo.core.database.nodes.PieChartNode;
 import org.amanzi.neo.core.database.nodes.RowNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.enums.CellRelationTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -80,6 +82,11 @@ public class SpreadsheetService {
 	 * NeoService
 	 */
 	protected NeoService neoService;
+	
+	/*
+	 * Project Service
+	 */
+	protected AweProjectService projectService;
 
 	/**
 	 * Constructor of Service.
@@ -89,39 +96,8 @@ public class SpreadsheetService {
 	public SpreadsheetService() {
 		provider = NeoServiceProvider.getProvider();
 		neoService = provider.getService();
-	}
-
-	/**
-	 * Searches for Spreadsheets by given name
-	 * 
-	 * @param root
-	 *            root node of Spreadsheet
-	 * @param name
-	 *            name of Spreadsheet
-	 * @return founded Spreadsheet or null if Spreadsheet was not found
-	 */
-	public SpreadsheetNode findSpreadsheet(RubyProjectNode root, String name) {
-		SpreadsheetNode result = null;
-
-		Transaction tx = neoService.beginTx();
-
-		try {
-			Iterator<SpreadsheetNode> spreadsheetIterator = root.getSpreadsheets();
-
-			while (spreadsheetIterator.hasNext()) {
-				SpreadsheetNode spreadsheet = spreadsheetIterator.next();
-
-				if (spreadsheet.getSpreadsheetName().equals(name)) {
-					result = spreadsheet;
-					break;
-				}
-			}
-			tx.success();
-		} finally {
-			tx.finish();
-		}
-
-		return result;
+		
+		projectService = NeoCorePlugin.getDefault().getProjectService();		
 	}
 
 	/**
@@ -137,7 +113,7 @@ public class SpreadsheetService {
 	 */
 
 	public SpreadsheetNode createSpreadsheet(RubyProjectNode root, String name) throws SplashDatabaseException {
-		if (findSpreadsheet(root, name) != null) {
+		if (projectService.findSpreadsheet(root, name) != null) {
 			String message = SplashDatabaseExceptionMessages.getFormattedString(
 					SplashDatabaseExceptionMessages.Duplicate_Spreadsheet, name);
 			throw new SplashDatabaseException(message);

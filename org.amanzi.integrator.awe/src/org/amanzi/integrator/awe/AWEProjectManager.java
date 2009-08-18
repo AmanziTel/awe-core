@@ -707,4 +707,23 @@ public class AWEProjectManager {
         AweProjectService service = NeoCorePlugin.getDefault().getProjectService();
         service.renameRubyProject(aweProjectName, rubyProjectName, newName);
     }
+
+    /**
+     * Renames Spreadsheet in AWE Project Structure
+     *
+     * @param rubyProjectResource resource of parent Ruby Project
+     * @param oldName old Name of Spreadsheet
+     * @param newName new Name of Spreadsheet
+     */
+    public static void renameSpreadsheet(IProject rubyProjectResource, String oldName, String newName) {
+        String rubyProjectName = rubyProjectResource.getName();
+        String aweProjectName = getAWEprojectNameFromResource(rubyProjectResource);
+        
+        Project aweProject = findProject(aweProjectName);
+        RubyProject rubyProject = findRubyProject(aweProject, rubyProjectName);
+        Spreadsheet spreadsheet = findSpreadsheet(rubyProject, oldName);
+        
+        spreadsheet.setName(newName);
+        spreadsheet.eResource().setModified(true);
+    }
 }

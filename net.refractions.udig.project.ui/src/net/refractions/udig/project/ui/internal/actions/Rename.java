@@ -16,6 +16,8 @@
  */
 package net.refractions.udig.project.ui.internal.actions;
 
+import net.refractions.udig.project.IRubyFile;
+import net.refractions.udig.project.ISpreadsheet;
 import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
@@ -90,8 +92,19 @@ public class Rename extends UDIGGenericAction {
      *
      * @param element RubyProjectElement
      */
-    protected void operate(RubyProjectElement element) {        
-        RDTProjectManager.renameRubyScript(element.getRubyProjectInternal().getName(), element.getName());
+    protected void operate(RubyProjectElement element) {      
+        if (element instanceof IRubyFile) {
+            RDTProjectManager.renameRubyScript(element.getRubyProjectInternal().getName(), element.getName());
+        }
+        //Lagutko, 18.08.2009, renaming of Spreadsheet
+        else if (element instanceof ISpreadsheet) {
+            String aweProjectName = element.getRubyProjectInternal().getProjectInternal().getName();
+            String rubyProjectName = element.getRubyProjectInternal().getName();
+            String oldName = element.getName();
+            String newName = getNewName(oldName);
+            RDTProjectManager.renameSpreadsheet(aweProjectName, rubyProjectName, oldName, newName);
+            element.setName(newName);
+        }
     }
 
     /**

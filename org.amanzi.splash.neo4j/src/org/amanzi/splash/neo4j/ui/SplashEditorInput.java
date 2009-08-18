@@ -1,7 +1,9 @@
 package org.amanzi.splash.neo4j.ui;
 
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
@@ -16,49 +18,56 @@ import org.eclipse.ui.IPersistableElement;
  */
 
 public class SplashEditorInput implements IEditorInput {
+    
+    /**
+     * Name of Spreadsheet
+     */
+    private String sheetName;
+    
+    /**
+     * Project service
+     */
+    private AweProjectService service;
+    
+    /**
+     * Root node of Spreadsheet
+     */
+    private RubyProjectNode root;
+    
+    /**
+     * Node of Spreadsheet
+     */
+    private SpreadsheetNode node;
+    
+    /**
+     * Constructor.
+     * 
+     * @param sheetName name of Spreadsheet
+     * @param root root node of Spreadsheet
+     */
+    public SplashEditorInput(String sheetName, RubyProjectNode root) {
+        service = NeoCorePlugin.getDefault().getProjectService();
+        this.root = root;
+        
+        node = service.findSpreadsheet(root, sheetName); 
+        
+        this.sheetName = sheetName;
+    }
+    
+    /**
+     * Constructor. 
+     * 
+     * @param spreadsheetNode Spreadsheet Node
+     */
+    public SplashEditorInput(SpreadsheetNode spreadsheetNode) {
+        service = NeoCorePlugin.getDefault().getProjectService();
+        this.sheetName = spreadsheetNode.getName();
+        
+        this.root = spreadsheetNode.getSpreadsheetRootProject();
+        
+        node = spreadsheetNode;
+    }
 
-	/**
-	 * Name of Spreadsheet
-	 */
-	private String sheetName;
-
-	/**
-	 * Spreadsheet service
-	 */
-	private SpreadsheetService service;
-
-	/**
-	 * Root node of Spreadsheet
-	 */
-	private RubyProjectNode root;
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param sheetName
-	 *            name of Spreadsheet
-	 * @param root
-	 *            root node of Spreadsheet
-	 */
-	public SplashEditorInput(String sheetName, RubyProjectNode root) {
-		service = SplashPlugin.getDefault().getSpreadsheetService();
-		this.root = root;
-
-		this.sheetName = sheetName;
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param spreadsheetNode
-	 *            Spreadsheet Node
-	 */
-	public SplashEditorInput(SpreadsheetNode spreadsheetNode) {
-		service = SplashPlugin.getDefault().getSpreadsheetService();
-		this.sheetName = spreadsheetNode.getSpreadsheetName();
-
-		this.root = spreadsheetNode.getSpreadsheetRootProject();
-	}
 
 	public boolean exists() {
 		boolean isExist = (Boolean) ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
@@ -70,9 +79,8 @@ public class SplashEditorInput implements IEditorInput {
 			}
 
 			public void run() {
-				result = service.findSpreadsheet(root, sheetName) != null;
-			}
-
+                result = node != null;
+            }
 		});
 		return isExist;
 	}

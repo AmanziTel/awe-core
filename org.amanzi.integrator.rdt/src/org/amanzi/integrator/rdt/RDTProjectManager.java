@@ -3,6 +3,7 @@ package org.amanzi.integrator.rdt;
 import java.net.URL;
 
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
@@ -21,6 +22,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.RenameResourceAction;
 import org.rubypeople.rdt.core.IRubyElement;
+import org.rubypeople.rdt.core.IRubyModel;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.core.IRubyScript;
 import org.rubypeople.rdt.core.ISourceFolder;
@@ -279,6 +281,25 @@ public class RDTProjectManager {
         catch (RubyModelException e) {
             RubyPlugin.log(e);
         }
+	}
+	
+	public static void renameSpreadsheet(String aweProjectName, String rubyProjectName, String oldSpreadsheetName, String newSpreadsheetName) {
+	    AweProjectService service = NeoCorePlugin.getDefault().getProjectService();
+	    
+	    AweProjectNode aweNode = service.findAweProject(aweProjectName);
+	    RubyProjectNode rubyNode = service.findRubyProject(aweNode, rubyProjectName);
+	    
+	    service.renameSpreadsheet(rubyNode, oldSpreadsheetName, newSpreadsheetName);
+	    
+	    IRubyModel model = RubyModelManager.getRubyModelManager().getRubyModel();
+	    IRubyProject project = model.getRubyProject(rubyProjectName);
+	    
+	    try {
+	        model.refreshSpreadsheets(new IRubyElement[] {project}, null);
+	    }
+	    catch (RubyModelException e) {
+	        RubyPlugin.log(e);
+	    }
 	}
 
 	/**

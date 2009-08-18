@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
@@ -203,7 +204,7 @@ public class SplashTableModel extends DefaultTableModel {
 
 		// don't need to check that spreadsheet exists because it was checked in
 		// SplashEditorInput
-		spreadsheet = service.findSpreadsheet(root, sheetName);
+		spreadsheet = NeoCorePlugin.getDefault().getProjectService().findSpreadsheet(root, sheetName);
 	}
 
 	/**

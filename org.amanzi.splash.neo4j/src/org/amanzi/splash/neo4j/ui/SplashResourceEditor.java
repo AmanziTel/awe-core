@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.listener.IUpdateBDListener;
 import org.amanzi.neo.core.database.services.UpdateBdEvent;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.neo4j.swing.Cell;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
@@ -58,7 +59,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 		IResourceChangeListener, IShowInSource, IShowInTargetList,
 		IUpdateBDListener {
 
-	private IFile createNewFile(String message) throws CoreException {
+	private IFile createNewFile(String message) throws CoreException {	    
 		SaveAsDialog dialog = new SaveAsDialog(getEditorSite().getShell());
 		dialog.setTitle("Save Mini-Spreadsheet As");
 		if (getEditorInput() instanceof FileEditorInput)
@@ -114,6 +115,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 	 */
 	public void dispose() {
 		super.dispose();
+		NeoServiceProvider.getProvider().removeServiceProviderListener(this);
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 		NeoCorePlugin.getDefault().getUpdateBDManager().removeListener(this);
 		NeoSplashUtil.logn("Closing the spreadsheet");
@@ -145,6 +147,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
 				IResourceChangeEvent.POST_CHANGE);
 		NeoCorePlugin.getDefault().getUpdateBDManager().addListener(this);
+		NeoServiceProvider.getProvider().addServiceProviderListener(this);
 	}
 
 	/**
@@ -262,6 +265,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 
 	@Override
 	public void databaseUpdated(UpdateBdEvent event) {
+	    
 		SplashTableModel splashTableModel = ((SplashTableModel) getTable()
 				.getModel());
 		if (event.getRubyProjectName().equals(
@@ -275,4 +279,25 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 		}
 
 	}
+
+    @Override
+    public void onNeoCommit(Object source) {
+        SplashEditorInput input = (SplashEditorInput)getEditorInput();
+        String editorName = input.getName();
+        if (!editorName.equals(getPartName())) {
+            setPartName(editorName);
+        }
+    }
+
+    @Override
+    public void onNeoRollback(Object source) {
+    }
+
+    @Override
+    public void onNeoStart(Object source) {
+    }
+
+    @Override
+    public void onNeoStop(Object source) {
+    }
 }

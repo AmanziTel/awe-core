@@ -5,10 +5,12 @@
  */
 package net.refractions.udig.project.internal.impl;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 
+import net.refractions.udig.catalog.URLUtils;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
 import net.refractions.udig.project.IRubyProjectElement;
@@ -16,7 +18,6 @@ import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.internal.Messages;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
-import net.refractions.udig.project.internal.ProjectFactory;
 import net.refractions.udig.project.internal.ProjectPackage;
 import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.internal.Spreadsheet;
@@ -27,6 +28,7 @@ import net.refractions.udig.project.internal.RubyProjectElement;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
 import org.eclipse.emf.common.notify.Adapter;
@@ -207,6 +209,19 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
     public void setName(String newName) {
         String oldName = name;
         name = newName;
+        //Lagutko, 18.08.2009, update SpreadsheetPath
+        if (spreadsheetType == SpreadsheetType.NEO4J_SPREADSHEET) {
+            IPath path = new Path(getSpreadsheetPath().toString());
+            String last = path.lastSegment().replaceAll(oldName, newName);            
+            IPath newPath = path.removeLastSegments(1);
+            newPath = newPath.append(last);
+            try {
+                setSpreadsheetPath(URLUtils.constructURL(new File("."), newPath.toOSString()));
+            }
+            catch (MalformedURLException e) {
+                ProjectPlugin.log(null, e);
+            }
+        }
         if (eNotificationRequired())
             eNotify(new ENotificationImpl(this, Notification.SET, ProjectPackage.SPREADSHEET__NAME, oldName, name));
     }
