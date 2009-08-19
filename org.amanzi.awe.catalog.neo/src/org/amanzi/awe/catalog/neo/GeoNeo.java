@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -32,7 +33,7 @@ public class GeoNeo {
     private ReferencedEnvelope bounds;
     private String name;
     private org.neo4j.api.core.NeoService neo;
-    
+    private GisTypes types;
     /**
      * A class representing a located Node in the database. By convention all GeoNodes
      * are expected to contain properties for "type" and "name". In addition they should contain
@@ -103,6 +104,7 @@ public class GeoNeo {
         this.neo = neo;
         this.gisNode = gisNode;
         this.name = this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        this.types = GisTypes.findGisTypeByHeader(this.gisNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString());
     }
     
     /**
@@ -240,5 +242,12 @@ public class GeoNeo {
             public Iterator<GeoNode> iterator() {
                 return new GeoIterator(gisNode);
             }};
+    }
+
+    /**
+     * @return Returns the gis type of node.
+     */
+    public GisTypes getGisType() {
+        return types;
     }
 }

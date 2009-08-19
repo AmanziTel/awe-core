@@ -24,9 +24,9 @@ import org.neo4j.api.core.RelationshipType;
  */
 
 public enum MeasurementRelationshipTypes implements RelationshipType {
-	FIRST,
-	LAST,
-	NEXT,
+    // FIRST,
+    // LAST,
+    // NEXT,
 	CHILD,
 	SOURCE,
 	POINT

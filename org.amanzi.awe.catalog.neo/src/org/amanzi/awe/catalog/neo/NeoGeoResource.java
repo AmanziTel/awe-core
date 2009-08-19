@@ -37,10 +37,11 @@ public class NeoGeoResource extends IGeoResource {
 					+ "#"
 					+ this.gisNode
 							.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-			CatalogUIPlugin.getDefault().getImageRegistry().put(
-					this.getIdentifier().toString(),
-					IconManager.getIconManager().getImage(
-							IconManager.NETWORK_ICON));
+			try {
+                CatalogUIPlugin.getDefault().getImageRegistry().put(this.getIdentifier().toString(),
+                        IconManager.getIconManager().getImage(IconManager.NETWORK_ICON));
+            } catch (IllegalArgumentException e) {
+            }
 		} catch (MalformedURLException e) {
 		}
 	}

@@ -9,6 +9,7 @@ import net.refractions.udig.project.render.IRenderMetricsFactory;
 import net.refractions.udig.project.render.IRenderer;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.neo.core.enums.GisTypes;
 
 public class NetworkRenderMetricsFactory implements IRenderMetricsFactory {
 
@@ -24,7 +25,7 @@ public class NetworkRenderMetricsFactory implements IRenderMetricsFactory {
         for(IGeoResource resource : context.getLayer().getGeoResources()){
             //TODO: test also that the data is for network only.
             if(resource.canResolve(GeoNeo.class)){
-                return true;
+                return resource.resolve(GeoNeo.class, null).getGisType() == GisTypes.Network;
             }
         }
         return false;

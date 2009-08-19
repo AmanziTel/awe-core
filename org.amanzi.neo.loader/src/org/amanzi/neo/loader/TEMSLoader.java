@@ -4,28 +4,41 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.EmbeddedNeo;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
 
 public class TEMSLoader {	
+    private CRS crs = null;
 	private NeoService neo;
 	private String filename = null;
 	private String basename = null;
 	private Node file = null;
 	private Node point = null;
+    private Node gis = null;
 	private String[] headers = null;
 	private HashMap<String,Integer> headerIndex = null;
 	private int line_number = 0;
@@ -113,7 +126,19 @@ public class TEMSLoader {
 			}
 		}finally{
 			reader.close();
-			saveData();
+            saveData();
+            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+            URL url = new URL("file://" + databaseLocation);
+            List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
+            for (IService service : services) {
+                System.out.println("TEMS Found catalog service: " + service);
+                if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
+                    catalog.replace(service.getIdentifier(), service);
+                } else {
+                    catalog.add(service);
+                }
+            }
 		}
 	}
 
@@ -286,6 +311,33 @@ public class TEMSLoader {
         }
 	}
 
+    private static Node getGISNode(NeoService neo, Node tems) {
+        Node gis = null;
+        Transaction tx = neo.beginTx();
+        try {
+            Node reference = neo.getReferenceNode();
+            for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME)
+                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().equals(
+                                INeoConstants.GIS_PREFIX + tems.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()))
+                    return node;
+            }
+            gis = neo.createNode();
+            gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
+            gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.GIS_PREFIX
+                    + tems.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+            gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.Tems.getHeader());
+            reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
+            gis.createRelationshipTo(tems, GeoNeoRelationshipTypes.NEXT);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        return gis;
+    }
 	/**
 	 * This method is called to dump the current cache of signals as one located point
 	 * linked to a number of signal strength measurements.
@@ -299,9 +351,9 @@ public class TEMSLoader {
 				mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
 				mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
 				mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
-				String[] ll = latlong.split("\\t");
-				mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, ll[0]);
-				mp.setProperty(INeoConstants.PROPERTY_LONG_NAME, ll[1]);
+                String[] ll = latlong.split("\\t");
+                mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, Double.parseDouble(ll[0]));
+                mp.setProperty(INeoConstants.PROPERTY_LONG_NAME, Double.parseDouble(ll[1]));
 				if (file == null) {
 					Node reference = neo.getReferenceNode();
 					for (Relationship relationship : reference.getRelationships(MeasurementRelationshipTypes.CHILD,
@@ -318,12 +370,21 @@ public class TEMSLoader {
 						file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
 						reference.createRelationshipTo(file, MeasurementRelationshipTypes.CHILD);
 					}
-					file.createRelationshipTo(mp, MeasurementRelationshipTypes.FIRST);
+                    file.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
+                    gis = getGISNode(neo, file);
+
 					debug("Added '" + mp.getProperty(INeoConstants.PROPERTY_TIME_NAME) + "' as first measurement of '" + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
 				}
+                if (crs == null) {
+                    crs = CRS.fromLocation(Float.parseFloat(ll[0]), Float.parseFloat(ll[1]));
+                    file.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
+                    file.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
+                    gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
+                    gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
+                }
 				debug("Added measurement point: " + propertiesString(mp));
 				if (point != null) {
-					point.createRelationshipTo(mp, MeasurementRelationshipTypes.NEXT);
+                    point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
 				}
 				point = mp;
 				for (String chanCode : signals.keySet()) {
@@ -409,16 +470,16 @@ public class TEMSLoader {
 			return;
 		Transaction tx = neo.beginTx();
 		try {
-			for (Relationship relationship : file.getRelationships(MeasurementRelationshipTypes.FIRST, Direction.OUTGOING)) {
+            for (Relationship relationship : file.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
 				Node measurement = relationship.getEndNode();
 				printMeasurement(measurement);
-				Iterator<Relationship> relationships = measurement.getRelationships(MeasurementRelationshipTypes.NEXT,
+                Iterator<Relationship> relationships = measurement.getRelationships(GeoNeoRelationshipTypes.NEXT,
 						Direction.OUTGOING).iterator();
 				while (relationships.hasNext()) {
 					relationship = relationships.next();
 					measurement = relationship.getEndNode();
 					printMeasurement(measurement);
-					relationships = measurement.getRelationships(MeasurementRelationshipTypes.NEXT, Direction.OUTGOING)
+                    relationships = measurement.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
 							.iterator();
 				}
 			}

@@ -17,11 +17,13 @@ import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
@@ -137,10 +139,15 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
             
             List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(new URL("file://"+databaseLocation));
-            for(IService service:services){
-                System.out.println("Found catalog service: "+service);
-            }            
-            if(services.size()>0) catalog.add(services.get(0));
+            for (IService service : services) {
+                System.out.println("TEMS Found catalog service: " + service);
+                if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
+                    catalog.replace(service.getIdentifier(), service);
+                } else {
+                    catalog.add(service);
+                }
+            }
+            // if(services.size()>0) catalog.add(services.get(0));
             
             //Lagutko, 21.07.2009, show NeworkTree
             try {
@@ -298,6 +305,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             gis = neo.createNode();
             gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
             gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.GIS_PREFIX + network.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+            gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.Network.getHeader());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
             gis.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
             tx.success();

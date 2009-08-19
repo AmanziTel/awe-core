@@ -13,7 +13,11 @@ public class INeoConstants {
      * Name of 'Name' property of Node 
      */
     public static final String PROPERTY_NAME_NAME = "name";
-    
+    /*
+     * Name of 'GIS Type' property of Node
+     */
+    public static final String PROPERTY_GIS_TYPE_NAME = "gis_type";
+
     /*
      * Name of 'Type' property of Node
      */
