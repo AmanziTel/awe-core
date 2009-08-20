@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import net.refractions.udig.catalog.CatalogPlugin;
@@ -319,23 +317,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     }
                     // delete network - begin - gis node.
                     Node nodeGis = getGISNode(neo, node);
-                    LinkedList<Node> nodeToDelete = new LinkedList<Node>();
-                    nodeToDelete.add(nodeGis);
-                    for (int i = 0; i < nodeToDelete.size(); i++) {
-                        Node deleteNode = nodeToDelete.get(i);
-                        Iterator<Relationship> relations = deleteNode.getRelationships(Direction.BOTH).iterator();
-                        while (relations.hasNext()) {
-                            Relationship relation = relations.next();
-                            if (relation.getStartNode().equals(deleteNode)) {
-                                Node endNode = relation.getEndNode();
-                                if (!nodeToDelete.contains(endNode)) {
-                                    nodeToDelete.addLast(endNode);
-                                }
-                            }
-                            relation.delete();
-                        }
-                        deleteNode.delete();
-                    }
+                    NeoCorePlugin.getDefault().getProjectService().deleteNode(nodeGis);
                     break;
                 }
 			}
