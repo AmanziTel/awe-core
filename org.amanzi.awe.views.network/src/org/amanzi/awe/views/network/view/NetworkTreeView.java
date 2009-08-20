@@ -46,6 +46,11 @@ public class NetworkTreeView extends ViewPart {
 	 */
 	private IPropertySheetPage propertySheetPage;
 	
+	/*
+	 * Listener for Neo-Database Events
+	 */
+	private NeoServiceEventListener neoEventListener;
+	
 	/**
 	 * The constructor.
 	 */
@@ -60,7 +65,8 @@ public class NetworkTreeView extends ViewPart {
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		
 		neoServiceProvider = NeoServiceProvider.getProvider();
-		neoServiceProvider.addServiceProviderListener(new NeoServiceEventListener());
+		neoEventListener = new NeoServiceEventListener();
+		neoServiceProvider.addServiceProviderListener(neoEventListener);
 		
 		setProviders(neoServiceProvider);
 		
@@ -119,6 +125,10 @@ public class NetworkTreeView extends ViewPart {
 	public void dispose() {
 	    if (propertySheetPage != null) {
 	        propertySheetPage.dispose();
+	    }
+	    
+	    if (neoEventListener != null) {
+	        neoServiceProvider.removeServiceProviderListener(neoEventListener);
 	    }
 	    
 	    super.dispose();
