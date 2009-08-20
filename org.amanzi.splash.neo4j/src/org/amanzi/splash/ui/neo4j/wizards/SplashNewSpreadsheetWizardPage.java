@@ -4,9 +4,9 @@ import net.refractions.udig.project.internal.impl.RubyProjectImpl;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
-import org.amanzi.splash.neo4j.utilities.ActionUtil;
-import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;

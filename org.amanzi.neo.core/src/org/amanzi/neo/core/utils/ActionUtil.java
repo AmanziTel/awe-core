@@ -1,4 +1,4 @@
-package org.amanzi.splash.neo4j.utilities;
+package org.amanzi.neo.core.utils;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;

@@ -352,30 +352,39 @@ public class AweProjectService {
 	 *            node to delete
 	 */
 	public void deleteNode(AbstractNode node) {
-		Transaction tx = neoService.beginTx();
-		try {
-			LinkedList<Node> nodeToDelete = new LinkedList<Node>();
-			nodeToDelete.add(node.getUnderlyingNode());
-			for (int i = 0; i < nodeToDelete.size(); i++) {
-				Node deleteNode = nodeToDelete.get(i);
-				Iterator<Relationship> relations = deleteNode.getRelationships(
-						Direction.BOTH).iterator();
-				while (relations.hasNext()) {
-					Relationship relationship = relations.next();
-					if (relationship.getStartNode().equals(deleteNode)) {
-						nodeToDelete.addLast(relationship.getEndNode());
-					}
-					relationship.delete();
-				}
-				deleteNode.delete();
-			}
-			tx.success();
-		} finally {
-			tx.finish();
-		}
-
+        deleteNode(node.getUnderlyingNode());
 	}
 
+    /**
+     * Delete Node and all depends nodes from bd
+     * 
+     * @param node node to delete
+     */
+    public void deleteNode(Node node) {
+        Transaction tx = neoService.beginTx();
+        try {
+            LinkedList<Node> nodeToDelete = new LinkedList<Node>();
+            nodeToDelete.add(node);
+            for (int i = 0; i < nodeToDelete.size(); i++) {
+                Node deleteNode = nodeToDelete.get(i);
+                Iterator<Relationship> relations = deleteNode.getRelationships(Direction.BOTH).iterator();
+                while (relations.hasNext()) {
+                    Relationship relationship = relations.next();
+                    if (relationship.getStartNode().equals(deleteNode)) {
+                        Node endNode = relationship.getEndNode();
+                        if (!nodeToDelete.contains(endNode))
+                            nodeToDelete.addLast(endNode);
+                    }
+                    relationship.delete();
+                }
+                deleteNode.delete();
+            }
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+
+    }
 	/**
 	 * Find script node
 	 * 

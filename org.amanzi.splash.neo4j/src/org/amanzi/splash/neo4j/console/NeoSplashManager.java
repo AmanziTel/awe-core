@@ -4,9 +4,9 @@ import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
-import org.amanzi.splash.neo4j.utilities.ActionUtil;
-import org.amanzi.splash.neo4j.utilities.ActionUtil.RunnableWithResult;
 
 /**
  * Spreadsheet Manager class

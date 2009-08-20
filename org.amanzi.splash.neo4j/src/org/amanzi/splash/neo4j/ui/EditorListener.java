@@ -11,7 +11,7 @@ import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.RubyScriptNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.splash.neo4j.utilities.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;

@@ -1,8 +1,8 @@
 package org.amanzi.splash.neo4j.handlers;
 
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.splash.neo4j.ui.AbstractSplashEditor;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
-import org.amanzi.splash.neo4j.utilities.ActionUtil;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;

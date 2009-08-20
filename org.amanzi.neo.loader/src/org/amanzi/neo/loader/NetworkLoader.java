@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import net.refractions.udig.catalog.CatalogPlugin;
@@ -22,8 +24,12 @@ import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
@@ -44,7 +50,11 @@ import org.neo4j.api.core.Transaction;
  * @author craig
  */
 public class NetworkLoader extends NeoServiceProviderEventAdapter {
-	/**
+	/** String LOAD_NETWORK_TITLE field */
+    private static final String LOAD_NETWORK_TITLE = "Load Network";
+    private static final String LOAD_NETWORK_MSG = "This network is already loaded into a database. Do you wish to rewrite data?";
+
+    /**
 	 * This class handles the CRS specification.
 	 * Currently it is hard coded to return WGS84 (EPSG:4326) for data that looks like lat/long
      * and RT90 2.5 gon V (EPSG:3021) for data that looks like it is in meters.
@@ -117,7 +127,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         try {
             String line;
             while ((line = reader.readLine()) != null) {
-                parseLine(line);
+                if (!parseLine(line)) {
+                    break;
+                }
             }
         } finally {
             // Close the file reader
@@ -171,7 +183,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		System.err.println(line);
 	}
 	
-	private void parseLine(String line){
+	private boolean parseLine(String line){
 		debug(line);
 		String fields[] = line.split("\\t");
 		if(fields.length>2){
@@ -207,7 +219,12 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 					if (!bscField.equals(bscName)) {
 						bscName = bscField;
 						debug("New BSC: " + bscName);
-						network = getNetwork(neo, basename);
+						if (network==null){
+						    network = getNetwork(neo, basename);
+						    if (network==null){
+						        return false;
+						    }
+						}
 						gis = getGISNode(neo, network);
 						network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
 						deleteTree(network);
@@ -248,11 +265,13 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 					for (int i : stringIndexes) sector.setProperty(headers[i], fields[i]);
 					for (int i : intIndexes) sector.setProperty(headers[i], Integer.parseInt(fields[i]));
 					tx.success();
+					return true;
 				} finally {
 					tx.finish();
 				}
 			}
 		}
+        return true;
 	}
 
 	private void deleteTree(Node root){
@@ -277,14 +296,56 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 			for (Relationship relationship : reference.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
 				Node node = relationship.getEndNode();
 				if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NetworkElementTypes.NETWORK.toString()) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-						&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename))
-					return node;
+						&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename)){
+                    int resultMsg = (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+                        int result;
+                        @Override
+                        public void run() {
+                            MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OK
+                                    | SWT.CANCEL);
+                            msg.setText(LOAD_NETWORK_TITLE);
+                            msg.setMessage(LOAD_NETWORK_MSG);
+                            result = msg.open();
+
+                        }
+
+                        @Override
+                        public Object getValue() {
+                            return new Integer(result);
+                        }
+                    });
+                    if (resultMsg != SWT.OK) {
+                        return null;
+                    }
+                    // delete network - begin - gis node.
+                    Node nodeGis = getGISNode(neo, node);
+                    LinkedList<Node> nodeToDelete = new LinkedList<Node>();
+                    nodeToDelete.add(nodeGis);
+                    for (int i = 0; i < nodeToDelete.size(); i++) {
+                        Node deleteNode = nodeToDelete.get(i);
+                        Iterator<Relationship> relations = deleteNode.getRelationships(Direction.BOTH).iterator();
+                        while (relations.hasNext()) {
+                            Relationship relation = relations.next();
+                            if (relation.getStartNode().equals(deleteNode)) {
+                                Node endNode = relation.getEndNode();
+                                if (!nodeToDelete.contains(endNode)) {
+                                    nodeToDelete.addLast(endNode);
+                                }
+                            }
+                            relation.delete();
+                        }
+                        deleteNode.delete();
+                    }
+                    break;
+                }
 			}
 			network = neo.createNode();
 			network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementTypes.NETWORK.toString());
 			network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
 			reference.createRelationshipTo(network, NetworkRelationshipTypes.CHILD);
 			tx.success();
+		}catch (Exception e){
+		    e.printStackTrace();
 		} finally {
 			tx.finish();
 		}
