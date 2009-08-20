@@ -14,6 +14,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 
+import com.eteks.openjeks.format.CellFormat;
+
 public class SplashCellRenderer extends DefaultTableCellRenderer
 {
 	/**
@@ -75,26 +77,36 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 		setBackground(c.getCellFormat().getBackgroundColor());
 		
 		setForeground(c.getCellFormat().getFontColor());
-		//setHorizontalAlignment(c.getCellFormat().getHorizontalAlignment());
-		//setVerticalAlignment(c.getCellFormat().getVerticalAlignment());
+
 		setFont(new Font(c.getCellFormat().getFontName(), c.getCellFormat().getFontStyle(), c.getCellFormat().getFontSize()));
 		String cell_value = (String)((Cell)value).getValue();
 		String regex = "\\d+";
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(cell_value);
-		boolean isNumerical = false;
-		while (matcher.find()) {
-			isNumerical = true;
-		}
-		
-		if (isNumerical == true){
-			//Util.logn("Numerical cell found...");
-			setHorizontalAlignment(new Integer(JLabel.RIGHT));
-			
-		}else{
-			//Util.logn("Text cell found...");
-			setHorizontalAlignment(new Integer(JLabel.LEFT));
-		}
+        Integer horizontalAlignment = c.getCellFormat().getHorizontalAlignment();
+        if ((int)horizontalAlignment != CellFormat.STANDARD_ALIGNMENT && (int)horizontalAlignment != CellFormat.UNKNOWN_ALIGNMENT) {
+            setHorizontalAlignment(horizontalAlignment);
+        } else {
+            boolean isNumerical = false;
+            while (matcher.find()) {
+                isNumerical = true;
+            }
+            if (isNumerical == true) {
+                // Util.logn("Numerical cell found...");
+                setHorizontalAlignment(new Integer(JLabel.RIGHT));
+
+            } else {
+                // Util.logn("Text cell found...");
+                setHorizontalAlignment(new Integer(JLabel.LEFT));
+            }
+        }
+
+        Integer verticalAlignment = c.getCellFormat().getVerticalAlignment();
+        if ((int)verticalAlignment != CellFormat.STANDARD_ALIGNMENT && (int)verticalAlignment != CellFormat.UNKNOWN_ALIGNMENT) {
+            setVerticalAlignment(verticalAlignment);
+        } else {
+            setVerticalAlignment(JLabel.CENTER);
+        }
 		
 		if (isSelected){
 			setBackground(NeoSplashUtil.selectedCellColor);
