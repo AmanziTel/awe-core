@@ -1,6 +1,0 @@
-# ignore netbeans specific stuff
-nbproject
-
-# ignore generated database
-var
-
