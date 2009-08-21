@@ -108,3 +108,4 @@ Export-Package: javax.transaction;uses:="javax.transaction.xa",
  org.neo4j.util.shell.apps.extra;uses:="org.neo4j.util.shell",
  org.neo4j.util.sortedtree;uses:="org.neo4j.api.core",
  org.neo4j.util.timeline;uses:="org.neo4j.api.core"
+Eclipse-BuddyPolicy: registered
