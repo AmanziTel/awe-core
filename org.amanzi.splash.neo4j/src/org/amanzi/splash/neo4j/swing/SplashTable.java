@@ -116,6 +116,7 @@ public class SplashTable extends JTable {
 		rowHeader.setPreferredScrollableViewportSize(d);
 		rowHeader.setDefaultRenderer(Object.class, _RowHeaderRenderer);
 		rowHeader.setRowHeight(getDefaultRowHeight());
+        rowHeader.setModel(new RowModel(getModel()));
 
 	}
 
@@ -158,6 +159,7 @@ public class SplashTable extends JTable {
 		// rowHeader.setRowHeight(getRowHeight());
 		rowHeader.setDefaultRenderer(Object.class, _RowHeaderRenderer);
 		rowHeader.setRowHeight(getDefaultRowHeight());
+        rowHeader.setModel(new RowModel(getModel()));
 	}
 
 	/**

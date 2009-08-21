@@ -445,7 +445,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 				// we don't allow reordering
 				table.getTableHeader().setReorderingAllowed(false);
 				table.getTableHeader().addMouseListener(ml);
-				table.rowHeader.addMouseListener(ml);
+                table.rowHeader.addMouseListener(ml);
+                // add listener for resizing row
+                new TableRowResizer(table.rowHeader, table);
 				table.addKeyListener(new KeyListener() {
 
 					public void keyPressed(KeyEvent e) {
