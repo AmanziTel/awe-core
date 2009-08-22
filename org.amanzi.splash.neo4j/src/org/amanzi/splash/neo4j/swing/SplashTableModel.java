@@ -241,6 +241,9 @@ public class SplashTableModel extends DefaultTableModel {
 						return new EclipseLoadService(runtime);
 					}
 				});
+				
+				//Lagutko, 29.08.2009, loader
+				setLoader(this.getClass().getClassLoader());
 
 				// The following modification forces IRB to ignore the fact that
 				// inside eclipse

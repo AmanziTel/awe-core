@@ -111,11 +111,21 @@ public class ScriptUtils {
         loadPath.add(jRubyHome+"/lib/ruby/"+jRubyVersion);
         loadPath.add(jRubyHome+"/lib/ruby/"+jRubyVersion+"/java");
         loadPath.add(jRubyHome+"/lib");
-        loadPath.add(jRubyHome + "/lib/ruby/gems/" + jRubyVersion + "/gems/neo4j-0.2.1/lib");
-        loadPath.add(jRubyHome + "/lib/ruby/gems/" + jRubyVersion + "/gems/neo4j-0.2.1/lib/relations");
-        loadPath.add(jRubyHome + "/lib/ruby/gems/" + jRubyVersion + "/gems/neo4j-0.2.1/lib/mixins");
-        loadPath.add(jRubyHome + "/lib/ruby/gems/" + jRubyVersion + "/gems/neo4j-0.2.1/lib/jars");
-        loadPath.add(jRubyHome + "/lib/ruby/gems/" + jRubyVersion + "/gems/neo4j-0.2.1/examples/imdb");
+        
+        //Lagutko, 20.08.2009, now we have Neo4j RubyGem inside current plugin but not inside org.jruby
+        //TODO: Lagutko: check this for complete application when plugin stores in JARs
+        try {
+            String neoRubyGemDir = FileLocator.resolve(Platform.getBundle("org.amanzi.scripting.jruby").getEntry(".")).getFile() + "/neo4j";
+        
+            loadPath.add(neoRubyGemDir + "/lib");
+            loadPath.add(neoRubyGemDir + "/lib/relations");
+            loadPath.add(neoRubyGemDir + "/lib/mixins");
+            loadPath.add(neoRubyGemDir + "/lib/jars");
+            loadPath.add(neoRubyGemDir + "/examples/imdb");
+        }
+        catch (IOException e) {
+            //TODO: handle
+        }
 
         loadPath.add("lib/ruby/"+jRubyVersion);
         loadPath.add(".");
@@ -146,8 +156,7 @@ public class ScriptUtils {
 
 	/** search for jruby home, starting with passed value, if any */
 	private static String findJRubyHome(String suggested) throws IOException {
-		String jRubyHome = null;
-		String userDir = System.getProperty("user.home");	
+		String jRubyHome = null;			
 		//Lagutko, 22.06.2009, since now we search ruby home only in org.jruby plugin		
 		for (String path : new String[] { FileLocator.resolve(Platform.getBundle("org.jruby").getEntry(".")).getFile() /*suggested,
 				Platform.getBundle("org.jruby").getLocation(),

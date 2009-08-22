@@ -4,6 +4,8 @@ module Neo4j
   # Before using neo it has to be started and the location of the Neo database on the filesystem must
   # have been configured, Neo4j::Config[:storage_path].
   #
+  # Lagutko: if prev parameter is set than it use this NeoService unless create a new 
+  #
   # ==== Examples
   # Neo4j::Config[:storage_path] = '/var/neo4j-db'
   # Neo4j.start
@@ -11,11 +13,11 @@ module Neo4j
   # ==== Returns
   # The neo instance
   #
-  # :api: public
-  def self.start
+  # :api: public  
+  def self.start(prev = nil)
     return if @instance
     @instance = Neo.new
-    @instance.start
+    @instance.start(prev)
     at_exit do
       Neo4j.stop
     end
@@ -152,8 +154,9 @@ module Neo4j
     #
     attr_reader :ref_node, :neo
 
-    def start
-      @neo = org.neo4j.api.core.EmbeddedNeo.new(Config[:storage_path])
+    #Lagutko, 21.08.2009, we can start neo with already created EmbeddedNeo
+    def start(prev = nil)
+      @neo = prev || org.neo4j.api.core.EmbeddedNeo.new(Config[:storage_path])
 
       Transaction.run do
         @ref_node = ReferenceNode.new(@neo.getReferenceNode())

@@ -72,8 +72,10 @@ public class SplashPlugin extends AbstractUIPlugin {
 		spreadsheetService = new SpreadsheetService();
 		
 		//Lagutko: 11.08.2009, listener for RubyExplorer activation
-		rubyExplorerListener = new RubyExplorerListener();
-		getWorkbench().getActiveWorkbenchWindow().getPartService().addPartListener(rubyExplorerListener);
+		rubyExplorerListener = new RubyExplorerListener();		
+		if (getWorkbench().getActiveWorkbenchWindow() != null) {
+		    getWorkbench().getActiveWorkbenchWindow().getPartService().addPartListener(rubyExplorerListener);
+		}
 	}
 
 	/*

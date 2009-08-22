@@ -46,7 +46,7 @@ public class Root extends NeoNode {
         
         NeoService service = serviceProvider.getService();
         
-        Transaction tx = service.beginTx();
+        Transaction transaction = service.beginTx();
         try {
             Node reference = service.getReferenceNode();
             
@@ -56,9 +56,9 @@ public class Root extends NeoNode {
                     networkNodes.add(new NeoNode(node));
             }           
             
-            tx.success();
+            transaction.success();
         } finally {
-            tx.finish();
+            transaction.finish();
         }
         
         if (networkNodes.isEmpty()) {

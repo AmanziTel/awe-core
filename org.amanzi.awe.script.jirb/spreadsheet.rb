@@ -37,13 +37,19 @@ class Spreadsheet
   def self.find(name, options={})
   	rdtName = options[:rdt]
   	udigName = options[:udig]
+    
+    splashManager = Java::org.amanzi.splash.console.SpreadsheetManager.getInstance
+    spreadsheet = splashManager.getSpreadsheet(name, rdtName, udigName)
   	
-  	Spreadsheet.new($spreadsheet_manager.getSpreadsheet(name, rdtName, udigName))  	  
+  	Spreadsheet.new(spreadsheet)  	  
   end
   
   #returns Active Spreadsheet
   def self.findActive()    
-    Spreadsheet.new($spreadsheet_manager.getActiveSpreadsheet)
+    splashManager = Java::org.amanzi.splash.console.SpreadsheetManager.getInstance
+    spreadsheet = splashManager.getActiveSpreadsheet
+    
+    Spreadsheet.new(spreadsheet)
   end
   
   #saves content of this Spreadsheet

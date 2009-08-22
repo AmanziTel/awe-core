@@ -1,9 +1,13 @@
 package org.amanzi.neo.core;
 
+import java.io.IOException;
+
 import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.database.services.UpdateBDManager;
 import org.amanzi.neo.core.preferences.NeoPreferencesInitializer;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
@@ -124,6 +128,16 @@ public class NeoCorePlugin extends Plugin {
 		getDefault().getLog().log(
 				new Status(IStatus.ERROR, ID, 0,
 						message == null ? "" : message, e)); //$NON-NLS-1$
+	}
+	
+	public String getNeoPluginLocation() {
+	    try {
+	        return FileLocator.resolve(Platform.getBundle("org.neo4j").getEntry(".")).getFile();
+	    }
+	    catch (IOException e) {
+	        error(null, e);
+	        return null;
+	    }
 	}
 
 }

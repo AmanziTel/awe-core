@@ -631,6 +631,4 @@ Bundle-ClassPath: .,
  lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/neo-1.0-b7.jar,
  lib/ruby/gems/1.8/gems/neo4j-0.2.1/lib/neo4j/jars/shell-1.0-b7.jar
 Bundle-Vendor: org.jruby community
-Require-Bundle: org.neo4j;bundle-version="1.0.0"
-Eclipse-RegisterBuddy: org.neo4j
 

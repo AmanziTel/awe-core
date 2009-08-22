@@ -27,6 +27,11 @@ public class IRBConfigData {
     private String[] extraRequire = null;
     private ArrayList<URL> extraScripts = null;
 	private HashMap<String,Object> extraGlobals = new HashMap<String,Object>();
+	
+	//Lagutko, 21.08.2009, additional field 
+	private ClassLoader loader;
+	
+	
 	public String getTitle() {
 		return title;
 	}
@@ -87,4 +92,20 @@ public class IRBConfigData {
     public void addExtraGlobal(String key, Object value) {
         this.extraGlobals.put(key,value);
     }
+    
+    //Lagutko, 21.08.2009, getter and setter for ClassLoader
+    /**
+     * @return Returns the loader.
+     */
+    public ClassLoader getLoader() {
+        return loader;
+    }
+    /**
+     * @param loader The loader to set.
+     */
+    public void setLoader(ClassLoader loader) {
+        this.loader = loader;
+    }
+    
+
 }

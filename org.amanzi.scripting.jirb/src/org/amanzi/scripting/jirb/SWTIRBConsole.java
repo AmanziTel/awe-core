@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -17,6 +18,8 @@ import javax.swing.JTextPane;
 
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.internal.adaptor.ContextFinder;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.layout.GridData;
@@ -134,17 +137,21 @@ public class SWTIRBConsole extends Composite {
 	 * @return
 	 */
 	private Thread start_irb_panel(final Shell shell) {
+	    Thread.currentThread().getContextClassLoader();
+	    	    
         config = new RubyInstanceConfig() {{
         	setJRubyHome(ScriptUtils.getJRubyHome());	// this helps online help work
             setInput(tar.getInputStream());
             setOutput(new PrintStream(tar.getOutputStream()));
             setError(new PrintStream(tar.getOutputStream()));
-            setObjectSpaceEnabled(true); // useful for code completion inside the IRB
+            setObjectSpaceEnabled(true); // useful for code completion inside the IRB                        
             setLoadServiceCreator(new LoadServiceCreator() {
                 public LoadService create(Ruby runtime) {
                     return new EclipseLoadService(runtime);
                 }
             });
+            //Lagutko, 21.08.2009, setLoader for RubyInstance
+            setLoader(irbConfig.getLoader());
             
             // The following modification forces IRB to ignore the fact that inside eclipse
             // the STDIN.tty? returns false, and IRB must continue to use a prompt

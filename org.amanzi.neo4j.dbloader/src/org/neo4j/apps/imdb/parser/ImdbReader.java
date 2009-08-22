@@ -43,13 +43,13 @@ public interface ImdbReader
     /**
      * Starts a new transaction:
      * <p>
-     * <code>Transaction tx = neoService.beginTx())</code>.
+     * <code>Transaction transaction = neoService.beginTx())</code>.
      */
     void beginTransaction();
 
     /**
-     * Commits the current transaction (first call <code>tx.success()</code>
-     * followed by <code>tx.finish()</code>.
+     * Commits the current transaction (first call <code>transaction.success()</code>
+     * followed by <code>transaction.finish()</code>.
      */
     void endTransaction();
 }

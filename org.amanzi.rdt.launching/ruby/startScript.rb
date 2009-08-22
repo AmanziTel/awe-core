@@ -1,6 +1,10 @@
-require $awe_console_path + 'spreadsheet.rb'
-require $awe_console_path + 'gisCommands.rb'
-require $awe_console_path + 'neoSpreadsheet.rb'
+awe_console_plugin = Java::org.eclipse.core.runtime.Platform.getBundle("org.amanzi.awe.script.jirb").getEntry("")
+awe_console_path = Java::org.eclipse.core.runtime.FileLocator.resolve(awe_console_plugin).getFile
+
+require awe_console_path + 'gisCommands.rb'
+require awe_console_path + 'neoSetup.rb'
+require awe_console_path + 'neoSpreadsheet.rb'
+require awe_console_path + 'spreadsheet.rb'
 
 # Some utilities for setting up AWE, including paths to uDIG jars
 module AWE

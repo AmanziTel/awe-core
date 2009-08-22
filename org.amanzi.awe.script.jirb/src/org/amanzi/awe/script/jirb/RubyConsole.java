@@ -3,9 +3,6 @@ package org.amanzi.awe.script.jirb;
 import org.amanzi.scripting.jirb.IRBConfigData;
 import org.amanzi.scripting.jirb.SWTIRBConsole;
 import org.amanzi.scripting.jirb.SwingIRBConsole;
-import org.amanzi.scripting.jruby.ScriptUtils;
-import org.amanzi.splash.console.SpreadsheetManager;
-import org.amanzi.splash.neo4j.console.NeoSplashManager;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -57,14 +54,10 @@ public class RubyConsole extends ViewPart {
 	private Action action2;
 
 	/*
-	 * Classes for Data Readers
-	 */
-	private static final String[] DATA_READERS_CLASSES = {"org.amanzi.awe.catalog.json.JSONReader", "org.amanzi.awe.catalog.neo.actions.NeoReader"};
-	
-	/*
 	 * Array of Extra Scripts for Ruby Console 
 	 */
-	private static final String[] EXTRA_SCRIPTS = {"gisCommands.rb", "awescript.rb", "spreadsheet.rb", "neoSpreadsheet.rb"};
+	//Lagutko, 20.08.2009, additional extran script 'neoSetup.rb'
+	public static final String[] EXTRA_SCRIPTS = {"gisGlobals.rb", "gisCommands.rb", "awescript.rb", "spreadsheet.rb", "neoSpreadsheet.rb", "neoSetup.rb"};
 	
 	/**
 	 * The constructor.
@@ -76,20 +69,12 @@ public class RubyConsole extends ViewPart {
      * This is a callback that will allow us to create the embedded SWTIRBConsole and initialize it.
      */
 	public void createPartControl(Composite parent) {
-        ex = new SWTIRBConsole(parent, new IRBConfigData(){{
+        ex = new SWTIRBConsole(parent, new IRBConfigData(){{            
             setTitle(AweScriptConsoleMessages.Welcome);
-            addExtraGlobal("view", RubyConsole.this);
-            addExtraGlobal("catalog", net.refractions.udig.catalog.CatalogPlugin.getDefault());
-            addExtraGlobal("catalogs", net.refractions.udig.catalog.CatalogPlugin.getDefault().getCatalogs());
-            addExtraGlobal("projects", net.refractions.udig.project.ui.ApplicationGIS.getProjects());
-            addExtraGlobal("active_project", net.refractions.udig.project.ui.ApplicationGIS.getActiveProject());
-            ScriptUtils.makeGlobalsFromClassNames(this.getExtraGlobals(), DATA_READERS_CLASSES);
-            addExtraGlobal("feature_source_class", org.geotools.data.FeatureSource.class);
+            addExtraGlobal("view", RubyConsole.this);         
             
-            //manager of spreadsheets
-            addExtraGlobal("spreadsheet_manager", SpreadsheetManager.getInstance());
-            //Lagutko, 29.07.2009, manager for Neo4j-based spreadsheet
-            addExtraGlobal("splash_manager", NeoSplashManager.getInstance());
+            //Lagutko, 21.08,2009, put BundleClassloader of this plugin
+            setLoader(this.getClass().getClassLoader());
             
             String userDir = System.getProperty(USER_HOME_PROPERTY);
             setExtraLoadPath(new String[]{userDir+AWE_SCRIPT_EXTRA_LOAD_PATH,userDir+AWE_LIB_EXTRA_LOAD_PATH});

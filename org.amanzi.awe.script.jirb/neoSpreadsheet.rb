@@ -37,13 +37,19 @@ class Splash
   def self.find(name, options={})
   	rdtName = options[:rdt]
   	udigName = options[:udig]
+    
+    splashManager = Java::org.amanzi.splash.neo4j.console.NeoSplashManager.getInstance
+    spreadsheet = splashManager.getSpreadsheet(name, rdtName, udigName)
   	
-  	Splash.new($splash_manager.getSpreadsheet(name, rdtName, udigName))  	  
+  	Splash.new(spreadsheet)  	  
   end
   
   #returns Active Spreadsheet
   def self.findActive()    
-    Splash.new($splash_manager.getActiveSpreadsheet)
+    splashManager = Java::org.amanzi.splash.neo4j.console.NeoSplashManager.getInstance
+    spreadsheet = splashManager.getActiveSpreadsheet
+    
+    Splash.new(spreadsheet)
   end
 
 end

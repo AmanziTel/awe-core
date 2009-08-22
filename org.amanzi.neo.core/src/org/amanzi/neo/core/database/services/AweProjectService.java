@@ -58,14 +58,14 @@ public class AweProjectService {
 	 * @return root node
 	 */
 	public RootNode getRootNode() {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 
 			RootNode root = new RootNode(neoService.getReferenceNode());
-			tx.success();
+			transaction.success();
 			return root;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -78,7 +78,7 @@ public class AweProjectService {
 	 */
 	public RubyProjectNode findRubyProject(String rubyProjectName) {
 		RootNode root = getRootNode();
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			Iterator<AweProjectNode> iterator = root.getAllProjects();
 			while (iterator.hasNext()) {
@@ -88,16 +88,16 @@ public class AweProjectService {
 				while (itrRubyProject.hasNext()) {
 					RubyProjectNode rubyProject = itrRubyProject.next();
 					if (rubyProjectName.equals(rubyProject.getName())) {
-						tx.success();
+						transaction.success();
 						return rubyProject;
 					}
 				}
 			}
-			tx.success();
+			transaction.success();
 			return null;
 
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -135,7 +135,7 @@ public class AweProjectService {
     public SpreadsheetNode findSpreadsheet(RubyProjectNode root, String name) {
         SpreadsheetNode result = null;
 
-        Transaction tx = neoService.beginTx();
+        Transaction transaction = neoService.beginTx();
 
         try {
             Iterator<SpreadsheetNode> spreadsheetIterator = root
@@ -149,9 +149,9 @@ public class AweProjectService {
                     break;
                 }
             }
-            tx.success();
+            transaction.success();
         } finally {
-            tx.finish();
+            transaction.finish();
         }
 
         return result;
@@ -170,7 +170,7 @@ public class AweProjectService {
 			String spreadsheetName) {
 		SpreadsheetNode result = null;
 
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 
 		try {
 			Iterator<SpreadsheetNode> spreadsheetIterator = rubyProject
@@ -188,10 +188,10 @@ public class AweProjectService {
 				result.setSpreadsheetName(spreadsheetName);
 				rubyProject.addSpreadsheet(result);
 			}
-			tx.success();
+			transaction.success();
 			return result;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 	
@@ -199,7 +199,7 @@ public class AweProjectService {
 	    assert project != null;
         assert rubyProjectName != null;
         RubyProjectNode result = null;
-        Transaction tx = neoService.beginTx();
+        Transaction transaction = neoService.beginTx();
         try {
             Iterator<RubyProjectNode> rubyProjects = project.getAllProjects();
             while (rubyProjects.hasNext()) {
@@ -210,10 +210,10 @@ public class AweProjectService {
                     break;
                 }
             }            
-            tx.success();
+            transaction.success();
             return result;
         } finally {
-            tx.finish();
+            transaction.finish();
         }
 	}
 
@@ -231,7 +231,7 @@ public class AweProjectService {
 		assert project != null;
 		assert rubyProjectName != null;
 		RubyProjectNode result = null;
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			result = findRubyProject(project, rubyProjectName);
 			if (result == null) {
@@ -239,10 +239,10 @@ public class AweProjectService {
 				result.setName(rubyProjectName);
 				project.addRubyProject(result);
 			}
-			tx.success();
+			transaction.success();
 			return result;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -256,7 +256,7 @@ public class AweProjectService {
 	public AweProjectNode findOrCreateAweProject(String aweProjectName) {
 		assert aweProjectName != null;
 		AweProjectNode result = null;
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 		    //Lagutko, 13.08.2009, use findAweProject() method to find an AWEProjectNode
 		    result = findAweProject(aweProjectName);
@@ -264,10 +264,10 @@ public class AweProjectService {
 				result = createEmptyAweProject();
 				result.setName(aweProjectName);
 			}
-			tx.success();
+			transaction.success();
 			return result;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 	
@@ -280,14 +280,14 @@ public class AweProjectService {
 	    AweProjectNode result = null;
 	    RootNode root = getRootNode();
 	    
-	    Transaction tx = neoService.beginTx();
+	    Transaction transaction = neoService.beginTx();
 	    try {
 	        result = new AweProjectNode(neoService.createNode());
 	        root.addProject(result);
-	        tx.success();
+	        transaction.success();
 	    }
 	    finally {
-	        tx.finish();
+	        transaction.finish();
 	    }
 	    
 	    return result;
@@ -302,15 +302,15 @@ public class AweProjectService {
 	public RubyProjectNode createEmptyRubyProject(String projectName) {
 	    RubyProjectNode result = null;
 	    
-	    Transaction tx = neoService.beginTx();
+	    Transaction transaction = neoService.beginTx();
 	    try {
 	        result = new RubyProjectNode(neoService.createNode());
 	        result.setName(projectName);
 	        
-	        tx.success();
+	        transaction.success();
 	    }
 	    finally {
-	        tx.finish();
+	        transaction.finish();
 	    }
 	    
 	    return result;
@@ -327,7 +327,7 @@ public class AweProjectService {
 	    assert aweProjectName != null;
         AweProjectNode result = null;
         RootNode root = getRootNode();
-        Transaction tx = neoService.beginTx();
+        Transaction transaction = neoService.beginTx();
         try {
             Iterator<AweProjectNode> aweProjects = root.getAllProjects();
             while (aweProjects.hasNext()) {
@@ -338,10 +338,10 @@ public class AweProjectService {
                     break;
                 }
             }            
-            tx.success();
+            transaction.success();
             return result;
         } finally {
-            tx.finish();
+            transaction.finish();
         }
 	}
 
@@ -361,7 +361,7 @@ public class AweProjectService {
      * @param node node to delete
      */
     public void deleteNode(Node node) {
-        Transaction tx = neoService.beginTx();
+        Transaction transaction = neoService.beginTx();
         try {
             LinkedList<Node> nodeToDelete = new LinkedList<Node>();
             nodeToDelete.add(node);
@@ -379,9 +379,9 @@ public class AweProjectService {
                 }
                 deleteNode.delete();
             }
-            tx.success();
+            transaction.success();
         } finally {
-            tx.finish();
+            transaction.finish();
         }
 
     }
@@ -396,20 +396,20 @@ public class AweProjectService {
 	 */
 	public RubyScriptNode findScript(RubyProjectNode rubyProject,
 			String scriptName) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			Iterator<RubyScriptNode> scripts = rubyProject.getScripts();
 			while (scripts.hasNext()) {
 				RubyScriptNode rubyScriptNode = (RubyScriptNode) scripts.next();
 				if (scriptName.equals(rubyScriptNode.getName())) {
-					tx.success();
+					transaction.success();
 					return rubyScriptNode;
 				}
 			}
-			tx.success();
+			transaction.success();
 			return null;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 
 	}
@@ -435,16 +435,16 @@ public class AweProjectService {
 			NeoCorePlugin.error(message, new SplashDatabaseException(message));
 			return null;
 		}
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			result = new RubyScriptNode(neoService.createNode());
 			result.setName(scriptName);
 			rubyProject.addScript(result);
 			result.addCell(cellNode);
-			tx.success();
+			transaction.success();
 			return result;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 
 	}
@@ -475,13 +475,13 @@ public class AweProjectService {
 	 * @return wrapper spreadsheet node
 	 */
 	public SpreadsheetNode getSpreadsheetByCell(CellNode cellNode) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			Node result = getSpreadSheet(cellNode);
-			tx.success();
+			transaction.success();
 			return result == null ? null : new SpreadsheetNode(result);
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -510,7 +510,7 @@ public class AweProjectService {
 	 * @return CellNode or null
 	 */
 	public CellNode findCellByScriptReference(RubyScriptNode script) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			Iterator<Node> cellIterator = script.getUnderlyingNode().traverse(
 					Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
@@ -521,10 +521,10 @@ public class AweProjectService {
 			if (cellIterator.hasNext()) {
 				result = new CellNode(cellIterator.next());
 			}
-			tx.success();
+			transaction.success();
 			return result;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 	
@@ -537,14 +537,14 @@ public class AweProjectService {
 	
 	public RubyProjectNode getSpreadsheetRoot(SpreadsheetNode spreadsheet) {
 	    RubyProjectNode result = null;
-	    Transaction tx = neoService.beginTx();
+	    Transaction transaction = neoService.beginTx();
 	    try {
 	        result = spreadsheet.getSpreadsheetRootProject();
 	        
-	        tx.success();
+	        transaction.success();
 	    } 
 	    finally {
-	        tx.finish();
+	        transaction.finish();
 	    }
 	    
 	    return result;

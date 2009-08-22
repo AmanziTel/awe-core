@@ -118,7 +118,7 @@ public class SpreadsheetService {
 					SplashDatabaseExceptionMessages.Duplicate_Spreadsheet, name);
 			throw new SplashDatabaseException(message);
 		} else {
-			Transaction tx = neoService.beginTx();
+			Transaction transaction = neoService.beginTx();
 
 			try {
 				SpreadsheetNode spreadsheet = new SpreadsheetNode(neoService.createNode());
@@ -127,11 +127,11 @@ public class SpreadsheetService {
 
 				root.addSpreadsheet(spreadsheet);
 
-				tx.success();
+				transaction.success();
 
 				return spreadsheet;
 			} finally {
-				tx.finish();
+				transaction.finish();
 			}
 		}
 	}
@@ -142,7 +142,7 @@ public class SpreadsheetService {
 	 * 
 	 */
 	public ChartNode createChart(SpreadsheetNode spreadsheet, String id) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 
 		try {
 			ChartNode chartNode = spreadsheet.getChart(id);
@@ -153,17 +153,17 @@ public class SpreadsheetService {
 				spreadsheet.addChart(chartNode);
 			}
 
-			tx.success();
+			transaction.success();
 
 			return chartNode;
 		} catch (SplashDatabaseException e) {
-			tx.failure();
+			transaction.failure();
 			String message = SplashDatabaseExceptionMessages.getFormattedString(
 					SplashDatabaseExceptionMessages.Service_Method_Exception, "createChart");
 			SplashPlugin.error(message, e);
 			return null;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -173,7 +173,7 @@ public class SpreadsheetService {
 	 * 
 	 */
 	public PieChartNode createPieChart(SpreadsheetNode spreadsheet, String id) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 
 		try {
 			PieChartNode chartNode = spreadsheet.getPieChart(id);
@@ -184,17 +184,17 @@ public class SpreadsheetService {
 				spreadsheet.addPieChart(chartNode);
 			}
 
-			tx.success();
+			transaction.success();
 
 			return chartNode;
 		} catch (SplashDatabaseException e) {
-			tx.failure();
+		    transaction.failure();
 			String message = SplashDatabaseExceptionMessages.getFormattedString(
 					SplashDatabaseExceptionMessages.Service_Method_Exception, "createChart");
 			SplashPlugin.error(message, e);
 			return null;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -204,7 +204,7 @@ public class SpreadsheetService {
 	 * 
 	 */
 	public ChartItemNode createChartItem(ChartNode chartNode, String id) throws SplashDatabaseException {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 
 		try {
 			ChartItemNode ChartItemNode = chartNode.getChartItem(id);
@@ -215,11 +215,11 @@ public class SpreadsheetService {
 				chartNode.addChartItem(ChartItemNode);
 			}
 
-			tx.success();
+			transaction.success();
 
 			return ChartItemNode;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -229,7 +229,7 @@ public class SpreadsheetService {
 	 * 
 	 */
 	public PieChartItemNode createPieChartItem(PieChartNode chartNode, String id) throws SplashDatabaseException {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 
 		try {
 			PieChartItemNode ChartItemNode = chartNode.getPieChartItem(id);
@@ -240,11 +240,11 @@ public class SpreadsheetService {
 				chartNode.addPieChartItem(ChartItemNode);
 			}
 
-			tx.success();
+			transaction.success();
 
 			return ChartItemNode;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -258,7 +258,7 @@ public class SpreadsheetService {
 	 * @return created Cell
 	 */
 	public CellNode createCell(SpreadsheetNode spreadsheet, CellID id) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 
 		try {
 			RowNode rowNode = spreadsheet.getRow(id.getRowName());
@@ -282,17 +282,17 @@ public class SpreadsheetService {
 			rowNode.addCell(cell);
 			columnNode.addCell(cell);
 
-			tx.success();
+			transaction.success();
 
 			return cell;
 		} catch (SplashDatabaseException e) {
-			tx.failure();
+		    transaction.failure();
 			String message = SplashDatabaseExceptionMessages.getFormattedString(
 					SplashDatabaseExceptionMessages.Service_Method_Exception, "createCell");
 			SplashPlugin.error(message, e);
 			return null;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -314,7 +314,7 @@ public class SpreadsheetService {
 			node = createCell(sheet, id);
 		}
 
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 
 		try {
 			node.setValue((String) cell.getValue());
@@ -342,11 +342,11 @@ public class SpreadsheetService {
                 node.setHorizontalAlignment(format.getHorizontalAlignment());
 			}
 
-			tx.success();
+			transaction.success();
 
 			return node;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -379,12 +379,12 @@ public class SpreadsheetService {
 	 * @return CellNode by ID or null if Cell doesn't exists
 	 */
 	public CellNode getCellNode(SpreadsheetNode sheet, CellID id) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 
 		try {
 			CellNode result = sheet.getCell(id.getRowName(), id.getColumnName());
 
-			tx.success();
+			transaction.success();
 
 			return result;
 		} catch (SplashDatabaseException e) {
@@ -392,7 +392,7 @@ public class SpreadsheetService {
 					SplashDatabaseExceptionMessages.Service_Method_Exception, "getCellNode");
 			SplashPlugin.error(message, e);
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 
 		return null;
@@ -408,16 +408,16 @@ public class SpreadsheetService {
 	 * @return CellNode by ID or null if Cell doesn't exists
 	 */
 	private ChartNode getChartNode(SpreadsheetNode sheet, String id) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 
 		try {
 			ChartNode result = sheet.getChartNode(id);
 
-			tx.success();
+			transaction.success();
 
 			return result;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -429,16 +429,16 @@ public class SpreadsheetService {
 	 * 
 	 */
 	private PieChartNode getPieChartNode(SpreadsheetNode sheet, String id) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 
 		try {
 			PieChartNode result = sheet.getPieChartNode(id);
 
-			tx.success();
+			transaction.success();
 
 			return result;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -539,17 +539,17 @@ public class SpreadsheetService {
 	// comments in #564 to support
 	// //Spreadsheets with same name in different Ruby and AWE projects
 	// public RubyProjectNode getRootNode() {
-	// Transaction tx = neoService.beginTx();
+	// Transaction transaction = neoService.beginTx();
 	// try {
 	//            
 	// RubyProjectNode root = new
 	// RubyProjectNode(neoService.getReferenceNode());
-	// tx.success();
+	// transaction.success();
 	//            
 	// return root;
 	// }
 	// finally {
-	// tx.finish();
+	// transaction.finish();
 	// }
 	// }
 
@@ -690,7 +690,7 @@ public class SpreadsheetService {
 		}
 		updatedNode.setCyclic(false);
 
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			Iterator<CellNode> dependentCells = updatedNode.getReferencedNodes();
 
@@ -725,9 +725,9 @@ public class SpreadsheetService {
 				}
 			}
 
-			tx.success();
+			transaction.success();
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -739,13 +739,13 @@ public class SpreadsheetService {
 	 * @return FullId
 	 */
 	public String getFullId(CellNode cell) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			String result = cell.getColumn().getColumnName() + cell.getRow().getRowIndex();
-			tx.success();
+			transaction.success();
 			return result;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -758,7 +758,7 @@ public class SpreadsheetService {
 	 *            row index (begin index: 0)
 	 */
 	public void insertRow(SpreadsheetNode spreadsheet, final int index) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			Iterator<Node> rowIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -814,9 +814,9 @@ public class SpreadsheetService {
 				}
 				rowNode.setRowIndex(String.valueOf(rowIndex + 1));
 			}
-			tx.success();
+			transaction.success();
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -888,7 +888,7 @@ public class SpreadsheetService {
 	 * @return true if all ok.
 	 */
 	public boolean deleteRow(SpreadsheetNode spreadsheet, final int index) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			String indexRow = String.valueOf(index + 1);
 			Iterator<Node> cellIterator;
@@ -906,7 +906,7 @@ public class SpreadsheetService {
 							}
 						}, SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
 				if (cellIterator.hasNext()) {
-					tx.success();
+					transaction.success();
 					return false;
 				}
 				deleteRow(rowNod);
@@ -965,13 +965,13 @@ public class SpreadsheetService {
 				rowNode.setRowIndex(String.valueOf(rowIndex - 1));
 			}
 
-			tx.success();
+			transaction.success();
 			return true;
 		} catch (SplashDatabaseException e) {
-			tx.failure();
+		    transaction.failure();
 			return false;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 
 	}
@@ -1065,7 +1065,7 @@ public class SpreadsheetService {
 	 *            row index (begin index: 0)
 	 */
 	public void insertColumn(SpreadsheetNode spreadsheet, final int index) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			Iterator<Node> columnIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -1128,9 +1128,9 @@ public class SpreadsheetService {
 				}
 				columnNode.setColumnName(newColumnLetter);
 			}
-			tx.success();
+			transaction.success();
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -1144,7 +1144,7 @@ public class SpreadsheetService {
 	 * @return true if all ok.
 	 */
 	public boolean deleteColumn(SpreadsheetNode spreadsheet, final int index) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			String indexColumn = CellID.getColumnLetter(index);
 			Iterator<Node> cellIterator;
@@ -1162,7 +1162,7 @@ public class SpreadsheetService {
 							}
 						}, SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
 				if (cellIterator.hasNext()) {
-					tx.success();
+					transaction.success();
 					return false;
 				}
 				deleteColumn(columnNod);
@@ -1229,13 +1229,13 @@ public class SpreadsheetService {
 				columnNode.setColumnName(newColumnLetter);
 			}
 
-			tx.success();
+			transaction.success();
 			return true;
 		} catch (SplashDatabaseException e) {
-			tx.failure();
+		    transaction.failure();
 			return false;
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 
 	}
@@ -1251,7 +1251,7 @@ public class SpreadsheetService {
 	 *            row2 index
 	 */
 	public void swapRows(SpreadsheetNode spreadsheet, final int index1, final int index2) {
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			Iterator<Node> rowIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -1308,9 +1308,9 @@ public class SpreadsheetService {
 
 				rowNode.setRowIndex(String.valueOf(newRowIndex + 1));
 			}
-			tx.success();
+			transaction.success();
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 
@@ -1366,7 +1366,7 @@ public class SpreadsheetService {
 	public void swapColumns(SpreadsheetNode spreadsheet, final int index1, final int index2) {
 		final String column1Name = CellID.getColumnLetter(index1);
 		final String column2Name = CellID.getColumnLetter(index2);
-		Transaction tx = neoService.beginTx();
+		Transaction transaction = neoService.beginTx();
 		try {
 			Iterator<Node> colIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -1424,9 +1424,9 @@ public class SpreadsheetService {
 
 				colNode.setColumnName(newColName);
 			}
-			tx.success();
+			transaction.success();
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 

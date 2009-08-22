@@ -11,7 +11,7 @@ public class ExampleImdbReader implements ImdbReader
 {
     private final NeoService neo;
     private final IndexService indexService;
-    private Transaction tx;
+    private Transaction transaction;
 
     public ExampleImdbReader( NeoService neoService, IndexService indexService )
     {
@@ -21,13 +21,13 @@ public class ExampleImdbReader implements ImdbReader
 
     public void beginTransaction()
     {
-        tx = neo.beginTx();
+        transaction = neo.beginTx();
     }
 
     public void endTransaction()
     {
-        tx.success();
-        tx.finish();
+        transaction.success();
+        transaction.finish();
     }
 
     public void newActor( String name, MovieRole[] movieRoles )

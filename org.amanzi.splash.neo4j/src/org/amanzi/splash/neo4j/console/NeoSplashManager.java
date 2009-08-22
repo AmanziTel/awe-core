@@ -2,6 +2,7 @@ package org.amanzi.splash.neo4j.console;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.utils.ActionUtil;
@@ -56,6 +57,21 @@ public class NeoSplashManager {
 			String udigName) throws SpreadsheetManagerException {
 		final String realUdigName = resolveUDIGProjectName(udigName);
 		final String realRdtName = resolveRDTProjectName(realUdigName, rdtName);
+		
+		//get AWEProject Node from database
+		final AweProjectNode aweNode = (AweProjectNode)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+		        private AweProjectNode result;
+		        
+		        public Object getValue() {
+		            return result;
+		        }
+		        
+		        public void run() {
+		            result = NeoCorePlugin.getDefault().getProjectService().findAweProject(realUdigName);
+		        }
+		});
+		
+		//get RubyProject Node from database
 		final RubyProjectNode rootNode = (RubyProjectNode) ActionUtil
 				.getInstance().runTaskWithResult(new RunnableWithResult() {
 
@@ -66,10 +82,11 @@ public class NeoSplashManager {
 					}
 
 					public void run() {
-						result = NeoCorePlugin.getDefault().getProjectService()
-								.findRubyProject(realUdigName);
+						result = NeoCorePlugin.getDefault().getProjectService().findRubyProject(aweNode, realRdtName);
 					}
 				});
+		
+	    //get Spreadsheet Node from database
 		final SpreadsheetNode spreadsheet = (SpreadsheetNode) ActionUtil
 				.getInstance().runTaskWithResult(new RunnableWithResult() {
 

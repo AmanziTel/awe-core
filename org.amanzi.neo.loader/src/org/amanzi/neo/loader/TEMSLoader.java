@@ -313,7 +313,7 @@ public class TEMSLoader {
 
     private static Node getGISNode(NeoService neo, Node tems) {
         Node gis = null;
-        Transaction tx = neo.beginTx();
+        Transaction transaction = neo.beginTx();
         try {
             Node reference = neo.getReferenceNode();
             for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
@@ -332,9 +332,9 @@ public class TEMSLoader {
             gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.Tems.getHeader());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
             gis.createRelationshipTo(tems, GeoNeoRelationshipTypes.NEXT);
-            tx.success();
+            transaction.success();
         } finally {
-            tx.finish();
+            transaction.finish();
         }
         return gis;
     }
@@ -344,7 +344,7 @@ public class TEMSLoader {
 	 */
 	private void saveData() {
 		if (signals.size() > 0) {
-			Transaction tx = neo.beginTx();
+			Transaction transaction = neo.beginTx();
 			try {
 				Node mp = neo.createNode();
 				mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
@@ -400,9 +400,9 @@ public class TEMSLoader {
 					debug("\tAdded measurement: " + propertiesString(ms));
 					point.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
 				}
-				tx.success();
+				transaction.success();
 			} finally {
-				tx.finish();
+				transaction.finish();
 			}
 		}
 		signals.clear();
@@ -468,7 +468,7 @@ public class TEMSLoader {
 	private void printMeasurements(Node file){
 		if (file == null)
 			return;
-		Transaction tx = neo.beginTx();
+		Transaction transaction = neo.beginTx();
 		try {
             for (Relationship relationship : file.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
 				Node measurement = relationship.getEndNode();
@@ -483,9 +483,9 @@ public class TEMSLoader {
 							.iterator();
 				}
 			}
-			tx.success();
+			transaction.success();
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 	}
 	

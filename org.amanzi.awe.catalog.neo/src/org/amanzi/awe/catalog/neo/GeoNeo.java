@@ -209,10 +209,10 @@ public class GeoNeo {
     private class GeoIterator implements Iterator<GeoNode>{
         private Iterator<Node> iterator;
         private GeoNode next;
-        private Transaction tx;
+        private Transaction transaction;
         private GeoIterator(Node gisNode){
             this.iterator = makeGeoNeoTraverser().iterator();
-            this.tx = neo.beginTx();
+            this.transaction = neo.beginTx();
         }
         public boolean hasNext() {
             while(next==null){
@@ -221,8 +221,8 @@ public class GeoNeo {
                 if(next.getCoords()==null) next = null;
             }
             if(next==null){
-                tx.success();
-                tx.finish();
+                transaction.success();
+                transaction.finish();
             }
             return next!=null;
         }

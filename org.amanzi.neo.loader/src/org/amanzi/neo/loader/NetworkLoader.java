@@ -134,12 +134,12 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             reader.close();
             // Save the bounding box
             if(gis!=null){
-                Transaction tx = neo.beginTx();
+                Transaction transaction = neo.beginTx();
                 try {
                     gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
-                    tx.success();
+                    transaction.success();
                 }finally{
-                    tx.finish();
+                    transaction.finish();
                 }
             }
             //Lagutko 21.07.2009, using of neo.core plugin
@@ -209,7 +209,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 				intIndexes = new int[ints.size()];
 				for(int i=0;i<ints.size();i++) intIndexes[i] = ints.get(i);
 			}else{
-				Transaction tx = neo.beginTx();
+				Transaction transaction = neo.beginTx();
 				try {
 					String bscField = fields[mainIndexes[0]];
 					String siteField = fields[mainIndexes[1]];
@@ -262,10 +262,10 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 					Node sector = addChild(site, NetworkElementTypes.SECTOR.toString(), sectorField);
 					for (int i : stringIndexes) sector.setProperty(headers[i], fields[i]);
 					for (int i : intIndexes) sector.setProperty(headers[i], Integer.parseInt(fields[i]));
-					tx.success();
+					transaction.success();
 					return true;
 				} finally {
-					tx.finish();
+					transaction.finish();
 				}
 			}
 		}
@@ -288,7 +288,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	 */
 	public static Node getNetwork(NeoService neo, String basename) {
 		Node network = null;
-		Transaction tx = neo.beginTx();
+		Transaction transaction = neo.beginTx();
 		try {
 			Node reference = neo.getReferenceNode();
 			for (Relationship relationship : reference.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
@@ -325,11 +325,11 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 			network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementTypes.NETWORK.toString());
 			network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
 			reference.createRelationshipTo(network, NetworkRelationshipTypes.CHILD);
-			tx.success();
+			transaction.success();
 		}catch (Exception e){
 		    e.printStackTrace();
 		} finally {
-			tx.finish();
+			transaction.finish();
 		}
 		if(network!=null) getGISNode(neo,network);
 		return network;
@@ -337,7 +337,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 
 	private static Node getGISNode(NeoService neo, Node network) {
         Node gis = null;
-        Transaction tx = neo.beginTx();
+        Transaction transaction = neo.beginTx();
         try {
             Node reference = neo.getReferenceNode();
             for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
@@ -351,9 +351,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.Network.getHeader());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
             gis.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
-            tx.success();
+            transaction.success();
         } finally {
-            tx.finish();
+            transaction.finish();
         }
         return gis;
 	}

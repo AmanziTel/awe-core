@@ -92,7 +92,7 @@ public class NeoService extends IService {
             synchronized (this) {
                 if (members == null) {
                     checkNeo(); // check we have a connection to the database
-                    Transaction tx = neo.beginTx();
+                    Transaction transaction = neo.beginTx();
                     try {
                         members = new ArrayList<NeoGeoResource>();
                         for(Relationship relationship:neo.getReferenceNode().getRelationships(Direction.OUTGOING)){
@@ -101,9 +101,9 @@ public class NeoService extends IService {
                                 members.add(new NeoGeoResource(this,neo,node));
                             }
                         }
-                        tx.success();
+                        transaction.success();
                     } finally {
-                        tx.finish();
+                        transaction.finish();
                     }
                 }
             }
