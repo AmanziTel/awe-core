@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.transaction.Transaction;
-
 import net.refractions.udig.project.IRubyProject;
 import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.ISpreadsheet;
