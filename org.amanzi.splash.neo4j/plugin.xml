@@ -127,6 +127,23 @@
           </toolbar>
        </menuContribution>
     </extension>
+    <extension
+          point="org.eclipse.ui.importWizards">
+       <category
+             id="org.amanzi.splash.neo4j.importWizards.sampleCategory"
+             name="Neo DataFile Import">
+       </category>
+       <wizard
+             category="org.amanzi.splash.neo4j.importWizards.sampleCategory"
+             class="org.amanzi.splash.ui.neo4j.wizards.NeoDataFileImportWizard"
+             icon="icons/sample.gif"
+             id="org.amanzi.splash.neo4j.importWizards.NeoDataFileImportWizard"
+             name="Import Neo Data File">
+          <description>
+             Import a file from the local file system into the workspace.
+          </description>
+       </wizard>
+    </extension>
    
    
    
