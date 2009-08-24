@@ -57,7 +57,8 @@ public class TEMSLoader {
     private int count_valid_changed = 0;
     private int limit = 0;
     private static int[] times = new int[2];
-    
+    private double[] bbox;
+
     public TEMSLoader(String filename) {
 		this(null,filename);
 	}
@@ -127,6 +128,15 @@ public class TEMSLoader {
 		}finally{
 			reader.close();
             saveData();
+            if (gis != null && bbox != null) {
+                Transaction transaction = neo.beginTx();
+                try {
+                    gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
+                    transaction.success();
+                } finally {
+                    transaction.finish();
+                }
+            }
             String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
             URL url = new URL("file://" + databaseLocation);
@@ -352,8 +362,22 @@ public class TEMSLoader {
 				mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
 				mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                 String[] ll = latlong.split("\\t");
-                mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, Double.parseDouble(ll[0]));
-                mp.setProperty(INeoConstants.PROPERTY_LONG_NAME, Double.parseDouble(ll[1]));
+                double lat = Double.parseDouble(ll[0]);
+                mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
+                double lon = Double.parseDouble(ll[1]);
+                mp.setProperty(INeoConstants.PROPERTY_LONG_NAME, lon);
+                if (bbox == null) {
+                    bbox = new double[] {lon, lon, lat, lat};
+                } else {
+                    if (bbox[0] > lon)
+                        bbox[0] = lon;
+                    if (bbox[1] < lon)
+                        bbox[1] = lon;
+                    if (bbox[2] > lat)
+                        bbox[2] = lat;
+                    if (bbox[3] < lat)
+                        bbox[3] = lat;
+                }
 				if (file == null) {
 					Node reference = neo.getReferenceNode();
 					for (Relationship relationship : reference.getRelationships(MeasurementRelationshipTypes.CHILD,
