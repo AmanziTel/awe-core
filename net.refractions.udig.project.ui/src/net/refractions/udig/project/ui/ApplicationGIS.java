@@ -556,7 +556,7 @@ public class ApplicationGIS {
     
     private static void openSpreadsheet(Spreadsheet element) {
         if (element.getSpreadsheetType().equals(SpreadsheetType.FILE_SPREADSHEET)) {
-            RDTProjectManager.openSpreadsheet(element.getResource());
+            //RDTProjectManager.openSpreadsheet(element.getResource());
         }
         else if (element.getSpreadsheetType().equals(SpreadsheetType.NEO4J_SPREADSHEET)) {
             RDTProjectManager.openSpreadsheet(element.getSpreadsheetPath(), element.getRubyProjectInternal().getName());

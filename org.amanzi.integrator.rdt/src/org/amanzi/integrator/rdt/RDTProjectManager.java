@@ -10,7 +10,6 @@ import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.rdt.launching.util.LaunchUtils;
 import org.amanzi.splash.neo4j.ui.SplashEditorInput;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
-import org.amanzi.splash.utilities.Util;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -207,17 +206,6 @@ public class RDTProjectManager {
 		} catch (RubyModelException e) {
 
 		}
-	}
-
-	/**
-	 * Opens File-based Spreadsheet in Editor
-	 * 
-	 * @param resource
-	 *            resource of Spreadsheet to open
-	 */
-
-	public static void openSpreadsheet(IResource resource) {
-		Util.openSpreadsheet(PlatformUI.getWorkbench(), (IFile) resource);
 	}
 
 	/**
