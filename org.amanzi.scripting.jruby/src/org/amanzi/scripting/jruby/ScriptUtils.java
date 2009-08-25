@@ -168,6 +168,9 @@ public class ScriptUtils {
 		if (rubyLocation.startsWith("jar:file:")) {
 		    rubyLocation = "file:/" + rubyLocation.substring(9);
 		}
+		else if (rubyLocation.startsWith("file:")) {
+		    rubyLocation = rubyLocation.substring(5);
+		}
 		for (String path : new String[] { rubyLocation /*suggested,
 				Platform.getBundle("org.jruby").getLocation(),
 				".",
