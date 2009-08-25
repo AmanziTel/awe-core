@@ -18,8 +18,10 @@ module Neo4j
     return if @instance
     @instance = Neo.new
     @instance.start(prev)
-    at_exit do
-      Neo4j.stop
+    unless prev # do not stop a service passed in from the outside
+      at_exit do
+        Neo4j.stop
+      end
     end
     @instance
   end
