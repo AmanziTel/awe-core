@@ -42,7 +42,7 @@ module Neo4j
         res
       end 
 
-      def placebo?(tx)
+      def placebo?(tx)        
         tx.java_object.java_type == 'org.neo4j.api.core.EmbeddedNeo$PlaceboTransaction'
       end
 
@@ -51,14 +51,21 @@ module Neo4j
       # real transaction.
       #
       def new
+        puts 'new in'
         tx = Neo4j.instance.begin_transaction
+        puts running?
         if running?
           # expects a placebo transaction, check just in case
           raise "Expected placebo transaction since one normal is already running" unless placebo?(tx)
-          tx = Transaction.current.create_placebo_tx_if_not_already_exists
+          puts 'try to create placebo'
+          tx = Transaction.current.create_placebo_tx_if_not_already_exists         
+          puts tx
           tx
         else
-          raise "Expected NOT placebo transaction since no TX is running" if placebo?(tx)
+          #Lagutko, 24.08.2009, since we use Neo4j RubyGem in AWE we didn't start NeoService using RubyCode
+          #but using Neoclipse functionality, and because of this here we will have a Placebo Transaction without
+          #any running Transactions in Neo4j RubyGem
+          #raise "Expected NOT placebo transaction since no TX is running" if placebo?(tx)          
           super(tx)
         end
       end
@@ -100,12 +107,13 @@ module Neo4j
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
         ret = nil
-    
+        
         begin
           tx = Neo4j::Transaction.new
           ret = yield tx
         rescue Exception => e
           #$NEO_LOGGER.warn{e.backtrace.join("\n")}
+          puts e          
           tx.failure
           raise e  
         ensure
@@ -168,8 +176,8 @@ module Neo4j
       @neo_tx = neo_tx
       @@counter += 1
       @id = @@counter
-      @failure = false      
-      Thread.current[:transaction] = self
+      @failure = false   
+      Thread.current[:transaction] = self      
     end
     
     def to_s
@@ -250,6 +258,7 @@ module Neo4j
   class PlaceboTransaction < DelegateClass(Transaction)
     
     def initialize(tx)
+      puts 'placebo transaction initialize'
       super(tx)
       @tx = tx # store it only for logging purpose
     end
