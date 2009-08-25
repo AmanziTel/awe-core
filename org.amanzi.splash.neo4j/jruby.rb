@@ -3,7 +3,7 @@ require $jrubyPath + "/lib/ruby/1.8/erb"
 
 awe_console_plugin = Java::org.eclipse.core.runtime.Platform.getBundle("org.amanzi.awe.script.jirb").getEntry("")
 awe_console_path = Java::org.eclipse.core.runtime.FileLocator.resolve(awe_console_plugin).getFile
-#require awe_console_path + 'neoSetup.rb'
+require awe_console_path + 'neoSetup.rb'
 
 def method_missing(method_id, *args)
   if method_id.to_s =~ /([a-z]{1,3})([0-9]+)/      
@@ -26,6 +26,8 @@ end
 def update(currentCellId, formula)      
   #idArray contains IDs of referenced Cells
   @idArray = []
+  puts 'update'
+  puts formula
   if formula[0] == '='[0]    
     formula = formula[1..formula.length]
     display = ERB.new("<%= #{formula} %>").result
