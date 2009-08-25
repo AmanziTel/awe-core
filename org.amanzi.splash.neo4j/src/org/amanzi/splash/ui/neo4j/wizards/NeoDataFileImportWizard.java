@@ -1,13 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2006 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *******************************************************************************/
 package org.amanzi.splash.ui.neo4j.wizards;
 
 import java.io.FileInputStream;
@@ -16,21 +6,33 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.util.Iterator;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 
-import org.amanzi.splash.neo4j.swing.Cell;
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.splash.neo4j.swing.SplashTable;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.ui.AbstractSplashEditor;
-import org.amanzi.splash.neo4j.utilities.CSVParser;
+import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.dialogs.DialogSettings;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.rubypeople.rdt.core.RubyModelException;
 
 public class NeoDataFileImportWizard extends Wizard implements IImportWizard {
 
@@ -46,48 +48,101 @@ public class NeoDataFileImportWizard extends Wizard implements IImportWizard {
 	public boolean performFinish() {
 		final IFile file = mainPage.createNewFile();
 
-		if (file == null)
-			return false;
+		final String containerName = "project.AWEScript";
+
+		NeoSplashUtil.logn("containerName: " + containerName);
+
+		final String fileName = mainPage.getFileName();
+		IRunnableWithProgress op = new IRunnableWithProgress() {
+			public void run(final IProgressMonitor monitor) throws InvocationTargetException {
+				try {
+					getShell().getDisplay().asyncExec(new Runnable() {
+						public void run() {
+							AbstractSplashEditor editor = (AbstractSplashEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+
+							SplashTable table = editor.getTable();
+
+							SplashTableModel model = (SplashTableModel) table.getModel();
+
+							monitor.beginTask("Loading ", getLinesCount(file));
+
+							IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+
+							monitor.worked(1);
+
+							monitor.setTaskName("Loading records from file...");
+
+							NeoSplashUtil.LoadFileIntoSpreadsheet(file.getLocation().toString(), model, monitor);		
+						}
+					});
 
 
-		String path = file.getLocation().toString();
-		NeoSplashUtil.logn("path: " + path);
-		InputStream is;
-		try {
-			is = new FileInputStream(path);
-			LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
-			String line;
-			line = lnr.readLine();
-			AbstractSplashEditor editor = (AbstractSplashEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-			SplashTable table = editor.getTable();
-			SplashTableModel model = (SplashTableModel) table.getModel();
-			//model.setValueAt(new Cell("Hello","Hello"), 1, 1);
-			int i=0;
-			int j=0;
-			while (line != null  && line.lastIndexOf(";") > 0){
-				CSVParser parser = new CSVParser(';');
-				List list = parser.parse(line);
-				Iterator it = list.iterator();
-				i = 0;
-				while (it.hasNext()) {
-					model.setValueAt(new Cell("",it.next().toString()), i++, j);
-					System.out.println(it.next());
+					//doFinish(file, monitor);
+				} finally {
+					monitor.done();
 				}
-
-				line = lnr.readLine();
-				j++;
 			}
+		};
+		try {
+			getContainer().run(true, false, op);
+		} catch (InterruptedException e) {
+			return false;
+		} catch (InvocationTargetException e) {
+			Throwable realException = e.getTargetException();
+			MessageDialog.openError(getShell(), "Error", realException.getMessage());
+			return false;
+		}
+		return true;
+	}
+
+	private int getLinesCount(IFile file){
+		InputStream is = null;
+		try {
+			is = new FileInputStream(file.getLocation().toString());
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
+		String line;
+
+
+		int count = 0;
+		try {
+			while (lnr.readLine() != null){
+				count++;
+
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		return true;
+		NeoSplashUtil.logn("Number of lines: " + count);
+
+		return count;
 	}
 
+	/**
+	 * The worker method. It will find the container, create the
+	 * file if missing or just replace its contents, and open
+	 * the editor on the newly created file.
+	 */
+
+	private void doFinish(
+			final IFile file,
+			final IProgressMonitor monitor)
+	throws CoreException {
+
+
+		// create a sample file
+
+
+
+
+
+		monitor.worked(1);
+	}
 
 
 	/* (non-Javadoc)
@@ -96,7 +151,10 @@ public class NeoDataFileImportWizard extends Wizard implements IImportWizard {
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		setWindowTitle("File Import Wizard"); //NON-NLS-1
 		setNeedsProgressMonitor(true);
-		mainPage = new NeoDataImportWizardPage("Import Neo Data File",selection); //NON-NLS-1
+
+
+
+		mainPage = new NeoDataImportWizardPage("Import Neo Data File", selection); //NON-NLS-1
 	}
 
 	/* (non-Javadoc)

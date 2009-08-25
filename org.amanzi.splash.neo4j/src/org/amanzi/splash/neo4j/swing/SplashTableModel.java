@@ -492,13 +492,11 @@ public class SplashTableModel extends DefaultTableModel {
 	public void setValueAt(final Object value, int row, int column) {
 		// row and column index are checked but storing in a Hashtable
 		// won't cause real problems
-		NeoSplashUtil.logn("row = " + row + " - getRowCount () = "
-				+ getRowCount());
+//		NeoSplashUtil.logn("row = " + row + " - getRowCount () = "
+//				+ getRowCount() + " - column: " + column + " - getColumnCount: ");
 		if (row >= getRowCount())
 			throw new ArrayIndexOutOfBoundsException(row);
 		if (column >= getColumnCount()) {
-			NeoSplashUtil.logn("column: " + column + " - getColumnCount: "
-					+ getColumnCount());
 			throw new ArrayIndexOutOfBoundsException(column);
 		}
 

@@ -1,8 +1,22 @@
 package org.amanzi.splash.neo4j.handlers;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
+import java.util.Iterator;
+import java.util.List;
+
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.splash.neo4j.swing.Cell;
+import org.amanzi.splash.neo4j.swing.SplashTable;
+import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.ui.AbstractSplashEditor;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
+import org.amanzi.splash.neo4j.utilities.CSVParser;
+import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -20,6 +34,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
+
+import com.eteks.openjeks.format.CellFormat;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -42,6 +58,8 @@ public class SplashToolbarHandler extends AbstractHandler {
 		
 				AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
 				editor.plotCellsBarChart();
+		
+		
 		
 		return null;
 	}

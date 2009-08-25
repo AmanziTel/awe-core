@@ -5,13 +5,16 @@ import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -25,17 +28,23 @@ import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.neo4j.swing.Cell;
+import org.amanzi.splash.neo4j.swing.SplashTable;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
+import org.amanzi.splash.neo4j.ui.AbstractSplashEditor;
 import org.amanzi.splash.neo4j.ui.SplashEditorInput;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+
+import com.eteks.openjeks.format.CellFormat;
 
 public class NeoSplashUtil {
 
@@ -284,6 +293,50 @@ public static final boolean enableNeo4j = true;
 		}
 		return result;
 		
+	}
+	
+	public static void LoadFileIntoSpreadsheet(String path, SplashTableModel model, IProgressMonitor monitor){
+		//String path = "c:\\sample.txt";
+		//NeoSplashUtil.logn("path: " + path);
+		InputStream is;
+		try {
+			is = new FileInputStream(path);
+			LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
+			String line;
+			line = lnr.readLine();
+			
+			//model.setValueAt(new Cell("Hello","Hello"), 1, 1);
+			int i=0;
+			int j=0;
+			CSVParser parser = new CSVParser(';');
+			
+			while (line != null  && line.lastIndexOf(";") > 0){
+				
+				monitor.setTaskName("Loading record #" + i);
+				NeoSplashUtil.logn("loading line #" + i);
+		
+				
+				List list = parser.parse(line);
+				Iterator it = list.iterator();
+				j = 0;
+				while (it.hasNext()) {
+					model.setValueAt(new Cell(i, j, "",(String) it.next(), new CellFormat()), i, j);
+					j++;
+				}
+
+				line = lnr.readLine();
+
+				monitor.worked(i);
+				i++;
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	/**
