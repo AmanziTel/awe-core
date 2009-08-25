@@ -3,10 +3,15 @@ package org.amanzi.scripting.jruby;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import net.refractions.udig.catalog.URLUtils;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
@@ -115,7 +120,7 @@ public class ScriptUtils {
         //Lagutko, 20.08.2009, now we have Neo4j RubyGem inside current plugin but not inside org.jruby
         //TODO: Lagutko: check this for complete application when plugin stores in JARs
         try {
-            String neoRubyGemDir = FileLocator.resolve(Platform.getBundle("org.amanzi.scripting.jruby").getEntry(".")).getFile() + "/neo4j";
+            String neoRubyGemDir = FileLocator.resolve(Platform.getBundle("org.amanzi.scripting.jruby").getEntry("/")).getFile() + "/neo4j";
         
             loadPath.add(neoRubyGemDir + "/lib");
             loadPath.add(neoRubyGemDir + "/lib/relations");
@@ -157,8 +162,13 @@ public class ScriptUtils {
 	/** search for jruby home, starting with passed value, if any */
 	private static String findJRubyHome(String suggested) throws IOException {
 		String jRubyHome = null;			
-		//Lagutko, 22.06.2009, since now we search ruby home only in org.jruby plugin		
-		for (String path : new String[] { FileLocator.resolve(Platform.getBundle("org.jruby").getEntry(".")).getFile() /*suggested,
+		//Lagutko, 22.06.2009, since now we search ruby home only in org.jruby plugin
+		URL rubyLocationURL = Platform.getBundle("org.jruby").getEntry("/");		
+		String rubyLocation = URLUtils.urlToString(FileLocator.resolve(rubyLocationURL), false);
+		if (rubyLocation.startsWith("jar:file:")) {
+		    rubyLocation = "file:/" + rubyLocation.substring(9);
+		}
+		for (String path : new String[] { rubyLocation /*suggested,
 				Platform.getBundle("org.jruby").getLocation(),
 				".",
 				"C:/Program Files/JRuby",
