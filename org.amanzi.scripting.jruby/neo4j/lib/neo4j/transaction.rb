@@ -51,15 +51,11 @@ module Neo4j
       # real transaction.
       #
       def new
-        puts 'new in'
         tx = Neo4j.instance.begin_transaction
-        puts running?
         if running?
           # expects a placebo transaction, check just in case
           raise "Expected placebo transaction since one normal is already running" unless placebo?(tx)
-          puts 'try to create placebo'
           tx = Transaction.current.create_placebo_tx_if_not_already_exists         
-          puts tx
           tx
         else
           #Lagutko, 24.08.2009, since we use Neo4j RubyGem in AWE we didn't start NeoService using RubyCode
