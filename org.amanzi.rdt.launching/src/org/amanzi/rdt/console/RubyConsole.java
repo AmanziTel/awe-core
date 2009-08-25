@@ -214,7 +214,7 @@ public class RubyConsole extends IOConsole implements IConsole {
 		}
 		catch (Exception e) {			
 			//pring stack trace of any exception to output stream
-			AweLaunchingPlugin.log(null, e);
+			e.printStackTrace(outputStream);
 		}
 		finally {
 			runtime.tearDown();
