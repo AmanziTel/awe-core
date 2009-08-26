@@ -75,6 +75,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -83,13 +84,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
-import org.eclipse.ui.part.ViewPart;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 
@@ -1055,7 +1054,54 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		
 		String heading = (String) hc.getValue();
 		
+		iv.getFiltersList().addHeadingToList(heading);
+		
+		ComboBoxCellEditor cb = (ComboBoxCellEditor)iv.getTableViewer().getCellEditors()[0];
+		
+//		String[] oldItems = cb.getItems();
+//		
+//		String[] newItems = new String[oldItems.length+1];
+//		
+//		for (int i=0;i<oldItems.length;i++){
+//			newItems[i] = oldItems[i];
+//		}
+//		
+//		newItems[oldItems.length] = heading;
+		
+		cb.setItems(iv.getFiltersList().getHeadingsList());
+		
+		
 		iv.getFiltersList().addFilter(heading,text);
+	}
+	
+	
+	public void LoadHeadings(){
+		ImportBuilderView view = 
+			(ImportBuilderView) PlatformUI.getWorkbench().
+		getActiveWorkbenchWindow().getActivePage().findView("org.amanzi.splash.neo4j.views.ImportBuilderView");
+		
+		ImportBuilderTableViewer iv = view.getImportBuilderTableViewer();
+		
+		SplashTableModel model = (SplashTableModel)table.getModel();
+		
+		
+		Cell hc = (Cell) model.getValueAt(0, 0);
+		String heading = (String) hc.getValue();
+		
+		int j = 0;
+		
+		while (heading != ""){
+		iv.getFiltersList().addHeadingToList(heading);
+		
+		ComboBoxCellEditor cb = (ComboBoxCellEditor)iv.getTableViewer().getCellEditors()[0];
+		
+		cb.setItems(iv.getFiltersList().getHeadingsList());
+		j++;
+		hc = (Cell) model.getValueAt(0, j);
+		heading = (String) hc.getValue();
+		}
+		
+
 	}
 
 	public boolean isEnabled() {

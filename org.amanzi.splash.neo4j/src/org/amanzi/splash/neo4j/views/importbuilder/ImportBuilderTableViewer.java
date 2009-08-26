@@ -217,7 +217,7 @@ public class ImportBuilderTableViewer {
 		editors[1] = textEditor;
 
 		// Column 3 : Owner (Combo Box) 
-		editors[0] = new ComboBoxCellEditor(table, filtersList.getFilterHeading());
+		editors[0] = new ComboBoxCellEditor(table, filtersList.getHeadingsList(), SWT.READ_ONLY);
 
 		// Column 4 : Percent complete (Text with digits only)
 		textEditor = new TextCellEditor(table);
@@ -301,7 +301,7 @@ public class ImportBuilderTableViewer {
 	 */
 	public String[] getChoices(String property) {
 		if (FILTER_HEADING_COLUMN.equals(property))
-			return filtersList.getFilterHeading();  // The ImportBuilderFilterList knows about the choice of owners
+			return filtersList.getHeadingsList();  // The ImportBuilderFilterList knows about the choice of owners
 		else
 			return new String[]{};
 	}
@@ -397,5 +397,13 @@ public class ImportBuilderTableViewer {
 
 	public void setTable(Table table) {
 		this.table = table;
+	}
+
+	public TableViewer getTableViewer() {
+		return tableViewer;
+	}
+
+	public void setTableViewer(TableViewer tableViewer) {
+		this.tableViewer = tableViewer;
 	}
 }

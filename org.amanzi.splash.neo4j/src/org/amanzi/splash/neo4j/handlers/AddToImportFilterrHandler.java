@@ -30,7 +30,9 @@ public class AddToImportFilterrHandler extends AbstractHandler {
 				AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
 //				editor.plotCellsBarChart();
 		
-		editor.addNewFilter();
+		//editor.addNewFilter();
+				
+				editor.LoadHeadings();
 		return null;
 	}
 }

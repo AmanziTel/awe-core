@@ -40,24 +40,30 @@ public class ImportBuilderFilterList {
 	 */
 	private void initData() {
 		ImportBuilderFilter filter;
-		filter_headings.add("Message Type");
-		filter_headings.add("Heading2");
-		filter_headings.add("Heading3");
-		for (int i = 0; i < 3; i++) {
-			filter = new ImportBuilderFilter(filter_headings.get(i),"Text" + i);
-			filters.add(filter);
-		}
-	};
+		//filter_headings.add("Message Type");
+		//filter_headings.add("Heading2");
+		//filter_headings.add("Heading3");
+		//for (int i = 0; i < 3; i++) {
+			//filter = new ImportBuilderFilter(filter_headings.get(i),"Text" + i);
+			//filters.add(filter);
+		//}
+		
+		
+	}
 
 	/**
 	 * Return the array of owners   
 	 */
-	public String[] getFilterHeading() {
+	public String[] getHeadingsList() {
 		
 		String[] ret = new String[filter_headings.size()];
 		for (int i=0;i<filter_headings.size();i++) ret[i] = filter_headings.get(i);
 		return ret;
 		
+	}
+	
+	public void addHeadingToList(String heading){
+		filter_headings.add(heading);
 	}
 	
 	public void setFilterHeading(int index, String heading){
@@ -91,6 +97,8 @@ public class ImportBuilderFilterList {
 		Iterator iterator = changeListeners.iterator();
 		while (iterator.hasNext())
 			((IImportBuilderFilterListViewer) iterator.next()).addFilter(filter);
+		
+		
 	}
 
 	/**
