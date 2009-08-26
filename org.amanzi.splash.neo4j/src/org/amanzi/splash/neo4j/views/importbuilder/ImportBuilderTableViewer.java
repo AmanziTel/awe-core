@@ -16,26 +16,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
-/**
- * The ImportBuilderTableViewer class is meant to be a fairly complete example
- * of the use of the org.eclipse.jface.viewers.TableViewer class to 
- * implement an editable table with text, combobox and image 
- * editors. 
- * 
- * The example application metaphor consists of a table to view and 
- * edit tasks in a task list. It is by no means a complete or truly 
- * usable application.
- * 
- * This example draws from sample code in the Eclipse
- * org.eclipse.ui.views.tasklist.TaskList class and some sample code 
- * in SWT fragments from the eclipse.org web site. 
- * 
- * Known issue: We were not able to get the images to be center aligned
- * in the checkbox column. 
- * 
- * @author Laurent Gauthier
- * @created Apr 2, 2003  
- */
+
 
 public class ImportBuilderTableViewer {
 /**

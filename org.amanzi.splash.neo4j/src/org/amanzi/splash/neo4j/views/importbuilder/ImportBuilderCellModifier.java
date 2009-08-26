@@ -1,9 +1,3 @@
-/**
- * (c) Copyright Mirasol Op'nWorks Inc. 2002, 2003. 
- * http://www.opnworks.com
- * Created on Apr 2, 2003 by lgauthier@opnworks.com
- * 
- */
 
 package org.amanzi.splash.neo4j.views.importbuilder;
 import org.eclipse.jface.viewers.ICellModifier;
