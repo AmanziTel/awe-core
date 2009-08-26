@@ -69,19 +69,19 @@ public class ImportBuilderView extends ViewPart {
 	 */
 	public ImportBuilderView() {
 	}
-
+	private ImportBuilderTableViewer importBuilderTableViewer;
 
 	/**
 	 * This is a callback that will allow us
 	 * to create the viewer and initialize it.
 	 */
 	public void createPartControl(Composite parent) {
-final ImportBuilderTableViewer tableViewerExample = new ImportBuilderTableViewer(parent);
+		importBuilderTableViewer = new ImportBuilderTableViewer(parent);
 		
-		tableViewerExample.getControl().addDisposeListener(new DisposeListener() {
+		importBuilderTableViewer.getControl().addDisposeListener(new DisposeListener() {
 
 			public void widgetDisposed(DisposeEvent e) {
-				tableViewerExample.dispose();			
+				importBuilderTableViewer.dispose();			
 			}
 			
 		});
@@ -173,5 +173,16 @@ final ImportBuilderTableViewer tableViewerExample = new ImportBuilderTableViewer
 	 */
 	public void setFocus() {
 		//viewer.getControl().setFocus();
+	}
+
+
+	public ImportBuilderTableViewer getImportBuilderTableViewer() {
+		return importBuilderTableViewer;
+	}
+
+
+	public void setImportBuilderTableViewer(
+			ImportBuilderTableViewer importBuilderTableViewer) {
+		this.importBuilderTableViewer = importBuilderTableViewer;
 	}
 }

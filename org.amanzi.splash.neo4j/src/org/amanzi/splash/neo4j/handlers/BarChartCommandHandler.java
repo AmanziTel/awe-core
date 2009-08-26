@@ -42,11 +42,11 @@ import com.eteks.openjeks.format.CellFormat;
  * @see org.eclipse.core.commands.IHandler
  * @see org.eclipse.core.commands.AbstractHandler
  */
-public class SplashToolbarHandler extends AbstractHandler {
+public class BarChartCommandHandler extends AbstractHandler {
 	/**
 	 * The constructor.
 	 */
-	public SplashToolbarHandler() {
+	public BarChartCommandHandler() {
 	}
 
 	/**
@@ -55,10 +55,11 @@ public class SplashToolbarHandler extends AbstractHandler {
 	 */
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		
+//		
 				AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
 				editor.plotCellsBarChart();
 		
+		//editor.addNewFilter();
 		
 		
 		return null;

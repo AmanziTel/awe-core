@@ -63,6 +63,8 @@ import org.amanzi.splash.neo4j.swing.ColumnHeaderRenderer;
 import org.amanzi.splash.neo4j.swing.SplashTable;
 import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
+import org.amanzi.splash.neo4j.views.importbuilder.ImportBuilderTableViewer;
+import org.amanzi.splash.neo4j.views.importbuilder.ImportBuilderView;
 import org.amanzi.splash.ui.neo4j.wizards.ExportScriptWizard;
 import org.eclipse.albireo.core.SwingControl;
 import org.eclipse.core.resources.IFile;
@@ -81,11 +83,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.part.ViewPart;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 
@@ -981,7 +985,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 				launchCellFormatPanel(table);
 			}
 		});
-
+		contextMenu.add(new JSeparator());
+		contextMenu.add(cellFormattingMenu);
 		// Lagutko, 30.07.2009, new menu items for integration with RDT
 
 		final Cell cell = (Cell) table.getValueAt(rowIndex, columnIndex);
@@ -1015,22 +1020,42 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 				}
 			});
 			contextMenu.add(updateCellMenu);
-			
-			
-			JMenuItem addToImportFilterMenu = new JMenuItem();
-			addToImportFilterMenu.setText("Add to Import Filter");
-			addToImportFilterMenu.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					//updateCell(cell);
-					
-				}
-			});
 			contextMenu.add(updateCellMenu);
 		}
-
-		contextMenu.add(new JSeparator());
-		contextMenu.add(cellFormattingMenu);
+		
+		JMenuItem addToImportFilterMenu = new JMenuItem();
+		addToImportFilterMenu.setText("Add to Import Filter");
+		addToImportFilterMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+					
+				addNewFilter();
+			}
+		});
+		contextMenu.add(addToImportFilterMenu);
+		
+		
 		return contextMenu;
+	}
+	
+	public void addNewFilter(){
+		ImportBuilderView view = 
+			(ImportBuilderView) PlatformUI.getWorkbench().
+		getActiveWorkbenchWindow().getActivePage().findView("org.amanzi.splash.neo4j.views.ImportBuilderView");
+		
+		ImportBuilderTableViewer iv = view.getImportBuilderTableViewer();
+		
+		SplashTableModel model = (SplashTableModel)table.getModel();
+		
+		Cell c = (Cell) model.getValueAt(table.getSelectedRow(), table.getSelectedColumn());
+		
+		
+		String text = (String) c.getValue();
+		
+		Cell hc = (Cell) model.getValueAt(0, table.getSelectedColumn());
+		
+		String heading = (String) hc.getValue();
+		
+		iv.getFiltersList().addFilter(heading,text);
 	}
 
 	public boolean isEnabled() {

@@ -81,6 +81,17 @@ public class ImportBuilderFilterList {
 		while (iterator.hasNext())
 			((IImportBuilderFilterListViewer) iterator.next()).addFilter(filter);
 	}
+	
+	/**
+	 * Add a new filter to the collection of filters
+	 */
+	public void addFilter(String heading, String text) {
+		ImportBuilderFilter filter = new ImportBuilderFilter(heading, text);
+		filters.add(filters.size(), filter);
+		Iterator iterator = changeListeners.iterator();
+		while (iterator.hasNext())
+			((IImportBuilderFilterListViewer) iterator.next()).addFilter(filter);
+	}
 
 	/**
 	 * @param filter

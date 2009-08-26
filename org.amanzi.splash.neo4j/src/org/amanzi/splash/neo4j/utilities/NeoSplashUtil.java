@@ -33,6 +33,8 @@ import org.amanzi.splash.neo4j.swing.SplashTableModel;
 import org.amanzi.splash.neo4j.ui.AbstractSplashEditor;
 import org.amanzi.splash.neo4j.ui.SplashEditorInput;
 import org.amanzi.splash.neo4j.ui.SplashPlugin;
+import org.amanzi.splash.neo4j.views.importbuilder.ImportBuilderTableViewer;
+import org.amanzi.splash.neo4j.views.importbuilder.ImportBuilderView;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -338,7 +340,8 @@ public static final boolean enableNeo4j = true;
 		}
 
 	}
-
+	
+	
 	/**
 	 * Returns content of script
 	 * 
