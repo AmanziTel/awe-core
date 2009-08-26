@@ -26,6 +26,7 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.neo4j.api.core.Transaction;
 import org.osgi.framework.BundleContext;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyProject;
@@ -53,6 +54,8 @@ public class SplashPlugin extends AbstractUIPlugin {
 	 * OpenListener for RubyExplorer
 	 */
 	private SpreadsheetOpenListener openListener;
+
+    private Transaction transaction;
 	
 	/**
 	 * Constructor for SplashPlugin.
@@ -73,6 +76,7 @@ public class SplashPlugin extends AbstractUIPlugin {
 		
 		//Lagutko: 11.08.2009, listener for RubyExplorer activation
 		rubyExplorerListener = new RubyExplorerListener();		
+        transaction = NeoServiceProvider.getProvider().getService().beginTx();
 		if (getWorkbench().getActiveWorkbenchWindow() != null) {
 		    getWorkbench().getActiveWorkbenchWindow().getPartService().addPartListener(rubyExplorerListener);
 		}
@@ -90,7 +94,7 @@ public class SplashPlugin extends AbstractUIPlugin {
 	        }
 	    }
 		plugin = null;
-		
+        transaction.finish();
 		super.stop(context);
 	}
 	

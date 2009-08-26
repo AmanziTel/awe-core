@@ -30,6 +30,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
+    private static final Color COLOR_SELECTED = Color.RED;
+    private static final Color COLOR_LESS = Color.BLUE;
+    private static final Color COLOR_MORE = Color.GREEN;
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
     private Color fillColor = new Color(120, 255, 170);
@@ -81,6 +84,9 @@ public class NetworkRenderer extends RendererImpl {
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
+            String selectedProp = geoNeo.getPropertyName();
+            Integer propertyValue = geoNeo.getPropertyValue();
+            Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
 
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -112,6 +118,7 @@ public class NetworkRenderer extends RendererImpl {
                         if(child.hasProperty("type") && child.getProperty("type").toString().equals("sector")){
                             double azimuth = 0.0;
                             double beamwidth = 0.0;
+                            Color colorToFill = fillColor;
                             for(String key:child.getPropertyKeys()){
                                 if(key.toLowerCase().contains("azimuth")){
                                     azimuth = (Integer)child.getProperty(key);
@@ -119,8 +126,16 @@ public class NetworkRenderer extends RendererImpl {
                                 if(key.toLowerCase().contains("beamwidth")){
                                     beamwidth = (Integer)child.getProperty(key);
                                 }
+                                if (selectedProp != null && selectedProp.equals(key)) {
+                                    int value = ((Number)child.getProperty(key)).intValue();
+                                    if (value == propertyValue) {
+                                        colorToFill = COLOR_SELECTED;
+                                    } else if (Math.abs(propertyValue - value) <= propertyAdjacency) {
+                                        colorToFill = value > propertyValue ? COLOR_MORE : COLOR_LESS;
+                                    }
+                                }
                             }
-                            renderSector(g, p, azimuth, beamwidth);
+                            renderSector(g, p, azimuth, beamwidth, colorToFill);
                             if(s<label_position_angles.length){
                                 label_position_angles[s] = azimuth;
                             }
@@ -169,7 +184,7 @@ public class NetworkRenderer extends RendererImpl {
      * @param p
      * @param azimuth
      */
-    private void renderSector( Graphics2D g, java.awt.Point p, double azimuth, double beamwidth ) {
+    private void renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth, Color fillColor) {
         if(base_transform==null) base_transform = g.getTransform();
         if(beamwidth<10) beamwidth = 10;
         g.setTransform(base_transform);

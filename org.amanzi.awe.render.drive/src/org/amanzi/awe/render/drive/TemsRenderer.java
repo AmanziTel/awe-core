@@ -101,7 +101,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
-
+            String selectedProp = geoNeo.getPropertyName();
+            Integer propertyValue = geoNeo.getPropertyValue();
+            Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
 

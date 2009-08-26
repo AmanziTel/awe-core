@@ -233,7 +233,14 @@ public class INeoConstants {
      */
     public static final String SPLASH_TYPE_NAME = "splash";
 
-    
+    /*
+     * Type Aggregation
+     */
+    public static final String AGGREGATION_TYPE_NAME = "aggregation";
+    /*
+     * Type Aggregation
+     */
+    public static final String COUNT_TYPE_NAME = "count";
     /*
      * Names of supported files for Network
      */

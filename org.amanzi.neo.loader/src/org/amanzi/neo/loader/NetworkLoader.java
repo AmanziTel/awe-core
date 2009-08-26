@@ -14,6 +14,7 @@ import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.awe.views.network.view.NetworkTreeView;
+import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -147,7 +148,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             // Register the database in the uDIG catalog            
             String databaseLocation = neoProvider.getDefaultDatabaseLocation();
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-            
+            ReusePlugin.getDefault().updateView();
             List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(new URL("file://"+databaseLocation));
             for (IService service : services) {
                 System.out.println("TEMS Found catalog service: " + service);

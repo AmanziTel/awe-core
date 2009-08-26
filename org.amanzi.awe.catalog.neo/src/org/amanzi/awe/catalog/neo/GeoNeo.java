@@ -34,6 +34,9 @@ public class GeoNeo {
     private String name;
     private org.neo4j.api.core.NeoService neo;
     private GisTypes types;
+    private String propertyName;
+    private Integer propertyValue;
+    private Integer propertyAdjacency;
     /**
      * A class representing a located Node in the database. By convention all GeoNodes
      * are expected to contain properties for "type" and "name". In addition they should contain
@@ -57,6 +60,7 @@ public class GeoNeo {
             this.coords = getCoords(node);
             this.node = node;
         }
+
         public Coordinate getCoordinate() {
             if(coordinate==null) coordinate = new Coordinate(coords[0],coords[1]);
             return coordinate;
@@ -249,5 +253,52 @@ public class GeoNeo {
      */
     public GisTypes getGisType() {
         return types;
+    }
+
+    /**
+     * Sets or remove property for dawning
+     * 
+     * @param aggrNode aggregation chart node
+     * @param propertyNode property node
+     * @param adjacency - adjacency
+     */
+    public void setPropertyToRefresh(Node aggrNode, Node propertyNode, Integer adjacency) {
+        if (aggrNode != null && propertyNode != null && adjacency != null) {
+            propertyName = (String)aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+            propertyValue = (Integer)propertyNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+            propertyAdjacency = adjacency;
+        } else {
+            propertyName = null;
+            propertyValue = 0;
+            propertyAdjacency = 0;
+        }
+    }
+
+    /**
+     * @return Returns the gisNode.
+     */
+    public Node getMainGisNode() {
+        return gisNode;
+    }
+
+    /**
+     * @return Returns the propertyName.
+     */
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    /**
+     * @return Returns the propertyValue.
+     */
+    public Integer getPropertyValue() {
+        return propertyValue;
+    }
+
+    /**
+     * @return Returns the propertyAdjacency.
+     */
+    public Integer getPropertyAdjacency() {
+        return propertyAdjacency;
     }
 }

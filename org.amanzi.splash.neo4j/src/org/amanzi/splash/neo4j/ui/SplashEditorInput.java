@@ -6,9 +6,9 @@ import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
-import org.amanzi.splash.neo4j.database.services.SpreadsheetService;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 
 /**
@@ -17,8 +17,12 @@ import org.eclipse.ui.IPersistableElement;
  * @author Lagutko_N
  */
 
-public class SplashEditorInput implements IEditorInput {
+public class SplashEditorInput implements IEditorInput, IPersistableElement {
     
+    private static final String RUBY_PROJECT = "ruby";
+
+    private static final String SPREADSHEET_NAME = "spreadsheet";
+
     /**
      * Name of Spreadsheet
      */
@@ -61,7 +65,7 @@ public class SplashEditorInput implements IEditorInput {
      */
     public SplashEditorInput(SpreadsheetNode spreadsheetNode) {
         service = NeoCorePlugin.getDefault().getProjectService();
-        this.sheetName = spreadsheetNode.getName();
+        this.sheetName = spreadsheetNode.getSpreadsheetName();
         
         this.root = spreadsheetNode.getSpreadsheetRootProject();
         
@@ -94,7 +98,7 @@ public class SplashEditorInput implements IEditorInput {
 	}
 
 	public IPersistableElement getPersistable() {
-		return null;
+        return this;
 	}
 
 	public String getToolTipText() {
@@ -125,4 +129,28 @@ public class SplashEditorInput implements IEditorInput {
 		}
 		return false;
 	}
+
+    @Override
+    public String getFactoryId() {
+        return SplashEditorInputFactory.getFactoryId();
+    }
+
+    @Override
+    public void saveState(IMemento memento) {
+        memento.putString(RUBY_PROJECT, root.getName());
+        memento.putString(SPREADSHEET_NAME, getName());
+    }
+
+    /**
+     * @param memento
+     * @return
+     */
+    public static SplashEditorInput create(IMemento memento) {
+        String rubyProjectName = memento.getString(RUBY_PROJECT);
+        String name = memento.getString(SPREADSHEET_NAME);
+        AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+        RubyProjectNode rubyProject = projectService.findRubyProject(rubyProjectName);
+        SpreadsheetNode spreadsheetNode = projectService.findSpreadsheet(rubyProject, name);
+        return new SplashEditorInput(spreadsheetNode);
+    }
 }

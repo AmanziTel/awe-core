@@ -137,6 +137,13 @@
        </menuContribution>
     </extension>
     <extension
+          point="org.eclipse.ui.elementFactories">
+      <factory
+            class="org.amanzi.splash.neo4j.ui.SplashEditorInputFactory"
+            id="org.amanzi.splash.neo4j.ui.SplashEditorInputFactory">
+      </factory>          
+    </extension>
+    <extension
           point="org.eclipse.ui.importWizards">
        <category
              id="org.amanzi.splash.neo4j.importWizards.sampleCategory"
@@ -167,9 +174,4 @@
              name="Import Builder">
        </view>
     </extension>
-   
-   
-   
-  
-
 </plugin>

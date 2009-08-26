@@ -6,16 +6,20 @@ import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.*;
+import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
-import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.action.*;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.SWT;
+import org.neo4j.api.core.Transaction;
 
 
 /**
@@ -67,13 +71,17 @@ public class NetworkTreeView extends ViewPart {
 		neoServiceProvider = NeoServiceProvider.getProvider();
 		neoEventListener = new NeoServiceEventListener();
 		neoServiceProvider.addServiceProviderListener(neoEventListener);
-		
-		setProviders(neoServiceProvider);
-		
-		viewer.setInput(getSite());
-		getSite().setSelectionProvider(viewer);
-		
-		hookContextMenu();
+        Transaction tx = neoServiceProvider.getService().beginTx();
+        try {
+            setProviders(neoServiceProvider);
+
+            viewer.setInput(getSite());
+            getSite().setSelectionProvider(viewer);
+
+            hookContextMenu();
+        } finally {
+            tx.finish();
+        }
 	}
 	
 	/**

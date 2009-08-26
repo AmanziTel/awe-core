@@ -13,6 +13,7 @@ import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
 
+import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
@@ -138,6 +139,7 @@ public class TEMSLoader {
                 }
             }
             String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+            ReusePlugin.getDefault().updateView();
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
             URL url = new URL("file://" + databaseLocation);
             List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
@@ -417,8 +419,8 @@ public class TEMSLoader {
 					Node ms = neo.createNode();
 					String[] cc = chanCode.split("\\t");
 					ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
-					ms.setProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME, cc[0]);
-					ms.setProperty(INeoConstants.PROPERTY_CODE_NAME, cc[1]);
+                    ms.setProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME, Integer.parseInt(cc[0]));
+                    ms.setProperty(INeoConstants.PROPERTY_CODE_NAME, Integer.parseInt(cc[1]));
 					ms.setProperty(INeoConstants.PROPERTY_DBM_NAME, mw2dbm(mw));
 					ms.setProperty(INeoConstants.PROPERTY_MW_NAME, mw);
 					debug("\tAdded measurement: " + propertiesString(ms));

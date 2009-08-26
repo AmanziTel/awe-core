@@ -33,11 +33,11 @@ public class RubyProjectNode extends AbstractNode {
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, RUBY_PROJECT_NODE_NAME);
 	}
 
-	/**
-	 * Returns name of Awe project
-	 * 
-	 * @return name of Awe project
-	 */
+    /**
+     * Returns name of RUBY project
+     * 
+     * @return name of RUBY project
+     */
 	public String getName() {
 		return (String) getParameter(ATTR_PROJECT_NAME);
 	}

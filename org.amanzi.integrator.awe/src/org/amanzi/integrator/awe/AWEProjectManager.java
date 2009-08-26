@@ -15,8 +15,8 @@ import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.internal.RubyFile;
-import net.refractions.udig.project.internal.RubyProjectElement;
 import net.refractions.udig.project.internal.RubyProject;
+import net.refractions.udig.project.internal.RubyProjectElement;
 import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.SpreadsheetType;
 import net.refractions.udig.project.internal.impl.ProjectFactoryImpl;
@@ -26,16 +26,17 @@ import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IActionDelegate;
+import org.neo4j.api.core.Transaction;
 
 /**
  * Class for integration functionality of AWE project to RDT plugin
@@ -630,15 +631,19 @@ public class AWEProjectManager {
         
         AweProjectNode aweProject = projectService.findOrCreateAweProject(aweProjectName);
         RubyProjectNode rubyProject = projectService.findOrCreateRubyProject(aweProject, rubyProjectName);
-        
-        Iterator<SpreadsheetNode> spreadsheetIterator = rubyProject.getSpreadsheets();
-        
-        ArrayList<String> spreadsheets = new ArrayList<String>(0);
-        while (spreadsheetIterator.hasNext()) {
-            spreadsheets.add(spreadsheetIterator.next().getSpreadsheetName());
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
+            Iterator<SpreadsheetNode> spreadsheetIterator = rubyProject.getSpreadsheets();
+
+            ArrayList<String> spreadsheets = new ArrayList<String>(0);
+            while (spreadsheetIterator.hasNext()) {
+                spreadsheets.add(spreadsheetIterator.next().getSpreadsheetName());
+            }
+
+            return spreadsheets;
+        } finally {
+            tx.finish();
         }
-        
-        return spreadsheets;
     }
     
     /**

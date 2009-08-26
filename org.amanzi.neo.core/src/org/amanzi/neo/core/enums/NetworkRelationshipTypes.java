@@ -10,6 +10,7 @@ import org.neo4j.api.core.RelationshipType;
  */
 
 public enum NetworkRelationshipTypes implements RelationshipType {
+    AGGREGATION,
     CHILD,
     SIBLING,
     INTERFERS;

@@ -13,6 +13,7 @@ public class PerspectiveFactory implements IPerspectiveFactory {
     private static final String PROJECTS = "net.refractions.udig.project.ui.projectExplorer"; //$NON-NLS-1$
     private static final String LAYERS = "net.refractions.udig.project.ui.layerManager"; //$NON-NLS-1$
     private static final String CATALOG = "net.refractions.udig.catalog.ui.CatalogView"; //$NON-NLS-1$
+    private static final String REUSE = "org.amanzi.awe.views.reuse.views.ReuseAnalyserView"; //$NON-NLS-1$
     public static String NETWORK_VIEW_ID = "org.amanzi.awe.networktree.views.NetworkTreeView";
     /** 
      * Creates the initial layout for a page.
@@ -33,8 +34,11 @@ public class PerspectiveFactory implements IPerspectiveFactory {
         IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, 0.25f, editorArea);
         topLeft.addView(PROJECTS);
         topLeft.addView(RubyUI.ID_RUBY_EXPLORER);
-        
-        layout.addView(CATALOG, IPageLayout.BOTTOM, 0.65f, editorArea);
+
+        IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, 0.65f, editorArea);
+        bottom.addView(CATALOG);
+        bottom.addView(REUSE);
+        // layout.addView(CATALOG, IPageLayout.BOTTOM, 0.65f, editorArea);
         
         //Here we are making folder layout to show two views side by side
         IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, 0.25f,PROJECTS);
