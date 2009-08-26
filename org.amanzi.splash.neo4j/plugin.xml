@@ -53,6 +53,15 @@
 		<view id= "org.eclipse.jdt.ui.PackageExplorer" relative="org.eclipse.ui.views.ResourceNavigator" relationship="stack"/>
 		<view id= "org.eclipse.jdt.ui.TypeHierarchy" relative= "org.eclipse.ui.views.ResourceNavigator" relationship= "left" ratio= "0.50" />
 		</perspectiveExtension>
+  <perspectiveExtension
+        targetID="org.eclipse.ui.resourcePerspective">
+     <view
+           id="org.amanzi.splash.neo4j.views.ImportBuilderView"
+           ratio="0.5"
+           relationship="right"
+           relative="org.eclipse.ui.views.TaskList">
+     </view>
+  </perspectiveExtension>
 	</extension>
     <extension
           point="org.eclipse.ui.popupMenus">
@@ -143,6 +152,20 @@
              Import a file from the local file system into the workspace.
           </description>
        </wizard>
+    </extension>
+    <extension
+          point="org.eclipse.ui.views">
+       <category
+             id="org.amanzi.splash.neo4j"
+             name="ImportBuilder Category">
+       </category>
+       <view
+             category="org.amanzi.splash.neo4j"
+             class="org.amanzi.splash.neo4j.views.importbuilder.ImportBuilderView"
+             icon="icons/sample.gif"
+             id="org.amanzi.splash.neo4j.views.ImportBuilderView"
+             name="Import Builder">
+       </view>
     </extension>
    
    

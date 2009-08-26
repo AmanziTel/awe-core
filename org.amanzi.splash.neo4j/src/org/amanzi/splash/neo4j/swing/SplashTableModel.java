@@ -504,7 +504,10 @@ public class SplashTableModel extends DefaultTableModel {
 			public void run() {
 				service.updateCell(spreadsheet, (Cell) value);
 			}
-		}, false);
+		}, true);
+		
+		
+		
 
 		fireTableChanged(new TableModelEvent(this, row, row, column));
 	}

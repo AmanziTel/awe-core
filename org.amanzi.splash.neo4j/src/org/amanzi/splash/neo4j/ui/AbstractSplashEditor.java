@@ -1015,6 +1015,17 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 				}
 			});
 			contextMenu.add(updateCellMenu);
+			
+			
+			JMenuItem addToImportFilterMenu = new JMenuItem();
+			addToImportFilterMenu.setText("Add to Import Filter");
+			addToImportFilterMenu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					//updateCell(cell);
+					
+				}
+			});
+			contextMenu.add(updateCellMenu);
 		}
 
 		contextMenu.add(new JSeparator());
