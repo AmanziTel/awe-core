@@ -86,7 +86,7 @@
        </category>
        <command
              categoryId="org.amanzi.splash.neo4j.commands.category"
-             id="org.amanzi.splash.neo4j.commands.sampleCommand"
+             id="org.amanzi.splash.neo4j.commands.barchartcommand"
              name="barchart">
        </command>
        <command
@@ -94,22 +94,41 @@
              id="org.amanzi.splash.neo4j.pieChartcommand"
              name="piechart">
        </command>
+       <category
+             id="org.amanzi.splash.neo4j.commands.category"
+             name="Sample Category">
+       </category>
+       <command
+             categoryId="org.amanzi.splash.neo4j.commands.category"
+             id="org.amanzi.splash.neo4j.commands.addtoimportfiltercommand"
+             name="Add to Import Filter">
+       </command>
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
        <handler
-             class="org.amanzi.splash.neo4j.handlers.SplashToolbarHandler"
-             commandId="org.amanzi.splash.neo4j.commands.sampleCommand">
+             class="org.amanzi.splash.neo4j.handlers.BarChartCommandHandler"
+             commandId="org.amanzi.splash.neo4j.commands.barchartcommand">
        </handler>
        <handler
              class="org.amanzi.splash.neo4j.handlers.PieChartCommandHandler"
              commandId="org.amanzi.splash.neo4j.pieChartcommand">
        </handler>
+       <handler
+             class="org.amanzi.splash.neo4j.handlers.AddToImportFilterrHandler"
+             commandId="org.amanzi.splash.neo4j.commands.addtoimportfiltercommand">
+       </handler>
     </extension>
     <extension
           point="org.eclipse.ui.bindings">
        <key
-             commandId="org.amanzi.splash.neo4j.commands.sampleCommand"
+             commandId="org.amanzi.splash.neo4j.commands.barchartcommand"
+             contextId="org.eclipse.ui.contexts.window"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M1+6">
+       </key>
+       <key
+             commandId="org.amanzi.splash.neo4j.commands.barchartcommand"
              contextId="org.eclipse.ui.contexts.window"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
              sequence="M1+6">
@@ -122,7 +141,7 @@
           <toolbar
                 id="org.amanzi.splash.neo4j.toolbars.sampleToolbar">
              <command
-                   commandId="org.amanzi.splash.neo4j.commands.sampleCommand"
+                   commandId="org.amanzi.splash.neo4j.commands.barchartcommand"
                    icon="icons/barchart.ico"
                    id="org.amanzi.splash.neo4j.toolbars.barChartCommand"
                    tooltip="Plot Bar Chart">
@@ -132,6 +151,11 @@
                    icon="icons/piechart.ico"
                    id="org.amanzi.splash.neo4j.toolbars.pieChartCommand"
                    tooltip="Plot Pie Chart">
+             </command>
+             <command
+                   commandId="org.amanzi.splash.neo4j.commands.addtoimportfiltercommand"
+                   icon="icons/Filter.png"
+                   id="Add to Import Filter">
              </command>
           </toolbar>
        </menuContribution>
