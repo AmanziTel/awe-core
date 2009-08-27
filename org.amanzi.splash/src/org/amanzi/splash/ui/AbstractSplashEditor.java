@@ -62,10 +62,10 @@ import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.ColumnHeaderRenderer;
 import org.amanzi.splash.swing.SplashTable;
 import org.amanzi.splash.swing.SplashTableModel;
-import org.amanzi.splash.ui.wizards.ExportScriptWizard;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.amanzi.splash.views.importbuilder.ImportBuilderTableViewer;
 import org.amanzi.splash.views.importbuilder.ImportBuilderView;
+import org.amanzi.splash.ui.wizards.ExportScriptWizard;
 import org.eclipse.albireo.core.SwingControl;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -82,6 +82,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
@@ -646,15 +647,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
 		NeoSplashUtil.logn("splashID = " + splashID);
 
-		try {
-		    table = new SplashTable(splashID, root);
-		}
-		catch (IOException e) {		    
-		    ErrorDialog.openError(parent.getShell(), "Splash failed", 
-                    "An error occured while starting JRuby Interpreter of Splash", 
-                    new Status(Status.ERROR, SplashPlugin.getId(), "Splash failed", e));
-		    return;
-		}
+		table = new SplashTable(splashID, root);
 		table.getModel().addTableModelListener(this);
 
 		createTable(parent);
@@ -1068,20 +1061,19 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		
 		ComboBoxCellEditor cb = (ComboBoxCellEditor)iv.getTableViewer().getCellEditors()[0];
 		
-//		String[] oldItems = cb.getItems();
-//		
-//		String[] newItems = new String[oldItems.length+1];
-//		
-//		for (int i=0;i<oldItems.length;i++){
-//			newItems[i] = oldItems[i];
-//		}
-//		
-//		newItems[oldItems.length] = heading;
+		//cb.setItems(iv.getFiltersList().getHeadingsList());
+		int index = 0;
+		String[] filter_headings = iv.getFiltersList().getHeadingsList(); 
+		for (int i=0;i<iv.getFiltersList().getHeadingsList().length;i++){
+			
+			if (heading.equals(filter_headings[i]) == true){
+				index = i;
+				break;
+			}
+		}
+		((CCombo)cb.getControl()).select(index);
 		
-		cb.setItems(iv.getFiltersList().getHeadingsList());
-		
-		
-		iv.getFiltersList().addFilter(heading,text);
+		iv.getFiltersList().addFilter(heading, text, "filter" + iv.getFiltersList().getFilters().size()+1 + ".rb");
 	}
 	
 	
