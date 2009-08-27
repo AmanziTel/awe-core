@@ -35,7 +35,7 @@ public class NetworkRenderer extends RendererImpl {
     private static final Color COLOR_MORE = Color.GREEN;
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
-    private Color fillColor = new Color(255, 255, 128);// Color.YELLOW;// new Color(120, 255, 170);
+    private Color fillColor = new Color(255, 255, 128);
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
 
