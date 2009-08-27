@@ -57,7 +57,7 @@ public class RubyConsole extends ViewPart {
 	 * Array of Extra Scripts for Ruby Console 
 	 */
 	//Lagutko, 20.08.2009, additional extran script 'neoSetup.rb'
-	public static final String[] EXTRA_SCRIPTS = {"gisGlobals.rb", "gisCommands.rb", "awescript.rb", "spreadsheet.rb", "neoSpreadsheet.rb", "neoSetup.rb"};
+	public static final String[] EXTRA_SCRIPTS = {"gisGlobals.rb", "gisCommands.rb", "awescript.rb", "neoSpreadsheet.rb", "neoSetup.rb"};
 	
 	/**
 	 * The constructor.

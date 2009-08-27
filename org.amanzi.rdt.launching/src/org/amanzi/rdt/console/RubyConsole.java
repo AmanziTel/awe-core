@@ -9,7 +9,7 @@ import org.amanzi.rdt.internal.launching.AweLaunchingPlugin;
 import org.amanzi.rdt.internal.launching.AweLaunchingPluginMessages;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
-import org.amanzi.splash.neo4j.utilities.NeoSplashUtil;
+import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;

@@ -15,7 +15,6 @@ import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
 import net.refractions.udig.project.IRubyProjectElement;
 
-import net.refractions.udig.project.internal.Messages;
 import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectPackage;
@@ -26,15 +25,12 @@ import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.RubyProjectElement;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
-import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
-import org.eclipse.emf.common.notify.impl.AdapterImpl;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -149,30 +145,6 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
      * @ordered
      */
     protected SpreadsheetType spreadsheetType = SPREADSHEET_TYPE_EDEFAULT;
-
-    /**
-     * Field for Resource of file
-     * 
-     * @author Lagutko_N
-     */
-
-    private IResource resource;
-
-    private Adapter spreadsheetPersistenceListener = new AdapterImpl(){
-        /**
-         * @see org.eclipse.emf.common.notify.impl.AdapterImpl#notifyChanged(org.eclipse.emf.common.notify.Notification)
-         */
-        public void notifyChanged(Notification msg) {
-            switch (msg.getFeatureID(Spreadsheet.class)) {
-            case ProjectPackage.SPREADSHEET__NAME:
-            case ProjectPackage.SPREADSHEET__PROJECT_INTERNAL:
-            case ProjectPackage.SPREADSHEET__RUBY_PROJECT_INTERNAL:
-            case ProjectPackage.SPREADSHEET__SPREADSHEET_PATH:
-                if (SpreadsheetImpl.this.eResource() != null)
-                    SpreadsheetImpl.this.eResource().setModified(true);
-            }
-        }
-    };
 
     /**
      * <!-- begin-user-doc -->
@@ -717,23 +689,12 @@ public class SpreadsheetImpl extends EObjectImpl implements Spreadsheet {
      */
 
     public IResource getResource() {
-        if (resource == null) {
-            resource = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocation(new Path(spreadsheetPath.getPath()))[0];
-        }
-
-        return resource;
+        //Lagutko, 27.08.2009, Neo-based Spreadsheet have no resource
+        return null;
     }
 
     public void setResource(IResource resource) {
-        if (resource != null) {
-            try {
-                setSpreadsheetPath(resource.getLocationURI().toURL());
-            } catch (MalformedURLException e) {
-                ProjectPlugin.log(Messages.Spreadsheet_UncorrectResource, e);
-            }
-        }
-
-        this.resource = resource;
+        //Lagutko, 27.08.2009, Neo-based Spreadsheet have no resource
     }
 
 } //SpreadsheetImpl

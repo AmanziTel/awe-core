@@ -9,22 +9,22 @@
             name="Amanzi: Mini-Spreadsheet"
             icon="icons/spreadsheet.gif"
             extensions="splash"
-            class="org.amanzi.splash.neo4j.ui.SplashResourceEditor"
-            id="org.amanzi.splash.neo4j.editor">
+            class="org.amanzi.splash.ui.SplashResourceEditor"
+            id="org.amanzi.splash.editor">
       </editor>
       <editor
-            class="org.amanzi.splash.neo4j.editors.SplashJFreeChartEditor"
-            contributorClass="org.amanzi.splash.neo4j.editors.SplashJFreeChartEditorContributor"
+            class="org.amanzi.splash.editors.SplashJFreeChartEditor"
+            contributorClass="org.amanzi.splash.editors.SplashJFreeChartEditorContributor"
             extensions="mpe"
             icon="icons/barchart.ico"
-            id="org.amanzi.splash.editors.neo4j.SplashJFreeChartEditor"
+            id="org.amanzi.splash.editors.SplashJFreeChartEditor"
             name="Neo4j Splash JFreeChart Bars Editor">
       </editor>
       <editor
-            class="org.amanzi.splash.neo4j.editors.SplashJFreePieChartEditor"
-            contributorClass="org.amanzi.splash.neo4j.editors.SplashJFreePieChartEditorContributor"
+            class="org.amanzi.splash.editors.SplashJFreePieChartEditor"
+            contributorClass="org.amanzi.splash.editors.SplashJFreePieChartEditorContributor"
             icon="icons/piechart.ico"
-            id="org.amanzi.splash.editors.neo4j.SplashJFreePieChartEditor"
+            id="org.amanzi.splash.editors.SplashJFreePieChartEditor"
             name="Neo4j Splash JFreeChart Pie Editor">
       </editor>
    </extension>
@@ -37,9 +37,9 @@
       </category>
       <wizard
             category="org.amanzi.splash"
-            class="org.amanzi.splash.ui.neo4j.wizards.SplashNewSpreadsheetWizard"
+            class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizard"
             icon="icons/spreadsheet.gif"
-            id="org.amanzi.splash.neo4j.wizards.SplashNewSpreadsheetWizard"
+            id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard"
             name="Amanzi Neo4j Splash Spreadsheet">
       </wizard>
    </extension>
@@ -56,7 +56,7 @@
   <perspectiveExtension
         targetID="org.eclipse.ui.resourcePerspective">
      <view
-           id="org.amanzi.splash.neo4j.views.ImportBuilderView"
+           id="org.amanzi.splash.views.ImportBuilderView"
            ratio="0.5"
            relationship="right"
            relative="org.eclipse.ui.views.TaskList">
@@ -66,12 +66,12 @@
     <extension
           point="org.eclipse.ui.popupMenus">
        <objectContribution
-             id="org.amanzi.splash.neo4j.splashWizard"
+             id="org.amanzi.splash.splashWizard"
              objectClass="net.refractions.udig.project.IRubyProject">
           <action
-                class="org.amanzi.splash.ui.neo4j.wizards.SplashNewSpreadsheetWizardAction"
+                class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizardAction"
                 icon="icons/spreadsheet.gif"
-                id="org.amanzi.splash.neo4j.action2"
+                id="org.amanzi.splash.action2"
                 label="Amanzi Neo4j Splash Spreadsheet">
           </action>
        </objectContribution>
@@ -81,54 +81,54 @@
    <extension
           point="org.eclipse.ui.commands">
        <category
-             id="org.amanzi.splash.neo4j.commands.category"
+             id="org.amanzi.splash.commands.category"
              name="Sample Category">
        </category>
        <command
-             categoryId="org.amanzi.splash.neo4j.commands.category"
-             id="org.amanzi.splash.neo4j.commands.barchartcommand"
+             categoryId="org.amanzi.splash.commands.category"
+             id="org.amanzi.splash.commands.barchartcommand"
              name="barchart">
        </command>
        <command
-             categoryId="org.amanzi.splash.neo4j.commands.category"
-             id="org.amanzi.splash.neo4j.pieChartcommand"
+             categoryId="org.amanzi.splash.commands.category"
+             id="org.amanzi.splash.pieChartcommand"
              name="piechart">
        </command>
        <category
-             id="org.amanzi.splash.neo4j.commands.category"
+             id="org.amanzi.splash.commands.category"
              name="Sample Category">
        </category>
        <command
-             categoryId="org.amanzi.splash.neo4j.commands.category"
-             id="org.amanzi.splash.neo4j.commands.addtoimportfiltercommand"
+             categoryId="org.amanzi.splash.commands.category"
+             id="org.amanzi.splash.commands.addtoimportfiltercommand"
              name="Add to Import Filter">
        </command>
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
        <handler
-             class="org.amanzi.splash.neo4j.handlers.BarChartCommandHandler"
-             commandId="org.amanzi.splash.neo4j.commands.barchartcommand">
+             class="org.amanzi.splash.handlers.BarChartCommandHandler"
+             commandId="org.amanzi.splash.commands.barchartcommand">
        </handler>
        <handler
-             class="org.amanzi.splash.neo4j.handlers.PieChartCommandHandler"
-             commandId="org.amanzi.splash.neo4j.pieChartcommand">
+             class="org.amanzi.splash.handlers.PieChartCommandHandler"
+             commandId="org.amanzi.splash.pieChartcommand">
        </handler>
        <handler
-             class="org.amanzi.splash.neo4j.handlers.AddToImportFilterrHandler"
-             commandId="org.amanzi.splash.neo4j.commands.addtoimportfiltercommand">
+             class="org.amanzi.splash.handlers.AddToImportFilterrHandler"
+             commandId="org.amanzi.splash.commands.addtoimportfiltercommand">
        </handler>
     </extension>
     <extension
           point="org.eclipse.ui.bindings">
        <key
-             commandId="org.amanzi.splash.neo4j.commands.barchartcommand"
+             commandId="org.amanzi.splash..commands.barchartcommand"
              contextId="org.eclipse.ui.contexts.window"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
              sequence="M1+6">
        </key>
        <key
-             commandId="org.amanzi.splash.neo4j.commands.barchartcommand"
+             commandId="org.amanzi.splash.commands.barchartcommand"
              contextId="org.eclipse.ui.contexts.window"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
              sequence="M1+6">
@@ -139,21 +139,21 @@
        <menuContribution
              locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
           <toolbar
-                id="org.amanzi.splash.neo4j.toolbars.sampleToolbar">
+                id="org.amanzi.splash.toolbars.sampleToolbar">
              <command
-                   commandId="org.amanzi.splash.neo4j.commands.barchartcommand"
+                   commandId="org.amanzi.splash.commands.barchartcommand"
                    icon="icons/barchart.ico"
-                   id="org.amanzi.splash.neo4j.toolbars.barChartCommand"
+                   id="org.amanzi.splash.toolbars.barChartCommand"
                    tooltip="Plot Bar Chart">
              </command>
              <command
-                   commandId="org.amanzi.splash.neo4j.pieChartcommand"
+                   commandId="org.amanzi.splash.pieChartcommand"
                    icon="icons/piechart.ico"
-                   id="org.amanzi.splash.neo4j.toolbars.pieChartCommand"
+                   id="org.amanzi.splash.toolbars.pieChartCommand"
                    tooltip="Plot Pie Chart">
              </command>
              <command
-                   commandId="org.amanzi.splash.neo4j.commands.addtoimportfiltercommand"
+                   commandId="org.amanzi.splash.commands.addtoimportfiltercommand"
                    icon="icons/Filter.png"
                    id="Add to Import Filter">
              </command>
@@ -163,21 +163,21 @@
     <extension
           point="org.eclipse.ui.elementFactories">
       <factory
-            class="org.amanzi.splash.neo4j.ui.SplashEditorInputFactory"
-            id="org.amanzi.splash.neo4j.ui.SplashEditorInputFactory">
+            class="org.amanzi.splash.ui.SplashEditorInputFactory"
+            id="org.amanzi.splash.ui.SplashEditorInputFactory">
       </factory>          
     </extension>
     <extension
           point="org.eclipse.ui.importWizards">
        <category
-             id="org.amanzi.splash.neo4j.importWizards.sampleCategory"
+             id="org.amanzi.splash.importWizards.sampleCategory"
              name="Neo DataFile Import">
        </category>
        <wizard
-             category="org.amanzi.splash.neo4j.importWizards.sampleCategory"
-             class="org.amanzi.splash.ui.neo4j.wizards.NeoDataFileImportWizard"
+             category="org.amanzi.splash.importWizards.sampleCategory"
+             class="org.amanzi.splash.ui.wizards.NeoDataFileImportWizard"
              icon="icons/sample.gif"
-             id="org.amanzi.splash.neo4j.importWizards.NeoDataFileImportWizard"
+             id="org.amanzi.splash.importWizards.NeoDataFileImportWizard"
              name="Import Neo Data File">
           <description>
              Import a file from the local file system into the workspace.
@@ -187,14 +187,14 @@
     <extension
           point="org.eclipse.ui.views">
        <category
-             id="org.amanzi.splash.neo4j"
+             id="org.amanzi.splash"
              name="ImportBuilder Category">
        </category>
        <view
-             category="org.amanzi.splash.neo4j"
-             class="org.amanzi.splash.neo4j.views.importbuilder.ImportBuilderView"
+             category="org.amanzi.splash"
+             class="org.amanzi.splash.views.importbuilder.ImportBuilderView"
              icon="icons/sample.gif"
-             id="org.amanzi.splash.neo4j.views.ImportBuilderView"
+             id="org.amanzi.splash.views.ImportBuilderView"
              name="Import Builder">
        </view>
     </extension>

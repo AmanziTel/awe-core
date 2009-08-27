@@ -4,7 +4,6 @@ awe_console_path = Java::org.eclipse.core.runtime.FileLocator.resolve(awe_consol
 require awe_console_path + 'gisCommands.rb'
 require awe_console_path + 'neoSetup.rb'
 require awe_console_path + 'neoSpreadsheet.rb'
-require awe_console_path + 'spreadsheet.rb'
 
 # Some utilities for setting up AWE, including paths to uDIG jars
 module AWE

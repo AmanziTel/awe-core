@@ -7,13 +7,13 @@ class TestSplash < Test::Unit::TestCase
     puts "projectService begin" 
     @projectService=Java::org.amanzi.neo.core.NeoCorePlugin.getDefault().getProjectService()
      puts "projectService"    
-    @spreadsheetService = Java::org.amanzi.splash.neo4j.ui.SplashPlugin.getDefault().getSpreadsheetService()
+    @spreadsheetService = Java::org.amanzi.splash.ui.SplashPlugin.getDefault().getSpreadsheetService()
     puts "spreadsheetService"
     @rootNode=@projectService.getRootNode();
     puts "setup complite getRootNode()"
     @spreadSheetNode=@projectService.findOrCreateSpreadsheet( @aweProjectName,@rubyProjectName, @spreadSheetName)
     @projectNode=@projectService.findOrCreateAweProject(@aweProjectName)
-    @splashTableModel=Java::org.amanzi.splash.neo4j.swing.SplashTableModel.new(@spreadSheetNode)
+    @splashTableModel=Java::org.amanzi.splash.swing.SplashTableModel.new(@spreadSheetNode)
     puts "setup end"
   end
 

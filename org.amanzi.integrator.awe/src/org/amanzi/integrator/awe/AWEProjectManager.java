@@ -393,24 +393,6 @@ public class AWEProjectManager {
 	}
 	
 	/**
-	 * Creates File-based Spreadsheet
-	 * 
-	 * @param rubyProject RubyProject that contain's Spreadsheet
-	 * @param sheetName name of Spreadsheet
-	 * @param resourcePath URL of Spreadsheet resource
-	 */
-	
-	public static void createFileSpreadsheet(IProject rubyProject, String sheetName, URL resourcePath) {
-		String aweProjectName = getAWEprojectNameFromResource(rubyProject);
-		Project project = findProject(aweProjectName);
-		
-		RubyProject ruby = findRubyProject(project, rubyProject.getName());
-		if (ruby != null) {
-			createSpreadsheetIfNotExist(ruby, sheetName, resourcePath, SpreadsheetType.FILE_SPREADSHEET);
-		}
-	}
-	
-	/**
 	 * Creates Neo4J-based Spreadsheet
 	 *
 	 * @param rubyProject RubyProject that contain's Spreadsheet
