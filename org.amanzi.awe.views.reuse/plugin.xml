@@ -19,13 +19,16 @@
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
-            targetID="org.eclipse.jdt.ui.JavaPerspective">
+            targetID="org.amanzi.awe.perspective">
          <view
-               ratio="0.5"
-               relative="org.eclipse.ui.views.TaskList"
-               relationship="right"
-               id="org.amanzi.awe.views.analizer.views.ReuseAnalyserView">
+               id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
          </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView">
+         </viewShortcut>
       </perspectiveExtension>
    </extension>
 

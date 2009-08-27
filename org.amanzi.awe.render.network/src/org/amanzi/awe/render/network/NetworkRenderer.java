@@ -35,7 +35,7 @@ public class NetworkRenderer extends RendererImpl {
     private static final Color COLOR_MORE = Color.GREEN;
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
-    private Color fillColor = new Color(120, 255, 170);
+    private Color fillColor = new Color(255, 255, 128);// Color.YELLOW;// new Color(120, 255, 170);
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
 
@@ -86,8 +86,9 @@ public class NetworkRenderer extends RendererImpl {
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String selectedProp = geoNeo.getPropertyName();
             Integer propertyValue = geoNeo.getPropertyValue();
-            Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
-
+//            Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
+            Integer maxValue=geoNeo.getMaxPropertyValue();
+            Integer minValue=geoNeo.getMinPropertyValue();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
 
@@ -130,8 +131,10 @@ public class NetworkRenderer extends RendererImpl {
                                     int value = ((Number)child.getProperty(key)).intValue();
                                     if (value == propertyValue) {
                                         colorToFill = COLOR_SELECTED;
-                                    } else if (Math.abs(propertyValue - value) <= propertyAdjacency) {
-                                        colorToFill = value > propertyValue ? COLOR_MORE : COLOR_LESS;
+                                    } else if (value > propertyValue && value <= maxValue) {
+                                        colorToFill = COLOR_MORE;
+                                    } else if (value < propertyValue && value >= minValue) {
+                                        colorToFill = COLOR_LESS;
                                     }
                                 }
                             }

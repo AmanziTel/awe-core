@@ -91,10 +91,12 @@ public class ReuseAnalyserView extends ViewPart {
     private PropertyCategoryDataset dataset;
     private Node selectedGisNode = null;
     private ChartNode selectedColumn = null;
-    private static final Paint DEFAULT_COLOR = Color.CYAN;
+    private static final Paint DEFAULT_COLOR = Color.GRAY;
     private static final Paint COLOR_SELECTED = Color.RED;
     private static final Paint COLOR_LESS = Color.BLUE;
     private static final Paint COLOR_MORE = Color.GREEN;
+    private static final Paint CHART_BACKGROUND = Color.WHITE;
+    private static final Paint PLOT_BACKGROUND = new Color(230, 230, 230);
 
     public void createPartControl(Composite parent) {
         gisSelected = new Label(parent, SWT.NONE);
@@ -114,6 +116,19 @@ public class ReuseAnalyserView extends ViewPart {
         spinAdj.setIncrement(1);
         spinAdj.setDigits(0);
         spinAdj.setSelection(1);
+        spinAdj.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (selectedColumn != null) {
+                    setSelection(selectedColumn);
+                };
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        });
         dataset = new PropertyCategoryDataset();
         chart = ChartFactory.createBarChart("SWTBarChart", VALUES_DOMAIN, COUNT_AXIS, dataset, PlotOrientation.VERTICAL, true,
                 true, false);
@@ -126,6 +141,8 @@ public class ReuseAnalyserView extends ViewPart {
         CategoryItemRenderer renderer = new CustomRenderer();
         renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
         plot.setRenderer(renderer);
+        plot.setBackgroundPaint(PLOT_BACKGROUND);
+        chart.setBackgroundPaint(CHART_BACKGROUND);
         // if: chartFrame = new ChartComposite(parent, 0, chart, FALSE); then font not zoomed, but
         // wrong column selection after resizing application
         chartFrame = new ChartComposite(parent, 0, chart, true);
@@ -164,7 +181,6 @@ public class ReuseAnalyserView extends ViewPart {
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-
             }
         };
         SelectionListener propComboSelectionListener = new SelectionListener() {
@@ -223,6 +239,7 @@ public class ReuseAnalyserView extends ViewPart {
             selectedGisNode = gisNode;
             fireLayerDrawEvent(gisNode, aggrNode, selectedColumn);
         }
+        chart.fireChartChanged();
     }
 
     /**
@@ -247,7 +264,10 @@ public class ReuseAnalyserView extends ViewPart {
                     try {
                         GeoNeo geo = resourse.resolve(GeoNeo.class, null);
                         if (geo.getMainGisNode().equals(gisNode)) {
-                            geo.setPropertyToRefresh(aggrNode, columnNode, adj);
+                            int colInd = columnKey == null ? 0 : dataset.getColumnIndex(columnKey);
+                            int minInd = columnKey == null ? 0 : Math.max(colInd - adj, 0);
+                            int maxind = columnKey == null ? 0 : Math.min(colInd + adj, dataset.getColumnCount() - 1);
+                            geo.setPropertyToRefresh(aggrNode, columnNode, adj,((ChartNode)dataset.getColumnKey(minInd)).getNode(),((ChartNode)dataset.getColumnKey(maxind)).getNode());
                             layer.refresh(null);
                         }
                     } catch (IOException e) {
@@ -603,13 +623,15 @@ public class ReuseAnalyserView extends ViewPart {
             ChartNode selColumn = getSelectedColumn();
             if (selColumn == null) {
                 return DEFAULT_COLOR;
-            } else if (column == dataset.getColumnIndex(selColumn)) {
+            }
+            int columnIndex = dataset.getColumnIndex(selColumn);
+            if (column == columnIndex) {
                 return COLOR_SELECTED;
             }
-            Integer thisValue = ((ChartNode)dataset.getColumnKey(column)).getNodeKey();
-            Integer selectedValue = selColumn.getNodeKey();
-            if (Math.abs(thisValue - selectedValue) <= spinAdj.getSelection()) {
-                return thisValue > selectedValue ? COLOR_MORE : COLOR_LESS;
+//            Integer thisValue = ((ChartNode)dataset.getColumnKey(column)).getNodeKey();
+//            Integer selectedValue = selColumn.getNodeKey();
+            if (Math.abs(column - columnIndex) <= spinAdj.getSelection()) {
+                return column > columnIndex ? COLOR_MORE : COLOR_LESS;
             }
             return DEFAULT_COLOR;
         }
