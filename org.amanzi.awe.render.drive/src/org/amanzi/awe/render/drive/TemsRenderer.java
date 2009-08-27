@@ -82,12 +82,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException {
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error:
-                                // bursa wolf parameters required
+        // bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
         this.transform_d2w = CRS.findMathTransform(dataCrs, worldCrs, lenient);
         this.transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient); // could use
-                                                                                // transform_d2w.inverse()
-                                                                                // also
+        // transform_d2w.inverse()
+        // also
     }
 
     private Envelope getTransformedBounds() throws TransformException {
@@ -98,6 +98,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         }
         return bounds_transformed;
     }
+
     /**
      * This method is called to render data from the Neo4j 'GeoNeo' Geo-Resource.
      */
@@ -111,8 +112,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String selectedProp = geoNeo.getPropertyName();
             Integer propertyValue = geoNeo.getPropertyValue();
-            Integer maxPropertyValue=geoNeo.getMaxPropertyValue();
-            Integer minPropertyValue=geoNeo.getMinPropertyValue();
+            Integer maxPropertyValue = geoNeo.getMaxPropertyValue();
+            Integer minPropertyValue = geoNeo.getMinPropertyValue();
             // Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -121,7 +122,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             int count = 0;
             monitor.subTask("drawing");
             Coordinate world_location = new Coordinate(); // single object for re-use in transform
-                                                          // below (minimize object creation)
+            // below (minimize object creation)
             for (GeoNode node : geoNeo.getGeoNodes()) {
                 Coordinate location = node.getCoordinate();
 
@@ -137,22 +138,27 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 java.awt.Point p = getContext().worldToPixel(world_location);
 
                 Color nodeColor = fillColor;
-                mainLoop: if (selectedProp != null) {
-                    for (Relationship relation : node.getNode()
-                            .getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                if (selectedProp != null) {
+                    Double delta = null;
+                    mainLoop: for (Relationship relation : node.getNode().getRelationships(NetworkRelationshipTypes.CHILD,
+                            Direction.OUTGOING)) {
                         Node child = relation.getEndNode();
                         for (String key : child.getPropertyKeys()) {
                             if (selectedProp.equals(key)) {
-                                int value = ((Number)child.getProperty(key)).intValue();
+                                Object property = child.getProperty(key);
+                                int value = ((Number)property).intValue();
                                 if (value == propertyValue) {
                                     nodeColor = COLOR_SELECTED;
+                                    delta = 0.0;
                                     break mainLoop;
-                                } else if (value > propertyValue && value <= maxPropertyValue) {
-                                    nodeColor = COLOR_MORE;
-                                    break mainLoop;
-                                } else if (value < propertyValue && value >= minPropertyValue) {
-                                    nodeColor = COLOR_LESS;
-                                    break mainLoop;
+                                } else if (delta == null || Math.abs(value - propertyValue) < delta) {
+                                    if (value > propertyValue && value <= maxPropertyValue) {
+                                        nodeColor = COLOR_MORE;
+                                        delta = Math.abs(((Number)property).doubleValue() - propertyValue);
+                                    } else if (value < propertyValue && value >= minPropertyValue) {
+                                        nodeColor = COLOR_LESS;
+                                        delta = Math.abs(propertyValue - ((Number)property).doubleValue());
+                                    }
                                 }
                             }
                         }
