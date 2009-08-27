@@ -24,5 +24,4 @@ package org.amanzi.neo.core.database.services;
  */
 public enum UpdateDatabaseEventType {
     Spreadsheet, GIS;
-
 }
