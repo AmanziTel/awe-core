@@ -81,7 +81,7 @@ public class ImportBuilderFilterList {
 	 * Add a new filter to the collection of filters
 	 */
 	public void addFilter() {
-		ImportBuilderFilter filter = new ImportBuilderFilter("New filter");
+		ImportBuilderFilter filter = new ImportBuilderFilter("Filter Heading", "Filter Text", "Filename.rb");
 		filters.add(filters.size(), filter);
 		Iterator iterator = changeListeners.iterator();
 		while (iterator.hasNext())
@@ -91,8 +91,8 @@ public class ImportBuilderFilterList {
 	/**
 	 * Add a new filter to the collection of filters
 	 */
-	public void addFilter(String heading, String text) {
-		ImportBuilderFilter filter = new ImportBuilderFilter(heading, text);
+	public void addFilter(String heading, String text, String filename) {
+		ImportBuilderFilter filter = new ImportBuilderFilter(heading, text, filename);
 		filters.add(filters.size(), filter);
 		Iterator iterator = changeListeners.iterator();
 		while (iterator.hasNext())

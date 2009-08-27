@@ -1,8 +1,3 @@
-/**
- * (c) Copyright Mirasol Op'nWorks Inc. 2002, 2003. 
- * http://www.opnworks.com
- * Created on Apr 2, 2003 by lgauthier@opnworks.com
- */
 
 package org.amanzi.splash.views.importbuilder;
 
@@ -65,12 +60,15 @@ public class ImportBuilderLabelProvider
 		switch (columnIndex) {
 //			case 0:  // COMPLETED_COLUMN
 //				break;
-			case 1 :
+		case 0 :
+			result = task.getFilterHeading();
+			break;	
+		case 1 :
 				result = task.getFilterText();
 				break;
-			case 0 :
-				result = task.getFilterHeading();
-				break;
+		case 2 :
+			result = task.getFilterFilename();
+			break;
 //			case 3 :
 //				result = task.getPercentComplete() + "";
 //				break;

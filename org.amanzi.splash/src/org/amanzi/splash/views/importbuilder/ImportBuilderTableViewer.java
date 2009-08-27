@@ -1,9 +1,3 @@
-/**
- * (c) Copyright Mirasol Op'nWorks Inc. 2002, 2003. 
- * http://www.opnworks.com
- * Created on Apr 2, 2003 by lgauthier@opnworks.com
- * 
- */
 
 package org.amanzi.splash.views.importbuilder;
 import java.util.Arrays;
@@ -30,7 +24,7 @@ public class ImportBuilderTableViewer {
 	//	private Shell shell;
 	private Table table;
 	private TableViewer tableViewer;
-	private Button closeButton;
+	private Button runButton;
 	
 	// Create a ImportBuilderFilterList and assign it to an instance variable
 	private ImportBuilderFilterList filtersList = new ImportBuilderFilterList(); 
@@ -39,15 +33,15 @@ public class ImportBuilderTableViewer {
 	
 	private final String FILTER_HEADING_COLUMN 			= "Filter Heading";
 	private final String FILTER_TEXT_COLUMN 	= "Filter Text";
-	
+	private final String FILTER_FILE_NAME 	= "Filter Filename";
 	
 
 	// Set column names
 	private String[] columnNames = new String[] { 
 			//COMPLETED_COLUMN, 
 			FILTER_HEADING_COLUMN,
-			FILTER_TEXT_COLUMN//,
-			//PERCENT_COLUMN
+			FILTER_TEXT_COLUMN,
+			FILTER_FILE_NAME
 			};
 
 	/**
@@ -179,20 +173,17 @@ public class ImportBuilderTableViewer {
 			}
 		});
 
-
-		
-
-//		// 4th column with task PercentComplete 
-//		column = new TableColumn(table, SWT.CENTER, 3);
-//		column.setText("% Complete");
-//		column.setWidth(80);
-//		//  Add listener to column so tasks are sorted by percent when clicked
-//		column.addSelectionListener(new SelectionAdapter() {
-//       	
-//			public void widgetSelected(SelectionEvent e) {
-//				tableViewer.setSorter(new ImportBuilderFilterSorter(ImportBuilderFilterSorter.PERCENT_COMPLETE));
-//			}
-//		});
+		// 2nd column with task Description
+		column = new TableColumn(table, SWT.LEFT, 2);
+		column.setText(columnNames[2]);
+		column.setWidth(200);
+		// Add listener to column so tasks are sorted by description when clicked 
+		column.addSelectionListener(new SelectionAdapter() {
+       	
+			public void widgetSelected(SelectionEvent e) {
+				//tableViewer.setSorter(new ImportBuilderFilterSorter(ImportBuilderFilterSorter.DESCRIPTION));
+			}
+		});
 	}
 
 	/**
@@ -207,9 +198,6 @@ public class ImportBuilderTableViewer {
 
 		// Create the cell editors
 		CellEditor[] editors = new CellEditor[columnNames.length];
-
-		// Column 1 : Completed (Checkbox)
-		//editors[0] = new CheckboxCellEditor(table);
 
 		// Column 2 : Description (Free text)
 		TextCellEditor textEditor = new TextCellEditor(table);
@@ -230,7 +218,11 @@ public class ImportBuilderTableViewer {
 					e.doit = "0123456789".indexOf(e.text) >= 0 ;
 				}
 			});
-		//editors[3] = textEditor;
+		// Column 2 : Description (Free text)
+		TextCellEditor textEditor1 = new TextCellEditor(table);
+		((Text) textEditor1.getControl()).setTextLimit(60);
+		editors[2] = textEditor1;
+
 		
 		// Assign the cell editors to the viewer 
 		tableViewer.setCellEditors(editors);
@@ -346,12 +338,35 @@ public class ImportBuilderTableViewer {
 			}
 		});
 		
-//		//	Create and configure the "Close" button
-//		closeButton = new Button(parent, SWT.PUSH | SWT.CENTER);
-//		closeButton.setText("Close");
+//		Create and configure the "Run" button
+//		Button run = new Button(parent, SWT.PUSH | SWT.CENTER);
+//		delete.setText("Run");
 //		gridData = new GridData (GridData.HORIZONTAL_ALIGN_END);
 //		gridData.widthHint = 80; 
-//		closeButton.setLayoutData(gridData); 		
+//		delete.setLayoutData(gridData); 
+//
+//		delete.addSelectionListener(new SelectionAdapter() {
+//       	
+//			//	Remove the selection and refresh the view
+//			public void widgetSelected(SelectionEvent e) {
+//				
+//			}
+//		});
+
+		
+		//	Create and configure the "Close" button
+		runButton = new Button(parent, SWT.PUSH | SWT.CENTER);
+		runButton.setText("Run");
+		gridData = new GridData (GridData.HORIZONTAL_ALIGN_END);
+		gridData.widthHint = 80; 
+		runButton.setLayoutData(gridData); 	
+		runButton.addSelectionListener(new SelectionAdapter() {
+	       	
+			//	Remove the selection and refresh the view
+			public void widgetSelected(SelectionEvent e) {
+				
+			}
+		});
 	}
 
 	/**
@@ -388,7 +403,7 @@ public class ImportBuilderTableViewer {
 	 * Return the 'close' Button
 	 */
 	public Button getCloseButton() {
-		return closeButton;
+		return runButton;
 	}
 
 	public Table getTable() {
