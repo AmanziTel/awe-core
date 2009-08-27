@@ -88,11 +88,8 @@
          <viewShortcut id="net.refractions.udig.browser.ui.browserContainerView"/>
          <viewShortcut id="org.tcat.citd.sim.udig.bookmarks.internal.ui.BookmarksView"/>
          <newWizardShortcut
-               id="org.amanzi.splash.neo4j.wizards.SplashNewSpreadsheetWizard">
-         </newWizardShortcut>
-      <newWizardShortcut
-            id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard">
-      </newWizardShortcut>
+               id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard">
+         </newWizardShortcut>      
          <perspectiveShortcut id="org.amanzi.awe.perspective"/>
          <perspectiveShortcut id="org.neo4j.neoclipse.NeoPerspective"/>
          
