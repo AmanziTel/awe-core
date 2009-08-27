@@ -26,13 +26,12 @@ public class AddToImportFilterrHandler extends AbstractHandler {
 	 */
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-//		
-				AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
-//				editor.plotCellsBarChart();
-		
-		//editor.addNewFilter();
-				
-				editor.LoadHeadings();
+
+		AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
+
+
+		editor.LoadHeadings();
+		editor.addNewFilter();
 		return null;
 	}
 }
