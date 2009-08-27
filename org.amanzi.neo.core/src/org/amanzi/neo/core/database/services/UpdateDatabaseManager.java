@@ -1,6 +1,6 @@
 package org.amanzi.neo.core.database.services;
 
-import org.amanzi.neo.core.database.listener.IUpdateBDListener;
+import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.SafeRunner;
@@ -20,7 +20,7 @@ public class UpdateDatabaseManager {
 	 * 
 	 * @param listener
 	 */
-	public void addListener(IUpdateBDListener listener) {
+	public void addListener(IUpdateDatabaseListener listener) {
 		getListeners().add(listener);
 	}
 
@@ -29,7 +29,7 @@ public class UpdateDatabaseManager {
 	 * 
 	 * @param listener
 	 */
-	public void removeListener(IUpdateBDListener listener) {
+	public void removeListener(IUpdateDatabaseListener listener) {
 		getListeners().remove(listener);
 	}
 
@@ -69,7 +69,7 @@ public class UpdateDatabaseManager {
     public void fireUbdateDatabase(final UpdateDatabaseEvent event) {
 		Object[] allListeners = getListeners().getListeners();
 		for (Object listener : allListeners) {
-			final IUpdateBDListener singleListener = (IUpdateBDListener) listener;
+			final IUpdateDatabaseListener singleListener = (IUpdateDatabaseListener) listener;
 			SafeRunner.run(new ISafeRunnable() {
 				@Override
                 public void run() throws Exception {

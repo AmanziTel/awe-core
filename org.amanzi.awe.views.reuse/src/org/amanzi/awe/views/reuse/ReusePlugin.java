@@ -6,7 +6,7 @@ import java.util.HashSet;
 
 import org.amanzi.awe.views.reuse.views.ReuseAnalyserView;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateBDListener;
+import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -21,7 +21,7 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class ReusePlugin extends AbstractUIPlugin implements IUpdateBDListener {
+public class ReusePlugin extends AbstractUIPlugin implements IUpdateDatabaseListener {
     private static final Collection<UpdateDatabaseEventType> handedTypes;
     static {
         Collection<UpdateDatabaseEventType> spr = new HashSet<UpdateDatabaseEventType>();

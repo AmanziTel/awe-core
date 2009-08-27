@@ -11,7 +11,7 @@ import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
  * @author Cinkel_A
  * 
  */
-public interface IUpdateBDListener {
+public interface IUpdateDatabaseListener {
 	/**
 	 * Handles coming event.
 	 * 

@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateBDListener;
+import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -61,7 +61,7 @@ import org.eclipse.ui.part.ShowInContext;
 
 public class SplashResourceEditor extends AbstractSplashEditor implements
 		IResourceChangeListener, IShowInSource, IShowInTargetList,
-		IUpdateBDListener {
+		IUpdateDatabaseListener {
     private static final Collection<UpdateDatabaseEventType> handedTypes;
     static {
         Collection<UpdateDatabaseEventType> spr = new HashSet<UpdateDatabaseEventType>();
