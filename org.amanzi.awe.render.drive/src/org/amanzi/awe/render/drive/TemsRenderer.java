@@ -26,12 +26,16 @@ import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -53,7 +57,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private MathTransform transform_w2d;
     // private AffineTransform base_transform = null;
     private Color drawColor = Color.BLACK;
-    private Color fillColor = Color.BLUE;// new Color(184,184,221);
+    private Color fillColor = new Color(128, 128, 255);//
+    private static final Color COLOR_SELECTED = Color.RED;
+    private static final Color COLOR_LESS = Color.BLUE;
+    private static final Color COLOR_MORE = Color.GREEN;
+
     @Override
     public void render(Graphics2D destination, IProgressMonitor monitor) throws RenderException {
         ILayer layer = getContext().getLayer();
@@ -103,6 +111,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String selectedProp = geoNeo.getPropertyName();
             Integer propertyValue = geoNeo.getPropertyValue();
+            Integer maxPropertyValue=geoNeo.getMaxPropertyValue();
+            Integer minPropertyValue=geoNeo.getMinPropertyValue();
             // Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -125,7 +135,30 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 }
 
                 java.awt.Point p = getContext().worldToPixel(world_location);
-                renderPoint(g, p);
+
+                Color nodeColor = fillColor;
+                mainLoop: if (selectedProp != null) {
+                    for (Relationship relation : node.getNode()
+                            .getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        Node child = relation.getEndNode();
+                        for (String key : child.getPropertyKeys()) {
+                            if (selectedProp.equals(key)) {
+                                int value = ((Number)child.getProperty(key)).intValue();
+                                if (value == propertyValue) {
+                                    nodeColor = COLOR_SELECTED;
+                                    break mainLoop;
+                                } else if (value > propertyValue && value <= maxPropertyValue) {
+                                    nodeColor = COLOR_MORE;
+                                    break mainLoop;
+                                } else if (value < propertyValue && value >= minPropertyValue) {
+                                    nodeColor = COLOR_LESS;
+                                    break mainLoop;
+                                }
+                            }
+                        }
+                    }
+                }
+                renderPoint(g, p, nodeColor);
                 monitor.worked(1);
                 count++;
                 if (monitor.isCanceled())
@@ -152,7 +185,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      * @param g
      * @param p
      */
-    private void renderPoint(Graphics2D g, java.awt.Point p) {
+    private void renderPoint(Graphics2D g, java.awt.Point p, Color fillColor) {
         g.setColor(fillColor);
         g.fillRect(p.x - 3, p.y - 3, 7, 7);
         g.setColor(drawColor);
