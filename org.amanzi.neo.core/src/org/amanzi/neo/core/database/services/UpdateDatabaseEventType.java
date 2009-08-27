@@ -15,10 +15,10 @@
 package org.amanzi.neo.core.database.services;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * types of event UpdateDatabaseEvent
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.1.0
  */
