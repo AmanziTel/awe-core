@@ -3,7 +3,7 @@ package org.amanzi.neo.core;
 import java.io.IOException;
 
 import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.database.services.UpdateBDManager;
+import org.amanzi.neo.core.database.services.UpdateDatabaseManager;
 import org.amanzi.neo.core.preferences.NeoPreferencesInitializer;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
@@ -40,7 +40,7 @@ public class NeoCorePlugin extends Plugin {
 	private NeoPreferencesInitializer initializer = new NeoPreferencesInitializer();
 
 	private AweProjectService aweProjectService;
-	private UpdateBDManager updateBDManager;
+	private UpdateDatabaseManager updateBDManager;
 
 	/**
 	 * Constructor for SplashPlugin.
@@ -53,7 +53,7 @@ public class NeoCorePlugin extends Plugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		updateBDManager = new UpdateBDManager();
+		updateBDManager = new UpdateDatabaseManager();
 	}
 
 	/*
@@ -100,7 +100,7 @@ public class NeoCorePlugin extends Plugin {
 	 * 
 	 * @return UpdateBDManager
 	 */
-	public UpdateBDManager getUpdateBDManager() {
+	public UpdateDatabaseManager getUpdateDatabaseManager() {
 		return updateBDManager;
 	}
 

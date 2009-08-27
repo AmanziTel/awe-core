@@ -11,7 +11,7 @@ import org.eclipse.core.runtime.SafeRunner;
  * @author Cinkel_A
  * 
  */
-public class UpdateBDManager {
+public class UpdateDatabaseManager {
 
 	private ListenerList listeners = new ListenerList();
 

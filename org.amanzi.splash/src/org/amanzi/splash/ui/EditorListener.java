@@ -76,7 +76,7 @@ public class EditorListener implements IResourceChangeListener {
 					CellNode cell = projectService
 							.findCellByScriptReference(script);
 					if (cell != null) {
-						NeoCorePlugin.getDefault().getUpdateBDManager()
+						NeoCorePlugin.getDefault().getUpdateDatabaseManager()
 								.updateCell(
 										projectName,
 										projectService.getSpreadsheetByCell(

@@ -141,7 +141,7 @@ public class TEMSLoader {
                 }
             }
             String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
-            NeoCorePlugin.getDefault().getUpdateBDManager()
+            NeoCorePlugin.getDefault().getUpdateDatabaseManager()
                     .fireUbdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
             URL url = new URL("file://" + databaseLocation);

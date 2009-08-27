@@ -53,7 +53,7 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateBDListener {
 		super.start(context);
 		plugin = this;
         currentTransaction = NeoServiceProvider.getProvider().getService().beginTx();
-        NeoCorePlugin.getDefault().getUpdateBDManager().addListener(this);
+        NeoCorePlugin.getDefault().getUpdateDatabaseManager().addListener(this);
 	}
 
 	/*
@@ -64,7 +64,7 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateBDListener {
 		plugin = null;
 		super.stop(context);
         currentTransaction.finish();
-        NeoCorePlugin.getDefault().getUpdateBDManager().removeListener(this);
+        NeoCorePlugin.getDefault().getUpdateDatabaseManager().removeListener(this);
 	}
 
 	/**

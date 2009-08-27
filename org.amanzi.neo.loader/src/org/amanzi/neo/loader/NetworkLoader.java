@@ -158,7 +158,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     catalog.add(service);
                 }
             }
-            NeoCorePlugin.getDefault().getUpdateBDManager()
+            NeoCorePlugin.getDefault().getUpdateDatabaseManager()
                     .fireUbdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
             // if(services.size()>0) catalog.add(services.get(0));
             

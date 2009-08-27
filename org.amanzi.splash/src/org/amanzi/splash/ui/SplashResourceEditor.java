@@ -126,7 +126,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 		super.dispose();
 		NeoServiceProvider.getProvider().removeServiceProviderListener(this);
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-		NeoCorePlugin.getDefault().getUpdateBDManager().removeListener(this);
+		NeoCorePlugin.getDefault().getUpdateDatabaseManager().removeListener(this);
 		NeoSplashUtil.logn("Closing the spreadsheet");
 
 	}
@@ -155,7 +155,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 		super.init(site, editorInput);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
 				IResourceChangeEvent.POST_CHANGE);
-		NeoCorePlugin.getDefault().getUpdateBDManager().addListener(this);
+		NeoCorePlugin.getDefault().getUpdateDatabaseManager().addListener(this);
 		NeoServiceProvider.getProvider().addServiceProviderListener(this);
 	}
 
