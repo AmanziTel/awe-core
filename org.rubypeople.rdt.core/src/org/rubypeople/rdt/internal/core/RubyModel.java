@@ -345,6 +345,7 @@ public boolean contains(IResource resource) {
 	public void refreshSpreadsheets(IRubyElement[] elementsScope, IProgressMonitor monitor) throws RubyModelException {
 	    RubyElementDelta delta = new RubyElementDelta(this);
 	    List<SourceFolder> folders = new ArrayList<SourceFolder>();
+	    //TODO: comment
 	    for (IRubyElement element : elementsScope) {
 	        if (element.getElementType() == IRubyElement.SOURCE_FOLDER) {
 	            folders.add((SourceFolder)element);

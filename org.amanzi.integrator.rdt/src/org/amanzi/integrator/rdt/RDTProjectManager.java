@@ -270,6 +270,14 @@ public class RDTProjectManager {
         }
 	}
 	
+	/**
+	 * //TODO:
+	 *
+	 * @param aweProjectName
+	 * @param rubyProjectName
+	 * @param oldSpreadsheetName
+	 * @param newSpreadsheetName
+	 */
 	public static void renameSpreadsheet(String aweProjectName, String rubyProjectName, String oldSpreadsheetName, String newSpreadsheetName) {
 	    AweProjectService service = NeoCorePlugin.getDefault().getProjectService();
 	    
