@@ -1,6 +1,14 @@
 package org.amanzi.awe.views.reuse;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+
 import org.amanzi.awe.views.reuse.views.ReuseAnalyserView;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.listener.IUpdateBDListener;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -13,8 +21,13 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class ReusePlugin extends AbstractUIPlugin {
-
+public class ReusePlugin extends AbstractUIPlugin implements IUpdateBDListener {
+    private static final Collection<UpdateDatabaseEventType> handedTypes;
+    static {
+        Collection<UpdateDatabaseEventType> spr = new HashSet<UpdateDatabaseEventType>();
+        spr.add(UpdateDatabaseEventType.GIS);
+        handedTypes = Collections.unmodifiableCollection(spr);
+    }
     /** String VIEW_ID field */
     private static final String VIEW_ID = "org.amanzi.awe.views.reuse.views.ReuseAnalyserView";
 
@@ -40,6 +53,7 @@ public class ReusePlugin extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
         currentTransaction = NeoServiceProvider.getProvider().getService().beginTx();
+        NeoCorePlugin.getDefault().getUpdateBDManager().addListener(this);
 	}
 
 	/*
@@ -50,6 +64,7 @@ public class ReusePlugin extends AbstractUIPlugin {
 		plugin = null;
 		super.stop(context);
         currentTransaction.finish();
+        NeoCorePlugin.getDefault().getUpdateBDManager().removeListener(this);
 	}
 
 	/**
@@ -75,7 +90,7 @@ public class ReusePlugin extends AbstractUIPlugin {
     /**
      *
      */
-    public void updateView() {
+    private void updateView() {
         ActionUtil.getInstance().runTask(new Runnable() {
 
             @Override
@@ -86,6 +101,16 @@ public class ReusePlugin extends AbstractUIPlugin {
                 }
             }
         }, true);
+    }
+
+    @Override
+    public void databaseUpdated(UpdateDatabaseEvent event) {
+        updateView();
+    }
+
+    @Override
+    public Collection<UpdateDatabaseEventType> getType() {
+        return handedTypes;
     }
 
 }

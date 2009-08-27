@@ -11,10 +11,14 @@ package org.amanzi.splash.ui;
  */
 
 import java.io.ByteArrayInputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.listener.IUpdateBDListener;
-import org.amanzi.neo.core.database.services.UpdateBdEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
@@ -58,7 +62,12 @@ import org.eclipse.ui.part.ShowInContext;
 public class SplashResourceEditor extends AbstractSplashEditor implements
 		IResourceChangeListener, IShowInSource, IShowInTargetList,
 		IUpdateBDListener {
-
+    private static final Collection<UpdateDatabaseEventType> handedTypes;
+    static {
+        Collection<UpdateDatabaseEventType> spr = new HashSet<UpdateDatabaseEventType>();
+        spr.add(UpdateDatabaseEventType.Spreadsheet);
+        handedTypes = Collections.unmodifiableCollection(spr);
+    }
 	private IFile createNewFile(String message) throws CoreException {	    
 		SaveAsDialog dialog = new SaveAsDialog(getEditorSite().getShell());
 		dialog.setTitle("Save Mini-Spreadsheet As");
@@ -264,7 +273,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 	}
 
 	@Override
-	public void databaseUpdated(UpdateBdEvent event) {
+	public void databaseUpdated(UpdateDatabaseEvent event) {
 	    
 		SplashTableModel splashTableModel = ((SplashTableModel) getTable()
 				.getModel());
@@ -299,5 +308,10 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 
     @Override
     public void onNeoStop(Object source) {
+    }
+
+    @Override
+    public Collection<UpdateDatabaseEventType> getType() {
+        return handedTypes;
     }
 }

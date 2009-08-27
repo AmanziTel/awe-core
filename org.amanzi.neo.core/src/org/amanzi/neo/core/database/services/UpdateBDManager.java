@@ -45,9 +45,9 @@ public class UpdateBDManager {
 	 */
 	public void updateCell(String rubyProjectName, String spreadSheetName,
 			String fullCellID) {
-		UpdateBdEvent event = new UpdateBdEvent(rubyProjectName,
+		UpdateDatabaseEvent event = new UpdateDatabaseEvent(rubyProjectName,
 				spreadSheetName, fullCellID);
-		fireUbdateBd(event);
+		fireUbdateDatabase(event);
 
 	}
 
@@ -66,14 +66,16 @@ public class UpdateBDManager {
 	 * @param event
 	 *            UpdateBdEvent
 	 */
-	protected void fireUbdateBd(final UpdateBdEvent event) {
+    public void fireUbdateDatabase(final UpdateDatabaseEvent event) {
 		Object[] allListeners = getListeners().getListeners();
 		for (Object listener : allListeners) {
 			final IUpdateBDListener singleListener = (IUpdateBDListener) listener;
 			SafeRunner.run(new ISafeRunnable() {
 				@Override
-				public void run() throws Exception {
-					singleListener.databaseUpdated(event);
+                public void run() throws Exception {
+                    if (singleListener.getType().contains(event.getType())) {
+                        singleListener.databaseUpdated(event);
+                    }
 				}
 
 				@Override

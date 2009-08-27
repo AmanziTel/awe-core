@@ -10,8 +10,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.forms,
  org.amanzi.awe.views.network,
  org.amanzi.neo.core,
- org.neo4j,
- org.amanzi.awe.views.reuse;bundle-version="1.0.0"
+ org.neo4j
 Eclipse-LazyStart: true
 Bundle-Vendor: AmanziTel AB
 Bundle-ClassPath: .

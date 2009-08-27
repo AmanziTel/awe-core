@@ -13,8 +13,10 @@ import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
 
-import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
@@ -139,7 +141,8 @@ public class TEMSLoader {
                 }
             }
             String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
-            ReusePlugin.getDefault().updateView();
+            NeoCorePlugin.getDefault().getUpdateBDManager()
+                    .fireUbdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
             URL url = new URL("file://" + databaseLocation);
             List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);

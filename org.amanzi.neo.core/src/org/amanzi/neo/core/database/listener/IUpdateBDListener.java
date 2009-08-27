@@ -1,6 +1,9 @@
 package org.amanzi.neo.core.database.listener;
 
-import org.amanzi.neo.core.database.services.UpdateBdEvent;
+import java.util.Collection;
+
+import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 
 /**
  * Listener - updating cells node from script
@@ -15,5 +18,12 @@ public interface IUpdateBDListener {
 	 * @param event
 	 *            UpdateBdEvent
 	 */
-	void databaseUpdated(UpdateBdEvent event);
+	void databaseUpdated(UpdateDatabaseEvent event);
+
+    /**
+     * Gets all event type, that handles current listener
+     * 
+     * @return
+     */
+    Collection<UpdateDatabaseEventType> getType();
 }
