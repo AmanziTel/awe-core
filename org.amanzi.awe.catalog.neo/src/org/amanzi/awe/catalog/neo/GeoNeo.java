@@ -37,6 +37,8 @@ public class GeoNeo {
     private String propertyName;
     private Integer propertyValue;
     private Integer propertyAdjacency;
+    private Integer minPropertyValue;
+    private Integer maxPropertyValue;
     /**
      * A class representing a located Node in the database. By convention all GeoNodes
      * are expected to contain properties for "type" and "name". In addition they should contain
@@ -261,17 +263,37 @@ public class GeoNeo {
      * @param aggrNode aggregation chart node
      * @param propertyNode property node
      * @param adjacency - adjacency
+     * @param maxSelNode
+     * @param minSelNode
      */
-    public void setPropertyToRefresh(Node aggrNode, Node propertyNode, Integer adjacency) {
+    public void setPropertyToRefresh(Node aggrNode, Node propertyNode, Integer adjacency, Node minSelNode, Node maxSelNode) {
         if (aggrNode != null && propertyNode != null && adjacency != null) {
             propertyName = (String)aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
             propertyValue = (Integer)propertyNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+            minPropertyValue = (Integer)minSelNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+            maxPropertyValue = (Integer)maxSelNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
             propertyAdjacency = adjacency;
         } else {
             propertyName = null;
             propertyValue = 0;
+            minPropertyValue = 0;
+            maxPropertyValue = 0;
             propertyAdjacency = 0;
         }
+    }
+
+    /**
+     * @return Returns the minPropertyValue.
+     */
+    public Integer getMinPropertyValue() {
+        return minPropertyValue;
+    }
+
+    /**
+     * @return Returns the maxPropertyValue.
+     */
+    public Integer getMaxPropertyValue() {
+        return maxPropertyValue;
     }
 
     /**
@@ -295,10 +317,10 @@ public class GeoNeo {
         return propertyValue;
     }
 
-    /**
-     * @return Returns the propertyAdjacency.
-     */
-    public Integer getPropertyAdjacency() {
-        return propertyAdjacency;
-    }
+    // /**
+    // * @return Returns the propertyAdjacency.
+    // */
+    // public Integer getPropertyAdjacency() {
+    // return propertyAdjacency;
+    // }
 }
