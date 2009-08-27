@@ -85,7 +85,7 @@ module AWE
           puts "Data model:"
           ($projects||[]).each_with_index do |pp,pi|
             puts "#{pi}:#{pp.name}" if($projects.length>1)
-            pp.elements.each_with_index do |pm,mi|
+            pp.elements(Java::JavaClass.for_name("net.refractions.udig.project.IMap")).each_with_index do |pm,mi|
               puts "#{(mi==0 && pp.elements.length>1) ? '   maps ' : '        '}#{mi}:#{pm.name}"
               pm.map_layers.each_with_index do |ml,li|
                 puts "#{(li==0) ? '         layers ' : '                '}#{ml.name}"
