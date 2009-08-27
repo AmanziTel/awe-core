@@ -20,7 +20,6 @@ module Neo4j
     @instance.start(prev)
     unless prev # do not stop a service passed in from the outside
       at_exit do
-        puts 'AAAAAAAAA I want to stop!!!!!!!'
         Neo4j.stop
       end
     end

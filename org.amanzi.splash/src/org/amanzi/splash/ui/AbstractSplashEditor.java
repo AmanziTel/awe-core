@@ -74,6 +74,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.ISelection;
@@ -644,7 +646,15 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
 		NeoSplashUtil.logn("splashID = " + splashID);
 
-		table = new SplashTable(splashID, root);
+		try {
+		    table = new SplashTable(splashID, root);
+		}
+		catch (IOException e) {		    
+		    ErrorDialog.openError(parent.getShell(), "Splash failed", 
+                    "An error occured while starting JRuby Interpreter of Splash", 
+                    new Status(Status.ERROR, SplashPlugin.getId(), "Splash failed", e));
+		    return;
+		}
 		table.getModel().addTableModelListener(this);
 
 		createTable(parent);

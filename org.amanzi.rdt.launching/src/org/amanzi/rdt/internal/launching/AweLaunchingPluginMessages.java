@@ -12,6 +12,8 @@ public class AweLaunchingPluginMessages extends NLS{
     
     public static String Could_not_open_editor;
     public static String Console_Terminated;
+    public static String Loadpath_Error;
+    public static String Init_script_Error;
     
     private AweLaunchingPluginMessages() {
     }

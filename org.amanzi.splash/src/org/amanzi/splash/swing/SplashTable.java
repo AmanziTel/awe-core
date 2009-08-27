@@ -2,6 +2,7 @@ package org.amanzi.splash.swing;
 
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -71,7 +72,7 @@ public class SplashTable extends JTable {
 	 * @param root
 	 *            Root node of Spreadsheet
 	 */
-	public SplashTable(String splash_name, RubyProjectNode root) {
+	public SplashTable(String splash_name, RubyProjectNode root) throws IOException {
 		this(Short.MAX_VALUE, Short.MAX_VALUE, splash_name, root);
 
 	}
@@ -88,7 +89,7 @@ public class SplashTable extends JTable {
 	 * @param root
 	 *            root node of Spreadsheet
 	 */
-	public SplashTable(int rowCount, int columnCount, String splash_name, RubyProjectNode root) {
+	public SplashTable(int rowCount, int columnCount, String splash_name, RubyProjectNode root) throws IOException {
 		super();
 
 		splashName = splash_name;
@@ -338,7 +339,9 @@ public class SplashTable extends JTable {
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount + 1, columnCount, splashName, root);
+		SplashTableModel oldModel = (SplashTableModel)getModel();
+		
+		SplashTableModel newModel = new SplashTableModel(rowCount + 1, columnCount, splashName, oldModel.getEngine(), root);
 
 		for (int i = 0; i < rowCount; i++)
 			for (int j = 0; j < columnCount; j++)
@@ -358,7 +361,9 @@ public class SplashTable extends JTable {
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount + 1, splashName, root);
+SplashTableModel oldModel = (SplashTableModel)getModel();
+        
+        SplashTableModel newModel = new SplashTableModel(rowCount + 1, columnCount, splashName, oldModel.getEngine(), root);
 
 		for (int i = 0; i < rowCount; i++)
 			for (int j = 0; j < columnCount; j++)
@@ -485,7 +490,9 @@ public class SplashTable extends JTable {
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount + count, columnCount, splashName, root);
+SplashTableModel oldModel = (SplashTableModel)getModel();
+        
+        SplashTableModel newModel = new SplashTableModel(rowCount + 1, columnCount, splashName, oldModel.getEngine(), root);
 
 		for (int i = index; i < index + count; i++)
 			for (int j = 0; j < columnCount; j++) {
@@ -548,7 +555,9 @@ public class SplashTable extends JTable {
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-		SplashTableModel newModel = new SplashTableModel(rowCount, columnCount + count, splashName, root);
+SplashTableModel oldModel = (SplashTableModel)getModel();
+        
+        SplashTableModel newModel = new SplashTableModel(rowCount + 1, columnCount, splashName, oldModel.getEngine(), root);
 
 		for (int i = 0; i < rowCount; i++) {
 			for (int j = index; j < index + count; j++)

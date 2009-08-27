@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public class SwingIRBConsole extends JFrame {
     }
 
     public static void main(final String[] args) {
-    	Thread t2 = start_thread(args);
+    	Thread t2 = startIrbPanelWithExceptions(args);
         try {
             t2.join();
         } catch (InterruptedException ie) {
@@ -47,14 +48,33 @@ public class SwingIRBConsole extends JFrame {
     public static Thread start(String[] args) {
     	if(args==null) args=new String[0];
     	if(consoleThread==null || !(consoleThread.isAlive())){
-    		consoleThread = start_thread(args);
+    		consoleThread = startIrbPanelWithExceptions(args);
     	}else if(console!=null){
     		console.setState(NORMAL);
     		console.toFront();
     	}
     	return consoleThread;
     }
-    private static Thread start_thread(final String[] args) {
+    
+    /**
+     * Starts IRB Panel with exception handling
+     *
+     * @param shell
+     * @return Thread that contains IRB
+     * @author Lagutko_N
+     */
+    private static Thread startIrbPanelWithExceptions(final String[] args) {
+        try {
+            return start_thread(args);
+        }
+        catch (IOException e) {
+            //TODO: handle this
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    private static Thread start_thread(final String[] args) throws IOException {
         console = new SwingIRBConsole("JRuby IRB Console");
 
         console.getContentPane().setLayout(new BorderLayout());

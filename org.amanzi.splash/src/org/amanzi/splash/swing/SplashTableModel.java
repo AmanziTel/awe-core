@@ -43,11 +43,6 @@ public class SplashTableModel extends DefaultTableModel {
 	private static final String TABLE_MODEL_RUBY_NAME = "tableModel";
 
 	/*
-	 * Path to ERB
-	 */
-	private static final String ERB_PATH = "/lib/ruby/1.8/erb";
-
-	/*
 	 * Constant for Empty String
 	 */
 	private static final String EMPTY_STRING = "";
@@ -102,7 +97,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 *            Spreadsheet Node
 	 * @author Lagutko_N
 	 */
-	public SplashTableModel(SpreadsheetNode spreadsheet, RubyProjectNode root) {
+	public SplashTableModel(SpreadsheetNode spreadsheet, RubyProjectNode root) throws IOException {
 		this.spreadsheet = spreadsheet;
 
 		this.service = SplashPlugin.getDefault().getSpreadsheetService();
@@ -121,7 +116,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 * @param root
 	 *            root node of Spreadsheet
 	 */
-	public SplashTableModel(String splash_name, RubyProjectNode root) {
+	public SplashTableModel(String splash_name, RubyProjectNode root) throws IOException {
 		this(Short.MAX_VALUE, Short.MAX_VALUE, splash_name, root);
 	}
 
@@ -136,7 +131,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 *            root node of Spreadsheet
 	 */
 	public SplashTableModel(int rows, int cols, String splash_name,
-			RubyProjectNode root) {
+			RubyProjectNode root) throws IOException {
 
 		this.rowCount = rows;
 		this.columnCount = cols;
@@ -165,7 +160,8 @@ public class SplashTableModel extends DefaultTableModel {
 		if (runtime == null)
 			this.runtime = rubyengine;
 
-		initialize(splash_name, root);	
+		this.rubyProjectNode = root;
+		initializeSpreadsheet(splash_name, rubyProjectNode);
 	}
 	
 	/**
@@ -216,7 +212,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 *            RootNode of Spreadsheet
 	 */
 
-	private void initialize(String splash_name, RubyProjectNode root) {
+	private void initialize(String splash_name, RubyProjectNode root) throws IOException {
 
 		this.rubyProjectNode = root;
 		initializeSpreadsheet(splash_name, root);
@@ -228,7 +224,7 @@ public class SplashTableModel extends DefaultTableModel {
 	/**
 	 * Initializes Ruby Runtime
 	 */
-	public void initializeJRubyInterpreter() {
+	public void initializeJRubyInterpreter() throws IOException {
 		RubyInstanceConfig config = null;
 		config = new RubyInstanceConfig() {
 			{
@@ -369,15 +365,13 @@ public class SplashTableModel extends DefaultTableModel {
 	 */
 	public String interpret_erb(String cellID, String formula) {
 		Object s = EMPTY_STRING;
-		String path = ScriptUtils.getJRubyHome() + ERB_PATH;
-
+		
 		NeoSplashUtil.logn("interpret_erb: formula = " + formula + " - cellID:"
 				+ cellID);
-		NeoSplashUtil.logn("path = " + path);
 		NeoSplashUtil.logn("cellID.toLowerCase():" + cellID.toLowerCase());
 
-		String input = "update('" + cellID.toLowerCase() + "', '"
-				+ formula + "')";
+		String input = "update(\"" + cellID.toLowerCase() + "\", \""
+				+ formula + "\")";
 
 		NeoSplashUtil.logn("ERB Input: " + input);
 

@@ -22,7 +22,18 @@ import org.eclipse.core.runtime.Platform;
  * @author craig
  */
 public class ScriptUtils {
-	private static ScriptUtils instance = new ScriptUtils();
+    
+    /*
+     * Name of JRuby plugin
+     */
+    private static final String JRUBY_PLUGIN_NAME = "org.jruby";
+    
+    /*
+     * Name of scripting Plugin
+     */
+	private static final String SCRIPTING_PLUGIN_NAME = "org.amanzi.scripting.jruby";
+	
+    private static ScriptUtils instance = new ScriptUtils();
 	private String jRubyHome = null;
 	private String jRubyVersion = null;
 
@@ -55,7 +66,7 @@ public class ScriptUtils {
      * to add an explicit location to the beginning of the search path.
      * @return String path to JRuby installation (eg. "/usr/lib/jruby")
      */
-    public static String getJRubyHome(){
+    public static String getJRubyHome() throws IOException {
     	return instance.ensureJRubyHome();
     }
 
@@ -64,7 +75,7 @@ public class ScriptUtils {
      * Set -Djruby.version to override this result.
      * @return String describing supported ruby version (eg. "1.8")
      */
-    public static String getJRubyVersion(){
+    public static String getJRubyVersion() throws IOException {
     	return instance.ensureJRubyVersion();
     }
 
@@ -96,12 +107,12 @@ public class ScriptUtils {
      * @param extras
      * @return
      */
-    public static List<String> makeLoadPath(String[] extras) {
+    public static List<String> makeLoadPath(String[] extras) throws IOException {
 		return instance.doMakeLoadPath(extras);
 	}
 
     /** Actually construct the list of load paths */ 
-    private List<String> doMakeLoadPath(String[] extras) {
+    private List<String> doMakeLoadPath(String[] extras) throws IOException {
 		// The following code finds the location of jruby on the computer and
         // makes sure the right loadpath is provided to the interpreter
         // The paths can be overridden by -Djruby.home and -Djruby.version
@@ -116,19 +127,14 @@ public class ScriptUtils {
         loadPath.add(jRubyHome+"/lib");
         
         //Lagutko, 20.08.2009, now we have Neo4j RubyGem inside current plugin but not inside org.jruby
-        //TODO: Lagutko: check this for complete application when plugin stores in JARs
-        try {
-            String neoRubyGemDir = FileLocator.resolve(Platform.getBundle("org.amanzi.scripting.jruby").getEntry("/")).getFile() + "/neo4j";
+        String neoRubyGemDir = getPluginRoot(SCRIPTING_PLUGIN_NAME) + "neo4j";
         
-            loadPath.add(neoRubyGemDir + "/lib");
-            loadPath.add(neoRubyGemDir + "/lib/relations");
-            loadPath.add(neoRubyGemDir + "/lib/mixins");
-            loadPath.add(neoRubyGemDir + "/lib/jars");
-            loadPath.add(neoRubyGemDir + "/examples/imdb");
-        }
-        catch (IOException e) {
-            //TODO: handle
-        }
+        loadPath.add(neoRubyGemDir + "/lib");
+        loadPath.add(neoRubyGemDir + "/lib/relations");
+        loadPath.add(neoRubyGemDir + "/lib/mixins");
+        loadPath.add(neoRubyGemDir + "/lib/jars");
+        loadPath.add(neoRubyGemDir + "/examples/imdb");
+        
 
         loadPath.add("lib/ruby/"+jRubyVersion);
         loadPath.add(".");
@@ -136,21 +142,15 @@ public class ScriptUtils {
 	}
 
 	/** return JRubyHome, searching for it if necessary */
-	private String ensureJRubyHome() {
-		if(jRubyHome==null){
-			try {
-				jRubyHome = ScriptUtils.findJRubyHome(System.getProperty("jruby.home"));
-			}
-			catch (IOException e) {
-				//TODO: handle this exception
-				e.printStackTrace();				
-			}
+	private String ensureJRubyHome() throws IOException {
+		if(jRubyHome==null){			
+		    jRubyHome = ScriptUtils.findJRubyHome(System.getProperty("jruby.home"));			
 		}
 		return(jRubyHome);
 	}
 
 	/** return JRubyVersion, searching for it if necessary */
-	private String ensureJRubyVersion() {
+	private String ensureJRubyVersion() throws IOException {
 		if(jRubyVersion==null){
 			jRubyVersion = ScriptUtils.findJRubyVersion(ensureJRubyHome(),System.getProperty("jruby.version"));
 		}
@@ -161,47 +161,8 @@ public class ScriptUtils {
 	private static String findJRubyHome(String suggested) throws IOException {
 		String jRubyHome = null;			
 		//Lagutko, 22.06.2009, since now we search ruby home only in org.jruby plugin
-		URL rubyLocationURL = Platform.getBundle("org.jruby").getEntry("/");		
-		String rubyLocation = URLUtils.urlToString(FileLocator.resolve(rubyLocationURL), false);
-		if (rubyLocation.startsWith("jar:file:")) {
-		    rubyLocation = "file:/" + rubyLocation.substring(9);
-		}
-		else if (rubyLocation.startsWith("file:")) {
-		    rubyLocation = rubyLocation.substring(5);
-		}
-		for (String path : new String[] { rubyLocation /*suggested,
-				Platform.getBundle("org.jruby").getLocation(),
-				".",
-				"C:/Program Files/JRuby",
-				"/usr/lib/jruby",
-				"/usr/local/lib/jruby",
-				userDir+"/.jruby",
-                userDir+"/dev/jruby-1.5.0",
-                userDir+"/dev/jruby-1.4.0",
-                userDir+"/dev/jruby-1.3.0",
-                userDir+"/dev/jruby-1.2.0",
-                userDir+"/dev/jruby-1.1.6",
-                userDir+"/dev/jruby-1.1.5",
-				userDir+"/dev/jruby-1.1.4",
-				userDir+"/dev/jruby-1.1.3",
-				userDir+"/dev/jruby-1.1.2",
-				userDir+"/dev/jruby-1.1.1",
-				userDir+"/dev/jruby-1.1",
-				userDir+"/dev/jruby-1.1RC1"*/
-		}) {
-			try {
-				//Lagutko, 22.06.2009, JRuby path contains source files but not a JAR
-				/*if ((new java.io.File(path+"/lib")).isDirectory() && (new java.io.File(path+"/lib/jruby.jar")).exists()) {
-					jRubyHome = path;
-					break;
-				}*/
-				jRubyHome = path;
-			} catch (Exception e) {
-				System.err
-						.println("Failed to process possible JRuby path '"
-								+ path + "': " + e.getMessage());
-			}
-		}
+		jRubyHome = getPluginRoot(JRUBY_PLUGIN_NAME);
+		
 		if (jRubyHome == null) {
 			jRubyHome = ".";
 		}
@@ -231,4 +192,24 @@ public class ScriptUtils {
 		return jRubyVersion;
 	}
 
+	/**
+	 * Returns path to plugin that can be handled by JRuby
+	 *
+	 * @param pluginName name of plugin
+	 * @return path to plugin
+	 * @throws IOException throws Exception if path cannot be resolved
+	 * @author Lagutko_N
+	 */
+	private static String getPluginRoot(String pluginName) throws IOException {
+	    URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");       
+        String rubyLocation = URLUtils.urlToString(FileLocator.resolve(rubyLocationURL), false);
+        if (rubyLocation.startsWith("jar:file:")) {
+            rubyLocation = "file:/" + rubyLocation.substring(9);
+        }
+        else if (rubyLocation.startsWith("file:")) {
+            rubyLocation = rubyLocation.substring(5);
+        }
+        
+        return rubyLocation;
+	}
 }

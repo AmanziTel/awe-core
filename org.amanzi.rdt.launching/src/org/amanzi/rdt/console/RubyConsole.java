@@ -14,6 +14,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
@@ -140,10 +141,23 @@ public class RubyConsole extends IOConsole implements IConsole {
 	public void init(IVMInstall jRubyInstall) throws CoreException {		
 		activate();
 		
-		initializeJRubyInterpreter(createRubyConfig(jRubyInstall));
+		try {
+		    
+		    initializeJRubyInterpreter(createRubyConfig(jRubyInstall));
+		}
+		catch (IOException e) {
+		    throw new CoreException(new Status(Status.ERROR, 
+		                                       AweLaunchingPlugin.PLUGIN_ID, 
+		                                       AweLaunchingPluginMessages.Loadpath_Error, e));
+		}
 		
-		if (!runInitScript()) {
-			//TODO: throw exception
+		try {
+		    runInitScript();
+		}
+		catch (IOException e) {
+		    throw new CoreException(new Status(Status.ERROR, 
+                    AweLaunchingPlugin.PLUGIN_ID, 
+                    AweLaunchingPluginMessages.Init_script_Error, e));
 		}
 	}
 	
@@ -151,9 +165,10 @@ public class RubyConsole extends IOConsole implements IConsole {
 	 * Initialized Ruby Runtime
 	 * 
 	 * @param rubyConfiguration configuration of RubyRuntime
+	 * @throws IOException throws Exception if was error on initializing of loadpaths
 	 */
 	
-	protected void initializeJRubyInterpreter(RubyInstanceConfig rubyConfiguration) {
+	protected void initializeJRubyInterpreter(RubyInstanceConfig rubyConfiguration) throws IOException {
 		runtime = Ruby.newInstance(rubyConfiguration);		
 		runtime.getLoadService().init(ScriptUtils.makeLoadPath(new String[] {}));
 	}
@@ -185,21 +200,14 @@ public class RubyConsole extends IOConsole implements IConsole {
 		}};
 	}
 	
-	private boolean runInitScript() {
-	    for (String startScript : START_SCRIPTS) {
-	        try {
-	            URL scriptUrl = FileLocator.toFileURL(AweLaunchingPlugin.getDefault().getBundle().getEntry(startScript));
+	private void runInitScript() throws IOException {
+	    for (String startScript : START_SCRIPTS) {	        
+	        URL scriptUrl = FileLocator.toFileURL(AweLaunchingPlugin.getDefault().getBundle().getEntry(startScript));
 		
-	            String script = NeoSplashUtil.getScriptContent(scriptUrl.getPath());
+	        String script = NeoSplashUtil.getScriptContent(scriptUrl.getPath());
 		
-	            runtime.evalScriptlet(script);
-	        }
-	        catch (IOException e) {
-	            AweLaunchingPlugin.log(null, e);
-	            return false;
-	        }
-	    }
-		return true;
+	        runtime.evalScriptlet(script);
+	    }		
 	}
 	
 	/**

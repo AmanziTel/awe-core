@@ -10,16 +10,23 @@ class TestSplash < Test::Unit::TestCase
     @spreadsheetService = Java::org.amanzi.splash.ui.SplashPlugin.getDefault().getSpreadsheetService()
     puts "spreadsheetService"
     @rootNode=@projectService.getRootNode();
-    puts "setup complite getRootNode()"
+    puts "setup complete getRootNode()"
     @spreadSheetNode=@projectService.findOrCreateSpreadsheet( @aweProjectName,@rubyProjectName, @spreadSheetName)
+    puts @spreadsheetNode
     @projectNode=@projectService.findOrCreateAweProject(@aweProjectName)
-    @splashTableModel=Java::org.amanzi.splash.swing.SplashTableModel.new(@spreadSheetNode)
+    puts @projectNode
+    rubyProject = @projectService.findOrCreateRubyProject(@projectNode, @rubyProjectName)
+    puts rubyProject
+    @splashTableModel=Java::org.amanzi.splash.swing.SplashTableModel.new(@spreadSheetNode, rubyProject)
     puts "setup end"
+    
+    @splashTable = Java::org.amanzi.splash.swing.SplashTable.new(@splashTableModel, true)
   end
 
   def teardown
         puts "teardown"
-        @projectService.deleteNode(@projectNode);
+        aweProjectNode = @projectService.findAweProject(@aweProjectName)
+        @projectService.deleteNode(aweProjectNode);
         puts "teardown end"
   end
 

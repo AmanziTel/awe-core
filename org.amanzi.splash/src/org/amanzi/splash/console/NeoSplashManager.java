@@ -1,5 +1,7 @@
 package org.amanzi.splash.console;
 
+import java.io.IOException;
+
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.AweProjectNode;
@@ -8,6 +10,10 @@ import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.swing.SplashTableModel;
+import org.amanzi.splash.ui.SplashPlugin;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * Spreadsheet Manager class
@@ -106,7 +112,17 @@ public class NeoSplashManager {
 					name);
 		}
 
-		SplashTableModel model = new SplashTableModel(spreadsheet, rootNode);
+		SplashTableModel model = null;
+		try {
+		     model = new SplashTableModel(spreadsheet, rootNode);
+		}
+		catch (IOException e) {
+		    ErrorDialog.openError(PlatformUI.getWorkbench().getDisplay().getActiveShell(), 
+		                          "Splash failed", 
+		                          "An error occured while starting JRuby Interpreter of Splash", 
+		                          new Status(Status.ERROR, SplashPlugin.getId(), "Splash failed", e));
+		    return null;
+		}
 
 		currentSpreadsheet = new Spreadsheet(model, realRdtName, name);
 

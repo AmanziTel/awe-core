@@ -4,9 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -18,8 +18,8 @@ import javax.swing.JTextPane;
 
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.internal.adaptor.ContextFinder;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.layout.GridData;
@@ -29,9 +29,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.RubyInstanceConfig.LoadServiceCreator;
 import org.jruby.demo.TextAreaReadline;
 import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -81,7 +81,30 @@ public class SWTIRBConsole extends Composite {
 		if(parent instanceof Shell) shell = (Shell)parent;
 		editorPane = makeEditorPane(irbPanel);
         tar = new TextAreaReadline(editorPane, irbConfig.getTitle());
-        irbThread = start_irb_panel(shell);
+        irbThread = startIrbPanelWithExceptions(shell);
+	}
+	
+	/**
+	 * Starts IRB Panel with exception handling
+	 *
+	 * @param shell
+	 * @return Thread that contains IRB
+	 * @author Lagutko_N
+	 */
+	private Thread startIrbPanelWithExceptions(Shell shell) {
+	    try {
+            return start_irb_panel(shell);
+        }
+        catch (IOException e) {
+            Shell dialogShell = shell;
+            if (dialogShell == null) {
+                dialogShell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+            }
+            ErrorDialog.openError(dialogShell, "AWEScript Console failed", 
+                                  "An error occured while starting AWEScript Console", 
+                                  new Status(Status.ERROR, "org.amanzi.scripting.jirb", "AWEScript Console failed", e));
+            return null;
+        }
 	}
 	
 	public SWTIRBConsole( Composite parent ) {
@@ -136,7 +159,7 @@ public class SWTIRBConsole extends Composite {
 	 * @param shell optional SWT shell to be closed if the user terminates the IRB session 
 	 * @return
 	 */
-	private Thread start_irb_panel(final Shell shell) {
+	private Thread start_irb_panel(final Shell shell) throws IOException {
 	    Thread.currentThread().getContextClassLoader();
 	    	    
         config = new RubyInstanceConfig() {{
@@ -273,8 +296,8 @@ public class SWTIRBConsole extends Composite {
 	    }
 	    shuttingDown = false;
 	    if(irbThread==null || !irbThread.isAlive()){
-	        tar = new TextAreaReadline(editorPane, irbConfig.getTitle());
-			irbThread = start_irb_panel(null);
+	        tar = new TextAreaReadline(editorPane, irbConfig.getTitle());	        
+	        irbThread = startIrbPanelWithExceptions(null);	        			
 		}
 	}
 
