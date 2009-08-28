@@ -36,8 +36,6 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.LegendItem;
-import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
@@ -91,7 +89,7 @@ public class ReuseAnalyserView extends ViewPart {
     private PropertyCategoryDataset dataset;
     private Node selectedGisNode = null;
     private ChartNode selectedColumn = null;
-    private static final Paint DEFAULT_COLOR = Color.GRAY;
+    private static final Paint DEFAULT_COLOR = new Color(0.75f,0.7f,0.4f);
     private static final Paint COLOR_SELECTED = Color.RED;
     private static final Paint COLOR_LESS = Color.BLUE;
     private static final Paint COLOR_MORE = Color.GREEN;
@@ -130,14 +128,14 @@ public class ReuseAnalyserView extends ViewPart {
             }
         });
         dataset = new PropertyCategoryDataset();
-        chart = ChartFactory.createBarChart("SWTBarChart", VALUES_DOMAIN, COUNT_AXIS, dataset, PlotOrientation.VERTICAL, true,
-                true, false);
+        chart = ChartFactory.createBarChart("SWTBarChart", VALUES_DOMAIN, COUNT_AXIS, dataset, PlotOrientation.VERTICAL, false, false, false);
         CategoryPlot plot = (CategoryPlot)chart.getPlot();
         NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        LegendItemCollection legends = new LegendItemCollection();
-        legends.add(new LegendItem(ROW_KEY, DEFAULT_COLOR));
-        plot.setFixedLegendItems(legends);
+        //Craig: Don't bother with a legend when we have only one data type
+        //LegendItemCollection legends = new LegendItemCollection();
+        //legends.add(new LegendItem(ROW_KEY, defaultColor));
+        //plot.setFixedLegendItems(legends);
         CategoryItemRenderer renderer = new CustomRenderer();
         renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
         plot.setRenderer(renderer);
