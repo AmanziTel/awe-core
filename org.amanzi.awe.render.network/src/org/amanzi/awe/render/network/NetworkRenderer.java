@@ -38,6 +38,7 @@ public class NetworkRenderer extends RendererImpl {
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
     private Color fillColor = new Color(255, 255, 128);
+    private int drawSize = 20;
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
 
@@ -83,6 +84,12 @@ public class NetworkRenderer extends RendererImpl {
         monitor.beginTask("render network sites and sectors", IProgressMonitor.UNKNOWN);    // TODO: Get size from info
 
         GeoNeo geoNeo = null;
+
+        //TODO: Get the symbol size, transparency and color values from a preference dialog or style dialog
+        int transparency = (int)(0.6*255.0);
+        fillColor = new Color(255, 255, 128, transparency);
+        drawSize=17;
+
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -153,7 +160,7 @@ public class NetworkRenderer extends RendererImpl {
                             }
                             //g.setColor(drawColor);
                             //g.rotate(-Math.toRadians(beamwidth/2));
-                            //g.drawString(sector.getString("name"),20,0);
+                            //g.drawString(sector.getString("name"),drawSize,0);
                             s++;
                         }
                     }
@@ -204,12 +211,12 @@ public class NetworkRenderer extends RendererImpl {
         g.translate(p.x, p.y);
         g.rotate(Math.toRadians(-90 + azimuth - beamwidth/2.0));
         g.setColor(fillColor);
-        g.fillArc(-20, -20, 40, 40, 0, -(int)beamwidth);
+        g.fillArc(-drawSize, -drawSize, 2*drawSize, 2*drawSize, 0, -(int)beamwidth);
         g.setColor(borderColor);
-        g.drawArc(-20, -20, 40, 40, 0, -(int)beamwidth);
-        g.drawLine(0, 0, 20, 0);
+        g.drawArc(-drawSize, -drawSize, 2*drawSize, 2*drawSize, 0, -(int)beamwidth);
+        g.drawLine(0, 0, drawSize, 0);
         g.rotate(Math.toRadians(beamwidth));
-        g.drawLine(0, 0, 20, 0);
+        g.drawLine(0, 0, drawSize, 0);
         g.setColor(oldColor);
     }
 
