@@ -14,9 +14,7 @@ class TestSplash < Test::Unit::TestCase
     @spreadSheetNode=@projectService.findOrCreateSpreadsheet( @aweProjectName,@rubyProjectName, @spreadSheetName)
     puts @spreadsheetNode
     @projectNode=@projectService.findOrCreateAweProject(@aweProjectName)
-    puts @projectNode
     rubyProject = @projectService.findOrCreateRubyProject(@projectNode, @rubyProjectName)
-    puts rubyProject
     @splashTableModel=Java::org.amanzi.splash.swing.SplashTableModel.new(@spreadSheetNode, rubyProject)
     puts "setup end"
     

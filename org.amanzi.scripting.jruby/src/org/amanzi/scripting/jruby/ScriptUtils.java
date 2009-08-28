@@ -127,7 +127,7 @@ public class ScriptUtils {
         loadPath.add(jRubyHome+"/lib");
         
         //Lagutko, 20.08.2009, now we have Neo4j RubyGem inside current plugin but not inside org.jruby
-        String neoRubyGemDir = getPluginRoot(SCRIPTING_PLUGIN_NAME) + "neo4j";
+        String neoRubyGemDir = getPluginRoot(SCRIPTING_PLUGIN_NAME) + "/neo4j";
         
         loadPath.add(neoRubyGemDir + "/lib");
         loadPath.add(neoRubyGemDir + "/lib/relations");

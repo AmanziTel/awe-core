@@ -16,6 +16,10 @@
       [Enter License Description here.]
    </license>
 
+   <includes
+         id="org.amanzi.splash.extras_feature"
+         version="0.0.0"/>
+
    <plugin
          id="org.amanzi.rdt.launching"
          download-size="0"

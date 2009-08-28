@@ -152,6 +152,10 @@
                name="preferenceCustomization"
                value="plugin_customization.ini">
          </property>
+         <property
+               name="windowImages"
+               value="icons/awe_icon_16.gif,icons/awe_icon_32.gif,icons/awe_icon_48.gif,icons/awe_icon_64.gif,icons/awe_icon_128.gif">
+         </property>
       </product>
    </extension>
 

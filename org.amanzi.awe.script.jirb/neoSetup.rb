@@ -1,4 +1,4 @@
-require 'Neo4j'
+require 'neo4j'
 include Java
 
 include_class 'org.amanzi.neo.core.service.NeoServiceProvider'
