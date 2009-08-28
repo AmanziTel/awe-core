@@ -647,12 +647,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
 		NeoSplashUtil.logn("splashID = " + splashID);
 
-		try {
-            table = new SplashTable(splashID, root);
-        } catch (IOException e) {
-            // TODO Handle IOException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
-        }
+		table = new SplashTable(splashID, root);
 		table.getModel().addTableModelListener(this);
 
 		createTable(parent);
@@ -1078,16 +1073,21 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		}
 		((CCombo)cb.getControl()).select(index);
 		
-		iv.getFiltersList().addFilter(heading, text, "filter" + iv.getFiltersList().getFilters().size()+1 + ".rb");
+		iv.getFiltersList().addFilter(heading, text);
 	}
 	
 	
 	public void LoadHeadings(){
+		
+		
+		
 		ImportBuilderView view = 
 			(ImportBuilderView) PlatformUI.getWorkbench().
 		getActiveWorkbenchWindow().getActivePage().findView("org.amanzi.splash.neo4j.views.ImportBuilderView");
 		
 		ImportBuilderTableViewer iv = view.getImportBuilderTableViewer();
+		
+		if (iv.getFiltersList().getHeadingsList().length != 0) return;
 		
 		SplashTableModel model = (SplashTableModel)table.getModel();
 		
