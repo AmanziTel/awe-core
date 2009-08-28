@@ -65,11 +65,13 @@ public class JtestRSuite implements Test {
         int colons = 0;
 
         switch(geh.length) {
+        case 1:
+            return new String[]{"", geh[0], "0"};
         case 2:
             // Handle cases like "<eval>:13"
             // or "/abc.rb:13"
             // or "in /abc.rb:13"
-            return new String[]{"", transformFile(geh[0]), geh[1]};
+            return new String[]{"", transformFile(geh[0]), geh[1].replace(")","")};
 
         default:
             // When we have more than two elements we know
