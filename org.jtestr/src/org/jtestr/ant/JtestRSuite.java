@@ -68,10 +68,17 @@ public class JtestRSuite implements Test {
         case 1:
             return new String[]{"", geh[0], "0"};
         case 2:
-            // Handle cases like "<eval>:13"
-            // or "/abc.rb:13"
-            // or "in /abc.rb:13"
-            return new String[]{"", transformFile(geh[0]), geh[1].replace(")","")};
+            if(geh[1].contains(")")) {
+                // Handle cases like "org.eclipse.jface.dialogs.IconAndMessageDialog.getSWTImage(IconAndMessageDialog.java:275)"
+                String lineNumber = geh[1].replace(")", "");
+                geh = geh[0].split("\\(");
+                return new String[]{geh[0], transformFile(geh[1]), lineNumber};
+            }else{
+                // Handle cases like "<eval>:13"
+                // or "/abc.rb:13"
+                // or "in /abc.rb:13"
+                return new String[]{"", transformFile(geh[0]), geh[1]};
+            }
 
         default:
             // When we have more than two elements we know
