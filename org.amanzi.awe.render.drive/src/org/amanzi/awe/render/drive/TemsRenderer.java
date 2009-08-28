@@ -57,7 +57,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private MathTransform transform_w2d;
     // private AffineTransform base_transform = null;
     private Color drawColor = Color.BLACK;
-    private Color fillColor = new Color(128, 128, 255);//
+    private Color fillColor = new Color(200, 128, 255);
+    private int drawSize = 3;
+    private int drawWidth = 1 + 2*drawSize;
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
     private static final Color COLOR_MORE = Color.GREEN;
@@ -105,8 +107,15 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private void renderGeoNeo(Graphics2D g, IGeoResource neoGeoResource, IProgressMonitor monitor) throws RenderException {
         if (monitor == null)
             monitor = new NullProgressMonitor();
-        monitor.beginTask("render network sites and sectors", IProgressMonitor.UNKNOWN);
+        monitor.beginTask("render drive test data", IProgressMonitor.UNKNOWN);
         GeoNeo geoNeo = null;
+
+        //TODO: Get the symbol size, transparency and color values from a preference dialog or style dialog
+        int transparency = (int)(0.6*255.0);
+        fillColor = new Color(200, 128, 255, transparency);
+        drawSize = 3;
+        drawWidth = 1 + 2*drawSize;
+
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -150,7 +159,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                 if (value == propertyValue) {
                                     nodeColor = COLOR_SELECTED;
                                     delta = 0.0;
-                                    break mainLoop;
                                 } else if (delta == null || Math.abs(value - propertyValue) < delta) {
                                     if (value > propertyValue && value <= maxPropertyValue) {
                                         nodeColor = COLOR_MORE;
@@ -160,6 +168,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                         delta = Math.abs(propertyValue - ((Number)property).doubleValue());
                                     }
                                 }
+                                break mainLoop; // we support only value of first relationship
                             }
                         }
                     }
@@ -193,9 +202,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      */
     private void renderPoint(Graphics2D g, java.awt.Point p, Color fillColor) {
         g.setColor(fillColor);
-        g.fillRect(p.x - 3, p.y - 3, 7, 7);
+        g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
         g.setColor(drawColor);
-        g.drawRect(p.x - 3, p.y - 3, 7, 7);
+        g.drawRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
 
     }
 }
