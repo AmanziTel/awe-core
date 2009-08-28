@@ -159,7 +159,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                 }
             }
             NeoCorePlugin.getDefault().getUpdateDatabaseManager()
-                    .fireUbdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
+                    .fireUpdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
             // if(services.size()>0) catalog.add(services.get(0));
             
             //Lagutko, 21.07.2009, show NeworkTree
@@ -350,7 +350,8 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             }
             gis = neo.createNode();
             gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
-            gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.GIS_PREFIX + network.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+            gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.GIS_PREFIX
+                    + network.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
             gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.Network.getHeader());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
             gis.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);

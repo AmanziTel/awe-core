@@ -190,7 +190,7 @@ public class ReuseAnalyserView extends ViewPart {
                 if (propertyCombo.getSelectionIndex() < 0) {
                     chartFrame.setVisible(false);
                 } else {
-                    Node aggrNode = formAggregatesNode(members.get(gisCombo.getText()), propertyCombo.getText());
+                    Node aggrNode = findOrCreateAggregateNode(members.get(gisCombo.getText()), propertyCombo.getText());
                     chartUpdate(aggrNode);
                 }
             }
@@ -280,13 +280,13 @@ public class ReuseAnalyserView extends ViewPart {
     }
 
     /**
-     * Forms a aggregates node
+     * Finds aggregate node or creates if nod does not exist
      * 
      * @param gisNode GIS node
      * @param propertyName name of property
-     * @return aggregates node
+     * @return necessary aggregates node
      */
-    protected Node formAggregatesNode(Node gisNode, final String propertyName) {
+    protected Node findOrCreateAggregateNode(Node gisNode, final String propertyName) {
         Iterator<Node> iterator = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
             @Override
@@ -343,7 +343,7 @@ public class ReuseAnalyserView extends ViewPart {
     }
 
     /**
-     * Forms property list by selected node
+     * Creation list of property by selected node
      * 
      * @param node - selected node
      */

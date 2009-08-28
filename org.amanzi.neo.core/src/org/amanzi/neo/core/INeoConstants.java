@@ -211,7 +211,7 @@ public class INeoConstants {
     /*
      * Prefix of GIS catalog
      */
-    public static final String GIS_PREFIX = "gis: ";
+    public static final String GIS_PREFIX = "";
     
     /*
      * Type GIS

@@ -47,7 +47,7 @@ public class UpdateDatabaseManager {
 			String fullCellID) {
 		UpdateDatabaseEvent event = new UpdateDatabaseEvent(rubyProjectName,
 				spreadSheetName, fullCellID);
-		fireUbdateDatabase(event);
+		fireUpdateDatabase(event);
 
 	}
 
@@ -60,13 +60,12 @@ public class UpdateDatabaseManager {
 		return listeners;
 	}
 
-	/**
-	 * Fires <code>UpdateBdEvent</code> to listeners.
-	 * 
-	 * @param event
-	 *            UpdateBdEvent
-	 */
-    public void fireUbdateDatabase(final UpdateDatabaseEvent event) {
+    /**
+     * Fires <code>UpdateDatabaseEvent</code> to listeners.
+     * 
+     * @param event UpdateDatabaseEvent
+     */
+    public void fireUpdateDatabase(final UpdateDatabaseEvent event) {
 		Object[] allListeners = getListeners().getListeners();
 		for (Object listener : allListeners) {
 			final IUpdateDatabaseListener singleListener = (IUpdateDatabaseListener) listener;

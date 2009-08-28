@@ -33,6 +33,8 @@ public class NetworkRenderer extends RendererImpl {
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
     private static final Color COLOR_MORE = Color.GREEN;
+    private static final Color COLOR_SITE_SELECTED = Color.CYAN;
+    private static final Color COLOR_SECTOR_SELECTED = Color.CYAN;
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
     private Color fillColor = new Color(255, 255, 128);
@@ -86,7 +88,6 @@ public class NetworkRenderer extends RendererImpl {
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String selectedProp = geoNeo.getPropertyName();
             Integer propertyValue = geoNeo.getPropertyValue();
-//            Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
             Integer maxValue=geoNeo.getMaxPropertyValue();
             Integer minValue=geoNeo.getMinPropertyValue();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
@@ -109,7 +110,11 @@ public class NetworkRenderer extends RendererImpl {
                 }
 
                 java.awt.Point p = getContext().worldToPixel(world_location);
-                renderSite(g, p);
+                Color borderColor = g.getColor();
+                if (geoNeo.getSelectedNodes().contains(node.getNode())) {
+                    borderColor = COLOR_SITE_SELECTED;
+                }
+                renderSite(g, p, borderColor);
                 double[] label_position_angles = new double[]{0,90};
                 try {
                     int s = 0;
@@ -138,7 +143,11 @@ public class NetworkRenderer extends RendererImpl {
                                     }
                                 }
                             }
-                            renderSector(g, p, azimuth, beamwidth, colorToFill);
+                            borderColor = g.getColor();
+                            if (geoNeo.getSelectedNodes().contains(child)) {
+                                borderColor = COLOR_SECTOR_SELECTED;
+                            }
+                            renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor);
                             if(s<label_position_angles.length){
                                 label_position_angles[s] = azimuth;
                             }
@@ -187,7 +196,8 @@ public class NetworkRenderer extends RendererImpl {
      * @param p
      * @param azimuth
      */
-    private void renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth, Color fillColor) {
+    private void renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth, Color fillColor, Color borderColor) {
+        Color oldColor = g.getColor();
         if(base_transform==null) base_transform = g.getTransform();
         if(beamwidth<10) beamwidth = 10;
         g.setTransform(base_transform);
@@ -195,20 +205,26 @@ public class NetworkRenderer extends RendererImpl {
         g.rotate(Math.toRadians(-90 + azimuth - beamwidth/2.0));
         g.setColor(fillColor);
         g.fillArc(-20, -20, 40, 40, 0, -(int)beamwidth);
-        g.setColor(drawColor);
+        g.setColor(borderColor);
         g.drawArc(-20, -20, 40, 40, 0, -(int)beamwidth);
         g.drawLine(0, 0, 20, 0);
         g.rotate(Math.toRadians(beamwidth));
         g.drawLine(0, 0, 20, 0);
+        g.setColor(oldColor);
     }
 
     /**
      * This one is very simple, just draw a circle at the site location.
+     * 
      * @param g
      * @param p
+     * @param borderColor
      */
-    private void renderSite( Graphics2D g, java.awt.Point p ) {
+    private void renderSite(Graphics2D g, java.awt.Point p, Color borderColor) {
+        Color oldColor = g.getColor();
+        g.setColor(borderColor);
         g.fillOval(p.x - 5, p.y - 5, 10, 10);
+        g.setColor(oldColor);
     }
 
     @Override

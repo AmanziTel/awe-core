@@ -30,10 +30,11 @@ public class NeoGeoResourceInfo extends IGeoResourceInfo {
         try {
             this.handle = resource;
             this.gisNode = gisNode;
-            this.title = handle.getIdentifier().toString();
+
             GeoNeo geoNeo = handle.getGeoNeo(monitor);
             try {
                 this.name = gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                this.title = this.name;
                 this.description = gisNode.hasProperty(INeoConstants.PROPERTY_DESCRIPTION_NAME) ? gisNode.getProperty(
                         INeoConstants.PROPERTY_DESCRIPTION_NAME).toString() : "GeoNeo Data";
                 this.bounds = geoNeo.getBounds();

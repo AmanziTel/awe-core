@@ -1,7 +1,9 @@
 package org.amanzi.awe.catalog.neo;
 
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -39,6 +41,7 @@ public class GeoNeo {
     private Integer propertyAdjacency;
     private Integer minPropertyValue;
     private Integer maxPropertyValue;
+    private Set<Node> selectedNodes = new HashSet<Node>();
     /**
      * A class representing a located Node in the database. By convention all GeoNodes
      * are expected to contain properties for "type" and "name". In addition they should contain
@@ -317,10 +320,29 @@ public class GeoNeo {
         return propertyValue;
     }
 
-    // /**
-    // * @return Returns the propertyAdjacency.
-    // */
-    // public Integer getPropertyAdjacency() {
-    // return propertyAdjacency;
-    // }
+    /**
+     * @param object
+     */
+    public void setSelectedNodes(Set<Node> selectedNodes) {
+        if (selectedNodes == null) {
+            this.selectedNodes = new HashSet<Node>();
+        } else {
+            this.selectedNodes = selectedNodes;
+        }
+    }
+
+    /**
+     * @param node
+     */
+    public void addNodeToSelect(Node node) {
+        selectedNodes.add(node);
+    }
+
+    /**
+     * @return Returns the selectedNodes.
+     */
+    public Set<Node> getSelectedNodes() {
+        return selectedNodes;
+    }
+
 }
