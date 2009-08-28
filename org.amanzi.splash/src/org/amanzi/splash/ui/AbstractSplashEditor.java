@@ -647,7 +647,12 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
 		NeoSplashUtil.logn("splashID = " + splashID);
 
-		table = new SplashTable(splashID, root);
+		try {
+            table = new SplashTable(splashID, root);
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
 		table.getModel().addTableModelListener(this);
 
 		createTable(parent);
