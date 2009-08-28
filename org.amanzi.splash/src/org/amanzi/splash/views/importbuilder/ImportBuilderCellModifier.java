@@ -52,9 +52,6 @@ public class ImportBuilderCellModifier implements ICellModifier {
 		case 1 :  
 			result = filter.getFilterText();
 			break;
-		case 2 :  
-			result = filter.getFilterFilename();
-			break;
 
 		default :
 			result = "";
@@ -98,10 +95,6 @@ public class ImportBuilderCellModifier implements ICellModifier {
 		case 1 :  
 			valueString = ((String) value).trim();
 			filter.setFilterText(valueString);
-			break;
-		case 2 :  
-			valueString = ((String) value).trim();
-			filter.setFilterFilename(valueString);
 			break;
 
 		default :

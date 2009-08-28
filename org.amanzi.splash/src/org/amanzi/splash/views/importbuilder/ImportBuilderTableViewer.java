@@ -3,12 +3,25 @@ package org.amanzi.splash.views.importbuilder;
 import java.util.Arrays;
 
 
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.CellNode;
+import org.amanzi.neo.core.database.nodes.RubyScriptNode;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.splash.database.services.SpreadsheetService;
+import org.amanzi.splash.swing.Cell;
+import org.amanzi.splash.swing.SplashTable;
+import org.amanzi.splash.swing.SplashTableModel;
+import org.amanzi.splash.ui.AbstractSplashEditor;
+import org.amanzi.splash.ui.SplashPlugin;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.HandlerUtil;
 
 
 
@@ -33,15 +46,14 @@ public class ImportBuilderTableViewer {
 	
 	private final String FILTER_HEADING_COLUMN 			= "Filter Heading";
 	private final String FILTER_TEXT_COLUMN 	= "Filter Text";
-	private final String FILTER_FILE_NAME 	= "Filter Filename";
+	
 	
 
 	// Set column names
 	private String[] columnNames = new String[] { 
 			//COMPLETED_COLUMN, 
 			FILTER_HEADING_COLUMN,
-			FILTER_TEXT_COLUMN,
-			FILTER_FILE_NAME
+			FILTER_TEXT_COLUMN
 			};
 
 	/**
@@ -106,7 +118,7 @@ public class ImportBuilderTableViewer {
 		composite.setLayoutData (gridData);
 
 		// Set numColumns to 3 for the buttons 
-		GridLayout layout = new GridLayout(3, false);
+		GridLayout layout = new GridLayout(5, false);
 		layout.marginWidth = 4;
 		composite.setLayout (layout);
 
@@ -138,7 +150,7 @@ public class ImportBuilderTableViewer {
 		
 		GridData gridData = new GridData(GridData.FILL_BOTH);
 		gridData.grabExcessVerticalSpace = true;
-		gridData.horizontalSpan = 3;
+		gridData.horizontalSpan = 7;
 		table.setLayoutData(gridData);		
 					
 		table.setLinesVisible(true);
@@ -173,17 +185,6 @@ public class ImportBuilderTableViewer {
 			}
 		});
 
-		// 2nd column with task Description
-		column = new TableColumn(table, SWT.LEFT, 2);
-		column.setText(columnNames[2]);
-		column.setWidth(200);
-		// Add listener to column so tasks are sorted by description when clicked 
-		column.addSelectionListener(new SelectionAdapter() {
-       	
-			public void widgetSelected(SelectionEvent e) {
-				//tableViewer.setSorter(new ImportBuilderFilterSorter(ImportBuilderFilterSorter.DESCRIPTION));
-			}
-		});
 	}
 
 	/**
@@ -218,10 +219,6 @@ public class ImportBuilderTableViewer {
 					e.doit = "0123456789".indexOf(e.text) >= 0 ;
 				}
 			});
-		// Column 2 : Description (Free text)
-		TextCellEditor textEditor1 = new TextCellEditor(table);
-		((Text) textEditor1.getControl()).setTextLimit(60);
-		editors[2] = textEditor1;
 
 		
 		// Assign the cell editors to the viewer 
@@ -303,12 +300,14 @@ public class ImportBuilderTableViewer {
 	 * @param parent the parent composite
 	 */
 	private void createButtons(Composite parent) {
+	    
 		
 		// Create and configure the "Add" button
 		Button add = new Button(parent, SWT.PUSH | SWT.CENTER);
 		add.setText("Add");
 		
 		GridData gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
+		
 		gridData.widthHint = 80;
 		add.setLayoutData(gridData);
 		add.addSelectionListener(new SelectionAdapter() {
@@ -338,35 +337,50 @@ public class ImportBuilderTableViewer {
 			}
 		});
 		
-//		Create and configure the "Run" button
-//		Button run = new Button(parent, SWT.PUSH | SWT.CENTER);
-//		delete.setText("Run");
-//		gridData = new GridData (GridData.HORIZONTAL_ALIGN_END);
-//		gridData.widthHint = 80; 
-//		delete.setLayoutData(gridData); 
-//
-//		delete.addSelectionListener(new SelectionAdapter() {
-//       	
-//			//	Remove the selection and refresh the view
-//			public void widgetSelected(SelectionEvent e) {
-//				
-//			}
-//		});
-
+		
+		
+		Label label = new Label(parent, SWT.LEFT);
+		label.setText("Filter Filename:");
+		gridData = new GridData (GridData.HORIZONTAL_ALIGN_END);
+		gridData.widthHint = 80; 
+		label.setLayoutData(gridData);
+		
+		final Text filenameTextBox = new Text(parent, SWT.BORDER | SWT.SINGLE);
+		gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
+		gridData.widthHint = 80;
+		filenameTextBox.setText("FilterX.rb");
+		filenameTextBox.setLayoutData(gridData);
 		
 		//	Create and configure the "Close" button
 		runButton = new Button(parent, SWT.PUSH | SWT.CENTER);
 		runButton.setText("Run");
-		gridData = new GridData (GridData.HORIZONTAL_ALIGN_END);
+		gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
 		gridData.widthHint = 80; 
 		runButton.setLayoutData(gridData); 	
 		runButton.addSelectionListener(new SelectionAdapter() {
 	       	
 			//	Remove the selection and refresh the view
 			public void widgetSelected(SelectionEvent e) {
+				String filter_code = filtersList.getFilterRubyCode();
+				System.out.println(filter_code);
+				
+
+				AbstractSplashEditor editor = (AbstractSplashEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+				SplashTable table = editor.getTable();
+				SpreadsheetNode spreadsheetNode = ((SplashTableModel) table.getModel()).getSpreadsheet();
+				SpreadsheetService spreadsheetService = SplashPlugin
+				.getDefault().getSpreadsheetService();
+				SplashTableModel model = (SplashTableModel) table.getModel();
+				Cell c = (Cell) model.getValueAt(0, 0);
+				
+				CellNode cellNode = spreadsheetService.getCellNode(
+						spreadsheetNode, c.getCellID());
+				NeoCorePlugin.getDefault().getProjectService().createScript(
+						cellNode, filenameTextBox.getText());
 				
 			}
 		});
+		
 	}
 
 	/**

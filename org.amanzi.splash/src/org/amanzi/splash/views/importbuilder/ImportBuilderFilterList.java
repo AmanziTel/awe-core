@@ -81,7 +81,7 @@ public class ImportBuilderFilterList {
 	 * Add a new filter to the collection of filters
 	 */
 	public void addFilter() {
-		ImportBuilderFilter filter = new ImportBuilderFilter("Filter Heading", "Filter Text", "Filename.rb");
+		ImportBuilderFilter filter = new ImportBuilderFilter("Filter Heading", "Filter Text");
 		filters.add(filters.size(), filter);
 		Iterator iterator = changeListeners.iterator();
 		while (iterator.hasNext())
@@ -91,8 +91,8 @@ public class ImportBuilderFilterList {
 	/**
 	 * Add a new filter to the collection of filters
 	 */
-	public void addFilter(String heading, String text, String filename) {
-		ImportBuilderFilter filter = new ImportBuilderFilter(heading, text, filename);
+	public void addFilter(String heading, String text) {
+		ImportBuilderFilter filter = new ImportBuilderFilter(heading, text);
 		filters.add(filters.size(), filter);
 		Iterator iterator = changeListeners.iterator();
 		while (iterator.hasNext())
@@ -133,5 +133,17 @@ public class ImportBuilderFilterList {
 	public void addChangeListener(IImportBuilderFilterListViewer viewer) {
 		changeListeners.add(viewer);
 	}
+	
+	public String getFilterRubyCode(){
+		String code = "";
+		code += "sheet_importer = SheetImporter.create.filter_and { \n";
+		for (int i=0;i<filters.size();i++){
+			code += "match '" + filters.get(i).getFilterHeading() + "', '"+filters.get(i).getFilterText()+"' \n";
+		}
+		code += "} \n";
+		
+		return code;
+	}
+
 
 }

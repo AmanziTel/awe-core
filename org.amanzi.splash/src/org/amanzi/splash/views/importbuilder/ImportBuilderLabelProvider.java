@@ -66,12 +66,6 @@ public class ImportBuilderLabelProvider
 		case 1 :
 				result = task.getFilterText();
 				break;
-		case 2 :
-			result = task.getFilterFilename();
-			break;
-//			case 3 :
-//				result = task.getPercentComplete() + "";
-//				break;
 			default :
 				break; 	
 		}

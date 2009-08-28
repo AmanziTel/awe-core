@@ -5,7 +5,6 @@ public class ImportBuilderFilter {
 	
 	private String filter_text 	= "";
 	private String filter_heading 		= "?";
-	private String filter_filename 		= "new_filter.rb";
 	
 	/**
 	 * Create a task with an initial filter_text
@@ -25,13 +24,6 @@ public class ImportBuilderFilter {
 		setFilterText(text);
 	}
 	
-public ImportBuilderFilter(String heading, String text, String filename) {
-		
-		super();
-		setFilterHeading(heading);
-		setFilterText(text);
-		setFilterFilename(filename);
-	}
 
 	/**
 	 * @return String task filter_text
@@ -46,7 +38,8 @@ public ImportBuilderFilter(String heading, String text, String filename) {
 	public String getFilterHeading() {
 		return filter_heading;
 	}
-
+	
+	
 	
 
 	
@@ -66,14 +59,6 @@ public ImportBuilderFilter(String heading, String text, String filename) {
 	 */
 	public void setFilterHeading(String string) {
 		filter_heading = string;
-	}
-
-	public String getFilterFilename() {
-		return filter_filename;
-	}
-
-	public void setFilterFilename(String filter_filename) {
-		this.filter_filename = filter_filename;
 	}
 
 	
