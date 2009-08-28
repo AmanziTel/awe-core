@@ -1042,7 +1042,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	public void addNewFilter(){
 		ImportBuilderView view = 
 			(ImportBuilderView) PlatformUI.getWorkbench().
-		getActiveWorkbenchWindow().getActivePage().findView("org.amanzi.splash.neo4j.views.ImportBuilderView");
+		getActiveWorkbenchWindow().getActivePage().findView("org.amanzi.splash.views.ImportBuilderView");
 		
 		ImportBuilderTableViewer iv = view.getImportBuilderTableViewer();
 		
@@ -1083,11 +1083,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		
 		ImportBuilderView view = 
 			(ImportBuilderView) PlatformUI.getWorkbench().
-		getActiveWorkbenchWindow().getActivePage().findView("org.amanzi.splash.neo4j.views.ImportBuilderView");
+		getActiveWorkbenchWindow().getActivePage().findView("org.amanzi.splash.views.ImportBuilderView");
 		
 		ImportBuilderTableViewer iv = view.getImportBuilderTableViewer();
 		
-		if (iv.getFiltersList().getHeadingsList().length != 0) return;
+		//if (iv.getFiltersList().getHeadingsList().length != 0) return;
 		
 		SplashTableModel model = (SplashTableModel)table.getModel();
 		
