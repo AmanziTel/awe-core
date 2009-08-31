@@ -11,13 +11,22 @@
 
    <copyright url="http://www.amanzi.org/awe/copyright">
       The Amanzi Wireless Explorer contains code written by Amanzi
-HB, AmanziTel AB, Refractions Research, Geotools, the Eclipse
-Foundation and others. All code is copyright their respective
-owners.
+HB, AmanziTel AB, Refractions Research, Neotechnology,
+Geotools, the Eclipse Foundation and others.
+All code is copyright their respective owners.
    </copyright>
 
    <license url="http://www.amanzi.org/awe/license">
-      The Amanzi Wireless Explorer contains code written by Amanzi HB, AmanziTel AB, Refractions Research, Geotools, the Eclipse Foundation and others. All code is copyright their respective owners. All code by Amanzi HB is licensed using the LGPL version 2.1 or later. Each of the copyright owners has licensed their work using their prefered licenses, so please refer to each component for the specific license.
+      The Amanzi Wireless Explorer contains code written by Amanzi
+HB, AmanziTel AB, Refractions Research, Neotechnology, Geotools,
+the Eclipse Foundation and others.
+
+All code is copyright their respective owners. All code by
+Amanzi HB is licensed using the LGPL version 2.1 or later.
+All code by AmanziTel AB is licensed using the GPL version
+3.0 or later. Each of the copyright owners has licensed their
+work using their prefered licenses, so please refer to each component
+for the specific license.
    </license>
 
    <requires>
