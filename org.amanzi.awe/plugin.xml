@@ -13,7 +13,7 @@
    <extension point="org.eclipse.ui.perspectives">
       <perspective
             class="org.amanzi.awe.PerspectiveFactory"
-            icon="icons/obj16/world_16.png"
+            icon="icons/obj16/awe_icon_16.png"
             id="org.amanzi.awe.perspective"
             name="Amanzi Wireless Explorer">
       </perspective>
@@ -134,7 +134,7 @@
          </property>
          <property
                name="aboutText"
-               value="Amanzi Wireless Explorer&#x0A;&#x0A;This is an open source platform for data management, planning and optimization in cellular radio networks.&#x0A;For more information and support visit http://www.amanzitel.com/page/AWE">
+               value="Amanzi Wireless Explorer&#x0A;&#x0A;This is an open source platform for data management, planning and optimization in cellular radio networks. It is distributed for free and without warranty through the GPL version 3. It is based on software written by AmanziTel AB, Refractions Research, Neotechnology, the Eclipse Foundation and others. Please refer to the file COPYING.txt in the installation folder for complete licensing information.&#x0A;&#x0A;For more information and support visit http://www.amanzitel.com/page/AWE">
          </property>
          <property
                name="startupForegroundColor"
