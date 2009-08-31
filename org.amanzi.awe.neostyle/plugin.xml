@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="net.refractions.udig.project.style">
+      <style
+            class="org.amanzi.awe.neostyle.NeoStyleContent"
+            id="org.amanzi.awe.neostyle.style"
+            name="NeoStyle">
+      </style>
+   </extension>
+   <extension
+         point="net.refractions.udig.style.styleConfigurator">
+      <styleConfigurator
+            class="org.amanzi.awe.neostyle.NeoStyleConfigurator"
+            id=".amanzi.awe.neostyle.NeoStyleConfigurator"
+            label="Style"
+            requires="org.amanzi.awe.catalog.neo.NeoGeoResource"
+            styleId="org.amanzi.awe.neostyle.style">
+      </styleConfigurator>
+   </extension>
+
+</plugin>

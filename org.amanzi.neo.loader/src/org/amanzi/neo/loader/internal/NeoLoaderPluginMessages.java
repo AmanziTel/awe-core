@@ -21,6 +21,9 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String TEMSDialog_MonitorName;
     public static String Console_ErrorOnClose;
     public static String NetworkDialog_DialogTitle;
+	public static String TEMSDialog_AddAllButtonText;
+	public static String TEMSDialog_RemoveAllButtonText;
+	public static String TEMSDialog_DatasetLabel;
     
     private NeoLoaderPluginMessages() {
     }

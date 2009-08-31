@@ -11,8 +11,11 @@ import net.refractions.udig.project.render.AbstractRenderMetrics;
 import net.refractions.udig.project.render.IRenderContext;
 import net.refractions.udig.project.render.IRenderMetricsFactory;
 
+import org.amanzi.awe.neostyle.NeoStyleContent;
+
 public class NetworkRenderMetrics extends AbstractRenderMetrics {
-    /**
+
+	/**
      * Construct based on context (which includes map, layer and geoResource).
      * @param context
      * @param factory
@@ -33,7 +36,7 @@ public class NetworkRenderMetrics extends AbstractRenderMetrics {
      * We cannot use styles, this is a raw Java2D renderer
      */
     public boolean canStyle( String styleID, Object value ) {
-        return false;
+        return NeoStyleContent.ID.equals(styleID);
     }
 
     /**

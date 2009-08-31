@@ -61,6 +61,8 @@ public class TEMSLoader {
     private int limit = 0;
     private static int[] times = new int[2];
     private double[] bbox;
+	private String dataset=null;
+	private Node datasetNode=null;
 
     public TEMSLoader(String filename) {
 		this(null,filename);
@@ -74,8 +76,13 @@ public class TEMSLoader {
      * @author Lagutko_N
      */
     
-    public TEMSLoader(String filename, Display display) {
+    public TEMSLoader(String filename, Display display,String dataset) {
     	this(null, filename, display);
+    	if (dataset==null||dataset.trim().isEmpty()){
+    		this.dataset=null;
+    	}else{
+    		this.dataset = dataset.trim();
+    	}
     }
     
     /**
@@ -335,15 +342,15 @@ public class TEMSLoader {
                 Node node = relationship.getEndNode();
                 if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
                         && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME)
-                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-                        && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().equals(
-                                INeoConstants.GIS_PREFIX + tems.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()))
-                    return node;
+                        && node.hasProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString().equals(GisTypes.Tems.getHeader())){
+                	node.createRelationshipTo(tems, GeoNeoRelationshipTypes.NEXT);
+                	return node;
+                }
             }
             gis = neo.createNode();
             gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
-            gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.GIS_PREFIX
-                    + tems.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+            gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.GIS_TEMS_NAME);
             gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.Tems.getHeader());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
             gis.createRelationshipTo(tems, GeoNeoRelationshipTypes.NEXT);
@@ -385,22 +392,26 @@ public class TEMSLoader {
                 }
 				if (file == null) {
 					Node reference = neo.getReferenceNode();
-					for (Relationship relationship : reference.getRelationships(MeasurementRelationshipTypes.CHILD,
-							Direction.OUTGOING)) {
-						Node node = relationship.getEndNode();
-						if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.FILE_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-								&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename))
-							file = node;
-					}
-					if (file == null) {
-						file = neo.createNode();
-						file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
-						file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-						file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-						reference.createRelationshipTo(file, MeasurementRelationshipTypes.CHILD);
-					}
+					datasetNode=findOrCreateDatasetNode(neo.getReferenceNode(),dataset);
+					file = findOrCreateFileNode(reference,datasetNode);
+					
+					Node mainFileNode=datasetNode==null?file:datasetNode;
+					//					for (Relationship relationship : reference.getRelationships(MeasurementRelationshipTypes.CHILD,
+//							Direction.OUTGOING)) {
+//						Node node = relationship.getEndNode();
+//						if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.FILE_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+//								&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename))
+//							file = node;
+//					}
+//					if (file == null) {
+//						file = neo.createNode();
+//						file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
+//						file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
+//						file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
+//						reference.createRelationshipTo(file, MeasurementRelationshipTypes.CHILD);
+//					}
                     file.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
-                    gis = getGISNode(neo, file);
+                    gis = getGISNode(neo, mainFileNode);
 
 					debug("Added '" + mp.getProperty(INeoConstants.PROPERTY_TIME_NAME) + "' as first measurement of '" + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
 				}
@@ -438,6 +449,89 @@ public class TEMSLoader {
 		first_line = 0;
 		last_line = 0;
 	}
+
+    /**
+     * Finds or create if not exist necessary file node
+     * 
+     * @param root root node
+     * @param datasetNode dataset node
+     * @return
+     */
+    private Node findOrCreateFileNode(Node root, Node datasetNode) {
+        Node file;
+        if (datasetNode == null) {
+            for (Relationship relationship : root.getRelationships(MeasurementRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.FILE_TYPE_NAME)
+                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename)) {
+                    file = node;
+                    return file;
+                }
+            }
+            file = neo.createNode();
+            file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
+            file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
+            file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
+            root.createRelationshipTo(file, MeasurementRelationshipTypes.CHILD);
+        } else {
+            // TODO handling if file node exist, but not part of datasetNode
+            for (Relationship relationship : datasetNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.FILE_TYPE_NAME)
+                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename)) {
+                    file = node;
+                    return file;
+                }
+            }
+            file = neo.createNode();
+            file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
+            file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
+            file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
+            datasetNode.createRelationshipTo(file, GeoNeoRelationshipTypes.NEXT);
+        }
+        return file;
+    }
+
+    /**
+     * Finds or create if not exist necessary dataset node
+     * 
+     * @param root root node
+     * @param datasetName name of dataset node
+     * @return dataset node
+     */
+    private Node findOrCreateDatasetNode(Node root, String datasetName) {
+        Transaction tx = null;
+        Node result;
+        try {
+            tx = neo.beginTx();
+            if (datasetName == null || datasetName.isEmpty()) {
+                return null;
+            }
+            for (Relationship relationship : root.getRelationships(MeasurementRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.DATASET_TYPE_NAME)
+                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(datasetName)) {
+                    result = node;
+                    return result;
+                }
+            }
+
+            result = neo.createNode();
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DATASET_TYPE_NAME);
+            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, datasetName);
+            root.createRelationshipTo(result, MeasurementRelationshipTypes.CHILD);
+            tx.success();
+            return result;
+        } finally {
+            tx.finish();
+        }
+    }
 
 	private static String propertiesString(Node node){
 		StringBuffer properties = new StringBuffer();

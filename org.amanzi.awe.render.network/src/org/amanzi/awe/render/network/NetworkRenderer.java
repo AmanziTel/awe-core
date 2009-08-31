@@ -7,11 +7,14 @@ import java.io.IOException;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
+import net.refractions.udig.project.IStyleBlackboard;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
+import org.amanzi.awe.neostyle.NeoStyle;
+import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -37,10 +40,11 @@ public class NetworkRenderer extends RendererImpl {
     private static final Color COLOR_SECTOR_SELECTED = Color.CYAN;
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
-    private Color fillColor = new Color(255, 255, 128);
+    private Color fillColor = new Color(255, 255, 128,(int)(0.6*255.0));
     private int drawSize = 20;
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
+	private Color labelColor;
 
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
@@ -68,7 +72,6 @@ public class NetworkRenderer extends RendererImpl {
     public void render( Graphics2D g, IProgressMonitor monitor ) throws RenderException {
         ILayer layer = getContext().getLayer();
         // Are there any resources in the layer that respond to the GeoNeo class (should be the case if we found a Neo4J database with GeoNeo data)
-        //TODO: Limit this to network data only
         IGeoResource resource = layer.findGeoResource(GeoNeo.class);
         if(resource != null){
             renderGeoNeo(g,resource,monitor);
@@ -81,13 +84,20 @@ public class NetworkRenderer extends RendererImpl {
     private void renderGeoNeo( Graphics2D g, IGeoResource neoGeoResource, IProgressMonitor monitor ) throws RenderException {
         if (monitor == null)
             monitor = new NullProgressMonitor();
+
         monitor.beginTask("render network sites and sectors", IProgressMonitor.UNKNOWN);    // TODO: Get size from info
 
         GeoNeo geoNeo = null;
 
-        //TODO: Get the symbol size, transparency and color values from a preference dialog or style dialog
-        int transparency = (int)(0.6*255.0);
-        fillColor = new Color(255, 255, 128, transparency);
+        IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
+        NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID );     
+        if (neostyle!=null){
+        	fillColor=neostyle.getFill();
+        	drawColor=neostyle.getLine();
+        	labelColor=neostyle.getLabel();
+        }
+//        int transparency = (int)(0.6*255.0);
+//        fillColor = new Color(255, 255, 128, transparency);
         drawSize=17;
 
         try {
@@ -150,7 +160,7 @@ public class NetworkRenderer extends RendererImpl {
                                     }
                                 }
                             }
-                            borderColor = g.getColor();
+                            borderColor = drawColor;
                             if (geoNeo.getSelectedNodes().contains(child)) {
                                 borderColor = COLOR_SECTOR_SELECTED;
                             }
@@ -174,6 +184,7 @@ public class NetworkRenderer extends RendererImpl {
                 double label_position_angle = Math.toRadians(-90 + (label_position_angles[0]+label_position_angles[1])/2.0);
                 int label_x = 5+(int)(10 * Math.cos(label_position_angle));
                 int label_y = (int)(10 * Math.sin(label_position_angle));
+                g.setColor(labelColor);
                 g.drawString(node.toString(), p.x + label_x, p.y + label_y);
                 g.setTransform(base_transform);
                 monitor.worked(1);

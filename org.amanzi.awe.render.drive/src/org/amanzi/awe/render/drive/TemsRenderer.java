@@ -20,12 +20,15 @@ import java.io.IOException;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
+import net.refractions.udig.project.IStyleBlackboard;
 import net.refractions.udig.project.internal.render.Renderer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
+import org.amanzi.awe.neostyle.NeoStyle;
+import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -115,7 +118,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         fillColor = new Color(200, 128, 255, transparency);
         drawSize = 3;
         drawWidth = 1 + 2*drawSize;
-
+        IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
+        NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);     
+        if (neostyle!=null){
+        	fillColor=neostyle.getFill();
+        	drawColor=neostyle.getLine();
+        }
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -133,6 +141,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             Coordinate world_location = new Coordinate(); // single object for re-use in transform
             // below (minimize object creation)
             for (GeoNode node : geoNeo.getGeoNodes()) {
+            	System.out.println("in");
                 Coordinate location = node.getCoordinate();
 
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {

@@ -222,6 +222,10 @@ public class INeoConstants {
      * Type File
      */
     public static final String FILE_TYPE_NAME = "file";
+    /*
+     * Type Dataset
+     */
+    public static final String DATASET_TYPE_NAME = "dataset";
     
     /*
      * Type Map
@@ -341,5 +345,9 @@ public class INeoConstants {
      * Name of Id property
      */
     public static final String PROPERTY_ID_NAME = "id";
+    /*
+     * Name of drive Gis node
+     */
+	public static final String GIS_TEMS_NAME = "drive";
    
 }

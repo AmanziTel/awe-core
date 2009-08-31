@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Drive
+Bundle-SymbolicName: org.amanzi.awe.neostyle;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.neostyle.NeoStylePlugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui,
+ net.refractions.udig.project.ui,
+ net.refractions.udig.style,
+ org.amanzi.awe.catalog.neo,
+ org.neo4j,
+ org.amanzi.neo.core
+Eclipse-LazyStart: true
+Export-Package: org.amanzi.awe.neostyle

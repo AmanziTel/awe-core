@@ -3,9 +3,13 @@ package org.amanzi.neo.loader.dialogs;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -16,14 +20,20 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -31,6 +41,13 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.actions.RetargetAction;
+import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * Dialog for Loading TEMS data
@@ -99,7 +116,13 @@ public class TEMSDialog {
 	 */
 	private HashMap<String, String> folderFiles = new HashMap<String, String>();
 	private HashMap<String, String> loadedFiles = new HashMap<String, String>();
-	
+
+    private Button addAllFilesToLoaded;
+
+    private Button removeAllFilesFromLoaded;
+
+	private Combo combo;
+	private String datasetName;
 	/* 
 	 * Default directory for file dialogs 
 	 */
@@ -180,13 +203,47 @@ public class TEMSDialog {
 	 */
 	
 	private void createSelectFileGroup(Composite parent) {
+		createDatasetRow(parent);
 		Group group = new Group(parent, SWT.NONE);		
 		group.setLayout(new GridLayout(3, false));
 		group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		
 		createFolderSelectionComposite(group);
 		createManipulationComposite(group);
 		createFileToLoadComposite(group);
+	}
+/**
+ * Creates group for selecting
+ * @param parent
+ */
+	private void createDatasetRow(Composite parent) {
+		Composite panel = new Composite(parent, SWT.NONE);
+		panel.setLayout(new FormLayout());
+		GridData data = new GridData(SWT.FILL, SWT.BOTTOM, true, false);
+		panel.setLayoutData(data);
+
+		Label ldataset=new Label(panel, SWT.NONE);
+		ldataset.setText(NeoLoaderPluginMessages.TEMSDialog_DatasetLabel);
+		combo = new Combo(panel, SWT.NONE);
+        FormData dLabel = new FormData(); 
+        dLabel.left = new FormAttachment(0, 5);
+        dLabel.top = new FormAttachment(combo, 5, SWT.CENTER);
+        ldataset.setLayoutData(dLabel);
+
+        FormData dCombo = new FormData(); 
+        dCombo.left = new FormAttachment(ldataset, 5);
+        dCombo.top = new FormAttachment(0, 2);
+        dCombo.right = new FormAttachment(40,3);
+        combo.setLayoutData(dCombo);
+        
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        ArrayList<String> datasetList = new ArrayList<String>();
+        for (Relationship relation:NeoServiceProvider.getProvider().getService().getReferenceNode().getRelationships(NetworkRelationshipTypes.CHILD,Direction.OUTGOING)){
+        	String type = (String)relation.getEndNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
+        	if (type!=null&&type.equals(INeoConstants.DATASET_TYPE_NAME)){
+        		datasetList.add((String)relation.getEndNode().getProperty(INeoConstants.PROPERTY_NAME_NAME));
+        	}
+        }
+        combo.setItems(datasetList.toArray(new String[]{}));
 	}
 	
 	/**
@@ -224,7 +281,9 @@ public class TEMSDialog {
 		actionPanel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		
 		addFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.TEMSDialog_AddButtonText, SWT.CENTER);
+        addAllFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.TEMSDialog_AddAllButtonText, SWT.CENTER);
 		removeFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.TEMSDialog_RemoveButtonText, SWT.CENTER);
+        removeAllFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.TEMSDialog_RemoveAllButtonText, SWT.CENTER);
 	}
 	
 	/**
@@ -334,14 +393,18 @@ public class TEMSDialog {
 		      
 		        if (fn != null) {
 		        	setDefaultDirectory(dlg.getFilterPath());
-		        	
 		        	for (String name : dlg.getFileNames()) {		        		
 		        		addFileToLoad(name, dlg.getFilterPath(), true);
+			        	if (combo.getText().isEmpty()){
+			        		combo.setText(name);
+			        	}
 		        	}
 		        	
-		        	for (File file : new File(getDefaultDirectory()).listFiles(new TEMFFileFilter())) {
+		        	File[] listFiles = new File(getDefaultDirectory()).listFiles(new TEMFFileFilter());
+                    for (File file : listFiles) {
 		        		addFileToChoose(file.getName(), getDefaultDirectory(), true);
 		        	}
+
 		        }
 			}
 			
@@ -358,6 +421,16 @@ public class TEMSDialog {
 			
 		});
 		
+        addAllFilesToLoaded.addSelectionListener(new SelectionAdapter() {
+
+            public void widgetSelected(SelectionEvent e) {
+                for (String fileName : folderFilesList.getItems()) {
+                    addFileToLoad(fileName);
+                }
+            }
+
+        });
+
 		//removes selected files from files to load
 		removeFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
 			
@@ -368,6 +441,15 @@ public class TEMSDialog {
 			}
 			
 		});
+        removeAllFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
+
+            public void widgetSelected(SelectionEvent e) {
+                for (String fileName : filesToLoadList.getItems()) {
+                    removeFileToLoad(fileName);
+                }
+            }
+
+        });
 		
 		//closes dialog
 		cancelButton.addSelectionListener(new SelectionAdapter() {
@@ -382,10 +464,18 @@ public class TEMSDialog {
 		loadButton.addSelectionListener(new SelectionAdapter() {
 			
 			public void widgetSelected(SelectionEvent e) {
+				datasetName=combo.getText();
 				LoadTEMSJob job = new LoadTEMSJob(temsShell.getDisplay());
 				job.schedule(50);				
 			}
 			
+		});
+		combo.addModifyListener(new ModifyListener() {
+			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				checkLoadButton();
+			}
 		});
 		
 	}
@@ -401,7 +491,7 @@ public class TEMSDialog {
 
 		public boolean accept(File pathname) {
 		    for (String extension : INeoConstants.TEMS_FILE_EXTENSIONS) {
-		        if (pathname.getName().endsWith(extension)) {
+                if (pathname.getName().toLowerCase().endsWith(extension.toLowerCase().substring(1))) {
 		            return true;
 		        }
 		    }
@@ -428,7 +518,7 @@ public class TEMSDialog {
 		
 		for (String filePath : loadedFiles.values()) {
 			try {				
-				TEMSLoader temsLoader = new TEMSLoader(filePath, display);
+				TEMSLoader temsLoader = new TEMSLoader(filePath, display,datasetName);
 				temsLoader.run();
 				temsLoader.printStats();	// stats for this load						
 			}
@@ -529,7 +619,7 @@ public class TEMSDialog {
 	 */
 	
 	private void checkLoadButton() {
-		loadButton.setEnabled(filesToLoadList.getItemCount() > 0);
+		loadButton.setEnabled(filesToLoadList.getItemCount() > 0/*&&combo.getText().length()>0*/);
 	}
 	
 	/**
