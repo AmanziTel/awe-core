@@ -32,7 +32,11 @@ import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser.Order;
 
 public class TEMSLoader {	
     private CRS crs = null;
@@ -458,42 +462,44 @@ public class TEMSLoader {
      * @return
      */
     private Node findOrCreateFileNode(Node root, Node datasetNode) {
-        Node file;
-        if (datasetNode == null) {
-            for (Relationship relationship : root.getRelationships(MeasurementRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();
-                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.FILE_TYPE_NAME)
-                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-                        && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename)) {
-                    file = node;
-                    return file;
-                }
-            }
+        Node file = findFileNode(filename);
+        if (file == null) {
             file = neo.createNode();
             file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
             file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
             file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-            root.createRelationshipTo(file, MeasurementRelationshipTypes.CHILD);
-        } else {
-            // TODO handling if file node exist, but not part of datasetNode
-            for (Relationship relationship : datasetNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();
-                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.FILE_TYPE_NAME)
-                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-                        && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename)) {
-                    file = node;
-                    return file;
-                }
-            }
-            file = neo.createNode();
-            file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
-            file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-            file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
+        }
+        if (datasetNode != null) {
             datasetNode.createRelationshipTo(file, GeoNeoRelationshipTypes.NEXT);
         }
         return file;
+    }
+
+    /**
+     * Find file Node
+     * 
+     * @param filename file name - value of property INeoConstants.PROPERTY_FILENAME_NAME
+     * @return file node or null
+     */
+    private Node findFileNode(final String filename) {
+        Iterator<Node> iterator = neo.getReferenceNode().traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+            
+            @Override
+            public boolean isStopNode(TraversalPosition traversalposition) {
+                return traversalposition.depth() > 0
+                        && traversalposition.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString().equals(
+                                INeoConstants.FILE_TYPE_NAME);
+                }
+        },new ReturnableEvaluator() {
+            
+            @Override
+            public boolean isReturnableNode(TraversalPosition traversalposition) {
+                Node currentNode = traversalposition.currentNode();
+                return currentNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.FILE_TYPE_NAME)
+                        && currentNode.getProperty(INeoConstants.PROPERTY_FILENAME_NAME, "").equals(filename);
+            }
+        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     /**
