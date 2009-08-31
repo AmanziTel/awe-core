@@ -3,6 +3,7 @@ package org.amanzi.awe.views.network.proxy;
 import java.util.ArrayList;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -51,9 +52,19 @@ public class Root extends NeoNode {
             Node reference = service.getReferenceNode();
             
             for (Relationship relationship : reference.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();                
-                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NetworkElementTypes.NETWORK.toString()) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME))
-                    networkNodes.add(new NeoNode(node));
+                Node node = relationship.getEndNode();
+                Node gisNode = null;
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME.toString()) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) {
+                    gisNode = node;                    
+                }
+                if (gisNode != null) {
+                    for (Relationship gisRelationship : gisNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                        node = gisRelationship.getEndNode();
+                        if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NetworkElementTypes.NETWORK.toString()) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) {
+                            networkNodes.add(new NeoNode(node));
+                        }
+                    }
+                }
             }           
             
             transaction.success();
