@@ -39,6 +39,8 @@ public class TableRowResizer extends MouseInputAdapter {
     private final JTable mainTable;
 
     /**
+     * Constructor
+     * 
      * @param rowHeader row header table
      * @param mainTable main table
      */
@@ -49,10 +51,23 @@ public class TableRowResizer extends MouseInputAdapter {
         rowHeader.addMouseMotionListener(this);
     }
 
+    /**
+     * Gets resizing row
+     * 
+     * @param p - point
+     * @return index of row
+     */
     private int getResizingRow(Point p) {
         return getResizingRow(p, table.rowAtPoint(p));
     }
 
+    /**
+     * Gets resizing row
+     * 
+     * @param p - point
+     * @param row index of row
+     * @return
+     */
     private int getResizingRow(Point p, int row) {
         if (row == -1) {
             return -1;
@@ -78,6 +93,9 @@ public class TableRowResizer extends MouseInputAdapter {
         mouseYOffset = p.y - table.getRowHeight(resizingRow);
     }
 
+    /**
+     * Swap cursor
+     */
     private void swapCursor() {
         Cursor tmp = table.getCursor();
         table.setCursor(otherCursor);
