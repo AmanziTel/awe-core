@@ -12,6 +12,8 @@ public class Messages extends NLS {
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
     
     public static String Copy_Error_Title;
+    public static String Open_Spreadsheet_Error_Title;
+    public static String Open_Spreadsheet_Error_Message;
     
     private Messages() {
     }

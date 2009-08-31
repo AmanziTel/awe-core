@@ -10,14 +10,17 @@ package org.amanzi.splash.ui;
  * Code or samples provided herein are provided without warranty of any kind.
  */
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.splash.database.services.Messages;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.OpenEvent;
@@ -25,6 +28,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.neo4j.api.core.Transaction;
 import org.osgi.framework.BundleContext;
@@ -169,9 +173,17 @@ public class SplashPlugin extends AbstractUIPlugin {
                     //if Spreadsheet than open it in Editor
                     IRubyProject rubyProject = rubyElement.getRubyProject();
                     
-                    URL spreadsheetURL = NeoSplashUtil.getSpeadsheetURL(rubyElement.getElementName());
+                    try {
+                        URL spreadsheetURL = NeoSplashUtil.getSpeadsheetURL(rubyElement.getElementName());
                     
-                    NeoSplashUtil.openSpreadsheet(getWorkbench(), spreadsheetURL, rubyProject.getElementName());
+                        NeoSplashUtil.openSpreadsheet(getWorkbench(), spreadsheetURL, rubyProject.getElementName());
+                    }
+                    catch (MalformedURLException e) {
+                        ErrorDialog.openError(PlatformUI.getWorkbench().getDisplay().getActiveShell(), 
+                                              Messages.Open_Spreadsheet_Error_Title,
+                                              Messages.Open_Spreadsheet_Error_Message,
+                                              new Status(Status.ERROR, SplashPlugin.getId(), Messages.Open_Spreadsheet_Error_Message, e));
+                    }
                 }
             }
         }

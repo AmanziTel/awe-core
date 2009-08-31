@@ -3,7 +3,6 @@ package org.amanzi.splash.utilities;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -30,7 +29,6 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.SplashEditorInput;
-import org.amanzi.splash.ui.SplashPlugin;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -66,7 +64,7 @@ public class NeoSplashUtil {
 
 	public static final int MAX_SPLASH_COL_COUNT = 30;
 
-public static final boolean enableNeo4j = true;
+	public static final boolean enableNeo4j = true;
 
 	public static boolean isDebug = true;
 
@@ -447,19 +445,10 @@ public static final boolean enableNeo4j = true;
 	 * @param name name of spreadsheet
 	 * @return url of spreadsheet
 	 */
-	public static URL getSpeadsheetURL(String name) {
+	public static URL getSpeadsheetURL(String name) throws MalformedURLException {
 	    String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
-	    String fullPath = databaseLocation + "?" + INeoConstants.PROPERTY_NAME_NAME + "=" + name;
-	    if(!fullPath.matches("\\w{2,100}\\:\\/\\/.*")){
-	        fullPath = "file://" + fullPath;
-	    }
+	    String fullPath = "file://" + databaseLocation + "?" + INeoConstants.PROPERTY_NAME_NAME + "=" + name;
 	    
-	    try {
-	        return URLUtils.constructURL(new File("."), fullPath);
-	    }
-	    catch (MalformedURLException e) {
-	        SplashPlugin.error(null, e);
-	        return null;
-	    }
+	    return new URL(fullPath);	    
 	}
 }

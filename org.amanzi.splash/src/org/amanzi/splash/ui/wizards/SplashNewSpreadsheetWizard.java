@@ -9,6 +9,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.*;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -108,25 +109,29 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 		monitor.worked(1);
 		
 		monitor.setTaskName("Opening spreadsheet for editing...");
-		getShell().getDisplay().asyncExec(new Runnable() {
-			public void run() {
-				//Lagutko 20.07.2009, create Spreadsheet also for EMF structure		
-				URL spreadsheetURL = NeoSplashUtil.getSpeadsheetURL(fileName);
+		
+		//Lagutko 20.07.2009, create Spreadsheet also for EMF structure  
+		try {
+		    final URL spreadsheetURL = NeoSplashUtil.getSpeadsheetURL(fileName);
+		    getShell().getDisplay().asyncExec(new Runnable() {
+		        public void run() {AWEProjectManager.createNeoSpreadsheet(resource.getProject(), fileName, spreadsheetURL);
 				
-				AWEProjectManager.createNeoSpreadsheet(resource.getProject(), fileName, spreadsheetURL);
+				    NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, resource.getProject().getName());
 				
-				NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, resource.getProject().getName());
-				
-				//Lagutko, 11.08.2009, put newly created Spreadsheet to Delta
-				CreateSpreadsheetOperation op= new CreateSpreadsheetOperation((IProject)resource, fileName);
-				try {
-				    op.runOperation(monitor);
-				}
-				catch (RubyModelException e) {
-				    SplashPlugin.error(null, e);
-				}
-			}
-		});
+				    //Lagutko, 11.08.2009, put newly created Spreadsheet to Delta
+				    CreateSpreadsheetOperation op= new CreateSpreadsheetOperation((IProject)resource, fileName);
+				    try {
+				        op.runOperation(monitor);
+				    }
+				    catch (RubyModelException e) {
+				        SplashPlugin.error(null, e);
+				    }				
+		        }
+		    });
+		}
+		catch (MalformedURLException e) {
+		    throw new CoreException(new Status(Status.ERROR, SplashPlugin.getId(), null, e));
+		}
 		monitor.worked(1);
 	}
 	
