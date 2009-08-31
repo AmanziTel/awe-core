@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Jfree
+Bundle-Name: JFreeChart Plugin
 Bundle-SymbolicName: org.jfree
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.13
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: com.keypoint,
  com.lowagie.text,
@@ -123,3 +123,4 @@ Bundle-ClassPath: lib/gnujaxp.jar,
  lib/junit.jar,
  lib/servlet.jar,
  lib/swtgraphics2d.jar
+Bundle-Vendor: org.jfree
