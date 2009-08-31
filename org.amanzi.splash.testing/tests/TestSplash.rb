@@ -1,24 +1,27 @@
 class TestSplash < Test::Unit::TestCase
   def setup
-    puts "setup begin"
-    @aweProjectName="TESTPROJECT"
-    @rubyProjectName="TESTPROJECT.TESTPROJECT"
-    @spreadSheetName="TEST_SPREADSHEET"
-    puts "projectService begin" 
-    @projectService=Java::org.amanzi.neo.core.NeoCorePlugin.getDefault().getProjectService()
-     puts "projectService"    
-    @spreadsheetService = Java::org.amanzi.splash.ui.SplashPlugin.getDefault().getSpreadsheetService()
-    puts "spreadsheetService"
-    @rootNode=@projectService.getRootNode();
-    puts "setup complete getRootNode()"
-    @spreadSheetNode=@projectService.findOrCreateSpreadsheet( @aweProjectName,@rubyProjectName, @spreadSheetName)
-    puts @spreadsheetNode
-    @projectNode=@projectService.findOrCreateAweProject(@aweProjectName)
-    rubyProject = @projectService.findOrCreateRubyProject(@projectNode, @rubyProjectName)
-    @splashTableModel=Java::org.amanzi.splash.swing.SplashTableModel.new(@spreadSheetNode, rubyProject)
-    puts "setup end"
+    begin
+      puts "setup begin"
+      @aweProjectName="TESTPROJECT"
+      @rubyProjectName="TESTPROJECT.TESTPROJECT"
+      @spreadSheetName="TEST_SPREADSHEET"
+      puts "projectService begin" 
+      @projectService=Java::org.amanzi.neo.core.NeoCorePlugin.getDefault().getProjectService()
+      puts "projectService"    
+      @spreadsheetService = Java::org.amanzi.splash.ui.SplashPlugin.getDefault().getSpreadsheetService()
+      puts "spreadsheetService"
+      @rootNode=@projectService.getRootNode();
+      puts "setup complete getRootNode()"
+      @spreadSheetNode=@projectService.findOrCreateSpreadsheet( @aweProjectName,@rubyProjectName, @spreadSheetName)
+      @projectNode=@projectService.findOrCreateAweProject(@aweProjectName)
+      rubyProject = @projectService.findOrCreateRubyProject(@projectNode, @rubyProjectName)
+      @splashTableModel=Java::org.amanzi.splash.swing.SplashTableModel.new(@spreadSheetNode, rubyProject)
+      puts "setup end"
     
-    @splashTable = Java::org.amanzi.splash.swing.SplashTable.new(@splashTableModel, true)
+      @splashTable = Java::org.amanzi.splash.swing.SplashTable.new(@splashTableModel, true)
+    rescue => e
+      puts e
+    end
   end
 
   def teardown
