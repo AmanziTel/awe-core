@@ -29,7 +29,7 @@ public class SplashImages {
 		IMAGE_ALIGN_LEFT = createImageDescriptor("icons/align_left.gif");
 		IMAGE_ALIGN_CENTER = createImageDescriptor("icons/align_center.gif");
 		IMAGE_ALIGN_RIGHT = createImageDescriptor("icons/align_right.gif");
-		IMAGE_SPREADSHEET = createImageDescriptor("icons/spreadsheet.gif");		
+		IMAGE_SPREADSHEET = createImageDescriptor("icons/splash_16.png");		
 		IMAGE_CLEAR_ALL = createImageDescriptor("icons/clear_all.gif");		
 	}
 

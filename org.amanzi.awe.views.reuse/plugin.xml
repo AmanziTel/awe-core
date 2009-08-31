@@ -10,7 +10,7 @@
       </category>
       <view
             name="Reuse Analyser"
-            icon="icons/sample.gif"
+            icon="icons/reuse.png"
             category="org.amanzi.awe.views.reuse"
             class="org.amanzi.awe.views.reuse.views.ReuseAnalyserView"
             id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView">

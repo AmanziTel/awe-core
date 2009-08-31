@@ -19,8 +19,8 @@ import org.neo4j.api.core.Traverser;
 public class RubyProjectNode extends AbstractNode {
 
 	private static final String ATTR_PROJECT_NAME = "Project name";
-	private static final Object RUBY_PROJECT_NODE_TYPE = "Ruby_project";;
-	private static final Object RUBY_PROJECT_NODE_NAME = "Ruby project";;
+	private static final Object RUBY_PROJECT_NODE_TYPE = "ruby_project";
+	private static final Object RUBY_PROJECT_NODE_NAME = "Ruby project";
 
 	/**
 	 * Constructor. Wraps a Node that will be parent node for Spreadsheets

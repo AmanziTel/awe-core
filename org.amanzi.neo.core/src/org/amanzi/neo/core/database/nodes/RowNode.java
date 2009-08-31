@@ -31,7 +31,7 @@ public class RowNode extends AbstractNode {
     /*
      * Type of this Node
      */
-    private static final String ROW_NODE_TYPE = "Spreadsheet_Row";
+    private static final String ROW_NODE_TYPE = "spreadsheet_row";
     
     /*
      * Name of this Node

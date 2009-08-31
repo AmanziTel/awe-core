@@ -6,7 +6,7 @@ import org.neo4j.api.core.Node;
 public class ChartItemNode extends AbstractNode {
 
 	public static final String CHART_ITEM_NAME = "chart_item_name";
-	private static final String CHART_ITEM_NODE_TYPE = "Spreadsheet_Chart_Item";
+	private static final String CHART_ITEM_NODE_TYPE = "spreadsheet_chart_item";
 	private static final String CHART_ITEM_NODE_NAME = "Spreadsheet Chart Item";
 	
 	private static final String CHART_ITEM_NODE_CATEGORY = "Spreadsheet Chart Category";

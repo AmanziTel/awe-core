@@ -10,7 +10,7 @@
       </category>
       <view
             name="AWEScript"
-            icon="icons/awe_icon_16.png"
+            icon="icons/awescript_icon_16.png"
             category="org.amanzi.awe.script"
             class="org.amanzi.awe.script.jirb.RubyConsole"
             id="org.amanzi.awe.script.jirb.RubyConsole">

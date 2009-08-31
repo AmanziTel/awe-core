@@ -7,7 +7,7 @@
          point="org.eclipse.ui.editors">
       <editor
             name="Amanzi: Mini-Spreadsheet"
-            icon="icons/spreadsheet.gif"
+            icon="icons/splash_16.png"
             extensions="splash"
             class="org.amanzi.splash.ui.SplashResourceEditor"
             id="org.amanzi.splash.editor">
@@ -16,16 +16,16 @@
             class="org.amanzi.splash.editors.SplashJFreeChartEditor"
             contributorClass="org.amanzi.splash.editors.SplashJFreeChartEditorContributor"
             extensions="mpe"
-            icon="icons/barchart.ico"
+            icon="icons/barchart.png"
             id="org.amanzi.splash.editors.SplashJFreeChartEditor"
-            name="Neo4j Splash JFreeChart Bars Editor">
+            name="Amanzi Splash Bar Chart Editor">
       </editor>
       <editor
             class="org.amanzi.splash.editors.SplashJFreePieChartEditor"
             contributorClass="org.amanzi.splash.editors.SplashJFreePieChartEditorContributor"
-            icon="icons/piechart.ico"
+            icon="icons/piechart.png"
             id="org.amanzi.splash.editors.SplashJFreePieChartEditor"
-            name="Neo4j Splash JFreeChart Pie Editor">
+            name="Amanzi Splash Pie Chart Editor">
       </editor>
    </extension>
    
@@ -38,9 +38,9 @@
       <wizard
             category="org.amanzi.splash"
             class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizard"
-            icon="icons/spreadsheet.gif"
+            icon="icons/splash_16.gif"
             id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard"
-            name="Amanzi Neo4j Splash Spreadsheet">
+            name="Amanzi Splash Spreadsheet">
       </wizard>
    </extension>
    
@@ -70,9 +70,9 @@
              objectClass="net.refractions.udig.project.IRubyProject">
           <action
                 class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizardAction"
-                icon="icons/spreadsheet.gif"
+                icon="icons/splash_16.gif"
                 id="org.amanzi.splash.action2"
-                label="Amanzi Neo4j Splash Spreadsheet">
+                label="Amanzi Splash Spreadsheet">
           </action>
        </objectContribution>
     </extension>

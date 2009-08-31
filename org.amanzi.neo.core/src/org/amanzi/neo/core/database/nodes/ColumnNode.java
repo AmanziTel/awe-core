@@ -24,7 +24,7 @@ public class ColumnNode extends AbstractNode {
 	/*
 	 * Type of this Node
 	 */
-	private static final String COLUMN_NODE_TYPE = "Spreadsheet_Column";
+	private static final String COLUMN_NODE_TYPE = "spreadsheet_column";
 
 	/*
 	 * Name of this Node

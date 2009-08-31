@@ -17,7 +17,7 @@ import org.neo4j.api.core.Traverser;
 public class PieChartNode extends AbstractNode {
 
 	public static final String PIE_CHART_NAME = "chart_name";
-	private static final String PIE_CHART_NODE_TYPE = "Spreadsheet_Chart";
+	private static final String PIE_CHART_NODE_TYPE = "spreadsheet_chart";
 	private static final String PIE_CHART_NODE_NAME = "Spreadsheet Chart";
 	public static final String PIE_CHART_INDEX = "chart_index";
 

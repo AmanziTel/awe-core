@@ -101,7 +101,7 @@ public class CellNode extends AbstractNode {
     /*
      * Type of this Node
      */
-    private static final String CELL_NODE_TYPE = "Spreadsheet_Cell";
+    private static final String CELL_NODE_TYPE = "spreadsheet_cell";
     
     /*
      * Name of this Node

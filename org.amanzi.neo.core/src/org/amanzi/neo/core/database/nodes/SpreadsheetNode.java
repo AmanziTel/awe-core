@@ -30,7 +30,7 @@ public class SpreadsheetNode extends AbstractNode {
 	/*
 	 * Type of this Node
 	 */
-	private static final String SPREADSHEET_NODE_TYPE = "Spreadsheet";
+	private static final String SPREADSHEET_NODE_TYPE = "spreadsheet";
 
 	/*
 	 * Name of this Node

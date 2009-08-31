@@ -13,7 +13,7 @@ public class RubyScriptNode extends AbstractNode {
 	private static final String ATTR_NAME = "ATTR_NAME";
 
 	private static final String SCRIPT_NAME = "Ruby Script";
-	private static final String SCRIPT_TYPE = "Ruby_Script";
+	private static final String SCRIPT_TYPE = "ruby_script";
 
 	/**
 	 * Constructor
