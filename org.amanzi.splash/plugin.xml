@@ -142,13 +142,13 @@
                 id="org.amanzi.splash.toolbars.sampleToolbar">
              <command
                    commandId="org.amanzi.splash.commands.barchartcommand"
-                   icon="icons/barchart.ico"
+                   icon="icons/barchart.png"
                    id="org.amanzi.splash.toolbars.barChartCommand"
                    tooltip="Plot Bar Chart">
              </command>
              <command
                    commandId="org.amanzi.splash.pieChartcommand"
-                   icon="icons/piechart.ico"
+                   icon="icons/piechart.png"
                    id="org.amanzi.splash.toolbars.pieChartCommand"
                    tooltip="Plot Pie Chart">
              </command>
@@ -193,7 +193,7 @@
        <view
              category="org.amanzi.splash"
              class="org.amanzi.splash.views.importbuilder.ImportBuilderView"
-             icon="icons/adam_icon_16.png"
+             icon="icons/import.png"
              id="org.amanzi.splash.views.ImportBuilderView"
              name="Import Builder">
        </view>
