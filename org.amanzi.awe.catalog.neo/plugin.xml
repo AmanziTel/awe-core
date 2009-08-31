@@ -11,5 +11,12 @@
             name="Neo4J Catalog Service Extension">
       </service>
    </extension>
+   <extension
+         point="net.refractions.udig.project.mapInterceptor">
+      <layerAdded
+            class="org.amanzi.awe.catalog.neo.listeners.NeoLayerAdded"
+            id="org.amanzi.awe.catalog.neo.listeners.layerAdded">
+      </layerAdded>
+   </extension>
 
 </plugin>

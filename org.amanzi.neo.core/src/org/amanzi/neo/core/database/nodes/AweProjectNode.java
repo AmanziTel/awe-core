@@ -3,6 +3,7 @@ package org.amanzi.neo.core.database.nodes;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
@@ -91,5 +92,14 @@ public class AweProjectNode extends AbstractNode {
 		}
 
 	}
+
+    /**
+     *Adds a Network to Project
+     * 
+     * @param network network node
+     */
+    public void addNetworkNode(Node network) {
+        addRelationship(NetworkRelationshipTypes.CHILD, network);
+    }
 
 }

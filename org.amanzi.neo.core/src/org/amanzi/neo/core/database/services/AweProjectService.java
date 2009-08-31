@@ -624,4 +624,22 @@ public class AweProjectService {
         //Splash Editor and Editor will change its name
         provider.commit();
 	}
+
+    /**
+     * Adds network node to necessary awe project node
+     * 
+     * @param aweProjectName name of awe project
+     * @param network network node
+     */
+    public void addNetworkToProject(String aweProjectName, Node network) {
+        Transaction transacation = neoService.beginTx();
+
+        try {
+            AweProjectNode project = findOrCreateAweProject(aweProjectName);
+            project.addNetworkNode(network);
+            transacation.success();
+        } finally {
+            transacation.finish();
+        }
+    }
 }

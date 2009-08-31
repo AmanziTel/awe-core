@@ -13,6 +13,7 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
@@ -115,7 +116,25 @@ public class GeoNeo {
         this.name = this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
         this.types = GisTypes.findGisTypeByHeader(this.gisNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString());
     }
-    
+
+    /**
+     * get child (depth=1) by necessary type
+     * 
+     * @param type type name
+     * @return set of child's
+     */
+    public Set<Node> getChildByType(String type) {
+        HashSet<Node> result = new HashSet<Node>();
+        Iterable<Relationship> relations = gisNode.getRelationships(Direction.OUTGOING);
+        for (Relationship relationship : relations) {
+            Node node = relationship.getEndNode();
+            if (type.equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""))) {
+                result.add(node);
+            }
+        }
+        return result;
+    }
+
     /**
      * Find the Coordinate Reference System in the GIS node, or default
      * to WGS84 if none found.
@@ -155,7 +174,7 @@ public class GeoNeo {
         return gisNode.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
                 GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
     }
-    
+
     /**
      * Find the bounding box for the data set as a ReferenceEnvelope. It uses the getCRS method to
      * find the reference system then looks for explicit "bbox" elements, and finally, if no bbox

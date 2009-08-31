@@ -214,6 +214,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 			}else{
 				Transaction transaction = neo.beginTx();
 				try {
+                    if (gis == null) {
+                        gis = getGISNode(neo, INeoConstants.GIS_PREFIX + basename);
+                    }
 					String bscField = fields[mainIndexes[0]];
 					String siteField = fields[mainIndexes[1]];
 					String sectorField = fields[mainIndexes[2]];
@@ -221,12 +224,12 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 						bscName = bscField;
 						debug("New BSC: " + bscName);
 						if (network==null){
-						    network = getNetwork(neo, basename);
+                            network = getNetwork(neo, gis, basename);
 						    if (network==null){
 						        return false;
 						    }
 						}
-						gis = getGISNode(neo, network);
+
 						network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
 						deleteTree(network);
 						bsc = addChild(network, NetworkElementTypes.BSC.toString(), bscName);
@@ -285,16 +288,18 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 			}
 		}
 	}
-	
-	/**
-	 * This code finds the specified network node in the database, creating its own transaction for that.
-	 */
-	public static Node getNetwork(NeoService neo, String basename) {
+
+    /**
+     * This code finds the specified network node in the database, creating its own transaction for
+     * that.
+     * 
+     * @param gis gis node
+     */
+	public static Node getNetwork(NeoService neo, Node gis, String basename) {
 		Node network = null;
 		Transaction transaction = neo.beginTx();
 		try {
-			Node reference = neo.getReferenceNode();
-			for (Relationship relationship : reference.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            for (Relationship relationship : gis.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
 				Node node = relationship.getEndNode();
 				if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NetworkElementTypes.NETWORK.toString()) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
 						&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename)){
@@ -319,42 +324,42 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                         return null;
                     }
                     // delete network - begin - gis node.
-                    Node nodeGis = getGISNode(neo, node);
-                    NeoCorePlugin.getDefault().getProjectService().deleteNode(nodeGis);
+                    NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
                     break;
                 }
 			}
 			network = neo.createNode();
 			network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementTypes.NETWORK.toString());
 			network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-			reference.createRelationshipTo(network, NetworkRelationshipTypes.CHILD);
+            gis.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
 			transaction.success();
 		}catch (Exception e){
 		    e.printStackTrace();
 		} finally {
 			transaction.finish();
 		}
-		if(network!=null) getGISNode(neo,network);
 		return network;
 	}
 
-	private static Node getGISNode(NeoService neo, Node network) {
+    private static Node getGISNode(NeoService neo, String gisName) {
         Node gis = null;
         Transaction transaction = neo.beginTx();
         try {
             Node reference = neo.getReferenceNode();
             for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
-                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME) && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().equals(INeoConstants.GIS_PREFIX+network.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()))
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME)
+                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().equals(gisName))
                     return node;
             }
             gis = neo.createNode();
             gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
-            gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.GIS_PREFIX
-                    + network.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+            gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, gisName);
             gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.Network.getHeader());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
-            gis.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
+            // gis.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
             transaction.success();
         } finally {
             transaction.finish();
