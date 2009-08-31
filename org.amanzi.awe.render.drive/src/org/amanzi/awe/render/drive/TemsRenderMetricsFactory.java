@@ -39,7 +39,6 @@ public class TemsRenderMetricsFactory implements IRenderMetricsFactory {
     @Override
     public boolean canRender(IRenderContext context) throws IOException {
         for (IGeoResource resource : context.getLayer().getGeoResources()) {
-            // TODO: test also that the data is for network only.
             if (resource.canResolve(GeoNeo.class)) {
                 return resource.resolve(GeoNeo.class, null).getGisType() == GisTypes.Tems;
             }
