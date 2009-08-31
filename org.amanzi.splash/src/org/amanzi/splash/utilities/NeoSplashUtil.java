@@ -450,6 +450,9 @@ public static final boolean enableNeo4j = true;
 	public static URL getSpeadsheetURL(String name) {
 	    String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
 	    String fullPath = databaseLocation + "?" + INeoConstants.PROPERTY_NAME_NAME + "=" + name;
+	    if(!fullPath.matches("\\w{2,100}\\:\\/\\/.*")){
+	        fullPath = "file://" + fullPath;
+	    }
 	    
 	    try {
 	        return URLUtils.constructURL(new File("."), fullPath);
