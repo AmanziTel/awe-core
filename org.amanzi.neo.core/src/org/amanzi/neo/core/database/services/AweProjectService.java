@@ -157,46 +157,40 @@ public class AweProjectService {
         return result;
     }
 
-	/**
-	 * Finds or Creates a Spreadsheet
-	 * 
-	 * @param rubyProject
-	 *            ruby project node
-	 * @param spreadsheetName
-	 *            spreadsheet name
-	 * @return Spreadsheet
-	 */
-	public SpreadsheetNode findOrCreateSpreadSheet(RubyProjectNode rubyProject,
-			String spreadsheetName) {
-		SpreadsheetNode result = null;
+    /**
+     * Finds or Creates a Spreadsheet
+     * 
+     * @param rubyProject ruby project node
+     * @param spreadsheetName spreadsheet name
+     * @return Spreadsheet
+     */
+    public SpreadsheetNode findOrCreateSpreadSheet(RubyProjectNode rubyProject, String spreadsheetName) {
+        SpreadsheetNode result = findSpreadsheet(rubyProject, spreadsheetName);;
 
-		Transaction transaction = neoService.beginTx();
+        Transaction transaction = neoService.beginTx();
 
-		try {
-			Iterator<SpreadsheetNode> spreadsheetIterator = rubyProject
-					.getSpreadsheets();
+        try {
+            if (result == null) {
+                result = new SpreadsheetNode(neoService.createNode());
+                result.setSpreadsheetName(spreadsheetName);
+                rubyProject.addSpreadsheet(result);
+            }
+            transaction.success();
+            return result;
+        } finally {
+            transaction.finish();
+        }
+    }
 
-			while (spreadsheetIterator.hasNext()) {
-				SpreadsheetNode spreadsheet = spreadsheetIterator.next();
-				if (spreadsheet.getSpreadsheetName().equals(spreadsheetName)) {
-					result = spreadsheet;
-					break;
-				}
-			}
-			if (result == null) {
-				result = new SpreadsheetNode(neoService.createNode());
-				result.setSpreadsheetName(spreadsheetName);
-				rubyProject.addSpreadsheet(result);
-			}
-			transaction.success();
-			return result;
-		} finally {
-			transaction.finish();
-		}
-	}
-	
-	public RubyProjectNode findRubyProject(AweProjectNode project, String rubyProjectName) {
-	    assert project != null;
+    /**
+     * Find a RubyProject
+     * 
+     * @param project awe project node
+     * @param rubyProjectName name of ruby project
+     * @return RubyProjectNode
+     */
+    public RubyProjectNode findRubyProject(AweProjectNode project, String rubyProjectName) {
+        assert project != null;
         assert rubyProjectName != null;
         RubyProjectNode result = null;
         Transaction transaction = neoService.beginTx();
@@ -204,18 +198,17 @@ public class AweProjectService {
             Iterator<RubyProjectNode> rubyProjects = project.getAllProjects();
             while (rubyProjects.hasNext()) {
                 RubyProjectNode rubyProject = rubyProjects.next();
-
                 if (rubyProjectName.equals(rubyProject.getName())) {
                     result = rubyProject;
                     break;
                 }
-            }            
+            }
             transaction.success();
             return result;
         } finally {
             transaction.finish();
         }
-	}
+    }
 
 	/**
 	 * Find or create a RubyProject
@@ -356,7 +349,7 @@ public class AweProjectService {
 	}
 
     /**
-     * Delete Node and all depends nodes from bd
+     * Delete Node and all depends nodes from database
      * 
      * @param node node to delete
      */
