@@ -4,14 +4,10 @@
 
    <extension
          point="org.eclipse.ui.views">
-      <category
-            name="Amanzi"
-            id="org.amanzi.awe.views.reuse">
-      </category>
       <view
             name="Reuse Analyser"
             icon="icons/reuse.png"
-            category="org.amanzi.awe.views.reuse"
+            category="org.amanzi.awe.script"
             class="org.amanzi.awe.views.reuse.views.ReuseAnalyserView"
             id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView">
       </view>
