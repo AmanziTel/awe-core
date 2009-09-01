@@ -24,14 +24,12 @@ package org.rubypeople.rdt.internal.ui.wizards;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.eclipse.core.filesystem.URIUtil;
-import org.eclipse.core.internal.runtime.InternalPlatform;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
@@ -43,16 +41,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.core.runtime.adaptor.LocationManager;
-import org.eclipse.equinox.internal.app.EclipseAppContainer;
-import org.eclipse.equinox.internal.app.EclipseAppDescriptor;
-import org.eclipse.equinox.internal.app.EclipseAppHandle;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.osgi.framework.internal.core.FrameworkProperties;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.rubypeople.rdt.core.ILoadpathEntry;
@@ -61,15 +52,12 @@ import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.core.RubyCore;
 import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.internal.ui.RubyPluginImages;
-import org.rubypeople.rdt.internal.ui.util.CoreUtility;
 import org.rubypeople.rdt.internal.ui.util.ExceptionHandler;
 import org.rubypeople.rdt.internal.ui.wizards.buildpaths.BuildPathsBlock;
 import org.rubypeople.rdt.internal.ui.wizards.buildpaths.CPListElement;
 import org.rubypeople.rdt.launching.IVMInstall;
 import org.rubypeople.rdt.launching.RubyRuntime;
 import org.rubypeople.rdt.ui.PreferenceConstants;
-
-import com.sun.jndi.toolkit.url.UrlUtil;
 
 public class RubyProjectWizard extends NewElementWizard implements IExecutableExtension {
     
@@ -103,17 +91,16 @@ public class RubyProjectWizard extends NewElementWizard implements IExecutableEx
      *     
      */    
     private String computeAWEProjectName() {
-    	String name = null;
-    	
     	ISelection selection = getSelection();
-    	
     	if (selection instanceof IStructuredSelection) {
     		Object nameObject = ((IStructuredSelection)selection).getFirstElement();
-    		
-    		name = (String)nameObject;
+            if (nameObject == null) {
+                return null;
+            }
+            return AWEProjectManager.computeAWEProjectName(nameObject);
     	}
     	
-    	return name;
+        return null;
     }
     
     /* (non-Javadoc)
