@@ -19,75 +19,63 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 
 /**
- * @author Cinkel_A Listener for change ruby script
+ * Listener for change ruby script
+ * 
+ * @author Cinkel_A
  */
 public class EditorListener implements IResourceChangeListener {
 
-	public void resourceChanged(IResourceChangeEvent event) {	    
-		IResourceDelta delta = event.getDelta();
-		LinkedList<IResourceDelta> listResourceDelta = new LinkedList<IResourceDelta>();
-		listResourceDelta.add(delta);
-		String projectName = null;
-		for (int i = 0; i < listResourceDelta.size(); i++) {
-			final IResourceDelta resourceDelta = listResourceDelta.get(i);
-			IResource resource = resourceDelta.getResource();
-			if (resource instanceof IProject) {
-				projectName = resource.getName();
-			}
-			if ("rb".equals(resourceDelta.getFullPath().getFileExtension())
-					&& ((resourceDelta.getFlags() & IResourceDelta.CONTENT) != 0)) {
-				ActionUtil.getInstance().runTask(
-						new UpdateScript(projectName, resourceDelta), false);
-			}
-			listResourceDelta.addAll(Arrays.asList(resourceDelta
-					.getAffectedChildren(IResourceDelta.CHANGED)));
-		}
+    public void resourceChanged(IResourceChangeEvent event) {
+        IResourceDelta delta = event.getDelta();
+        LinkedList<IResourceDelta> listResourceDelta = new LinkedList<IResourceDelta>();
+        listResourceDelta.add(delta);
+        String projectName = null;
+        for (int i = 0; i < listResourceDelta.size(); i++) {
+            final IResourceDelta resourceDelta = listResourceDelta.get(i);
+            IResource resource = resourceDelta.getResource();
+            if (resource instanceof IProject) {
+                projectName = resource.getName();
+            }
+            if ("rb".equals(resourceDelta.getFullPath().getFileExtension())
+                    && ((resourceDelta.getFlags() & IResourceDelta.CONTENT) != 0)) {
+                ActionUtil.getInstance().runTask(new UpdateScript(projectName, resourceDelta), false);
+            }
+            listResourceDelta.addAll(Arrays.asList(resourceDelta.getAffectedChildren(IResourceDelta.CHANGED)));
+        }
 
-	}
+    }
 
-	/**
-	 * Runnable class for update script in bd
-	 * 
-	 * @author Cinkel_A
-	 * 
-	 */
-	private static class UpdateScript implements Runnable {
+    /**
+     * Runnable class for update script in database
+     * 
+     * @author Cinkel_A
+     */
+    private static class UpdateScript implements Runnable {
 
-		private final String projectName;
-		private final String scriptName;
+        private final String projectName;
+        private final String scriptName;
 
-		public UpdateScript(String projectName, IResourceDelta resourceDelta) {
-			this.projectName = projectName;
-			// TODO Auto-generated constructor stub
-			scriptName = resourceDelta.getResource().getName();
-		}
+        public UpdateScript(String projectName, IResourceDelta resourceDelta) {
+            this.projectName = projectName;
+            scriptName = resourceDelta.getResource().getName();
+        }
 
-		@Override
-		public void run() {
-			AweProjectService projectService = NeoCorePlugin.getDefault()
-					.getProjectService();
-			RubyProjectNode rubyProject = projectService
-					.findRubyProject(projectName);
-			if (rubyProject != null) {
-				RubyScriptNode script = projectService.findScript(rubyProject,
-						scriptName);
-				if (script != null) {
-					System.out.println();
-					CellNode cell = projectService
-							.findCellByScriptReference(script);
-					if (cell != null) {
-						NeoCorePlugin.getDefault().getUpdateDatabaseManager()
-								.updateCell(
-										projectName,
-										projectService.getSpreadsheetByCell(
-												cell).getName(),
-										SplashPlugin.getDefault()
-												.getSpreadsheetService()
-												.getFullId(cell));
-					}
-				}
-			}
+        @Override
+        public void run() {
+            AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+            RubyProjectNode rubyProject = projectService.findRubyProject(projectName);
+            if (rubyProject != null) {
+                RubyScriptNode script = projectService.findScript(rubyProject, scriptName);
+                if (script != null) {
+                    CellNode cell = projectService.findCellByScriptReference(script);
+                    if (cell != null) {
+                        NeoCorePlugin.getDefault().getUpdateDatabaseManager().updateCell(projectName,
+                                projectService.getSpreadsheetByCell(cell).getName(),
+                                SplashPlugin.getDefault().getSpreadsheetService().getFullId(cell));
+                    }
+                }
+            }
 
-		}
-	}
+        }
+    }
 }

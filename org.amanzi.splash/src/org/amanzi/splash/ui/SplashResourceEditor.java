@@ -284,7 +284,6 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 			Cell cellByID = splashTableModel.getCellByID(event.getFullCellID());
 			splashTableModel.refreshCell(cellByID);
 			splashTableModel.updateCellFromScript(cellByID);
-			// splashTableModel.refreshCell(cellByID);
 		}
 
 	}
