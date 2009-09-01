@@ -114,7 +114,7 @@ public class SpreadsheetItemProvider extends ItemProviderAdapter implements
 	 */
 	public Object getImage(Object object) {
 		return overlayImage(object, getResourceLocator().getImage(
-				"full/obj16/Spreadsheet")); //$NON-NLS-1$
+				"full/obj16/splash_16")); //$NON-NLS-1$
 	}
 
 	/**

@@ -75,6 +75,7 @@ public interface Spreadsheet extends ISpreadsheet, RubyProjectElement, ProjectEl
      * @see net.refractions.udig.project.internal.ProjectPackage#getSpreadsheet_SpreadsheetType()
      * @model default="" dataType="net.refractions.udig.project.internal.SpreadsheetType"
      * @generated
+     * //TODO: Lagutko, this method will be needed in futher version when a File-based Spreadsheet will be supported
      */
     SpreadsheetType getSpreadsheetType();
 
@@ -85,6 +86,7 @@ public interface Spreadsheet extends ISpreadsheet, RubyProjectElement, ProjectEl
      * @param value the new value of the '<em>Spreadsheet Type</em>' attribute.
      * @see #getSpreadsheetType()
      * @generated
+     * //TODO: Lagutko, this method will be needed in futher version when a File-based Spreadsheet will be supported
      */
     void setSpreadsheetType(SpreadsheetType value);
 

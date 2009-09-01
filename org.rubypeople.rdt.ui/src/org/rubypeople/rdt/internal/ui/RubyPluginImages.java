@@ -67,7 +67,7 @@ public class RubyPluginImages {
     public static final String IMG_OBJS_CORRECTION_CHANGE= NAME_PREFIX + "correction_change.gif";	//$NON-NLS-1$
     
     //Lagutko, 11.08.2009, Image for Spreadsheet
-    public static final String IMG_OBJS_SPREADSHEET= NAME_PREFIX + "spreadsheet.gif";   //$NON-NLS-1$
+    public static final String IMG_OBJS_SPREADSHEET= NAME_PREFIX + "splash_16.png";   //$NON-NLS-1$
     
     public static final String IMG_OBJS_SEARCH_READACCESS= NAME_PREFIX + "occ_read.gif"; //$NON-NLS-1$
 	public static final String IMG_OBJS_SEARCH_WRITEACCESS= NAME_PREFIX + "occ_write.gif"; //$NON-NLS-1$

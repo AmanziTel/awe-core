@@ -38,7 +38,7 @@
       <wizard
             category="org.amanzi.splash"
             class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizard"
-            icon="icons/splash_16.gif"
+            icon="icons/splash_16.png"
             id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard"
             name="Amanzi Splash Spreadsheet">
       </wizard>

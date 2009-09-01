@@ -4,7 +4,7 @@ package net.refractions.udig.project.internal;
  * Enum for SpreadsheetType
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * //TODO: Lagutko, this enum will be needed in futher version when a File-based Spreadsheet will be supported
  */
 
 public enum SpreadsheetType {
