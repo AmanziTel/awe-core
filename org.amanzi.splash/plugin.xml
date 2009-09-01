@@ -87,12 +87,12 @@
        <command
              categoryId="org.amanzi.splash.commands.category"
              id="org.amanzi.splash.commands.barchartcommand"
-             name="barchart">
+             name="Create Bar Chart">
        </command>
        <command
              categoryId="org.amanzi.splash.commands.category"
-             id="org.amanzi.splash.pieChartcommand"
-             name="piechart">
+             id="org.amanzi.splash.commands.piechartcommand"
+             name="Create Pie Chart">
        </command>
        <command
              categoryId="org.amanzi.splash.commands.category"
