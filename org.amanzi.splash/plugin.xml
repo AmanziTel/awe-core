@@ -70,7 +70,7 @@
              objectClass="net.refractions.udig.project.IRubyProject">
           <action
                 class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizardAction"
-                icon="icons/splash_16.gif"
+                icon="icons/splash_16.png"
                 id="org.amanzi.splash.action2"
                 label="Amanzi Splash Spreadsheet">
           </action>
