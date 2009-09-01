@@ -54,6 +54,7 @@ public class SWTIRBConsole extends Composite {
     private RubyInstanceConfig config = null;
     private Ruby runtime = null;
     private boolean shuttingDown;
+    private static ClassLoader loader = null;
 	
     /**
      * Construct an instance of this class, which will also result in
@@ -67,7 +68,9 @@ public class SWTIRBConsole extends Composite {
 	        setTitle(" Welcome to the JRuby IRB Console \n\n");
 	        //setExtraRequire(new String[]{"awescript"});
 	    }};
-
+        if (irbConfig.getLoader() != null) {
+            loader = irbConfig.getLoader();
+        };
 		java.awt.Frame irbFrame = SWT_AWT.new_Frame(this);
 		java.awt.Panel panel = new java.awt.Panel(new java.awt.BorderLayout());
 		irbFrame.add(panel);
@@ -160,8 +163,7 @@ public class SWTIRBConsole extends Composite {
 	 * @return
 	 */
 	private Thread start_irb_panel(final Shell shell) throws IOException {
-	    Thread.currentThread().getContextClassLoader();
-	    	    
+
         config = new RubyInstanceConfig() {{
         	setJRubyHome(ScriptUtils.getJRubyHome());	// this helps online help work
             setInput(tar.getInputStream());
@@ -174,7 +176,7 @@ public class SWTIRBConsole extends Composite {
                 }
             });
             //Lagutko, 21.08.2009, setLoader for RubyInstance
-            setLoader(irbConfig.getLoader());
+                setLoader(loader);
             
             // The following modification forces IRB to ignore the fact that inside eclipse
             // the STDIN.tty? returns false, and IRB must continue to use a prompt
