@@ -30,7 +30,7 @@ module AWE
     end
     # Find all maps in current or specified project
     def maps(index=nil)
-      project(index) && project.elements
+      project(index) && project.elements(Java::JavaClass.for_name("net.refractions.udig.project.IMap"))
     end
     # Find the current or specified layer in current map
     def layer(index=nil)
@@ -47,7 +47,7 @@ module AWE
     end
     # Find the feature store in the current or specified layer (default layer index 0, default store type FeatureSource)
     def feature_store(index=nil,fs_class=$feature_source_class)
-      (geo_rs=geo_resource(index)) && (try_fs_from(geo_rs,fs_class) || try_fs_from(geo_rs,$feature_source_class) || try_fs_from(geo_rs,$json_reader_class))
+      (geo_rs=geo_resource(index)) && (try_fs_from(geo_rs,fs_class) || try_fs_from(geo_rs,$feature_source_class))
     end
     # Find all features in the current or specified layer (default layer index 0, default store type FeatureSource)
     def features(index=nil,fs_class=$feature_source_class)

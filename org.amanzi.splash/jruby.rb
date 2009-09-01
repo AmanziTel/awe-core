@@ -8,7 +8,7 @@ require awe_console_path + 'neoSetup.rb'
 def method_missing(method_id, *args)  
   if method_id.to_s =~ /([a-z]{1,3})([0-9]+)/      
     #if method_missing was called with ID of Cell than put this ID to array
-    @idArray << method_id
+    $idArray << method_id
     find_cell(method_id)
   else
     super.method_missing(method_id.to_s, *args)
@@ -25,7 +25,7 @@ end
 
 def update(currentCellId, formula)      
   #idArray contains IDs of referenced Cells
-  @idArray = []
+  $idArray = []
   if formula[0] == '='[0]    
     formula = formula[1..formula.length]
     display = ERB.new("<%= #{formula} %>").result
@@ -34,7 +34,7 @@ def update(currentCellId, formula)
   end
     
   #if the formula was interpreted than update References of Cell
-  $tableModel.updateCellReferences(currentCellId.to_s, @idArray)
+  $tableModel.updateCellReferences(currentCellId.to_s, $idArray)
   display    
 end
 
