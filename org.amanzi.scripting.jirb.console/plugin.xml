@@ -10,14 +10,14 @@
       </category>
       <view
             name="Ruby Console"
-            icon="icons/sample.gif"
+            icon="icons/console_16.png"
             category="org.amanzi.scripting.jirb.console"
             class="org.amanzi.scripting.jirb.console.RubyConsole"
             id="org.amanzi.scripting.jirb.console.RubyConsole">
       </view>
       <view
             name="Simple Ruby Console"
-            icon="icons/sample.gif"
+            icon="icons/console_16.png"
             category="org.amanzi.scripting.jirb.console"
             class="org.amanzi.scripting.jirb.console.SimpleRubyConsole"
             id="org.amanzi.scripting.jirb.console.SimpleRubyConsole">

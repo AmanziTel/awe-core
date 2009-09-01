@@ -10,7 +10,7 @@
       </category>
       <view
             name="Network Tree"
-            icon="icons/sample.gif"
+            icon="icons/network.png"
             category="org.amanzi.awe.networktree"
             class="org.amanzi.awe.views.network.view.NetworkTreeView"
             id="org.amanzi.awe.networktree.views.NetworkTreeView">
