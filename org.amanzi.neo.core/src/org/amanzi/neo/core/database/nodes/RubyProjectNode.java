@@ -18,19 +18,37 @@ import org.neo4j.api.core.Traverser;
 
 public class RubyProjectNode extends AbstractNode {
 
-	private static final String ATTR_PROJECT_NAME = "Project name";
 	private static final Object RUBY_PROJECT_NODE_TYPE = "ruby_project";
-	private static final Object RUBY_PROJECT_NODE_NAME = "Ruby project";
 
 	/**
 	 * Constructor. Wraps a Node that will be parent node for Spreadsheets
 	 * 
 	 * @param node
 	 */
-	public RubyProjectNode(Node node) {
+	public RubyProjectNode(Node node, String projectName) {
 		super(node);
 		setParameter(INeoConstants.PROPERTY_TYPE_NAME, RUBY_PROJECT_NODE_TYPE);
-		setParameter(INeoConstants.PROPERTY_NAME_NAME, RUBY_PROJECT_NODE_NAME);
+		setParameter(INeoConstants.PROPERTY_NAME_NAME, projectName);
+	}
+
+	/**
+	 * Constructor for wrapping existing Ruby project nodes. To reduce API confusion,
+	 * this constructor is private, and users should use the factory method instead.
+	 * @param node
+	 */
+	private RubyProjectNode(Node node) {
+	    super(node);
+	    if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(RUBY_PROJECT_NODE_TYPE)) throw new RuntimeException("Expected existing RubyProject Node, but got "+node.toString());
+	}
+	
+	/**
+	 * Use factory method to ensure clear API different to normal constructor.
+	 *
+	 * @param node representing an existing Ruby project
+	 * @return RubyProjectNode from existing Node
+	 */
+	public static RubyProjectNode fromNode(Node node) {
+	    return new RubyProjectNode(node);
 	}
 
     /**
@@ -39,7 +57,7 @@ public class RubyProjectNode extends AbstractNode {
      * @return name of RUBY project
      */
 	public String getName() {
-		return (String) getParameter(ATTR_PROJECT_NAME);
+		return (String) getParameter(INeoConstants.PROPERTY_NAME_NAME);
 	}
 
 	/**
@@ -49,7 +67,7 @@ public class RubyProjectNode extends AbstractNode {
 	 *            name of Awe project
 	 */
 	public void setName(String projectName) {
-		setParameter(ATTR_PROJECT_NAME, projectName);
+		setParameter(INeoConstants.PROPERTY_NAME_NAME, projectName);
 	}
 
 	/**
@@ -118,7 +136,7 @@ public class RubyProjectNode extends AbstractNode {
 
 		@Override
 		protected SpreadsheetNode wrapNode(Node node) {
-			return new SpreadsheetNode(node);
+			return SpreadsheetNode.fromNode(node);
 		}
 
 	}
@@ -141,7 +159,7 @@ public class RubyProjectNode extends AbstractNode {
 
 		@Override
 		protected RubyScriptNode wrapNode(Node node) {
-			return new RubyScriptNode(node);
+			return RubyScriptNode.fromNode(node);
 		}
 
 	}

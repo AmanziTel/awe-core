@@ -53,7 +53,7 @@ public class RootNode extends AbstractNode {
 
 		@Override
 		protected AweProjectNode wrapNode(Node node) {
-			return new AweProjectNode(node);
+			return AweProjectNode.fromNode(node);
 		}
 
 	}

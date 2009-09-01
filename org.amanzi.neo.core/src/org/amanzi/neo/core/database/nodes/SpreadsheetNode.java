@@ -23,19 +23,9 @@ import org.neo4j.api.core.Traverser;
 public class SpreadsheetNode extends AbstractNode {
 
 	/*
-	 * Name property of Spreadsheet
-	 */
-	private static final String SPREADSHEET_NAME = "spreadsheet_name";
-
-	/*
 	 * Type of this Node
 	 */
 	private static final String SPREADSHEET_NODE_TYPE = "spreadsheet";
-
-	/*
-	 * Name of this Node
-	 */
-	private static final String SPREADSHEET_NODE_NAME = "Spreadsheet";
 
 	/**
 	 * Constructor. Wraps a Node from database and sets type and name of Node
@@ -43,11 +33,31 @@ public class SpreadsheetNode extends AbstractNode {
 	 * @param node
 	 *            database node
 	 */
-	public SpreadsheetNode(Node node) {
+	public SpreadsheetNode(Node node, String name) {
 		super(node);
 		setParameter(INeoConstants.PROPERTY_TYPE_NAME, SPREADSHEET_NODE_TYPE);
-		setParameter(INeoConstants.PROPERTY_NAME_NAME, SPREADSHEET_NODE_NAME);
+		setParameter(INeoConstants.PROPERTY_NAME_NAME, name);
 	}
+
+	/**
+     * Constructor for wrapping existing Spreadsheet nodes. To reduce API confusion,
+     * this constructor is private, and users should use the factory method instead.
+     * @param node
+     */
+    private SpreadsheetNode(Node node) {
+        super(node);
+        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(SPREADSHEET_NODE_TYPE)) throw new RuntimeException("Expected existing Spreadsheet Node, but got "+node.toString());
+    }
+
+    /**
+     * Use factory method to ensure clear API different to normal constructor.
+     *
+     * @param node representing an existing Spreadsheet
+     * @return SpreadsheetNode from existing Node
+     */
+    public static SpreadsheetNode fromNode(Node node) {
+        return new SpreadsheetNode(node);
+    }
 
 	/**
 	 * Sets name of Spreadsheet
@@ -57,7 +67,7 @@ public class SpreadsheetNode extends AbstractNode {
 	 */
 
 	public void setSpreadsheetName(String newName) {
-		setParameter(SPREADSHEET_NAME, newName);
+		setParameter(INeoConstants.PROPERTY_NAME_NAME, newName);
 	}
 
 	/**
@@ -66,7 +76,7 @@ public class SpreadsheetNode extends AbstractNode {
 	 * @return name of Spreadsheet
 	 */
 	public String getSpreadsheetName() {
-		return (String) getParameter(SPREADSHEET_NAME);
+		return (String) getParameter(INeoConstants.PROPERTY_NAME_NAME);
 	}
 
 	/**
@@ -275,8 +285,7 @@ public class SpreadsheetNode extends AbstractNode {
 							}
 							return position.lastRelationshipTraversed()
 									.getEndNode()
-									.getProperty(RowNode.ROW_INDEX).equals(
-											rowIndex);
+									.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(rowIndex);
 						}
 
 					}, SplashRelationshipTypes.ROW, Direction.OUTGOING)
@@ -285,7 +294,7 @@ public class SpreadsheetNode extends AbstractNode {
 
 		@Override
 		protected RowNode wrapNode(Node node) {
-			return new RowNode(node);
+			return RowNode.fromNode(node);
 		}
 	}
 
@@ -369,7 +378,7 @@ public class SpreadsheetNode extends AbstractNode {
 
 		@Override
 		protected RowNode wrapNode(Node node) {
-			return new RowNode(node);
+			return RowNode.fromNode(node);
 		}
 	}
 
@@ -399,9 +408,7 @@ public class SpreadsheetNode extends AbstractNode {
 						public boolean isReturnableNode(
 								TraversalPosition position) {
 							if (position.depth() == COLUMN_NODE_DEPTH) {
-								return position.currentNode().getProperty(
-										ColumnNode.COLUMN_NAME).equals(
-										columnName);
+								return position.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(columnName);
 							}
 							return false;
 						}
@@ -415,7 +422,7 @@ public class SpreadsheetNode extends AbstractNode {
 
 		@Override
 		protected ColumnNode wrapNode(Node node) {
-			return new ColumnNode(node);
+			return ColumnNode.fromNode(node);
 		}
 	}
 
@@ -459,7 +466,7 @@ public class SpreadsheetNode extends AbstractNode {
 	 */
 	public RubyProjectNode getSpreadsheetRootProject() {
 	    Relationship relationship = getUnderlyingNode().getSingleRelationship(SplashRelationshipTypes.SPREADSHEET, Direction.INCOMING);
-	    return new RubyProjectNode(relationship.getStartNode());
+	    return RubyProjectNode.fromNode(relationship.getStartNode());
 	}
 
 }

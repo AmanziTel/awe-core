@@ -87,7 +87,11 @@ public class NeoNode {
      */
     
     public String getType() {
-        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+        if(node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)) {
+            return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+        } else {
+            return null;
+        }
     }
     
     /**

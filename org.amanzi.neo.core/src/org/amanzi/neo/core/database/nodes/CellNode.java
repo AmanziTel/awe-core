@@ -104,11 +104,6 @@ public class CellNode extends AbstractNode {
     private static final String CELL_NODE_TYPE = "spreadsheet_cell";
     
     /*
-     * Name of this Node
-     */
-    private static final String CELL_NODE_NAME = "Spreadsheet Cell";    
-    
-    /*
      * Name of Cyclic Dependencies property
      */
     private static final String CELL_CYCLIC = "Cell cyclic dependencies";
@@ -121,7 +116,6 @@ public class CellNode extends AbstractNode {
     public CellNode(Node node) {
         super(node);
         setParameter(INeoConstants.PROPERTY_TYPE_NAME, CELL_NODE_TYPE);
-        setParameter(INeoConstants.PROPERTY_NAME_NAME, CELL_NODE_NAME);        
     }
     
     /**
@@ -130,8 +124,7 @@ public class CellNode extends AbstractNode {
      * @return Row of Cell
      */    
     public RowNode getRow() {
-        Node rowNode = node.getSingleRelationship(SplashRelationshipTypes.ROW_CELL, Direction.INCOMING).getStartNode();
-        return new RowNode(rowNode);
+        return RowNode.fromNode(node.getSingleRelationship(SplashRelationshipTypes.ROW_CELL, Direction.INCOMING).getStartNode());
     }
     
     /**
@@ -141,8 +134,7 @@ public class CellNode extends AbstractNode {
      */
     
     public ColumnNode getColumn() {
-        Node columnNode = node.getSingleRelationship(SplashRelationshipTypes.COLUMN_CELL, Direction.INCOMING).getStartNode();
-        return new ColumnNode(columnNode);
+        return ColumnNode.fromNode(node.getSingleRelationship(SplashRelationshipTypes.COLUMN_CELL, Direction.INCOMING).getStartNode());
     }
     
     /**

@@ -19,15 +19,33 @@ import org.neo4j.api.core.Traverser;
  */
 public class AweProjectNode extends AbstractNode {
 
-	private static final String ATTR_PROJECT_NAME = "Project name";
 	private static final String AWE_PROJECT_NODE_TYPE = "awe_project";
-	private static final String AWE_PROJECT_NODE_NAME = "Awe Project";
 
-	public AweProjectNode(Node node) {
+	public AweProjectNode(Node node, String projectName) {
 		super(node);
 		setParameter(INeoConstants.PROPERTY_TYPE_NAME, AWE_PROJECT_NODE_TYPE);
-		setParameter(INeoConstants.PROPERTY_NAME_NAME, AWE_PROJECT_NODE_NAME);
+		setParameter(INeoConstants.PROPERTY_NAME_NAME, projectName);
 	}
+
+    /**
+     * Constructor for wrapping existing Awe project nodes. To reduce API confusion,
+     * this constructor is private, and users should use the factory method instead.
+     * @param node
+     */
+    private AweProjectNode(Node node) {
+        super(node);
+        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(AWE_PROJECT_NODE_TYPE)) throw new RuntimeException("Expected existing AweProject Node, but got "+node.toString());
+    }
+    
+    /**
+     * Use factory method to ensure clear API different to normal constructor.
+     *
+     * @param node representing an existing Awe project
+     * @return AweProjectNode from existing Node
+     */
+    public static AweProjectNode fromNode(Node node) {
+        return new AweProjectNode(node);
+    }
 
 	/**
 	 * Returns name of Awe project
@@ -35,7 +53,7 @@ public class AweProjectNode extends AbstractNode {
 	 * @return name of Awe project
 	 */
 	public String getName() {
-		return (String) getParameter(ATTR_PROJECT_NAME);
+		return (String) getParameter(INeoConstants.PROPERTY_NAME_NAME);
 	}
 
 	/**
@@ -45,7 +63,7 @@ public class AweProjectNode extends AbstractNode {
 	 *            name of Awe project
 	 */
 	public void setName(String projectName) {
-		setParameter(ATTR_PROJECT_NAME, projectName);
+		setParameter(INeoConstants.PROPERTY_NAME_NAME, projectName);
 	}
 
 	/**
@@ -88,7 +106,7 @@ public class AweProjectNode extends AbstractNode {
 
 		@Override
 		protected RubyProjectNode wrapNode(Node node) {
-			return new RubyProjectNode(node);
+			return RubyProjectNode.fromNode(node);
 		}
 
 	}

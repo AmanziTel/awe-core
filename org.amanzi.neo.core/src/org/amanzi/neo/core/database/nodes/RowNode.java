@@ -23,32 +23,41 @@ import org.neo4j.api.core.Traverser.Order;
 public class RowNode extends AbstractNode {
     
     /*
-     * Index property of Row 
-     */
-    
-    public static final String ROW_INDEX = "row_index";
-
-    /*
      * Type of this Node
      */
     private static final String ROW_NODE_TYPE = "spreadsheet_row";
-    
-    /*
-     * Name of this Node
-     */
-    private static final String ROW_NODE_NAME = "Spreadsheet Row";
     
     /**
      * Constructor. Wraps a Node from database and sets type and name of Node
      * 
      * @param node database node
      */
-    public RowNode(Node node) {
+    public RowNode(Node node, String row) {
         super(node);
         setParameter(INeoConstants.PROPERTY_TYPE_NAME, ROW_NODE_TYPE);
-        setParameter(INeoConstants.PROPERTY_NAME_NAME, ROW_NODE_NAME);
+        setRowIndex(row);
+    }
+
+    /**
+     * Constructor for wrapping existing row nodes. To reduce API confusion,
+     * this constructor is private, and users should use the factory method instead.
+     * @param node
+     */
+    private RowNode(Node node) {
+        super(node);
+        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(ROW_NODE_TYPE)) throw new RuntimeException("Expected existing Splash Row Node, but got "+node.toString());
     }
     
+    /**
+     * Use factory method to ensure clear API different to normal constructor.
+     *
+     * @param node representing an existing row project
+     * @return RowNode from existing Node
+     */
+    public static RowNode fromNode(Node node) {
+        return new RowNode(node);
+    }
+
     /**
      * Returns Index of Row
      *
@@ -56,7 +65,7 @@ public class RowNode extends AbstractNode {
      */
     
     public String getRowIndex() {
-        return (String)getParameter(ROW_INDEX);
+        return (String)getParameter(INeoConstants.PROPERTY_NAME_NAME);
     }
     
     /**
@@ -65,7 +74,7 @@ public class RowNode extends AbstractNode {
      * @param newRowIndex index of Row
      */    
     public void setRowIndex(String newRowIndex) {
-        setParameter(ROW_INDEX, newRowIndex);
+        setParameter(INeoConstants.PROPERTY_NAME_NAME, newRowIndex);
     }
     
     /**
@@ -116,7 +125,7 @@ public class RowNode extends AbstractNode {
                                               public boolean isReturnableNode(TraversalPosition position) {
                                                   if (position.depth() == 1) {                                                    
                                                       Node column = position.currentNode().getSingleRelationship(SplashRelationshipTypes.COLUMN_CELL, Direction.INCOMING).getStartNode();
-                                                      return column.getProperty(ColumnNode.COLUMN_NAME).equals(columnName);
+                                                      return column.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(columnName);
                                                   }
                                                   return false;
                                               }                                                

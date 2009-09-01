@@ -17,19 +17,9 @@ import org.neo4j.api.core.Relationship;
 public class ColumnNode extends AbstractNode {
 
 	/*
-	 * ColumnName property of Node
-	 */
-	public static final String COLUMN_NAME = "column_name";
-
-	/*
 	 * Type of this Node
 	 */
 	private static final String COLUMN_NODE_TYPE = "spreadsheet_column";
-
-	/*
-	 * Name of this Node
-	 */
-	private static final String COLUMN_NODE_NAME = "Spreadsheet Column";
 
 	/**
 	 * Constructor. Wraps a Node from database and sets type and name of Node
@@ -37,11 +27,31 @@ public class ColumnNode extends AbstractNode {
 	 * @param node
 	 *            database node
 	 */
-	public ColumnNode(Node node) {
+	public ColumnNode(Node node, String col) {
 		super(node);
 		setParameter(INeoConstants.PROPERTY_TYPE_NAME, COLUMN_NODE_TYPE);
-		setParameter(INeoConstants.PROPERTY_NAME_NAME, COLUMN_NODE_NAME);
+		setColumnName(col);
 	}
+
+    /**
+     * Constructor for wrapping existing column nodes. To reduce API confusion,
+     * this constructor is private, and users should use the factory method instead.
+     * @param node
+     */
+    private ColumnNode(Node node) {
+        super(node);
+        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(COLUMN_NODE_TYPE)) throw new RuntimeException("Expected existing Splash Column Node, but got "+node.toString());
+    }
+    
+    /**
+     * Use factory method to ensure clear API different to normal constructor.
+     *
+     * @param node representing an existing column project
+     * @return ColumnNode from existing Node
+     */
+    public static ColumnNode fromNode(Node node) {
+        return new ColumnNode(node);
+    }
 
 	/**
 	 * Returns Column name
@@ -49,7 +59,7 @@ public class ColumnNode extends AbstractNode {
 	 * @return name of Column
 	 */
 	public String getColumnName() {
-		return (String) getParameter(COLUMN_NAME);
+		return (String) getParameter(INeoConstants.PROPERTY_NAME_NAME);
 	}
 
 	/**
@@ -59,7 +69,7 @@ public class ColumnNode extends AbstractNode {
 	 *            name of Column
 	 */
 	public void setColumnName(String columnName) {
-		setParameter(COLUMN_NAME, columnName);
+        setParameter(INeoConstants.PROPERTY_NAME_NAME, columnName);
 	}
 
 	/**
@@ -73,7 +83,7 @@ public class ColumnNode extends AbstractNode {
 	}
 
 	/**
-	 * Returns number of Cells in this Row
+	 * Returns number of Cells in this Column
 	 * 
 	 * @return number of Cells
 	 */
@@ -89,7 +99,7 @@ public class ColumnNode extends AbstractNode {
 	/**
 	 * Returns Iterator with all Cells of this Column
 	 * 
-	 * @return all Cells of this Row
+	 * @return all Cells of this Column
 	 */
 	public Iterator<CellNode> getAllCells() {
 		return new AllCellsIterator(node, SplashRelationshipTypes.COLUMN_CELL);

@@ -143,7 +143,7 @@
                    tooltip="Plot Bar Chart">
              </command>
              <command
-                   commandId="org.amanzi.splash.pieChartcommand"
+                   commandId="org.amanzi.splash.commands.piechartcommand"
                    icon="icons/piechart.png"
                    id="org.amanzi.splash.toolbars.pieChartCommand"
                    tooltip="Plot Pie Chart">

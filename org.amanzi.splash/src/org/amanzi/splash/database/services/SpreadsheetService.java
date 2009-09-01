@@ -16,6 +16,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.exception.LoopInCellReferencesException;
 import org.amanzi.neo.core.database.exception.SplashDatabaseException;
@@ -140,9 +141,7 @@ public class SpreadsheetService {
 			Transaction transaction = neoService.beginTx();
 
 			try {
-				SpreadsheetNode spreadsheet = new SpreadsheetNode(neoService.createNode());
-
-				spreadsheet.setSpreadsheetName(name);
+				SpreadsheetNode spreadsheet = new SpreadsheetNode(neoService.createNode(),name);
 
 				root.addSpreadsheet(spreadsheet);
 
@@ -283,16 +282,14 @@ public class SpreadsheetService {
 			RowNode rowNode = spreadsheet.getRow(id.getRowName());
 
 			if (rowNode == null) {
-				rowNode = new RowNode(neoService.createNode());
-				rowNode.setRowIndex(id.getRowName());
+				rowNode = new RowNode(neoService.createNode(),id.getRowName());
 				spreadsheet.addRow(rowNode);
 			}
 
 			ColumnNode columnNode = spreadsheet.getColumn(id.getColumnName());
 
 			if (columnNode == null) {
-				columnNode = new ColumnNode(neoService.createNode());
-				columnNode.setColumnName(id.getColumnName());
+				columnNode = new ColumnNode(neoService.createNode(),id.getColumnName());
 				spreadsheet.addColumn(columnNode);
 			}
 
@@ -755,7 +752,7 @@ public class SpreadsheetService {
 								return false;
 							}
 							return Integer.parseInt(position.lastRelationshipTraversed().getEndNode()
-									.getProperty(RowNode.ROW_INDEX).toString()) > index;
+									.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()) > index;
 						}
 
 					}, SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
@@ -766,7 +763,7 @@ public class SpreadsheetService {
 				}
 			});
 			while (rowIterator.hasNext()) {
-				rows.add(new RowNode(rowIterator.next()));
+				rows.add(RowNode.fromNode(rowIterator.next()));
 			}
 			for (RowNode rowNode : rows) {
 				Node row = rowNode.getUnderlyingNode();
@@ -878,7 +875,7 @@ public class SpreadsheetService {
 								return false;
 							}
 							return Integer.parseInt(position.lastRelationshipTraversed().getEndNode()
-									.getProperty(RowNode.ROW_INDEX).toString()) > index;
+									.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()) > index;
 						}
 
 					}, SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
@@ -889,7 +886,7 @@ public class SpreadsheetService {
 				}
 			});
 			while (rowIterator.hasNext()) {
-				rows.add(new RowNode(rowIterator.next()));
+				rows.add(RowNode.fromNode(rowIterator.next()));
 			}
 			for (RowNode rowNode : rows) {
 				int rowIndex = Integer.parseInt(rowNode.getRowIndex());
@@ -1017,7 +1014,7 @@ public class SpreadsheetService {
 								return false;
 							}
 							boolean result = CellID
-									.getColumnIndexFromCellID(new ColumnNode(position.currentNode()).getColumnName()) >= index;
+									.getColumnIndexFromCellID(ColumnNode.fromNode(position.currentNode()).getColumnName()) >= index;
 							System.out.println(result);
 							return result;
 						}
@@ -1025,7 +1022,7 @@ public class SpreadsheetService {
 					}, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
 			List<ColumnNode> columns = new ArrayList<ColumnNode>();
 			while (columnIterator.hasNext()) {
-				columns.add(new ColumnNode(columnIterator.next()));
+				columns.add(ColumnNode.fromNode(columnIterator.next()));
 			}
 			Collections.sort(columns, new Comparator<ColumnNode>() {
 				@Override
@@ -1097,7 +1094,7 @@ public class SpreadsheetService {
                                 return false;
                             }
                             boolean result = CellID
-                                    .getColumnIndexFromCellID(new ColumnNode(position.currentNode()).getColumnName()) > index;
+                                    .getColumnIndexFromCellID(ColumnNode.fromNode(position.currentNode()).getColumnName()) > index;
                             System.out.println(result);
                             return result;
                         }
@@ -1105,7 +1102,7 @@ public class SpreadsheetService {
                     }, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
             List<ColumnNode> columns = new ArrayList<ColumnNode>();
             while (columnIterator.hasNext()) {
-                columns.add(new ColumnNode(columnIterator.next()));
+                columns.add(ColumnNode.fromNode(columnIterator.next()));
             }
             Collections.sort(columns, new Comparator<ColumnNode>() {
                 @Override
@@ -1171,14 +1168,14 @@ public class SpreadsheetService {
 							if (position.isStartNode()) {
 								return false;
 							}
-							int rowIndex = Integer.parseInt(position.currentNode().getProperty(RowNode.ROW_INDEX).toString()) - 1;
+							int rowIndex = Integer.parseInt(position.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()) - 1;
 							return index1 == rowIndex || index2 == rowIndex;
 						}
 
 					}, SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
 			List<RowNode> rows = new ArrayList<RowNode>();
 			while (rowIterator.hasNext()) {
-				rows.add(new RowNode(rowIterator.next()));
+				rows.add(RowNode.fromNode(rowIterator.next()));
 			}
 			Set<Long> cells = new HashSet<Long>();
 			for (RowNode rowNode : rows) {
@@ -1273,14 +1270,14 @@ public class SpreadsheetService {
 							if (position.isStartNode()) {
 								return false;
 							}
-							String columnName = (String) position.currentNode().getProperty(ColumnNode.COLUMN_NAME);
+							String columnName = (String) position.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME);
 							return column1Name.equals(columnName) || column2Name.equals(columnName);
 						}
 
 					}, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
 			List<ColumnNode> columns = new ArrayList<ColumnNode>();
 			while (colIterator.hasNext()) {
-				columns.add(new ColumnNode(colIterator.next()));
+				columns.add(ColumnNode.fromNode(colIterator.next()));
 			}
 			Set<Long> cells = new HashSet<Long>();
 			for (ColumnNode colNode : columns) {
