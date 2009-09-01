@@ -615,13 +615,12 @@ public class SpreadsheetService {
 		return cellsList;
 	}
 
-	/**
-	 * Returns all Charts of Spreadsheet
-	 * 
-	 * @param sheet
-	 *            Spreadsheet
-	 * @return all Cells of given Spreadsheet
-	 */
+    /**
+     * Returns all Charts of Spreadsheet
+     * 
+     * @param sheet Spreadsheet
+     * @return all Cells of given Spreadsheet
+     */
 
 	public List<ChartItemNode> getAllChartItems(ChartNode chartNode) {
 		ArrayList<ChartItemNode> chartItemsList = new ArrayList<ChartItemNode>(0);
@@ -638,13 +637,12 @@ public class SpreadsheetService {
 		return chartItemsList;
 	}
 
-	/**
-	 * Returns all Pie Charts of Spreadsheet
-	 * 
-	 * @param sheet
-	 *            Spreadsheet
-	 * @return all Cells of given Spreadsheet
-	 */
+    /**
+     * Returns all Pie Charts of Spreadsheet
+     * 
+     * @param sheet Spreadsheet
+     * @return all Cells of given Spreadsheet
+     */
 
 	public List<PieChartItemNode> getAllPieChartItems(PieChartNode chartNode) {
 		ArrayList<PieChartItemNode> chartItemsList = new ArrayList<PieChartItemNode>(0);
@@ -661,16 +659,13 @@ public class SpreadsheetService {
 		return chartItemsList;
 	}
 
-	/**
-	 * Updates References of Cell
-	 * 
-	 * @param sheet
-	 *            Spreadsheet of Cell
-	 * @param cellID
-	 *            ID of Cell
-	 * @param array
-	 *            Array with IDs of referenced Cells
-	 */
+    /**
+     * Updates References of Cell
+     * 
+     * @param sheet Spreadsheet of Cell
+     * @param cellID ID of Cell
+     * @param array Array with IDs of referenced Cells
+     */
 	public void updateCellReferences(SpreadsheetNode sheet, String cellID, RubyArray array) {
 		List<String> referencedIds = new ArrayList<String>(0);
 		for (IRubyObject rubyString : array.toJavaArray()) {
@@ -727,13 +722,12 @@ public class SpreadsheetService {
 		}
 	}
 
-	/**
-	 * Get cells FullId
-	 * 
-	 * @param cell
-	 *            cell node
-	 * @return FullId
-	 */
+    /**
+     * Get cells FullId
+     * 
+     * @param cell cell node
+     * @return FullId
+     */
 	public String getFullId(CellNode cell) {
 		Transaction transaction = neoService.beginTx();
 		try {
@@ -745,14 +739,12 @@ public class SpreadsheetService {
 		}
 	}
 
-	/**
-	 * Insert row
-	 * 
-	 * @param spreadsheet
-	 *            spreadsheet node
-	 * @param index
-	 *            row index (begin index: 0)
-	 */
+    /**
+     * Insert row
+     * 
+     * @param spreadsheet spreadsheet node
+     * @param index row index (begin index: 0)
+     */
 	public void insertRow(SpreadsheetNode spreadsheet, final int index) {
 		Transaction transaction = neoService.beginTx();
 		try {
@@ -806,15 +798,13 @@ public class SpreadsheetService {
 		}
 	}
 
-	/**
-	 * Updates script
-	 * 
-	 * @param scriptURI
-	 *            script URI
-	 * @param formula
-	 *            new formula
-	 * @return true if no error
-	 */
+    /**
+     * Updates script
+     * 
+     * @param scriptURI script URI
+     * @param formula new formula
+     * @return true if no error
+     */
 	private boolean updateScript(URI scriptURI, String formula) {
 		File file = new File(scriptURI);
 		FileWriter fr;
@@ -828,21 +818,16 @@ public class SpreadsheetService {
 		}
 	}
 
-	/**
-	 * Updating formula
-	 * 
-	 * @param formula
-	 *            formula to update
-	 * @param rowIndex
-	 *            old row index
-	 * @param columnName
-	 *            old column name
-	 * @param newRowIndex
-	 *            new row index
-	 * @param newColumnName
-	 *            new column name
-	 * @return new formula
-	 */
+    /**
+     * Updating formula
+     * 
+     * @param formula formula to update
+     * @param rowIndex old row index
+     * @param columnName old column name
+     * @param newRowIndex new row index
+     * @param newColumnName new column name
+     * @return new formula
+     */
 	private String updatingFormula(String formula, int rowIndex, String columnName, int newRowIndex, String newColumnName) {
 
 		String oldCellName = columnName.toLowerCase() + rowIndex;
@@ -864,15 +849,13 @@ public class SpreadsheetService {
 		return result.toString();
 	}
 
-	/**
-	 * Deleting row
-	 * 
-	 * @param spreadsheet
-	 *            spreadsheet node
-	 * @param index
-	 *            row index (begin index: 0)
-	 * @return true if all ok.
-	 */
+    /**
+     * Deleting row
+     * 
+     * @param spreadsheet spreadsheet node
+     * @param index row index (begin index: 0)
+     * @return true if all ok.
+     */
 	public boolean deleteRow(SpreadsheetNode spreadsheet, final int index) {
 		Transaction transaction = neoService.beginTx();
 		try {
@@ -944,12 +927,11 @@ public class SpreadsheetService {
 
 	}
 
-	/**
-	 * Delete row
-	 * 
-	 * @param rowNode
-	 *            row to delete
-	 */
+    /**
+     * Delete row
+     * 
+     * @param rowNode row to delete
+     */
 	private void deleteRow(RowNode rowNode) {
 		Iterator<CellNode> allCells = rowNode.getAllCells();
 		while (allCells.hasNext()) {
@@ -959,12 +941,11 @@ public class SpreadsheetService {
 		deleteNode(rowNode.getUnderlyingNode());
 	}
 
-	/**
-	 * Delete column
-	 * 
-	 * @param columnNode
-	 *            row to delete
-	 */
+    /**
+     * Delete column
+     * 
+     * @param columnNode row to delete
+     */
 	private void deleteColumn(ColumnNode columnNode) {
 		Iterator<CellNode> allCells = columnNode.getAllCells();
 		while (allCells.hasNext()) {
@@ -974,12 +955,11 @@ public class SpreadsheetService {
 		deleteNode(columnNode.getUnderlyingNode());
 	}
 
-	/**
-	 * Delete node
-	 * 
-	 * @param node
-	 *            node to delete
-	 */
+    /**
+     * Delete node
+     * 
+     * @param node node to delete
+     */
 	private void deleteNode(Node node) {
 		Iterable<Relationship> relationships = node.getRelationships();
 		for (Relationship relationship : relationships) {
@@ -988,17 +968,14 @@ public class SpreadsheetService {
 		node.delete();
 	}
 
-	/**
-	 * Copies a Given Spreadsheet
-	 * 
-	 * @param spreadsheet
-	 *            spreadsheet to copy
-	 * @param newRoot
-	 *            root for new Spreadsheet
-	 * @param newName
-	 *            name of new Spreadsheet
-	 * @return copied Spreadsheet
-	 */
+    /**
+     * Copies a Given Spreadsheet
+     * 
+     * @param spreadsheet spreadsheet to copy
+     * @param newRoot root for new Spreadsheet
+     * @param newName name of new Spreadsheet
+     * @return copied Spreadsheet
+     */
 	public SpreadsheetNode copySpreadsheet(SpreadsheetNode spreadsheet, RubyProjectNode newRoot, String newName) {
 		try {
 			SpreadsheetNode result = createSpreadsheet(newRoot, newName);
@@ -1024,14 +1001,12 @@ public class SpreadsheetService {
 		}
 	}
 
-	/**
-	 * Insert column
-	 * 
-	 * @param spreadsheet
-	 *            spreadsheet node
-	 * @param index
-	 *            row index (begin index: 0)
-	 */
+    /**
+     * Insert column
+     * 
+     * @param spreadsheet spreadsheet node
+     * @param index row index (begin index: 0)
+     */
 	public void insertColumn(SpreadsheetNode spreadsheet, final int index) {
 		Transaction transaction = neoService.beginTx();
 		try {
@@ -1114,6 +1089,7 @@ public class SpreadsheetService {
                 }
                 deleteColumn(columnNod);
             }
+            // find columns for change of their number
             Iterator<Node> columnIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
                     StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
                         public boolean isReturnableNode(TraversalPosition position) {
@@ -1145,6 +1121,7 @@ public class SpreadsheetService {
                 Iterator<Node> celIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
                         SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
                 String newColumnLetter = CellID.getColumnLetter(colIndex - 1);
+                // change formula for all referenced cells
                 while (celIterator.hasNext()) {
                     Node cell = (Node)celIterator.next();
                     CellNode cellNode = new CellNode(cell);
@@ -1177,19 +1154,17 @@ public class SpreadsheetService {
 
 	}
 
-	/**
-	 * Swap rows in database
-	 * 
-	 * @param spreadsheet
-	 *            spreadsheet node
-	 * @param index1
-	 *            row1 index
-	 * @param index2
-	 *            row2 index
-	 */
+    /**
+     * Swap rows in database
+     * 
+     * @param spreadsheet spreadsheet node
+     * @param index1 row1 index
+     * @param index2 row2 index
+     */
 	public void swapRows(SpreadsheetNode spreadsheet, final int index1, final int index2) {
 		Transaction transaction = neoService.beginTx();
 		try {
+            // find necessary rows in database
 			Iterator<Node> rowIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 						public boolean isReturnableNode(TraversalPosition position) {
@@ -1212,6 +1187,7 @@ public class SpreadsheetService {
                 Iterator<Node> cellIterator = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
                         SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
 				int newRowIndex = index1 == rowIndex ? index2 : index1;
+                // change formula for all referenced cells
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
 					CellNode cellNode = new CellNode(cell);
@@ -1242,17 +1218,14 @@ public class SpreadsheetService {
 		}
 	}
 
-	/**
-	 * Swap row numbers in formula
-	 * 
-	 * @param formula
-	 *            formula
-	 * @param index1
-	 *            row1 index
-	 * @param index2
-	 *            row2 index
-	 * @return
-	 */
+    /**
+     * Swap row numbers in formula
+     * 
+     * @param formula formula
+     * @param index1 row1 index
+     * @param index2 row2 index
+     * @return
+     */
 	private String swapRows(String formula, int index1, int index2) {
 		String rowIndex1 = String.valueOf(index1 + 1);
 		String rowIndex2 = String.valueOf(index2 + 1);
@@ -1281,21 +1254,19 @@ public class SpreadsheetService {
 		return result.toString();
 	}
 
-	/**
-	 * Swap columns in database
-	 * 
-	 * @param spreadsheet
-	 *            spreadsheet node
-	 * @param index1
-	 *            column1 index
-	 * @param index2
-	 *            column2 index
-	 */
+    /**
+     * Swap columns in database
+     * 
+     * @param spreadsheet spreadsheet node
+     * @param index1 column1 index
+     * @param index2 column2 index
+     */
 	public void swapColumns(SpreadsheetNode spreadsheet, final int index1, final int index2) {
 		final String column1Name = CellID.getColumnLetter(index1);
 		final String column2Name = CellID.getColumnLetter(index2);
 		Transaction transaction = neoService.beginTx();
 		try {
+            // find necessary column in database
 			Iterator<Node> colIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 						public boolean isReturnableNode(TraversalPosition position) {
@@ -1318,6 +1289,7 @@ public class SpreadsheetService {
                 Iterator<Node> cellIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
                         SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
 				String newColName = column1Name.equals(colName) ? column2Name : column1Name;
+                // change formula for all referenced cells
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
 					CellNode cellNode = new CellNode(cell);
@@ -1348,17 +1320,14 @@ public class SpreadsheetService {
 		}
 	}
 
-	/**
-	 * Swap columns in formula
-	 * 
-	 * @param formula
-	 *            formula
-	 * @param column1Name
-	 *            name of column1
-	 * @param column2Name
-	 *            name of column2
-	 * @return
-	 */
+    /**
+     * Swap columns in formula
+     * 
+     * @param formula formula
+     * @param column1Name name of column1
+     * @param column2Name name of column2
+     * @return
+     */
 	private String swapColumns(String formula, String column1Name, String column2Name) {
 		column1Name = column1Name.toLowerCase();
 		column2Name = column2Name.toLowerCase();
