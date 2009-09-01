@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import net.refractions.udig.project.IProjectElement;
 import net.refractions.udig.project.IRubyProject;
 import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.ISpreadsheet;
@@ -712,5 +713,20 @@ public class AWEProjectManager {
         
         spreadsheet.setName(newName);
         spreadsheet.eResource().setModified(true);
+    }
+
+    /**
+     * Compute name of AWE project
+     * 
+     * @param nameObject - selection
+     * @return name
+     */
+    public static String computeAWEProjectName(Object nameObject) {
+        if (nameObject instanceof net.refractions.udig.project.IProject){
+            return ((net.refractions.udig.project.IProject)nameObject).getName();
+        }if (nameObject instanceof IProjectElement){
+            return ((IProjectElement)nameObject).getProject().getName();
+        }
+        return null;
     }
 }
