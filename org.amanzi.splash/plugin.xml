@@ -6,7 +6,7 @@
      <extension
          point="org.eclipse.ui.editors">
       <editor
-            name="Amanzi: Mini-Spreadsheet"
+            name="Amanzi Splash Spreadsheet Editor"
             icon="icons/splash_16.png"
             extensions="splash"
             class="org.amanzi.splash.ui.SplashResourceEditor"
@@ -32,7 +32,7 @@
    <extension
          point="org.eclipse.ui.newWizards">
       <category
-            name="Amanzi"
+            name="Amanzi Splash"
             id="org.amanzi.splash">
       </category>
       <wizard
@@ -82,7 +82,7 @@
           point="org.eclipse.ui.commands">
        <category
              id="org.amanzi.splash.commands.category"
-             name="Sample Category">
+             name="Amanzi Splash Commands">
        </category>
        <command
              categoryId="org.amanzi.splash.commands.category"
@@ -94,10 +94,6 @@
              id="org.amanzi.splash.pieChartcommand"
              name="piechart">
        </command>
-       <category
-             id="org.amanzi.splash.commands.category"
-             name="Sample Category">
-       </category>
        <command
              categoryId="org.amanzi.splash.commands.category"
              id="org.amanzi.splash.commands.addtoimportfiltercommand"
@@ -112,7 +108,7 @@
        </handler>
        <handler
              class="org.amanzi.splash.handlers.PieChartCommandHandler"
-             commandId="org.amanzi.splash.pieChartcommand">
+             commandId="org.amanzi.splash.commands.piechartcommand">
        </handler>
        <handler
              class="org.amanzi.splash.handlers.AddToImportFilterrHandler"
@@ -122,10 +118,10 @@
     <extension
           point="org.eclipse.ui.bindings">
        <key
-             commandId="org.amanzi.splash..commands.barchartcommand"
+             commandId="org.amanzi.splash.commands.piechartcommand"
              contextId="org.eclipse.ui.contexts.window"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-             sequence="M1+6">
+             sequence="M1+7">
        </key>
        <key
              commandId="org.amanzi.splash.commands.barchartcommand"
@@ -154,7 +150,7 @@
              </command>
              <command
                    commandId="org.amanzi.splash.commands.addtoimportfiltercommand"
-                   icon="icons/Filter.png"
+                   icon="icons/filter_16.png"
                    id="Add to Import Filter">
              </command>
           </toolbar>
@@ -169,31 +165,31 @@
     </extension>
     <extension
           point="org.eclipse.ui.importWizards">
-       <category
-             id="org.amanzi.splash.importWizards.sampleCategory"
-             name="Neo DataFile Import">
-       </category>
        <wizard
-             category="org.amanzi.splash.importWizards.sampleCategory"
+             category="org.amanzi.splash"
              class="org.amanzi.splash.ui.wizards.NeoDataFileImportWizard"
-             icon="icons/sample.gif"
+             icon="icons/splash_16.png"
              id="org.amanzi.splash.importWizards.NeoDataFileImportWizard"
-             name="Import Neo Data File">
+             name="Import Data Into Splash">
           <description>
-             Import a file from the local file system into the workspace.
+             Import a data file from the local file system into the active Amanzi Splash sheet
           </description>
        </wizard>
+       <category
+             id="org.amanzi.splash"
+             name="Amanzi Splash">
+       </category>
     </extension>
     <extension
           point="org.eclipse.ui.views">
        <category
              id="org.amanzi.splash"
-             name="ImportBuilder Category">
+             name="Import Builder">
        </category>
        <view
              category="org.amanzi.splash"
              class="org.amanzi.splash.views.importbuilder.ImportBuilderView"
-             icon="icons/import.png"
+             icon="icons/filter_16.png"
              id="org.amanzi.splash.views.ImportBuilderView"
              name="Import Builder">
        </view>
