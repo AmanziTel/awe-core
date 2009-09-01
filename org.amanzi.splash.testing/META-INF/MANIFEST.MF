@@ -7,7 +7,7 @@ Bundle-Activator: org.amanzi.splash.testing.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.junit,
  org.jtestr,
- org.amanzi.splash;bundle-version="3.2.0",
+ org.amanzi.splash;bundle-version="1.0.0",
  org.amanzi.neo.core;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Eclipse-RegisterBuddy: org.jtestr
