@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -140,15 +141,25 @@ public class TEMSLoader {
 				else parseLine(line);
 			}
 		}finally{
-			reader.close();
+            reader.close();
             saveData();
-            if (gis != null && bbox != null) {
+            if (gis != null) {
                 Transaction transaction = neo.beginTx();
                 try {
-                    gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
+                    if (bbox != null) {
+                        gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
+                    }
+                    HashSet<Node> nodeToDelete = new HashSet<Node>();
+                    for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING)) {
+                        nodeToDelete.add(relation.getEndNode());
+                    }
+                    for (Node node : nodeToDelete) {
+                        NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+                    }
                     transaction.success();
                 } finally {
                     transaction.finish();
+                    NeoServiceProvider.getProvider().commit();
                 }
             }
             String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
@@ -187,7 +198,8 @@ public class TEMSLoader {
 				NeoLoaderPlugin.notify("TEMS:"+basename+":"+status()+": "+line);
 			}
 		});	
-		NeoLoaderPlugin.info("TEMS:"+basename+":"+status()+": "+line);
+        // TODO if this info is necessary, then put this info in display thread
+        // NeoLoaderPlugin.info("TEMS:"+basename+":"+status()+": "+line);
 	}
 	
 	private void notify(final String line){
@@ -400,20 +412,6 @@ public class TEMSLoader {
 					file = findOrCreateFileNode(reference,datasetNode);
 					
 					Node mainFileNode=datasetNode==null?file:datasetNode;
-					//					for (Relationship relationship : reference.getRelationships(MeasurementRelationshipTypes.CHILD,
-//							Direction.OUTGOING)) {
-//						Node node = relationship.getEndNode();
-//						if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.FILE_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-//								&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename))
-//							file = node;
-//					}
-//					if (file == null) {
-//						file = neo.createNode();
-//						file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
-//						file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-//						file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-//						reference.createRelationshipTo(file, MeasurementRelationshipTypes.CHILD);
-//					}
                     file.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
                     gis = getGISNode(neo, mainFileNode);
 

@@ -52,6 +52,7 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
 
@@ -285,6 +286,9 @@ public class ReuseAnalyserView extends ViewPart {
      * @return necessary aggregates node
      */
     protected Node findOrCreateAggregateNode(Node gisNode, final String propertyName) {
+        NeoService service = NeoServiceProvider.getProvider().getService();
+        Transaction tx = service.beginTx();
+        try {
         Iterator<Node> iterator = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
             @Override
@@ -293,9 +297,10 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }, NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING).iterator();
         if (iterator.hasNext()) {
+                tx.success();
             return iterator.next();
         }
-        NeoService service = NeoServiceProvider.getProvider().getService();
+
         Node result = service.createNode();
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, propertyName);
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.AGGREGATION_TYPE_NAME);
@@ -310,7 +315,13 @@ public class ReuseAnalyserView extends ViewPart {
             parentNode.createRelationshipTo(childNode, NetworkRelationshipTypes.CHILD);
             parentNode = childNode;
         }
+            tx.success();
         return result;
+        } finally {
+            tx.finish();
+            // fix bug - aggregate data of drive gis node do not save after restart application
+            NeoServiceProvider.getProvider().commit();
+        }
     }
 
     /**
