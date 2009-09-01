@@ -63,7 +63,26 @@ import com.eteks.openjeks.format.CellFormat;
 
 public class SpreadsheetService {
 
-	/*
+    /**
+     * <p>
+     * Returnable Evaluator - return cells, that have reference: CellRelationTypes.REFERENCED,
+     * Direction.INCOMING
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.1.0
+     */
+    private final class ReferencedCell implements ReturnableEvaluator {
+        @Override
+        public boolean isReturnableNode(TraversalPosition traversalposition) {
+        	if (traversalposition.isStartNode()) {
+        		return false;
+        	}
+            return traversalposition.currentNode().hasRelationship(CellRelationTypes.REFERENCED, Direction.INCOMING);
+        }
+    }
+
+    /*
 	 * Default value of Cell Value
 	 */
 	private static final String DEFAULT_VALUE = "";
@@ -530,29 +549,6 @@ public class SpreadsheetService {
 		return result;
 	}
 
-	// /**
-	// * Returns RootNode for Spreadsheets
-	// *
-	// * @return root node
-	// */
-	// //TODO: this method must be rewritten to support specification from
-	// comments in #564 to support
-	// //Spreadsheets with same name in different Ruby and AWE projects
-	// public RubyProjectNode getRootNode() {
-	// Transaction transaction = neoService.beginTx();
-	// try {
-	//            
-	// RubyProjectNode root = new
-	// RubyProjectNode(neoService.getReferenceNode());
-	// transaction.success();
-	//            
-	// return root;
-	// }
-	// finally {
-	// transaction.finish();
-	// }
-	// }
-
 	/**
 	 * Deletes the Cell from Spreadsheet
 	 * 
@@ -783,17 +779,7 @@ public class SpreadsheetService {
 			for (RowNode rowNode : rows) {
 				Node row = rowNode.getUnderlyingNode();
 				int rowIndex = Integer.parseInt(rowNode.getRowIndex());
-				Iterator<Node> cellIterator = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-					@Override
-					public boolean isReturnableNode(TraversalPosition traversalposition) {
-						if (traversalposition.isStartNode()) {
-							return false;
-						}
-						return traversalposition.lastRelationshipTraversed().getEndNode().hasRelationship(
-								CellRelationTypes.REFERENCED, Direction.INCOMING);
-					}
-				}, SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
+				Iterator<Node> cellIterator = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(), SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
 					CellNode cellNode = new CellNode(cell);
@@ -894,17 +880,8 @@ public class SpreadsheetService {
 			Iterator<Node> cellIterator;
 			RowNode rowNod = spreadsheet.getRow(indexRow);
 			if (rowNod != null) {
-				cellIterator = rowNod.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-						new ReturnableEvaluator() {
-							@Override
-							public boolean isReturnableNode(TraversalPosition traversalposition) {
-								if (traversalposition.isStartNode()) {
-									return false;
-								}
-								return traversalposition.lastRelationshipTraversed().getEndNode().hasRelationship(
-										CellRelationTypes.REFERENCED, Direction.INCOMING);
-							}
-						}, SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
+                cellIterator = rowNod.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+                        new ReferencedCell(), SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
 				if (cellIterator.hasNext()) {
 					transaction.success();
 					return false;
@@ -933,17 +910,8 @@ public class SpreadsheetService {
 			}
 			for (RowNode rowNode : rows) {
 				int rowIndex = Integer.parseInt(rowNode.getRowIndex());
-				cellIterator = rowNode.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-						new ReturnableEvaluator() {
-							@Override
-							public boolean isReturnableNode(TraversalPosition traversalposition) {
-								if (traversalposition.isStartNode()) {
-									return false;
-								}
-								return traversalposition.lastRelationshipTraversed().getEndNode().hasRelationship(
-										CellRelationTypes.REFERENCED, Direction.INCOMING);
-							}
-						}, SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
+                cellIterator = rowNode.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+                        new ReferencedCell(), SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
 					CellNode cellNode = new CellNode(cell);
@@ -1095,18 +1063,8 @@ public class SpreadsheetService {
 				Node column = columnNode.getUnderlyingNode();
 				String colName = columnNode.getColumnName();
 				int colIndex = CellID.getColumnIndexFromCellID(colName);
-				Iterator<Node> cellIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-						new ReturnableEvaluator() {
-
-							@Override
-							public boolean isReturnableNode(TraversalPosition traversalposition) {
-								if (traversalposition.isStartNode()) {
-									return false;
-								}
-								return traversalposition.lastRelationshipTraversed().getEndNode().hasRelationship(
-										CellRelationTypes.REFERENCED, Direction.INCOMING);
-							}
-						}, SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
+                Iterator<Node> cellIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
+                        SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
 				String newColumnLetter = CellID.getColumnLetter(colIndex + 1);
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
@@ -1134,100 +1092,79 @@ public class SpreadsheetService {
 		}
 	}
 
-	/**
-	 * Deleting column
-	 * 
-	 * @param spreadsheet
-	 *            spreadsheet node
-	 * @param index
-	 *            column index (begin index: 0)
-	 * @return true if all ok.
-	 */
-	public boolean deleteColumn(SpreadsheetNode spreadsheet, final int index) {
-		Transaction transaction = neoService.beginTx();
-		try {
-			String indexColumn = CellID.getColumnLetter(index);
-			Iterator<Node> cellIterator;
-			ColumnNode columnNod = spreadsheet.getColumn(indexColumn);
-			if (columnNod != null) {
-				cellIterator = columnNod.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-						new ReturnableEvaluator() {
-							@Override
-							public boolean isReturnableNode(TraversalPosition traversalposition) {
-								if (traversalposition.isStartNode()) {
-									return false;
-								}
-								return traversalposition.lastRelationshipTraversed().getEndNode().hasRelationship(
-										CellRelationTypes.REFERENCED, Direction.INCOMING);
-							}
-						}, SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
-				if (cellIterator.hasNext()) {
-					transaction.success();
-					return false;
-				}
-				deleteColumn(columnNod);
-			}
-			Iterator<Node> columnIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
-					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-						public boolean isReturnableNode(TraversalPosition position) {
-							if (position.isStartNode()) {
-								return false;
-							}
-							boolean result = CellID
-									.getColumnIndexFromCellID(new ColumnNode(position.currentNode()).getColumnName()) > index;
-							System.out.println(result);
-							return result;
-						}
+    /**
+     * Deleting column
+     * 
+     * @param spreadsheet spreadsheet node
+     * @param index column index (begin index: 0)
+     * @return true if all ok.
+     */
+    public boolean deleteColumn(SpreadsheetNode spreadsheet, final int index) {
+        Transaction transaction = neoService.beginTx();
+        try {
+            String indexColumn = CellID.getColumnLetter(index);
+            Iterator<Node> cellIterator;
+            ColumnNode columnNod = spreadsheet.getColumn(indexColumn);
+            if (columnNod != null) {
+                cellIterator = columnNod.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+                        new ReferencedCell(), SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
+                if (cellIterator.hasNext()) {
+                    transaction.success();
+                    return false;
+                }
+                deleteColumn(columnNod);
+            }
+            Iterator<Node> columnIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
+                    StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                        public boolean isReturnableNode(TraversalPosition position) {
+                            if (position.isStartNode()) {
+                                return false;
+                            }
+                            boolean result = CellID
+                                    .getColumnIndexFromCellID(new ColumnNode(position.currentNode()).getColumnName()) > index;
+                            System.out.println(result);
+                            return result;
+                        }
 
-					}, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
-			List<ColumnNode> columns = new ArrayList<ColumnNode>();
-			while (columnIterator.hasNext()) {
-				columns.add(new ColumnNode(columnIterator.next()));
-			}
-			Collections.sort(columns, new Comparator<ColumnNode>() {
-				@Override
-				public int compare(ColumnNode o1, ColumnNode o2) {
-					return CellID.getColumnIndexFromCellID(o2.getColumnName())
-							- CellID.getColumnIndexFromCellID(o1.getColumnName());
-				}
-			});
-			for (ColumnNode columnNode : columns) {
-				Node column = columnNode.getUnderlyingNode();
-				String colName = columnNode.getColumnName();
-				int colIndex = CellID.getColumnIndexFromCellID(colName);
-				Iterator<Node> celIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-						new ReturnableEvaluator() {
-
-							@Override
-							public boolean isReturnableNode(TraversalPosition traversalposition) {
-								if (traversalposition.isStartNode()) {
-									return false;
-								}
-								return traversalposition.lastRelationshipTraversed().getEndNode().hasRelationship(
-										CellRelationTypes.REFERENCED, Direction.INCOMING);
-							}
-						}, SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
-				String newColumnLetter = CellID.getColumnLetter(colIndex - 1);
-				while (celIterator.hasNext()) {
-					Node cell = (Node) celIterator.next();
-					CellNode cellNode = new CellNode(cell);
-					int rowIndex = Integer.parseInt(cellNode.getRow().getRowIndex());
-					Iterator<CellNode> referencedNodes = cellNode.getDependedNodes();
-					while (referencedNodes.hasNext()) {
-						CellNode refCell = (CellNode) referencedNodes.next();
-						String formula = refCell.getDefinition();
-						if (formula != null && formula.length() > 0) {
-							formula = updatingFormula(formula, rowIndex, colName, rowIndex, newColumnLetter);
-							refCell.setDefinition(formula);
-							URI scriptURI = refCell.getScriptURI();
-							if (scriptURI != null) {
-								updateScript(scriptURI, formula);
-							}
-						}
-					}
-				}
-				columnNode.setColumnName(newColumnLetter);
-			}
+                    }, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
+            List<ColumnNode> columns = new ArrayList<ColumnNode>();
+            while (columnIterator.hasNext()) {
+                columns.add(new ColumnNode(columnIterator.next()));
+            }
+            Collections.sort(columns, new Comparator<ColumnNode>() {
+                @Override
+                public int compare(ColumnNode o1, ColumnNode o2) {
+                    return CellID.getColumnIndexFromCellID(o2.getColumnName())
+                            - CellID.getColumnIndexFromCellID(o1.getColumnName());
+                }
+            });
+            for (ColumnNode columnNode : columns) {
+                Node column = columnNode.getUnderlyingNode();
+                String colName = columnNode.getColumnName();
+                int colIndex = CellID.getColumnIndexFromCellID(colName);
+                Iterator<Node> celIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
+                        SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
+                String newColumnLetter = CellID.getColumnLetter(colIndex - 1);
+                while (celIterator.hasNext()) {
+                    Node cell = (Node)celIterator.next();
+                    CellNode cellNode = new CellNode(cell);
+                    int rowIndex = Integer.parseInt(cellNode.getRow().getRowIndex());
+                    Iterator<CellNode> referencedNodes = cellNode.getDependedNodes();
+                    while (referencedNodes.hasNext()) {
+                        CellNode refCell = (CellNode)referencedNodes.next();
+                        String formula = refCell.getDefinition();
+                        if (formula != null && formula.length() > 0) {
+                            formula = updatingFormula(formula, rowIndex, colName, rowIndex, newColumnLetter);
+                            refCell.setDefinition(formula);
+                            URI scriptURI = refCell.getScriptURI();
+                            if (scriptURI != null) {
+                                updateScript(scriptURI, formula);
+                            }
+                        }
+                    }
+                }
+                columnNode.setColumnName(newColumnLetter);
+            }
 
 			transaction.success();
 			return true;
@@ -1272,17 +1209,8 @@ public class SpreadsheetService {
 			for (RowNode rowNode : rows) {
 				Node row = rowNode.getUnderlyingNode();
 				int rowIndex = Integer.parseInt(rowNode.getRowIndex()) - 1;
-				Iterator<Node> cellIterator = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-					@Override
-					public boolean isReturnableNode(TraversalPosition traversalposition) {
-						if (traversalposition.isStartNode()) {
-							return false;
-						}
-						return traversalposition.lastRelationshipTraversed().getEndNode().hasRelationship(
-								CellRelationTypes.REFERENCED, Direction.INCOMING);
-					}
-				}, SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
+                Iterator<Node> cellIterator = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
+                        SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
 				int newRowIndex = index1 == rowIndex ? index2 : index1;
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
@@ -1387,18 +1315,8 @@ public class SpreadsheetService {
 			for (ColumnNode colNode : columns) {
 				Node column = colNode.getUnderlyingNode();
 				String colName = colNode.getColumnName();
-				Iterator<Node> cellIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-						new ReturnableEvaluator() {
-
-							@Override
-							public boolean isReturnableNode(TraversalPosition traversalposition) {
-								if (traversalposition.isStartNode()) {
-									return false;
-								}
-								return traversalposition.lastRelationshipTraversed().getEndNode().hasRelationship(
-										CellRelationTypes.REFERENCED, Direction.INCOMING);
-							}
-						}, SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
+                Iterator<Node> cellIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
+                        SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
 				String newColName = column1Name.equals(colName) ? column2Name : column1Name;
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
