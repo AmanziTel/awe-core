@@ -3,6 +3,7 @@ package org.amanzi.splash.views.importbuilder;
 import java.util.Arrays;
 
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.RubyScriptNode;
@@ -13,6 +14,10 @@ import org.amanzi.splash.swing.SplashTable;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.AbstractSplashEditor;
 import org.amanzi.splash.ui.SplashPlugin;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -22,6 +27,12 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.rubypeople.rdt.core.ISourceFolder;
+import org.rubypeople.rdt.core.RubyModelException;
+import org.rubypeople.rdt.internal.core.CreateRubyScriptOperation;
+import org.rubypeople.rdt.internal.core.RubyProject;
+import org.rubypeople.rdt.internal.core.SourceFolder;
+import org.rubypeople.rdt.internal.core.SourceFolderRoot;
 
 
 
@@ -367,16 +378,28 @@ public class ImportBuilderTableViewer {
 
 				AbstractSplashEditor editor = (AbstractSplashEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 				SplashTable table = editor.getTable();
-				SpreadsheetNode spreadsheetNode = ((SplashTableModel) table.getModel()).getSpreadsheet();
-				SpreadsheetService spreadsheetService = SplashPlugin
-				.getDefault().getSpreadsheetService();
-				SplashTableModel model = (SplashTableModel) table.getModel();
-				Cell c = (Cell) model.getValueAt(0, 0);
+				final Cell cell = new Cell (filter_code, filter_code);
+				editor.exportCell(((SplashTableModel) table.getModel()).getSpreadsheet(), cell);
 				
-				CellNode cellNode = spreadsheetService.getCellNode(
-						spreadsheetNode, c.getCellID());
-				NeoCorePlugin.getDefault().getProjectService().createScript(
-						cellNode, filenameTextBox.getText());
+//				SplashTable table = editor.getTable();
+//				SpreadsheetNode spreadsheetNode = ((SplashTableModel) table.getModel()).getSpreadsheet();
+//				SpreadsheetService spreadsheetService = SplashPlugin
+//				.getDefault().getSpreadsheetService();
+//				SplashTableModel model = (SplashTableModel) table.getModel();
+//				Cell c = (Cell) model.getValueAt(0, 0);
+//				
+//				CellNode cellNode = spreadsheetService.getCellNode(
+//						spreadsheetNode, c.getCellID());
+//				NeoCorePlugin.getDefault().getProjectService().createScript(
+//						cellNode, filenameTextBox.getText());
+				
+				//SourceFolderRoot root1 = new SourceFolderRoot(resource, (RubyProject) AWEProjectManager.getAllRubyProjects()[0]);
+				
+				
+				
+//				NeoCorePlugin.getDefault().getProjectService().createScript(
+//						cellNode, modifiedResource.getName());
+				
 				
 			}
 		});
