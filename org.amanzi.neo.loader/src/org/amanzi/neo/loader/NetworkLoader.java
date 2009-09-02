@@ -144,6 +144,10 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     transaction.finish();
                 }
             }
+            if (network != null) {
+                NeoCorePlugin.getDefault().getProjectService().addNetworkToProject(TEMSLoader.getAweProjectName(), network);
+            }
+            NeoServiceProvider.getProvider().commit();
             //Lagutko 21.07.2009, using of neo.core plugin
             unregisterNeoManager();
             // Register the database in the uDIG catalog            

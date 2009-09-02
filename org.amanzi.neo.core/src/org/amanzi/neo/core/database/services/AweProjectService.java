@@ -620,6 +620,9 @@ public class AweProjectService {
      * @param network network node
      */
     public void addNetworkToProject(String aweProjectName, Node network) {
+        if (aweProjectName == null || network == null) {
+            return;
+        }
         Transaction transacation = neoService.beginTx();
 
         try {
@@ -629,5 +632,15 @@ public class AweProjectService {
         } finally {
             transacation.finish();
         }
+    }
+
+    /**
+     * Adds TEMS node to necessary awe project node
+     * 
+     * @param aweProjectName name of awe project
+     * @param mainNode drive node
+     */
+    public void addDriveToProject(String aweProjectName, Node mainNode) {
+        addNetworkToProject(aweProjectName, mainNode);
     }
 }

@@ -13,6 +13,8 @@ import java.util.List;
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
+import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -157,6 +159,8 @@ public class TEMSLoader {
                         NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
                     }
                     transaction.success();
+                    Node mainNode = datasetNode == null ? file : datasetNode;
+                    NeoCorePlugin.getDefault().getProjectService().addDriveToProject(getAweProjectName(), mainNode);
                 } finally {
                     transaction.finish();
                     NeoServiceProvider.getProvider().commit();
@@ -179,6 +183,15 @@ public class TEMSLoader {
 		}
 	}
 
+    /**
+     * return AWE project name of active map
+     * 
+     * @return
+     */
+    public static String getAweProjectName() {
+        IMap map = ApplicationGIS.getActiveMap();
+        return map == null ? null : map.getProject().getName();
+    }
     private String status(){
     	if(started<=0) started = System.currentTimeMillis();
         return (line_number>0 ? "line:"+line_number : ""+((System.currentTimeMillis()-started)/1000.0)+"s");
@@ -529,14 +542,13 @@ public class TEMSLoader {
             result = neo.createNode();
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DATASET_TYPE_NAME);
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, datasetName);
-            root.createRelationshipTo(result, MeasurementRelationshipTypes.CHILD);
+            // root.createRelationshipTo(result, MeasurementRelationshipTypes.CHILD);
             tx.success();
             return result;
         } finally {
             tx.finish();
         }
     }
-
 	private static String propertiesString(Node node){
 		StringBuffer properties = new StringBuffer();
 		for(String property:node.getPropertyKeys()) {
