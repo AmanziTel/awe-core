@@ -6,6 +6,7 @@ class TestSplash < Test::Unit::TestCase
       @rubyProjectName="TESTPROJECT.TESTPROJECT"
       @spreadSheetName="TEST_SPREADSHEET"
       
+      Java::org.amanzi.neo.core.NeoCorePlugin.default.initializer.earlyStartup
       puts Java::org.amanzi.neo.core.service.NeoServiceProvider.getProvider.getService
       
       puts "projectService begin" 
