@@ -370,8 +370,13 @@ public class SplashTableModel extends DefaultTableModel {
 				+ cellID);
 		NeoSplashUtil.logn("cellID.toLowerCase():" + cellID.toLowerCase());
 
-		String input = "update(\"" + cellID.toLowerCase() + "\", \""
-				+ formula + "\")";
+		//TODO: This hack only necessary because we STILL are doing too much in Java
+		if(formula.contains("'")) {
+            formula = "\"" + formula + "\"";
+		} else {
+            formula = "'" + formula + "'";
+		}
+        String input = "update('" + cellID.toLowerCase() + "', " + formula + ")";
 
 		NeoSplashUtil.logn("ERB Input: " + input);
 

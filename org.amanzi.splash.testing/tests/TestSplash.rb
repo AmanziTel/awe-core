@@ -1,4 +1,17 @@
+module Kernel
+ private
+    def this_method_name(depth=0)
+      caller[depth] =~ /`([^']*)'/ and $1
+    end
+end
+
 class TestSplash < Test::Unit::TestCase
+  def header
+    "\n" +
+    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n" +
+    this_method_name(1) +
+    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n"
+  end
   def setup
     begin
       unless @aweProjectName
@@ -37,9 +50,48 @@ class TestSplash < Test::Unit::TestCase
     puts "teardown end"
   end
 
+  def test00a_sum
+    puts header
+    @splashTableModel.interpret('<% 1.upto(4){|x| eval "b#{x+1} = #{x}"} %>','',0,1)
+    @splashTableModel.interpret('= sum([b2,b3,b4,b5])','',5,1)
+    @splashTableModel.interpret('= sum(b2,b3,b4,b5)','',6,1)
+    @splashTableModel.interpret('= sum(b2..b5)','',7,1)
+    puts "Checking b1-b8 - should have '', 1, 2, 3, 4, 10, 10, 10"
+    1.upto(8) do |row|
+      puts "b#{row} = #{@splashTableModel.getValueAt(row,1).getValue()}"
+    end
+    assert_equal '',  @splashTableModel.getValueAt(0,1).getValue()
+    assert_equal '1', @splashTableModel.getValueAt(1,1).getValue()
+    assert_equal '2', @splashTableModel.getValueAt(2,1).getValue()
+    assert_equal '3', @splashTableModel.getValueAt(3,1).getValue()
+    assert_equal '4', @splashTableModel.getValueAt(4,1).getValue()
+    assert_equal '10',@splashTableModel.getValueAt(5,1).getValue()
+    assert_equal '10',@splashTableModel.getValueAt(6,1).getValue()
+    assert_equal '10',@splashTableModel.getValueAt(7,1).getValue()
+  end
+
+  def test00b_complex_formulas
+    puts header
+    @splashTableModel.interpret('<% 1.upto(4){|x| eval "b#{x+1} = #{x}"} %>','',0,1)
+    @splashTableModel.interpret('= sum(b2..b5)','',5,1)
+    @splashTableModel.interpret('= average(b2..b5)','',6,1)
+    @splashTableModel.interpret('= max(b2..b5)','',7,1)
+    puts "Checking b1-b8 - should have '', 1, 2, 3, 4, 10, 2, 4"
+    1.upto(8) do |row|
+      puts "b#{row} = #{@splashTableModel.getValueAt(row,1).getValue()}"
+    end
+    assert_equal '',  @splashTableModel.getValueAt(0,1).getValue()
+    assert_equal '1', @splashTableModel.getValueAt(1,1).getValue()
+    assert_equal '2', @splashTableModel.getValueAt(2,1).getValue()
+    assert_equal '3', @splashTableModel.getValueAt(3,1).getValue()
+    assert_equal '4', @splashTableModel.getValueAt(4,1).getValue()
+    assert_equal '10',@splashTableModel.getValueAt(5,1).getValue()
+    assert_equal '2', @splashTableModel.getValueAt(6,1).getValue()
+    assert_equal '4', @splashTableModel.getValueAt(7,1).getValue()
+  end
+
   def test01_display_plain_text_as_plain_text
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test01_display_plain_text_as_plain_text"
+    puts header
     @splashTableModel.interpret("PLAINTEXT","",0,0)
     puts "test01_plained"
     assert_equal "PLAINTEXT",@splashTableModel.getValueAt(0,0).getValue()
@@ -47,85 +99,77 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test02_simple_style_formula
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test02_simple_style_formula"
+    puts header
     @splashTableModel.interpret("='Ahmed'","",1,0)
     assert_equal "Ahmed",@splashTableModel.getValueAt(1,0).getValue()
   end
 
   def test03_erb_style_formula
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test03_erb_style_formula"
+    puts header
     @splashTableModel.interpret("<%= 'Craig' %>","",2,0)
     assert_equal "Craig",@splashTableModel.getValueAt(2,0).getValue()
   end
 
   def test04_cell_with_reference_to_other_cells
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test04_cell_with_reference_to_other_cells"
+    puts header
     @splashTableModel.interpret("='Ahmed'","",1,0)
     @splashTableModel.interpret("<%= 'Craig' %>","",2,0)
     @splashTableModel.interpret("=a2+a3","",3,0)
     assert_equal "AhmedCraig",@splashTableModel.getValueAt(3,0).getValue()
   end
 
-  def test05_move_row_down
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test05_move_row_down"
+  def test04b_cell_with_numerical_reference_to_other_cells
+    puts header
+    @splashTableModel.interpret("5","",1,0)
+    @splashTableModel.interpret("<%= 6 %>","",2,0)
+    @splashTableModel.interpret("=a2+a3","",3,0)
+    assert_equal "11",@splashTableModel.getValueAt(3,0).getValue()
+  end
 
+  def test05_move_row_down
+    puts header
     @splashTableModel.interpret("<%= 'Craig' %>","",5,0)
     @splashTable.moveRowDown(5);
     assert_equal "Craig",@splashTableModel.getValueAt(6,0).getValue()
   end
 
   def test06_move_row_up
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test06_move_row_up"
-
+    puts header
     @splashTableModel.interpret("<%= 'Craig' %>","",8,0)
     @splashTable.moveRowUp(8);
     assert_equal "Craig",@splashTableModel.getValueAt(7,0).getValue()
   end
 
   def test07_move_column_left
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test07_move_column_left"
-
+    puts header
     @splashTableModel.interpret("<%= 'Craig' %>","",1,2)
     @splashTable.moveColumnLeft(2);
     assert_equal "Craig",@splashTableModel.getValueAt(1,1).getValue()
   end
 
   def test08_move_column_right
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test08_move_column_right"
-
+    puts header
     @splashTableModel.interpret("<%= 'Craig' %>","",1,2)
     @splashTable.moveColumnRight(2);
     assert_equal "Craig",@splashTableModel.getValueAt(1,3).getValue()
   end
 
   def test09_insert_row
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test09_insert_row"
-
+    puts header
     @splashTableModel.interpret("<%= 'Craig' %>","",2,2)
     @splashTable.insertRow(2);
     assert_equal "Craig",@splashTableModel.getValueAt(3,2).getValue()
   end
 
   def test10_insert_column
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test10_insert_column"
-
+    puts header
     @splashTableModel.interpret("<%= 'Craig' %>","",2,2)
     @splashTable.insertColumn(2);
     assert_equal "Craig",@splashTableModel.getValueAt(2,3).getValue()
   end
 
   def test11_cell_formatting_default_font_name
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test11_cell_formatting_default_font_name"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
     puts cell_format
@@ -139,8 +183,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test12_cell_formatting_default_font_size
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test12_cell_formatting_default_font_size"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -151,8 +194,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test13_cell_formatting_default_h_align
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test13_cell_formatting_default_h_align"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
     testCell=@splashTableModel.getValueAt(8,0);
@@ -164,8 +206,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test14_cell_formatting_default_v_align
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test14_cell_formatting_default_v_align"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -177,8 +218,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test15_cell_formatting_default_font_color
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test15_cell_formatting_default_font_color"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -191,8 +231,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test16_cell_formatting_default_background_color
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test14_cell_formatting_default_background_color"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -205,8 +244,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test17_cell_formatting_default_font_style
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test17_cell_formatting_default_font_style"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -219,8 +257,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test18_cell_formatting_change_font_name
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test18_cell_formatting_change_font_name"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -243,8 +280,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test19_cell_formatting_change_font_size
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test19_cell_formatting_change_font_size"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -264,8 +300,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test20_cell_formatting_change_h_align
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test20_cell_formatting_change_h_align"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -287,8 +322,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test21_cell_formatting_change_v_align
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test21_cell_formatting_change_v_align"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -309,8 +343,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test22_cell_formatting_change_font_color
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test22_cell_formatting_change_font_color"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -331,8 +364,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test23_cell_formatting_change_background_color
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test23_cell_formatting_change_background_color"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -353,8 +385,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test24_cell_formatting_change_font_style
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test24_cell_formatting_change_font_style"
+    puts header
 
     cell_format = Java::com.eteks.openjeks.format.CellFormat.new
 
@@ -374,8 +405,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def test25_cell_with_reference_to_other_cells_with_changes
-    puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-    puts "test25_cell_with_reference_to_other_cells_with_changes"
+    puts header
     @splashTableModel.interpret("='Ahmed'","",1,1)
     puts "test25_ Ahmed"
     @splashTableModel.interpret("<%= 'Craig' %>","",2,1)
