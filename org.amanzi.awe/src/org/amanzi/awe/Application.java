@@ -5,6 +5,8 @@ import java.net.URL;
 import net.refractions.udig.internal.ui.UDIGApplication;
 import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.splash.ui.SplashPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -14,7 +16,6 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.model.WorkbenchAdapterBuilder;
 import org.osgi.framework.Bundle;
-import org.amanzi.neo.core.NeoCorePlugin;
 /**
  * This is the default application for the Amanzi Wireless Explorer.
  * It is based directly on uDIG, and uses its advisor.
@@ -54,7 +55,13 @@ public class Application extends UDIGApplication implements IApplication {
 		public String getInitialWindowPerspectiveId() {
 			return PerspectiveFactory.AWE_PERSPECTIVE;
 		}
-		
+
+        @Override
+        public void postStartup() {
+            super.postStartup();
+            // initialize splash plugin
+            SplashPlugin.getDefault();
+        }
 		//Lagutko, 30.06.2009, add some icons
 		@Override
 	    public void initialize( IWorkbenchConfigurer configurer ) {

@@ -26,6 +26,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
@@ -84,6 +86,14 @@ public class SplashPlugin extends AbstractUIPlugin {
 		if (getWorkbench().getActiveWorkbenchWindow() != null) {
 		    getWorkbench().getActiveWorkbenchWindow().getPartService().addPartListener(rubyExplorerListener);
 		}
+        // registers listener on open view;
+        IWorkbenchPage activePage = getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        if (activePage != null) {
+            IViewPart rubyView = activePage.findView(RubyUI.ID_RUBY_EXPLORER);
+            if (rubyView != null) {
+                registerOpenListener(rubyView);
+            }
+        }
 	}
 
 	/*

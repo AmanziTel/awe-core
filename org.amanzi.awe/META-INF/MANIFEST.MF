@@ -14,6 +14,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.debug.ui,
  org.amanzi.integrator.awe,
  org.amanzi.awe.views.network,
- org.amanzi.neo.core
+ org.amanzi.neo.core,
+ org.amanzi.splash;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe
