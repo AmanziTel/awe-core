@@ -1,5 +1,6 @@
 package org.amanzi.splash.ui.wizards;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -87,31 +88,39 @@ public class NeoDataFileImportWizard extends Wizard implements IImportWizard {
 	}
 
 	private int getLinesCount(IFile file){
-		InputStream is = null;
-		try {
-			is = new FileInputStream(file.getLocation().toString());
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
-		String line;
+//		InputStream is = null;
+//		try {
+//			is = new FileInputStream(file.getLocation().toString());
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
+//		String line = "";
+//
+//		// Read a single line:
+//		try {
+//			line = lnr.readLine();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
 
-
+		
+		String path = file.getLocation().toString();
+		
+		File f = new File(path);
+		
 		int count = 0;
-		try {
-			while (lnr.readLine() != null){
-				count++;
-
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		NeoSplashUtil.logn("Number of lines: " + count);
-
-		return count;
+		
+		NeoSplashUtil.logn("f.length(): " + f.length());
+		//NeoSplashUtil.logn("line.length(): " + line.length());
+		
+		return (int) f.length();
+		
+		//NeoSplashUtil.logn("Number of lines: " + count);
+		//return count;
 	}
 
 	/**

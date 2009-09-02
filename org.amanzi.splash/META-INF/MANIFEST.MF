@@ -5,7 +5,8 @@ Bundle-SymbolicName: org.amanzi.splash;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-ClassPath: .,
  ext/,
- OpenJeks/
+ OpenJeks/,
+ lib/poi-3.2-FINAL-20081019.jar
 Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.views,

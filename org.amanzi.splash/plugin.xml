@@ -179,6 +179,20 @@
              id="org.amanzi.splash"
              name="Amanzi Splash">
        </category>
+       <category
+             id="org.amanzi.splash.importWizards.sampleCategory"
+             name="Excel File Import">
+       </category>
+       <wizard
+             category="org.amanzi.splash.importWizards.sampleCategory"
+             class="org.amanzi.splash.ui.wizards.ExcelImportWizard"
+             icon="icons/excel_table.ico"
+             id="org.amanzi.splash.importWizards.ExcelImportWizard"
+             name="Import Excel File">
+          <description>
+             Import a file from the local file system into the workspace.
+          </description>
+       </wizard>
     </extension>
     <extension
           point="org.eclipse.ui.views">

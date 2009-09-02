@@ -303,7 +303,7 @@ public class NeoSplashUtil {
 			//model.setValueAt(new Cell("Hello","Hello"), 1, 1);
 			int i=0;
 			int j=0;
-			CSVParser parser = new CSVParser(';');
+			CSVParser parser = new CSVParser('\t');
 			
 			while (line != null  && line.lastIndexOf(";") > 0){
 				
@@ -321,7 +321,7 @@ public class NeoSplashUtil {
 
 				line = lnr.readLine();
 
-				monitor.worked(i);
+				monitor.worked(line.length());
 				i++;
 			}
 		} catch (FileNotFoundException e) {
@@ -332,6 +332,12 @@ public class NeoSplashUtil {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public static void LoadExcelFileIntoSpreadsheet(String path, SplashTableModel model, IProgressMonitor monitor){
+		POIExcelReader poiExample = new POIExcelReader ();
+		String         xlsPath    = "c:\\test.xls";
+		poiExample.loadDataFromExcelFile (xlsPath, model);
 	}
 	
 	

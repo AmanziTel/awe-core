@@ -252,7 +252,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	 * @param spreadsheetNode
 	 */
 
-	private void exportCell(final SpreadsheetNode spreadsheetNode, final Cell cell) {
+	public void exportCell(final SpreadsheetNode spreadsheetNode, final Cell cell) {
 		// get Cell and Display
 		final Display display = swingControl.getDisplay();
 
