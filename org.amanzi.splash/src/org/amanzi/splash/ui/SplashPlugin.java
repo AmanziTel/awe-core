@@ -79,11 +79,20 @@ public class SplashPlugin extends AbstractUIPlugin {
 		org.eclipse.core.resources.ResourcesPlugin.getWorkspace().addResourceChangeListener(new EditorListener(),IResourceChangeEvent.POST_CHANGE);
 		//Lagutko, 29.07.2009, initialize SpreadsheetService
 		spreadsheetService = new SpreadsheetService();
-		
-		//Lagutko: 11.08.2009, listener for RubyExplorer activation
-		rubyExplorerListener = new RubyExplorerListener();		
         transaction = NeoServiceProvider.getProvider().getService().beginTx();
+
+        try {
+            registerOpenSplashListenerInRDT();
+        } catch (RuntimeException e) {
+            System.err.println("Failed to initialize RDT-Splash open-splash listener: "+e);
+            //e.printStackTrace(System.err);
+        }
+	}
+
+    private void registerOpenSplashListenerInRDT() {
+        //Lagutko: 11.08.2009, listener for RubyExplorer activation
 		if (getWorkbench().getActiveWorkbenchWindow() != null) {
+	        rubyExplorerListener = new RubyExplorerListener();
 		    getWorkbench().getActiveWorkbenchWindow().getPartService().addPartListener(rubyExplorerListener);
 		}
         // registers listener on open view;
@@ -94,23 +103,27 @@ public class SplashPlugin extends AbstractUIPlugin {
                 registerOpenListener(rubyView);
             }
         }
-	}
+    }
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
-	    NeoServiceProvider.getProvider().stopNeo();
+	    unregisterOpenSplashListenerInRDT();
+        NeoServiceProvider.getProvider().stopNeo();
+        transaction.finish();
+		super.stop(context);
+	}
+
+    private void unregisterOpenSplashListenerInRDT() {
 	    if (rubyExplorerListener != null) {
 	        if ((getWorkbench() != null) && (getWorkbench().getActiveWorkbenchWindow() != null)) {
 	            getWorkbench().getActiveWorkbenchWindow().getPartService().removePartListener(rubyExplorerListener);
 	        }
 	    }
 		plugin = null;
-        transaction.finish();
-		super.stop(context);
-	}
+    }
 	
 	/**
 	 * Return the plug-in ID.

@@ -31,13 +31,17 @@ public class NeoPreferencesInitializer extends AbstractPreferenceInitializer
 	@SuppressWarnings("unchecked")
 	@Override
 	public void initializeDefaultPreferences() {
+	    initializeDefaultPreferences("neo");
+	}
+
+	private void initializeDefaultPreferences(String databaseName) {
 		Activator neoclipsePlugin = Activator.getDefault();
 		NeoPreferenceHelper neoPreferenceHelper = new NeoPreferenceHelper();
 		IPreferenceStore pref = neoclipsePlugin.getPreferenceStore();
 		pref.setDefault(NeoDecoratorPreferences.NODE_PROPERTY_NAMES, "name,time,code");
         pref.setDefault(NeoDecoratorPreferences.NODE_ICON_PROPERTY_NAMES, "type");
         pref.setDefault(NeoPreferences.DATABASE_LOCATION, checkDirs(
-                new String[] {System.getProperty("user.home"), ".amanzi", "neo"}).getPath());
+                new String[] {System.getProperty("user.home"), ".amanzi", databaseName}).getPath());
 
         ArrayList<URL> iconDirs = new ArrayList<URL>(0);
         for (Object found : Collections.list(Platform.getBundle("org.amanzi.neo.loader").findEntries("/icons", "*", false))) {
@@ -98,8 +102,18 @@ public class NeoPreferencesInitializer extends AbstractPreferenceInitializer
         return dir;
     }
 
-	public void earlyStartup() {
+    /**
+     * Stratup with default runtime preferences
+     */
+    public void earlyStartup() {
 		initializeDefaultPreferences();
 	}
+
+    /**
+     * Startup with testing preferences (different database location)
+     */
+    public void startupTesting() {
+        initializeDefaultPreferences("neo_test");
+    }
 
 }

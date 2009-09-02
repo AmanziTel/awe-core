@@ -1,38 +1,40 @@
 class TestSplash < Test::Unit::TestCase
   def setup
     begin
-      puts "setup begin"
-      @aweProjectName="TESTPROJECT"
-      @rubyProjectName="TESTPROJECT.TESTPROJECT"
-      @spreadSheetName="TEST_SPREADSHEET"
+      unless @aweProjectName
+        puts "setup begin"
+        @aweProjectName="TESTPROJECT"
+        @rubyProjectName="TESTPROJECT.TESTPROJECT"
+        @spreadSheetName="TEST_SPREADSHEET"
+        
+        Java::org.amanzi.neo.core.NeoCorePlugin.default.initializer.startupTesting
+        puts Java::org.amanzi.neo.core.service.NeoServiceProvider.getProvider.getService
+        
+        puts "projectService begin" 
+        @projectService=Java::org.amanzi.neo.core.NeoCorePlugin.getDefault().getProjectService()
+        puts "projectService"    
+        @spreadsheetService = Java::org.amanzi.splash.ui.SplashPlugin.getDefault().getSpreadsheetService()
+        puts "spreadsheetService"
+        @rootNode=@projectService.getRootNode();
+        puts "setup complete getRootNode()"
+        @spreadSheetNode=@projectService.findOrCreateSpreadsheet( @aweProjectName,@rubyProjectName, @spreadSheetName)
+        @projectNode=@projectService.findOrCreateAweProject(@aweProjectName)
+        rubyProject = @projectService.findOrCreateRubyProject(@projectNode, @rubyProjectName)
+        @splashTableModel=Java::org.amanzi.splash.swing.SplashTableModel.new(@spreadSheetNode, rubyProject)
+        puts "setup end"
       
-      Java::org.amanzi.neo.core.NeoCorePlugin.default.initializer.earlyStartup
-      puts Java::org.amanzi.neo.core.service.NeoServiceProvider.getProvider.getService
-      
-      puts "projectService begin" 
-      @projectService=Java::org.amanzi.neo.core.NeoCorePlugin.getDefault().getProjectService()
-      puts "projectService"    
-      @spreadsheetService = Java::org.amanzi.splash.ui.SplashPlugin.getDefault().getSpreadsheetService()
-      puts "spreadsheetService"
-      @rootNode=@projectService.getRootNode();
-      puts "setup complete getRootNode()"
-      @spreadSheetNode=@projectService.findOrCreateSpreadsheet( @aweProjectName,@rubyProjectName, @spreadSheetName)
-      @projectNode=@projectService.findOrCreateAweProject(@aweProjectName)
-      rubyProject = @projectService.findOrCreateRubyProject(@projectNode, @rubyProjectName)
-      @splashTableModel=Java::org.amanzi.splash.swing.SplashTableModel.new(@spreadSheetNode, rubyProject)
-      puts "setup end"
-    
-      @splashTable = Java::org.amanzi.splash.swing.SplashTable.new(@splashTableModel, true)
+        @splashTable = Java::org.amanzi.splash.swing.SplashTable.new(@splashTableModel, true)
+      end
     rescue => e
       puts e
     end
   end
 
   def teardown
-        puts "teardown"
-        aweProjectNode = @projectService.findAweProject(@aweProjectName)
-        @projectService.deleteNode(aweProjectNode);
-        puts "teardown end"
+    puts "teardown"
+#    aweProjectNode = @projectService.findAweProject(@aweProjectName)
+#    @projectService.deleteNode(aweProjectNode);
+    puts "teardown end"
   end
 
   def test01_display_plain_text_as_plain_text
