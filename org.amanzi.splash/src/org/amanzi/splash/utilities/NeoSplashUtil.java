@@ -329,9 +329,10 @@ public class NeoSplashUtil {
 					j++;
 				}
 
-				line = lnr.readLine();
-
 				monitor.worked(line.length());
+				
+				line = lnr.readLine();
+				
 				i++;
 			}
 		} catch (FileNotFoundException e) {
