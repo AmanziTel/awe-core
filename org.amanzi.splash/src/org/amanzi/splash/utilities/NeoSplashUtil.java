@@ -300,12 +300,22 @@ public class NeoSplashUtil {
 			String line;
 			line = lnr.readLine();
 			
-			//model.setValueAt(new Cell("Hello","Hello"), 1, 1);
 			int i=0;
 			int j=0;
-			CSVParser parser = new CSVParser('\t');
 			
-			while (line != null  && line.lastIndexOf(";") > 0){
+			// detecting type of separator;
+			char sep=';';
+			if (line.contains(";") == true){
+				sep = ';';
+			}else if (line.contains("\t")){
+				sep = '\t';
+			}else if (line.contains(",")){
+				sep = ',';
+			}
+			
+			CSVParser parser = new CSVParser(sep);
+			
+			while (line != null  && line.lastIndexOf(sep) > 0){
 				
 				monitor.setTaskName("Loading record #" + i);
 				NeoSplashUtil.logn("loading line #" + i);
