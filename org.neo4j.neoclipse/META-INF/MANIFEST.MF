@@ -52,5 +52,6 @@ Export-Package: org.neo4j.neoclipse;x-friends:="org.amanzi.awe.catalog.neo,org.a
  org.neo4j.neoclipse.decorate;x-friends:="org.amanzi.neo.core",
  org.neo4j.neoclipse.neo;x-friends:="org.amanzi.neo.loader,org.amanzi.neo.core",
  org.neo4j.neoclipse.preference;x-friends:="org.amanzi.neo.loader,org.amanzi.neo.core",
- org.neo4j.neoclipse.property;x-friends:="org.amanzi.awe.networktree"
+ org.neo4j.neoclipse.property;x-friends:="org.amanzi.awe.networktree",
+ org.neo4j.neoclipse.view
 Eclipse-LazyStart: true

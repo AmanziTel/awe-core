@@ -25,6 +25,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -32,11 +33,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IPageLayout;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
 /**
  * NetworkTree View
@@ -143,6 +146,34 @@ public class NetworkTreeView extends ViewPart {
                 }
             }
         });
+        manager.add(new Action("show in database graph") {
+            public void run() {
+                IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+                ITreeSelection selectionTree = (ITreeSelection)selection;
+                showSelection((NeoNode)selection.getFirstElement());
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return ((IStructuredSelection)viewer.getSelection()).size() == 1;
+            }
+        });
+    }
+
+    /**
+     * @param firstElement
+     */
+    protected void showSelection(NeoNode firstElement) {
+        try {
+            IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
+                    "org.neo4j.neoclipse.view.NeoGraphViewPart");
+            NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
+            viewGraph.showNode(firstElement.getNode());
+        } catch (PartInitException e) {
+            // TODO Handle PartInitException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
     }
 
     public void dispose() {
