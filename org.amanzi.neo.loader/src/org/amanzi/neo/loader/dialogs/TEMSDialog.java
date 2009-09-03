@@ -8,7 +8,6 @@ import java.util.HashMap;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.TEMSLoader;
@@ -20,13 +19,10 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -41,13 +37,9 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.actions.RetargetAction;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.api.core.Traverser;
 
 /**
  * Dialog for Loading TEMS data
@@ -237,11 +229,10 @@ public class TEMSDialog {
         
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         ArrayList<String> datasetList = new ArrayList<String>();
-        for (Relationship relation:NeoServiceProvider.getProvider().getService().getReferenceNode().getRelationships(NetworkRelationshipTypes.CHILD,Direction.OUTGOING)){
-        	String type = (String)relation.getEndNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-        	if (type!=null&&type.equals(INeoConstants.DATASET_TYPE_NAME)){
-        		datasetList.add((String)relation.getEndNode().getProperty(INeoConstants.PROPERTY_NAME_NAME));
-        	}
+        Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
+                NeoServiceProvider.getProvider().getService().getReferenceNode());
+        for (Node node : allDatasetTraverser) {
+            datasetList.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
         }
         combo.setItems(datasetList.toArray(new String[]{}));
 	}

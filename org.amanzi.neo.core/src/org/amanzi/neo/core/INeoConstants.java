@@ -349,5 +349,14 @@ public class INeoConstants {
      * Name of drive Gis node
      */
 	public static final String GIS_TEMS_NAME = "drive";
+    /**
+     * Name of distribute property
+     */
+    public static final String PROPERTY_DISTRIBUTE_NAME = "distribute";
+    /**
+     * Name of select property
+     */
+    public static final String PROPERTY_SELECT_NAME = "select";
+    public static final String AWE_PROJECT_NODE_TYPE = "awe_project";
    
 }

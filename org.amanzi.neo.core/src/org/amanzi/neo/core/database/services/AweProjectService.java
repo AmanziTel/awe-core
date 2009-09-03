@@ -3,6 +3,7 @@ package org.amanzi.neo.core.database.services;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.exception.SplashDatabaseException;
 import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
@@ -13,6 +14,7 @@ import org.amanzi.neo.core.database.nodes.RootNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.RubyScriptNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.api.core.Direction;
@@ -22,6 +24,8 @@ import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 
 /**
@@ -642,5 +646,28 @@ public class AweProjectService {
      */
     public void addDriveToProject(String aweProjectName, Node mainNode) {
         addNetworkToProject(aweProjectName, mainNode);
+    }
+
+    /**
+     * return Traverser for all dataset node in database
+     * 
+     * @param root - start node to find
+     */
+    public Traverser getAllDatasetTraverser(Node root) {
+        return root.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+
+            @Override
+            public boolean isStopNode(TraversalPosition currentPos) {
+                return currentPos.depth() > 3;
+            }
+        }, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                return node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.DATASET_TYPE_NAME);
+            }
+        }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
     }
 }

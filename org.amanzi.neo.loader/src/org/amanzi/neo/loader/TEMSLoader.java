@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
@@ -41,6 +41,7 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 
 public class TEMSLoader {	
@@ -533,7 +534,7 @@ public class TEMSLoader {
      * @param datasetName name of dataset node
      * @return dataset node
      */
-    private Node findOrCreateDatasetNode(Node root, String datasetName) {
+    private Node findOrCreateDatasetNode(Node root, final String datasetName) {
         Transaction tx = null;
         Node result;
         try {
@@ -541,21 +542,15 @@ public class TEMSLoader {
             if (datasetName == null || datasetName.isEmpty()) {
                 return null;
             }
-            for (Relationship relationship : root.getRelationships(MeasurementRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();
-                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.DATASET_TYPE_NAME)
-                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-                        && node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(datasetName)) {
-                    result = node;
-                    return result;
+            Traverser traverse = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(root);
+            for (Node node : traverse) {
+                if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(datasetName)) {
+                    return node;
                 }
             }
-
             result = neo.createNode();
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DATASET_TYPE_NAME);
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, datasetName);
-            // root.createRelationshipTo(result, MeasurementRelationshipTypes.CHILD);
             tx.success();
             return result;
         } finally {

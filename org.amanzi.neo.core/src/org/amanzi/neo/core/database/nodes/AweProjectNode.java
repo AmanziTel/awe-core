@@ -19,7 +19,7 @@ import org.neo4j.api.core.Traverser;
  */
 public class AweProjectNode extends AbstractNode {
 
-	private static final String AWE_PROJECT_NODE_TYPE = "awe_project";
+    private static final String AWE_PROJECT_NODE_TYPE = INeoConstants.AWE_PROJECT_NODE_TYPE;
 
 	public AweProjectNode(Node node, String projectName) {
 		super(node);
