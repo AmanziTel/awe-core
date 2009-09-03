@@ -434,7 +434,7 @@ public class TEMSLoader {
 					debug("Added '" + mp.getProperty(INeoConstants.PROPERTY_TIME_NAME) + "' as first measurement of '" + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
 				}
                 if (crs == null) {
-                    crs = CRS.fromLocation(Float.parseFloat(ll[0]), Float.parseFloat(ll[1]));
+                    crs = CRS.fromLocation(Float.parseFloat(ll[0]), Float.parseFloat(ll[1]), null);
                     file.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
                     file.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
                     gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());

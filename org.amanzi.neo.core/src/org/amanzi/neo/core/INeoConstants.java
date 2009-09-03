@@ -189,26 +189,6 @@ public class INeoConstants {
     public static final String HEADER_MS = "ms";
     
     /*
-     * EPSG 3021 for CRS
-     */
-    public static final String CRS_EPSG_3021 = "EPSG:3021";
-    
-    /*
-     * EPSG 4326 for CRS
-     */
-    public static final String CRS_EPSG_4326 = "EPSG:4326";
-    
-    /*
-     * CRS type Projects
-     */
-    public static final String CRS_TYPE_PROJECTED = "projected";
-    
-    /*
-     * CRS type Geographic
-     */
-    public static final String CRS_TYPE_GEOGRAPHIC = "geographic";
-    
-    /*
      * Prefix of GIS catalog
      */
     public static final String GIS_PREFIX = "";

@@ -57,26 +57,32 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
     /**
 	 * This class handles the CRS specification.
 	 * Currently it is hard coded to return WGS84 (EPSG:4326) for data that looks like lat/long
-     * and RT90 2.5 gon V (EPSG:3021) for data that looks like it is in meters.
+     * and RT90 2.5 gon V (EPSG:3021) for data that looks like it is in meters and no hints are given.
+     * If the user passes a hint, the following are considered:
+     * 
 	 * @author craig
 	 */
 	public static class CRS {
-		private String type = null;
-		private String epsg = null;
-		private CRS(){}
-		public String getType(){return type;}
-		public String toString(){return epsg;}
-		public static CRS fromLocation(float lat, float lon){
-			CRS crs = new CRS();
-			crs.type = INeoConstants.CRS_TYPE_GEOGRAPHIC;
-			crs.epsg = INeoConstants.CRS_EPSG_4326;
-			if((lat>90 || lat<-90) && (lon>180 || lon<-180)) {
-				crs.type=INeoConstants.CRS_TYPE_PROJECTED;
-				crs.epsg = INeoConstants.CRS_EPSG_3021;
-			}
-			return crs;
-		}
-	}
+        private String type = null;
+        private String epsg = null;
+        private CRS() {}
+        public String getType() {return type;}
+        public String toString() {return epsg;}
+        public static CRS fromLocation(float lat, float lon, String hint) {
+            CRS crs = new CRS();
+            crs.type = "geographic";
+            crs.epsg = "EPSG:4326";
+            if ((lat > 90 || lat < -90) && (lon > 180 || lon < -180)) {
+                crs.type = "projected";
+                if (hint != null && hint.toLowerCase().startsWith("germany")) {
+                    crs.epsg = "EPSG:31467";
+                } else {
+                    crs.epsg = "EPSG:3021";
+                }
+            }
+            return crs;
+        }
+    }
 	private NeoService neo;
 	private NeoServiceProvider neoProvider;
 	private String siteName = null;
@@ -251,7 +257,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 						float lat = Float.parseFloat(fields[mainIndexes[3]]);
 						float lon = Float.parseFloat(fields[mainIndexes[4]]);
 						if(crs==null){
-							crs = CRS.fromLocation(lat, lon);
+							crs = CRS.fromLocation(lat, lon, null);
                             network.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
                             network.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
                             gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
