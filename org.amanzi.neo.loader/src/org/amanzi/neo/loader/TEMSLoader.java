@@ -448,7 +448,7 @@ public class TEMSLoader {
                 TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
                 for (String chanCode : signals.keySet()) {
                     float[] signal = signals.get(chanCode);
-                    sorted_signals.put(signal[1] / signal[2], chanCode);
+                    sorted_signals.put(signal[1] / signal[0], chanCode);
                 }
                 for (Map.Entry<Float, String> entry : sorted_signals.entrySet()) {
                     String chanCode = entry.getValue();
