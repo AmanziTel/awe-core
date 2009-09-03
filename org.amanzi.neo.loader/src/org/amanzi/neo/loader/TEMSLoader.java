@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeMap;
+import java.util.Map;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
@@ -442,7 +444,14 @@ public class TEMSLoader {
                     point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
 				}
 				point = mp;
-				for (String chanCode : signals.keySet()) {
+				Node prev_ms = null;
+                TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
+                for (String chanCode : signals.keySet()) {
+                    float[] signal = signals.get(chanCode);
+                    sorted_signals.put(signal[0], chanCode);
+                }
+                for (Map.Entry<Float, String> entry : sorted_signals.entrySet()) {
+                    String chanCode = entry.getValue();
 					float[] signal = signals.get(chanCode);
 					double mw = signal[0] / signal[1];
 					Node ms = neo.createNode();
@@ -454,6 +463,10 @@ public class TEMSLoader {
 					ms.setProperty(INeoConstants.PROPERTY_MW_NAME, mw);
 					debug("\tAdded measurement: " + propertiesString(ms));
 					point.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
+					if (prev_ms != null) {
+                        prev_ms.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
+                    }
+                    prev_ms = ms;
 				}
 				transaction.success();
 			} finally {

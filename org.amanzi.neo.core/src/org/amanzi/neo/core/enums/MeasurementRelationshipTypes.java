@@ -29,5 +29,6 @@ public enum MeasurementRelationshipTypes implements RelationshipType {
     // NEXT,
 	CHILD,
 	SOURCE,
-	POINT
+	POINT,
+	NEXT
 }
