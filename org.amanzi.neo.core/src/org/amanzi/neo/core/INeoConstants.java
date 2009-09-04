@@ -302,6 +302,17 @@ public class INeoConstants {
      * Name of select property
      */
     public static final String PROPERTY_SELECT_NAME = "select";
+    /**
+     * Name of awe_ project property
+     */
     public static final String AWE_PROJECT_NODE_TYPE = "awe_project";
+    /**
+     * Name of min property
+     */
+    public static final String PROPERTY_NAME_MIN_VALUE = "min";
+    /**
+     * name of max property
+     */
+    public static final String PROPERTY_NAME_MAX_VALUE = "max";
    
 }
