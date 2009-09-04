@@ -24,10 +24,13 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -86,6 +89,21 @@ public class NetworkTreeView extends ViewPart {
     public void createPartControl(Composite parent) {
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         viewer.addSelectionChangedListener(new NetworkSelectionListener());
+        viewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                StructuredSelection sel = (StructuredSelection)event.getSelection();
+                Object s = sel.getFirstElement();
+                if ((s != null) && (s instanceof NeoNode)) {
+                    NeoNode node = (NeoNode)s;
+                    if (viewer != event.getViewer()) {
+                        return;
+                    }
+                    showSelection(node);
+                }
+            }
+        });
+
         neoServiceProvider = NeoServiceProvider.getProvider();
         neoEventListener = new NeoServiceEventListener();
         neoServiceProvider.addServiceProviderListener(neoEventListener);
@@ -169,8 +187,10 @@ public class NetworkTreeView extends ViewPart {
                     "org.neo4j.neoclipse.view.NeoGraphViewPart");
             NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
             viewGraph.showNode(firstElement.getNode());
-        } catch (PartInitException e) {
-            // TODO Handle PartInitException
+            final StructuredSelection selection = new StructuredSelection(new Object[] {firstElement.getNode()});
+            viewGraph.getViewer().setSelection(selection, true);
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NETWORK_TREE_VIEW_ID);
+        } catch (Exception e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
@@ -356,4 +376,5 @@ public class NetworkTreeView extends ViewPart {
             });
         }
     }
+
 }
