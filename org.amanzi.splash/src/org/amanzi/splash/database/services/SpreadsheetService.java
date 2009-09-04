@@ -30,6 +30,7 @@ import org.amanzi.neo.core.database.nodes.PieChartItemNode;
 import org.amanzi.neo.core.database.nodes.PieChartNode;
 import org.amanzi.neo.core.database.nodes.RowNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.core.database.nodes.SplashFormatNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.enums.CellRelationTypes;
@@ -294,10 +295,11 @@ public class SpreadsheetService {
 			}
 
 			CellNode cell = new CellNode(neoService.createNode());
-
+			SplashFormatNode sfNode = new SplashFormatNode(neoService.createNode());
 			rowNode.addCell(cell);
 			columnNode.addCell(cell);
-
+			//cell.addSplashFormat(sfNode);
+			sfNode.addCell(cell);
 			transaction.success();
 
 			return cell;
@@ -341,21 +343,22 @@ public class SpreadsheetService {
 			}
 
 			CellFormat format = cell.getCellFormat();
+			SplashFormatNode sfNode = node.getSplashFormat();
 
 			if (format != null) {
-				node.setBackgroundColorB(format.getBackgroundColor().getBlue());
-				node.setBackgroundColorG(format.getBackgroundColor().getGreen());
-				node.setBackgroundColorR(format.getBackgroundColor().getRed());
+				sfNode.setBackgroundColorB(format.getBackgroundColor().getBlue());
+				sfNode.setBackgroundColorG(format.getBackgroundColor().getGreen());
+				sfNode.setBackgroundColorR(format.getBackgroundColor().getRed());
 
-				node.setFontColorB(format.getFontColor().getBlue());
-				node.setFontColorG(format.getFontColor().getGreen());
-				node.setFontColorR(format.getFontColor().getRed());
+				sfNode.setFontColorB(format.getFontColor().getBlue());
+				sfNode.setFontColorG(format.getFontColor().getGreen());
+				sfNode.setFontColorR(format.getFontColor().getRed());
 
-				node.setFontName(format.getFontName());
-				node.setFontSize(format.getFontSize());
-				node.setFontStyle(format.getFontStyle());
-                node.setVerticalAlignment(format.getVerticalAlignment());
-                node.setHorizontalAlignment(format.getHorizontalAlignment());
+				sfNode.setFontName(format.getFontName());
+				sfNode.setFontSize(format.getFontSize());
+				sfNode.setFontStyle(format.getFontStyle());
+				sfNode.setVerticalAlignment(format.getVerticalAlignment());
+				sfNode.setHorizontalAlignment(format.getHorizontalAlignment());
 			}
 
 			transaction.success();
@@ -479,30 +482,30 @@ public class SpreadsheetService {
 		CellID id = new CellID(rowIndex, columnName);
 
 		CellFormat cellFormat = new CellFormat();
-
-		Integer bgColorB = node.getBackgroundColorB();
-		Integer bgColorG = node.getBackgroundColorG();
-		Integer bgColorR = node.getBackgroundColorR();
+		SplashFormatNode sfNode = node.getSplashFormat();
+		Integer bgColorB = sfNode.getBackgroundColorB();
+		Integer bgColorG = sfNode.getBackgroundColorG();
+		Integer bgColorR = sfNode.getBackgroundColorR();
 
 		if ((bgColorB != null) && (bgColorG != null) && (bgColorR != null)) {
 			Color color = new Color(bgColorR, bgColorR, bgColorB);
 			cellFormat.setBackgroundColor(color);
 		}
 
-		Integer fontColorB = node.getFontColorB();
-		Integer fontColorG = node.getFontColorG();
-		Integer fontColorR = node.getFontColorR();
+		Integer fontColorB = sfNode.getFontColorB();
+		Integer fontColorG = sfNode.getFontColorG();
+		Integer fontColorR = sfNode.getFontColorR();
 
 		if ((fontColorB != null) && (fontColorG != null) && (fontColorR != null)) {
 			Color color = new Color(fontColorR, fontColorG, fontColorB);
 			cellFormat.setFontColor(color);
 		}
 
-		cellFormat.setFontName(node.getFontName());
-		cellFormat.setFontSize(node.getFontSize());
-		cellFormat.setFontStyle(node.getFontStyle());
-		cellFormat.setHorizontalAlignment(node.getHorizontalAlignment());
-		cellFormat.setVerticalAlignment(node.getVerticalAlignment());
+		cellFormat.setFontName(sfNode.getFontName());
+		cellFormat.setFontSize(sfNode.getFontSize());
+		cellFormat.setFontStyle(sfNode.getFontStyle());
+		cellFormat.setHorizontalAlignment(sfNode.getHorizontalAlignment());
+		cellFormat.setVerticalAlignment(sfNode.getVerticalAlignment());
 
 		String value = node.getValue();
 		if (value == null) {
