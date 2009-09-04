@@ -97,9 +97,6 @@ public class GeoNeo {
                 if(next.hasProperty(INeoConstants.PROPERTY_LON_NAME)){
                     return new double[]{(Float)next.getProperty(INeoConstants.PROPERTY_LON_NAME),(Float)next.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
                 }
-                if(next.hasProperty(INeoConstants.PROPERTY_LONG_NAME)){
-                    return new double[]{(Double)next.getProperty(INeoConstants.PROPERTY_LONG_NAME),(Double)next.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
-                }
             }
             return null;
         }

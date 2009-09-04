@@ -409,7 +409,7 @@ public class TEMSLoader {
                 double lat = Double.parseDouble(ll[0]);
                 mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
                 double lon = Double.parseDouble(ll[1]);
-                mp.setProperty(INeoConstants.PROPERTY_LONG_NAME, lon);
+                mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
                 if (bbox == null) {
                     bbox = new double[] {lon, lon, lat, lat};
                 } else {

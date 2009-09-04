@@ -44,11 +44,6 @@ public class INeoConstants {
     public static final String PROPERTY_FILENAME_NAME = "filename";
     
     /*
-     * Name of 'long' property of Node
-     */
-    public static final String PROPERTY_LONG_NAME = "long";
-    
-    /*
      * Name of 'lon' property of Node
      */
     public static final String PROPERTY_LON_NAME = "lon";
@@ -122,11 +117,6 @@ public class INeoConstants {
      * Name of 'project' property of Node
      */    
     public static final String PROPERTY_PROJECT_NAME = "project";
-    
-    /*
-     * Status header
-     */
-    public static final String NETWORK_HEADER_STATUS_NAME = "status";   
     
     /*
      * All pilot set header
@@ -225,31 +215,6 @@ public class INeoConstants {
      * Type Aggregation
      */
     public static final String COUNT_TYPE_NAME = "count";
-    /*
-     * Names of supported files for Network
-     */
-    public static final String[] NETWORK_FILE_NAMES = {
-        "Comma Separated Values Files (*.csv)",
-        "OpenOffice.org Spreadsheet Files (*.sxc)",
-        "Microsoft Excel Spreadsheet Files (*.xls)",
-        "All Files (*.*)" };
-    
-    /*
-     * Extensions of supported files for Network
-     */
-    public static final String[] NETWORK_FILE_EXTENSIONS = {"*.csv", "*.sxc", "*.xls", "*.*"};
-    
-    /*
-     * Names of supported files for TEMS data
-     */
-    public static final String[] TEMS_FILE_NAMES = {
-         "(*.FMT)"
-    };
-    
-    /*
-     * Extensions of supported files for TEMS data
-     */
-    public static final String[] TEMS_FILE_EXTENSIONS = {"*.FMT"};
     
     /*
      * ED-VO Message Type

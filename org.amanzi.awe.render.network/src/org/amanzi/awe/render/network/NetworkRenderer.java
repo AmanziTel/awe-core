@@ -140,14 +140,32 @@ public class NetworkRenderer extends RendererImpl {
                         Node child = relationship.getEndNode();
                         if(child.hasProperty("type") && child.getProperty("type").toString().equals("sector")){
                             double azimuth = 0.0;
-                            double beamwidth = 0.0;
+                            double beamwidth = 10.0;
                             Color colorToFill = fillColor;
                             for(String key:child.getPropertyKeys()){
                                 if(key.toLowerCase().contains("azimuth")){
-                                    azimuth = (Integer)child.getProperty(key);
+                                    Object value = child.getProperty(key);
+                                    if (value instanceof Integer) {
+                                        azimuth = (Integer)value;
+                                    } else {
+                                        try {
+                                            azimuth = Integer.parseInt(value.toString());
+                                        } catch (Exception e) {
+                                        }
+                                    }
                                 }
                                 if(key.toLowerCase().contains("beamwidth")){
                                     beamwidth = (Integer)child.getProperty(key);
+                                }else  if(key.toLowerCase().startsWith("beam")){
+                                    Object value = child.getProperty(key);
+                                    if (value instanceof Integer) {
+                                        beamwidth = (Integer)value;
+                                    } else {
+                                        try {
+                                            beamwidth = Integer.parseInt(value.toString());
+                                        } catch (Exception e) {
+                                        }
+                                    }
                                 }
                                 if (selectedProp != null && selectedProp.equals(key)) {
                                     int value = ((Number)child.getProperty(key)).intValue();

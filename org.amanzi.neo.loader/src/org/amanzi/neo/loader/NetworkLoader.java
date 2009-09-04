@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,20 +87,33 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	private NeoService neo;
 	private NeoServiceProvider neoProvider;
 	private String siteName = null;
-	private String bscName = null;
+    private String bscName = null;
+    private String cityName = null;
 	private Node site = null;
-	private Node bsc = null;
-	private Node network = null;
+    private HashMap<String,Node> bsc_s = new HashMap<String,Node>();
+    private HashMap<String,Node> city_s = new HashMap<String,Node>();
+    private Node bsc = null;
+    private Node city = null;
+    private Node network = null;
 	private Node gis = null;
 	private CRS crs = null;
 	private String[] headers = null;
 	private HashMap<String,Integer> headerIndex = null;
 	private int[] mainIndexes = null;
-	private int[] stringIndexes = null;
-	private int[] intIndexes = null;
+    private ArrayList<Integer> stringIndexes = new ArrayList<Integer>();
+    private ArrayList<Integer> intIndexes = new ArrayList<Integer>();
+    private ArrayList<Integer> floatIndexes = new ArrayList<Integer>();
+    private ArrayList<String> shortLines = new ArrayList<String>();
+    private ArrayList<String> emptyFields = new ArrayList<String>();
+    private ArrayList<String> badFields = new ArrayList<String>();
+    private ArrayList<String> lineErrors = new ArrayList<String>();
 	private String filename;
 	private String basename;
 	private double[] bbox;
+    private String crsHint;
+    private long lineNumber = 0;
+    private long siteNumber = 0;
+    private long sectorNumber = 0;
 
 	public NetworkLoader(String filename) {
 		this(null, filename);
@@ -131,17 +145,24 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	public void run() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         try {
+            long startTime = System.currentTimeMillis();
             String line;
             while ((line = reader.readLine()) != null) {
+                lineNumber++;
                 if (!parseLine(line)) {
                     break;
                 }
             }
+            info("Loaded "+filename+" in "+(System.currentTimeMillis()-startTime)/1000.0+"s");
+            printWarnings(emptyFields, "empty fields", 0, lineNumber);
+            printWarnings(badFields, "field parsing warnings", 10, lineNumber);
+            printWarnings(shortLines, "missing fields", 10, lineNumber);
+            printWarnings(lineErrors, "uncaught errors", 10, lineNumber);
         } finally {
             // Close the file reader
             reader.close();
             // Save the bounding box
-            if(gis!=null){
+            if(gis!=null && bbox!=null){
                 Transaction transaction = neo.beginTx();
                 try {
                     gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
@@ -150,35 +171,70 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     transaction.finish();
                 }
             }
-            if (network != null) {
-                NeoCorePlugin.getDefault().getProjectService().addNetworkToProject(TEMSLoader.getAweProjectName(), network);
-            }
-            NeoServiceProvider.getProvider().commit();
-            //Lagutko 21.07.2009, using of neo.core plugin
-            unregisterNeoManager();
-            // Register the database in the uDIG catalog            
-            String databaseLocation = neoProvider.getDefaultDatabaseLocation();
-            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-            List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(new URL("file://"+databaseLocation));
-            for (IService service : services) {
-                System.out.println("TEMS Found catalog service: " + service);
-                if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
-                    catalog.replace(service.getIdentifier(), service);
-                } else {
-                    catalog.add(service);
+            if(network!=null){
+                Transaction transaction = neo.beginTx();
+                try {
+                    network.setProperty("site_count", siteNumber);
+                    network.setProperty("sector_count", sectorNumber);
+                    network.setProperty("bsc_count", bsc_s.size());
+                    network.setProperty("city_count", city_s.size());
+                    transaction.success();
+                }finally{
+                    transaction.finish();
                 }
             }
-            NeoCorePlugin.getDefault().getUpdateDatabaseManager()
-                    .fireUpdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
-            // if(services.size()>0) catalog.add(services.get(0));
-            
-            //Lagutko, 21.07.2009, show NeworkTree
-            try {
-                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NetworkTreeView.NETWORK_TREE_VIEW_ID);
+            //If we are not running the command-line test then attach the data to the AWE project
+            if (neoProvider!=null) {
+                attachDataToProject();
             }
-            catch (PartInitException e) {
-                NeoCorePlugin.error(null, e);
+        }
+    }
+
+    private static void printWarnings(ArrayList<String> warnings, String warning_type, int limit, long lineNumber) {
+        if(warnings.size()>0){
+            info("Had " + warnings.size() + " "+warning_type+" warnings in " + lineNumber + " lines parsed");
+            if (limit > 0) {
+                int i = 0;
+                for (String warning : warnings) {
+                    info("\t" + warning);
+                    if (i++ > limit) {
+                        info("\t... and " + (warnings.size() - 10) + " more ...");
+                        break;
+                    }
+                }
             }
+        }
+    }
+
+    private void attachDataToProject() throws MalformedURLException {
+        if (network != null) {
+            NeoCorePlugin.getDefault().getProjectService().addNetworkToProject(TEMSLoader.getAweProjectName(), network);
+        }
+        NeoServiceProvider.getProvider().commit();
+        //Lagutko 21.07.2009, using of neo.core plugin
+        unregisterNeoManager();
+        // Register the database in the uDIG catalog            
+        String databaseLocation = neoProvider.getDefaultDatabaseLocation();
+        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+        List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(new URL("file://"+databaseLocation));
+        for (IService service : services) {
+            System.out.println("Found catalog service: " + service);
+            if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
+                catalog.replace(service.getIdentifier(), service);
+            } else {
+                catalog.add(service);
+            }
+        }
+        NeoCorePlugin.getDefault().getUpdateDatabaseManager()
+                .fireUpdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
+        // if(services.size()>0) catalog.add(services.get(0));
+        
+        //Lagutko, 21.07.2009, show NeworkTree
+        try {
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NetworkTreeView.NETWORK_TREE_VIEW_ID);
+        }
+        catch (PartInitException e) {
+            NeoCorePlugin.error(null, e);
         }
     }
 
@@ -196,70 +252,84 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	
 	private boolean parseLine(String line){
 		debug(line);
-		String fields[] = line.split("\\t");
+        String fields[] = line.split("\\t");
 		if(fields.length>2){
 			if(headers==null){	// first line
 				headers = fields;
 				headerIndex = new HashMap<String,Integer>();
-				mainIndexes = new int[5];
-				ArrayList<Integer> strings = new ArrayList<Integer>();
-				ArrayList<Integer> ints = new ArrayList<Integer>();
+				mainIndexes = new int[]{-1,-1,-1,-1,-1,-1};
 				int index=0;
 				for(String header:headers){
 					debug("Added header["+index+"] = "+header);
-					if(header.equals(NetworkElementTypes.BSC.getHeader())) mainIndexes[0]=index;
-					else if(header.equals(NetworkElementTypes.SITE.getHeader())) mainIndexes[1]=index;
-					else if(header.equals(NetworkElementTypes.SECTOR.getHeader())) mainIndexes[2]=index;
-					else if(header.toLowerCase().startsWith(INeoConstants.PROPERTY_LAT_NAME)) mainIndexes[3]=index;
-					else if(header.toLowerCase().startsWith(INeoConstants.PROPERTY_LONG_NAME)) mainIndexes[4]=index;
-					else if(header.toLowerCase().contains(INeoConstants.PROPERTY_TYPE_NAME)) strings.add(index);
-					else if(header.toLowerCase().contains(INeoConstants.NETWORK_HEADER_STATUS_NAME)) strings.add(index);
-					else ints.add(index);
+                    if(NetworkElementTypes.BSC.matches(header)) mainIndexes[0]=index;
+                    else if(NetworkElementTypes.CITY.matches(header)) mainIndexes[1]=index;
+					else if(NetworkElementTypes.SITE.matches(header)) mainIndexes[2]=index;
+					else if(NetworkElementTypes.SECTOR.matches(header)) mainIndexes[3]=index;
+                    else if(header.toLowerCase().startsWith("lat")) mainIndexes[4]=index;
+                    else if(header.toLowerCase().startsWith("long")) mainIndexes[5]=index;
+                    else if(header.toLowerCase().startsWith("y_wert")) {mainIndexes[4]=index; crsHint="germany";}
+                    else if(header.toLowerCase().startsWith("x_wert")) {mainIndexes[5]=index; crsHint="germany";}
+                    else if(header.toLowerCase().startsWith("trx")) intIndexes.add(index);
+                    else stringIndexes.add(index);
 					headerIndex.put(header,index++);
 				}
-				stringIndexes = new int[strings.size()];
-				for(int i=0;i<strings.size();i++) stringIndexes[i] = strings.get(i);
-				intIndexes = new int[ints.size()];
-				for(int i=0;i<ints.size();i++) intIndexes[i] = ints.get(i);
 			}else{
 				Transaction transaction = neo.beginTx();
 				try {
                     if (gis == null) {
                         gis = getGISNode(neo, INeoConstants.GIS_PREFIX + basename);
                     }
-					String bscField = fields[mainIndexes[0]];
-					String siteField = fields[mainIndexes[1]];
-					String sectorField = fields[mainIndexes[2]];
-					if (!bscField.equals(bscName)) {
-						bscName = bscField;
-						debug("New BSC: " + bscName);
-						if (network==null){
-                            network = getNetwork(neo, gis, basename);
-						    if (network==null){
-						        return false;
-						    }
-						}
-
-						network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-						deleteTree(network);
-						bsc = addChild(network, NetworkElementTypes.BSC.toString(), bscName);
-					}
+                    String bscField = null;
+                    String cityField = null;
+                    try {
+                        bscField = fields[mainIndexes[0]];
+                    } catch (RuntimeException e1) {
+                    }
+                    try {
+                        cityField = fields[mainIndexes[1]];
+                    } catch (RuntimeException e1) {
+                    }
+					String siteField = fields[mainIndexes[2]];
+					String sectorField = fields[mainIndexes[3]];
+                    if (network==null){
+                        network = getNetwork(neo, gis, basename);
+                        if (network==null){
+                            return false;
+                        }
+                        network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
+                    }
+                    if (cityField!=null && !cityField.equals(cityName)) {
+                        cityName = cityField;
+                        city = city_s.get(cityField);
+                        if (city == null) {
+                            debug("New City: " + cityName);
+                            city = addChild(network, NetworkElementTypes.CITY.toString(), cityName);
+                            city_s.put(cityField, city);
+                        }
+                    }
+                    if (bscField!=null && !bscField.equals(bscName)) {
+                        bscName = bscField;
+                        bsc = bsc_s.get(bscField);
+                        if (bsc == null) {
+                            debug("New BSC: " + bscName);
+                            bsc = addChild(city == null ? network : city, NetworkElementTypes.BSC.toString(), bscName);
+                            bsc_s.put(bscField, bsc);
+                        }
+                    }
 					if (!siteField.equals(siteName)) {
 						siteName = siteField;
 						debug("New site: " + siteName);
-						Node newSite = addChild(bsc, NetworkElementTypes.SITE.toString(), siteName);
-				        if(site!=null){
-				            site.createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
-				        }else{
-				            network.createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
-				        }
+						Node siteRoot = bsc==null ? (city==null ? network : city) : bsc;
+                        Node newSite = addChild(siteRoot, NetworkElementTypes.SITE.toString(), siteName);
+				        (site==null ? network : site).createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
 				        site = newSite;
-						float lat = Float.parseFloat(fields[mainIndexes[3]]);
-						float lon = Float.parseFloat(fields[mainIndexes[4]]);
+				        siteNumber++;
+						float lat = Float.parseFloat(fields[mainIndexes[4]]);
+						float lon = Float.parseFloat(fields[mainIndexes[5]]);
 						if(crs==null){
-							crs = CRS.fromLocation(lat, lon, null);
-                            network.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
-                            network.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
+							crs = CRS.fromLocation(lat, lon, crsHint);
+                            //network.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
+                            //network.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
                             gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
                             gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
 						}
@@ -276,10 +346,56 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 					}
 					debug("New Sector: " + sectorField);
 					Node sector = addChild(site, NetworkElementTypes.SECTOR.toString(), sectorField);
-					for (int i : stringIndexes) sector.setProperty(headers[i], fields[i]);
-					for (int i : intIndexes) sector.setProperty(headers[i], Integer.parseInt(fields[i]));
+                    sectorNumber++;
+					if(floatIndexes.size()==0){
+                        determineFieldTypes(fields);
+					}
+					try {
+                        for (int i : stringIndexes) {
+                            if (fields[i].length() > 0) {
+                                sector.setProperty(headers[i], fields[i]);
+                            } else {
+                                emptyFields.add("Empty string at " + lineNumber + ":" + i);
+                            }
+                        }
+                        for (int i : intIndexes) {
+                            if (fields[i].length() > 0) {
+                                try {
+                                    sector.setProperty(headers[i], Integer.parseInt(fields[i]));
+                                } catch (NumberFormatException e) {
+                                    badFields.add("Invalid integer '" + fields[i] + "' at " + lineNumber + ":" + i + " ("
+                                            + headers[i] + ")");
+                                }
+                            } else {
+                                emptyFields.add("Empty string at " + lineNumber + ":" + i);
+                            }
+                        }
+                        for (int i : floatIndexes) {
+                            if (fields[i].length() > 0) {
+                                try {
+                                    sector.setProperty(headers[i], Float.parseFloat(fields[i]));
+                                } catch (NumberFormatException e) {
+                                    badFields.add("Invalid float '" + fields[i] + "' at " + lineNumber + ":" + i + " ("
+                                            + headers[i] + ")");
+                                }
+                            } else {
+                                emptyFields.add("Empty string at " + lineNumber + ":" + i);
+                            }
+                        }
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        shortLines.add("Empty fields at end of line " + lineNumber + ": "+e.getMessage());
+                    }
 					transaction.success();
 					return true;
+				} catch(Exception e) {
+				    lineErrors.add("Error parsing line " + lineNumber + ": " + e);
+                    error(lineErrors.get(lineErrors.size() - 1));
+                    if (lineErrors.size() == 1) {
+                        e.printStackTrace(System.err);
+                    } else if (lineErrors.size() > 10) {
+                        e.printStackTrace(System.err);
+                        return false;
+                    }
 				} finally {
 					transaction.finish();
 				}
@@ -288,16 +404,44 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         return true;
 	}
 
-	private void deleteTree(Node root){
-		if(root!=null){
-			for (Relationship relationship : root.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
-				Node node = relationship.getEndNode();
-				deleteTree(node);
-				node.delete();
-				relationship.delete();
-			}
-		}
-	}
+    private void determineFieldTypes(String[] fields) {
+        for(int i : stringIndexes){
+            try {
+                Float.parseFloat(fields[i]);
+                floatIndexes.add(i);
+                Integer.parseInt(fields[i]);
+                floatIndexes.remove(floatIndexes.size()-1);
+                intIndexes.add(i);
+            }catch(Exception e){
+            }
+        }
+        for(int i:intIndexes) {
+            stringIndexes.remove((Integer)i);
+        }
+        for(int i:floatIndexes) {
+            stringIndexes.remove((Integer)i);
+        }
+    }
+
+	private static void deleteTree(Node root) {
+        if (root != null) {
+            for (Relationship relationship : root.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                deleteTree(node);
+                debug("Deleting node " + node + ": " + (node.hasProperty("name") ? node.getProperty("name") : ""));
+                deleteNode(node);
+            }
+        }
+    }
+	
+	private static void deleteNode(Node node) {
+        if (node != null) {
+            for (Relationship relationship : node.getRelationships()) {
+                relationship.delete();
+            }
+            node.delete();
+        }
+    }
 
     /**
      * This code finds the specified network node in the database, creating its own transaction for
@@ -311,30 +455,20 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		try {
             for (Relationship relationship : gis.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
 				Node node = relationship.getEndNode();
+                debug("Testing possible Network node "+node+": "+(node.hasProperty("name") ? node.getProperty("name") : ""));
 				if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NetworkElementTypes.NETWORK.toString()) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
 						&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename)){
-                    int resultMsg = (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
-                        int result;
-                        @Override
-                        public void run() {
-                            MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OK
-                                    | SWT.CANCEL);
-                            msg.setText(LOAD_NETWORK_TITLE);
-                            msg.setMessage(LOAD_NETWORK_MSG);
-                            result = msg.open();
-
-                        }
-
-                        @Override
-                        public Object getValue() {
-                            return new Integer(result);
-                        }
-                    });
-                    if (resultMsg != SWT.OK) {
-                        return null;
-                    }
-                    // delete network - begin - gis node.
-                    NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+	                debug("Found matching Network node "+node+": "+(node.hasProperty("name") ? node.getProperty("name") : ""));
+			        try {
+			            PlatformUI.getWorkbench();
+	                    if(!askIfOverwrite()) return null;
+	                    // delete network - begin - gis node.
+	                    NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+			        } catch(IllegalStateException e) {
+			            // we are in test mode, automatically agree to overwrite network
+			            deleteTree(node);
+			            deleteNode(node);
+			        }
                     break;
                 }
 			}
@@ -351,6 +485,27 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		return network;
 	}
 
+    private static boolean askIfOverwrite() {
+        int resultMsg = (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+            int result;
+            @Override
+            public void run() {
+                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OK
+                        | SWT.CANCEL);
+                msg.setText(LOAD_NETWORK_TITLE);
+                msg.setMessage(LOAD_NETWORK_MSG);
+                result = msg.open();
+
+            }
+
+            @Override
+            public Object getValue() {
+                return new Integer(result);
+            }
+        });
+        return resultMsg == SWT.OK;
+    }
+
     private static Node getGISNode(NeoService neo, String gisName) {
         Node gis = null;
         Transaction transaction = neo.beginTx();
@@ -358,6 +513,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             Node reference = neo.getReferenceNode();
             for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
+                debug("Testing possible GIS node "+node+": "+(node.hasProperty("name") ? node.getProperty("name") : ""));
                 if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
                         && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME)
                         && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
@@ -396,15 +552,21 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		return child;
 	}
 	
-	public void printStats(){
-		if(bsc!=null){
-			printChildren(bsc,0);
-		}else{
-			error("No BSC node found");
-		}
-	}
+	public void printStats() {
+        if (network != null) {
+            Transaction tx = neo.beginTx();
+            try {
+                printChildren(network, 0);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        } else {
+            error("No network node found");
+        }
+    }
 
-	public static void printChildren(Node node, int depth){
+	private static void printChildren(Node node, int depth){
 		if(node==null || depth > 4 || !node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) return;
 		StringBuffer tab = new StringBuffer();
 		for(int i=0;i<depth;i++) tab.append("    ");
@@ -418,17 +580,20 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 			printChildren(relationship.getEndNode(),depth+1);
 		}
 	}
-	
-	//TODO: Lagutko: is this method required?
+
 	/**
+	 * A main method for useful quick-turn-around testing and debugging of data parsing on various sample files.
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		EmbeddedNeo neo = new EmbeddedNeo("var/neo");
+	    //NeoLoaderPlugin.debug = true;
+		EmbeddedNeo neo = new EmbeddedNeo("../../var/neo");
 		try{
-			NetworkLoader networkLoader = new NetworkLoader(neo,args.length>0 ? args[0] : "amanzi/network.csv");
+		    long startTime = System.currentTimeMillis();
+			NetworkLoader networkLoader = new NetworkLoader(neo,args.length>0 ? args[0] : "amanzi/network.txt");
 			networkLoader.run();
 			networkLoader.printStats();
+            info("Ran test in "+(System.currentTimeMillis()-startTime)/1000.0+"s");
 		} catch (IOException e) {
 			System.err.println("Failed to load network: "+e);
 			e.printStackTrace(System.err);

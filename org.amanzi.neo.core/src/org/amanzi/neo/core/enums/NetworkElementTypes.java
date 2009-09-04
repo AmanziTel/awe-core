@@ -9,19 +9,23 @@ package org.amanzi.neo.core.enums;
 
 public enum NetworkElementTypes {
 
-    NETWORK("Network"),
-    BSC("BSC"),
-    SITE("Name"),
-    SECTOR("Cell");
+    NETWORK(new String[]{"Network"}),
+    CITY(new String[]{"City","Town","Ort"}),
+    BSC(new String[]{"BSC"}),
+    SITE(new String[]{"Site","Name"}),
+    SECTOR(new String[]{"Sector","Cell","BTS_Name"});
+
+    private String[] headers = null;
     
-    private String header = null;
-    
-    private NetworkElementTypes(String header){
-        this.header = header;
+    private NetworkElementTypes(String[] headers){
+        this.headers = headers;
     }
     
-    public String getHeader(){
-        return header;
+    public boolean matches(String header){
+        for(String valid_header:headers) {
+            if(header.equalsIgnoreCase(valid_header)) return true;
+        }
+        return false;
     }
     
     public String toString(){

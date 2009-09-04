@@ -58,7 +58,7 @@ public class NeoLoaderPlugin extends Plugin {
 	/*
 	 * Logging properties
 	 */
-	private static boolean debug = false;
+	public static boolean debug = false;
 	private static boolean verbose = true;	
 	
 	/**
@@ -137,6 +137,8 @@ public class NeoLoaderPlugin extends Plugin {
 			if (debug) {
 				getDefault().printToStream(line);
 			}
+		} else if(debug) {
+		    System.out.println(line);
 		}
 	}
 	
@@ -151,6 +153,8 @@ public class NeoLoaderPlugin extends Plugin {
 			if (verbose || debug) {
 				getDefault().printToStream(line);
 			}
+        } else {
+            System.out.println(line);
 		}
 	}
 	
@@ -163,6 +167,8 @@ public class NeoLoaderPlugin extends Plugin {
 	public static void notify(String line) {
 		if (loggingPossible) {
 			getDefault().printToStream(line);
+        } else {
+            System.out.println(line);
 		}
 	}
 	
@@ -175,6 +181,8 @@ public class NeoLoaderPlugin extends Plugin {
 	public static void error(String line) {
 		if (loggingPossible) {
 			getDefault().printToStream(line);
+        } else {
+            System.err.println(line);
 		}
 	}
 	
@@ -187,16 +195,13 @@ public class NeoLoaderPlugin extends Plugin {
 	public static void exception(Exception e) {
 		if (loggingPossible) {
 			getDefault().printException(e);
+        } else {
+            e.printStackTrace(System.out);
 		}
 	}
 	
-	/**
-	 * Print a message to Console
-	 * 
-	 * @param line
-	 */
-	
-	public void printToStream(final String line) {
+	/** Print a message to Console */
+	private void printToStream(final String line) {
 		if (!isVisible) {			
 			pluginConsole.activate();			
 			ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);
@@ -205,13 +210,8 @@ public class NeoLoaderPlugin extends Plugin {
 		consoleStream.println(line);
 	}
 	
-	/**
-	 * Print a message to Console
-	 * 
-	 * @param line
-	 */
-	
-	public void printException(Exception e) {
+	/** Print a exception to Console */	
+	private void printException(Exception e) {
 		if (!isVisible) {			
 			pluginConsole.activate();			
 			ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);

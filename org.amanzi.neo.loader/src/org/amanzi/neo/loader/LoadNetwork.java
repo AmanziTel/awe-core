@@ -2,7 +2,6 @@ package org.amanzi.neo.loader;
 
 import java.io.IOException;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.dialogs.TEMSDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -13,8 +12,22 @@ import org.eclipse.swt.widgets.FileDialog;
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
 public class LoadNetwork extends AbstractActionTool {
-	
-	private static String directory = null;
+    /*
+     * Names of supported files for Network
+     */
+    private static final String[] NETWORK_FILE_NAMES = {
+        "Comma Separated Values Files (*.csv)",
+        "Plain Text Files (*.txt)",
+        "OpenOffice.org Spreadsheet Files (*.sxc)",
+        "Microsoft Excel Spreadsheet Files (*.xls)",
+        "All Files (*.*)" };
+    
+    /*
+     * Extensions of supported files for Network
+     */
+    private static final String[] NETWORK_FILE_EXTENSIONS = {"*.csv", "*.txt", "*.sxc", "*.xls", "*.*"};
+
+    private static String directory = null;
 
 	public LoadNetwork() {
 	}
@@ -61,8 +74,8 @@ public class LoadNetwork extends AbstractActionTool {
 			public void run() {
 				FileDialog dlg = new FileDialog(display.getActiveShell(), SWT.OPEN);
 				dlg.setText(NeoLoaderPluginMessages.NetworkDialog_DialogTitle);
-				dlg.setFilterNames(INeoConstants.NETWORK_FILE_NAMES);
-				dlg.setFilterExtensions(INeoConstants.NETWORK_FILE_EXTENSIONS);
+				dlg.setFilterNames(NETWORK_FILE_NAMES);
+				dlg.setFilterExtensions(NETWORK_FILE_EXTENSIONS);
 				dlg.setFilterPath(getDirectory());
 				final String filename = dlg.open();
 				if (filename != null) {

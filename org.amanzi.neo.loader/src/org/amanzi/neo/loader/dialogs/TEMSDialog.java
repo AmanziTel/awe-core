@@ -47,6 +47,15 @@ import org.neo4j.api.core.Traverser;
  * @author Lagutko_N
  */
 public class TEMSDialog {
+    /*
+     * Names of supported files for TEMS data
+     */
+    public static final String[] TEMS_FILE_NAMES = {"(*.FMT)"};
+    
+    /*
+     * Extensions of supported files for TEMS data
+     */
+    public static final String[] TEMS_FILE_EXTENSIONS = {"*.FMT"};
 	
     /*
      * Minimum height of Shell
@@ -376,8 +385,8 @@ public class TEMSDialog {
 				// User has selected to open a single file
 		        FileDialog dlg = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
 				dlg.setText(NeoLoaderPluginMessages.TEMSDialog_FileDialogTitle);
-		        dlg.setFilterNames(INeoConstants.TEMS_FILE_NAMES);
-		        dlg.setFilterExtensions(INeoConstants.TEMS_FILE_EXTENSIONS);
+		        dlg.setFilterNames(TEMS_FILE_NAMES);
+		        dlg.setFilterExtensions(TEMS_FILE_EXTENSIONS);
 		        dlg.setFilterPath(getDefaultDirectory());
 				
 		        String fn = dlg.open();
@@ -481,7 +490,7 @@ public class TEMSDialog {
 	private class TEMFFileFilter implements FileFilter {
 
 		public boolean accept(File pathname) {
-		    for (String extension : INeoConstants.TEMS_FILE_EXTENSIONS) {
+		    for (String extension : TEMS_FILE_EXTENSIONS) {
                 if (pathname.getName().toLowerCase().endsWith(extension.toLowerCase().substring(1))) {
 		            return true;
 		        }
