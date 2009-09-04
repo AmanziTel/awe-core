@@ -3,12 +3,16 @@ package org.amanzi.awe.views.reuse.views;
 import java.awt.Color;
 import java.awt.Paint;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -17,8 +21,12 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.views.reuse.Distribute;
+import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.swt.SWT;
@@ -54,6 +62,7 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 
 /**
@@ -81,6 +90,10 @@ public class ReuseAnalyserView extends ViewPart {
     private Combo gisCombo;
     private Label propertySelected;
     private Combo propertyCombo;
+    private Label lSelect;
+    private Combo cSelect;
+    private Label lDistribute;
+    private Combo cDistribute;
     private HashMap<String, Node> members;
     protected ArrayList<String> propertyList;
     private Spinner spinAdj;
@@ -96,6 +109,8 @@ public class ReuseAnalyserView extends ViewPart {
     private static final Paint COLOR_MORE = Color.GREEN;
     private static final Paint CHART_BACKGROUND = Color.WHITE;
     private static final Paint PLOT_BACKGROUND = new Color(230, 230, 230);
+    private static final String SELECT_LABEL = "Select";
+    private static final String DISTRIBUTE_LABEL = "Distribute";
 
     public void createPartControl(Composite parent) {
         gisSelected = new Label(parent, SWT.NONE);
@@ -115,6 +130,17 @@ public class ReuseAnalyserView extends ViewPart {
         spinAdj.setIncrement(1);
         spinAdj.setDigits(0);
         spinAdj.setSelection(1);
+        lDistribute = new Label(parent, SWT.NONE);
+        lDistribute.setText(DISTRIBUTE_LABEL);
+        cDistribute = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cDistribute.setItems(Distribute.getEnumAsStringArray());
+        cDistribute.select(0);
+        lSelect = new Label(parent, SWT.NONE);
+        lSelect.setText(SELECT_LABEL);
+        cSelect = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cSelect.setItems(Select.getEnumAsStringArray());
+        cSelect.select(0);
+        cSelect.setEnabled(false);
         spinAdj.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -173,7 +199,10 @@ public class ReuseAnalyserView extends ViewPart {
                     propertyList = new ArrayList<String>();
                     chartFrame.setVisible(false);
                 } else {
-                    formPropertyList(members.get(gisCombo.getText()));
+                    Node gis = members.get(gisCombo.getText());
+                    cSelect
+                            .setEnabled(new GeoNeo(NeoServiceProvider.getProvider().getService(), gis).getGisType() == GisTypes.Tems);
+                    formPropertyList(gis);
                 }
                 propertyCombo.setItems(propertyList.toArray(new String[] {}));
             }
@@ -199,8 +228,26 @@ public class ReuseAnalyserView extends ViewPart {
                 widgetSelected(e);
             }
         };
+        SelectionListener selectComboSelectionListener = new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (!chartFrame.isVisible()) {
+                    return;
+                }
+                Node aggrNode = findOrCreateAggregateNode(members.get(gisCombo.getText()), propertyCombo.getText());
+                chartUpdate(aggrNode);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        };
         gisCombo.addSelectionListener(gisComboSelectionListener);
         propertyCombo.addSelectionListener(propComboSelectionListener);
+        cSelect.addSelectionListener(selectComboSelectionListener);
+        cDistribute.addSelectionListener(selectComboSelectionListener);
     }
 
     /**
@@ -266,11 +313,11 @@ public class ReuseAnalyserView extends ViewPart {
                             int colInd = columnKey == null ? 0 : dataset.getColumnIndex(columnKey);
                             int minInd = columnKey == null ? 0 : Math.max(colInd - adj, 0);
                             int maxind = columnKey == null ? 0 : Math.min(colInd + adj, dataset.getColumnCount() - 1);
-                            geo.setPropertyToRefresh(aggrNode, columnNode, adj,((ChartNode)dataset.getColumnKey(minInd)).getNode(),((ChartNode)dataset.getColumnKey(maxind)).getNode());
+                            geo.setPropertyToRefresh(aggrNode, columnNode,/* adj, */((ChartNode)dataset.getColumnKey(minInd))
+                                    .getNode(), ((ChartNode)dataset.getColumnKey(maxind)).getNode());
                             layer.refresh(null);
                         }
                     } catch (IOException e) {
-                        // TODO Handle IOException
                         throw (RuntimeException)new RuntimeException().initCause(e);
                     }
                 }
@@ -287,36 +334,62 @@ public class ReuseAnalyserView extends ViewPart {
      */
     protected Node findOrCreateAggregateNode(Node gisNode, final String propertyName) {
         NeoService service = NeoServiceProvider.getProvider().getService();
+        final GisTypes typeOfGis = new GeoNeo(service, gisNode).getGisType();
+        final String distribute = cDistribute.getText();
+        final String select = cSelect.getText();
         Transaction tx = service.beginTx();
         try {
-        Iterator<Node> iterator = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+            Iterator<Node> iterator = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-            @Override
-            public boolean isReturnableNode(TraversalPosition arg0) {
-                return propertyName.equals(arg0.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, null));
-            }
-        }, NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING).iterator();
-        if (iterator.hasNext()) {
+                @Override
+                public boolean isReturnableNode(TraversalPosition arg0) {
+                    // necessary property name
+
+                    return propertyName.equals(arg0.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, null))
+                    // necessary property distribute type
+                            && (distribute.equals(arg0.currentNode().getProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, null)))
+                            // network of necessary select type
+                            && (typeOfGis == GisTypes.Network || select.equals(arg0.currentNode().getProperty(
+                                    INeoConstants.PROPERTY_SELECT_NAME, null)));
+                }
+            }, NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING).iterator();
+            if (iterator.hasNext()) {
                 tx.success();
-            return iterator.next();
-        }
+                return iterator.next();
+            }
 
-        Node result = service.createNode();
-        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, propertyName);
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.AGGREGATION_TYPE_NAME);
-        gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
-        TreeMap<Integer, Integer> statistics = computeStatistics(gisNode, propertyName);
-        Node parentNode = result;
-        for (Integer key : statistics.keySet()) {
-            Node childNode = service.createNode();
-            childNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.COUNT_TYPE_NAME);
-            childNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, key);
-            childNode.setProperty(INeoConstants.PROPERTY_VALUE_NAME, statistics.get(key));
-            parentNode.createRelationshipTo(childNode, NetworkRelationshipTypes.CHILD);
-            parentNode = childNode;
-        }
+            Node result = service.createNode();
+            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, propertyName);
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.AGGREGATION_TYPE_NAME);
+            result.setProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, distribute);
+            if (typeOfGis == GisTypes.Tems) {
+                result.setProperty(INeoConstants.PROPERTY_SELECT_NAME, select);
+            }
+            gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
+
+            TreeMap<Column, Integer> statistics = computeStatistics(gisNode, propertyName, Distribute.findEnumByValue(cDistribute
+                    .getText()), Select.findSelectByValue(cSelect.getText()));
+            Node parentNode = result;
+            for (Column key : statistics.keySet()) {
+                Node childNode = service.createNode();
+                // TODO calculate column name more correctly
+                BigDecimal minValue = new BigDecimal(key.getMinValue());
+                BigDecimal maxValue = new BigDecimal(key.getMinValue() + key.getRange());
+                minValue = minValue.setScale(2, RoundingMode.HALF_UP);
+                maxValue = maxValue.setScale(2, RoundingMode.HALF_UP);
+
+                String nameCol = "[" + minValue.toString() + ":" + maxValue.toString() + ")";
+                childNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.COUNT_TYPE_NAME);
+
+                childNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, nameCol);
+                childNode.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, key.getMinValue());
+                childNode.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, key.getMinValue() + key.getRange());
+                childNode.setProperty(INeoConstants.PROPERTY_VALUE_NAME, statistics.get(key));
+                parentNode.createRelationshipTo(childNode, NetworkRelationshipTypes.CHILD);
+                parentNode = childNode;
+            }
             tx.success();
-        return result;
+            return result;
         } finally {
             tx.finish();
             // fix bug - aggregate data of drive gis node do not save after restart application
@@ -331,26 +404,240 @@ public class ReuseAnalyserView extends ViewPart {
      * @param propertyName name of property
      * @return
      */
-    private TreeMap<Integer, Integer> computeStatistics(Node gisNode, String propertyName) {
-        TreeMap<Integer, Integer> result = new TreeMap<Integer, Integer>();
-        Iterator<Node> iteratorProperties = gisNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
-                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-        while (iteratorProperties.hasNext()) {
-            Node propertyNode = iteratorProperties.next();
-            if (propertyNode.hasProperty(propertyName)) {
-                Integer key = ((Number)propertyNode.getProperty(propertyName)).intValue();
-                Integer value = result.get(key);
-                if (value == null) {
-                    result.put(key, 1);
+    private TreeMap<Column, Integer> computeStatistics(Node gisNode, String propertyName, Distribute distribute, Select select) {
+        Map<Node, Number> mpMap = new HashMap<Node, Number>();
+        final GisTypes typeOfGis = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode).getGisType();
+        TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
+        Traverser travers = gisNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
+                NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+
+        Double min = null;
+        Double max = null;
+        Object propertyValue = null;
+        int colCount = 0;
+        Collection<Node> trav = travers.getAllNodes();
+        for (Node node : trav) {
+            propertyValue = node.getProperty(propertyName);
+            Number valueNum = (Number)propertyValue;
+            if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
+                Node mpNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+                Number oldValue = mpMap.get(mpNode);
+                if (oldValue == null) {
+                    if (select == Select.AVERAGE) {
+                        valueNum = calculateAverageValueOfMpNode(mpNode, propertyName);
+                    }
+                    mpMap.put(mpNode, valueNum);
                 } else {
-                    result.put(key, value + 1);
+                    switch (select) {
+                    case MAX:
+                        if (oldValue.doubleValue() <valueNum.doubleValue()) {
+                            mpMap.put(mpNode, valueNum);
+                        }
+                        break;
+                    case MIN:
+                        if (oldValue.doubleValue() > valueNum.doubleValue()) {
+                            mpMap.put(mpNode, valueNum);
+                        }
+                        break;
+                    case FIRST:
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
+            }else{
+            colCount++;
+            min = min == null ? ((Number)propertyValue).doubleValue() : Math.min(((Number)propertyValue).doubleValue(), min);
+            max = max == null ? ((Number)propertyValue).doubleValue() : Math.max(((Number)propertyValue).doubleValue(), max);
+            
+            }
+        }
+        if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
+            colCount=mpMap.size();
+            min=null;
+            max=null;
+            for (Number value : mpMap.values()) {
+                min = min == null ? value.doubleValue() : Math.min(value.doubleValue(), min);
+                max = max == null ? value.doubleValue() : Math.max(value.doubleValue(), max);               
+            }
+        }
+        double range = 0;
+        switch (distribute) {
+        case I10:
+            range = (max - min) / 9;
+            break;
+        case I50:
+            range = (max - min) / 49;
+            break;
+        case I20:
+            range = (max - min) / 19;
+            break;
+        case AUTO:
+            range = (max - min);
+            if (range >= 5 && range <= 30) {
+                range = 1;
+            } else if (range < 5) {
+                if (propertyValue instanceof Integer) {
+                    range = 1;
+                } else {
+                    range = range / 19;
+                }
+            } else {
+                range = range / 19;
+            }
+            break;
+        case INTEGERS:
+            min = Math.rint(min) - 0.5;
+            max = Math.rint(max) + 0.5;
+            range = 1;
+            break;
+        default:
+            break;
+        }
+        ArrayList<Column> keySet = new ArrayList<Column>();
+        double curValue = min;
+        while (curValue <= max) {
+            keySet.add(new Column(curValue, range));
+            curValue += range;
+            if (range == 0) {
+                break;
+            }
+        }
+        if (typeOfGis == GisTypes.Network || select == Select.EXISTS) {
+            for (Node node : trav) {
+                double value = ((Number)node.getProperty(propertyName)).doubleValue();
+                for (Column column : keySet) {
+                    if (column.containsValue(value)) {
+                        Integer count = result.get(column);
+                        if (count == null) {
+                            result.put(column, 1);
+                        } else {
+                            result.put(column, count + 1);
+                        }
+
+                        break;
+                    }
+                }
+            }
+        } else {
+            for (Number mpValue : mpMap.values()) {
+                double value = mpValue.doubleValue();
+                for (Column column : keySet) {
+                    if (column.containsValue(value)) {
+                        Integer count = result.get(column);
+                        if (count == null) {
+                            result.put(column, 1);
+                        } else {
+                            result.put(column, count + 1);
+                        }
+                        break;
+                    }
                 }
             }
         }
         return result;
     }
 
+    /**
+     * @param mpNode
+     * @return
+     */
+    private static Number calculateAverageValueOfMpNode(Node mpNode, String properties) {
+        Double result = new Double(0);
+        int count = 0;
+        for (Relationship relation : mpNode.getRelationships(MeasurementRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            Node node = relation.getEndNode();
+            if (INeoConstants.HEADER_MS.equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""))) {
+                result = result + ((Number)node.getProperty(properties, new Double(0))).doubleValue();
+                count++;
+            }
+        }
+        return count == 0 ? 0 : (double)result / (double)count;
+    }
+
+    private static class Column implements Comparable<Column> {
+        Double minValue;
+        Double range;
+
+        /**
+         * @param curValue
+         * @param range
+         */
+        public Column(double curValue, double range) {
+            minValue = curValue;
+            this.range = range;
+        }
+
+        /**
+         * @param value
+         * @return
+         */
+        public boolean containsValue(double value) {
+            return value >= minValue && (range == 0 || value < minValue + range);
+        }
+
+        /**
+         * @return Returns the minValue.
+         */
+        public Double getMinValue() {
+            return minValue;
+        }
+
+        /**
+         * @return Returns the range.
+         */
+        public Double getRange() {
+            return range;
+        }
+
+        @Override
+        public int compareTo(Column o) {
+            return minValue.compareTo(o.minValue);
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((minValue == null) ? 0 : minValue.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            Column other = (Column)obj;
+            if (minValue == null) {
+                if (other.minValue != null)
+                    return false;
+            } else if (!minValue.equals(other.minValue))
+                return false;
+            return true;
+        }
+        
+    }
+
+    private static class ComapableNode implements Comparable<ComapableNode> {
+        private Number value;
+        private Node node;
+
+        public ComapableNode(Node node, Number value) {
+            this.node = node;
+            this.value = value;
+        }
+
+        @Override
+        public int compareTo(ComapableNode o) {
+            return Double.compare(value.doubleValue(), o.value.doubleValue());
+        }
+
+    }
     /**
      * Creation list of property by selected node
      * 
@@ -414,7 +701,7 @@ public class ReuseAnalyserView extends ViewPart {
         FormData dCombo = new FormData(); // bind to label and text
         dCombo.left = new FormAttachment(gisSelected, 2);
         dCombo.top = new FormAttachment(0, 2);
-        dCombo.right = new FormAttachment(40, -5);
+        dCombo.right = new FormAttachment(20, -5);
         gisCombo.setLayoutData(dCombo);
 
         dLabel = new FormData(); // bind to left & text
@@ -425,11 +712,33 @@ public class ReuseAnalyserView extends ViewPart {
         dCombo = new FormData(); // bind to label and text
         dCombo.left = new FormAttachment(propertySelected, 2);
         dCombo.top = new FormAttachment(0, 2);
-        dCombo.right = new FormAttachment(80, -5);
+        dCombo.right = new FormAttachment(50, -5);
         propertyCombo.setLayoutData(dCombo);
 
         dLabel = new FormData(); // bind to left & text
         dLabel.left = new FormAttachment(propertyCombo, 10);
+        dLabel.top = new FormAttachment(cDistribute, 5, SWT.CENTER);
+        lDistribute.setLayoutData(dLabel);
+
+        dCombo = new FormData(); // bind to label and text
+        dCombo.left = new FormAttachment(lDistribute, 2);
+        dCombo.top = new FormAttachment(0, 2);
+        dCombo.right = new FormAttachment(68, -5);
+        cDistribute.setLayoutData(dCombo);
+
+        dLabel = new FormData(); // bind to left & text
+        dLabel.left = new FormAttachment(cDistribute, 10);
+        dLabel.top = new FormAttachment(cSelect, 5, SWT.CENTER);
+        lSelect.setLayoutData(dLabel);
+
+        dCombo = new FormData(); // bind to label and text
+        dCombo.left = new FormAttachment(lSelect, 2);
+        dCombo.top = new FormAttachment(0, 2);
+        dCombo.right = new FormAttachment(85, -5);
+        cSelect.setLayoutData(dCombo);
+
+        dLabel = new FormData(); // bind to left & text
+        dLabel.left = new FormAttachment(cSelect, 10);
         dLabel.top = new FormAttachment(spinAdj, 5, SWT.CENTER);
         spinLabel.setLayoutData(dLabel);
 
@@ -459,14 +768,74 @@ public class ReuseAnalyserView extends ViewPart {
      * @since 1.1.0
      */
     private static final class PropertyReturnableEvalvator implements ReturnableEvaluator {
+
+
         @Override
         public boolean isReturnableNode(TraversalPosition traversalposition) {
             Node curNode = traversalposition.currentNode();
             Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
             return type != null && (INeoConstants.HEADER_MS.equals(type.toString()) || "sector".equals(type.toString()));
+            }
         }
-    }
 
+    // /**
+    // * <p>
+    // * Implementation of ReturnableEvaluator Returns necessary MS or sector nodes
+    // * </p>
+    // *
+    // * @author Cinkel_A
+    // * @since 1.1.0
+    // */
+    // private static final class NodeReturnableEvaluator implements ReturnableEvaluator {
+    //
+    // private final String propertyName;
+    // private Map<Node, Node> mpMap;
+    // private final Select select;
+    //
+    // /**
+    // * @param typeOfGis
+    // * @param propertyName
+    // * @param distribute
+    // * @param select
+    // */
+    // NodeReturnableEvaluator(String propertyName, Select select) {
+    // this.propertyName = propertyName;
+    // this.select = select;
+    // mpMap = new HashMap<Node, Node>();
+    // }
+    //
+    // @Override
+    // public boolean isReturnableNode(TraversalPosition traversalposition) {
+    // Node curNode = traversalposition.currentNode();
+    // Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
+    // if (type != null) {
+    // if ("sector".equals(type.toString())) {
+    // return curNode.hasProperty(propertyName);
+    // }
+    // if (INeoConstants.HEADER_MS.equals(type.toString())) {
+    // if (select==null){
+    // return curNode.hasProperty(propertyName);
+    // }
+    // Node mp = curNode.getSingleRelationship(MeasurementRelationshipTypes.CHILD,
+    // Direction.INCOMING).getEndNode();
+    // Node oldMsNode = mpMap.get(mp);
+    // if (oldMsNode == null) {
+    // mpMap.put(mp, curNode);
+    // } else {
+    // switch (select) {
+    // case MAX:
+    //
+    // break;
+    //
+    // default:
+    // break;
+    // }
+    // }
+    // }
+    // }
+    // return false;
+    // }
+    // }
     /**
      * <p>
      * Implementation of CategoryDataset Only for mapping. Does not support complete functionality.
@@ -582,17 +951,19 @@ public class ReuseAnalyserView extends ViewPart {
      */
     private static class ChartNode implements Comparable {
         private Node node;
-        private Integer nodeKey;
+        private Double nodeKey;
+        private String columnValue;
 
         ChartNode(Node aggrNode) {
             node = aggrNode;
-            nodeKey = (Integer)aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+            nodeKey = ((Number)aggrNode.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE)).doubleValue();
+            columnValue = aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
         }
 
         @Override
         public int compareTo(Object o) {
             ChartNode nodeToCompare = (ChartNode)o;
-            return getNodeKey() - nodeToCompare.getNodeKey();
+            return Double.compare(getNodeKey(), nodeToCompare.getNodeKey());
         }
 
         /**
@@ -604,13 +975,13 @@ public class ReuseAnalyserView extends ViewPart {
 
         @Override
         public String toString() {
-            return String.valueOf(getNodeKey());
+            return columnValue;
         }
 
         /**
          * @return Returns the nodeKey.
          */
-        public Integer getNodeKey() {
+        public Double getNodeKey() {
             return nodeKey;
         }
     }

@@ -104,9 +104,10 @@ public class NetworkRenderer extends RendererImpl {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String selectedProp = geoNeo.getPropertyName();
-            Integer propertyValue = geoNeo.getPropertyValue();
-            Integer maxValue=geoNeo.getMaxPropertyValue();
-            Integer minValue=geoNeo.getMinPropertyValue();
+            Double redMinValue = geoNeo.getPropertyValueMin();
+            Double redMaxValue = geoNeo.getPropertyValueMax();
+            Double lesMinValue = geoNeo.getMinPropertyValue();
+            Double moreMaxValue = geoNeo.getMaxPropertyValue();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
 
@@ -168,13 +169,15 @@ public class NetworkRenderer extends RendererImpl {
                                     }
                                 }
                                 if (selectedProp != null && selectedProp.equals(key)) {
-                                    int value = ((Number)child.getProperty(key)).intValue();
-                                    if (value == propertyValue) {
-                                        colorToFill = COLOR_SELECTED;
-                                    } else if (value > propertyValue && value <= maxValue) {
+                                    double value = ((Number)child.getProperty(key)).doubleValue();
+                                    if (value < redMaxValue || value == redMinValue) {
+                                        if (value >= redMinValue) {
+                                            colorToFill = COLOR_SELECTED;
+                                        } else if (value >= lesMinValue) {
+                                            colorToFill = COLOR_LESS;
+                                        }
+                                    } else if (value < moreMaxValue) {
                                         colorToFill = COLOR_MORE;
-                                    } else if (value < propertyValue && value >= minValue) {
-                                        colorToFill = COLOR_LESS;
                                     }
                                 }
                             }

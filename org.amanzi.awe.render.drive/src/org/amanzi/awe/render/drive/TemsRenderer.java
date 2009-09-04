@@ -29,6 +29,8 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -128,9 +130,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String selectedProp = geoNeo.getPropertyName();
-            Integer propertyValue = geoNeo.getPropertyValue();
-            Integer maxPropertyValue = geoNeo.getMaxPropertyValue();
-            Integer minPropertyValue = geoNeo.getMinPropertyValue();
+            Double redMinValue = geoNeo.getPropertyValueMin();
+            Double redMaxValue = geoNeo.getPropertyValueMax();
+            Double lesMinValue = geoNeo.getMinPropertyValue();
+            Double moreMaxValue = geoNeo.getMaxPropertyValue();
+            Select select = Select.findSelectByValue(geoNeo.getSelectName());
             // Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -157,30 +161,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
                 Color nodeColor = fillColor;
                 if (selectedProp != null) {
-                    Double delta = null;
-                    mainLoop: for (Relationship relation : node.getNode().getRelationships(NetworkRelationshipTypes.CHILD,
-                            Direction.OUTGOING)) {
-                        Node child = relation.getEndNode();
-                        for (String key : child.getPropertyKeys()) {
-                            if (selectedProp.equals(key)) {
-                                Object property = child.getProperty(key);
-                                int value = ((Number)property).intValue();
-                                if (value == propertyValue) {
-                                    nodeColor = COLOR_SELECTED;
-                                    delta = 0.0;
-                                } else if (delta == null || Math.abs(value - propertyValue) < delta) {
-                                    if (value > propertyValue && value <= maxPropertyValue) {
-                                        nodeColor = COLOR_MORE;
-                                        delta = Math.abs(((Number)property).doubleValue() - propertyValue);
-                                    } else if (value < propertyValue && value >= minPropertyValue) {
-                                        nodeColor = COLOR_LESS;
-                                        delta = Math.abs(propertyValue - ((Number)property).doubleValue());
-                                    }
-                                }
-                                break mainLoop; // we support only value of first relationship
-                            }
-                        }
-                    }
+                    nodeColor = getColorOfMpNode(select, node.getNode(), fillColor, selectedProp, redMinValue, redMaxValue,
+                            lesMinValue, moreMaxValue);
+
                 }
                 renderPoint(g, p, nodeColor);
                 monitor.worked(1);
@@ -204,6 +187,90 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     }
 
     /**
+     * @param select
+     * @param moreMaxValue
+     * @param lesMinValue
+     * @param redMaxValue
+     * @param redMinValue
+     * @param selectedProp
+     * @param node
+     * @param fillColor2
+     * @return
+     */
+    private Color getColorOfMpNode(Select select, Node mpNode, Color defColor, String selectedProp, Double redMinValue,
+            Double redMaxValue, Double lesMinValue, Double moreMaxValue) {
+        Color colorToFill = defColor;
+        switch (select) {
+        case AVERAGE:
+        case MAX:
+        case MIN:
+        case FIRST:
+            Double sum = new Double(0);
+            int count = 0;
+            Double min = null;
+            Double max = null;
+            Double average = null;
+            Double firstValue = null;
+            for (Relationship relation : mpNode.getRelationships(MeasurementRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                Node node = relation.getEndNode();
+                if (INeoConstants.HEADER_MS.equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""))
+                        && node.hasProperty(selectedProp)) {
+                    double value = ((Number)node.getProperty(selectedProp)).doubleValue();
+                    min = min == null ? value : Math.min(min, value);
+                    max = max == null ? value : Math.max(max, value);
+                    // TODO hande gets firstValue by other way
+                    firstValue = firstValue == null ? value : firstValue;
+                    sum = sum + value;
+                    count++;
+                }
+            }
+            average = (double)sum / (double)count;
+            double checkValue = select == Select.MAX ? max : select == Select.MIN ? min : select == Select.AVERAGE ? average
+                    : firstValue;
+
+            if (checkValue < redMaxValue || checkValue == redMinValue) {
+                if (checkValue >= redMinValue) {
+                    colorToFill = COLOR_SELECTED;
+                } else if (checkValue >= lesMinValue) {
+                    colorToFill = COLOR_LESS;
+                }
+            } else if (checkValue < moreMaxValue) {
+                colorToFill = COLOR_MORE;
+            }
+            return colorToFill;
+        case EXISTS:
+            int priority = -1;
+            mainLoop: for (Relationship relation : mpNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                Node child = relation.getEndNode();
+
+                for (String key : child.getPropertyKeys()) {
+                    if (selectedProp.equals(key)) {
+                        Object property = child.getProperty(key);
+                        double value = ((Number)child.getProperty(selectedProp)).doubleValue();
+                        if (value < redMaxValue || value == redMinValue) {
+                            if (value >= redMinValue) {
+                                colorToFill = COLOR_SELECTED;
+                                priority = 3;
+                            } else if (value >= lesMinValue && (priority < 2)) {
+                                colorToFill = COLOR_LESS;
+                                priority = 1;
+
+                            }
+                        } else if (value < moreMaxValue && priority < 3) {
+                            colorToFill = COLOR_MORE;
+                            priority = 2;
+                        }
+                    }
+                }
+            }
+            return colorToFill;
+        default:
+            break;
+        }
+        return defColor;
+    }
+
+    /**
      * This one is very simple, just draw a rectangle at the point location.
      * 
      * @param g
@@ -215,5 +282,54 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         g.setColor(drawColor);
         g.drawRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
 
+    }
+
+    /**
+     * <p>
+     * TODO union with org.amanzi.awe.views.reuse.Select now simple copy enum from
+     * org.amanzi.awe.views.reuse.Select
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.1.0
+     */
+    private enum Select {
+        MAX("max"), MIN("min"), AVERAGE("average"), EXISTS("exists"), FIRST("first");
+        private final String value;
+
+        /**
+         * Constructor
+         * 
+         * @param value - string value
+         */
+        private Select(String value) {
+            this.value = value;
+        }
+
+        public static Select findSelectByValue(String value) {
+            if (value == null) {
+                return null;
+            }
+            for (Select selection : Select.values()) {
+                if (selection.value.equals(value)) {
+                    return selection;
+                }
+            }
+            return null;
+        }
+
+        public static String[] getEnumAsStringArray() {
+            Select[] enums = Select.values();
+            String[] result = new String[enums.length];
+            for (int i = 0; i < enums.length; i++) {
+                result[i] = enums[i].value;
+            }
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
     }
 }
