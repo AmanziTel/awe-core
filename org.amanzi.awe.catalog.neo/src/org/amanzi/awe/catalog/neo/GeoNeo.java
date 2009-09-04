@@ -38,11 +38,14 @@ public class GeoNeo {
     private org.neo4j.api.core.NeoService neo;
     private GisTypes types;
     private String propertyName;
-    private Integer propertyValue;
-    private Integer propertyAdjacency;
-    private Integer minPropertyValue;
-    private Integer maxPropertyValue;
+    // private Integer propertyAdjacency;
+    private Double minPropertyValue;
+    private Double maxPropertyValue;
     private Set<Node> selectedNodes = new HashSet<Node>();
+    private Double propertyValueMin;
+    private Double propertyValueMax;
+    private String distrName;
+    private String selectName;
     /**
      * A class representing a located Node in the database. By convention all GeoNodes
      * are expected to contain properties for "type" and "name". In addition they should contain
@@ -285,33 +288,35 @@ public class GeoNeo {
      * @param maxSelNode
      * @param minSelNode
      */
-    public void setPropertyToRefresh(Node aggrNode, Node propertyNode, Integer adjacency, Node minSelNode, Node maxSelNode) {
-        if (aggrNode != null && propertyNode != null && adjacency != null) {
+    public void setPropertyToRefresh(Node aggrNode, Node propertyNode, Node minSelNode, Node maxSelNode) {
+        if (aggrNode != null && propertyNode != null) {
+            distrName = (String)aggrNode.getProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME);
+            selectName = (String)aggrNode.getProperty(INeoConstants.PROPERTY_SELECT_NAME, null);
             propertyName = (String)aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-            propertyValue = (Integer)propertyNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-            minPropertyValue = (Integer)minSelNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-            maxPropertyValue = (Integer)maxSelNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-            propertyAdjacency = adjacency;
+            propertyValueMin = (Double)propertyNode.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE);
+            propertyValueMax = (Double)propertyNode.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE);
+            minPropertyValue = (Double)minSelNode.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE);
+            maxPropertyValue = (Double)maxSelNode.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE);
+            // propertyAdjacency = adjacency;
         } else {
             propertyName = null;
-            propertyValue = 0;
-            minPropertyValue = 0;
-            maxPropertyValue = 0;
-            propertyAdjacency = 0;
+            minPropertyValue = null;
+            maxPropertyValue = null;
+            // propertyAdjacency = 0;
         }
     }
 
     /**
      * @return Returns the minPropertyValue.
      */
-    public Integer getMinPropertyValue() {
+    public Double getMinPropertyValue() {
         return minPropertyValue;
     }
 
     /**
      * @return Returns the maxPropertyValue.
      */
-    public Integer getMaxPropertyValue() {
+    public Double getMaxPropertyValue() {
         return maxPropertyValue;
     }
 
@@ -330,10 +335,17 @@ public class GeoNeo {
     }
 
     /**
-     * @return Returns the propertyValue.
+     * @return Returns the propertyValueMin.
      */
-    public Integer getPropertyValue() {
-        return propertyValue;
+    public Double getPropertyValueMin() {
+        return propertyValueMin;
+    }
+
+    /**
+     * @return Returns the propertyValueMax.
+     */
+    public Double getPropertyValueMax() {
+        return propertyValueMax;
     }
 
     /**
@@ -359,6 +371,20 @@ public class GeoNeo {
      */
     public Set<Node> getSelectedNodes() {
         return selectedNodes;
+    }
+
+    /**
+     * @return Returns the distrName.
+     */
+    public String getDistrName() {
+        return distrName;
+    }
+
+    /**
+     * @return Returns the selectName.
+     */
+    public String getSelectName() {
+        return selectName;
     }
 
 }
