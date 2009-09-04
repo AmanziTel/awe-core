@@ -110,7 +110,8 @@ public class NeoGraphViewPart extends ViewPart implements
     public void createPartControl( final Composite parent )
     {
         viewer = new GraphViewer( parent, SWT.NONE );
-        viewer.setUseHashlookup( true );
+        // for setting selection event
+        viewer.setUseHashlookup(false);
         viewer.setContentProvider( new NeoGraphContentProvider( this ) );
         viewer.addDoubleClickListener( new NeoGraphDoubleClickListener() );
         viewer.setLayoutAlgorithm( new SpringLayoutAlgorithm(
