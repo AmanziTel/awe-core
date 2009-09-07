@@ -38,6 +38,8 @@ public class NetworkRenderer extends RendererImpl {
     private static final Color COLOR_MORE = Color.GREEN;
     private static final Color COLOR_SITE_SELECTED = Color.CYAN;
     private static final Color COLOR_SECTOR_SELECTED = Color.CYAN;
+    private static final int MAX_SITES_FULL = 100;
+    private static final int MAX_SITES_LITE = 1000;
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
     private Color fillColor = new Color(255, 255, 128,(int)(0.6*255.0));
@@ -53,8 +55,11 @@ public class NetworkRenderer extends RendererImpl {
         this.transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient); // could use transform_d2w.inverse() also
     }
 
-    private Envelope getTransformedBounds() throws TransformException{
+    private Envelope getTransformedBounds() throws TransformException {
         ReferencedEnvelope bounds = getRenderBounds();
+        if (bounds == null) {
+            bounds = this.context.getViewportModel().getBounds();
+        }
         Envelope bounds_transformed = null;
         if (bounds != null && transform_w2d != null) {
             bounds_transformed = JTS.transform(bounds, transform_w2d);
@@ -110,6 +115,19 @@ public class NetworkRenderer extends RendererImpl {
             Double moreMaxValue = geoNeo.getMaxPropertyValue();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
+            Envelope data_bounds = geoNeo.getBounds();
+            boolean drawFull = true;
+            boolean drawLite = true;
+            if (bounds_transformed == null) {
+                drawFull = false;
+                drawLite = false;
+            }else if (data_bounds != null && data_bounds.getHeight()>0 && data_bounds.getWidth()>0) {
+                double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
+                        / (data_bounds.getHeight() * data_bounds.getWidth());
+                double countScaled = dataScaled * geoNeo.getCount();
+                drawFull = countScaled < MAX_SITES_FULL;
+                drawLite = countScaled < MAX_SITES_LITE;
+            }
 
             g.setColor(drawColor);
             int count = 0;
@@ -132,82 +150,86 @@ public class NetworkRenderer extends RendererImpl {
                 if (geoNeo.getSelectedNodes().contains(node.getNode())) {
                     borderColor = COLOR_SITE_SELECTED;
                 }
-                renderSite(g, p, borderColor);
-                double[] label_position_angles = new double[]{0,90};
-                try {
-                    int s = 0;
-                    for(Relationship relationship:node.getNode().getRelationships(Direction.OUTGOING)){
-//                    for(Relationship relationship:node.getNode().getRelationships(NetworkLoader.NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
-                        Node child = relationship.getEndNode();
-                        if(child.hasProperty("type") && child.getProperty("type").toString().equals("sector")){
-                            double azimuth = 0.0;
-                            double beamwidth = 10.0;
-                            Color colorToFill = fillColor;
-                            for(String key:child.getPropertyKeys()){
-                                if(key.toLowerCase().contains("azimuth")){
-                                    Object value = child.getProperty(key);
-                                    if (value instanceof Integer) {
-                                        azimuth = (Integer)value;
-                                    } else {
-                                        try {
-                                            azimuth = Integer.parseInt(value.toString());
-                                        } catch (Exception e) {
+                renderSite(g, p, borderColor, drawFull, drawLite);
+                if (drawFull) {
+                    double[] label_position_angles = new double[] {0, 90};
+                    try {
+                        int s = 0;
+                        for (Relationship relationship : node.getNode().getRelationships(Direction.OUTGOING)) {
+                            // for(Relationship
+                            // relationship:node.getNode().getRelationships(NetworkLoader.NetworkRelationshipTypes.CHILD,
+                            // Direction.OUTGOING)){
+                            Node child = relationship.getEndNode();
+                            if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
+                                double azimuth = 0.0;
+                                double beamwidth = 10.0;
+                                Color colorToFill = fillColor;
+                                for (String key : child.getPropertyKeys()) {
+                                    if (key.toLowerCase().contains("azimuth")) {
+                                        Object value = child.getProperty(key);
+                                        if (value instanceof Integer) {
+                                            azimuth = (Integer)value;
+                                        } else {
+                                            try {
+                                                azimuth = Integer.parseInt(value.toString());
+                                            } catch (Exception e) {
+                                            }
+                                        }
+                                    }
+                                    if (key.toLowerCase().contains("beamwidth")) {
+                                        beamwidth = (Integer)child.getProperty(key);
+                                    } else if (key.toLowerCase().startsWith("beam")) {
+                                        Object value = child.getProperty(key);
+                                        if (value instanceof Integer) {
+                                            beamwidth = (Integer)value;
+                                        } else {
+                                            try {
+                                                beamwidth = Integer.parseInt(value.toString());
+                                            } catch (Exception e) {
+                                            }
+                                        }
+                                    }
+                                    if (selectedProp != null && selectedProp.equals(key)) {
+                                        double value = ((Number)child.getProperty(key)).doubleValue();
+                                        if (value < redMaxValue || value == redMinValue) {
+                                            if (value >= redMinValue) {
+                                                colorToFill = COLOR_SELECTED;
+                                            } else if (value >= lesMinValue) {
+                                                colorToFill = COLOR_LESS;
+                                            }
+                                        } else if (value < moreMaxValue) {
+                                            colorToFill = COLOR_MORE;
                                         }
                                     }
                                 }
-                                if(key.toLowerCase().contains("beamwidth")){
-                                    beamwidth = (Integer)child.getProperty(key);
-                                }else  if(key.toLowerCase().startsWith("beam")){
-                                    Object value = child.getProperty(key);
-                                    if (value instanceof Integer) {
-                                        beamwidth = (Integer)value;
-                                    } else {
-                                        try {
-                                            beamwidth = Integer.parseInt(value.toString());
-                                        } catch (Exception e) {
-                                        }
-                                    }
+                                borderColor = drawColor;
+                                if (geoNeo.getSelectedNodes().contains(child)) {
+                                    borderColor = COLOR_SECTOR_SELECTED;
                                 }
-                                if (selectedProp != null && selectedProp.equals(key)) {
-                                    double value = ((Number)child.getProperty(key)).doubleValue();
-                                    if (value < redMaxValue || value == redMinValue) {
-                                        if (value >= redMinValue) {
-                                            colorToFill = COLOR_SELECTED;
-                                        } else if (value >= lesMinValue) {
-                                            colorToFill = COLOR_LESS;
-                                        }
-                                    } else if (value < moreMaxValue) {
-                                        colorToFill = COLOR_MORE;
-                                    }
+                                renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor);
+                                if (s < label_position_angles.length) {
+                                    label_position_angles[s] = azimuth;
                                 }
+                                // g.setColor(drawColor);
+                                // g.rotate(-Math.toRadians(beamwidth/2));
+                                // g.drawString(sector.getString("name"),drawSize,0);
+                                s++;
                             }
-                            borderColor = drawColor;
-                            if (geoNeo.getSelectedNodes().contains(child)) {
-                                borderColor = COLOR_SECTOR_SELECTED;
-                            }
-                            renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor);
-                            if(s<label_position_angles.length){
-                                label_position_angles[s] = azimuth;
-                            }
-                            //g.setColor(drawColor);
-                            //g.rotate(-Math.toRadians(beamwidth/2));
-                            //g.drawString(sector.getString("name"),drawSize,0);
-                            s++;
+                        }
+                    } finally {
+                        if (base_transform != null) {
+                            // recover the normal transform
+                            g.setTransform(base_transform);
+                            g.setColor(drawColor);
                         }
                     }
-                } finally {
-                    if (base_transform != null) {
-                        // recover the normal transform
-                        g.setTransform(base_transform);
-                        g.setColor(drawColor);
-                    }
+                    double label_position_angle = Math.toRadians(-90 + (label_position_angles[0] + label_position_angles[1]) / 2.0);
+                    int label_x = 5 + (int)(10 * Math.cos(label_position_angle));
+                    int label_y = (int)(10 * Math.sin(label_position_angle));
+                    g.setColor(labelColor);
+                    g.drawString(node.toString(), p.x + label_x, p.y + label_y);
+                    g.setTransform(base_transform);
                 }
-                double label_position_angle = Math.toRadians(-90 + (label_position_angles[0]+label_position_angles[1])/2.0);
-                int label_x = 5+(int)(10 * Math.cos(label_position_angle));
-                int label_y = (int)(10 * Math.sin(label_position_angle));
-                g.setColor(labelColor);
-                g.drawString(node.toString(), p.x + label_x, p.y + label_y);
-                g.setTransform(base_transform);
                 monitor.worked(1);
                 count++;
                 if (monitor.isCanceled())
@@ -259,10 +281,16 @@ public class NetworkRenderer extends RendererImpl {
      * @param p
      * @param borderColor
      */
-    private void renderSite(Graphics2D g, java.awt.Point p, Color borderColor) {
+    private void renderSite(Graphics2D g, java.awt.Point p, Color borderColor, boolean drawFull, boolean drawLite) {
         Color oldColor = g.getColor();
         g.setColor(borderColor);
-        g.fillOval(p.x - 5, p.y - 5, 10, 10);
+        if (drawFull) {
+            g.fillOval(p.x - 5, p.y - 5, 10, 10);
+        } else if (drawLite) {
+            g.drawOval(p.x - 5, p.y - 5, 10, 10);
+        } else {
+            g.drawRect(p.x - 1, p.y - 1, 3, 3);
+        }
         g.setColor(oldColor);
     }
 

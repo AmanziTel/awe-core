@@ -86,7 +86,7 @@ public class LoadNetwork extends AbstractActionTool {
 							try {
 								networkLoader = new NetworkLoader(filename);
 								networkLoader.run();
-								networkLoader.printStats();
+								networkLoader.printStats(false);
 							} catch (IOException e) {								
 								NeoCorePlugin.error("Error loading Network file", e);
 							}

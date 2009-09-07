@@ -166,6 +166,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                 Transaction transaction = neo.beginTx();
                 try {
                     gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
+                    gis.setProperty("count", siteNumber);
                     transaction.success();
                 }finally{
                     transaction.finish();
@@ -552,21 +553,24 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		return child;
 	}
 	
-	public void printStats() {
+	public void printStats(boolean verbose) {
         if (network != null) {
-            Transaction tx = neo.beginTx();
-            try {
-                printChildren(network, 0);
-                tx.success();
-            } finally {
-                tx.finish();
+            if (verbose) {
+                Transaction tx = neo.beginTx();
+                try {
+                    printChildren(network, 0);
+                    tx.success();
+                } finally {
+                    tx.finish();
+                }
             }
+            info("Finished loading "+siteNumber+" sites and "+sectorNumber+" sectors from "+lineNumber+" lines");
         } else {
             error("No network node found");
         }
     }
 
-	private static void printChildren(Node node, int depth){
+	private static void printChildren(Node node, int depth) {
 		if(node==null || depth > 4 || !node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) return;
 		StringBuffer tab = new StringBuffer();
 		for(int i=0;i<depth;i++) tab.append("    ");
@@ -592,7 +596,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		    long startTime = System.currentTimeMillis();
 			NetworkLoader networkLoader = new NetworkLoader(neo,args.length>0 ? args[0] : "amanzi/network.txt");
 			networkLoader.run();
-			networkLoader.printStats();
+			networkLoader.printStats(true);
             info("Ran test in "+(System.currentTimeMillis()-startTime)/1000.0+"s");
 		} catch (IOException e) {
 			System.err.println("Failed to load network: "+e);

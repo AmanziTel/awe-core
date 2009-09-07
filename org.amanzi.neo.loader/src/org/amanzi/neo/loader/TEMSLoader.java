@@ -68,6 +68,7 @@ public class TEMSLoader {
     private int count_valid_message = 0;
     private int count_valid_location = 0;
     private int count_valid_changed = 0;
+    private long savedData = 0;
     private int limit = 0;
     private static int[] times = new int[2];
     private double[] bbox;
@@ -86,7 +87,7 @@ public class TEMSLoader {
      * @author Lagutko_N
      */
     
-    public TEMSLoader(String filename, Display display,String dataset) {
+    public TEMSLoader(String filename, Display display, String dataset) {
     	this(null, filename, display);
     	if (dataset==null||dataset.trim().isEmpty()){
     		this.dataset=null;
@@ -153,6 +154,7 @@ public class TEMSLoader {
                 try {
                     if (bbox != null) {
                         gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
+                        gis.setProperty("count", savedData + (Long)gis.getProperty("count", 0L));
                     }
                     HashSet<Node> nodeToDelete = new HashSet<Node>();
                     for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING)) {
@@ -469,6 +471,7 @@ public class TEMSLoader {
                     }
                     prev_ms = ms;
 				}
+                savedData ++;
 				transaction.success();
 			} finally {
 				transaction.finish();
@@ -577,7 +580,7 @@ public class TEMSLoader {
 				+ (times[1] / times[0]) / 1000.0 + " seconds per load)");
 	}
 	
-	public void printStats(){
+	public void printStats(boolean verbose){
         long taken = System.currentTimeMillis()-started;
         addTimes(taken);
         notify("Finished loading "+basename+" data in "+(taken/1000.0)+" seconds");
@@ -590,11 +593,11 @@ public class TEMSLoader {
         	int[] pn_counts = stats.get(pn_code);
         	notify("\t"+pn_code+" measured "+pn_counts[0]+" times (average Ec/Io = "+pn_counts[1]/pn_counts[0]+")");
         }
-		if(file!=null){
-			printMeasurements(file);
-		}else{
-			error("No measurement file node found");
-		}
+		if (file != null && verbose) {
+            printMeasurements(file);
+        } else {
+            error("No measurement file node found");
+        }
 	}
 
 	private void printMeasurement(Node measurement){
@@ -648,7 +651,7 @@ public class TEMSLoader {
 				TEMSLoader temsLoader = new TEMSLoader(neo,filename);
 				temsLoader.setLimit(100);
 				temsLoader.run();
-				temsLoader.printStats();	// stats for this load
+				temsLoader.printStats(true);	// stats for this load
 			}
 			printTimesStats();	// stats for all loads
 		} catch (IOException e) {

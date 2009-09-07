@@ -24,7 +24,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * This class is a utility class for reading GIS information from a specific
- * source within a Neo4J database. The GIS information is assummed to start with
+ * source within a Neo4J database. The GIS information is assumed to start with
  * a node known as the GIS node. This node contains the CRS information and a relationship
  * to the first of a graph of nodes representing GIS data. Each of these is expected to
  * have properties x/y or lat/long containing the location.
@@ -46,6 +46,8 @@ public class GeoNeo {
     private Double propertyValueMax;
     private String distrName;
     private String selectName;
+    private long count = 0;
+
     /**
      * A class representing a located Node in the database. By convention all GeoNodes
      * are expected to contain properties for "type" and "name". In addition they should contain
@@ -115,6 +117,7 @@ public class GeoNeo {
         this.gisNode = gisNode;
         this.name = this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
         this.types = GisTypes.findGisTypeByHeader(this.gisNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString());
+        this.count = (Long)this.gisNode.getProperty("count", 0L);
     }
 
     /**
@@ -385,6 +388,10 @@ public class GeoNeo {
      */
     public String getSelectName() {
         return selectName;
+    }
+
+    public long getCount() {
+        return this.count;
     }
 
 }

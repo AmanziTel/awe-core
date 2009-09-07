@@ -518,9 +518,9 @@ public class TEMSDialog {
 		
 		for (String filePath : loadedFiles.values()) {
 			try {				
-				TEMSLoader temsLoader = new TEMSLoader(filePath, display,datasetName);
+				TEMSLoader temsLoader = new TEMSLoader(filePath, display, datasetName);
 				temsLoader.run();
-				temsLoader.printStats();	// stats for this load						
+				temsLoader.printStats(false);	// stats for this load						
 			}
 			catch (IOException e) {
 				NeoLoaderPlugin.exception(e);
