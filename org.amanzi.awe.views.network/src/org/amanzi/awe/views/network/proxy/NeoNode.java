@@ -25,12 +25,12 @@ public class NeoNode {
     /*
      * Node
      */
-    private Node node;
+    protected Node node;
     
     /*
      * Name of Node
      */
-    private String name;
+    protected String name;
     
     /**
      * Creates a proxy element for given Node

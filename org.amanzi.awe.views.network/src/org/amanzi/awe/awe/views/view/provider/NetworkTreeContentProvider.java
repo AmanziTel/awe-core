@@ -20,7 +20,7 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
      * NeoServiceProvider
      */
     
-    private NeoServiceProvider neoServiceProvider;
+    protected NeoServiceProvider neoServiceProvider;
     
     /**
      * Constructor of ContentProvider

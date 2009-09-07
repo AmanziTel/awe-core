@@ -60,7 +60,7 @@ public class NetworkTreeView extends ViewPart {
     /*
      * TreeViewer for database Nodes
      */
-    private TreeViewer viewer;
+    protected TreeViewer viewer;
 
     /*
      * NeoService provider
@@ -126,7 +126,7 @@ public class NetworkTreeView extends ViewPart {
      * @param neoServiceProvider
      */
 
-    private void setProviders(NeoServiceProvider neoServiceProvider) {
+    protected void setProviders(NeoServiceProvider neoServiceProvider) {
         viewer.setContentProvider(new NetworkTreeContentProvider(neoServiceProvider));
         viewer.setLabelProvider(new NetworkTreeLabelProvider(viewer));
     }
@@ -179,15 +179,15 @@ public class NetworkTreeView extends ViewPart {
     }
 
     /**
-     * @param firstElement
+     * shows database graph with selected node
+     * @param nodeToSelect - selected node
      */
-    protected void showSelection(NeoNode firstElement) {
+    protected void showSelection(NeoNode nodeToSelect) {
         try {
-            IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
-                    "org.neo4j.neoclipse.view.NeoGraphViewPart");
+            IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NeoGraphViewPart.ID);
             NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
-            viewGraph.showNode(firstElement.getNode());
-            final StructuredSelection selection = new StructuredSelection(new Object[] {firstElement.getNode()});
+            viewGraph.showNode(nodeToSelect.getNode());
+            final StructuredSelection selection = new StructuredSelection(new Object[] {nodeToSelect.getNode()});
             viewGraph.getViewer().setSelection(selection, true);
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NETWORK_TREE_VIEW_ID);
         } catch (Exception e) {

@@ -14,6 +14,9 @@ Require-Bundle: org.eclipse.ui,
  org.gef;bundle-version="1.0.0",
  org.neo4j.neoclipse;bundle-version="0.4.0"
 Eclipse-LazyStart: true
-Export-Package: org.amanzi.awe.views.network,
+Export-Package: org.amanzi.awe.awe.views.view.provider,
+ org.amanzi.awe.views.network,
+ org.amanzi.awe.views.network.property,
+ org.amanzi.awe.views.network.proxy,
  org.amanzi.awe.views.network.view
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

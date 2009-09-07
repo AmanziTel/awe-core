@@ -25,7 +25,7 @@ public class Root extends NeoNode {
     /*
      * NeoServiceProvider
      */
-    private NeoServiceProvider serviceProvider;
+    protected NeoServiceProvider serviceProvider;
     
     /**
      * Constructor that creates Root
