@@ -105,6 +105,12 @@ public class NetworkRenderer extends RendererImpl {
         	fillColor=neostyle.getFill();
         	drawColor=neostyle.getLine();
         	labelColor=neostyle.getLabel();
+            drawSize = neostyle.getSymbolSize();
+            transparency = (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
+            maxSitesLabel = neostyle.getLabeling();
+            maxSitesFull = neostyle.getSmallSymb();
+            maxSitesLite = neostyle.getSmallestSymb();
+            scaleSectors = !neostyle.isFixSymbolSize();
             //TODO: get drawSite, transparency, maxSitesLabel, maxSitesFull, maxSitesLite and scaleSectors from style
         }
         fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), transparency);

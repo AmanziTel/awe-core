@@ -27,6 +27,12 @@ public class NeoStyleContent extends StyleContent {
     private static final String FILL_PRFX = "FILL_";
     private static final String LABEL_PRFX = "LABEL_";
     private static final String COLOR_RGB = "RGB";
+    private static final String SMALLEST_SYMB = "SECTOR_SMALLEST_SYMB";
+    private static final String SMALL_SYMB = "SECTOR_SMALL_SYMB";
+    private static final String LABELING = "SECTOR_LABELING";
+    private static final String FIX_SYMBOL = "FIX_SYMBOL";
+    private static final String SYMBOL_SIZE = "SYMBOL_SIZE";
+    private static final String SECTOR_TRANSPARENCY = "SECTOR_TRANSPARENCY";
 
     public NeoStyleContent() {
         super(ID);
@@ -38,7 +44,14 @@ public class NeoStyleContent extends StyleContent {
             NeoGeoResource res = resource.resolve(NeoGeoResource.class, monitor);
             int transparency = (int)(0.6 * 255.0);
             if (res.getGeoNeo(monitor).getGisType() == GisTypes.Network) {
-                return new NeoStyle(Color.DARK_GRAY, new Color(255, 255, 128, transparency), Color.DARK_GRAY);
+                NeoStyle result = new NeoStyle(Color.DARK_GRAY, new Color(255, 255, 128, transparency), Color.DARK_GRAY);
+                result.setSmallestSymb(1000);
+                result.setSmallSymb(100);
+                result.setLabeling(50);
+                result.setFixSymbolSize(false);
+                result.setSymbolSize(15);
+                result.setSectorTransparency(60);
+                return result;
             } else {
                 return new NeoStyle(Color.BLACK, new Color(200, 128, 255, transparency), Color.BLACK);
             }
@@ -56,7 +69,14 @@ public class NeoStyleContent extends StyleContent {
         Color line = loadColor(memento, LINE_PRFX, Color.BLACK);
         Color fill = loadColor(memento, FILL_PRFX, Color.BLACK);
         Color label = loadColor(memento, LABEL_PRFX, Color.BLACK);
-        return new NeoStyle(line, fill, label);
+        NeoStyle result = new NeoStyle(line, fill, label);
+        result.setSmallestSymb(memento.getInteger(SMALLEST_SYMB));
+        result.setSmallSymb(memento.getInteger(SMALL_SYMB));
+        result.setLabeling(memento.getInteger(LABELING));
+        result.setFixSymbolSize(Boolean.parseBoolean(memento.getString(FIX_SYMBOL)));
+        result.setSymbolSize(memento.getInteger(SYMBOL_SIZE));
+        result.setSectorTransparency(memento.getInteger(SECTOR_TRANSPARENCY));
+        return result;
     }
 
     private Color loadColor(IMemento memento, String prfx, Color defColor) {
@@ -76,6 +96,12 @@ public class NeoStyleContent extends StyleContent {
         saveColor(memento, LINE_PRFX, style.getLine());
         saveColor(memento, FILL_PRFX, style.getFill());
         saveColor(memento, LABEL_PRFX, style.getLabel());
+        memento.putInteger(SMALLEST_SYMB, style.getSmallestSymb());
+        memento.putInteger(SMALL_SYMB, style.getSmallSymb());
+        memento.putInteger(LABELING, style.getLabeling());
+        memento.putString(FIX_SYMBOL, String.valueOf(style.isFixSymbolSize()));
+        memento.putInteger(SYMBOL_SIZE, style.getSymbolSize());
+        memento.putInteger(SECTOR_TRANSPARENCY, style.getSectorTransparency());
 
     }
 
