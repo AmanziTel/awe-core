@@ -417,40 +417,45 @@ public class ReuseAnalyserView extends ViewPart {
         int colCount = 0;
         Collection<Node> trav = travers.getAllNodes();
         for (Node node : trav) {
-            propertyValue = node.getProperty(propertyName);
-            Number valueNum = (Number)propertyValue;
-            if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
-                Node mpNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-                Number oldValue = mpMap.get(mpNode);
-                if (oldValue == null) {
-                    if (select == Select.AVERAGE) {
-                        valueNum = calculateAverageValueOfMpNode(mpNode, propertyName);
-                    }
-                    mpMap.put(mpNode, valueNum);
-                } else {
-                    switch (select) {
-                    case MAX:
-                        if (oldValue.doubleValue() <valueNum.doubleValue()) {
-                            mpMap.put(mpNode, valueNum);
+            if (node.hasProperty(propertyName)) {
+                propertyValue = node.getProperty(propertyName);
+                Number valueNum = (Number)propertyValue;
+                if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
+                    Node mpNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+                    Number oldValue = mpMap.get(mpNode);
+                    if (oldValue == null) {
+                        if (select == Select.AVERAGE) {
+                            valueNum = calculateAverageValueOfMpNode(mpNode, propertyName);
                         }
-                        break;
-                    case MIN:
-                        if (oldValue.doubleValue() > valueNum.doubleValue()) {
-                            mpMap.put(mpNode, valueNum);
+                        mpMap.put(mpNode, valueNum);
+                    } else {
+                        switch (select) {
+                        case MAX:
+                            if (oldValue.doubleValue() < valueNum.doubleValue()) {
+                                mpMap.put(mpNode, valueNum);
+                            }
+                            break;
+                        case MIN:
+                            if (oldValue.doubleValue() > valueNum.doubleValue()) {
+                                mpMap.put(mpNode, valueNum);
+                            }
+                            break;
+                        case FIRST:
+                            break;
+                        default:
+                            break;
                         }
-                        break;
-                    case FIRST:
-                        break;
-                    default:
-                        break;
                     }
-                }
 
-            }else{
-            colCount++;
-            min = min == null ? ((Number)propertyValue).doubleValue() : Math.min(((Number)propertyValue).doubleValue(), min);
-            max = max == null ? ((Number)propertyValue).doubleValue() : Math.max(((Number)propertyValue).doubleValue(), max);
-            
+                } else {
+                    colCount++;
+                    min = min == null ? ((Number)propertyValue).doubleValue() : Math
+                            .min(((Number)propertyValue).doubleValue(), min);
+                    max = max == null ? ((Number)propertyValue).doubleValue() : Math
+                            .max(((Number)propertyValue).doubleValue(), max);
+                }
+            } else {
+                System.out.println("No such property '"+propertyName+"' for node "+(node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
             }
         }
         if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
@@ -506,18 +511,22 @@ public class ReuseAnalyserView extends ViewPart {
         }
         if (typeOfGis == GisTypes.Network || select == Select.EXISTS) {
             for (Node node : trav) {
-                double value = ((Number)node.getProperty(propertyName)).doubleValue();
-                for (Column column : keySet) {
-                    if (column.containsValue(value)) {
-                        Integer count = result.get(column);
-                        if (count == null) {
-                            result.put(column, 1);
-                        } else {
-                            result.put(column, count + 1);
+                if (node.hasProperty(propertyName)) {
+                    double value = ((Number)node.getProperty(propertyName)).doubleValue();
+                    for (Column column : keySet) {
+                        if (column.containsValue(value)) {
+                            Integer count = result.get(column);
+                            if (count == null) {
+                                result.put(column, 1);
+                            } else {
+                                result.put(column, count + 1);
+                            }
+    
+                            break;
                         }
-
-                        break;
                     }
+                } else {
+                    System.out.println("No such property '"+propertyName+"' for node "+(node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
                 }
             }
         } else {
