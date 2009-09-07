@@ -25,6 +25,11 @@ public class DriveNeoNode extends NeoNode {
     /** int TRUNCATE_NODE field */
     private static final int TRUNCATE_NODE = 10;
 
+    /**
+     * Constructor
+     * 
+     * @param node node
+     */
     public DriveNeoNode(Node node) {
         super(node);
         if (getType().equals(INeoConstants.MP_TYPE_NAME)) {
