@@ -104,17 +104,20 @@ public class NetworkRenderer extends RendererImpl {
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID );     
         if (neostyle!=null){
-            //siteColor=neostyle.getSiteFill();
-        	fillColor=neostyle.getFill();
-        	drawColor=neostyle.getLine();
-        	labelColor=neostyle.getLabel();
-            drawSize = neostyle.getSymbolSize();
-            transparency = (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
-            maxSitesLabel = neostyle.getLabeling();
-            maxSitesFull = neostyle.getSmallSymb();
-            maxSitesLite = neostyle.getSmallestSymb();
-            scaleSectors = !neostyle.isFixSymbolSize();
-            //TODO: get drawSite, transparency, maxSitesLabel, maxSitesFull, maxSitesLite and scaleSectors from style
+            try {
+                //siteColor=neostyle.getSiteFill();
+                fillColor=neostyle.getFill();
+                drawColor=neostyle.getLine();
+                labelColor=neostyle.getLabel();
+                drawSize = neostyle.getSymbolSize();
+                transparency = (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
+                maxSitesLabel = neostyle.getLabeling();
+                maxSitesFull = neostyle.getSmallSymb();
+                maxSitesLite = neostyle.getSmallestSymb();
+                scaleSectors = !neostyle.isFixSymbolSize();
+            } catch (Exception e) {
+                //TODO: we can get here if an old style exists, and we have added new fields
+            }
         }
         siteColor = new Color(siteColor.getRed(), siteColor.getGreen(), siteColor.getBlue(), transparency);
         fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), transparency);
