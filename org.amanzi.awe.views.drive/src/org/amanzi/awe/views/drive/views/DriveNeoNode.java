@@ -22,6 +22,9 @@ import org.neo4j.api.core.Traverser.Order;
  * @since 1.1.0
  */
 public class DriveNeoNode extends NeoNode {
+    /** int TRUNCATE_NODE field */
+    private static final int TRUNCATE_NODE = 10;
+
     public DriveNeoNode(Node node) {
         super(node);
         if (getType().equals(INeoConstants.MP_TYPE_NAME)) {
@@ -48,7 +51,7 @@ public class DriveNeoNode extends NeoNode {
         int i = 0;
         ArrayList<DriveNeoNode> subnodes = new ArrayList<DriveNeoNode>();
         for (Node node : traverse) {
-            if (++i < 10) {
+            if (++i <= TRUNCATE_NODE) {
                 children.add(new DriveNeoNode(node));
             } else {
                 subnodes.add(new DriveNeoNode(node));
