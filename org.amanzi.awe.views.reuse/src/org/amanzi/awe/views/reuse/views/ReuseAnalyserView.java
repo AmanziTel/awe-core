@@ -490,7 +490,7 @@ public class ReuseAnalyserView extends ViewPart {
                     if (key.getRange() == 0) {
                         nameCol = minValue.toString();
                     } else {
-                        nameCol = "[" + minValue.toString() + ":" + maxValue.toString() + ")";
+                        nameCol = minValue.toString() + "-" + maxValue.toString();
                     }
                 }
                 childNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.COUNT_TYPE_NAME);
@@ -498,6 +498,7 @@ public class ReuseAnalyserView extends ViewPart {
                 childNode.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, key.getMinValue());
                 childNode.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, key.getMinValue() + key.getRange());
                 childNode.setProperty(INeoConstants.PROPERTY_VALUE_NAME, statistics.get(key));
+                if(key.isSpacer()) childNode.setProperty("spacer", true);
                 parentNode.createRelationshipTo(childNode, NetworkRelationshipTypes.CHILD);
                 parentNode = childNode;
             }
@@ -617,7 +618,9 @@ public class ReuseAnalyserView extends ViewPart {
         ArrayList<Column> keySet = new ArrayList<Column>();
         double curValue = min;
         while (curValue <= max) {
-            keySet.add(new Column(curValue, range));
+            Column col = new Column(curValue, range);
+            keySet.add(col);
+            result.put(col, 0); // make sure distribution is continuous (includes gaps)
             curValue += range;
             if (range == 0) {
                 break;
@@ -630,12 +633,7 @@ public class ReuseAnalyserView extends ViewPart {
                     for (Column column : keySet) {
                         if (column.containsValue(value)) {
                             Integer count = result.get(column);
-                            if (count == null) {
-                                result.put(column, 1);
-                            } else {
-                                result.put(column, count + 1);
-                            }
-
+                            result.put(column, 1 + (count == null ? 0 : count));
                             break;
                         }
                     }
@@ -650,15 +648,22 @@ public class ReuseAnalyserView extends ViewPart {
                 for (Column column : keySet) {
                     if (column.containsValue(value)) {
                         Integer count = result.get(column);
-                        if (count == null) {
-                            result.put(column, 1);
-                        } else {
-                            result.put(column, count + 1);
-                        }
+                        result.put(column, 1 + (count == null ? 0 : count));
                         break;
                     }
                 }
             }
+        }
+        // Now merge any gaps in the distribution into a single category (TODO: Prevent adjacency jumping this gap)
+        Column prev_col = null;
+        for (Column column : keySet) {
+            if(prev_col!=null && result.get(prev_col)==0 && result.get(column)==0) {
+                result.remove(prev_col);
+                column.minValue = prev_col.minValue;
+                column.range += prev_col.range;
+                column.setSpacer(true);
+            }
+            prev_col = column;
         }
         return result;
     }
@@ -692,6 +697,7 @@ public class ReuseAnalyserView extends ViewPart {
 
         private Double minValue;
         private Double range;
+        private boolean spacer = false;
 
         /**
          * Constructor
@@ -702,6 +708,22 @@ public class ReuseAnalyserView extends ViewPart {
         public Column(double curValue, double range) {
             minValue = curValue;
             this.range = range;
+        }
+
+        /**
+         * Whether or not this column is a chart spacer column
+         * @return true if this column is only a chart spacer
+         */
+        public boolean isSpacer() {
+            return spacer;
+        }
+
+        /**
+         * Set this column to be a chart spacer (no data)
+         * @param value
+         */
+        public void setSpacer(boolean value) {
+            spacer = value;
         }
 
         /**
