@@ -16,14 +16,24 @@ package org.amanzi.awe.views.reuse;
 
 /**
  * <p>
- * Enum of
+ * Selection type of 'ms' node
  * </p>
  * 
  * @author Cinkel_A
  * @since 1.1.0
  */
 public enum Select {
-    MAX("max"), MIN("min"), AVERAGE("average"), EXISTS("exists"), FIRST("first");
+
+    /** Select node with max value */
+    MAX("max"),
+    /** Select node with min value */
+    MIN("min"),
+    /** Select AVERAGE value of nodes */
+    AVERAGE("average"),
+    /** Select EXISTS algorithm */
+    EXISTS("exists"),
+    /** Select FIRST value of nodes */
+    FIRST("first");
     private final String value;
 
     /**
@@ -35,6 +45,12 @@ public enum Select {
         this.value = value;
     }
 
+    /**
+     * Find enum by value
+     * 
+     * @param value string value
+     * @return enum with necessary value or null
+     */
     public static Select findSelectByValue(String value) {
         if (value == null) {
             return null;
@@ -47,6 +63,11 @@ public enum Select {
         return null;
     }
 
+    /**
+     * gets enums as array of its values
+     * 
+     * @return string array of values
+     */
     public static String[] getEnumAsStringArray() {
         Select[] enums = Select.values();
         String[] result = new String[enums.length];
@@ -55,6 +76,7 @@ public enum Select {
         }
         return result;
     }
+
     @Override
     public String toString() {
         return value;

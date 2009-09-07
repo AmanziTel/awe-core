@@ -88,7 +88,7 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateDatabaseList
 	}
 
     /**
-     *
+     *updates ReuseAnalyserView
      */
     private void updateView() {
         ActionUtil.getInstance().runTask(new Runnable() {

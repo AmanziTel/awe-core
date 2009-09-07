@@ -15,15 +15,24 @@
 package org.amanzi.awe.views.reuse;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Type of column groups
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.1.0
  */
 public enum Distribute {
-    AUTO("auto"), INTEGERS("integers"), I10("10"), I20("20"), I50("50");
+    /** auto column groups*/
+    AUTO("auto"), 
+    /** column groups by integer value*/
+    INTEGERS("integers"), 
+    /** group by 10 columns */
+    I10("10"),
+    /** group by 20 columns */
+    I20("20"),
+    /** group by 50 columns */
+    I50("50");
     private final String value;
 
     /**
@@ -35,6 +44,12 @@ public enum Distribute {
         this.value = value;
     }
 
+    /**
+     * Find enum by value
+     * 
+     * @param value string value
+     * @return enum with necessary value or null
+     */
     public static Distribute findEnumByValue(String value) {
         if (value == null) {
             return null;
@@ -47,6 +62,11 @@ public enum Distribute {
         return null;
     }
 
+    /**
+     * gets enums as array of its values
+     * 
+     * @return string array of values
+     */
     public static String[] getEnumAsStringArray() {
         Distribute[] enums = Distribute.values();
         String[] result = new String[enums.length];
