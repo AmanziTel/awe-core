@@ -30,6 +30,10 @@ import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
@@ -39,6 +43,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -104,6 +109,8 @@ public class ReuseAnalyserView extends ViewPart {
     private Node selectedGisNode = null;
     private ChartNode selectedColumn = null;
     private Object propertyValue;
+    private Text tSelectedInformation;
+    private Label lSelectedInformation;
     private static final Paint DEFAULT_COLOR = new Color(0.75f,0.7f,0.4f);
     private static final Paint COLOR_SELECTED = Color.RED;
     private static final Paint COLOR_LESS = Color.BLUE;
@@ -112,6 +119,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final Paint PLOT_BACKGROUND = new Color(230, 230, 230);
     private static final String SELECT_LABEL = "Select";
     private static final String DISTRIBUTE_LABEL = "Distribute";
+    private static final String LABEL_INFO = "Selected bar";
 
     public void createPartControl(Composite parent) {
         gisSelected = new Label(parent, SWT.NONE);
@@ -142,6 +150,9 @@ public class ReuseAnalyserView extends ViewPart {
         cSelect.setItems(Select.getEnumAsStringArray());
         cSelect.select(0);
         cSelect.setEnabled(false);
+        lSelectedInformation = new Label(parent, SWT.NONE);
+        lSelectedInformation.setText(LABEL_INFO);
+        tSelectedInformation = new Text(parent, SWT.NONE);
         spinAdj.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -173,7 +184,7 @@ public class ReuseAnalyserView extends ViewPart {
         // wrong column selection after resizing application
         chartFrame = new ChartComposite(parent, 0, chart, true);
         chartFrame.pack();
-        chartFrame.setVisible(false);
+        setVisibleForChart(false);
         layoutComponents(parent);
         chartFrame.addChartMouseListener(new ChartMouseListener() {
             @Override
@@ -198,7 +209,8 @@ public class ReuseAnalyserView extends ViewPart {
                 int selectedGisInd = gisCombo.getSelectionIndex();
                 if (selectedGisInd < 0) {
                     propertyList = new ArrayList<String>();
-                    chartFrame.setVisible(false);
+                    setVisibleForChart(false);
+                    tSelectedInformation.setText("");
                 } else {
                     Node gis = members.get(gisCombo.getText());
                     cSelect
@@ -217,7 +229,7 @@ public class ReuseAnalyserView extends ViewPart {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (propertyCombo.getSelectionIndex() < 0) {
-                    chartFrame.setVisible(false);
+                    setVisibleForChart(false);
                 } else {
                     Node aggrNode = findOrCreateAggregateNode(members.get(gisCombo.getText()), propertyCombo.getText());
                     chartUpdate(aggrNode);
@@ -249,6 +261,77 @@ public class ReuseAnalyserView extends ViewPart {
         propertyCombo.addSelectionListener(propComboSelectionListener);
         cSelect.addSelectionListener(selectComboSelectionListener);
         cDistribute.addSelectionListener(selectComboSelectionListener);
+        tSelectedInformation.addFocusListener(new FocusListener() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                findSelectionInformation();
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+            }
+        });
+        tSelectedInformation.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.keyCode == SWT.KEYPAD_CR || e.keyCode == 13) {
+                    findSelectionInformation();
+                }
+            }
+        });
+    }
+
+    /**
+     *update select information
+     */
+    protected void findSelectionInformation() {
+        String text = tSelectedInformation.getText();
+        if (text == null || text.isEmpty()) {
+            setSelectionName(selectedColumn);
+            return;
+        }
+        try {
+            double valueToFind = Double.parseDouble(text);
+            ChartNode column = findColumnByValue(valueToFind);
+            setSelection(column);
+            return;
+
+        } catch (NumberFormatException e) {
+            setSelectionName(selectedColumn);
+        }
+    }
+
+    /**
+     * Finds column,which contains necessary value
+     * 
+     * @param valueToFind value to find
+     * @return column or null
+     */
+    private ChartNode findColumnByValue(double valueToFind) {
+        for (int i = 0; i < dataset.getColumnCount(); i++) {
+            ChartNode column = (ChartNode)dataset.getColumnKey(i);
+            if (column.containsValue(valueToFind)) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * sets visibility of chart and depends element
+     * 
+     * @param isVisible - visibility
+     */
+    private void setVisibleForChart(boolean isVisible) {
+        chartFrame.setVisible(isVisible);
+        lSelectedInformation.setVisible(isVisible);
+        tSelectedInformation.setVisible(isVisible);
     }
 
     /**
@@ -260,7 +343,7 @@ public class ReuseAnalyserView extends ViewPart {
         chart.setTitle(aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
         dataset.setAggrNode(aggrNode);
         setSelection(null);
-        chartFrame.setVisible(true);
+        setVisibleForChart(true);
     }
 
     /**
@@ -286,7 +369,19 @@ public class ReuseAnalyserView extends ViewPart {
             selectedGisNode = gisNode;
             fireLayerDrawEvent(gisNode, aggrNode, selectedColumn);
         }
+        setSelectionName(columnKey);
         chart.fireChartChanged();
+    }
+
+    /**
+     * @param columnKey
+     */
+    private void setSelectionName(ChartNode columnKey) {
+        if (columnKey == null) {
+            tSelectedInformation.setText("");
+        } else {
+            tSelectedInformation.setText(columnKey.toString());
+        }
     }
 
     /**
@@ -379,18 +474,19 @@ public class ReuseAnalyserView extends ViewPart {
                 BigDecimal minValue = new BigDecimal(key.getMinValue());
                 BigDecimal maxValue = new BigDecimal(key.getMinValue() + key.getRange());
                 if (distributeColumn == Distribute.INTEGERS) {
-                    nameCol = minValue.setScale(0, RoundingMode.HALF_UP).toString();
+                    nameCol = minValue.setScale(0, RoundingMode.DOWN).toString();
                 } else if (propertyValue instanceof Integer) {
                     minValue = minValue.setScale(0, RoundingMode.HALF_UP);
-                    maxValue = maxValue.setScale(0, RoundingMode.HALF_UP);
-                    if (maxValue.compareTo(minValue) <= 1) {
+                    maxValue = maxValue.setScale(0, RoundingMode.DOWN);
+                    if (maxValue.subtract(minValue).compareTo(BigDecimal.ONE) < 1) {
                         nameCol = minValue.toString();
                     } else {
                         nameCol = minValue.toString() + "-" + maxValue.toString();
                     }
                 } else {
-                    minValue = minValue.setScale(2, RoundingMode.HALF_UP);
-                    maxValue = maxValue.setScale(2, RoundingMode.HALF_UP);
+                    // TODO calculate scale depending on key.getRange()
+                    minValue = minValue.setScale(3, RoundingMode.HALF_UP);
+                    maxValue = maxValue.setScale(3, RoundingMode.HALF_UP);
                     if (key.getRange() == 0) {
                         nameCol = minValue.toString();
                     } else {
@@ -713,7 +809,7 @@ public class ReuseAnalyserView extends ViewPart {
                 }
             }
         }
-        chartFrame.setVisible(false);
+        setVisibleForChart(false);
     }
 
     /**
@@ -792,20 +888,31 @@ public class ReuseAnalyserView extends ViewPart {
         dCombo.right = new FormAttachment(85, -5);
         cSelect.setLayoutData(dCombo);
 
-        dLabel = new FormData(); // bind to left & text
+        dLabel = new FormData();
         dLabel.left = new FormAttachment(cSelect, 10);
         dLabel.top = new FormAttachment(spinAdj, 5, SWT.CENTER);
         spinLabel.setLayoutData(dLabel);
 
-        FormData dSpin = new FormData(); // bind to label and text
+        FormData dSpin = new FormData();
         dSpin.left = new FormAttachment(spinLabel, 5);
         dSpin.top = new FormAttachment(propertyCombo, 5, SWT.CENTER);
         spinAdj.setLayoutData(dSpin);
 
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(0, 5);
+        dLabel.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
+        lSelectedInformation.setLayoutData(dLabel);
+
+        FormData dText = new FormData();
+        dText.left = new FormAttachment(lSelectedInformation, 5);
+        dText.right = new FormAttachment(30, 5);
+        dText.bottom = new FormAttachment(100, -2);
+        tSelectedInformation.setLayoutData(dText);
+
         FormData dChart = new FormData(); // bind to label and text
         dChart.left = new FormAttachment(0, 5);
         dChart.top = new FormAttachment(gisSelected, 10);
-        dChart.bottom = new FormAttachment(100, -2);
+        dChart.bottom = new FormAttachment(tSelectedInformation, -2);
         dChart.right = new FormAttachment(100, -5);
         chartFrame.setLayoutData(dChart);
     }
@@ -957,6 +1064,18 @@ public class ReuseAnalyserView extends ViewPart {
             columnValue = aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
         }
 
+        /**
+         * Returns true if value in selected column;
+         * 
+         * @param value value to find
+         * @return true if value in selected column;
+         */
+        public boolean containsValue(double value) {
+            double minValue = (Double)node.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE);
+            double maxValue = (Double)node.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE);
+            return value >= minValue && (value == minValue || value < maxValue);
+        }
+
         @Override
         public int compareTo(Object o) {
             ChartNode nodeToCompare = (ChartNode)o;
@@ -1020,6 +1139,6 @@ public class ReuseAnalyserView extends ViewPart {
         String[] gisItems = getGisItems();
         gisCombo.setItems(gisItems);
         propertyCombo.setItems(new String[] {});
-        chartFrame.setVisible(false);
+        setVisibleForChart(false);
     }
 }

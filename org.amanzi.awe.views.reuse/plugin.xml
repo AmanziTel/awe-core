@@ -5,7 +5,7 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            name="Reuse Analyser"
+            name="Distribution"
             icon="icons/reuse.png"
             category="org.amanzi.awe.script"
             class="org.amanzi.awe.views.reuse.views.ReuseAnalyserView"
