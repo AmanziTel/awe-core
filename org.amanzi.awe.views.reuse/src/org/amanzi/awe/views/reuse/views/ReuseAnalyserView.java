@@ -474,7 +474,7 @@ public class ReuseAnalyserView extends ViewPart {
                 BigDecimal minValue = new BigDecimal(key.getMinValue());
                 BigDecimal maxValue = new BigDecimal(key.getMinValue() + key.getRange());
                 if (distributeColumn == Distribute.INTEGERS) {
-                    nameCol = minValue.setScale(0, RoundingMode.DOWN).toString();
+                    nameCol = minValue.setScale(0, RoundingMode.UP).toString();
                 } else if (propertyValue instanceof Integer) {
                     minValue = minValue.setScale(0, RoundingMode.HALF_UP);
                     maxValue = maxValue.setScale(0, RoundingMode.DOWN);
