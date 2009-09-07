@@ -103,6 +103,7 @@ public class ReuseAnalyserView extends ViewPart {
     private PropertyCategoryDataset dataset;
     private Node selectedGisNode = null;
     private ChartNode selectedColumn = null;
+    private Object propertyValue;
     private static final Paint DEFAULT_COLOR = new Color(0.75f,0.7f,0.4f);
     private static final Paint COLOR_SELECTED = Color.RED;
     private static final Paint COLOR_LESS = Color.BLUE;
@@ -367,20 +368,36 @@ public class ReuseAnalyserView extends ViewPart {
             }
             gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
 
-            TreeMap<Column, Integer> statistics = computeStatistics(gisNode, propertyName, Distribute.findEnumByValue(cDistribute
-                    .getText()), Select.findSelectByValue(cSelect.getText()));
+            Distribute distributeColumn = Distribute.findEnumByValue(cDistribute.getText());
+            TreeMap<Column, Integer> statistics = computeStatistics(gisNode, propertyName, distributeColumn, Select
+                    .findSelectByValue(cSelect.getText()));
             Node parentNode = result;
             for (Column key : statistics.keySet()) {
                 Node childNode = service.createNode();
-                // TODO calculate column name more correctly
+                String nameCol;
+
                 BigDecimal minValue = new BigDecimal(key.getMinValue());
                 BigDecimal maxValue = new BigDecimal(key.getMinValue() + key.getRange());
-                minValue = minValue.setScale(2, RoundingMode.HALF_UP);
-                maxValue = maxValue.setScale(2, RoundingMode.HALF_UP);
-
-                String nameCol = "[" + minValue.toString() + ":" + maxValue.toString() + ")";
+                if (distributeColumn == Distribute.INTEGERS) {
+                    nameCol = minValue.setScale(0, RoundingMode.HALF_UP).toString();
+                } else if (propertyValue instanceof Integer) {
+                    minValue = minValue.setScale(0, RoundingMode.HALF_UP);
+                    maxValue = maxValue.setScale(0, RoundingMode.HALF_UP);
+                    if (maxValue.compareTo(minValue) <= 1) {
+                        nameCol = minValue.toString();
+                    } else {
+                        nameCol = minValue.toString() + "-" + maxValue.toString();
+                    }
+                } else {
+                    minValue = minValue.setScale(2, RoundingMode.HALF_UP);
+                    maxValue = maxValue.setScale(2, RoundingMode.HALF_UP);
+                    if (key.getRange() == 0) {
+                        nameCol = minValue.toString();
+                    } else {
+                        nameCol = "[" + minValue.toString() + ":" + maxValue.toString() + ")";
+                    }
+                }
                 childNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.COUNT_TYPE_NAME);
-
                 childNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, nameCol);
                 childNode.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, key.getMinValue());
                 childNode.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, key.getMinValue() + key.getRange());
@@ -455,16 +472,17 @@ public class ReuseAnalyserView extends ViewPart {
                             .max(((Number)propertyValue).doubleValue(), max);
                 }
             } else {
-                System.out.println("No such property '"+propertyName+"' for node "+(node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
+                System.out.println("No such property '" + propertyName + "' for node "
+                        + (node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
             }
         }
         if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
-            colCount=mpMap.size();
-            min=null;
-            max=null;
+            colCount = mpMap.size();
+            min = null;
+            max = null;
             for (Number value : mpMap.values()) {
                 min = min == null ? value.doubleValue() : Math.min(value.doubleValue(), min);
-                max = max == null ? value.doubleValue() : Math.max(value.doubleValue(), max);               
+                max = max == null ? value.doubleValue() : Math.max(value.doubleValue(), max);
             }
         }
         double range = 0;
@@ -521,12 +539,13 @@ public class ReuseAnalyserView extends ViewPart {
                             } else {
                                 result.put(column, count + 1);
                             }
-    
+
                             break;
                         }
                     }
                 } else {
-                    System.out.println("No such property '"+propertyName+"' for node "+(node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
+                    System.out.println("No such property '" + propertyName + "' for node "
+                            + (node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
                 }
             }
         } else {
@@ -565,13 +584,24 @@ public class ReuseAnalyserView extends ViewPart {
         return count == 0 ? 0 : (double)result / (double)count;
     }
 
+    /**
+     * <p>
+     * Information about column
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.1.0
+     */
     private static class Column implements Comparable<Column> {
-        Double minValue;
-        Double range;
+
+        private Double minValue;
+        private Double range;
 
         /**
-         * @param curValue
-         * @param range
+         * Constructor
+         * 
+         * @param curValue - minimum number which enters into a column
+         * @param range - range of column
          */
         public Column(double curValue, double range) {
             minValue = curValue;
@@ -579,6 +609,8 @@ public class ReuseAnalyserView extends ViewPart {
         }
 
         /**
+         * Returns true if value in [minValue,minValue+range);
+         * 
          * @param value
          * @return
          */
@@ -632,10 +664,24 @@ public class ReuseAnalyserView extends ViewPart {
         
     }
 
+    /**
+     * <p>
+     * Wrapper of Node which comparable by it value
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.1.0
+     */
     private static class ComapableNode implements Comparable<ComapableNode> {
         private Number value;
         private Node node;
 
+        /**
+         * Constructor
+         * 
+         * @param node node
+         * @param value - value of property
+         */
         public ComapableNode(Node node, Number value) {
             this.node = node;
             this.value = value;
@@ -787,64 +833,6 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
 
-    // /**
-    // * <p>
-    // * Implementation of ReturnableEvaluator Returns necessary MS or sector nodes
-    // * </p>
-    // *
-    // * @author Cinkel_A
-    // * @since 1.1.0
-    // */
-    // private static final class NodeReturnableEvaluator implements ReturnableEvaluator {
-    //
-    // private final String propertyName;
-    // private Map<Node, Node> mpMap;
-    // private final Select select;
-    //
-    // /**
-    // * @param typeOfGis
-    // * @param propertyName
-    // * @param distribute
-    // * @param select
-    // */
-    // NodeReturnableEvaluator(String propertyName, Select select) {
-    // this.propertyName = propertyName;
-    // this.select = select;
-    // mpMap = new HashMap<Node, Node>();
-    // }
-    //
-    // @Override
-    // public boolean isReturnableNode(TraversalPosition traversalposition) {
-    // Node curNode = traversalposition.currentNode();
-    // Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-    // if (type != null) {
-    // if ("sector".equals(type.toString())) {
-    // return curNode.hasProperty(propertyName);
-    // }
-    // if (INeoConstants.HEADER_MS.equals(type.toString())) {
-    // if (select==null){
-    // return curNode.hasProperty(propertyName);
-    // }
-    // Node mp = curNode.getSingleRelationship(MeasurementRelationshipTypes.CHILD,
-    // Direction.INCOMING).getEndNode();
-    // Node oldMsNode = mpMap.get(mp);
-    // if (oldMsNode == null) {
-    // mpMap.put(mp, curNode);
-    // } else {
-    // switch (select) {
-    // case MAX:
-    //
-    // break;
-    //
-    // default:
-    // break;
-    // }
-    // }
-    // }
-    // }
-    // return false;
-    // }
-    // }
     /**
      * <p>
      * Implementation of CategoryDataset Only for mapping. Does not support complete functionality.
@@ -1017,8 +1005,6 @@ public class ReuseAnalyserView extends ViewPart {
             if (column == columnIndex) {
                 return COLOR_SELECTED;
             }
-//            Integer thisValue = ((ChartNode)dataset.getColumnKey(column)).getNodeKey();
-//            Integer selectedValue = selColumn.getNodeKey();
             if (Math.abs(column - columnIndex) <= spinAdj.getSelection()) {
                 return column > columnIndex ? COLOR_MORE : COLOR_LESS;
             }
