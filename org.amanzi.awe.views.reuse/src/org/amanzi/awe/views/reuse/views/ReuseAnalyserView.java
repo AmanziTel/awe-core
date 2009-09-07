@@ -2,6 +2,7 @@ package org.amanzi.awe.views.reuse.views;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.TextField;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -142,6 +143,7 @@ public class ReuseAnalyserView extends ViewPart {
         cSelect.setItems(Select.getEnumAsStringArray());
         cSelect.select(0);
         cSelect.setEnabled(false);
+        lSelectedInformation = new TextField();
         spinAdj.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -430,7 +432,7 @@ public class ReuseAnalyserView extends ViewPart {
 
         Double min = null;
         Double max = null;
-        Object propertyValue = null;
+        propertyValue = null;
         int colCount = 0;
         Collection<Node> trav = travers.getAllNodes();
         for (Node node : trav) {
