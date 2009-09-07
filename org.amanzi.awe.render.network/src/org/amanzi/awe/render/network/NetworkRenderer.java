@@ -38,12 +38,9 @@ public class NetworkRenderer extends RendererImpl {
     private static final Color COLOR_MORE = Color.GREEN;
     private static final Color COLOR_SITE_SELECTED = Color.CYAN;
     private static final Color COLOR_SECTOR_SELECTED = Color.CYAN;
-    private static final int MAX_SITES_FULL = 100;
-    private static final int MAX_SITES_LITE = 1000;
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
     private Color fillColor = new Color(255, 255, 128,(int)(0.6*255.0));
-    private int drawSize = 20;
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
 	private Color labelColor;
@@ -94,16 +91,23 @@ public class NetworkRenderer extends RendererImpl {
 
         GeoNeo geoNeo = null;
 
+        // Setup default drawing parameters and thresholds (to be modified by style if found)
+        int drawSize=15;
+        int transparency = (int)(0.6*255.0);
+        int maxSitesLabel = 30;
+        int maxSitesFull = 100;
+        int maxSitesLite = 1000;
+        boolean scaleSectors = true;
+
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID );     
         if (neostyle!=null){
         	fillColor=neostyle.getFill();
         	drawColor=neostyle.getLine();
         	labelColor=neostyle.getLabel();
+            //TODO: get drawSite, transparency, maxSitesLabel, maxSitesFull, maxSitesLite and scaleSectors from style
         }
-//        int transparency = (int)(0.6*255.0);
-//        fillColor = new Color(255, 255, 128, transparency);
-        drawSize=17;
+        fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), transparency);
 
         try {
             monitor.subTask("connecting");
@@ -118,15 +122,21 @@ public class NetworkRenderer extends RendererImpl {
             Envelope data_bounds = geoNeo.getBounds();
             boolean drawFull = true;
             boolean drawLite = true;
+            boolean drawLabels = true;
             if (bounds_transformed == null) {
                 drawFull = false;
                 drawLite = false;
+                drawLabels = false;
             }else if (data_bounds != null && data_bounds.getHeight()>0 && data_bounds.getWidth()>0) {
                 double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
                         / (data_bounds.getHeight() * data_bounds.getWidth());
                 double countScaled = dataScaled * geoNeo.getCount();
-                drawFull = countScaled < MAX_SITES_FULL;
-                drawLite = countScaled < MAX_SITES_LITE;
+                drawLabels = countScaled < maxSitesLabel;
+                drawFull = countScaled < maxSitesFull;
+                drawLite = countScaled < maxSitesLite;
+                if (drawFull && scaleSectors) {
+                    drawSize *= Math.sqrt(maxSitesFull) / (3 * Math.sqrt(countScaled));
+                }
             }
 
             g.setColor(drawColor);
@@ -206,7 +216,7 @@ public class NetworkRenderer extends RendererImpl {
                                 if (geoNeo.getSelectedNodes().contains(child)) {
                                     borderColor = COLOR_SECTOR_SELECTED;
                                 }
-                                renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor);
+                                renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor, drawSize);
                                 if (s < label_position_angles.length) {
                                     label_position_angles[s] = azimuth;
                                 }
@@ -223,11 +233,13 @@ public class NetworkRenderer extends RendererImpl {
                             g.setColor(drawColor);
                         }
                     }
-                    double label_position_angle = Math.toRadians(-90 + (label_position_angles[0] + label_position_angles[1]) / 2.0);
-                    int label_x = 5 + (int)(10 * Math.cos(label_position_angle));
-                    int label_y = (int)(10 * Math.sin(label_position_angle));
-                    g.setColor(labelColor);
-                    g.drawString(node.toString(), p.x + label_x, p.y + label_y);
+                    if (drawLabels) {
+                        double label_position_angle = Math.toRadians(-90 + (label_position_angles[0] + label_position_angles[1]) / 2.0);
+                        int label_x = 5 + (int)(10 * Math.cos(label_position_angle));
+                        int label_y = (int)(10 * Math.sin(label_position_angle));
+                        g.setColor(labelColor);
+                        g.drawString(node.toString(), p.x + label_x, p.y + label_y);
+                    }
                     g.setTransform(base_transform);
                 }
                 monitor.worked(1);
@@ -257,7 +269,7 @@ public class NetworkRenderer extends RendererImpl {
      * @param p
      * @param azimuth
      */
-    private void renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth, Color fillColor, Color borderColor) {
+    private void renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth, Color fillColor, Color borderColor, int drawSize) {
         Color oldColor = g.getColor();
         if(base_transform==null) base_transform = g.getTransform();
         if(beamwidth<10) beamwidth = 10;
