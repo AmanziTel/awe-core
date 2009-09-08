@@ -56,7 +56,7 @@ license).
          id="com.ibm.icu"
          download-size="0"
          install-size="0"
-         version="3.8.1"
+         version="3.8.1.v20080530"
          unpack="false"/>
 
    <plugin
