@@ -13,11 +13,12 @@ import java.awt.Color;
 public class NeoStyle {
     private Color line;
     private Color fill;
+    private Color fillSite;
     private Color label;
     private Integer smallestSymb;
     private Integer smallSymb;
     private Integer labeling;
-    private boolean fixSymbolSize;
+    private boolean fixSymbolSize = NeoStyleContent.DEF_FIX_SYMB_SIZE;
     private Integer symbolSize;
     private Integer sectorTransparency;
 
@@ -34,7 +35,7 @@ public class NeoStyle {
      * @return
      */
     public Color getLine() {
-        return line;
+        return line != null ? line : NeoStyleContent.DEF_COLOR_LINE;
     }
 
     /**
@@ -52,7 +53,7 @@ public class NeoStyle {
      * @return
      */
     public Color getFill() {
-        return fill;
+        return fill != null ? fill : NeoStyleContent.DEF_COLOR_FILL;
     }
 
     /**
@@ -70,7 +71,7 @@ public class NeoStyle {
      * @return
      */
     public Color getLabel() {
-        return label;
+        return label != null ? label : NeoStyleContent.DEF_COLOR_LABEL;
     }
 
     /**
@@ -86,7 +87,7 @@ public class NeoStyle {
      * @return Returns the smallestSymb.
      */
     public Integer getSmallestSymb() {
-        return smallestSymb;
+        return smallestSymb != null ? smallestSymb : NeoStyleContent.DEF_SMALLEST_SYMB;
     }
 
     /**
@@ -100,7 +101,7 @@ public class NeoStyle {
      * @return Returns the smallSymb.
      */
     public Integer getSmallSymb() {
-        return smallSymb;
+        return smallSymb != null ? smallSymb : NeoStyleContent.DEF_SMALL_SYMB;
     }
 
     /**
@@ -114,7 +115,7 @@ public class NeoStyle {
      * @return Returns the labeling.
      */
     public Integer getLabeling() {
-        return labeling;
+        return labeling != null ? labeling : NeoStyleContent.DEF_LABELING;
     }
 
     /**
@@ -142,7 +143,7 @@ public class NeoStyle {
      * @return Returns the symbolSize.
      */
     public Integer getSymbolSize() {
-        return symbolSize;
+        return symbolSize != null ? symbolSize : NeoStyleContent.DEF_SYMB_SIZE;
     }
 
     /**
@@ -156,7 +157,7 @@ public class NeoStyle {
      * @return Returns the sectorTransparency.
      */
     public Integer getSectorTransparency() {
-        return sectorTransparency;
+        return sectorTransparency != null ? sectorTransparency : NeoStyleContent.DEF_SECTOR_TR;
     }
 
     /**
@@ -164,6 +165,20 @@ public class NeoStyle {
      */
     public void setSectorTransparency(Integer sectorTransparency) {
         this.sectorTransparency = sectorTransparency;
+    }
+
+    /**
+     * @param fillSite The fillSite to set.
+     */
+    public void setSiteFill(Color fillSite) {
+        this.fillSite = fillSite;
+    }
+
+    /**
+     * @return Returns the fillSite.
+     */
+    public Color getSiteFill() {
+        return fillSite != null ? fillSite : NeoStyleContent.DEF_COLOR_SITE;
     }
 
 }

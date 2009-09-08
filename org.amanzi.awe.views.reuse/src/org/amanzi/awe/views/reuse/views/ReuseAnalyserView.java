@@ -134,7 +134,7 @@ public class ReuseAnalyserView extends ViewPart {
         propertyCombo.setEnabled(true);
         spinLabel = new Label(parent, SWT.NONE);
         spinLabel.setText(ADJACENCY);
-        spinAdj = new Spinner(parent, SWT.NONE);
+        spinAdj = new Spinner(parent, SWT.BORDER);
         spinAdj.setMinimum(0);
         spinAdj.setIncrement(1);
         spinAdj.setDigits(0);
@@ -152,7 +152,7 @@ public class ReuseAnalyserView extends ViewPart {
         cSelect.setEnabled(false);
         lSelectedInformation = new Label(parent, SWT.NONE);
         lSelectedInformation.setText(LABEL_INFO);
-        tSelectedInformation = new Text(parent, SWT.NONE);
+        tSelectedInformation = new Text(parent, SWT.BORDER);
         spinAdj.addSelectionListener(new SelectionListener() {
 
             @Override

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: neo4j
 Bundle-SymbolicName: org.neo4j;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.0.b9
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: javax.transaction;uses:="javax.transaction.xa",
  javax.transaction.xa,

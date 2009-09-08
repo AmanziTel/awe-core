@@ -39,4 +39,8 @@ public final class NeoPreferences
      * Show the help view when the application starts.
      */
     public static final String HELP_ON_START = "helpOnStart";
+    /**
+     * Maximum node returned
+     */
+    public static final String MAXIMUM_NODES_RETURNED = "maximumNodesRetirned";
 }

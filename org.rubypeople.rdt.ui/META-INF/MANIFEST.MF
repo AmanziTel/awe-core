@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Plugin.name
 Bundle-SymbolicName: org.rubypeople.rdt.ui; singleton:=true
-Bundle-Version: 0.0.0
+Bundle-Version: 1.0.0.awe
 Bundle-ClassPath: .
 Bundle-Activator: org.rubypeople.rdt.internal.ui.RubyPlugin
 Bundle-Vendor: %providerName

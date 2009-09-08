@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Spinner;
 
 /**
  * <p>
@@ -26,11 +26,28 @@ import org.eclipse.swt.widgets.Text;
  * @since 1.1.0
  */
 public class NeoStyleConfigurator extends IStyleConfigurator {
+    /** String SYMBOL_SIZE field */
+    private static final String SYMBOL_SIZE = "Symbol base size";
+    /** String RADIO_SCALE_WITH_ZOOM field */
+    private static final String RADIO_SCALE_WITH_ZOOM = "Scale with zoom";
+    /** String RADIO_FIXED_SYMB field */
+    private static final String RADIO_FIXED_SYMB = "Use fixed size";
+    /** String GROUP_SCALE_SYMB field */
+    private static final String GROUP_SCALE_SYMB = "Scale symbols when zooming";
+    /** String LABELING field */
+    private static final String LABELING = "for labeling";
+    /** String SMALL_SYMBOLS field */
+    private static final String SMALL_SYMBOLS = "for small symbols";
+    /** String SMALLEST_SYMBOLS field */
+    private static final String SMALLEST_SYMBOLS = "for smallest symbols";
+    /** String SECTOR_TRANSPARENCY field */
+    private static final String SECTOR_TRANSPARENCY = "Sector transparency (%)";
     /** String GROUP_SITE field */
     private static final String GROUP_SITE = "Site density thresholds";
     private static final String COLOR_TITLE = "Label";
     private static final String COLOR_LINE = "Line";
-    private static final String COLOR_FILL = "Fill";
+    private static final String COLOR_FILL = "Sector fill";
+    private static final String COLOR_FILL_SITE = "Site fill";
     public static final String ID = "org.amanzi.awe.neostyle.style";
 
     public NeoStyleConfigurator() {
@@ -52,17 +69,19 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private ColorEditor cEdLine;
     private ColorEditor cEdLabel;
     private Label lSmallSymb;
-    private Text tSmallSymb;
+    private Spinner tSmallSymb;
     private Label lSmallestSymb;
-    private Text tSmallestSymb;
+    private Spinner tSmallestSymb;
     private Label lLabeling;
-    private Text tLabeling;
+    private Spinner tLabeling;
     private Button rButton1;
     private Button rButton2;
     private Label lSymbolSize;
-    private Text tSymbolSize;
+    private Spinner tSymbolSize;
     private Label lSectorTr;
-    private Text tSectorTr;
+    private Spinner tSectorTr;
+    private Label lSite;
+    private ColorEditor cEdFillSite;
 
     public void createControl(Composite parent) {
         FormLayout layout = new FormLayout();
@@ -71,6 +90,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         layout.marginWidth = 0;
         layout.spacing = 0;
         parent.setLayout(layout);
+
 
         labelFill = new Label(parent, SWT.NONE);
         labelFill.setText(COLOR_FILL);
@@ -83,17 +103,30 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.left = new FormAttachment(labelFill, 50);
         cEdFill.getButton().setLayoutData(formData);
 
+        lSite = new Label(parent, SWT.NONE);
+        lSite.setText(COLOR_FILL_SITE);
+        cEdFillSite = new ColorEditor(parent);
+        formData = new FormData();
+        formData.top = new FormAttachment(labelFill, 25);
+        formData.left = new FormAttachment(0);
+        lSite.setLayoutData(formData);
+        formData = new FormData();
+        formData.left = new FormAttachment(labelFill, 50);
+        formData.top = new FormAttachment(labelFill, 20);
+        cEdFillSite.getButton().setLayoutData(formData);
+
         labelLine = new Label(parent, SWT.NONE);
         labelLine.setText(COLOR_LINE);
         cEdLine = new ColorEditor(parent);
         formData = new FormData();
-        formData.top = new FormAttachment(labelFill, 25);
+        formData.top = new FormAttachment(lSite, 25);
         formData.left = new FormAttachment(0);
         labelLine.setLayoutData(formData);
         formData = new FormData();
         formData.left = new FormAttachment(labelFill, 50);
-        formData.top = new FormAttachment(labelFill, 20);
+        formData.top = new FormAttachment(lSite, 20);
         cEdLine.getButton().setLayoutData(formData);
+
         labelLabel = new Label(parent, SWT.NONE);
         labelLabel.setText(COLOR_TITLE);
         cEdLabel = new ColorEditor(parent);
@@ -109,61 +142,66 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         cGroup.setText(GROUP_SITE);
         formData = new FormData();
         formData.top = new FormAttachment(labelLabel, 25);
-        formData.left = new FormAttachment(0);
+        formData.left = new FormAttachment(0, 5);
+        formData.right = new FormAttachment(60, -10);
         cGroup.setLayout(new FormLayout());
         cGroup.setLayoutData(formData);
 
         lSmallestSymb = new Label(cGroup, SWT.NONE);
-        tSmallestSymb = new Text(cGroup, SWT.NONE);
+        tSmallestSymb = new Spinner(cGroup, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSmallestSymb, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0);
+        formData.left = new FormAttachment(0, 5);
         lSmallestSymb.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(lSmallestSymb, 10);
+        formData.left = new FormAttachment(60, 10);
+        formData.right = new FormAttachment(100, -5);
         formData.top = new FormAttachment(0, 5);
         tSmallestSymb.setLayoutData(formData);
 
         lSmallSymb = new Label(cGroup, SWT.NONE);
-        tSmallSymb = new Text(cGroup, SWT.NONE);
+        tSmallSymb = new Spinner(cGroup, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSmallSymb, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0);
+        formData.left = new FormAttachment(0, 5);
         lSmallSymb.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(lSmallSymb, 10);
+        formData.left = new FormAttachment(60, 10);
+        formData.right = new FormAttachment(100, -5);
         formData.top = new FormAttachment(tSmallestSymb, 5);
         tSmallSymb.setLayoutData(formData);
 
         lLabeling = new Label(cGroup, SWT.NONE);
-        tLabeling = new Text(cGroup, SWT.NONE);
+        tLabeling = new Spinner(cGroup, SWT.BORDER);
 
         formData = new FormData();
         formData.top = new FormAttachment(tLabeling, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0);
+        formData.left = new FormAttachment(0, 5);
         lLabeling.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(lLabeling, 10);
+        formData.left = new FormAttachment(60, 10);
+        formData.right = new FormAttachment(100, -5);
         formData.top = new FormAttachment(tSmallSymb, 5);
         tLabeling.setLayoutData(formData);
 
-        lSmallestSymb.setText("for smallest symbols");
-        lSmallSymb.setText("for small symbols");
-        lLabeling.setText("for labeling");
+        lSmallestSymb.setText(SMALLEST_SYMBOLS);
+        lSmallSymb.setText(SMALL_SYMBOLS);
+        lLabeling.setText(LABELING);
 
         Group rGroup = new Group(parent, SWT.NONE);
-        rGroup.setText("Scale symbols with zoom");
+        rGroup.setText(GROUP_SCALE_SYMB);
         formData = new FormData();
         formData.top = new FormAttachment(cGroup, 25);
-        formData.left = new FormAttachment(0);
+        formData.left = new FormAttachment(0, 5);
+        formData.right = new FormAttachment(60, -10);
         rGroup.setLayout(new FormLayout());
         rGroup.setLayoutData(formData);
         rButton1 = new Button(rGroup, SWT.RADIO);
         formData = new FormData();
-        formData.left = new FormAttachment(0);
+        formData.left = new FormAttachment(0, 5);
         formData.top = new FormAttachment(0, 5);
         rButton1.setLayoutData(formData);
         rButton2 = new Button(rGroup, SWT.RADIO);
@@ -172,60 +210,78 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.left = new FormAttachment(rButton1, 10);
         rButton2.setLayoutData(formData);
 
-        rButton1.setText("Scale symbols with zoom");
-        rButton2.setText("Use fixed symbol size");
+        rButton1.setText(RADIO_SCALE_WITH_ZOOM);
+        rButton2.setText(RADIO_FIXED_SYMB);
 
         lSymbolSize = new Label(parent, SWT.NONE);
-        lSymbolSize.setText("Symbol size");
-        tSymbolSize = new Text(parent, SWT.NONE);
+        lSymbolSize.setText(SYMBOL_SIZE);
+        tSymbolSize = new Spinner(parent, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSymbolSize, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0);
+        formData.left = new FormAttachment(0, 5);
         lSymbolSize.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(lSymbolSize, 10);
+        formData.left = new FormAttachment(36, 10);
         formData.top = new FormAttachment(rGroup, 5);
+        formData.right = new FormAttachment(60, -10);
         tSymbolSize.setLayoutData(formData);
 
         lSectorTr = new Label(parent, SWT.NONE);
-        lSectorTr.setText("Sector transparency (%)");
-        tSectorTr = new Text(parent, SWT.NONE);
+        lSectorTr.setText(SECTOR_TRANSPARENCY);
+        tSectorTr = new Spinner(parent, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSectorTr, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0);
+        formData.left = new FormAttachment(0, 5);
         lSectorTr.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(lSectorTr, 10);
+        formData.left = new FormAttachment(36, 10);
         formData.top = new FormAttachment(tSymbolSize, 5);
+        formData.right = new FormAttachment(60, -10);
         tSectorTr.setLayoutData(formData);
-
+        // sets spinners range
+        tLabeling.setMinimum(1);
+        tLabeling.setMaximum(10000);
+        tSectorTr.setMinimum(1);
+        tSectorTr.setMaximum(100);
+        tSmallestSymb.setMinimum(1);
+        tSmallestSymb.setMaximum(10000);
+        tSmallSymb.setMinimum(1);
+        tSmallSymb.setMaximum(10000);
+        tSymbolSize.setMinimum(1);
+        tSymbolSize.setMaximum(10000);
     }
 
     @Override
     protected void refresh() {
-        getApplyAction().setEnabled(false);
+        // getApplyAction().setEnabled(false);
         try {
             curStyle = (NeoStyle)getStyleBlackboard().get(ID);
             cEdFill.setColorValue(rgbFromColor(curStyle.getFill()));
             cEdLabel.setColorValue(rgbFromColor(curStyle.getLabel()));
             cEdLine.setColorValue(rgbFromColor(curStyle.getLine()));
-            String value = String.valueOf(curStyle.getSmallestSymb());
-            tSmallestSymb.setText("null".equals(value) ? "" : value);
-            value = String.valueOf(curStyle.getSmallSymb());
-            tSmallSymb.setText("null".equals(value) ? "" : value);
-            value = String.valueOf(curStyle.getLabeling());
-            tLabeling.setText("null".equals(value) ? "" : value);
+            cEdFillSite.setColorValue(rgbFromColor(curStyle.getSiteFill()));
+            // String value = String.valueOf(curStyle.getSmallestSymb());
+            tSmallestSymb.setSelection(curStyle.getSmallestSymb());// ("null".equals(value) ? "" :
+                                                                   // value);
+            // value = String.valueOf(curStyle.getSmallSymb());
+            tSmallSymb.setSelection(curStyle.getSmallSymb());// setText("null".equals(value) ? "" :
+                                                             // value);
+            // value = String.valueOf(curStyle.getLabeling());
+            tLabeling.setSelection(curStyle.getLabeling());// setText("null".equals(value) ? "" :
+                                                           // value);
             if (curStyle.isFixSymbolSize()) {
                 rButton2.setSelection(true);
             } else {
                 rButton1.setSelection(true);
             }
-            value = String.valueOf(curStyle.getSymbolSize());
-            tSymbolSize.setText("null".equals(value) ? "" : value);
-            value = String.valueOf(curStyle.getSectorTransparency());
-            tSectorTr.setText("null".equals(value) ? "" : value);
+            // value = String.valueOf(curStyle.getSymbolSize());
+            tSymbolSize.setSelection(curStyle.getSymbolSize());// setText("null".equals(value) ? ""
+                                                               // : value);
+            // value = String.valueOf(curStyle.getSectorTransparency());
+            tSectorTr.setSelection(curStyle.getSectorTransparency());// setText("null".equals(value)
+                                                                     // ? "" : value);
         } finally {
         }
     }
@@ -234,6 +290,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     public void preApply() {
         super.preApply();
         curStyle.setFill(colorFromRGB(cEdFill.getColorValue()));
+        curStyle.setSiteFill(colorFromRGB(cEdFillSite.getColorValue()));
         curStyle.setLabel(colorFromRGB(cEdLabel.getColorValue()));
         curStyle.setLine(colorFromRGB(cEdLine.getColorValue()));
         curStyle.setSmallestSymb(getSmallestSymb());
@@ -255,11 +312,12 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * @return
      */
     private Integer getSectorTransparency() {
-        try {
-            return Integer.parseInt(tSectorTr.getText());
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return tSectorTr.getSelection();
+        // try {
+        // return Integer.parseInt(tSectorTr.getText());
+        // } catch (NumberFormatException e) {
+        // return null;
+        // }
     }
 
     /**
@@ -268,11 +326,12 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * @return
      */
     private Integer getSymbolSize() {
-        try {
-            return Integer.parseInt(tSymbolSize.getText());
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return tSymbolSize.getSelection();
+        // try {
+        // return Integer.parseInt(tSymbolSize.getText());
+        // } catch (NumberFormatException e) {
+        // return null;
+        // }
     }
 
     /**
@@ -281,11 +340,12 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * @return
      */
     private Integer getLabeling() {
-        try {
-            return Integer.parseInt(tLabeling.getText());
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return tLabeling.getSelection();
+        // try {
+        // return Integer.parseInt(tLabeling.getText());
+        // } catch (NumberFormatException e) {
+        // return null;
+        // }
     }
 
     /**
@@ -294,11 +354,12 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * @return
      */
     private Integer getSmallSymb() {
-        try {
-            return Integer.parseInt(tSmallSymb.getText());
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return tSmallSymb.getSelection();
+        // try {
+        // return Integer.parseInt(tSmallSymb.getText());
+        // } catch (NumberFormatException e) {
+        // return null;
+        // }
     }
 
     /**
@@ -307,11 +368,12 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * @return
      */
     private Integer getSmallestSymb() {
-        try {
-            return Integer.parseInt(tSmallestSymb.getText());
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return tSmallestSymb.getSelection();
+        // try {
+        // return Integer.parseInt(tSmallestSymb.getText());
+        // } catch (NumberFormatException e) {
+        // return null;
+        // }
     }
 
     /**

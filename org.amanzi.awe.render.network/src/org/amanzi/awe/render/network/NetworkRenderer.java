@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
@@ -105,7 +104,7 @@ public class NetworkRenderer extends RendererImpl {
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID );     
         if (neostyle!=null){
             try {
-                //siteColor=neostyle.getSiteFill();
+                siteColor = neostyle.getSiteFill();
                 fillColor=neostyle.getFill();
                 drawColor=neostyle.getLine();
                 labelColor=neostyle.getLabel();

@@ -2,7 +2,9 @@ package org.amanzi.awe.views.network.view;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -33,8 +35,15 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
@@ -77,6 +86,8 @@ public class NetworkTreeView extends ViewPart {
      */
     private NeoServiceEventListener neoEventListener;
 
+    private Text tSearch;
+
     /**
      * The constructor.
      */
@@ -87,6 +98,8 @@ public class NetworkTreeView extends ViewPart {
      * This is a callback that will allow us to create the viewer and initialize it.
      */
     public void createPartControl(Composite parent) {
+
+        tSearch = new Text(parent, SWT.BORDER);
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         viewer.addSelectionChangedListener(new NetworkSelectionListener());
         viewer.addDoubleClickListener(new IDoubleClickListener() {
@@ -118,6 +131,60 @@ public class NetworkTreeView extends ViewPart {
         } finally {
             tx.finish();
         }
+        tSearch.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                findAndSelectNode();
+            }
+        });
+        setLayout(parent);
+    }
+
+    /**
+     *finds and shows node
+     */
+    protected void findAndSelectNode() {
+        String text = tSearch.getText();
+        text=text==null?"":text.toLowerCase().trim();
+        if (text.isEmpty()){
+            return;
+        }
+        LinkedList<TreeItem> items = new LinkedList<TreeItem>(Arrays.asList(viewer.getTree().getItems()));
+        for (int i = 0; i <= items.size(); i++) {
+            TreeItem item = items.get(i);
+            if (item.getText().toLowerCase().contains(text)) {
+                viewer.getTree().showItem(item);
+                viewer.getTree().setSelection(item);
+                return;
+            }
+            items.addAll(Arrays.asList(item.getItems()));
+        };
+    }
+
+    /**
+     * @param parent
+     */
+    private void setLayout(Composite parent) {
+        FormLayout layout = new FormLayout();
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.marginWidth = 0;
+        layout.spacing = 0;
+        parent.setLayout(layout);
+        FormData formData = new FormData();
+        formData.top = new FormAttachment(0, 5);
+        formData.left = new FormAttachment(0, 5);
+        formData.right = new FormAttachment(100, -5);
+        tSearch.setLayoutData(formData);
+
+        formData = new FormData();
+        formData.top = new FormAttachment(tSearch, 5);
+        formData.left = new FormAttachment(0, 5);
+        formData.right = new FormAttachment(100, -5);
+        formData.bottom = new FormAttachment(100, -5);
+        viewer.getTree().setLayoutData(formData);
+
     }
 
     /**
@@ -255,6 +322,12 @@ public class NetworkTreeView extends ViewPart {
 
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
+            StructuredSelection stSel = (StructuredSelection)event.getSelection();
+            if (!stSel.isEmpty()) {
+                tSearch.setText(stSel.getFirstElement().toString());
+            } else {
+                tSearch.setText("");
+            }
             ITreeSelection selected = (ITreeSelection)event.getSelection();
             Iterator iterator = selected.iterator();
             layers = findAllNetworkLayers();

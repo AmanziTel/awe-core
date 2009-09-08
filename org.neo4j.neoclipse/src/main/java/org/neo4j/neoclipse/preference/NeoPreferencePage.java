@@ -15,6 +15,7 @@ package org.neo4j.neoclipse.preference;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 
 /**
@@ -30,6 +31,7 @@ public class NeoPreferencePage extends AbstractPreferencePage
     private static final String NEO_DATABASE_LOCATION_ERROR = "The database location is invalid.";
     // resource uri
     private static final String DATABASE_RESOURCE_URI_LABEL = "Database resource URI:";
+    private static final String LABEL_MAXIMUM_NODE = "Limit the number of nodes returned:";
 
     /**
      * Initializes the several input fields.
@@ -53,7 +55,12 @@ public class NeoPreferencePage extends AbstractPreferencePage
         // show help view on startup
         BooleanFieldEditor helpOnStart = new BooleanFieldEditor(
             NeoPreferences.HELP_ON_START, HELP_ON_START_LABEL,
-            getFieldEditorParent() );
-        addField( helpOnStart );
+                getFieldEditorParent());
+        addField(helpOnStart);
+        //
+        IntegerFieldEditor maximumNodesRetirned = new IntegerFieldEditor(NeoPreferences.MAXIMUM_NODES_RETURNED, LABEL_MAXIMUM_NODE,
+                getFieldEditorParent());
+        maximumNodesRetirned.setValidRange(1, Integer.MAX_VALUE);
+        addField(maximumNodesRetirned);
     }
 }

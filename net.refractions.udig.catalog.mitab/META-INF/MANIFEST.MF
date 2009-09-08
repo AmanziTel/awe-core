@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: MITAB Plug-in
 Bundle-SymbolicName: net.refractions.udig.catalog.mitab;singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.1.1.awe
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6,
  J2SE-1.5
 Require-Bundle: net.refractions.udig.catalog.ui,
