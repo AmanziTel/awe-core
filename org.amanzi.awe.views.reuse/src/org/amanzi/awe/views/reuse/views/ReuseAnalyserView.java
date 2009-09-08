@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -529,8 +528,8 @@ public class ReuseAnalyserView extends ViewPart {
         Double max = null;
         propertyValue = null;
         int colCount = 0;
-        Collection<Node> trav = travers.getAllNodes();
-        for (Node node : trav) {
+        // Collection<Node> trav = travers.getAllNodes();
+        for (Node node : travers) {
             if (node.hasProperty(propertyName)) {
                 propertyValue = node.getProperty(propertyName);
                 Number valueNum = (Number)propertyValue;
@@ -627,7 +626,9 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         if (typeOfGis == GisTypes.Network || select == Select.EXISTS) {
-            for (Node node : trav) {
+            travers = gisNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
+                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            for (Node node : travers) {
                 if (node.hasProperty(propertyName)) {
                     double value = ((Number)node.getProperty(propertyName)).doubleValue();
                     for (Column column : keySet) {
