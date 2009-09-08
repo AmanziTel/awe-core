@@ -151,7 +151,7 @@ public class NetworkTreeView extends ViewPart {
             return;
         }
         LinkedList<TreeItem> items = new LinkedList<TreeItem>(Arrays.asList(viewer.getTree().getItems()));
-        for (int i = 0; i <= items.size(); i++) {
+        for (int i = 0; i < items.size(); i++) {
             TreeItem item = items.get(i);
             if (item.getText().toLowerCase().contains(text)) {
                 viewer.getTree().showItem(item);
