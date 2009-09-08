@@ -174,13 +174,6 @@ for the specific license.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.neo4j.dbloader"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.awe.render.drive"
          download-size="0"
          install-size="0"
@@ -196,6 +189,13 @@ for the specific license.
 
    <plugin
          id="org.amanzi.awe.neostyle"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.views.drive"
          download-size="0"
          install-size="0"
          version="0.0.0"
