@@ -42,5 +42,5 @@ public final class NeoPreferences
     /**
      * Maximum node returned
      */
-    public static final String MAXIMUM_NODES_RETURNED = "maximumNodesRetirned";
+    public static final String MAXIMUM_NODES_RETURNED = "maximumNodesReturned";
 }
