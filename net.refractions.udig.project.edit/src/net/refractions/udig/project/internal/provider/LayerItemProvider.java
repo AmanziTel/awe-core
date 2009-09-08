@@ -101,7 +101,7 @@ public class LayerItemProvider extends ItemProviderAdapter
         if (itemPropertyDescriptors == null) {
             super.getPropertyDescriptors(object);
 
-            addZorderPropertyDescriptor(object);
+            //addZorderPropertyDescriptor(object);
             addNamePropertyDescriptor(object);
             addVisiblePropertyDescriptor(object);
             addGlyphPropertyDescriptor(object);
