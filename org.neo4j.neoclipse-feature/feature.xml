@@ -1,19 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="neoclipse_feature"
-      label="Neoclipse_feature Feature"
-      version="1.0.0">
+      id="org.neo4j.neoclipse_feature"
+      label="Neoclipse Feature"
+      version="0.4.0"
+      provider-name="org.neo4j">
 
-   <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+   <description url="http://wiki.neo4j.org/content/Neoclipse_Guide">
+      Neoclipse is a subproject of Neo4j which aims to provide plugins for the Eclipse IDE in order to support the development of Neo4j applications. Main features:
+
+    * visualize the node space
+    * increase/decrease the traversal depth
+    * filter the view by relationship types
+    * add/remove nodes/relationships
+    * create relationship types
+    * add/remove/change properties on nodes and relationships
+    * highlight nodes/relationships in different ways
+    * add icons to nodes
    </description>
 
-   <copyright url="http://www.example.com/copyright">
-      [Enter Copyright Description here.]
+   <copyright url="http://neo4j.org/">
+      Neo4j is released under a dual free software/commercial license
+model (which basically means that it’s “open source” but if you’re
+interested in using it in commercially, then you must buy a commercial
+license).
    </copyright>
 
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
+   <license url="http://neo4j.org">
+      Neo4j is released under a dual free software/commercial license
+model (which basically means that it’s “open source” but if you’re
+interested in using it in commercially, then you must buy a commercial
+license).
    </license>
 
    <plugin
