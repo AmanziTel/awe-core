@@ -94,7 +94,7 @@ public class NetworkRenderer extends RendererImpl {
 
         // Setup default drawing parameters and thresholds (to be modified by style if found)
         int drawSize=15;
-        int transparency = (int)(0.6*255.0);
+        int alpha = (int)(0.6*255.0);
         int maxSitesLabel = 30;
         int maxSitesFull = 100;
         int maxSitesLite = 1000;
@@ -109,7 +109,7 @@ public class NetworkRenderer extends RendererImpl {
                 drawColor=neostyle.getLine();
                 labelColor=neostyle.getLabel();
                 drawSize = neostyle.getSymbolSize();
-                transparency = (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
+                alpha = 255 - (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
                 maxSitesLabel = neostyle.getLabeling();
                 maxSitesFull = neostyle.getSmallSymb();
                 maxSitesLite = neostyle.getSmallestSymb();
@@ -118,8 +118,8 @@ public class NetworkRenderer extends RendererImpl {
                 //TODO: we can get here if an old style exists, and we have added new fields
             }
         }
-        siteColor = new Color(siteColor.getRed(), siteColor.getGreen(), siteColor.getBlue(), transparency);
-        fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), transparency);
+        siteColor = new Color(siteColor.getRed(), siteColor.getGreen(), siteColor.getBlue(), alpha);
+        fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
 
         try {
             monitor.subTask("connecting");

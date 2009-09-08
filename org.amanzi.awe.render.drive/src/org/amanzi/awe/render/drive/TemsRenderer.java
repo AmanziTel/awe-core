@@ -62,7 +62,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private MathTransform transform_w2d;
     // private AffineTransform base_transform = null;
     private Color drawColor = Color.BLACK;
-    private Color fillColor = new Color(200, 128, 255);
+    private Color fillColor = new Color(200, 128, 255, (int)(0.6*255.0));
     private int drawSize = 3;
     private int drawWidth = 1 + 2*drawSize;
     private static final Color COLOR_SELECTED = Color.RED;
@@ -116,8 +116,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         GeoNeo geoNeo = null;
 
         //TODO: Get the symbol size, transparency and color values from a preference dialog or style dialog
-        int transparency = (int)(0.6*255.0);
-        fillColor = new Color(200, 128, 255, transparency);
+        int alpha = (int)(0.6*255.0);
         drawSize = 3;
         drawWidth = 1 + 2*drawSize;
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
@@ -125,7 +124,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         if (neostyle!=null){
         	fillColor=neostyle.getFill();
         	drawColor=neostyle.getLine();
+            alpha = 255 - (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
         }
+        fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -240,12 +241,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             return colorToFill;
         case EXISTS:
             int priority = -1;
-            mainLoop: for (Relationship relation : mpNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            for (Relationship relation : mpNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                 Node child = relation.getEndNode();
 
                 for (String key : child.getPropertyKeys()) {
                     if (selectedProp.equals(key)) {
-                        Object property = child.getProperty(key);
                         double value = ((Number)child.getProperty(selectedProp)).doubleValue();
                         if (value < redMaxValue || value == redMinValue) {
                             if (value >= redMinValue) {
