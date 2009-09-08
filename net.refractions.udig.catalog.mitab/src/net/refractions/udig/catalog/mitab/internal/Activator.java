@@ -15,7 +15,6 @@
 
 package net.refractions.udig.catalog.mitab.internal;
 
-import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
