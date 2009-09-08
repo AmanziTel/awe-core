@@ -47,15 +47,23 @@ license).
          unpack="false"/>
 
    <plugin
-         id="org.junit"
+         id="org.junit4"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
 
    <plugin
-         id="org.junit4"
+         id="com.ibm.icu"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="3.8.1"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.gef"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>

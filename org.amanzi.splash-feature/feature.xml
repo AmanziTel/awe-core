@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.amanzi.splash_feature"
-      label="Splash_feature Feature"
-      version="1.0.0">
+      label="Splash"
+      version="1.0.0"
+      provider-name="org.amanzi">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]
@@ -56,21 +57,7 @@
          unpack="false"/>
 
    <plugin
-         id="org.rubypeople.rdt.install"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.rubypeople.rdt.launching"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.rubypeople.rdt.refactoring"
          download-size="0"
          install-size="0"
          version="0.0.0"

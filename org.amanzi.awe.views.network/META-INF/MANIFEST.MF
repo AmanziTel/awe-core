@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.views,
  net.refractions.udig.project.ui;bundle-version="1.1.1",
  org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
- org.gef;bundle-version="1.0.0",
+ org.amanzi.gef;bundle-version="1.0.0",
  org.neo4j.neoclipse;bundle-version="0.4.0"
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.awe.views.view.provider,

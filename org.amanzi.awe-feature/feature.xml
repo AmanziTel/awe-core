@@ -118,13 +118,6 @@ for the specific license.
          unpack="false"/>
 
    <plugin
-         id="org.gef"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.kxml2"
          download-size="0"
          install-size="0"
@@ -196,6 +189,19 @@ for the specific license.
 
    <plugin
          id="org.amanzi.awe.views.drive"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jfree"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.amanzi.gef"
          download-size="0"
          install-size="0"
          version="0.0.0"

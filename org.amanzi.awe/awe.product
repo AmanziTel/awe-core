@@ -36,7 +36,6 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       </win>
    </launcher>
 
-
    <vm>
       <linux type="jre">jre1.6.0_11_gdal</linux>
       <windows type="jre">jre6</windows>
@@ -51,11 +50,12 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <feature id="net.refractions.udig_base" version="1.1.0"/>
       <feature id="net.refractions.udig_language" version="1.1.0"/>
       <feature id="net.refractions.udig_printing" version="1.1.0"/>
-      <feature id="org.amanzi.awe_feature" version="1.0.0"/>
-      <feature id="neoclipse_feature" version="1.0.0"/>
-      <feature id="org.amanzi.splash_feature" version="1.0.0"/>
       <feature id="net.refractions.udig_application" version="1.1.1"/>
       <feature id="net.refractions.udig_platform" version="1.1.1"/>
+      <feature id="org.amanzi.awe_feature" version="1.0.0"/>
+      <feature id="org.amanzi.splash_feature" version="1.0.0"/>
+      <feature id="org.amanzi.splash.extras_feature" version="1.0.0.qualifier"/>
+      <feature id="org.neo4j.neoclipse_feature" version="0.4.0"/>
    </features>
 
 </product>

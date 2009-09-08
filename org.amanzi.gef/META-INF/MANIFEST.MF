@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Gef Plug-in
-Bundle-SymbolicName: org.gef
+Bundle-Name: Amanzi Build of org.eclipse.gef and some dependencies
+Bundle-SymbolicName: org.amanzi.gef
 Bundle-Version: 1.0.0
-Bundle-Activator: org.gef.Activator
+Bundle-Activator: org.amanzi.gef.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  com.ibm.icu;bundle-version="3.8.1",
@@ -17,3 +17,4 @@ Export-Package: org.eclipse.zest.core.viewers,
  org.eclipse.zest.core.widgets,
  org.eclipse.zest.layouts,
  org.eclipse.zest.layouts.algorithms
+Bundle-Vendor: org.amanzi
