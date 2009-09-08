@@ -4,7 +4,7 @@ Created-By: 1.5.0_16-133 (Apple Inc.)
 Bundle-ManifestVersion: 2
 Bundle-Name: %plugin.name
 Bundle-SymbolicName: net.refractions.udig.project.ui; singleton:=true
-Bundle-Version: 1.1.1.awe
+Bundle-Version: 1.1.1
 Bundle-Activator: net.refractions.udig.project.ui.internal.ProjectUIPl
  ugin
 Bundle-Vendor: udig.refractions.net
