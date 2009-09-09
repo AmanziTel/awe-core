@@ -17,7 +17,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
    <configIni use="default"/>
 
    <launcherArgs>
-      <vmArgs>-Xmx1024M -XX:MaxPermSize=256m -Dosgi.parentClassloader=ext</vmArgs>
+      <vmArgs>-Xmx800M -XX:MaxPermSize=128m -Dosgi.parentClassloader=ext</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true</vmArgsMac>
    </launcherArgs>
 
