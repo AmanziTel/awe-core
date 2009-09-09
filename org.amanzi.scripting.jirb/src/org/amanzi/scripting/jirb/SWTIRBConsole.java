@@ -66,7 +66,7 @@ public class SWTIRBConsole extends Composite {
 		this.irbConfig = configData;
 		if(irbConfig==null) irbConfig = new IRBConfigData() {{
 	        setTitle(" Welcome to the JRuby IRB Console \n\n");
-	        //setExtraRequire(new String[]{"awescript"});
+	        //setExtraRequire(new String[]{"setup_script"});
 	    }};
         if (irbConfig.getLoader() != null) {
             loader = irbConfig.getLoader();

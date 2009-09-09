@@ -49,7 +49,7 @@ public class RubyConsole extends ViewPart {
 		ex = new SWTIRBConsole(parent, new IRBConfigData(){{
             setTitle("  Welcome to the Ruby Console   \n  Use $view to access this view \n\n");
             addExtraGlobal("view", RubyConsole.this);
-            //setExtraRequire(new String[]{"awescript"});   // add startup ruby scripts here, and they will be called before IRB.start
+            //setExtraRequire(new String[]{"setup_script"});   // add startup ruby scripts here, and they will be called before IRB.start
 		}});
 
 		// Create the help context id for the viewer's control
