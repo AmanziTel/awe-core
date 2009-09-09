@@ -30,7 +30,7 @@ for the specific license.
    </license>
 
    <requires>
-      <import feature="net.refractions.udig_base" version="1.1.0"/>
+      <import feature="net.refractions.udig_base" version="1.1.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
