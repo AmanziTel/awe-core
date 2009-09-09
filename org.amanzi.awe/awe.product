@@ -8,7 +8,13 @@
       <text>
          Amanzi Wireless Explorer
 
-This is an open source platform for data management, planning and optimization in cellular radio networks. It is distributed for free and without warranty through the GPL version 3. It is based on software written by AmanziTel AB, Refractions Research, Neotechnology, the Eclipse Foundation and others. Please refer to the file COPYING.txt in the installation folder for complete licensing information.
+This is an open source platform for data management, planning and optimization
+in cellular radio networks. It is distributed for free and without warranty. It is based
+on software written by AmanziTel AB, Refractions Research, Neotechnology, the
+Eclipse Foundation and others.
+
+Please refer to the file COPYING.txt in the installation folder for complete licensing
+information.
 
 For more information and support visit http://www.amanzitel.com/page/AWE
       </text>
@@ -35,6 +41,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
          <bmp/>
       </win>
    </launcher>
+
 
    <vm>
       <linux type="jre">jre1.6.0_11_gdal</linux>
