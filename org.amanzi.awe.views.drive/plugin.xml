@@ -6,7 +6,7 @@
          point="org.eclipse.ui.views">
       <view
             name="Data Tree"
-            icon="icons/driveTree.gif"
+            icon="icons/drive.png"
             category="org.amanzi.awe.script"
             class="org.amanzi.awe.views.drive.views.DriveTreeView"
             id="org.amanzi.awe.views.drive.views.DriveTreeView">
