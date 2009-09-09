@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -100,6 +101,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	private String[] headers = null;
 	private HashMap<String,Integer> headerIndex = null;
 	private int[] mainIndexes = null;
+	private boolean haveTypedIndexes = false;
     private ArrayList<Integer> stringIndexes = new ArrayList<Integer>();
     private ArrayList<Integer> intIndexes = new ArrayList<Integer>();
     private ArrayList<Integer> floatIndexes = new ArrayList<Integer>();
@@ -292,6 +294,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     }
 					String siteField = fields[mainIndexes[2]];
 					String sectorField = fields[mainIndexes[3]];
+					if(siteField.contains("306460123A")) {
+					    System.out.println("debug");
+					}
                     if (network==null){
                         network = getNetwork(neo, gis, basename);
                         if (network==null){
@@ -348,7 +353,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 					debug("New Sector: " + sectorField);
 					Node sector = addChild(site, NetworkElementTypes.SECTOR.toString(), sectorField);
                     sectorNumber++;
-					if(floatIndexes.size()==0){
+					if(!haveTypedIndexes){
                         determineFieldTypes(fields);
 					}
 					try {
@@ -422,6 +427,10 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         for(int i:floatIndexes) {
             stringIndexes.remove((Integer)i);
         }
+        Collections.sort(stringIndexes);
+        Collections.sort(intIndexes);
+        Collections.sort(floatIndexes);
+        haveTypedIndexes = true;
     }
 
 	private static void deleteTree(Node root) {
