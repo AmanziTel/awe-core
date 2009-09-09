@@ -38,6 +38,7 @@ import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.ui.SplashPlugin;
+import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -65,26 +66,26 @@ import com.eteks.openjeks.format.CellFormat;
 
 public class SpreadsheetService {
 
-    /**
-     * <p>
-     * Returnable Evaluator - return cells, that have reference: CellRelationTypes.REFERENCED,
-     * Direction.INCOMING
-     * </p>
-     * 
-     * @author Cinkel_A
-     * @since 1.1.0
-     */
-    private final class ReferencedCell implements ReturnableEvaluator {
-        @Override
-        public boolean isReturnableNode(TraversalPosition traversalposition) {
-        	if (traversalposition.isStartNode()) {
-        		return false;
-        	}
-            return traversalposition.currentNode().hasRelationship(CellRelationTypes.REFERENCED, Direction.INCOMING);
-        }
-    }
+	/**
+	 * <p>
+	 * Returnable Evaluator - return cells, that have reference: CellRelationTypes.REFERENCED,
+	 * Direction.INCOMING
+	 * </p>
+	 * 
+	 * @author Cinkel_A
+	 * @since 1.1.0
+	 */
+	private final class ReferencedCell implements ReturnableEvaluator {
+		@Override
+		public boolean isReturnableNode(TraversalPosition traversalposition) {
+			if (traversalposition.isStartNode()) {
+				return false;
+			}
+			return traversalposition.currentNode().hasRelationship(CellRelationTypes.REFERENCED, Direction.INCOMING);
+		}
+	}
 
-    /*
+	/*
 	 * Default value of Cell Value
 	 */
 	private static final String DEFAULT_VALUE = "";
@@ -103,11 +104,13 @@ public class SpreadsheetService {
 	 * NeoService
 	 */
 	protected NeoService neoService;
-	
+
 	/*
 	 * Project Service
 	 */
 	protected AweProjectService projectService;
+
+	private SplashFormatNode defaultSFNode;
 
 	/**
 	 * Constructor of Service.
@@ -117,8 +120,11 @@ public class SpreadsheetService {
 	public SpreadsheetService() {
 		provider = NeoServiceProvider.getProvider();
 		neoService = provider.getService();
-		
-		projectService = NeoCorePlugin.getDefault().getProjectService();		
+
+		projectService = NeoCorePlugin.getDefault().getProjectService();
+
+		defaultSFNode = new SplashFormatNode(neoService.createNode());
+		setSplashFormat(defaultSFNode, new CellFormat());
 	}
 
 	/**
@@ -207,7 +213,7 @@ public class SpreadsheetService {
 
 			return chartNode;
 		} catch (SplashDatabaseException e) {
-		    transaction.failure();
+			transaction.failure();
 			String message = SplashDatabaseExceptionMessages.getFormattedString(
 					SplashDatabaseExceptionMessages.Service_Method_Exception, "createChart");
 			SplashPlugin.error(message, e);
@@ -295,16 +301,19 @@ public class SpreadsheetService {
 			}
 
 			CellNode cell = new CellNode(neoService.createNode());
-			SplashFormatNode sfNode = new SplashFormatNode(neoService.createNode());
+			//SplashFormatNode sfNode = new SplashFormatNode(neoService.createNode());
 			rowNode.addCell(cell);
 			columnNode.addCell(cell);
 			//cell.addSplashFormat(sfNode);
-			sfNode.addCell(cell);
+			defaultSFNode.addCell(cell);
+			
+
+
 			transaction.success();
 
 			return cell;
 		} catch (SplashDatabaseException e) {
-		    transaction.failure();
+			transaction.failure();
 			String message = SplashDatabaseExceptionMessages.getFormattedString(
 					SplashDatabaseExceptionMessages.Service_Method_Exception, "createCell");
 			SplashPlugin.error(message, e);
@@ -344,22 +353,60 @@ public class SpreadsheetService {
 
 			CellFormat format = cell.getCellFormat();
 			SplashFormatNode sfNode = node.getSplashFormat();
+			if (format != null && sfNode != null){
 
-			if (format != null) {
-				sfNode.setBackgroundColorB(format.getBackgroundColor().getBlue());
-				sfNode.setBackgroundColorG(format.getBackgroundColor().getGreen());
-				sfNode.setBackgroundColorR(format.getBackgroundColor().getRed());
+				if (isFormatChanged(sfNode, format)==true){
+					NeoSplashUtil.logn("Format has been changed...");
 
-				sfNode.setFontColorB(format.getFontColor().getBlue());
-				sfNode.setFontColorG(format.getFontColor().getGreen());
-				sfNode.setFontColorR(format.getFontColor().getRed());
+					NeoSplashUtil.logn("Deleting reference to old SplashFormatNode");
+					
+					//node.getUnderlyingNode().hasRelationship();
+					Iterator<Relationship> relationships = node.getUnderlyingNode().getRelationships(SplashRelationshipTypes.SPLASH_FORMAT, Direction.INCOMING).iterator();
+			        
+			        while (relationships.hasNext()) {
+			            Relationship relationship = relationships.next();
+		                relationship.delete();
+			        }
 
-				sfNode.setFontName(format.getFontName());
-				sfNode.setFontSize(format.getFontSize());
-				sfNode.setFontStyle(format.getFontStyle());
-				sfNode.setVerticalAlignment(format.getVerticalAlignment());
-				sfNode.setHorizontalAlignment(format.getHorizontalAlignment());
+					NeoSplashUtil.logn("Adding reference to new SplashFormatNode");
+
+					SplashFormatNode newSFNode = new SplashFormatNode(neoService.createNode());
+
+					setSplashFormat(newSFNode, format);
+
+					newSFNode.addCell(node);
+				}
 			}
+
+
+
+			//if (format != null && !format.isDefaultFormat()) {
+
+
+
+//			SplashFormatNode sfNode = null;
+//			if (sfRel != null){
+//			sfRel.delete();
+//			sfNode = new SplashFormatNode(neoService.createNode());
+//			}else{
+//			sfNode = node.getSplashFormat();
+//			}
+
+//			sfNode.setBackgroundColorB(format.getBackgroundColor().getBlue());
+//			sfNode.setBackgroundColorG(format.getBackgroundColor().getGreen());
+//			sfNode.setBackgroundColorR(format.getBackgroundColor().getRed());
+
+//			sfNode.setFontColorB(format.getFontColor().getBlue());
+//			sfNode.setFontColorG(format.getFontColor().getGreen());
+//			sfNode.setFontColorR(format.getFontColor().getRed());
+
+//			sfNode.setFontName(format.getFontName());
+//			sfNode.setFontSize(format.getFontSize());
+//			sfNode.setFontStyle(format.getFontStyle());
+//			sfNode.setVerticalAlignment(format.getVerticalAlignment());
+//			sfNode.setHorizontalAlignment(format.getHorizontalAlignment());
+
+			//}
 
 			transaction.success();
 
@@ -368,6 +415,181 @@ public class SpreadsheetService {
 			transaction.finish();
 		}
 	}
+
+	private void setSplashFormat(SplashFormatNode sfNode, CellFormat format){
+		sfNode.setBackgroundColorB(format.getBackgroundColor().getBlue());
+		sfNode.setBackgroundColorG(format.getBackgroundColor().getGreen());
+		sfNode.setBackgroundColorR(format.getBackgroundColor().getRed());
+		sfNode.setFontColorB(format.getFontColor().getBlue());
+		sfNode.setFontColorG(format.getFontColor().getGreen());
+		sfNode.setFontColorR(format.getFontColor().getRed());
+		sfNode.setFontName(format.getFontName());
+		sfNode.setFontSize(format.getFontSize());
+		sfNode.setFontStyle(format.getFontStyle());
+		sfNode.setVerticalAlignment(format.getVerticalAlignment());
+		sfNode.setHorizontalAlignment(format.getHorizontalAlignment());
+	}
+
+	/**
+	 * Returns Pie Chart Node by given ID
+	 * 
+	 * @param sheet
+	 *            spreadsheet
+	 * 
+	 */
+	private PieChartNode getPieChartNode(SpreadsheetNode sheet, String id) {
+		Transaction transaction = neoService.beginTx();
+
+		try {
+			PieChartNode result = sheet.getPieChartNode(id);
+
+			transaction.success();
+
+			return result;
+		} finally {
+			transaction.finish();
+		}
+	}
+
+	private boolean isFormatChanged(SplashFormatNode sfNode, CellFormat newCF){
+
+
+		Integer bgColorB = sfNode.getBackgroundColorB();
+		Integer bgColorG = sfNode.getBackgroundColorG();
+		Integer bgColorR = sfNode.getBackgroundColorR();
+
+		Integer fontColorB = sfNode.getFontColorB();
+		Integer fontColorG = sfNode.getFontColorG();
+		Integer fontColorR = sfNode.getFontColorR();
+		String fontName = sfNode.getFontName();
+		Integer fontSize = sfNode.getFontSize();
+		Integer fontStyle = sfNode.getFontStyle();
+		Integer hAllign = sfNode.getHorizontalAlignment();
+		Integer vAllign = sfNode.getVerticalAlignment();
+
+		try{
+
+			if (bgColorB != newCF.getBackgroundColor().getBlue()) {
+				NeoSplashUtil.logn("bgColorB changed");
+				return true;
+			}
+			if (bgColorG != newCF.getBackgroundColor().getGreen()) {
+				NeoSplashUtil.logn("bgColorG changed");
+				return true;
+			}
+			if (bgColorR != newCF.getBackgroundColor().getRed()) {
+				NeoSplashUtil.logn("bgColorR changed");
+				return true;
+			}
+
+			if (fontColorB != newCF.getFontColor().getBlue()) {
+				NeoSplashUtil.logn("fontColorB changed");
+				return true;
+			}
+			if (fontColorG != newCF.getFontColor().getGreen()) {
+				NeoSplashUtil.logn("fontColorG changed");
+				return true;
+			}
+			if (fontColorR != newCF.getFontColor().getRed()) {
+				NeoSplashUtil.logn("fontColorR changed");
+				return true;
+			}
+
+			if (!fontName.equals(newCF.getFontName())) {
+				NeoSplashUtil.logn("fontName changed");
+				return true;
+			}
+			if (fontSize != newCF.getFontSize()) {
+				NeoSplashUtil.logn("fontSize changed");
+				return true;
+			}
+			if (fontStyle != newCF.getFontStyle()) {
+				NeoSplashUtil.logn("fontStyle changed");
+				return true;
+			}
+			if (hAllign != newCF.getHorizontalAlignment()) {
+				NeoSplashUtil.logn("hAllign changed");
+				return true;
+			}
+			if (vAllign != newCF.getVerticalAlignment()) {
+				NeoSplashUtil.logn("vAllign changed");
+				return true;
+			}
+		}catch (Exception ex){
+			return false;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Converts CellNode to Cell
+	 * 
+	 * @param node
+	 *            CellNode
+	 * @return Cell
+	 */
+	private Cell convertNodeToCell(CellNode node, String rowIndex, String columnName, boolean parentCyclic) {
+		if (rowIndex == null) {
+			RowNode row = node.getRow();
+			rowIndex = row.getRowIndex();
+		}
+
+		if (columnName == null) {
+			ColumnNode column = node.getColumn();
+			columnName = column.getColumnName();
+		}
+
+		CellID id = new CellID(rowIndex, columnName);
+
+		CellFormat cellFormat = new CellFormat();
+		
+		SplashFormatNode sfNode = node.getSplashFormat();
+		
+		
+		Integer bgColorB = sfNode.getBackgroundColorB();
+		Integer bgColorG = sfNode.getBackgroundColorG();
+		Integer bgColorR = sfNode.getBackgroundColorR();
+
+		if ((bgColorB != null) && (bgColorG != null) && (bgColorR != null)) {
+			Color color = new Color(bgColorR, bgColorR, bgColorB);
+			cellFormat.setBackgroundColor(color);
+		}
+
+		Integer fontColorB = sfNode.getFontColorB();
+		Integer fontColorG = sfNode.getFontColorG();
+		Integer fontColorR = sfNode.getFontColorR();
+
+		if ((fontColorB != null) && (fontColorG != null) && (fontColorR != null)) {
+			Color color = new Color(fontColorR, fontColorG, fontColorB);
+			cellFormat.setFontColor(color);
+		}
+
+		cellFormat.setFontName(sfNode.getFontName());
+		cellFormat.setFontSize(sfNode.getFontSize());
+		cellFormat.setFontStyle(sfNode.getFontStyle());
+		cellFormat.setHorizontalAlignment(sfNode.getHorizontalAlignment());
+		cellFormat.setVerticalAlignment(sfNode.getVerticalAlignment());
+
+		String value = node.getValue();
+		if (value == null) {
+			value = DEFAULT_VALUE;
+		}
+		if (node.isCyclic()) {
+			value = Cell.CELL_CYLIC_ERROR;
+		}
+
+		String definition = node.getDefinition();
+		if (definition == null) {
+			definition = DEFAULT_DEFINITION;
+		}
+
+		Cell result = new Cell(id.getRowIndex(), id.getColumnIndex(), definition, value, cellFormat);
+		result.setScriptURI(node.getScriptURI());
+
+		return result;
+	}
+
 
 	/**
 	 * Returns Cell by given ID
@@ -440,91 +662,6 @@ public class SpreadsheetService {
 		}
 	}
 
-	/**
-	 * Returns Pie Chart Node by given ID
-	 * 
-	 * @param sheet
-	 *            spreadsheet
-	 * 
-	 */
-	private PieChartNode getPieChartNode(SpreadsheetNode sheet, String id) {
-		Transaction transaction = neoService.beginTx();
-
-		try {
-			PieChartNode result = sheet.getPieChartNode(id);
-
-			transaction.success();
-
-			return result;
-		} finally {
-			transaction.finish();
-		}
-	}
-
-	/**
-	 * Converts CellNode to Cell
-	 * 
-	 * @param node
-	 *            CellNode
-	 * @return Cell
-	 */
-	private Cell convertNodeToCell(CellNode node, String rowIndex, String columnName, boolean parentCyclic) {
-		if (rowIndex == null) {
-			RowNode row = node.getRow();
-			rowIndex = row.getRowIndex();
-		}
-
-		if (columnName == null) {
-			ColumnNode column = node.getColumn();
-			columnName = column.getColumnName();
-		}
-
-		CellID id = new CellID(rowIndex, columnName);
-
-		CellFormat cellFormat = new CellFormat();
-		SplashFormatNode sfNode = node.getSplashFormat();
-		Integer bgColorB = sfNode.getBackgroundColorB();
-		Integer bgColorG = sfNode.getBackgroundColorG();
-		Integer bgColorR = sfNode.getBackgroundColorR();
-
-		if ((bgColorB != null) && (bgColorG != null) && (bgColorR != null)) {
-			Color color = new Color(bgColorR, bgColorR, bgColorB);
-			cellFormat.setBackgroundColor(color);
-		}
-
-		Integer fontColorB = sfNode.getFontColorB();
-		Integer fontColorG = sfNode.getFontColorG();
-		Integer fontColorR = sfNode.getFontColorR();
-
-		if ((fontColorB != null) && (fontColorG != null) && (fontColorR != null)) {
-			Color color = new Color(fontColorR, fontColorG, fontColorB);
-			cellFormat.setFontColor(color);
-		}
-
-		cellFormat.setFontName(sfNode.getFontName());
-		cellFormat.setFontSize(sfNode.getFontSize());
-		cellFormat.setFontStyle(sfNode.getFontStyle());
-		cellFormat.setHorizontalAlignment(sfNode.getHorizontalAlignment());
-		cellFormat.setVerticalAlignment(sfNode.getVerticalAlignment());
-
-		String value = node.getValue();
-		if (value == null) {
-			value = DEFAULT_VALUE;
-		}
-		if (node.isCyclic()) {
-			value = Cell.CELL_CYLIC_ERROR;
-		}
-
-		String definition = node.getDefinition();
-		if (definition == null) {
-			definition = DEFAULT_DEFINITION;
-		}
-
-		Cell result = new Cell(id.getRowIndex(), id.getColumnIndex(), definition, value, cellFormat);
-		result.setScriptURI(node.getScriptURI());
-
-		return result;
-	}
 
 	/**
 	 * Returns RFD Cells of Cell by given ID
@@ -615,12 +752,12 @@ public class SpreadsheetService {
 		return cellsList;
 	}
 
-    /**
-     * Returns all Charts of Spreadsheet
-     * 
-     * @param sheet Spreadsheet
-     * @return all Cells of given Spreadsheet
-     */
+	/**
+	 * Returns all Charts of Spreadsheet
+	 * 
+	 * @param sheet Spreadsheet
+	 * @return all Cells of given Spreadsheet
+	 */
 
 	public List<ChartItemNode> getAllChartItems(ChartNode chartNode) {
 		ArrayList<ChartItemNode> chartItemsList = new ArrayList<ChartItemNode>(0);
@@ -637,12 +774,12 @@ public class SpreadsheetService {
 		return chartItemsList;
 	}
 
-    /**
-     * Returns all Pie Charts of Spreadsheet
-     * 
-     * @param sheet Spreadsheet
-     * @return all Cells of given Spreadsheet
-     */
+	/**
+	 * Returns all Pie Charts of Spreadsheet
+	 * 
+	 * @param sheet Spreadsheet
+	 * @return all Cells of given Spreadsheet
+	 */
 
 	public List<PieChartItemNode> getAllPieChartItems(PieChartNode chartNode) {
 		ArrayList<PieChartItemNode> chartItemsList = new ArrayList<PieChartItemNode>(0);
@@ -659,13 +796,13 @@ public class SpreadsheetService {
 		return chartItemsList;
 	}
 
-    /**
-     * Updates References of Cell
-     * 
-     * @param sheet Spreadsheet of Cell
-     * @param cellID ID of Cell
-     * @param array Array with IDs of referenced Cells
-     */
+	/**
+	 * Updates References of Cell
+	 * 
+	 * @param sheet Spreadsheet of Cell
+	 * @param cellID ID of Cell
+	 * @param array Array with IDs of referenced Cells
+	 */
 	public void updateCellReferences(SpreadsheetNode sheet, String cellID, RubyArray array) {
 		List<String> referencedIds = new ArrayList<String>(0);
 		for (IRubyObject rubyString : array.toJavaArray()) {
@@ -722,12 +859,12 @@ public class SpreadsheetService {
 		}
 	}
 
-    /**
-     * Get cells FullId
-     * 
-     * @param cell cell node
-     * @return FullId
-     */
+	/**
+	 * Get cells FullId
+	 * 
+	 * @param cell cell node
+	 * @return FullId
+	 */
 	public String getFullId(CellNode cell) {
 		Transaction transaction = neoService.beginTx();
 		try {
@@ -739,26 +876,26 @@ public class SpreadsheetService {
 		}
 	}
 
-    /**
-     * Insert row
-     * 
-     * @param spreadsheet spreadsheet node
-     * @param index row index (begin index: 0)
-     */
+	/**
+	 * Insert row
+	 * 
+	 * @param spreadsheet spreadsheet node
+	 * @param index row index (begin index: 0)
+	 */
 	public void insertRow(SpreadsheetNode spreadsheet, final int index) {
 		Transaction transaction = neoService.beginTx();
 		try {
 			Iterator<Node> rowIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-						public boolean isReturnableNode(TraversalPosition position) {
-							if (position.isStartNode()) {
-								return false;
-							}
-							return Integer.parseInt(position.lastRelationshipTraversed().getEndNode()
-									.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()) > index;
-						}
+				public boolean isReturnableNode(TraversalPosition position) {
+					if (position.isStartNode()) {
+						return false;
+					}
+					return Integer.parseInt(position.lastRelationshipTraversed().getEndNode()
+							.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()) > index;
+				}
 
-					}, SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
+			}, SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
 			TreeSet<RowNode> rows = new TreeSet<RowNode>(new Comparator<RowNode>() {
 				@Override
 				public int compare(RowNode o1, RowNode o2) {
@@ -798,13 +935,13 @@ public class SpreadsheetService {
 		}
 	}
 
-    /**
-     * Updates script
-     * 
-     * @param scriptURI script URI
-     * @param formula new formula
-     * @return true if no error
-     */
+	/**
+	 * Updates script
+	 * 
+	 * @param scriptURI script URI
+	 * @param formula new formula
+	 * @return true if no error
+	 */
 	private boolean updateScript(URI scriptURI, String formula) {
 		File file = new File(scriptURI);
 		FileWriter fr;
@@ -818,16 +955,16 @@ public class SpreadsheetService {
 		}
 	}
 
-    /**
-     * Updating formula
-     * 
-     * @param formula formula to update
-     * @param rowIndex old row index
-     * @param columnName old column name
-     * @param newRowIndex new row index
-     * @param newColumnName new column name
-     * @return new formula
-     */
+	/**
+	 * Updating formula
+	 * 
+	 * @param formula formula to update
+	 * @param rowIndex old row index
+	 * @param columnName old column name
+	 * @param newRowIndex new row index
+	 * @param newColumnName new column name
+	 * @return new formula
+	 */
 	private String updatingFormula(String formula, int rowIndex, String columnName, int newRowIndex, String newColumnName) {
 
 		String oldCellName = columnName.toLowerCase() + rowIndex;
@@ -849,13 +986,13 @@ public class SpreadsheetService {
 		return result.toString();
 	}
 
-    /**
-     * Deleting row
-     * 
-     * @param spreadsheet spreadsheet node
-     * @param index row index (begin index: 0)
-     * @return true if all ok.
-     */
+	/**
+	 * Deleting row
+	 * 
+	 * @param spreadsheet spreadsheet node
+	 * @param index row index (begin index: 0)
+	 * @return true if all ok.
+	 */
 	public boolean deleteRow(SpreadsheetNode spreadsheet, final int index) {
 		Transaction transaction = neoService.beginTx();
 		try {
@@ -863,8 +1000,8 @@ public class SpreadsheetService {
 			Iterator<Node> cellIterator;
 			RowNode rowNod = spreadsheet.getRow(indexRow);
 			if (rowNod != null) {
-                cellIterator = rowNod.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-                        new ReferencedCell(), SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
+				cellIterator = rowNod.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+						new ReferencedCell(), SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
 				if (cellIterator.hasNext()) {
 					transaction.success();
 					return false;
@@ -873,15 +1010,15 @@ public class SpreadsheetService {
 			}
 			Iterator<Node> rowIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-						public boolean isReturnableNode(TraversalPosition position) {
-							if (position.isStartNode()) {
-								return false;
-							}
-							return Integer.parseInt(position.lastRelationshipTraversed().getEndNode()
-									.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()) > index;
-						}
+				public boolean isReturnableNode(TraversalPosition position) {
+					if (position.isStartNode()) {
+						return false;
+					}
+					return Integer.parseInt(position.lastRelationshipTraversed().getEndNode()
+							.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()) > index;
+				}
 
-					}, SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
+			}, SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
 			TreeSet<RowNode> rows = new TreeSet<RowNode>(new Comparator<RowNode>() {
 				@Override
 				public int compare(RowNode o1, RowNode o2) {
@@ -893,8 +1030,8 @@ public class SpreadsheetService {
 			}
 			for (RowNode rowNode : rows) {
 				int rowIndex = Integer.parseInt(rowNode.getRowIndex());
-                cellIterator = rowNode.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-                        new ReferencedCell(), SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
+				cellIterator = rowNode.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+						new ReferencedCell(), SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
 					CellNode cellNode = new CellNode(cell);
@@ -919,7 +1056,7 @@ public class SpreadsheetService {
 			transaction.success();
 			return true;
 		} catch (SplashDatabaseException e) {
-		    transaction.failure();
+			transaction.failure();
 			return false;
 		} finally {
 			transaction.finish();
@@ -927,11 +1064,11 @@ public class SpreadsheetService {
 
 	}
 
-    /**
-     * Delete row
-     * 
-     * @param rowNode row to delete
-     */
+	/**
+	 * Delete row
+	 * 
+	 * @param rowNode row to delete
+	 */
 	private void deleteRow(RowNode rowNode) {
 		Iterator<CellNode> allCells = rowNode.getAllCells();
 		while (allCells.hasNext()) {
@@ -941,11 +1078,11 @@ public class SpreadsheetService {
 		deleteNode(rowNode.getUnderlyingNode());
 	}
 
-    /**
-     * Delete column
-     * 
-     * @param columnNode row to delete
-     */
+	/**
+	 * Delete column
+	 * 
+	 * @param columnNode row to delete
+	 */
 	private void deleteColumn(ColumnNode columnNode) {
 		Iterator<CellNode> allCells = columnNode.getAllCells();
 		while (allCells.hasNext()) {
@@ -955,11 +1092,11 @@ public class SpreadsheetService {
 		deleteNode(columnNode.getUnderlyingNode());
 	}
 
-    /**
-     * Delete node
-     * 
-     * @param node node to delete
-     */
+	/**
+	 * Delete node
+	 * 
+	 * @param node node to delete
+	 */
 	private void deleteNode(Node node) {
 		Iterable<Relationship> relationships = node.getRelationships();
 		for (Relationship relationship : relationships) {
@@ -968,14 +1105,14 @@ public class SpreadsheetService {
 		node.delete();
 	}
 
-    /**
-     * Copies a Given Spreadsheet
-     * 
-     * @param spreadsheet spreadsheet to copy
-     * @param newRoot root for new Spreadsheet
-     * @param newName name of new Spreadsheet
-     * @return copied Spreadsheet
-     */
+	/**
+	 * Copies a Given Spreadsheet
+	 * 
+	 * @param spreadsheet spreadsheet to copy
+	 * @param newRoot root for new Spreadsheet
+	 * @param newName name of new Spreadsheet
+	 * @return copied Spreadsheet
+	 */
 	public SpreadsheetNode copySpreadsheet(SpreadsheetNode spreadsheet, RubyProjectNode newRoot, String newName) {
 		try {
 			SpreadsheetNode result = createSpreadsheet(newRoot, newName);
@@ -1001,28 +1138,28 @@ public class SpreadsheetService {
 		}
 	}
 
-    /**
-     * Insert column
-     * 
-     * @param spreadsheet spreadsheet node
-     * @param index row index (begin index: 0)
-     */
+	/**
+	 * Insert column
+	 * 
+	 * @param spreadsheet spreadsheet node
+	 * @param index row index (begin index: 0)
+	 */
 	public void insertColumn(SpreadsheetNode spreadsheet, final int index) {
 		Transaction transaction = neoService.beginTx();
 		try {
 			Iterator<Node> columnIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-						public boolean isReturnableNode(TraversalPosition position) {
-							if (position.isStartNode()) {
-								return false;
-							}
-							boolean result = CellID
-									.getColumnIndexFromCellID(ColumnNode.fromNode(position.currentNode()).getColumnName()) >= index;
-							System.out.println(result);
-							return result;
-						}
+				public boolean isReturnableNode(TraversalPosition position) {
+					if (position.isStartNode()) {
+						return false;
+					}
+					boolean result = CellID
+					.getColumnIndexFromCellID(ColumnNode.fromNode(position.currentNode()).getColumnName()) >= index;
+					System.out.println(result);
+					return result;
+				}
 
-					}, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
+			}, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
 			List<ColumnNode> columns = new ArrayList<ColumnNode>();
 			while (columnIterator.hasNext()) {
 				columns.add(ColumnNode.fromNode(columnIterator.next()));
@@ -1031,15 +1168,15 @@ public class SpreadsheetService {
 				@Override
 				public int compare(ColumnNode o1, ColumnNode o2) {
 					return CellID.getColumnIndexFromCellID(o2.getColumnName())
-							- CellID.getColumnIndexFromCellID(o1.getColumnName());
+					- CellID.getColumnIndexFromCellID(o1.getColumnName());
 				}
 			});
 			for (ColumnNode columnNode : columns) {
 				Node column = columnNode.getUnderlyingNode();
 				String colName = columnNode.getColumnName();
 				int colIndex = CellID.getColumnIndexFromCellID(colName);
-                Iterator<Node> cellIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
-                        SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
+				Iterator<Node> cellIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
+						SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
 				String newColumnLetter = CellID.getColumnLetter(colIndex + 1);
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
@@ -1067,86 +1204,86 @@ public class SpreadsheetService {
 		}
 	}
 
-    /**
-     * Deleting column
-     * 
-     * @param spreadsheet spreadsheet node
-     * @param index column index (begin index: 0)
-     * @return true if all ok.
-     */
-    public boolean deleteColumn(SpreadsheetNode spreadsheet, final int index) {
-        Transaction transaction = neoService.beginTx();
-        try {
-            String indexColumn = CellID.getColumnLetter(index);
-            Iterator<Node> cellIterator;
-            ColumnNode columnNod = spreadsheet.getColumn(indexColumn);
-            if (columnNod != null) {
-                cellIterator = columnNod.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-                        new ReferencedCell(), SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
-                if (cellIterator.hasNext()) {
-                    transaction.success();
-                    return false;
-                }
-                deleteColumn(columnNod);
-            }
-            // find columns for change of their number
-            Iterator<Node> columnIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
-                    StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-                        public boolean isReturnableNode(TraversalPosition position) {
-                            if (position.isStartNode()) {
-                                return false;
-                            }
-                            boolean result = CellID
-                                    .getColumnIndexFromCellID(ColumnNode.fromNode(position.currentNode()).getColumnName()) > index;
-                            System.out.println(result);
-                            return result;
-                        }
+	/**
+	 * Deleting column
+	 * 
+	 * @param spreadsheet spreadsheet node
+	 * @param index column index (begin index: 0)
+	 * @return true if all ok.
+	 */
+	public boolean deleteColumn(SpreadsheetNode spreadsheet, final int index) {
+		Transaction transaction = neoService.beginTx();
+		try {
+			String indexColumn = CellID.getColumnLetter(index);
+			Iterator<Node> cellIterator;
+			ColumnNode columnNod = spreadsheet.getColumn(indexColumn);
+			if (columnNod != null) {
+				cellIterator = columnNod.getUnderlyingNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+						new ReferencedCell(), SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
+				if (cellIterator.hasNext()) {
+					transaction.success();
+					return false;
+				}
+				deleteColumn(columnNod);
+			}
+			// find columns for change of their number
+			Iterator<Node> columnIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
+					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+				public boolean isReturnableNode(TraversalPosition position) {
+					if (position.isStartNode()) {
+						return false;
+					}
+					boolean result = CellID
+					.getColumnIndexFromCellID(ColumnNode.fromNode(position.currentNode()).getColumnName()) > index;
+					System.out.println(result);
+					return result;
+				}
 
-                    }, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
-            List<ColumnNode> columns = new ArrayList<ColumnNode>();
-            while (columnIterator.hasNext()) {
-                columns.add(ColumnNode.fromNode(columnIterator.next()));
-            }
-            Collections.sort(columns, new Comparator<ColumnNode>() {
-                @Override
-                public int compare(ColumnNode o1, ColumnNode o2) {
-                    return CellID.getColumnIndexFromCellID(o2.getColumnName())
-                            - CellID.getColumnIndexFromCellID(o1.getColumnName());
-                }
-            });
-            for (ColumnNode columnNode : columns) {
-                Node column = columnNode.getUnderlyingNode();
-                String colName = columnNode.getColumnName();
-                int colIndex = CellID.getColumnIndexFromCellID(colName);
-                Iterator<Node> celIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
-                        SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
-                String newColumnLetter = CellID.getColumnLetter(colIndex - 1);
-                // change formula for all referenced cells
-                while (celIterator.hasNext()) {
-                    Node cell = (Node)celIterator.next();
-                    CellNode cellNode = new CellNode(cell);
-                    int rowIndex = Integer.parseInt(cellNode.getRow().getRowIndex());
-                    Iterator<CellNode> referencedNodes = cellNode.getDependedNodes();
-                    while (referencedNodes.hasNext()) {
-                        CellNode refCell = (CellNode)referencedNodes.next();
-                        String formula = refCell.getDefinition();
-                        if (formula != null && formula.length() > 0) {
-                            formula = updatingFormula(formula, rowIndex, colName, rowIndex, newColumnLetter);
-                            refCell.setDefinition(formula);
-                            URI scriptURI = refCell.getScriptURI();
-                            if (scriptURI != null) {
-                                updateScript(scriptURI, formula);
-                            }
-                        }
-                    }
-                }
-                columnNode.setColumnName(newColumnLetter);
-            }
+			}, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
+			List<ColumnNode> columns = new ArrayList<ColumnNode>();
+			while (columnIterator.hasNext()) {
+				columns.add(ColumnNode.fromNode(columnIterator.next()));
+			}
+			Collections.sort(columns, new Comparator<ColumnNode>() {
+				@Override
+				public int compare(ColumnNode o1, ColumnNode o2) {
+					return CellID.getColumnIndexFromCellID(o2.getColumnName())
+					- CellID.getColumnIndexFromCellID(o1.getColumnName());
+				}
+			});
+			for (ColumnNode columnNode : columns) {
+				Node column = columnNode.getUnderlyingNode();
+				String colName = columnNode.getColumnName();
+				int colIndex = CellID.getColumnIndexFromCellID(colName);
+				Iterator<Node> celIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
+						SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
+				String newColumnLetter = CellID.getColumnLetter(colIndex - 1);
+				// change formula for all referenced cells
+				while (celIterator.hasNext()) {
+					Node cell = (Node)celIterator.next();
+					CellNode cellNode = new CellNode(cell);
+					int rowIndex = Integer.parseInt(cellNode.getRow().getRowIndex());
+					Iterator<CellNode> referencedNodes = cellNode.getDependedNodes();
+					while (referencedNodes.hasNext()) {
+						CellNode refCell = (CellNode)referencedNodes.next();
+						String formula = refCell.getDefinition();
+						if (formula != null && formula.length() > 0) {
+							formula = updatingFormula(formula, rowIndex, colName, rowIndex, newColumnLetter);
+							refCell.setDefinition(formula);
+							URI scriptURI = refCell.getScriptURI();
+							if (scriptURI != null) {
+								updateScript(scriptURI, formula);
+							}
+						}
+					}
+				}
+				columnNode.setColumnName(newColumnLetter);
+			}
 
 			transaction.success();
 			return true;
 		} catch (SplashDatabaseException e) {
-		    transaction.failure();
+			transaction.failure();
 			return false;
 		} finally {
 			transaction.finish();
@@ -1154,28 +1291,28 @@ public class SpreadsheetService {
 
 	}
 
-    /**
-     * Swap rows in database
-     * 
-     * @param spreadsheet spreadsheet node
-     * @param index1 row1 index
-     * @param index2 row2 index
-     */
+	/**
+	 * Swap rows in database
+	 * 
+	 * @param spreadsheet spreadsheet node
+	 * @param index1 row1 index
+	 * @param index2 row2 index
+	 */
 	public void swapRows(SpreadsheetNode spreadsheet, final int index1, final int index2) {
 		Transaction transaction = neoService.beginTx();
 		try {
-            // find necessary rows in database
+			// find necessary rows in database
 			Iterator<Node> rowIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-						public boolean isReturnableNode(TraversalPosition position) {
-							if (position.isStartNode()) {
-								return false;
-							}
-							int rowIndex = Integer.parseInt(position.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()) - 1;
-							return index1 == rowIndex || index2 == rowIndex;
-						}
+				public boolean isReturnableNode(TraversalPosition position) {
+					if (position.isStartNode()) {
+						return false;
+					}
+					int rowIndex = Integer.parseInt(position.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()) - 1;
+					return index1 == rowIndex || index2 == rowIndex;
+				}
 
-					}, SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
+			}, SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
 			List<RowNode> rows = new ArrayList<RowNode>();
 			while (rowIterator.hasNext()) {
 				rows.add(RowNode.fromNode(rowIterator.next()));
@@ -1184,10 +1321,10 @@ public class SpreadsheetService {
 			for (RowNode rowNode : rows) {
 				Node row = rowNode.getUnderlyingNode();
 				int rowIndex = Integer.parseInt(rowNode.getRowIndex()) - 1;
-                Iterator<Node> cellIterator = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
-                        SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
+				Iterator<Node> cellIterator = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
+						SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING).iterator();
 				int newRowIndex = index1 == rowIndex ? index2 : index1;
-                // change formula for all referenced cells
+				// change formula for all referenced cells
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
 					CellNode cellNode = new CellNode(cell);
@@ -1218,14 +1355,14 @@ public class SpreadsheetService {
 		}
 	}
 
-    /**
-     * Swap row numbers in formula
-     * 
-     * @param formula formula
-     * @param index1 row1 index
-     * @param index2 row2 index
-     * @return
-     */
+	/**
+	 * Swap row numbers in formula
+	 * 
+	 * @param formula formula
+	 * @param index1 row1 index
+	 * @param index2 row2 index
+	 * @return
+	 */
 	private String swapRows(String formula, int index1, int index2) {
 		String rowIndex1 = String.valueOf(index1 + 1);
 		String rowIndex2 = String.valueOf(index2 + 1);
@@ -1254,30 +1391,30 @@ public class SpreadsheetService {
 		return result.toString();
 	}
 
-    /**
-     * Swap columns in database
-     * 
-     * @param spreadsheet spreadsheet node
-     * @param index1 column1 index
-     * @param index2 column2 index
-     */
+	/**
+	 * Swap columns in database
+	 * 
+	 * @param spreadsheet spreadsheet node
+	 * @param index1 column1 index
+	 * @param index2 column2 index
+	 */
 	public void swapColumns(SpreadsheetNode spreadsheet, final int index1, final int index2) {
 		final String column1Name = CellID.getColumnLetter(index1);
 		final String column2Name = CellID.getColumnLetter(index2);
 		Transaction transaction = neoService.beginTx();
 		try {
-            // find necessary column in database
+			// find necessary column in database
 			Iterator<Node> colIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-						public boolean isReturnableNode(TraversalPosition position) {
-							if (position.isStartNode()) {
-								return false;
-							}
-							String columnName = (String) position.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME);
-							return column1Name.equals(columnName) || column2Name.equals(columnName);
-						}
+				public boolean isReturnableNode(TraversalPosition position) {
+					if (position.isStartNode()) {
+						return false;
+					}
+					String columnName = (String) position.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME);
+					return column1Name.equals(columnName) || column2Name.equals(columnName);
+				}
 
-					}, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
+			}, SplashRelationshipTypes.COLUMN, Direction.OUTGOING).iterator();
 			List<ColumnNode> columns = new ArrayList<ColumnNode>();
 			while (colIterator.hasNext()) {
 				columns.add(ColumnNode.fromNode(colIterator.next()));
@@ -1286,10 +1423,10 @@ public class SpreadsheetService {
 			for (ColumnNode colNode : columns) {
 				Node column = colNode.getUnderlyingNode();
 				String colName = colNode.getColumnName();
-                Iterator<Node> cellIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
-                        SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
+				Iterator<Node> cellIterator = column.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReferencedCell(),
+						SplashRelationshipTypes.COLUMN_CELL, Direction.OUTGOING).iterator();
 				String newColName = column1Name.equals(colName) ? column2Name : column1Name;
-                // change formula for all referenced cells
+				// change formula for all referenced cells
 				while (cellIterator.hasNext()) {
 					Node cell = (Node) cellIterator.next();
 					CellNode cellNode = new CellNode(cell);
@@ -1320,14 +1457,14 @@ public class SpreadsheetService {
 		}
 	}
 
-    /**
-     * Swap columns in formula
-     * 
-     * @param formula formula
-     * @param column1Name name of column1
-     * @param column2Name name of column2
-     * @return
-     */
+	/**
+	 * Swap columns in formula
+	 * 
+	 * @param formula formula
+	 * @param column1Name name of column1
+	 * @param column2Name name of column2
+	 * @return
+	 */
 	private String swapColumns(String formula, String column1Name, String column2Name) {
 		column1Name = column1Name.toLowerCase();
 		column2Name = column2Name.toLowerCase();

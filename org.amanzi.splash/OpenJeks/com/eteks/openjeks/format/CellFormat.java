@@ -99,13 +99,13 @@ public class CellFormat implements Cloneable
   }
   
   public boolean isDefaultFormat(){
-	  	if (this.format != null) return false;
+	  	//if (this.format != null) return false;
 	    if (!this.fontName.equals("Arial")) return false;
 	    if (this.fontStyle != new Integer(Font.PLAIN)) return false;
-	    if (this.fontSize != new Integer(14)) return false;
+	    //TODO: if (this.fontSize != new Integer(14)) return false;
 	    if (this.fontColor != Color.BLACK) return false ;
-	    if (this.verticalAlignment != new Integer(JLabel.CENTER)) return false;
-	    if (this.horizontalAlignment != new Integer(-2)) return false;
+	    //TODO: if (this.verticalAlignment != new Integer(JLabel.CENTER)) return false;
+	    //TODO: if (this.horizontalAlignment != new Integer(-2)) return false;
 	    if (this.backgroundColor != Color.WHITE) return false;
 	    
 	    return true;
