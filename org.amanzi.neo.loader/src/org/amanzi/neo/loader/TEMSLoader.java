@@ -195,7 +195,7 @@ public class TEMSLoader {
                 // TODO fix bug with SWT exception
                     // && MessageDialog.openConfirm(display.getActiveShell(),
                     // NeoLoaderPluginMessages.ADD_LAYER_TITLE, String
-                    // .format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGES, basename,
+                    // .format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, basename,
                     // map.getName()))) {
                     List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
                     for (IGeoResource iGeoResource : curService.resources(null)) {

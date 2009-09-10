@@ -280,8 +280,13 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      * @return true or false
      */
     private boolean confirmLoadNetworkOnMap(IMap map) {
-        return MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE,
-                String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGES, basename, map.getName()));
+        if (map == null || map.getName() == null) {
+            return MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE, String
+                    .format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, basename, map.getName()));
+        } else {
+            return MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE, String
+                    .format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, basename, map.getName()));
+        }
     }
 
     /**

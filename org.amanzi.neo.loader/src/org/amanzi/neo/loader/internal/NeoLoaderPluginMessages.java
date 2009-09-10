@@ -25,7 +25,8 @@ public class NeoLoaderPluginMessages extends NLS {
 	public static String TEMSDialog_AddAllButtonText;
 	public static String TEMSDialog_RemoveAllButtonText;
 	public static String TEMSDialog_DatasetLabel;
-    public static String ADD_LAYER_MESSAGES;
+    public static String ADD_LAYER_MESSAGE;
+    public static String ADD_NEW_MAP_MESSAGE;
     public static String ADD_LAYER_TITLE;
     
     private NeoLoaderPluginMessages() {
