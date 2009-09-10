@@ -251,8 +251,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         }
         try {
             IMap map = ApplicationGIS.getActiveMap();
-            if (map != null
-                    && curService != null
+            if (curService != null
                     && gis != null
                     && findLayerByNode(map, gis) == null
                     && confirmLoadNetworkOnMap(map)) {
@@ -280,7 +279,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      * @return true or false
      */
     private boolean confirmLoadNetworkOnMap(IMap map) {
-        if (map == null || map.getName() == null) {
+        if (map == ApplicationGIS.NO_MAP) {
             return MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE, String
                     .format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, basename, map.getName()));
         } else {
