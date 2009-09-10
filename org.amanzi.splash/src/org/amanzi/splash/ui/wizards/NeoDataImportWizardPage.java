@@ -36,7 +36,7 @@ public class NeoDataImportWizardPage extends WizardNewFileCreationPage {
 	public NeoDataImportWizardPage(String pageName, IStructuredSelection selection) {
 		super(pageName, selection);
 		setTitle(pageName); //NON-NLS-1
-		setDescription("Import a file from the local file system into the workspace"); //NON-NLS-1
+		setDescription("Import a CSV file into a new Amanzi Splash sheet"); //NON-NLS-1
 	}
 
 	/* (non-Javadoc)

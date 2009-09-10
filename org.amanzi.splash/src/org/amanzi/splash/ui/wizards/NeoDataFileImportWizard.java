@@ -56,7 +56,7 @@ public class NeoDataFileImportWizard extends Wizard implements IImportWizard {
 
 							SplashTableModel model = (SplashTableModel) table.getModel();
 
-							monitor.beginTask("Loading ", getLinesCount(file));
+							monitor.beginTask("Loading ", 100);
 
 							IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 
@@ -87,40 +87,9 @@ public class NeoDataFileImportWizard extends Wizard implements IImportWizard {
 		return true;
 	}
 
-	private int getLinesCount(IFile file){
-//		InputStream is = null;
-//		try {
-//			is = new FileInputStream(file.getLocation().toString());
-//		} catch (FileNotFoundException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
-//		String line = "";
-//
-//		// Read a single line:
-//		try {
-//			line = lnr.readLine();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
-
-		
+	private long getFileLength(IFile file){
 		String path = file.getLocation().toString();
-		
-		File f = new File(path);
-		
-		int count = 0;
-		
-		NeoSplashUtil.logn("f.length(): " + f.length());
-		//NeoSplashUtil.logn("line.length(): " + line.length());
-		
-		return (int) f.length();
-		
-		//NeoSplashUtil.logn("Number of lines: " + count);
-		//return count;
+		return (new File(path)).length();
 	}
 
 	/**
@@ -149,12 +118,9 @@ public class NeoDataFileImportWizard extends Wizard implements IImportWizard {
 	 * @see org.eclipse.ui.IWorkbenchWizard#init(org.eclipse.ui.IWorkbench, org.eclipse.jface.viewers.IStructuredSelection)
 	 */
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		setWindowTitle("File Import Wizard"); //NON-NLS-1
+		setWindowTitle("Splash Import Wizard"); //NON-NLS-1
 		setNeedsProgressMonitor(true);
-
-
-
-		mainPage = new NeoDataImportWizardPage("Import Neo Data File", selection); //NON-NLS-1
+		mainPage = new NeoDataImportWizardPage("Import Data File as Amanzi Splash Sheet", selection); //NON-NLS-1
 	}
 
 	/* (non-Javadoc)

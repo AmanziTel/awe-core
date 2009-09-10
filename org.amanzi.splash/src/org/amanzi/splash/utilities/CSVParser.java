@@ -21,7 +21,7 @@ public class CSVParser {
 	  }
 
 	  /** The fields in the current String */
-	  protected List list = new ArrayList();
+	  protected List<String> list = new ArrayList<String>();
 
 	  /** the separator char for this parser */
 	  protected char fieldSep;
@@ -30,7 +30,7 @@ public class CSVParser {
 	   * @return java.util.Iterator containing each field 
 	   * from the original as a String, in order.
 	   */
-	  public List parse(String line)
+	  public List<String> parse(String line)
 	  {
 	    StringBuffer sb = new StringBuffer();
 	    list.clear();      // recycle to initial state

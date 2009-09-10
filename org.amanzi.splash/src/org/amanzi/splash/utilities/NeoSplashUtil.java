@@ -3,12 +3,12 @@ package org.amanzi.splash.utilities;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -289,16 +289,44 @@ public class NeoSplashUtil {
 		return result;
 		
 	}
-	
+
+	/**
+	 * A class that extends FileInputStream and enabled counting of the bytes read and calculation of the percentage read
+	 * @author craig
+	 * @since 1.0.0
+	 */
+	public static class CountingFileInputStream extends FileInputStream {
+        long bytesRead = 0;
+        long totalBytes = 0;
+
+        public CountingFileInputStream(File arg0) throws FileNotFoundException {
+            super(arg0);
+        }
+
+        public int read(byte[] b) {
+            int ans = this.read(b);
+            if (ans > 0)
+                bytesRead += ans;
+            return ans;
+        }
+
+        public long tell() {
+            return bytesRead;
+        }
+
+        public int percentage() {
+            return (int)(100.0 * (float)bytesRead / (float)totalBytes);
+        }
+    }
+
 	public static void LoadFileIntoSpreadsheet(String path, SplashTableModel model, IProgressMonitor monitor){
 		//String path = "c:\\sample.txt";
 		//NeoSplashUtil.logn("path: " + path);
-		InputStream is;
 		try {
-			is = new FileInputStream(path);
-			LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
+		    CountingFileInputStream is = new CountingFileInputStream(new File(path));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 			String line;
-			line = lnr.readLine();
+			line = reader.readLine();
 			
 			int i=0;
 			int j=0;
@@ -314,32 +342,32 @@ public class NeoSplashUtil {
 			}
 			
 			CSVParser parser = new CSVParser(sep);
-			
+			int perc = is.percentage();
+            int prevPerc = 0;
 			while (line != null  && line.lastIndexOf(sep) > 0){
-				
-				monitor.setTaskName("Loading record #" + i);
 				NeoSplashUtil.logn("loading line #" + i);
-		
-				
-				List list = parser.parse(line);
-				Iterator it = list.iterator();
+
+				List<String> list = parser.parse(line);
+				Iterator<String> it = list.iterator();
 				j = 0;
 				while (it.hasNext()) {
 					model.setValueAt(new Cell(i, j, "",(String) it.next(), new CellFormat()), i, j);
 					j++;
 				}
 
-				monitor.worked(line.length());
-				
-				line = lnr.readLine();
-				
+	            perc = is.percentage();
+	            if (perc > prevPerc) {
+	                monitor.setTaskName("Loading record #" + i);
+                    monitor.worked(perc - prevPerc);
+                    prevPerc = perc;
+                }
+
+				line = reader.readLine();
 				i++;
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
