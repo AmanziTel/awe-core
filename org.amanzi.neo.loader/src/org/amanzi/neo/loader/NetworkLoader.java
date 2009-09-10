@@ -360,6 +360,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     }
 					String siteField = fields[mainIndexes[2]];
 					String sectorField = fields[mainIndexes[3]];
+					sectorField = sectorField.replaceAll(siteField+"[\\:\\-]?", "");
 					if(siteField.contains("306460123A")) {
 					    System.out.println("debug");
 					}
