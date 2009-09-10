@@ -54,6 +54,8 @@ public class NeoStyleContent extends StyleContent {
     private static final String FIX_SYMBOL = "FIX_SYMBOL";
     private static final String SYMBOL_SIZE = "SYMBOL_SIZE";
     private static final String SECTOR_TRANSPARENCY = "SECTOR_TRANSPARENCY";
+    public static final int DEF_MAXIMUM_SYMBOL_SIZE = 40;
+    private static final String MAX_SYMB_SIZE = "MAXIMUM_SYMBOL_SIZE";
 
 
     public NeoStyleContent() {
@@ -73,6 +75,7 @@ public class NeoStyleContent extends StyleContent {
                 result.setSymbolSize(DEF_SYMB_SIZE);
                 result.setSectorTransparency(DEF_SECTOR_TR);
                 result.setSiteFill(DEF_COLOR_SITE);
+                result.setMaximumSymbolSize(DEF_MAXIMUM_SYMBOL_SIZE);
                 return result;
             } else {
                 return new NeoStyle(Color.BLACK, new Color(200, 128, 255, (int)(0.6 * 255.0)), Color.BLACK);
@@ -100,6 +103,7 @@ public class NeoStyleContent extends StyleContent {
         result.setFixSymbolSize(Boolean.parseBoolean(memento.getString(FIX_SYMBOL)));
         result.setSymbolSize(memento.getInteger(SYMBOL_SIZE));
         result.setSectorTransparency(memento.getInteger(SECTOR_TRANSPARENCY));
+        result.setMaximumSymbolSize(memento.getInteger(MAX_SYMB_SIZE));
         return result;
     }
 
@@ -127,6 +131,7 @@ public class NeoStyleContent extends StyleContent {
         memento.putString(FIX_SYMBOL, String.valueOf(style.isFixSymbolSize()));
         memento.putInteger(SYMBOL_SIZE, style.getSymbolSize());
         memento.putInteger(SECTOR_TRANSPARENCY, style.getSectorTransparency());
+        memento.putInteger(MAX_SYMB_SIZE, style.getMaximumSymbolSize());
 
     }
 

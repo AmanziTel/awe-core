@@ -98,6 +98,7 @@ public class NetworkRenderer extends RendererImpl {
         int maxSitesLabel = 30;
         int maxSitesFull = 100;
         int maxSitesLite = 1000;
+        int maxSymbolSize = 40;
         boolean scaleSectors = true;
 
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
@@ -114,6 +115,7 @@ public class NetworkRenderer extends RendererImpl {
                 maxSitesFull = neostyle.getSmallSymb();
                 maxSitesLite = neostyle.getSmallestSymb();
                 scaleSectors = !neostyle.isFixSymbolSize();
+                maxSymbolSize = neostyle.getMaximumSymbolSize();
             } catch (Exception e) {
                 //TODO: we can get here if an old style exists, and we have added new fields
             }
@@ -148,6 +150,7 @@ public class NetworkRenderer extends RendererImpl {
                 drawLite = countScaled < maxSitesLite;
                 if (drawFull && scaleSectors) {
                     drawSize *= Math.sqrt(maxSitesFull) / (3 * Math.sqrt(countScaled));
+                    drawSize = Math.min(drawSize, maxSymbolSize);
                 }
             }
 

@@ -21,6 +21,14 @@ public class NeoStyle {
     private boolean fixSymbolSize = NeoStyleContent.DEF_FIX_SYMB_SIZE;
     private Integer symbolSize;
     private Integer sectorTransparency;
+    private Integer maximumSymbolSize;
+
+    /**
+     * @param maximumSymbolSize The maximumSymbolSize to set.
+     */
+    public void setMaximumSymbolSize(Integer maximumSymbolSize) {
+        this.maximumSymbolSize = maximumSymbolSize;
+    }
 
     public NeoStyle(Color line, Color fill, Color label) {
         super();
@@ -179,6 +187,13 @@ public class NeoStyle {
      */
     public Color getSiteFill() {
         return fillSite != null ? fillSite : NeoStyleContent.DEF_COLOR_SITE;
+    }
+
+    /**
+     * @return the maximumSymbolSize
+     */
+    public int getMaximumSymbolSize() {
+        return maximumSymbolSize != null ? maximumSymbolSize : NeoStyleContent.DEF_MAXIMUM_SYMBOL_SIZE;
     }
 
 }

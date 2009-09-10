@@ -7,6 +7,8 @@ import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 import net.refractions.udig.style.IStyleConfigurator;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -49,6 +51,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private static final String COLOR_FILL = "Sector fill";
     private static final String COLOR_FILL_SITE = "Site fill";
     public static final String ID = "org.amanzi.awe.neostyle.style";
+    private static final String MAX_SYMB_SIZE = "Symbol maximum size";
 
     public NeoStyleConfigurator() {
         super();
@@ -82,6 +85,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private Spinner tSectorTr;
     private Label lSite;
     private ColorEditor cEdFillSite;
+    private Label lMaxSymSize;
+    private Spinner sMaxSymSize;
 
     public void createControl(Composite parent) {
         FormLayout layout = new FormLayout();
@@ -240,6 +245,21 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(tSymbolSize, 5);
         formData.right = new FormAttachment(60, -10);
         tSectorTr.setLayoutData(formData);
+
+        lMaxSymSize = new Label(parent, SWT.NONE);
+        sMaxSymSize = new Spinner(parent, SWT.BORDER);
+        lMaxSymSize.setText(MAX_SYMB_SIZE);
+
+        formData = new FormData();
+        formData.top = new FormAttachment(sMaxSymSize, 5, SWT.CENTER);
+        formData.left = new FormAttachment(0, 5);
+        lMaxSymSize.setLayoutData(formData);
+
+        formData = new FormData();
+        formData.left = new FormAttachment(36, 10);
+        formData.top = new FormAttachment(tSectorTr, 5);
+        formData.right = new FormAttachment(60, -10);
+        sMaxSymSize.setLayoutData(formData);
         // sets spinners range
         tLabeling.setMinimum(1);
         tLabeling.setMaximum(10000);
@@ -251,6 +271,19 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         tSmallSymb.setMaximum(10000);
         tSymbolSize.setMinimum(1);
         tSymbolSize.setMaximum(10000);
+        rButton1.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                lMaxSymSize.setVisible(rButton1.getSelection());
+                sMaxSymSize.setVisible(rButton1.getSelection());
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
     }
 
     @Override
@@ -281,7 +314,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
                                                                // : value);
             // value = String.valueOf(curStyle.getSectorTransparency());
             tSectorTr.setSelection(curStyle.getSectorTransparency());// setText("null".equals(value)
-                                                                     // ? "" : value);
+            sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize()); // ? "" : value);
         } finally {
         }
     }
@@ -306,6 +339,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             e.printStackTrace();
             throw (RuntimeException) new RuntimeException( ).initCause( e );
         }
+        curStyle.setMaximumSymbolSize(sMaxSymSize.getSelection());
     }
 
     /**
