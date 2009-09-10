@@ -40,9 +40,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -68,7 +66,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
     private static final String DELETE_OLD_NETWORK = "Delete old network";
     /** String LOAD_NETWORK_TITLE field */
     private static final String LOAD_NETWORK_TITLE = "Load Network";
-    private static final String LOAD_NETWORK_MSG = "This network is already loaded into a database. Do you wish to rewrite data?";
+    private static final String LOAD_NETWORK_MSG = "This network is already loaded into the database.\nDo you wish to overwrite the data?";
 
     /**
 	 * This class handles the CRS specification.
@@ -287,14 +285,27 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      * @param map map
      * @return true or false
      */
-    private boolean confirmLoadNetworkOnMap(IMap map) {
-        if (map == ApplicationGIS.NO_MAP) {
-            return MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE, String
-                    .format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, basename, map.getName()));
-        } else {
-            return MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE, String
-                    .format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, basename, map.getName()));
-        }
+    private boolean confirmLoadNetworkOnMap(final IMap map) {
+        return (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+            int result;
+
+            @Override
+            public void run() {
+                String message = String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, basename, map.getName());
+                if (map == ApplicationGIS.NO_MAP) {
+                    message = String.format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, basename);
+                }
+                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
+                msg.setText(NeoLoaderPluginMessages.ADD_LAYER_TITLE);
+                msg.setMessage(message);
+                result = msg.open();
+            }
+
+            @Override
+            public Object getValue() {
+                return result;
+            }
+        }) == SWT.YES;
     }
 
     /**
@@ -605,12 +616,11 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             int result;
             @Override
             public void run() {
-                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OK
-                        | SWT.CANCEL);
+                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES
+                        | SWT.NO);
                 msg.setText(LOAD_NETWORK_TITLE);
                 msg.setMessage(LOAD_NETWORK_MSG);
                 result = msg.open();
-
             }
 
             @Override
@@ -618,7 +628,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                 return new Integer(result);
             }
         });
-        return resultMsg == SWT.OK;
+        return resultMsg == SWT.YES;
     }
 
     private static Node getGISNode(NeoService neo, String gisName) {
