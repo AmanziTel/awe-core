@@ -28,6 +28,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -38,8 +39,10 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
@@ -48,7 +51,9 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
@@ -78,7 +83,8 @@ import org.neo4j.api.core.Traverser.Order;
  * @since 1.1.0
  */
 public class ReuseAnalyserView extends ViewPart {
-
+    /** Maximum bars in chart */
+    private static final int MAXIMUM_BARS = 500;
     /** String ADJACENCY field */
     private static final String ADJACENCY = "Adjacency";
     /** String PROPERTY_LABEL field */
@@ -110,6 +116,9 @@ public class ReuseAnalyserView extends ViewPart {
     private Object propertyValue;
     private Text tSelectedInformation;
     private Label lSelectedInformation;
+    private Button bLogarithmic;
+    private ValueAxis axisNumeric;
+    private LogarithmicAxis axisLog;
     private static final Paint DEFAULT_COLOR = new Color(0.75f,0.7f,0.4f);
     private static final Paint COLOR_SELECTED = Color.RED;
     private static final Paint COLOR_LESS = Color.BLUE;
@@ -119,6 +128,8 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String SELECT_LABEL = "Select";
     private static final String DISTRIBUTE_LABEL = "Distribute";
     private static final String LABEL_INFO = "Selected bar";
+    private static final String ERROR_TITLE = "Chart calculation";
+    private static final String ERROR_MSG = "There are too many categories for this selection";
 
     public void createPartControl(Composite parent) {
         gisSelected = new Label(parent, SWT.NONE);
@@ -151,6 +162,9 @@ public class ReuseAnalyserView extends ViewPart {
         cSelect.setEnabled(false);
         lSelectedInformation = new Label(parent, SWT.NONE);
         lSelectedInformation.setText(LABEL_INFO);
+        bLogarithmic = new Button(parent, SWT.CHECK);
+        bLogarithmic.setToolTipText("logarithmic counts");
+        bLogarithmic.setSelection(false);
         tSelectedInformation = new Text(parent, SWT.BORDER);
         spinAdj.addSelectionListener(new SelectionListener() {
 
@@ -163,6 +177,18 @@ public class ReuseAnalyserView extends ViewPart {
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        });
+        bLogarithmic.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                logarithmicSelection();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
             }
         });
         dataset = new PropertyCategoryDataset();
@@ -284,6 +310,24 @@ public class ReuseAnalyserView extends ViewPart {
                 }
             }
         });
+        axisNumeric = ((CategoryPlot)chart.getPlot()).getRangeAxis();
+        axisLog = new LogarithmicAxis(COUNT_AXIS);
+        axisLog.setAllowNegativesFlag(true);
+        axisLog.setAutoRange(true);
+    }
+
+    /**
+     *
+     */
+    protected void logarithmicSelection() {
+            CategoryPlot plot = (CategoryPlot)chart.getPlot();
+            if (bLogarithmic.getSelection()) {
+                plot.setRangeAxis(axisLog);
+                axisLog.autoAdjustRange();
+            } else {
+                plot.setRangeAxis(axisNumeric);
+            }
+            chart.fireChartChanged();
     }
 
     /**
@@ -448,9 +492,18 @@ public class ReuseAnalyserView extends ViewPart {
                                     INeoConstants.PROPERTY_SELECT_NAME, null)));
                 }
             }, NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING).iterator();
+            Distribute distributeColumn = Distribute.findEnumByValue(cDistribute.getText());
             if (iterator.hasNext()) {
+                Node result = iterator.next();
+                if (distributeColumn != Distribute.AUTO && result.hasProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME)
+                        && (Boolean)result.getProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME)) {
+                    MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, ERROR_MSG);
+                    result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
+                    cDistribute.select(0);
+                    return findOrCreateAggregateNode(gisNode, propertyName);
+                }
                 tx.success();
-                return iterator.next();
+                return result;
             }
 
             Node result = service.createNode();
@@ -462,9 +515,16 @@ public class ReuseAnalyserView extends ViewPart {
             }
             gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
 
-            Distribute distributeColumn = Distribute.findEnumByValue(cDistribute.getText());
+
             TreeMap<Column, Integer> statistics = computeStatistics(gisNode, propertyName, distributeColumn, Select
                     .findSelectByValue(cSelect.getText()));
+            if (statistics == null && distributeColumn != Distribute.AUTO) {
+                MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, ERROR_MSG);
+
+                result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
+                cDistribute.select(0);
+                return findOrCreateAggregateNode(gisNode, propertyName);
+            }
             Node parentNode = result;
             for (Column key : statistics.keySet()) {
                 Node childNode = service.createNode();
@@ -613,6 +673,9 @@ public class ReuseAnalyserView extends ViewPart {
             break;
         default:
             break;
+        }
+        if (distribute != Distribute.AUTO && range > 0 && (double)(max - min) / (double)range > MAXIMUM_BARS) {
+            return null;
         }
         ArrayList<Column> keySet = new ArrayList<Column>();
         double curValue = min;
@@ -908,11 +971,16 @@ public class ReuseAnalyserView extends ViewPart {
         dCombo = new FormData(); // bind to label and text
         dCombo.left = new FormAttachment(lSelect, 2);
         dCombo.top = new FormAttachment(0, 2);
-        dCombo.right = new FormAttachment(85, -5);
+        dCombo.right = new FormAttachment(82, -5);
         cSelect.setLayoutData(dCombo);
+        
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(cSelect, 5);
+        dLabel.top = new FormAttachment(spinAdj, 5, SWT.CENTER);
+        bLogarithmic.setLayoutData(dLabel);
 
         dLabel = new FormData();
-        dLabel.left = new FormAttachment(cSelect, 10);
+        dLabel.left = new FormAttachment(bLogarithmic, 5);
         dLabel.top = new FormAttachment(spinAdj, 5, SWT.CENTER);
         spinLabel.setLayoutData(dLabel);
 
