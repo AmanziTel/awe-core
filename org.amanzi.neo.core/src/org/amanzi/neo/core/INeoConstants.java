@@ -314,5 +314,9 @@ public class INeoConstants {
      * name of max property
      */
     public static final String PROPERTY_NAME_MAX_VALUE = "max";
+    /**
+     * name of chart error property
+     */
+    public static final String PROPERTY_CHART_ERROR_NAME = "error_node";
    
 }
