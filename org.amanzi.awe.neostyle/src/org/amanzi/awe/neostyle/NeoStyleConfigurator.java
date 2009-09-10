@@ -20,38 +20,29 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 
 /**
- * <p>
- * Style editor
- * </p>
+ * Style editor for org.amanzi.awe.render.network
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class NeoStyleConfigurator extends IStyleConfigurator {
-    /** String SYMBOL_SIZE field */
+
+    public static final String ID = "org.amanzi.awe.neostyle.style";
+
     private static final String SYMBOL_SIZE = "Symbol base size";
-    /** String RADIO_SCALE_WITH_ZOOM field */
     private static final String RADIO_SCALE_WITH_ZOOM = "Scale with zoom";
-    /** String RADIO_FIXED_SYMB field */
     private static final String RADIO_FIXED_SYMB = "Use fixed size";
-    /** String GROUP_SCALE_SYMB field */
-    private static final String GROUP_SCALE_SYMB = "Scale symbols when zooming";
-    /** String LABELING field */
-    private static final String LABELING = "for labeling";
-    /** String SMALL_SYMBOLS field */
-    private static final String SMALL_SYMBOLS = "for small symbols";
-    /** String SMALLEST_SYMBOLS field */
-    private static final String SMALLEST_SYMBOLS = "for smallest symbols";
-    /** String SECTOR_TRANSPARENCY field */
+    private static final String GROUP_SCALE_SYMB = "Symbol sizes";
+    private static final String LABELING = "Labels";
+    private static final String SMALL_SYMBOLS = "Small symbols";
+    private static final String SMALLEST_SYMBOLS = "Smallest symbols";
     private static final String SECTOR_TRANSPARENCY = "Sector transparency (%)";
-    /** String GROUP_SITE field */
     private static final String GROUP_SITE = "Site density thresholds";
     private static final String COLOR_TITLE = "Label";
     private static final String COLOR_LINE = "Line";
     private static final String COLOR_FILL = "Sector fill";
     private static final String COLOR_FILL_SITE = "Site fill";
-    public static final String ID = "org.amanzi.awe.neostyle.style";
-    private static final String MAX_SYMB_SIZE = "Symbol maximum size";
+    private static final String MAX_SYMB_SIZE = "Maximum size";
 
     public NeoStyleConfigurator() {
         super();
@@ -64,9 +55,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     private Label labelFill;
     private Label labelLabel;
-    private Button buttonLabel;
     private Label labelLine;
-    private Button buttonLine;
     private NeoStyle curStyle;
     private ColorEditor cEdFill;
     private ColorEditor cEdLine;
@@ -96,59 +85,68 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         layout.spacing = 0;
         parent.setLayout(layout);
 
-
-        labelFill = new Label(parent, SWT.NONE);
-        labelFill.setText(COLOR_FILL);
-        cEdFill = new ColorEditor(parent);
+        Group xGroup = new Group(parent, SWT.NONE);
+        xGroup.setText("Colors");
         FormData formData = new FormData();
         formData.top = new FormAttachment(0, 5);
-        formData.left = new FormAttachment(0);
+        formData.left = new FormAttachment(0, 5);
+        formData.right = new FormAttachment(70, -10);
+        xGroup.setLayout(new FormLayout());
+        xGroup.setLayoutData(formData);
+
+        labelFill = new Label(xGroup, SWT.NONE);
+        labelFill.setText(COLOR_FILL);
+        cEdFill = new ColorEditor(xGroup);
+        formData = new FormData();
+        formData.top = new FormAttachment(0, 5);
+        formData.left = new FormAttachment(2);
         labelFill.setLayoutData(formData);
         formData = new FormData();
-        formData.left = new FormAttachment(labelFill, 50);
+        formData.left = new FormAttachment(labelFill, 130);
         cEdFill.getButton().setLayoutData(formData);
 
-        lSite = new Label(parent, SWT.NONE);
+        lSite = new Label(xGroup, SWT.NONE);
         lSite.setText(COLOR_FILL_SITE);
-        cEdFillSite = new ColorEditor(parent);
+        cEdFillSite = new ColorEditor(xGroup);
         formData = new FormData();
-        formData.top = new FormAttachment(labelFill, 25);
-        formData.left = new FormAttachment(0);
+        formData.top = new FormAttachment(labelFill, 15);
+        formData.left = new FormAttachment(2);
         lSite.setLayoutData(formData);
         formData = new FormData();
-        formData.left = new FormAttachment(labelFill, 50);
-        formData.top = new FormAttachment(labelFill, 20);
+        formData.left = new FormAttachment(labelFill, 130);
+        formData.top = new FormAttachment(labelFill, 10);
         cEdFillSite.getButton().setLayoutData(formData);
 
-        labelLine = new Label(parent, SWT.NONE);
+        labelLine = new Label(xGroup, SWT.NONE);
         labelLine.setText(COLOR_LINE);
-        cEdLine = new ColorEditor(parent);
+        cEdLine = new ColorEditor(xGroup);
         formData = new FormData();
-        formData.top = new FormAttachment(lSite, 25);
-        formData.left = new FormAttachment(0);
+        formData.top = new FormAttachment(lSite, 15);
+        formData.left = new FormAttachment(2);
         labelLine.setLayoutData(formData);
         formData = new FormData();
-        formData.left = new FormAttachment(labelFill, 50);
-        formData.top = new FormAttachment(lSite, 20);
+        formData.left = new FormAttachment(labelFill, 130);
+        formData.top = new FormAttachment(lSite, 10);
         cEdLine.getButton().setLayoutData(formData);
 
-        labelLabel = new Label(parent, SWT.NONE);
+        labelLabel = new Label(xGroup, SWT.NONE);
         labelLabel.setText(COLOR_TITLE);
-        cEdLabel = new ColorEditor(parent);
+        cEdLabel = new ColorEditor(xGroup);
         formData = new FormData();
-        formData.top = new FormAttachment(labelLine, 25);
-        formData.left = new FormAttachment(0);
+        formData.top = new FormAttachment(labelLine, 15);
+        formData.left = new FormAttachment(2);
         labelLabel.setLayoutData(formData);
         formData = new FormData();
-        formData.left = new FormAttachment(labelFill, 50);
-        formData.top = new FormAttachment(labelLine, 20);
+        formData.left = new FormAttachment(labelFill, 130);
+        formData.top = new FormAttachment(labelLine, 10);
         cEdLabel.getButton().setLayoutData(formData);
+
         Group cGroup = new Group(parent, SWT.NONE);
         cGroup.setText(GROUP_SITE);
         formData = new FormData();
-        formData.top = new FormAttachment(labelLabel, 25);
+        formData.top = new FormAttachment(xGroup, 15);
         formData.left = new FormAttachment(0, 5);
-        formData.right = new FormAttachment(60, -10);
+        formData.right = new FormAttachment(70, -10);
         cGroup.setLayout(new FormLayout());
         cGroup.setLayoutData(formData);
 
@@ -156,11 +154,11 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         tSmallestSymb = new Spinner(cGroup, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSmallestSymb, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0, 5);
+        formData.left = new FormAttachment(2);
         lSmallestSymb.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(60, 10);
+        formData.left = new FormAttachment(70, 10);
         formData.right = new FormAttachment(100, -5);
         formData.top = new FormAttachment(0, 5);
         tSmallestSymb.setLayoutData(formData);
@@ -169,11 +167,11 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         tSmallSymb = new Spinner(cGroup, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSmallSymb, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0, 5);
+        formData.left = new FormAttachment(2);
         lSmallSymb.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(60, 10);
+        formData.left = new FormAttachment(70, 10);
         formData.right = new FormAttachment(100, -5);
         formData.top = new FormAttachment(tSmallestSymb, 5);
         tSmallSymb.setLayoutData(formData);
@@ -183,11 +181,11 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
         formData = new FormData();
         formData.top = new FormAttachment(tLabeling, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0, 5);
+        formData.left = new FormAttachment(2);
         lLabeling.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(60, 10);
+        formData.left = new FormAttachment(70, 10);
         formData.right = new FormAttachment(100, -5);
         formData.top = new FormAttachment(tSmallSymb, 5);
         tLabeling.setLayoutData(formData);
@@ -199,14 +197,14 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         Group rGroup = new Group(parent, SWT.NONE);
         rGroup.setText(GROUP_SCALE_SYMB);
         formData = new FormData();
-        formData.top = new FormAttachment(cGroup, 25);
+        formData.top = new FormAttachment(cGroup, 15);
         formData.left = new FormAttachment(0, 5);
-        formData.right = new FormAttachment(60, -10);
+        formData.right = new FormAttachment(70, -10);
         rGroup.setLayout(new FormLayout());
         rGroup.setLayoutData(formData);
         rButton1 = new Button(rGroup, SWT.RADIO);
         formData = new FormData();
-        formData.left = new FormAttachment(0, 5);
+        formData.left = new FormAttachment(2);
         formData.top = new FormAttachment(0, 5);
         rButton1.setLayoutData(formData);
         rButton2 = new Button(rGroup, SWT.RADIO);
@@ -218,47 +216,47 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         rButton1.setText(RADIO_SCALE_WITH_ZOOM);
         rButton2.setText(RADIO_FIXED_SYMB);
 
-        lSymbolSize = new Label(parent, SWT.NONE);
+        lSymbolSize = new Label(rGroup, SWT.NONE);
         lSymbolSize.setText(SYMBOL_SIZE);
-        tSymbolSize = new Spinner(parent, SWT.BORDER);
+        tSymbolSize = new Spinner(rGroup, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSymbolSize, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0, 5);
+        formData.left = new FormAttachment(2);
         lSymbolSize.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(36, 10);
-        formData.top = new FormAttachment(rGroup, 5);
-        formData.right = new FormAttachment(60, -10);
+        formData.left = new FormAttachment(70, 10);
+        formData.top = new FormAttachment(rButton1, 5);
+        formData.right = new FormAttachment(100, -5);
         tSymbolSize.setLayoutData(formData);
 
-        lSectorTr = new Label(parent, SWT.NONE);
+        lSectorTr = new Label(rGroup, SWT.NONE);
         lSectorTr.setText(SECTOR_TRANSPARENCY);
-        tSectorTr = new Spinner(parent, SWT.BORDER);
+        tSectorTr = new Spinner(rGroup, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSectorTr, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0, 5);
+        formData.left = new FormAttachment(2);
         lSectorTr.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(36, 10);
+        formData.left = new FormAttachment(70, 10);
         formData.top = new FormAttachment(tSymbolSize, 5);
-        formData.right = new FormAttachment(60, -10);
+        formData.right = new FormAttachment(100, -5);
         tSectorTr.setLayoutData(formData);
 
-        lMaxSymSize = new Label(parent, SWT.NONE);
-        sMaxSymSize = new Spinner(parent, SWT.BORDER);
+        lMaxSymSize = new Label(rGroup, SWT.NONE);
+        sMaxSymSize = new Spinner(rGroup, SWT.BORDER);
         lMaxSymSize.setText(MAX_SYMB_SIZE);
 
         formData = new FormData();
         formData.top = new FormAttachment(sMaxSymSize, 5, SWT.CENTER);
-        formData.left = new FormAttachment(0, 5);
+        formData.left = new FormAttachment(2);
         lMaxSymSize.setLayoutData(formData);
 
         formData = new FormData();
-        formData.left = new FormAttachment(36, 10);
+        formData.left = new FormAttachment(70, 10);
         formData.top = new FormAttachment(tSectorTr, 5);
-        formData.right = new FormAttachment(60, -10);
+        formData.right = new FormAttachment(100, -5);
         sMaxSymSize.setLayoutData(formData);
         // sets spinners range
         tLabeling.setMinimum(1);
