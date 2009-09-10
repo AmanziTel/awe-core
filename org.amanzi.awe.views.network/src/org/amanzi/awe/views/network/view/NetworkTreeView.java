@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,7 +21,9 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
+import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.database.nodes.RootNode;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
@@ -34,12 +37,16 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.FormAttachment;
@@ -103,6 +110,9 @@ public class NetworkTreeView extends ViewPart {
     private NeoServiceEventListener neoEventListener;
 
     private Text tSearch;
+    private String previousSearch = null;
+    private LinkedHashMap<Node,List<Node>> searchResults = null;
+    private Iterator<Node> searchIterator = null;
 
     private boolean autoZoom = true;
 
@@ -154,7 +164,20 @@ public class NetworkTreeView extends ViewPart {
 
             @Override
             public void modifyText(ModifyEvent e) {
-                findAndSelectNode();
+                //findAndSelectNode();
+            }
+        });
+        tSearch.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if(e.keyCode == '\r'){
+                    findAndSelectNode();                    
+                }
             }
         });
         setLayout(parent);
@@ -169,16 +192,56 @@ public class NetworkTreeView extends ViewPart {
         if (text.isEmpty()){
             return;
         }
-        LinkedList<TreeItem> items = new LinkedList<TreeItem>(Arrays.asList(viewer.getTree().getItems()));
-        for (int i = 0; i < items.size(); i++) {
-            TreeItem item = items.get(i);
-            if (item.getText().toLowerCase().contains(text)) {
-                viewer.getTree().showItem(item);
-                viewer.getTree().setSelection(item);
-                return;
+        if (true) {
+            // new search mechanism
+            Root root = (Root)((ITreeContentProvider)viewer.getContentProvider()).getElements(0)[0];
+            if (searchResults == null || !previousSearch.equals(text)) {
+                // Do completely new search on changed text
+                searchResults = root.search(text);
+                searchIterator = searchResults.keySet().iterator();
+                previousSearch = text;
             }
-            items.addAll(Arrays.asList(item.getItems()));
-        };
+            if(searchIterator == null || !searchIterator.hasNext()){
+                // Reset iterator on new search or on end of iteration
+                searchIterator = searchResults.keySet().iterator();
+            }
+            Node nextNode = searchIterator.next();
+            List<Node> path = searchResults.get(nextNode);
+            TreeItem[] items = viewer.getTree().getItems();
+            viewer.expandToLevel(1);
+            items = items[0].getItems();
+            TreeItem lastItem = null;
+            for(Node node:path){
+                for(TreeItem item:items){
+                    Node itemNode = (item.getData()!=null) ? ((NeoNode)item.getData()).getNode() : null;
+                    if(itemNode!=null && itemNode.getId()==node.getId()){
+                        items=item.getItems();
+                        viewer.getTree().showItem(item);
+                        if(itemNode.getId()!=nextNode.getId()){
+                            //TODO: Consider getting previous expanded items so we don't keep closing the tree
+                            viewer.setExpandedElements(new Object[]{item});
+                        }
+                        lastItem = item;
+                        break;
+                    }
+                }
+            }
+            if(lastItem!=null) {
+                viewer.getTree().setSelection(lastItem);
+            }
+        } else {
+            // old search mechanism
+            LinkedList<TreeItem> items = new LinkedList<TreeItem>(Arrays.asList(viewer.getTree().getItems()));
+            for (int i = 0; i < items.size(); i++) {
+                TreeItem item = items.get(i);
+                if (item.getText().toLowerCase().contains(text)) {
+                    viewer.getTree().showItem(item);
+                    viewer.getTree().setSelection(item);
+                    return;
+                }
+                items.addAll(Arrays.asList(item.getItems()));
+            };
+        }
     }
 
     /**
@@ -423,10 +486,8 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
             StructuredSelection stSel = (StructuredSelection)event.getSelection();
-            if (!stSel.isEmpty()) {
+            if (!stSel.isEmpty() && tSearch.getText().isEmpty()) {
                 tSearch.setText(stSel.getFirstElement().toString());
-            } else {
-                tSearch.setText("");
             }
             ITreeSelection selected = (ITreeSelection)event.getSelection();
             Iterator iterator = selected.iterator();

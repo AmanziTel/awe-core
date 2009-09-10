@@ -20,7 +20,7 @@ import org.neo4j.api.core.Relationship;
 public class NeoNode {
     
     /*
-     * Constans for empty array of Nodes
+     * Constant for empty array of Nodes
      */
     protected static final NeoNode[] NO_NODES = new NeoNode[0];
     
@@ -39,13 +39,10 @@ public class NeoNode {
      * 
      * @param node node
      */
-    
+
     public NeoNode(Node node) {
         this.node = node;
-        
-        if (node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) {
-            name = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-        }
+        this.name = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
     }
     
     /**
@@ -54,7 +51,7 @@ public class NeoNode {
      * @return is this node has children 
      */
     
-    public boolean hasChildren() {        
+    public boolean hasChildren() {
         return node.hasRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
     }
     
@@ -89,11 +86,7 @@ public class NeoNode {
      */
     
     public String getType() {
-        if(node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)) {
-            return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
-        } else {
-            return null;
-        }
+        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
     }
     
     /**
@@ -112,7 +105,7 @@ public class NeoNode {
      * </p>
      * 
      * @author Cinkel_A
-     * @since 1.1.0
+     * @since 1.0.0
      */
     public static class NeoNodeComparator implements Comparator<NeoNode> {
 
@@ -121,7 +114,5 @@ public class NeoNode {
             return o1 == null ? -1 : o2 == null ? 1 : o1.name.compareTo(o2.name);
         }
 
-
-        
     }
 }

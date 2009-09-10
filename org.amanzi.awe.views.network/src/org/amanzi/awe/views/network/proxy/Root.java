@@ -2,6 +2,8 @@ package org.amanzi.awe.views.network.proxy;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -12,20 +14,21 @@ import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * Proxy class that provides access for Neo-database
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public class Root extends NeoNode {
-    
-    /*
-     * NeoServiceProvider
-     */
+
     protected NeoServiceProvider serviceProvider;
     
     /**
@@ -37,6 +40,38 @@ public class Root extends NeoNode {
     public Root(NeoServiceProvider serviceProvider) {
         super(serviceProvider.getService().getReferenceNode());
         this.serviceProvider = serviceProvider;
+    }
+    
+    public LinkedHashMap<Node,List<Node>> search(final String text) {
+        LinkedHashMap<Node,List<Node>> results = new LinkedHashMap<Node,List<Node>>();
+        NeoService service = serviceProvider.getService();
+        Transaction transaction = service.beginTx();
+        try {
+            for(NeoNode firstLevel:getChildren()){
+                ReturnableEvaluator returnMatches = new ReturnableEvaluator(){
+    
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return currentPos.currentNode().getProperty("name", "").toString().toLowerCase().contains(text);
+                    }};
+                for(Node node:firstLevel.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnMatches, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+                    ArrayList<Node> path = new ArrayList<Node>();
+                    Relationship relationship = null;
+                    Node startNode = node;
+                    while((relationship=startNode.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING))!=null) {
+                        startNode = relationship.getStartNode();
+                        path.add(0,startNode);
+                        if(startNode==firstLevel.getNode()) break;
+                    }
+                    path.add(node);
+                    results.put(node,path);
+                }
+            }
+            transaction.success();
+        } finally {
+            transaction.finish();
+        }
+        return results;
     }
     
     /**
