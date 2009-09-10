@@ -1,6 +1,7 @@
 package org.amanzi.awe.views.network.proxy;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -79,6 +80,7 @@ public class Root extends NeoNode {
             return networkNodes.get(0).getChildren();
         }
         else {
+            Collections.sort(networkNodes, new NeoNodeComparator());
             return networkNodes.toArray(NO_NODES);
         }
     }

@@ -1,6 +1,7 @@
 package org.amanzi.awe.views.drive.views;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 
@@ -25,6 +26,7 @@ public class AggregatesNode extends DriveNeoNode {
 		//for icons sets the first node
 		super(subnodes.get(0).getNode());
 		this.subnodes = subnodes;
+        Collections.sort(this.subnodes, new NeoNodeComparator());
 		name="and "+subnodes.size()+" more";
 	}
 	@Override

@@ -1,6 +1,7 @@
 package org.amanzi.awe.views.drive.views;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.INeoConstants;
@@ -64,9 +65,11 @@ public class DriveNeoNode extends NeoNode {
         }
         // there are no necessary to create aggregated node for one subnode
         if (subnodes.size() > 1) {
+            Collections.sort(children, new NeoNodeComparator());
             children.add(new AggregatesNode(subnodes));
         } else {
             children.addAll(subnodes);
+            Collections.sort(children, new NeoNodeComparator());
         }
         return children.toArray(NO_NODES);
     }

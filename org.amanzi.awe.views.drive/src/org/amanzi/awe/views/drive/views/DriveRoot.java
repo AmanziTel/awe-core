@@ -1,6 +1,7 @@
 package org.amanzi.awe.views.drive.views;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
@@ -81,6 +82,7 @@ public class DriveRoot extends Root {
         } else if (driveNodes.size() == 1) {
             return driveNodes.get(0).getChildren();
         } else {
+            Collections.sort(driveNodes, new NeoNodeComparator());
             return driveNodes.toArray(NO_NODES);
         }
     }

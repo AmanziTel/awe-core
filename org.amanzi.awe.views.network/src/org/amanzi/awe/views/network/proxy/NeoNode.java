@@ -1,6 +1,8 @@
 package org.amanzi.awe.views.network.proxy;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -76,7 +78,7 @@ public class NeoNode {
         for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.CHILD,Direction.OUTGOING)){
             children.add(new NeoNode(relationship.getEndNode()));
         }
-        
+        Collections.sort(children, new NeoNodeComparator());
         return children.toArray(NO_NODES);
     }
     
@@ -104,4 +106,22 @@ public class NeoNode {
         return node;
     }
 
+    /**
+     * <p>
+     * Comparator of NeoNode
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.1.0
+     */
+    public static class NeoNodeComparator implements Comparator<NeoNode> {
+
+        @Override
+        public int compare(NeoNode o1, NeoNode o2) {
+            return o1 == null ? -1 : o2 == null ? 1 : o1.name.compareTo(o2.name);
+        }
+
+
+        
+    }
 }
