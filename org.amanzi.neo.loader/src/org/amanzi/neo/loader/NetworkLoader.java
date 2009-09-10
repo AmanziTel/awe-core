@@ -255,8 +255,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     && curService != null
                     && gis != null
                     && findLayerByNode(map, gis) == null
-                    && MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE,
-                            String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGES, basename, map.getName()))) {
+                    && confirmLoadNetworkOnMap(map)) {
                 List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
                 for (IGeoResource iGeoResource : curService.resources(null)) {
                     if (iGeoResource.canResolve(GeoNeo.class)) {
@@ -272,6 +271,17 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             // TODO Handle IOException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
+    }
+
+    /**
+     * Confirm load network on map
+     * 
+     * @param map map
+     * @return true or false
+     */
+    private boolean confirmLoadNetworkOnMap(IMap map) {
+        return MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE,
+                String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGES, basename, map.getName()));
     }
 
     /**
