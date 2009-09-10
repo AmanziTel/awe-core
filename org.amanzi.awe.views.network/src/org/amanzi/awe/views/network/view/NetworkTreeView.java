@@ -1,6 +1,7 @@
 package org.amanzi.awe.views.network.view;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -10,6 +11,7 @@ import java.util.List;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.internal.command.navigation.SetViewportCenterCommand;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
@@ -18,8 +20,11 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.eclipse.jface.action.Action;
@@ -50,8 +55,20 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
+import org.geotools.referencing.CRS;
+import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser;
+import org.neo4j.api.core.Traverser.Order;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * NetworkTree View
@@ -243,6 +260,80 @@ public class NetworkTreeView extends ViewPart {
                 return ((IStructuredSelection)viewer.getSelection()).size() == 1;
             }
         });
+        manager.add(new Action("show in active map") {
+            public void run() {
+                IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+                ITreeSelection selectionTree = (ITreeSelection)selection;
+                showSelectionOnMap((NeoNode)selection.getFirstElement());
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return ((IStructuredSelection)viewer.getSelection()).size() == 1
+                        && ApplicationGIS.getActiveMap() != ApplicationGIS.NO_MAP;
+            }
+        });
+    }
+
+    /**
+     * @param node
+     */
+    protected void showSelectionOnMap(NeoNode node) {
+        try {
+            IMap map = ApplicationGIS.getActiveMap();
+            if (map == ApplicationGIS.NO_MAP || node == null) {
+                return;
+            }
+            Node gis = getGisNode(node.getNode());
+            if (gis == null) {
+                return;
+            }
+            boolean presentFlag = false;
+            for (ILayer layer : map.getMapLayers()) {
+                IGeoResource resource = layer.findGeoResource(Node.class);
+                if (resource != null && gis.equals(resource.resolve(Node.class, null))) {
+                    presentFlag = true;
+                    break;
+                }
+            }
+            if (!presentFlag) {
+                return;
+            }
+            CoordinateReferenceSystem crs = null;
+            if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
+                crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
+            } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
+                URL crsURL = new URL(gis.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
+                crs = CRS.decode(crsURL.getContent().toString());
+            }
+            double[] c = getCoords(node.getNode());
+            if (c == null) {
+                return;
+            }
+            map.sendCommandASync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
+        } catch (Exception e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+    }
+
+    /**
+     * Gets GIS node of necessary subnode
+     * 
+     * @param node subnode
+     * @return gis node or null
+     */
+    private Node getGisNode(Node node) {
+        Traverser traverse = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
+                        INeoConstants.GIS_TYPE_NAME);
+            }
+        }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+        return traverse.iterator().hasNext() ? traverse.iterator().next() : null;
     }
 
     /**
@@ -450,4 +541,65 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
+    /**
+     *Returns layer, that contains necessary gis node
+     * 
+     * @param map map
+     * @param gisNode gis node
+     * @return layer or null
+     */
+    public static ILayer findLayerByNode(IMap map, Node gisNode) {
+        try {
+            for (ILayer layer : map.getMapLayers()) {
+                IGeoResource resource = layer.findGeoResource(GeoNeo.class);
+                if (resource != null && resource.resolve(GeoNeo.class, null).getMainGisNode().equals(gisNode)) {
+                    return layer;
+                }
+            }
+            return null;
+        } catch (IOException e) {
+            // TODO Handle IOException
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * get coordinates of selected node if node do not contains coordinates, try to find it in
+     * parent node
+     * 
+     * @param node node
+     * @return
+     */
+    private static double[] getCoords(Node node) {
+        for (int i = 0; i <= 1; i++) {
+            if (node.hasProperty(INeoConstants.PROPERTY_COORDS_NAME)) {
+                return (double[])node.getProperty(INeoConstants.PROPERTY_COORDS_NAME);
+            }
+            if (node.hasProperty(INeoConstants.PROPERTY_X_NAME) && node.hasProperty(INeoConstants.PROPERTY_Y_NAME)) {
+                return new double[] {(Float)node.getProperty(INeoConstants.PROPERTY_X_NAME),
+                        (Float)node.getProperty(INeoConstants.PROPERTY_Y_NAME)};
+            }
+            if (node.hasProperty(INeoConstants.PROPERTY_LAT_NAME)) {
+                if (node.hasProperty(INeoConstants.PROPERTY_LON_NAME)) {
+                    try {
+                        return new double[] {(Float)node.getProperty(INeoConstants.PROPERTY_LON_NAME),
+                                (Float)node.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
+                    } catch (ClassCastException e) {
+                        return new double[] {(Double)node.getProperty(INeoConstants.PROPERTY_LON_NAME),
+                                (Double)node.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
+                    }
+                }
+            }
+            // try to up by 1 lvl
+            Iterable<Relationship> relationships = node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+            if (relationships.iterator().hasNext()) {
+                node = relationships.iterator().next().getStartNode();
+            } else {
+                return null;
+            }
+        }
+        return null;
+
+    }
 }

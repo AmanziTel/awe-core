@@ -90,13 +90,15 @@ public class NeoGeoResource extends IGeoResource {
 
 	public <T> boolean canResolve(Class<T> adaptee) {
 		return adaptee.isAssignableFrom(GeoNeo.class)
-				|| super.canResolve(adaptee);
+ || adaptee.isAssignableFrom(Node.class) || super.canResolve(adaptee);
 	}
 
 	public <T> T resolve(Class<T> adaptee, IProgressMonitor monitor)
 			throws IOException {
 		if (adaptee.isAssignableFrom(GeoNeo.class)) {
 			return adaptee.cast(getGeoNeo(monitor));
+        } else if (adaptee.isAssignableFrom(Node.class)) {
+            return adaptee.cast(geoNeo.getMainGisNode());
 		}
 		return super.resolve(adaptee, monitor);
 	}
