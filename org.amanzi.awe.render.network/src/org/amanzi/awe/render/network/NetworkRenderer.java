@@ -261,7 +261,9 @@ public class NetworkRenderer extends RendererImpl {
                         g.setColor(labelColor);
                         g.drawString(node.toString(), p.x + label_x, p.y + label_y);
                     }
-                    g.setTransform(base_transform);
+                    if (base_transform != null) {
+                        g.setTransform(base_transform);
+                    }
                 }
                 monitor.worked(1);
                 count++;
