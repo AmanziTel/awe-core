@@ -15,6 +15,7 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -24,6 +25,9 @@ import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Traverser;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -172,16 +176,25 @@ public class NetworkRenderer extends RendererImpl {
 
                 java.awt.Point p = getContext().worldToPixel(world_location);
                 Color borderColor = g.getColor();
+                boolean selected = false;
                 if (geoNeo.getSelectedNodes().contains(node.getNode())) {
                     borderColor = COLOR_SITE_SELECTED;
+                    selected = true;
+                } else {
+                    for (Node rnode:node.getNode().traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH)){
+                        if (geoNeo.getSelectedNodes().contains(rnode)) {
+                            selected = true;
+                            break;
+                        }
+                    }
                 }
-                renderSite(g, p, borderColor, siteColor, drawSize, drawFull, drawLite);
+                renderSite(g, p, borderColor, siteColor, drawSize, drawFull, drawLite, selected);
                 if (drawFull) {
                     int countOmnis = 0;
                     double[] label_position_angles = new double[] {0, 90};
                     try {
                         int s = 0;
-                        for (Relationship relationship : node.getNode().getRelationships(Direction.OUTGOING)) {
+                        for (Relationship relationship : node.getNode().getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                             // for(Relationship
                             // relationship:node.getNode().getRelationships(NetworkLoader.NetworkRelationshipTypes.CHILD,
                             // Direction.OUTGOING)){
@@ -324,9 +337,10 @@ public class NetworkRenderer extends RendererImpl {
      * @param borderColor
      * @param drawSize 
      */
-    private void renderSite(Graphics2D g, java.awt.Point p, Color borderColor, Color fillColor, int drawSize, boolean drawFull, boolean drawLite) {
+    private void renderSite(Graphics2D g, java.awt.Point p, Color borderColor, Color fillColor, int drawSize, boolean drawFull, boolean drawLite, boolean selected) {
         Color oldColor = g.getColor();
         if (drawFull) {
+            if(selected) renderSelectionGlow(g, p, drawSize * 4);
             drawSize /= 4;
             if (drawSize < 2) drawSize = 2;
             g.setColor(fillColor);
@@ -334,13 +348,30 @@ public class NetworkRenderer extends RendererImpl {
             g.setColor(borderColor);
             g.drawOval(p.x - drawSize, p.y - drawSize, 2 * drawSize, 2 * drawSize);
         } else if (drawLite) {
+            if(selected) renderSelectionGlow(g, p, 20);
             g.setColor(borderColor);
             g.drawOval(p.x - 5, p.y - 5, 10, 10);
         } else {
+            if(selected) renderSelectionGlow(g, p, 20);
             g.setColor(borderColor);
             g.drawRect(p.x - 1, p.y - 1, 3, 3);
         }
         g.setColor(oldColor);
+    }
+
+    /**
+     * This method draws a fading glow around a point for selected site/sectors
+     *
+     * @param g
+     * @param p
+     * @param drawSize
+     */
+    private void renderSelectionGlow(Graphics2D g, java.awt.Point p, int drawSize) {
+        Color highColor = new Color(COLOR_SITE_SELECTED.getRed(), COLOR_SITE_SELECTED.getGreen(), COLOR_SITE_SELECTED.getBlue(), 8);
+        g.setColor(highColor);
+        for(;drawSize > 2; drawSize *= 0.8) {
+            g.fillOval(p.x - drawSize, p.y - drawSize, 2 * drawSize, 2 * drawSize);
+        }
     }
 
     @Override

@@ -58,7 +58,6 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
@@ -105,6 +104,8 @@ public class NetworkTreeView extends ViewPart {
 
     private Text tSearch;
 
+    private boolean autoZoom = true;
+
     /**
      * The constructor.
      */
@@ -130,6 +131,7 @@ public class NetworkTreeView extends ViewPart {
                         return;
                     }
                     showSelection(node);
+                    showSelectionOnMap(node);
                 }
             }
         });
@@ -248,10 +250,9 @@ public class NetworkTreeView extends ViewPart {
                 }
             }
         });
-        manager.add(new Action("show in database graph") {
+        manager.add(new Action("Show in database graph") {
             public void run() {
                 IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-                ITreeSelection selectionTree = (ITreeSelection)selection;
                 showSelection((NeoNode)selection.getFirstElement());
             }
 
@@ -260,10 +261,9 @@ public class NetworkTreeView extends ViewPart {
                 return ((IStructuredSelection)viewer.getSelection()).size() == 1;
             }
         });
-        manager.add(new Action("show in active map") {
+        manager.add(new Action("Show in active map") {
             public void run() {
                 IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-                ITreeSelection selectionTree = (ITreeSelection)selection;
                 showSelectionOnMap((NeoNode)selection.getFirstElement());
             }
 
@@ -300,8 +300,11 @@ public class NetworkTreeView extends ViewPart {
                 return;
             }
             CoordinateReferenceSystem crs = null;
+            if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME,"").toString().equalsIgnoreCase(("projected"))) {
+                autoZoom = false;
+            }
             if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
-                crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
+                    crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
             } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
                 URL crsURL = new URL(gis.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
                 crs = CRS.decode(crsURL.getContent().toString());
@@ -309,6 +312,11 @@ public class NetworkTreeView extends ViewPart {
             double[] c = getCoords(node.getNode());
             if (c == null) {
                 return;
+            }
+            if(autoZoom) {
+                //TODO: Check that this works with all CRS
+                map.sendCommandASync(new net.refractions.udig.project.internal.command.navigation.SetViewportWidth(30000));
+                autoZoom = false;   // only zoom first time, then rely on user to control zoom level
             }
             map.sendCommandASync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
         } catch (Exception e) {
@@ -411,6 +419,7 @@ public class NetworkTreeView extends ViewPart {
     private final class NetworkSelectionListener implements ISelectionChangedListener {
         private List<ILayer> layers = new ArrayList<ILayer>();
 
+        @SuppressWarnings("unchecked")
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
             StructuredSelection stSel = (StructuredSelection)event.getSelection();
@@ -463,14 +472,21 @@ public class NetworkTreeView extends ViewPart {
                     return;
                 }
                 String nodeType = selectedNode.getType();
-                if (!NetworkElementTypes.SITE.toString().equals(nodeType)
-                        && (!NetworkElementTypes.SECTOR.toString().equals(nodeType))) {
-                    return;
-                }
-                for (ILayer singleLayer : layers) {
-                    GeoNeo resource = singleLayer.findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
-                    if (containsGisNode(resource, selectedNode)) {
-                        resource.addNodeToSelect(selectedNode.getNode());
+                if (NetworkElementTypes.SITE.toString().equals(nodeType) ||
+                        NetworkElementTypes.SECTOR.toString().equals(nodeType) ||
+                        NetworkElementTypes.CITY.toString().equals(nodeType) ||
+                        NetworkElementTypes.BSC.toString().equals(nodeType)) {
+                    for (ILayer singleLayer : layers) {
+                        GeoNeo resource = singleLayer.findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
+                        if (containsGisNode(resource, selectedNode)) {
+                            resource.addNodeToSelect(selectedNode.getNode());
+                            if(nodeType.equals("city")){
+                                System.out.println("Adding city node "+selectedNode.toString());
+                                for(Node node:resource.getSelectedNodes()){
+                                    System.out.println("Have selected nodes: "+node);
+                                }
+                            }
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -592,9 +608,9 @@ public class NetworkTreeView extends ViewPart {
                 }
             }
             // try to up by 1 lvl
-            Iterable<Relationship> relationships = node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING);
-            if (relationships.iterator().hasNext()) {
-                node = relationships.iterator().next().getStartNode();
+            Traverser traverse = node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH);
+            if (traverse.iterator().hasNext()) {
+                node = traverse.iterator().next();
             } else {
                 return null;
             }
