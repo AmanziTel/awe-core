@@ -18,4 +18,3 @@ Bundle-ClassPath: .
 Export-Package: org.amanzi.neo.loader,
  org.amanzi.neo.loader.internal;uses:="org.amanzi.neo.loader.preferences,org.eclipse.core.runtime,org.osgi.framework"
 Bundle-Activator: org.amanzi.neo.loader.internal.NeoLoaderPlugin
-Import-Package: org.amanzi.awe.catalog.neo

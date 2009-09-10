@@ -3,13 +3,23 @@ package org.amanzi.neo.loader.dialogs;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.catalog.IService;
+import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.ui.ApplicationGIS;
+
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.LoadNetwork;
+import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -37,7 +47,9 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
 
@@ -526,17 +538,64 @@ public class TEMSDialog {
 				NeoLoaderPlugin.exception(e);
 			}
 		}
+        try {
+            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+            URL url = new URL("file://" + databaseLocation);
+            IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, url, null);
+            final IMap map = ApplicationGIS.getActiveMap();
+            Node gis = findMainGisNode();
+            if (curService != null && gis != null && NetworkLoader.findLayerByNode(map, gis) == null
+            // file name not using because we can adds only all drive on map
+                    && NetworkLoader.confirmLoadNetworkOnMap(map, "drive")) {
+                java.util.List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
+                for (IGeoResource iGeoResource : curService.resources(null)) {
+                    if (iGeoResource.canResolve(Node.class)) {
+                        if (iGeoResource.resolve(Node.class, null).equals(gis)) {
+                            listGeoRes.add(iGeoResource);
+                            ApplicationGIS.addLayersToMap(map, listGeoRes, 0);
+                            break;
+                        }
+                    }
+                };
+            }
+        } catch (MalformedURLException e) {
+            // TODO Handle MalformedURLException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
 
 		monitor.done();		
 	}
-	
-	/**
-	 * Add file to 'Choose File' list 
-	 * 
-	 * @param name name of file
-	 * @param path path to file
-	 * @param isNeedToConvert if true than convert name to 'fileName (filePath)'
-	 */
+
+    // TODO move method to utility class?
+    /**
+     *finds main drive gis node
+     * 
+     * @return gis node or null
+     */
+    private Node findMainGisNode() {
+        Node reference = NeoServiceProvider.getProvider().getService().getReferenceNode();
+        for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
+            Node node = relationship.getEndNode();
+            if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                    && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME)
+                    && node.hasProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME)
+                    && node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString().equals(GisTypes.Tems.getHeader())) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Add file to 'Choose File' list
+     * 
+     * @param name name of file
+     * @param path path to file
+     * @param isNeedToConvert if true than convert name to 'fileName (filePath)'
+     */
 	
 	private void addFileToChoose(String name, String path, boolean isNeedToConvert) {		
 		if (isNeedToConvert) {

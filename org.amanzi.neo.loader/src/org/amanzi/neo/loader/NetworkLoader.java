@@ -19,7 +19,6 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
-import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -261,11 +260,11 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             if (curService != null
                     && gis != null
                     && findLayerByNode(map, gis) == null
-                    && confirmLoadNetworkOnMap(map)) {
+ && confirmLoadNetworkOnMap(map, basename)) {
                 List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
                 for (IGeoResource iGeoResource : curService.resources(null)) {
-                    if (iGeoResource.canResolve(GeoNeo.class)) {
-                        if (iGeoResource.resolve(GeoNeo.class, null).getMainGisNode().equals(gis)) {
+                    if (iGeoResource.canResolve(Node.class)) {
+                        if (iGeoResource.resolve(Node.class, null).equals(gis)) {
                             listGeoRes.add(iGeoResource);
                             ApplicationGIS.addLayersToMap(map, listGeoRes, 0);
                             break;
@@ -283,17 +282,18 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      * Confirm load network on map
      * 
      * @param map map
+     * @param fileName name of loaded file
      * @return true or false
      */
-    private boolean confirmLoadNetworkOnMap(final IMap map) {
+    public static boolean confirmLoadNetworkOnMap(final IMap map, final String fileName) {
         return (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
             int result;
 
             @Override
             public void run() {
-                String message = String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, basename, map.getName());
+                String message = String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, fileName, map.getName());
                 if (map == ApplicationGIS.NO_MAP) {
-                    message = String.format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, basename);
+                    message = String.format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, fileName);
                 }
                 MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
                 msg.setText(NeoLoaderPluginMessages.ADD_LAYER_TITLE);
@@ -318,8 +318,8 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
     public static ILayer findLayerByNode(IMap map, Node gisNode) {
         try {
             for (ILayer layer : map.getMapLayers()) {
-                IGeoResource resource = layer.findGeoResource(GeoNeo.class);
-                if (resource != null && resource.resolve(GeoNeo.class, null).getMainGisNode().equals(gisNode)) {
+                IGeoResource resource = layer.findGeoResource(Node.class);
+                if (resource != null && resource.resolve(Node.class, null).equals(gisNode)) {
                     return layer;
                 }
             }

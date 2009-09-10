@@ -75,10 +75,6 @@ public class LoadNetwork extends AbstractActionTool {
 	}
 
 	public void run() {
-		final Display display = this.getContext().getViewportPane().getControl().getDisplay();
-		this.getContext().updateUI(new Runnable(){
-			
-			public void run() {
 				FileDialog dlg = new FileDialog(display.getActiveShell(), SWT.OPEN);
 				dlg.setText(NeoLoaderPluginMessages.NetworkDialog_DialogTitle);
 				dlg.setFilterNames(NETWORK_FILE_NAMES);
@@ -100,8 +96,7 @@ public class LoadNetwork extends AbstractActionTool {
 						}
 					});
 				}
-			}
-		});
+
 	}
 
     public void runOnAction() {

@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,12 +14,10 @@ import java.util.TreeMap;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
-import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
-import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
@@ -188,28 +185,9 @@ public class TEMSLoader {
                     catalog.add(service);
                 }
             }
-                IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, url, null);
-                IMap map = ApplicationGIS.getActiveMap();
-            if (map != ApplicationGIS.NO_MAP && curService != null && gis != null
-                    && NetworkLoader.findLayerByNode(map, gis) == null) {
-                // TODO fix bug with SWT exception
-                    // && MessageDialog.openConfirm(display.getActiveShell(),
-                    // NeoLoaderPluginMessages.ADD_LAYER_TITLE, String
-                    // .format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, basename,
-                    // map.getName()))) {
-                    List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
-                    for (IGeoResource iGeoResource : curService.resources(null)) {
-                        if (iGeoResource.canResolve(GeoNeo.class)) {
-                            if (iGeoResource.resolve(GeoNeo.class, null).getMainGisNode().equals(gis)) {
-                                listGeoRes.add(iGeoResource);
-                                ApplicationGIS.addLayersToMap(map, listGeoRes, 0);
-                                break;
-                            }
-                        }
-                    };
-                }
         }
     }
+
 
     /**
      * return AWE project name of active map
