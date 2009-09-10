@@ -2,14 +2,14 @@ package org.amanzi.neo.loader;
 
 import java.io.IOException;
 
+import net.refractions.udig.project.ui.tool.AbstractActionTool;
+
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.dialogs.TEMSDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
-
-import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
 public class LoadNetwork extends AbstractActionTool {
     /*
@@ -29,9 +29,16 @@ public class LoadNetwork extends AbstractActionTool {
 
     private static String directory = null;
 
+    private final Display display;
+
 	public LoadNetwork() {
+        display = null;
 	}
-	
+
+    public LoadNetwork(Display display) {
+        this.display = display;
+    }
+
 	public static String getDirectory(){
 		//LN, 9.07.2009, if directory in LoadNetwork is null than get DefaultDirectory from TEMSDialog
 		if (directory == null) {
@@ -97,6 +104,29 @@ public class LoadNetwork extends AbstractActionTool {
 		});
 	}
 
+    public void runOnAction() {
+        FileDialog dlg = new FileDialog(display.getActiveShell(), SWT.OPEN);
+        dlg.setText(NeoLoaderPluginMessages.NetworkDialog_DialogTitle);
+        dlg.setFilterNames(NETWORK_FILE_NAMES);
+        dlg.setFilterExtensions(NETWORK_FILE_EXTENSIONS);
+        dlg.setFilterPath(getDirectory());
+        final String filename = dlg.open();
+        if (filename != null) {
+            setDirectory(dlg.getFilterPath());
+            display.asyncExec(new Runnable() {
+                public void run() {
+                    NetworkLoader networkLoader;
+                    try {
+                        networkLoader = new NetworkLoader(filename);
+                        networkLoader.run();
+                        networkLoader.printStats(false);
+                    } catch (IOException e) {
+                        NeoCorePlugin.error("Error loading Network file", e);
+                    }
+                }
+            });
+        }
+    }
 	public void dispose() {
 	}
 

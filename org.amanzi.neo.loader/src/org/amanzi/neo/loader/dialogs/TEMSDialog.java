@@ -675,9 +675,15 @@ public class TEMSDialog {
 
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
-			loadTemsData(temsShell.getDisplay(), monitor);
-			
-			return Status.OK_STATUS;
+			try {
+                loadTemsData(temsShell.getDisplay(), monitor);
+                
+                return Status.OK_STATUS;
+            } catch (Exception e) {
+                e.printStackTrace();
+                // TODO Handle Exception
+                throw (RuntimeException) new RuntimeException( ).initCause( e );
+            }
 		}
 
 				

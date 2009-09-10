@@ -13,8 +13,13 @@ import java.util.List;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
+import net.refractions.udig.project.ILayer;
+import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.ui.ApplicationGIS;
 
+import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -29,8 +34,11 @@ import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -220,8 +228,10 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         String databaseLocation = neoProvider.getDefaultDatabaseLocation();
         ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
         List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(new URL("file://"+databaseLocation));
+        IService curService = null;
         for (IService service : services) {
             System.out.println("Found catalog service: " + service);
+            curService = service;
             if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
                 catalog.replace(service.getIdentifier(), service);
             } else {
@@ -239,9 +249,55 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         catch (PartInitException e) {
             NeoCorePlugin.error(null, e);
         }
+        try {
+            IMap map = ApplicationGIS.getActiveMap();
+            if (map != null
+                    && curService != null
+                    && gis != null
+                    && findLayerByNode(map, gis) == null
+                    && MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE,
+                            String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGES, basename, map.getName()))) {
+                List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
+                for (IGeoResource iGeoResource : curService.resources(null)) {
+                    if (iGeoResource.canResolve(GeoNeo.class)) {
+                        if (iGeoResource.resolve(GeoNeo.class, null).getMainGisNode().equals(gis)) {
+                            listGeoRes.add(iGeoResource);
+                            ApplicationGIS.addLayersToMap(map, listGeoRes, 0);
+                            break;
+                        }
+                    }
+                };
+            }
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
-	private static void debug(String line){
+    /**
+     *Returns layer, that contains necessary gis node
+     * 
+     * @param map map
+     * @param gisNode gis node
+     * @return layer or null
+     */
+    public static ILayer findLayerByNode(IMap map, Node gisNode) {
+        try {
+            for (ILayer layer : map.getMapLayers()) {
+                IGeoResource resource = layer.findGeoResource(GeoNeo.class);
+                if (resource != null && resource.resolve(GeoNeo.class, null).getMainGisNode().equals(gisNode)) {
+                    return layer;
+                }
+            }
+            return null;
+        } catch (IOException e) {
+            // TODO Handle IOException
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static void debug(String line) {
 		NeoLoaderPlugin.debug(line);
 	}
 	

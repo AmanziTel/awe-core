@@ -7,6 +7,7 @@ import org.eclipse.osgi.util.NLS;
 public class NeoLoaderPluginMessages extends NLS {
     
     private static final String BUNDLE_NAME = NeoLoaderPluginMessages.class.getName();
+
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
     
     public static String TEMSDialog_RemoveButtonText;
@@ -24,6 +25,8 @@ public class NeoLoaderPluginMessages extends NLS {
 	public static String TEMSDialog_AddAllButtonText;
 	public static String TEMSDialog_RemoveAllButtonText;
 	public static String TEMSDialog_DatasetLabel;
+    public static String ADD_LAYER_MESSAGES;
+    public static String ADD_LAYER_TITLE;
     
     private NeoLoaderPluginMessages() {
     }

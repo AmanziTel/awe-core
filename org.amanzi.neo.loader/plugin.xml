@@ -1,25 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
-   <extension
-         point="net.refractions.udig.project.ui.tool">
-      <actionTool
-            categoryId="Neo_tool"
-            class="org.amanzi.neo.loader.LoadNetwork"
-            icon="icons/32/network.png"
+      <extension
+          point="org.eclipse.ui.commands">
+       <category
+             id="org.amanzi.neo.loader.commands.category"
+             name="Amanzi Loading Commands">
+       </category>
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadNetwork"
+             name="Load Network Data">
+       </command>
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadTEMS"
+             name="Load TEMS Data">
+       </command>
+    </extension>
+    <extension
+          point="org.eclipse.ui.handlers">
+       <handler
+             class="org.amanzi.neo.loader.handlers.LoadNetworkHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadNetwork">
+       </handler>
+       <handler
+             class="org.amanzi.neo.loader.handlers.LoadTemsHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadTEMS">
+       </handler>
+    </extension>
+   
+    <extension
+          point="org.eclipse.ui.menus">
+       <menuContribution
+             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+          <toolbar
+                id="org.amanzi.neo.loader.toolbar">
+             <command
+                   commandId="org.amanzi.neo.loader.commands.LoadNetwork"
+            icon="icons/16/network.png"
             id="org.amanzi.neo.loader.LoadNetwork"
-            onToolbar="true"
-            tooltip="Load Network Data">
-         <enablement></enablement>
-      </actionTool>
-      <actionTool
-            categoryId="Neo_tool"
-            class="org.amanzi.neo.loader.LoadTEMS"
-            icon="icons/32/file.png"
+                   tooltip="Load Network Data">
+             </command>
+             <command
+                   commandId="org.amanzi.neo.loader.commands.LoadTEMS"
+            icon="icons/16/file.png"
             id="org.amanzi.neo.loader.LoadTEMS"
-            onToolbar="true"
-            tooltip="Load TEMS Data">
-         <enablement></enablement>
-      </actionTool>
-   </extension>
+                   tooltip="Load Drive Data">
+             </command>
+          </toolbar>
+       </menuContribution>
+    </extension>
+   <extension
+          point="org.eclipse.ui.importWizards">
+       <wizard
+             category="org.amanzi.load"
+             class="org.amanzi.neo.wizards.NetworkImportWizard"
+             icon="icons/16/network.png"
+             id="org.amanzi.neo.wizards.NetworkImportWizard"
+             name="Import Network data">
+          <description>
+             Import a network file from the local file system into the project
+          </description>
+       </wizard>
+        <wizard
+             category="org.amanzi.load"
+             class="org.amanzi.neo.wizards.TemsImportWizard"
+             icon="icons/16/file.png"
+             id="org.amanzi.neo.wizards.TemsImportWizard"
+             name="Import Drive data">
+          <description>
+ 				Import a data file from the local file system into the project
+          </description>
+       </wizard>      
+       <category
+             id="org.amanzi.load"
+             name="Amanzi Data">
+       </category>
+
+    </extension>
+
 </plugin>
