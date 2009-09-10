@@ -35,7 +35,11 @@ import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -60,7 +64,9 @@ import org.neo4j.api.core.Transaction;
  * @author craig
  */
 public class NetworkLoader extends NeoServiceProviderEventAdapter {
-	/** String LOAD_NETWORK_TITLE field */
+    /** String DELETE_OLD_NETWORK field */
+    private static final String DELETE_OLD_NETWORK = "Delete old network";
+    /** String LOAD_NETWORK_TITLE field */
     private static final String LOAD_NETWORK_TITLE = "Load Network";
     private static final String LOAD_NETWORK_MSG = "This network is already loaded into a database. Do you wish to rewrite data?";
 
@@ -544,7 +550,12 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 			            PlatformUI.getWorkbench();
 	                    if(!askIfOverwrite()) return null;
 	                    // delete network - begin - gis node.
-	                    NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+                        // remove all incoming relationships
+                        for (Relationship relationshipIn : node.getRelationships(Direction.INCOMING)) {
+                            relationshipIn.delete();
+                        }
+                        NeoServiceProvider.getProvider().commit();
+                        deleteNodeInNewThread(node);
 			        } catch(IllegalStateException e) {
 			            // we are in test mode, automatically agree to overwrite network
 			            deleteTree(node);
@@ -565,6 +576,24 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		}
 		return network;
 	}
+
+    /**
+     * Delete node tree in new thread
+     * 
+     * @param node - root of node three
+     */
+    private static void deleteNodeInNewThread(final Node node) {
+        Job job = new Job(DELETE_OLD_NETWORK) {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+                NeoServiceProvider.getProvider().commit();
+                return Status.OK_STATUS;
+            }
+
+        };
+        job.schedule();
+    }
 
     private static boolean askIfOverwrite() {
         int resultMsg = (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
