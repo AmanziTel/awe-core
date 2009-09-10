@@ -130,6 +130,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
     private long lineNumber = 0;
     private long siteNumber = 0;
     private long sectorNumber = 0;
+    private boolean trimSectorName = true;
 
 	public NetworkLoader(String filename) {
 		this(null, filename);
@@ -145,6 +146,8 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		}
 		this.filename = filename;
 		this.basename = (new File(filename)).getName();
+		//TODO: Enabled user preferences
+		//this.trimSectorName = get from preferences
 	}
 
 	//Lagutko 21.07.2009, using of neo.core plugin
@@ -370,7 +373,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     }
 					String siteField = fields[mainIndexes[2]];
 					String sectorField = fields[mainIndexes[3]];
-					sectorField = sectorField.replaceAll(siteField+"[\\:\\-]?", "");
+					if (trimSectorName) {
+                        sectorField = sectorField.replaceAll(siteField + "[\\:\\-]?", "");
+                    }
 					if(siteField.contains("306460123A")) {
 					    System.out.println("debug");
 					}
