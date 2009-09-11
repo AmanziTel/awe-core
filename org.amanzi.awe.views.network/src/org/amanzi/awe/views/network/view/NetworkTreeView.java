@@ -23,7 +23,6 @@ import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.database.nodes.RootNode;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
@@ -37,7 +36,6 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
@@ -192,55 +190,65 @@ public class NetworkTreeView extends ViewPart {
         if (text.isEmpty()){
             return;
         }
-        if (true) {
-            // new search mechanism
-            Root root = (Root)((ITreeContentProvider)viewer.getContentProvider()).getElements(0)[0];
-            if (searchResults == null || !previousSearch.equals(text)) {
-                // Do completely new search on changed text
-                searchResults = root.search(text);
-                searchIterator = searchResults.keySet().iterator();
-                previousSearch = text;
-            }
-            if(searchIterator == null || !searchIterator.hasNext()){
-                // Reset iterator on new search or on end of iteration
-                searchIterator = searchResults.keySet().iterator();
-            }
-            Node nextNode = searchIterator.next();
-            List<Node> path = searchResults.get(nextNode);
-            TreeItem[] items = viewer.getTree().getItems();
-            viewer.expandToLevel(1);
-            items = items[0].getItems();
-            TreeItem lastItem = null;
-            for(Node node:path){
-                for(TreeItem item:items){
-                    Node itemNode = (item.getData()!=null) ? ((NeoNode)item.getData()).getNode() : null;
-                    if(itemNode!=null && itemNode.getId()==node.getId()){
-                        items=item.getItems();
-                        viewer.getTree().showItem(item);
-                        if(itemNode.getId()!=nextNode.getId()){
-                            //TODO: Consider getting previous expanded items so we don't keep closing the tree
-                            viewer.setExpandedElements(new Object[]{item});
-                        }
-                        lastItem = item;
-                        break;
-                    }
+        try {
+            if (true) {
+                // new search mechanism
+                Root root = (Root)((ITreeContentProvider)viewer.getContentProvider()).getElements(0)[0];
+                if (searchResults == null || !previousSearch.equals(text)) {
+                    // Do completely new search on changed text
+                    searchResults = root.search(text);
+                    searchIterator = searchResults.keySet().iterator();
+                    previousSearch = text;
                 }
-            }
-            if(lastItem!=null) {
-                viewer.getTree().setSelection(lastItem);
-            }
-        } else {
-            // old search mechanism
-            LinkedList<TreeItem> items = new LinkedList<TreeItem>(Arrays.asList(viewer.getTree().getItems()));
-            for (int i = 0; i < items.size(); i++) {
-                TreeItem item = items.get(i);
-                if (item.getText().toLowerCase().contains(text)) {
-                    viewer.getTree().showItem(item);
-                    viewer.getTree().setSelection(item);
+                if(searchIterator == null || !searchIterator.hasNext()){
+                    // Reset iterator on new search or on end of iteration
+                    searchIterator = searchResults.keySet().iterator();
+                }
+                if (!searchIterator.hasNext()) {
                     return;
                 }
-                items.addAll(Arrays.asList(item.getItems()));
-            };
+                Node nextNode = searchIterator.next();
+                List<Node> path = searchResults.get(nextNode);
+                TreeItem[] items = viewer.getTree().getItems();
+                viewer.expandToLevel(1);
+                items = items[0].getItems();
+                TreeItem lastItem = null;
+                for(Node node:path){
+                    for(TreeItem item:items){
+                        Node itemNode = (item.getData()!=null) ? ((NeoNode)item.getData()).getNode() : null;
+                        if(itemNode!=null && itemNode.getId()==node.getId()){
+                            items=item.getItems();
+                            viewer.getTree().showItem(item);
+                            if(itemNode.getId()!=nextNode.getId()){
+                                //TODO: Consider getting previous expanded items so we don't keep closing the tree
+                                viewer.setExpandedElements(new Object[]{item});
+                            }
+                            lastItem = item;
+                            break;
+                        }
+                    }
+                }
+                if(lastItem!=null) {
+                    viewer.getTree().showItem(lastItem);
+                    viewer.getTree().setSelection(lastItem);
+                }
+            } else {
+                // old search mechanism
+                LinkedList<TreeItem> items = new LinkedList<TreeItem>(Arrays.asList(viewer.getTree().getItems()));
+                for (int i = 0; i < items.size(); i++) {
+                    TreeItem item = items.get(i);
+                    if (item.getText().toLowerCase().contains(text)) {
+                        viewer.getTree().showItem(item);
+                        viewer.getTree().setSelection(item);
+                        return;
+                    }
+                    items.addAll(Arrays.asList(item.getItems()));
+                };
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // TODO Handle Exception
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
         }
     }
 
