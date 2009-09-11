@@ -1,5 +1,6 @@
 package org.amanzi.neo.loader;
 
+import java.io.File;
 import java.io.IOException;
 
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
@@ -115,11 +116,9 @@ public class LoadNetwork extends AbstractActionTool {
         final String filename = dlg.open();
         if (filename != null) {
             setDirectory(dlg.getFilterPath());
-            Job job = new Job("Load Network") {
+            Job job = new Job("Load Network '" + (new File(filename)).getName() + "'") {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                    try {
-
                         NetworkLoader networkLoader;
                         try {
                             networkLoader = new NetworkLoader(filename);
@@ -128,13 +127,7 @@ public class LoadNetwork extends AbstractActionTool {
                         } catch (IOException e) {
                             NeoCorePlugin.error("Error loading Network file", e);
                         }
-
                         return Status.OK_STATUS;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        // TODO Handle Exception
-                        throw (RuntimeException)new RuntimeException().initCause(e);
-                    }
                 }
             };
             job.schedule(50);

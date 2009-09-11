@@ -204,6 +204,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             if (neoProvider!=null) {
                 attachDataToProject();
             }
+            NeoServiceProvider.getProvider().commit();
         }
     }
 
@@ -247,8 +248,8 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         NeoCorePlugin.getDefault().getUpdateDatabaseManager()
                 .fireUpdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
         // if(services.size()>0) catalog.add(services.get(0));
-        
-        //Lagutko, 21.07.2009, show NeworkTree
+
+        // Lagutko, 21.07.2009, show NeworkTree
         ActionUtil.getInstance().runTask(new Runnable() {
             @Override
             public void run() {
@@ -265,10 +266,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 
         try {
             IMap map = ApplicationGIS.getActiveMap();
-            if (curService != null
-                    && gis != null
-                    && findLayerByNode(map, gis) == null
- && confirmLoadNetworkOnMap(map, basename)) {
+            if (curService != null && gis != null && findLayerByNode(map, gis) == null && confirmLoadNetworkOnMap(map, basename)) {
                 List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
                 for (IGeoResource iGeoResource : curService.resources(null)) {
                     if (iGeoResource.canResolve(Node.class)) {
