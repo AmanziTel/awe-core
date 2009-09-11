@@ -213,17 +213,20 @@ public class NetworkTreeView extends ViewPart {
                 viewer.expandToLevel(1);
                 items = items[0].getItems();
                 TreeItem lastItem = null;
-                for(Node node:path){
-                    for(TreeItem item:items){
-                        Node itemNode = (item.getData()!=null) ? ((NeoNode)item.getData()).getNode() : null;
-                        if(itemNode!=null && itemNode.getId()==node.getId()){
-                            items=item.getItems();
+                ArrayList<Object> expanded = new ArrayList<Object>(Arrays.asList(viewer.getExpandedElements()));
+                for (Node node : path) {
+                    for (TreeItem item : items) {
+                        Node itemNode = (item.getData() != null) ? ((NeoNode)item.getData()).getNode() : null;
+                        if (itemNode != null && itemNode.getId() == node.getId()) {
                             viewer.getTree().showItem(item);
-                            if(itemNode.getId()!=nextNode.getId()){
-                                //TODO: Consider getting previous expanded items so we don't keep closing the tree
-                                viewer.setExpandedElements(new Object[]{item});
+                            if (itemNode.getId() != nextNode.getId()) {
+                                if (!expanded.contains(item)) {
+                                    expanded.add(item);
+                                    viewer.setExpandedElements(expanded.toArray());
+                                }
                             }
                             lastItem = item;
+                            items = item.getItems();
                             break;
                         }
                     }
