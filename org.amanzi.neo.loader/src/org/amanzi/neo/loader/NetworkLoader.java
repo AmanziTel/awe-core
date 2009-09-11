@@ -249,12 +249,20 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         // if(services.size()>0) catalog.add(services.get(0));
         
         //Lagutko, 21.07.2009, show NeworkTree
-        try {
-            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NetworkTreeView.NETWORK_TREE_VIEW_ID);
-        }
-        catch (PartInitException e) {
-            NeoCorePlugin.error(null, e);
-        }
+        ActionUtil.getInstance().runTask(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
+                            NetworkTreeView.NETWORK_TREE_VIEW_ID);
+                }
+
+                catch (PartInitException e) {
+                    NeoCorePlugin.error(null, e);
+                }
+            }
+        }, false);
+
         try {
             IMap map = ApplicationGIS.getActiveMap();
             if (curService != null
