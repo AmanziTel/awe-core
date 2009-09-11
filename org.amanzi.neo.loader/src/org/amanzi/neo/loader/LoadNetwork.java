@@ -7,6 +7,10 @@ import net.refractions.udig.project.ui.tool.AbstractActionTool;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.dialogs.TEMSDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -99,8 +103,11 @@ public class LoadNetwork extends AbstractActionTool {
 
 	}
 
+    /**
+     * Run from action handler
+     */
     public void runOnAction() {
-        FileDialog dlg = new FileDialog(display.getActiveShell(), SWT.OPEN);
+        final FileDialog dlg = new FileDialog(display.getActiveShell(), SWT.OPEN);
         dlg.setText(NeoLoaderPluginMessages.NetworkDialog_DialogTitle);
         dlg.setFilterNames(NETWORK_FILE_NAMES);
         dlg.setFilterExtensions(NETWORK_FILE_EXTENSIONS);
@@ -108,18 +115,29 @@ public class LoadNetwork extends AbstractActionTool {
         final String filename = dlg.open();
         if (filename != null) {
             setDirectory(dlg.getFilterPath());
-            display.asyncExec(new Runnable() {
-                public void run() {
-                    NetworkLoader networkLoader;
+            Job job = new Job("Load Network") {
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
                     try {
-                        networkLoader = new NetworkLoader(filename);
-                        networkLoader.run();
-                        networkLoader.printStats(false);
-                    } catch (IOException e) {
-                        NeoCorePlugin.error("Error loading Network file", e);
+
+                        NetworkLoader networkLoader;
+                        try {
+                            networkLoader = new NetworkLoader(filename);
+                            networkLoader.run();
+                            networkLoader.printStats(false);
+                        } catch (IOException e) {
+                            NeoCorePlugin.error("Error loading Network file", e);
+                        }
+
+                        return Status.OK_STATUS;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        // TODO Handle Exception
+                        throw (RuntimeException)new RuntimeException().initCause(e);
                     }
                 }
-            });
+            };
+            job.schedule(50);
         }
     }
 	public void dispose() {

@@ -571,6 +571,8 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                             relationshipIn.delete();
                         }
                         NeoServiceProvider.getProvider().commit();
+                        NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+                        NeoServiceProvider.getProvider().commit();
                         deleteNodeInNewThread(node);
 			        } catch(IllegalStateException e) {
 			            // we are in test mode, automatically agree to overwrite network
@@ -606,7 +608,6 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                 NeoServiceProvider.getProvider().commit();
                 return Status.OK_STATUS;
             }
-
         };
         job.schedule();
     }
