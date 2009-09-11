@@ -79,5 +79,19 @@
        </category>
 
     </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.neo.preferences.DataLoadPreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.amanzi.neo.preferences.DataLoadPreferencePage"
+            id="org.amanzi.neo.preferences.DataLoadPreferencePage"
+            name="Amanzi Data">
+      </page>
+   </extension>
 
 </plugin>

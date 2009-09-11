@@ -5,10 +5,13 @@ import java.io.PrintStream;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -54,6 +57,8 @@ public class NeoLoaderPlugin extends Plugin {
 	 */
 	
 	private MessageConsoleStream consoleStream;
+
+    private IPreferenceStore preferenceStore = null;
 	
 	/*
 	 * Logging properties
@@ -220,5 +225,19 @@ public class NeoLoaderPlugin extends Plugin {
 				
 		PrintStream stream = new PrintStream(consoleStream);		
 		e.printStackTrace(stream);		
-	}    
+    }
+
+    /**
+     * Returns the preference store for this plugin
+     * 
+     * @return the preference store
+     */
+    public IPreferenceStore getPreferenceStore() {
+        // Create the preference store lazily.
+        if (preferenceStore == null) {
+            preferenceStore = new ScopedPreferenceStore(new InstanceScope(), getBundle().getSymbolicName());
+
+        }
+        return preferenceStore;
+    }
 }
