@@ -34,6 +34,7 @@ import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -159,6 +160,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
     }
 
 	public void run() throws IOException {
+        trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         try {
             long startTime = System.currentTimeMillis();
@@ -579,7 +581,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                         NeoServiceProvider.getProvider().commit();
                         NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
                         NeoServiceProvider.getProvider().commit();
-                        deleteNodeInNewThread(node);
+                        // deleteNodeInNewThread(node);
 			        } catch(IllegalStateException e) {
 			            // we are in test mode, automatically agree to overwrite network
 			            deleteTree(node);
