@@ -79,8 +79,6 @@ public class DriveRoot extends Root {
 
         if (driveNodes.isEmpty()) {
             return NO_NODES;
-        } else if (driveNodes.size() == 1) {
-            return driveNodes.get(0).getChildren();
         } else {
             Collections.sort(driveNodes, new NeoNodeComparator());
             return driveNodes.toArray(NO_NODES);

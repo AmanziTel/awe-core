@@ -110,11 +110,7 @@ public class Root extends NeoNode {
         
         if (networkNodes.isEmpty()) {
             return NO_NODES;
-        }
-        else if (networkNodes.size() == 1) {
-            return networkNodes.get(0).getChildren();
-        }
-        else {
+        } else {
             Collections.sort(networkNodes, new NeoNodeComparator());
             return networkNodes.toArray(NO_NODES);
         }
