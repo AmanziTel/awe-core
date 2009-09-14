@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -56,7 +53,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
@@ -113,8 +109,6 @@ public class NetworkTreeView extends ViewPart {
     private NeoServiceEventListener neoEventListener;
 
     private Text tSearch;
-    private String previousSearch = null;
-    private LinkedHashMap<Node,List<Node>> searchResults = null;
     private Iterator<Node> searchIterator = new ArrayList<Node>().iterator();
     private boolean autoZoom = true;
     /**
@@ -186,125 +180,45 @@ public class NetworkTreeView extends ViewPart {
     }
 
     /**
-     *finds and shows node
+     * Searches for a node based on matching text to the name field. The resulting node is show in
+     * the tree. Multiple searches on the same text will step through multiple results, and loop
+     * back to the first.
      */
     protected void findAndSelectNode() {
         tSearch.setEditable(false);
-        try {      
-        String text = tSearch.getText();
-        text=text==null?"":text.toLowerCase().trim();
-        if (text.isEmpty()){
-            return;
-        }
+        try {
+            String text = tSearch.getText();
+            text = text == null ? "" : text.toLowerCase().trim();
+            if (text.isEmpty()) {
+                return;
+            }
             Root rootTree = (Root)((ITreeContentProvider)viewer.getContentProvider()).getElements(0)[0];
             if (searchIterator == null || !searchIterator.hasNext()) {
                 // Do completely new search on changed text
-                searchIterator = createSearchTraverce(rootTree.getNode(), text);
+                searchIterator = createSearchTraverser(rootTree.getNode(), text);
                 viewer.collapseAll();
             }
             if (!searchIterator.hasNext()) {
                 return;
             }
-             Node lastNode = searchIterator.next();
+            Node lastNode = searchIterator.next();
             viewer.reveal(new NeoNode(lastNode));
             viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(lastNode)}));
-            if (true) return;
-            // TODO remove dead code?
-            if (true) {
-                // new search mechanism
-                Root root = (Root)((ITreeContentProvider)viewer.getContentProvider()).getElements(0)[0];
-                if (searchResults == null || !previousSearch.equals(text)) {
-                    // Do completely new search on changed text
-                    searchResults = root.search(text);
-                    searchIterator = searchResults.keySet().iterator();
-                    previousSearch = text;
-                }
-                if(searchIterator == null || !searchIterator.hasNext()){
-                    // Reset iterator on new search or on end of iteration
-                    searchIterator = searchResults.keySet().iterator();
-                }
-                if (!searchIterator.hasNext()) {
-                    return;
-                }
-                Node nextNode = searchIterator.next();
-                List<Node> path = searchResults.get(nextNode);
-                TreeItem[] items = viewer.getTree().getItems();
-                viewer.expandToLevel(1);
-                items = items[0].getItems();
-                TreeItem lastItem = null;
-                ArrayList<Object> expanded = new ArrayList<Object>(Arrays.asList(viewer.getExpandedElements()));
-                for (Node node : path) {
-                    for (TreeItem item : items) {
-                        Node itemNode = (item.getData() != null) ? ((NeoNode)item.getData()).getNode() : null;
-                        if (itemNode != null && itemNode.getId() == node.getId()) {
-                            viewer.getTree().showItem(item);
-                            if (itemNode.getId() != nextNode.getId()) {
-                                if (!expanded.contains(item)) {
-                                    expanded.add(item);
-                                    viewer.setExpandedElements(expanded.toArray());
-                                }
-                            }
-                            lastItem = item;
-                            items = item.getItems();
-                            break;
-                        }
-                    }
-                }
-                if(lastItem!=null) {
-                    viewer.getTree().showItem(lastItem);
-                    viewer.getTree().setSelection(lastItem);
-                }
-            } else {
-                // old search mechanism
-                LinkedList<TreeItem> items = new LinkedList<TreeItem>(Arrays.asList(viewer.getTree().getItems()));
-                for (int i = 0; i < items.size(); i++) {
-                    TreeItem item = items.get(i);
-                    if (item.getText().toLowerCase().contains(text)) {
-                        viewer.getTree().showItem(item);
-                        viewer.getTree().setSelection(item);
-                        return;
-                    }
-                    items.addAll(Arrays.asList(item.getItems()));
-                };
-            }
         } catch (Exception e) {
             e.printStackTrace();
             // TODO Handle Exception
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
-        }finally{
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } finally {
             tSearch.setEditable(true);
         }
     }
-
-    private List<Node> findPath(Node root, Node node) {
-        LinkedList<Node> path = new LinkedList<Node>();
-        Node startNode = node;
-        path.add(node);
-        while (true) {
-            Iterator<Relationship> relationships = startNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
-                    .iterator();
-            if (!relationships.hasNext()) {
-                relationships = startNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
-                if (!relationships.hasNext()) {
-                    break;
-                }
-            }
-            startNode = relationships.next().getStartNode();
-            String type = startNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
-            if (type.equals(INeoConstants.AWE_PROJECT_NODE_TYPE) || (type.equals(INeoConstants.GIS_TYPE_NAME))) {
-                break;
-            }
-            path.addFirst(startNode);
-        }
-        return path;
-	}
 
     /**
      * @param node
      * @param text
      * @return
      */
-    private Iterator<Node> createSearchTraverce(Node node, final String text) {
+    private Iterator<Node> createSearchTraverser(Node node, final String text) {
         Traverser traverse = node.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
 
             @Override
@@ -766,14 +680,7 @@ public class NetworkTreeView extends ViewPart {
 
     }
 
-    // TODO move to utility class
-    /**
-     * gets name of node
-     * 
-     * @param node node
-     * @return name of node
-     */
-    public static String getNodeName(Node node) {
+    private static String getNodeName(Node node) {
         String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
         if (type.equals(INeoConstants.MP_TYPE_NAME)) {
             return node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
@@ -786,14 +693,7 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
-    /**
-     * gets type of node
-     * 
-     * @param node node
-     * @param defValue default type
-     * @return type of node or defValue if type not exist
-     */
-    public static String getNodeType(Node node, String... defValue) {
+    private static String getNodeType(Node node, String... defValue) {
         String def = defValue == null || defValue.length < 1 ? null : defValue[0];
         return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, def);
     }
@@ -866,4 +766,5 @@ public class NetworkTreeView extends ViewPart {
         }
 
     }
+
 }

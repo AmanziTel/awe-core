@@ -29,6 +29,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -74,6 +75,8 @@ public class TEMSLoader {
     private double[] bbox;
 	private String dataset=null;
 	private Node datasetNode=null;
+	/** How many units of work for the progress monitor for each file */
+	public static final int WORKED_PER_FILE = 10;
 
     public TEMSLoader(String filename) {
 		this(null,filename);
@@ -137,7 +140,8 @@ public class TEMSLoader {
 		}
 	}
 
-	public void run() throws IOException {
+	public void run(IProgressMonitor monitor) throws IOException {
+        if(monitor!=null) monitor.subTask(filename);
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		try{
 			String line;
@@ -145,10 +149,12 @@ public class TEMSLoader {
 				line_number++;
 				if(headers==null) parseHeader(line);
 				else parseLine(line);
+				if(monitor!=null && monitor.isCanceled()) break;
 			}
 		}finally{
             reader.close();
             saveData();
+            if(monitor!=null) monitor.worked(WORKED_PER_FILE);
             if (gis != null) {
                 Transaction transaction = neo.beginTx();
                 try {
@@ -362,7 +368,7 @@ public class TEMSLoader {
 	            signals.get(chan_code)[1] += 1;
             }catch(Exception e){
             	error("Error parsing column "+i+" for EC/IO, Channel or PN: "+e.getMessage());
-            	e.printStackTrace(System.err);
+            	//e.printStackTrace(System.err);
             }
           }
         }
@@ -651,7 +657,7 @@ public class TEMSLoader {
 			for(String filename:args){
 				TEMSLoader temsLoader = new TEMSLoader(neo,filename);
 				temsLoader.setLimit(100);
-				temsLoader.run();
+				temsLoader.run(null);
 				temsLoader.printStats(true);	// stats for this load
 			}
 			printTimesStats();	// stats for all loads

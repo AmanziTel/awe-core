@@ -283,6 +283,7 @@ public class TEMSDialog {
         dCombo.right = new FormAttachment(40,3);
         combo.setLayoutData(dCombo);
         
+        //TODO: Check if the following line is needed
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         ArrayList<String> datasetList = new ArrayList<String>();
         Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
@@ -566,12 +567,14 @@ public class TEMSDialog {
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();
 		}
-		
+		monitor.beginTask("Importing " + loadedFiles.size() + " drive test files", loadedFiles.size() * TEMSLoader.WORKED_PER_FILE);
+
 		for (String filePath : loadedFiles.values()) {
-			try {				
+			try {
 				TEMSLoader temsLoader = new TEMSLoader(filePath, display, datasetName);
-				temsLoader.run();
-				temsLoader.printStats(false);	// stats for this load						
+				temsLoader.run(monitor);
+				temsLoader.printStats(false);	// stats for this load
+				if(monitor.isCanceled()) break;
 			}
 			catch (IOException e) {
 				NeoLoaderPlugin.exception(e);
