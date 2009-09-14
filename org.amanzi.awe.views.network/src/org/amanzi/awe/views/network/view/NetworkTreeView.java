@@ -832,8 +832,11 @@ public class NetworkTreeView extends ViewPart {
                 Relationship relation = neoNode.getNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
                 if (relation != null) {
                     Node nodeNext = relation.getEndNode();
-                    neoNode.getNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode()
-                            .createRelationshipTo(nodeNext, GeoNeoRelationshipTypes.NEXT);
+                    Relationship singleRelationship = neoNode.getNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
+                            Direction.INCOMING);
+                    if (singleRelationship != null) {
+                        singleRelationship.getStartNode().createRelationshipTo(nodeNext, GeoNeoRelationshipTypes.NEXT);
+                    }
                     relation.delete();
                 }
             }
