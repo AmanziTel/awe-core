@@ -1,6 +1,7 @@
 package org.amanzi.awe.views.drive.views;
 
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
+import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 
 /**
@@ -22,7 +23,7 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
     }
 
     @Override
-    public Object[] getElements(Object inputElement) {
-        return new Object[] {new DriveRoot(neoServiceProvider)};
+    protected Root getRoot() {
+        return new DriveRoot(neoServiceProvider);
     }
 }

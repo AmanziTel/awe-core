@@ -1,6 +1,7 @@
 package org.amanzi.awe.views.network.view;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,6 +64,7 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
@@ -70,6 +72,7 @@ import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -110,10 +113,8 @@ public class NetworkTreeView extends ViewPart {
     private Text tSearch;
     private String previousSearch = null;
     private LinkedHashMap<Node,List<Node>> searchResults = null;
-    private Iterator<Node> searchIterator = null;
-
+    private Iterator<Node> searchIterator = new ArrayList<Node>().iterator();
     private boolean autoZoom = true;
-
     /**
      * The constructor.
      */
@@ -162,6 +163,7 @@ public class NetworkTreeView extends ViewPart {
 
             @Override
             public void modifyText(ModifyEvent e) {
+                searchIterator = new ArrayList<Node>().iterator();
                 //findAndSelectNode();
             }
         });
@@ -185,12 +187,27 @@ public class NetworkTreeView extends ViewPart {
      *finds and shows node
      */
     protected void findAndSelectNode() {
+        tSearch.setEditable(false);
+        try {      
         String text = tSearch.getText();
         text=text==null?"":text.toLowerCase().trim();
         if (text.isEmpty()){
             return;
         }
-        try {
+             Root rootTree =
+             (Root)((ITreeContentProvider)viewer.getContentProvider()).getElements(0)[0];
+             if (searchIterator == null || !searchIterator.hasNext()) {
+             // Do completely new search on changed text
+             searchIterator = createSearchTraverce(rootTree.getNode(),text);
+             }
+             if (!searchIterator.hasNext()){
+            	 return;
+             }
+             Node lastNode = searchIterator.next();
+            viewer.reveal(new NeoNode(lastNode));
+            viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(lastNode)}));
+            if (true) return;
+            // TODO remove dead code?
             if (true) {
                 // new search mechanism
                 Root root = (Root)((ITreeContentProvider)viewer.getContentProvider()).getElements(0)[0];
@@ -252,7 +269,57 @@ public class NetworkTreeView extends ViewPart {
             e.printStackTrace();
             // TODO Handle Exception
             throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }finally{
+            tSearch.setEditable(true);
         }
+    }
+
+    private List<Node> findPath(Node root, Node node) {
+        LinkedList<Node> path = new LinkedList<Node>();
+        Node startNode = node;
+        path.add(node);
+        while (true) {
+            Iterator<Relationship> relationships = startNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
+                    .iterator();
+            if (!relationships.hasNext()) {
+                relationships = startNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
+                if (!relationships.hasNext()) {
+                    break;
+                }
+            }
+            startNode = relationships.next().getStartNode();
+            String type = startNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
+            if (type.equals(INeoConstants.AWE_PROJECT_NODE_TYPE) || (type.equals(INeoConstants.GIS_TYPE_NAME))) {
+                break;
+            }
+            path.addFirst(startNode);
+        }
+        return path;
+	}
+
+    /**
+     * @param node
+     * @param text
+     * @return
+     */
+    private Iterator<Node> createSearchTraverce(Node node, final String text) {
+        Traverser traverse = node.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
+
+            @Override
+            public boolean isStopNode(TraversalPosition currentPos) {
+                return false;
+            }
+        }, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                String type = getNodeType(currentPos.currentNode(), "");
+                return !(type.equals(INeoConstants.AWE_PROJECT_NODE_TYPE) || type.equals(INeoConstants.GIS_TYPE_NAME))
+                        && getNodeName(currentPos.currentNode()).toLowerCase().contains(text);
+            }
+        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        // TODO needs sort by name
+        return traverse.iterator();
     }
 
     /**
@@ -350,7 +417,9 @@ public class NetworkTreeView extends ViewPart {
     }
 
     /**
-     * @param node
+     * Shows selected node on map
+     * 
+     * @param node selected node
      */
     protected void showSelectionOnMap(NeoNode node) {
         try {
@@ -393,8 +462,11 @@ public class NetworkTreeView extends ViewPart {
                 autoZoom = false;   // only zoom first time, then rely on user to control zoom level
             }
             map.sendCommandASync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
-        } catch (Exception e) {
-            // TODO Handle IOException
+        } catch (NoSuchAuthorityCodeException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (MalformedURLException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
@@ -689,5 +761,23 @@ public class NetworkTreeView extends ViewPart {
         }
         return null;
 
+    }
+
+    public static String getNodeName(Node node) {
+        String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
+        if (type.equals(INeoConstants.MP_TYPE_NAME)) {
+            return node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
+
+        } else if (type.equals(INeoConstants.HEADER_MS)) {
+            return node.getProperty(INeoConstants.PROPERTY_CODE_NAME, "").toString();
+
+        } else {
+            return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
+        }
+    }
+
+    public static String getNodeType(Node node, String... defValue) {
+        String def = defValue == null || defValue.length < 1 ? null : defValue[0];
+        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, def);
     }
 }
