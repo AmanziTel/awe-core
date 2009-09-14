@@ -15,6 +15,7 @@
 package org.amanzi.neo.wizards;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
@@ -29,16 +30,28 @@ import org.eclipse.ui.IWorkbench;
  */
 public class TemsImportWizard extends Wizard implements IImportWizard {
 
+    /** String PAGE_TITLE field */
+    private static final String PAGE_TITLE = "Import Network File";
+    /** String PAGE_DESCR field */
+    private static final String PAGE_DESCR = "Import a file from the local file system into the workspace";
     private IWorkbench workbench;
+    private TemsImportWizardPage mainPage;
 
     @Override
     public boolean performFinish() {
+        mainPage.getDialog().runLoadingJob();
         return true;
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
+        mainPage = new TemsImportWizardPage(PAGE_TITLE, PAGE_DESCR);
     }
 
+    @Override
+    public void addPages() {
+        super.addPages();
+        addPage(mainPage);
+    }
 }

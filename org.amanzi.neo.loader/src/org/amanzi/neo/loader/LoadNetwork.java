@@ -20,7 +20,7 @@ public class LoadNetwork extends AbstractActionTool {
     /*
      * Names of supported files for Network
      */
-    private static final String[] NETWORK_FILE_NAMES = {
+    public static final String[] NETWORK_FILE_NAMES = {
         "Comma Separated Values Files (*.csv)",
         "Plain Text Files (*.txt)",
         "OpenOffice.org Spreadsheet Files (*.sxc)",
@@ -30,7 +30,7 @@ public class LoadNetwork extends AbstractActionTool {
     /*
      * Extensions of supported files for Network
      */
-    private static final String[] NETWORK_FILE_EXTENSIONS = {"*.csv", "*.txt", "*.sxc", "*.xls", "*.*"};
+    public static final String[] NETWORK_FILE_EXTENSIONS = {"*.csv", "*.txt", "*.sxc", "*.xls", "*.*"};
 
     private static String directory = null;
 

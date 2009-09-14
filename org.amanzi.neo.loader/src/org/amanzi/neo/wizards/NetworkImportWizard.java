@@ -14,8 +14,16 @@
  */
 package org.amanzi.neo.wizards;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.loader.NetworkLoader;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
@@ -30,15 +38,35 @@ import org.eclipse.ui.IWorkbench;
  */
 public class NetworkImportWizard extends Wizard implements IImportWizard {
 
-    private IWizardPage mainPage;
+    /** String PAGE_TITLE field */
+    private static final String PAGE_TITLE = "Import Network File";
+    /** String PAGE_DESCR field */
+    private static final String PAGE_DESCR = "Import a file from the local file system into the workspace";
+    private NetworkImportWizardPage mainPage;
     @Override
     public boolean performFinish() {
+
+        Job job = new Job("Load Network '" + (new File(mainPage.getFileName())).getName() + "'") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                NetworkLoader networkLoader;
+                try {
+                    networkLoader = new NetworkLoader(mainPage.getFileName());
+                    networkLoader.run();
+                    networkLoader.printStats(false);
+                } catch (IOException e) {
+                    NeoCorePlugin.error("Error loading Network file", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule(50);
         return true;
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        mainPage = null;
+        mainPage = new NetworkImportWizardPage(PAGE_TITLE, PAGE_DESCR);
     }
 
     @Override

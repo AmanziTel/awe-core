@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -140,6 +141,10 @@ public class TEMSDialog {
 	 * Default directory for file dialogs 
 	 */
 	private static String defaultDirectory = null;
+    /**
+     * wizard page if tems dialog was created from import wizard page
+     */
+    private WizardPage wizardPage = null;
 
 	/**
 	 * Creates a Shell and add GUI elements
@@ -183,7 +188,20 @@ public class TEMSDialog {
 	public TEMSDialog(Display display) {
 		this(new Shell(display), false);
 	}
-	
+
+    /**
+     * Constructor for launch from import wizards
+     * 
+     * @param parent - Composite
+     * @param wizardPage wizards page
+     */
+    public TEMSDialog(Composite parent, WizardPage wizardPage) {
+        this.wizardPage = wizardPage;
+        temsShell = parent.getShell();
+        temsShell.setText(NeoLoaderPluginMessages.TEMSDialog_DialogTitle);
+        createControlForDialog(parent);
+        createActions(temsShell);
+    }
 	/**
 	 * Opens a Dialog
 	 * 
@@ -208,7 +226,28 @@ public class TEMSDialog {
 		createSelectFileGroup(parent);
 		createFinishButtons(parent);
 	}
-	
+
+    /**
+     * Creates controls in parent Composite
+     * 
+     * @param parent parent Composite
+     */
+
+    public void createControlForDialog(Composite parent) {
+        GridLayout layout = layoutOneColumnNotFixedWidth;
+
+        parent.setLayout(layout);
+        parent.setLayoutData(new GridData(SWT.FILL));
+        loadButton = new Button(parent, SWT.NONE);
+        cancelButton = loadButton;
+        // cancelButton.setVisible(false);
+        // cancelButton.setVisible(false);
+        // loadButton.setVisible(false);
+        createSelectFileGroup(parent);
+        cancelButton.moveBelow(null);
+        cancelButton.setVisible(false);
+    }
+
 	/**
 	 * Creates group for selecting files to load
 	 * 
@@ -476,10 +515,10 @@ public class TEMSDialog {
 		loadButton.addSelectionListener(new SelectionAdapter() {
 			
 			public void widgetSelected(SelectionEvent e) {
-				datasetName=combo.getText();
-				LoadTEMSJob job = new LoadTEMSJob(temsShell.getDisplay());
-				job.schedule(50);				
+				runLoadingJob();				
 			}
+
+
 			
 		});
 		combo.addModifyListener(new ModifyListener() {
@@ -491,7 +530,11 @@ public class TEMSDialog {
 		});
 		
 	}
-	
+	public void runLoadingJob() {
+		datasetName=combo.getText();
+		LoadTEMSJob job = new LoadTEMSJob(temsShell.getDisplay());
+		job.schedule(50);
+	}	
 	/**
 	 * FileFilter for TEMS data files
 	 * 
@@ -678,7 +721,11 @@ public class TEMSDialog {
 	 */
 	
 	private void checkLoadButton() {
-		loadButton.setEnabled(filesToLoadList.getItemCount() > 0/*&&combo.getText().length()>0*/);
+		boolean enabled = filesToLoadList.getItemCount() > 0;
+        loadButton.setEnabled(enabled/*&&combo.getText().length()>0*/);
+        if (wizardPage!=null){
+            wizardPage.setPageComplete(enabled);
+        }
 	}
 	
 	/**
@@ -728,14 +775,17 @@ public class TEMSDialog {
 
 	private class LoadTEMSJob extends Job {
 		
+		private final Display jobDisplay;
+
 		public LoadTEMSJob(Display jobDisplay) {
-			super(NeoLoaderPluginMessages.TEMSDialog_MonitorName);					
+			super(NeoLoaderPluginMessages.TEMSDialog_MonitorName);
+			this.jobDisplay = jobDisplay;					
 		}
 
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			try {
-                loadTemsData(temsShell.getDisplay(), monitor);
+                loadTemsData(jobDisplay, monitor);
                 
                 return Status.OK_STATUS;
             } catch (Exception e) {
