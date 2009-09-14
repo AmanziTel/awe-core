@@ -57,10 +57,10 @@ public class NeoPreferencePage extends AbstractPreferencePage
             NeoPreferences.HELP_ON_START, HELP_ON_START_LABEL,
                 getFieldEditorParent());
         addField(helpOnStart);
-        //
-        IntegerFieldEditor maximumNodesRetirned = new IntegerFieldEditor(NeoPreferences.MAXIMUM_NODES_RETURNED, LABEL_MAXIMUM_NODE,
+        // maximum nodes displayed on view
+        IntegerFieldEditor maximumNodesReturned = new IntegerFieldEditor(NeoPreferences.MAXIMUM_NODES_RETURNED, LABEL_MAXIMUM_NODE,
                 getFieldEditorParent());
-        maximumNodesRetirned.setValidRange(1, Integer.MAX_VALUE);
-        addField(maximumNodesRetirned);
+        maximumNodesReturned.setValidRange(1, Integer.MAX_VALUE);
+        addField(maximumNodesReturned);
     }
 }
