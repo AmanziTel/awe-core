@@ -766,6 +766,7 @@ public class NetworkTreeView extends ViewPart {
 
     }
 
+    // TODO move to utility class
     /**
      * gets name of node
      * 
@@ -796,6 +797,7 @@ public class NetworkTreeView extends ViewPart {
         String def = defValue == null || defValue.length < 1 ? null : defValue[0];
         return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, def);
     }
+
 
     /**
      * <p>
