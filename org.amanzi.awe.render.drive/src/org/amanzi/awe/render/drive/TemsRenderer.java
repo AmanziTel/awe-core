@@ -146,7 +146,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             Coordinate world_location = new Coordinate(); // single object for re-use in transform
             // below (minimize object creation)
             for (GeoNode node : geoNeo.getGeoNodes()) {
-            	System.out.println("in");
                 Coordinate location = node.getCoordinate();
 
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
