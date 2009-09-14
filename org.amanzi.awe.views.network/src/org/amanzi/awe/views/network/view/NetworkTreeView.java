@@ -24,6 +24,7 @@ import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
@@ -53,6 +54,7 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IPageLayout;
@@ -194,15 +196,15 @@ public class NetworkTreeView extends ViewPart {
         if (text.isEmpty()){
             return;
         }
-             Root rootTree =
-             (Root)((ITreeContentProvider)viewer.getContentProvider()).getElements(0)[0];
-             if (searchIterator == null || !searchIterator.hasNext()) {
-             // Do completely new search on changed text
-             searchIterator = createSearchTraverce(rootTree.getNode(),text);
-             }
-             if (!searchIterator.hasNext()){
-            	 return;
-             }
+            Root rootTree = (Root)((ITreeContentProvider)viewer.getContentProvider()).getElements(0)[0];
+            if (searchIterator == null || !searchIterator.hasNext()) {
+                // Do completely new search on changed text
+                searchIterator = createSearchTraverce(rootTree.getNode(), text);
+                viewer.collapseAll();
+            }
+            if (!searchIterator.hasNext()) {
+                return;
+            }
              Node lastNode = searchIterator.next();
             viewer.reveal(new NeoNode(lastNode));
             viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(lastNode)}));
@@ -414,6 +416,7 @@ public class NetworkTreeView extends ViewPart {
                         && ApplicationGIS.getActiveMap() != ApplicationGIS.NO_MAP;
             }
         });
+        manager.add(new DeleteAction());
     }
 
     /**
@@ -763,6 +766,12 @@ public class NetworkTreeView extends ViewPart {
 
     }
 
+    /**
+     * gets name of node
+     * 
+     * @param node node
+     * @return name of node
+     */
     public static String getNodeName(Node node) {
         String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
         if (type.equals(INeoConstants.MP_TYPE_NAME)) {
@@ -776,8 +785,80 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
+    /**
+     * gets type of node
+     * 
+     * @param node node
+     * @param defValue default type
+     * @return type of node or defValue if type not exist
+     */
     public static String getNodeType(Node node, String... defValue) {
         String def = defValue == null || defValue.length < 1 ? null : defValue[0];
         return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, def);
+    }
+
+    /**
+     * <p>
+     * Delete node action
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.1.0
+     */
+    private class DeleteAction extends Action {
+
+
+
+        @Override
+        public void run() {
+            MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
+            msg.setText("Delete node");
+            msg.setMessage(getText() + "?");
+            int result = msg.open();
+            if (result != SWT.YES) {
+                return;
+            }
+
+            IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+
+            Object element = selection.getFirstElement();
+            NeoNode neoNode = (NeoNode)element;
+            String type = getNodeType(neoNode.getNode(), "");
+            if (INeoConstants.MP_TYPE_NAME.equals(type) || (NetworkElementTypes.SITE.toString().equals(type))
+                    || (INeoConstants.HEADER_MS.equals(type))) {
+                // relink node
+                Relationship relation = neoNode.getNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                if (relation != null) {
+                    Node nodeNext = relation.getEndNode();
+                    neoNode.getNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode()
+                            .createRelationshipTo(nodeNext, GeoNeoRelationshipTypes.NEXT);
+                    relation.delete();
+                }
+            }
+
+            NeoCorePlugin.getDefault().getProjectService().deleteNode(neoNode.getNode());
+            NeoServiceProvider.getProvider().commit();
+            viewer.refresh();
+        }
+        @Override
+        public String getText() {
+            IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+            Object element = selection.getFirstElement();
+            if (element == null || !(element instanceof NeoNode) || (element instanceof Root)) {
+                return "Delete node";
+            }
+            NeoNode neoNode = (NeoNode)element;
+            return "Delete " + getNodeType(neoNode.getNode(), "") + " '" + neoNode.toString() + "'";
+        }
+
+        @Override
+        public boolean isEnabled() {
+            IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+            if (selection.size() != 1) {
+                return false;
+            }
+            return super.isEnabled() && !(selection.getFirstElement() instanceof Root);
+        }
+
     }
 }
