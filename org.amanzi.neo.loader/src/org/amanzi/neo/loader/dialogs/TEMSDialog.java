@@ -235,14 +235,10 @@ public class TEMSDialog {
 
     public void createControlForDialog(Composite parent) {
         GridLayout layout = layoutOneColumnNotFixedWidth;
-
         parent.setLayout(layout);
         parent.setLayoutData(new GridData(SWT.FILL));
         loadButton = new Button(parent, SWT.NONE);
         cancelButton = loadButton;
-        // cancelButton.setVisible(false);
-        // cancelButton.setVisible(false);
-        // loadButton.setVisible(false);
         createSelectFileGroup(parent);
         cancelButton.moveBelow(null);
         cancelButton.setVisible(false);

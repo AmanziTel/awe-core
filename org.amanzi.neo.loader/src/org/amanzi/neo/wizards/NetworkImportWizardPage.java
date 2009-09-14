@@ -65,7 +65,6 @@ public class NetworkImportWizardPage extends WizardPage {
         fileSelectionArea.setLayout(fileSelectionLayout);
 
         editor = new FileFieldEditor("fileSelect", "Select File: ", fileSelectionArea); // NON-NLS-1
-        // //NON-NLS-2
         editor.getTextControl(fileSelectionArea).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(NetworkImportWizardPage.this.editor.getStringValue());

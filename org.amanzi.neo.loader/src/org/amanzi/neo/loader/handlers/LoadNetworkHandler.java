@@ -25,7 +25,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * Load network command handler
  * </p>
  * 
- * @author TsAr
+ * @author Cinkel_A
  * @since 1.1.0
  */
 public class LoadNetworkHandler extends AbstractHandler {

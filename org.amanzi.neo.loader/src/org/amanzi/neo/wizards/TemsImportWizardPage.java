@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Composite;
  * Load Drive page wizard
  * </p>
  * 
- * @author TsAr
+ * @author Cinkel_A
  * @since 1.1.0
  */
 public class TemsImportWizardPage extends WizardPage {
@@ -32,6 +32,8 @@ public class TemsImportWizardPage extends WizardPage {
     private TEMSDialog dialog;
 
     /**
+     * Constructor
+     * 
      * @param pageTitle
      * @param pageDescr
      */
