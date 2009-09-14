@@ -24,12 +24,21 @@ public class NeoStyle {
     private Integer maximumSymbolSize;
 
     /**
+     * sets maximum size of symbol
+     * 
      * @param maximumSymbolSize The maximumSymbolSize to set.
      */
     public void setMaximumSymbolSize(Integer maximumSymbolSize) {
         this.maximumSymbolSize = maximumSymbolSize;
     }
 
+    /**
+     * Constructor
+     * 
+     * @param line line color
+     * @param fill fill color
+     * @param label label color
+     */
     public NeoStyle(Color line, Color fill, Color label) {
         super();
         this.line = line;

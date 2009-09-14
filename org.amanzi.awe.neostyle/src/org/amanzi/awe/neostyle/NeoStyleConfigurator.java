@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Spinner;
  */
 public class NeoStyleConfigurator extends IStyleConfigurator {
 
+    /** NeoStyleConfigurator ID field */
     public static final String ID = "org.amanzi.awe.neostyle.style";
 
     private static final String SYMBOL_SIZE = "Symbol base size";
@@ -84,7 +85,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         layout.marginWidth = 0;
         layout.spacing = 0;
         parent.setLayout(layout);
-
+        // color block
         Group xGroup = new Group(parent, SWT.NONE);
         xGroup.setText("Colors");
         FormData formData = new FormData();
@@ -286,33 +287,23 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     @Override
     protected void refresh() {
-        // getApplyAction().setEnabled(false);
         try {
             curStyle = (NeoStyle)getStyleBlackboard().get(ID);
             cEdFill.setColorValue(rgbFromColor(curStyle.getFill()));
             cEdLabel.setColorValue(rgbFromColor(curStyle.getLabel()));
             cEdLine.setColorValue(rgbFromColor(curStyle.getLine()));
             cEdFillSite.setColorValue(rgbFromColor(curStyle.getSiteFill()));
-            // String value = String.valueOf(curStyle.getSmallestSymb());
-            tSmallestSymb.setSelection(curStyle.getSmallestSymb());// ("null".equals(value) ? "" :
-                                                                   // value);
-            // value = String.valueOf(curStyle.getSmallSymb());
-            tSmallSymb.setSelection(curStyle.getSmallSymb());// setText("null".equals(value) ? "" :
-                                                             // value);
-            // value = String.valueOf(curStyle.getLabeling());
-            tLabeling.setSelection(curStyle.getLabeling());// setText("null".equals(value) ? "" :
-                                                           // value);
+            tSmallestSymb.setSelection(curStyle.getSmallestSymb());
+            tSmallSymb.setSelection(curStyle.getSmallSymb());
+            tLabeling.setSelection(curStyle.getLabeling());
             if (curStyle.isFixSymbolSize()) {
                 rButton2.setSelection(true);
             } else {
                 rButton1.setSelection(true);
             }
-            // value = String.valueOf(curStyle.getSymbolSize());
-            tSymbolSize.setSelection(curStyle.getSymbolSize());// setText("null".equals(value) ? ""
-                                                               // : value);
-            // value = String.valueOf(curStyle.getSectorTransparency());
-            tSectorTr.setSelection(curStyle.getSectorTransparency());// setText("null".equals(value)
-            sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize()); // ? "" : value);
+            tSymbolSize.setSelection(curStyle.getSymbolSize());
+            tSectorTr.setSelection(curStyle.getSectorTransparency());
+            sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
         } finally {
         }
     }
@@ -330,13 +321,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         curStyle.setFixSymbolSize(rButton2.getSelection());
         curStyle.setSymbolSize(getSymbolSize());
         curStyle.setSectorTransparency(getSectorTransparency());
-        try {
-            getStyleBlackboard().put(ID, curStyle);
-        } catch (Exception e) {
-            // TODO - remove after debug
-            e.printStackTrace();
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
-        }
+        getStyleBlackboard().put(ID, curStyle);
         curStyle.setMaximumSymbolSize(sMaxSymSize.getSelection());
     }
 
@@ -345,11 +330,6 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      */
     private Integer getSectorTransparency() {
         return tSectorTr.getSelection();
-        // try {
-        // return Integer.parseInt(tSectorTr.getText());
-        // } catch (NumberFormatException e) {
-        // return null;
-        // }
     }
 
     /**
@@ -359,11 +339,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      */
     private Integer getSymbolSize() {
         return tSymbolSize.getSelection();
-        // try {
-        // return Integer.parseInt(tSymbolSize.getText());
-        // } catch (NumberFormatException e) {
-        // return null;
-        // }
+
     }
 
     /**
@@ -373,11 +349,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      */
     private Integer getLabeling() {
         return tLabeling.getSelection();
-        // try {
-        // return Integer.parseInt(tLabeling.getText());
-        // } catch (NumberFormatException e) {
-        // return null;
-        // }
+
     }
 
     /**
@@ -387,11 +359,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      */
     private Integer getSmallSymb() {
         return tSmallSymb.getSelection();
-        // try {
-        // return Integer.parseInt(tSmallSymb.getText());
-        // } catch (NumberFormatException e) {
-        // return null;
-        // }
+
     }
 
     /**
@@ -401,11 +369,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      */
     private Integer getSmallestSymb() {
         return tSmallestSymb.getSelection();
-        // try {
-        // return Integer.parseInt(tSmallestSymb.getText());
-        // } catch (NumberFormatException e) {
-        // return null;
-        // }
+
     }
 
     /**
