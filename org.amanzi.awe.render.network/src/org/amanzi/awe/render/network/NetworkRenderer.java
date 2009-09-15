@@ -162,7 +162,8 @@ public class NetworkRenderer extends RendererImpl {
             int count = 0;
             monitor.subTask("drawing");
             Coordinate world_location = new Coordinate(); // single object for re-use in transform below (minimize object creation)
-            for(GeoNode node:geoNeo.getGeoNodes()) {
+            long startTime = System.currentTimeMillis();
+            for(GeoNode node:geoNeo.getGeoNodes(bounds_transformed)) {
                 Coordinate location = node.getCoordinate();
 
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
@@ -283,6 +284,7 @@ public class NetworkRenderer extends RendererImpl {
                 if (monitor.isCanceled())
                     break;
             }
+            System.out.println("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites");
         } catch (TransformException e) {
             throw new RenderException(e);
         } catch (FactoryException e) {
