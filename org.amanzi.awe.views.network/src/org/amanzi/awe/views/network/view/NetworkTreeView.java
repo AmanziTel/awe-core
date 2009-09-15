@@ -171,7 +171,7 @@ public class NetworkTreeView extends ViewPart {
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.keyCode == '\r'){
+                if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
                     findAndSelectNode();                    
                 }
             }
