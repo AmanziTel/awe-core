@@ -41,6 +41,9 @@ import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Traverser;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -63,6 +66,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     // private AffineTransform base_transform = null;
     private Color drawColor = Color.BLACK;
     private Color fillColor = new Color(200, 128, 255, (int)(0.6*255.0));
+    private static final Color COLOR_HIGHLIGHTED = Color.CYAN;
     private int drawSize = 3;
     private int drawWidth = 1 + 2*drawSize;
     private static final Color COLOR_SELECTED = Color.RED;
@@ -99,6 +103,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
     private Envelope getTransformedBounds() throws TransformException {
         ReferencedEnvelope bounds = getRenderBounds();
+        if (bounds == null) {
+            bounds = this.context.getViewportModel().getBounds();
+        }
         Envelope bounds_transformed = null;
         if (bounds != null && transform_w2d != null) {
             bounds_transformed = JTS.transform(bounds, transform_w2d);
@@ -145,7 +152,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.subTask("drawing");
             Coordinate world_location = new Coordinate(); // single object for re-use in transform
             // below (minimize object creation)
-            for (GeoNode node : geoNeo.getGeoNodes()) {
+            long startTime = System.currentTimeMillis();
+            for (GeoNode node : geoNeo.getGeoNodes(null)) {
                 Coordinate location = node.getCoordinate();
 
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
@@ -165,12 +173,26 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             lesMinValue, moreMaxValue);
 
                 }
-                renderPoint(g, p, nodeColor);
+                Color borderColor = g.getColor();
+                boolean selected = false;
+                if (geoNeo.getSelectedNodes().contains(node.getNode())) {
+                    borderColor = COLOR_HIGHLIGHTED;
+                    selected = true;
+                } else {
+                    for (Node rnode:node.getNode().traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH)){
+                        if (geoNeo.getSelectedNodes().contains(rnode)) {
+                            selected = true;
+                            break;
+                        }
+                    }
+                }
+                renderPoint(g, p, nodeColor, borderColor, selected);
                 monitor.worked(1);
                 count++;
                 if (monitor.isCanceled())
                     break;
             }
+            System.out.println("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " points");
         } catch (TransformException e) {
             throw new RenderException(e);
         } catch (FactoryException e) {
@@ -275,12 +297,27 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      * @param g
      * @param p
      */
-    private void renderPoint(Graphics2D g, java.awt.Point p, Color fillColor) {
+    private void renderPoint(Graphics2D g, java.awt.Point p, Color fillColor, Color borderColor, boolean selected) {
+        if(selected) renderSelectionGlow(g, p, 20);
         g.setColor(fillColor);
         g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
-        g.setColor(drawColor);
+        g.setColor(borderColor);
         g.drawRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
+    }
 
+    /**
+     * This method draws a fading glow around a point for selected site/sectors
+     *
+     * @param g
+     * @param p
+     * @param drawSize
+     */
+    private void renderSelectionGlow(Graphics2D g, java.awt.Point p, int drawSize) {
+        Color highColor = new Color(COLOR_HIGHLIGHTED.getRed(), COLOR_HIGHLIGHTED.getGreen(), COLOR_HIGHLIGHTED.getBlue(), 8);
+        g.setColor(highColor);
+        for(;drawSize > 2; drawSize *= 0.8) {
+            g.fillOval(p.x - drawSize, p.y - drawSize, 2 * drawSize, 2 * drawSize);
+        }
     }
 
     /**
