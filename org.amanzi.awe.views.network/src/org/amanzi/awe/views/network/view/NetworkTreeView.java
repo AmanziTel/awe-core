@@ -219,13 +219,7 @@ public class NetworkTreeView extends ViewPart {
      * @return
      */
     private Iterator<Node> createSearchTraverser(Node node, final String text) {
-        Traverser traverse = node.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
-
-            @Override
-            public boolean isStopNode(TraversalPosition currentPos) {
-                return false;
-            }
-        }, new ReturnableEvaluator() {
+        Traverser traverse = node.traverse(Order.DEPTH_FIRST, getSearchStopEvaluator(), new ReturnableEvaluator() {
 
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
@@ -236,6 +230,23 @@ public class NetworkTreeView extends ViewPart {
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         // TODO needs sort by name
         return traverse.iterator();
+    }
+
+    /**
+     * gets search stop Evaluator
+     * 
+     * @return search stop Evaluator
+     */
+    protected StopEvaluator getSearchStopEvaluator() {
+        return new StopEvaluator() {
+
+            @Override
+            public boolean isStopNode(TraversalPosition currentPos) {
+                String nodeType = getNodeType(currentPos.currentNode(), "");
+                boolean result = (nodeType.equals(INeoConstants.FILE_TYPE_NAME) || nodeType.equals(INeoConstants.DATASET_TYPE_NAME));
+                return result;
+            }
+        };
     }
 
     /**
@@ -680,7 +691,13 @@ public class NetworkTreeView extends ViewPart {
 
     }
 
-    private static String getNodeName(Node node) {
+    /**
+     * Gets node type
+     * 
+     * @param node node
+     * @return node type or empty string
+     */
+    public static String getNodeName(Node node) {
         String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
         if (type.equals(INeoConstants.MP_TYPE_NAME)) {
             return node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
@@ -693,7 +710,14 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
-    private static String getNodeType(Node node, String... defValue) {
+    /**
+     * gets node name
+     * 
+     * @param node node
+     * @param defValue default value
+     * @return node name or defValue
+     */
+    public static String getNodeType(Node node, String... defValue) {
         String def = defValue == null || defValue.length < 1 ? null : defValue[0];
         return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, def);
     }
