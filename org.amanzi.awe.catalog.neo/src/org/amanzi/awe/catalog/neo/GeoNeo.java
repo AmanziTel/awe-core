@@ -17,10 +17,12 @@ import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * This class is a utility class for reading GIS information from a specific
@@ -177,9 +179,19 @@ public class GeoNeo {
         return crs;
     }
 
-    public Traverser makeGeoNeoTraverser(){
-        return gisNode.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
-                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+    public Traverser makeGeoNeoTraverser(final Envelope searchBounds){
+        if(searchBounds==null) {
+            return gisNode.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
+                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        } else {
+            return gisNode.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    double[] c = GeoNode.getCoords(currentPos.currentNode());
+                    return c != null && searchBounds.contains(c[0], c[1]);
+                }
+            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);            
+        }
     }
 
     /**
@@ -210,7 +222,7 @@ public class GeoNeo {
             try{
                 if(this.bounds.isNull()){
                     // Try to create envelope from any data referenced by the gisNode
-                    for(GeoNode node:getGeoNodes()){
+                    for(GeoNode node:getGeoNodes(null)){
                         //TODO: support high dimensions
                         this.bounds.expandToInclude(node.getCoords()[0], node.getCoords()[1]);
                     }
@@ -245,8 +257,8 @@ public class GeoNeo {
         private Iterator<Node> iterator;
         private GeoNode next;
         private Transaction transaction;
-        private GeoIterator(Node gisNode){
-            this.iterator = makeGeoNeoTraverser().iterator();
+        private GeoIterator(Node gisNode, Envelope bounds){
+            this.iterator = makeGeoNeoTraverser(bounds).iterator();
             this.transaction = neo.beginTx();
         }
         public boolean hasNext() {
@@ -272,10 +284,10 @@ public class GeoNeo {
         }
     }
 
-    public Iterable<GeoNode> getGeoNodes() {
+    public Iterable<GeoNode> getGeoNodes(final Envelope searchBounds) {
         return new Iterable<GeoNode>(){
             public Iterator<GeoNode> iterator() {
-                return new GeoIterator(gisNode);
+                return new GeoIterator(gisNode, searchBounds);
             }};
     }
 
