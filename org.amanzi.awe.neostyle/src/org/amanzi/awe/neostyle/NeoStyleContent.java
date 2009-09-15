@@ -57,6 +57,8 @@ public class NeoStyleContent extends StyleContent {
     public static final int DEF_MAXIMUM_SYMBOL_SIZE = 40;
     private static final String MAX_SYMB_SIZE = "MAXIMUM_SYMBOL_SIZE";
 
+    // private static final String IS_NETWORK_STYLE = "IS_NETWORK";
+
 
     public NeoStyleContent() {
         super(ID);
@@ -76,9 +78,12 @@ public class NeoStyleContent extends StyleContent {
                 result.setSectorTransparency(DEF_SECTOR_TR);
                 result.setSiteFill(DEF_COLOR_SITE);
                 result.setMaximumSymbolSize(DEF_MAXIMUM_SYMBOL_SIZE);
+                // result.setNetwork(true);
                 return result;
             } else {
-                return new NeoStyle(Color.BLACK, new Color(200, 128, 255, (int)(0.6 * 255.0)), Color.BLACK);
+                NeoStyle result = new NeoStyle(Color.BLACK, new Color(200, 128, 255, (int)(0.6 * 255.0)), Color.BLACK);
+                // result.setNetwork(false);
+                return result;
             }
         }
         return null;
@@ -104,7 +109,22 @@ public class NeoStyleContent extends StyleContent {
         result.setSymbolSize(memento.getInteger(SYMBOL_SIZE));
         result.setSectorTransparency(memento.getInteger(SECTOR_TRANSPARENCY));
         result.setMaximumSymbolSize(memento.getInteger(MAX_SYMB_SIZE));
+        // result.setNetwork(getBoolean(memento, IS_NETWORK_STYLE, true));
         return result;
+    }
+
+    /**
+     * @param memento
+     * @param isNetworkStyle
+     * @param b
+     * @return
+     */
+    private boolean getBoolean(IMemento memento, String prefix, boolean defvalue) {
+        try {
+            return Boolean.parseBoolean(memento.getString(prefix));
+        } catch (Exception e) {
+            return defvalue;
+        }
     }
 
     private Color loadColor(IMemento memento, String prfx, Color defColor) {
@@ -132,6 +152,7 @@ public class NeoStyleContent extends StyleContent {
         memento.putInteger(SYMBOL_SIZE, style.getSymbolSize());
         memento.putInteger(SECTOR_TRANSPARENCY, style.getSectorTransparency());
         memento.putInteger(MAX_SYMB_SIZE, style.getMaximumSymbolSize());
+        // memento.putString(IS_NETWORK_STYLE, String.valueOf(style.isNetwork()));
 
     }
 

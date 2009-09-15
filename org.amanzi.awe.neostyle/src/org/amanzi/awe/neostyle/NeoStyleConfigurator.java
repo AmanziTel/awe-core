@@ -1,11 +1,15 @@
 package org.amanzi.awe.neostyle;
 
 import java.awt.Color;
+import java.io.IOException;
 
 import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 import net.refractions.udig.style.IStyleConfigurator;
 
+import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.catalog.neo.NeoGeoResource;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -45,6 +49,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private static final String COLOR_FILL_SITE = "Site fill";
     private static final String MAX_SYMB_SIZE = "Maximum size";
 
+    private static final String DRIVE_FILL = "Fill";
+
     public NeoStyleConfigurator() {
         super();
     }
@@ -77,6 +83,12 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private ColorEditor cEdFillSite;
     private Label lMaxSymSize;
     private Spinner sMaxSymSize;
+
+    private Group grSiteSymb;
+
+    private Group grScale;
+
+    private boolean isNetwork;
 
     public void createControl(Composite parent) {
         FormLayout layout = new FormLayout();
@@ -142,17 +154,17 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(labelLine, 10);
         cEdLabel.getButton().setLayoutData(formData);
 
-        Group cGroup = new Group(parent, SWT.NONE);
-        cGroup.setText(GROUP_SITE);
+        grSiteSymb = new Group(parent, SWT.NONE);
+        grSiteSymb.setText(GROUP_SITE);
         formData = new FormData();
         formData.top = new FormAttachment(xGroup, 15);
         formData.left = new FormAttachment(0, 5);
         formData.right = new FormAttachment(70, -10);
-        cGroup.setLayout(new FormLayout());
-        cGroup.setLayoutData(formData);
+        grSiteSymb.setLayout(new FormLayout());
+        grSiteSymb.setLayoutData(formData);
 
-        lSmallestSymb = new Label(cGroup, SWT.NONE);
-        tSmallestSymb = new Spinner(cGroup, SWT.BORDER);
+        lSmallestSymb = new Label(grSiteSymb, SWT.NONE);
+        tSmallestSymb = new Spinner(grSiteSymb, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSmallestSymb, 5, SWT.CENTER);
         formData.left = new FormAttachment(2);
@@ -164,8 +176,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(0, 5);
         tSmallestSymb.setLayoutData(formData);
 
-        lSmallSymb = new Label(cGroup, SWT.NONE);
-        tSmallSymb = new Spinner(cGroup, SWT.BORDER);
+        lSmallSymb = new Label(grSiteSymb, SWT.NONE);
+        tSmallSymb = new Spinner(grSiteSymb, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSmallSymb, 5, SWT.CENTER);
         formData.left = new FormAttachment(2);
@@ -177,8 +189,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(tSmallestSymb, 5);
         tSmallSymb.setLayoutData(formData);
 
-        lLabeling = new Label(cGroup, SWT.NONE);
-        tLabeling = new Spinner(cGroup, SWT.BORDER);
+        lLabeling = new Label(grSiteSymb, SWT.NONE);
+        tLabeling = new Spinner(grSiteSymb, SWT.BORDER);
 
         formData = new FormData();
         formData.top = new FormAttachment(tLabeling, 5, SWT.CENTER);
@@ -195,20 +207,20 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         lSmallSymb.setText(SMALL_SYMBOLS);
         lLabeling.setText(LABELING);
 
-        Group rGroup = new Group(parent, SWT.NONE);
-        rGroup.setText(GROUP_SCALE_SYMB);
+        grScale = new Group(parent, SWT.NONE);
+        grScale.setText(GROUP_SCALE_SYMB);
         formData = new FormData();
-        formData.top = new FormAttachment(cGroup, 15);
+        formData.top = new FormAttachment(grSiteSymb, 15);
         formData.left = new FormAttachment(0, 5);
         formData.right = new FormAttachment(70, -10);
-        rGroup.setLayout(new FormLayout());
-        rGroup.setLayoutData(formData);
-        rButton1 = new Button(rGroup, SWT.RADIO);
+        grScale.setLayout(new FormLayout());
+        grScale.setLayoutData(formData);
+        rButton1 = new Button(grScale, SWT.RADIO);
         formData = new FormData();
         formData.left = new FormAttachment(2);
         formData.top = new FormAttachment(0, 5);
         rButton1.setLayoutData(formData);
-        rButton2 = new Button(rGroup, SWT.RADIO);
+        rButton2 = new Button(grScale, SWT.RADIO);
         formData = new FormData();
         formData.top = new FormAttachment(0, 5);
         formData.left = new FormAttachment(rButton1, 10);
@@ -217,9 +229,9 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         rButton1.setText(RADIO_SCALE_WITH_ZOOM);
         rButton2.setText(RADIO_FIXED_SYMB);
 
-        lSymbolSize = new Label(rGroup, SWT.NONE);
+        lSymbolSize = new Label(grScale, SWT.NONE);
         lSymbolSize.setText(SYMBOL_SIZE);
-        tSymbolSize = new Spinner(rGroup, SWT.BORDER);
+        tSymbolSize = new Spinner(grScale, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSymbolSize, 5, SWT.CENTER);
         formData.left = new FormAttachment(2);
@@ -231,9 +243,9 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.right = new FormAttachment(100, -5);
         tSymbolSize.setLayoutData(formData);
 
-        lSectorTr = new Label(rGroup, SWT.NONE);
+        lSectorTr = new Label(grScale, SWT.NONE);
         lSectorTr.setText(SECTOR_TRANSPARENCY);
-        tSectorTr = new Spinner(rGroup, SWT.BORDER);
+        tSectorTr = new Spinner(grScale, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSectorTr, 5, SWT.CENTER);
         formData.left = new FormAttachment(2);
@@ -245,8 +257,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.right = new FormAttachment(100, -5);
         tSectorTr.setLayoutData(formData);
 
-        lMaxSymSize = new Label(rGroup, SWT.NONE);
-        sMaxSymSize = new Spinner(rGroup, SWT.BORDER);
+        lMaxSymSize = new Label(grScale, SWT.NONE);
+        sMaxSymSize = new Spinner(grScale, SWT.BORDER);
         lMaxSymSize.setText(MAX_SYMB_SIZE);
 
         formData = new FormData();
@@ -304,8 +316,42 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             tSymbolSize.setSelection(curStyle.getSymbolSize());
             tSectorTr.setSelection(curStyle.getSectorTransparency());
             sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
+
+            if (!isNetwork) {
+                changeToDriveStyle();
+            }
         } finally {
         }
+    }
+
+    @Override
+    public void focus(Layer layer1) {
+        try {
+            isNetwork = layer1.findGeoResource(NeoGeoResource.class).resolve(GeoNeo.class, null).getGisType() == GisTypes.Network;
+        } catch (IOException e) {
+            // TODO Handle IOException
+            e.printStackTrace();
+            isNetwork = true;
+        }
+        super.focus(layer1);
+    }
+    /**
+     *
+     */
+    private void changeToDriveStyle() {
+        labelFill.setText(DRIVE_FILL);
+        cEdFillSite.getButton().setVisible(false);
+        FormData formData = new FormData();
+        formData.left = new FormAttachment(labelFill, 130);
+        formData.top = new FormAttachment(labelFill, 10);
+        cEdLine.getButton().setLayoutData(formData);
+        formData = new FormData();
+        formData.top = new FormAttachment(labelFill, 15);
+        formData.left = new FormAttachment(2);
+        labelLine.setLayoutData(formData);
+        lSite.setVisible(false);
+        grSiteSymb.setVisible(false);
+        grScale.setVisible(false);
     }
 
     @Override
