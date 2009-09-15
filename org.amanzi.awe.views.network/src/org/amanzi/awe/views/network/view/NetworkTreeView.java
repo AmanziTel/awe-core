@@ -28,6 +28,10 @@ import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -691,6 +695,7 @@ public class NetworkTreeView extends ViewPart {
 
     }
 
+    // TODO move to utility class
     /**
      * Gets node type
      * 
@@ -722,7 +727,18 @@ public class NetworkTreeView extends ViewPart {
         return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, def);
     }
 
+    /**
+     * delete all incoming reference
+     * 
+     * @param node
+     */
+    public static void deleteIncomingRelations(Node node) {
+        for (Relationship relation : node.getRelationships(Direction.INCOMING)) {
+            relation.delete();
+        }
+    }
 
+    
     /**
      * <p>
      * Delete node action
@@ -739,24 +755,25 @@ public class NetworkTreeView extends ViewPart {
         public void run() {
             MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
             msg.setText("Delete node");
-            msg.setMessage(getText() + "?");
+            final String deleteText = getText();
+            msg.setMessage(deleteText + "?");
             int result = msg.open();
             if (result != SWT.YES) {
                 return;
             }
-
             IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
 
             Object element = selection.getFirstElement();
             NeoNode neoNode = (NeoNode)element;
-            String type = getNodeType(neoNode.getNode(), "");
+            final Node node = neoNode.getNode();
+            String type = getNodeType(node, "");
             if (INeoConstants.MP_TYPE_NAME.equals(type) || (NetworkElementTypes.SITE.toString().equals(type))
                     || (INeoConstants.HEADER_MS.equals(type))) {
                 // relink node
-                Relationship relation = neoNode.getNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
                 if (relation != null) {
                     Node nodeNext = relation.getEndNode();
-                    Relationship singleRelationship = neoNode.getNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
+                    Relationship singleRelationship = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
                             Direction.INCOMING);
                     if (singleRelationship != null) {
                         singleRelationship.getStartNode().createRelationshipTo(nodeNext, GeoNeoRelationshipTypes.NEXT);
@@ -764,10 +781,29 @@ public class NetworkTreeView extends ViewPart {
                     relation.delete();
                 }
             }
-
-            NeoCorePlugin.getDefault().getProjectService().deleteNode(neoNode.getNode());
-            NeoServiceProvider.getProvider().commit();
+            // fast delete reference
+            deleteIncomingRelations(node);
             viewer.refresh();
+            NeoServiceProvider.getProvider().commit();
+            Job job = new Job(deleteText) {
+
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                    try {
+                        NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+                        tx.success();
+                        NeoServiceProvider.getProvider().commit();
+                        return Status.OK_STATUS;
+                    } finally {
+                        tx.finish();
+                    }
+                }
+
+            };
+            job.schedule();
+
+
         }
         @Override
         public String getText() {
