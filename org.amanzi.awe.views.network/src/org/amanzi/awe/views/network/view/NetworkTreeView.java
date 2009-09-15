@@ -550,9 +550,14 @@ public class NetworkTreeView extends ViewPart {
                     return;
                 }
                 String nodeType = selectedNode.getType();
-                if (NetworkElementTypes.SITE.toString().equals(nodeType) || NetworkElementTypes.SECTOR.toString().equals(nodeType)
-                        || NetworkElementTypes.CITY.toString().equals(nodeType)
-                        || NetworkElementTypes.BSC.toString().equals(nodeType)) {
+                if (NetworkElementTypes.SITE.toString().equals(nodeType) ||
+                        NetworkElementTypes.SECTOR.toString().equals(nodeType) ||
+                        NetworkElementTypes.CITY.toString().equals(nodeType) ||
+                        NetworkElementTypes.BSC.toString().equals(nodeType) ||
+                        INeoConstants.HEADER_MS.toString().equalsIgnoreCase(nodeType) ||
+                        INeoConstants.MP_TYPE_NAME.toString().equalsIgnoreCase(nodeType) ||
+                        INeoConstants.FILE_TYPE_NAME.toString().equalsIgnoreCase(nodeType) ||
+                        INeoConstants.DATASET_TYPE_NAME.toString().equalsIgnoreCase(nodeType)) {
                     for (ILayer singleLayer : layers) {
                         GeoNeo resource = singleLayer.findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
                         if (containsGisNode(resource, selectedNode)) {
