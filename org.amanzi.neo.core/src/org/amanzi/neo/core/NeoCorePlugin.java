@@ -1,21 +1,12 @@
 package org.amanzi.neo.core;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-
-import net.refractions.udig.catalog.CatalogPlugin;
-import net.refractions.udig.catalog.ICatalog;
-import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.database.services.UpdateDatabaseManager;
 import org.amanzi.neo.core.preferences.NeoPreferencesInitializer;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
@@ -148,33 +139,5 @@ public class NeoCorePlugin extends Plugin {
 	        return null;
 	    }
 	}
-
-    /**
-     * create service on Catalog
-     */
-    public void createService() {
-        try {
-            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
-            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-            List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(
-                    new URL("file://" + databaseLocation));
-            IService curService = null;
-            for (IService service : services) {
-                System.out.println("Found catalog service: " + service);
-                curService = service;
-                if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
-                    catalog.replace(service.getIdentifier(), service);
-                } else {
-                    catalog.add(service);
-                }
-            }
-        } catch (MalformedURLException e) {
-            // TODO Handle MalformedURLException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (UnsupportedOperationException e) {
-            // TODO Handle UnsupportedOperationException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-    }
 
 }

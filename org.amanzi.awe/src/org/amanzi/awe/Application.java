@@ -1,12 +1,19 @@
 package org.amanzi.awe;
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.IService;
 import net.refractions.udig.internal.ui.UDIGApplication;
 import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.ui.SplashPlugin;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -67,7 +74,7 @@ public class Application extends UDIGApplication implements IApplication {
 	    public void initialize( IWorkbenchConfigurer configurer ) {
 			super.initialize(configurer);
 			NeoCorePlugin.getDefault().getInitializer().initializeDefaultPreferences();
-            NeoCorePlugin.getDefault().createService();
+            createService();
 			final String ICONS_PATH = "icons/full/";
 			final String PATH_OBJECT = ICONS_PATH + "obj16/";
 			Bundle ideBundle = Platform.getBundle(IDEWorkbenchPlugin.IDE_WORKBENCH);
@@ -78,7 +85,35 @@ public class Application extends UDIGApplication implements IApplication {
 			    PATH_OBJECT + "cprj_obj.gif", true);
 		}
 		
-		private void declareWorkbenchImage(IWorkbenchConfigurer configurer_p, Bundle ideBundle, String symbolicName,
+        /**
+         * create service on Catalog
+         */
+        public void createService() {
+            try {
+                String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+                ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+                List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(
+                        new URL("file://" + databaseLocation));
+                IService curService = null;
+                for (IService service : services) {
+                    System.out.println("Found catalog service: " + service);
+                    curService = service;
+                    if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
+                        catalog.replace(service.getIdentifier(), service);
+                    } else {
+                        catalog.add(service);
+                    }
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                // TODO Handle MalformedURLException
+            } catch (UnsupportedOperationException e) {
+                e.printStackTrace();
+                // TODO Handle UnsupportedOperationException
+            }
+        }
+
+        private void declareWorkbenchImage(IWorkbenchConfigurer configurer_p, Bundle ideBundle, String symbolicName,
 			String path, boolean shared) {
 			URL url = ideBundle.getEntry(path);
 			ImageDescriptor desc = ImageDescriptor.createFromURL(url);
