@@ -603,23 +603,6 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		return network;
 	}
 
-    /**
-     * Delete node tree in new thread
-     * 
-     * @param node - root of node three
-     */
-    private static void deleteNodeInNewThread(final Node node) {
-        Job job = new Job(DELETE_OLD_NETWORK) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
-                NeoServiceProvider.getProvider().commit();
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
-    }
-
     private static boolean askIfOverwrite() {
         int resultMsg = (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
             int result;
