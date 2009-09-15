@@ -115,6 +115,7 @@ public class NetworkTreeView extends ViewPart {
     private Text tSearch;
     private Iterator<Node> searchIterator = new ArrayList<Node>().iterator();
     private boolean autoZoom = true;
+
     /**
      * The constructor.
      */
@@ -164,7 +165,7 @@ public class NetworkTreeView extends ViewPart {
             @Override
             public void modifyText(ModifyEvent e) {
                 searchIterator = new ArrayList<Node>().iterator();
-                //findAndSelectNode();
+                // findAndSelectNode();
             }
         });
         tSearch.addKeyListener(new KeyListener() {
@@ -176,7 +177,7 @@ public class NetworkTreeView extends ViewPart {
             @Override
             public void keyReleased(KeyEvent e) {
                 if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
-                    findAndSelectNode();                    
+                    findAndSelectNode();
                 }
             }
         });
@@ -375,11 +376,11 @@ public class NetworkTreeView extends ViewPart {
                 return;
             }
             CoordinateReferenceSystem crs = null;
-            if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME,"").toString().equalsIgnoreCase(("projected"))) {
+            if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, "").toString().equalsIgnoreCase(("projected"))) {
                 autoZoom = false;
             }
             if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
-                    crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
+                crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
             } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
                 URL crsURL = new URL(gis.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
                 crs = CRS.decode(crsURL.getContent().toString());
@@ -388,10 +389,10 @@ public class NetworkTreeView extends ViewPart {
             if (c == null) {
                 return;
             }
-            if(autoZoom) {
-                //TODO: Check that this works with all CRS
+            if (autoZoom) {
+                // TODO: Check that this works with all CRS
                 map.sendCommandASync(new net.refractions.udig.project.internal.command.navigation.SetViewportWidth(30000));
-                autoZoom = false;   // only zoom first time, then rely on user to control zoom level
+                autoZoom = false; // only zoom first time, then rely on user to control zoom level
             }
             map.sendCommandASync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
         } catch (NoSuchAuthorityCodeException e) {
@@ -424,6 +425,7 @@ public class NetworkTreeView extends ViewPart {
 
     /**
      * shows database graph with selected node
+     * 
      * @param nodeToSelect - selected node
      */
     protected void showSelection(NeoNode nodeToSelect) {
@@ -548,18 +550,17 @@ public class NetworkTreeView extends ViewPart {
                     return;
                 }
                 String nodeType = selectedNode.getType();
-                if (NetworkElementTypes.SITE.toString().equals(nodeType) ||
-                        NetworkElementTypes.SECTOR.toString().equals(nodeType) ||
-                        NetworkElementTypes.CITY.toString().equals(nodeType) ||
-                        NetworkElementTypes.BSC.toString().equals(nodeType)) {
+                if (NetworkElementTypes.SITE.toString().equals(nodeType) || NetworkElementTypes.SECTOR.toString().equals(nodeType)
+                        || NetworkElementTypes.CITY.toString().equals(nodeType)
+                        || NetworkElementTypes.BSC.toString().equals(nodeType)) {
                     for (ILayer singleLayer : layers) {
                         GeoNeo resource = singleLayer.findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
                         if (containsGisNode(resource, selectedNode)) {
                             resource.addNodeToSelect(selectedNode.getNode());
-                            if(nodeType.equals("city")){
-                                System.out.println("Adding city node "+selectedNode.toString());
-                                for(Node node:resource.getSelectedNodes()){
-                                    System.out.println("Have selected nodes: "+node);
+                            if (nodeType.equals("city")) {
+                                System.out.println("Adding city node " + selectedNode.toString());
+                                for (Node node : resource.getSelectedNodes()) {
+                                    System.out.println("Have selected nodes: " + node);
                                 }
                             }
                         }
@@ -684,7 +685,8 @@ public class NetworkTreeView extends ViewPart {
                 }
             }
             // try to up by 1 lvl
-            Traverser traverse = node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH);
+            Traverser traverse = node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+                    ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH);
             if (traverse.iterator().hasNext()) {
                 node = traverse.iterator().next();
             } else {
@@ -738,7 +740,6 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
-    
     /**
      * <p>
      * Delete node action
@@ -748,8 +749,6 @@ public class NetworkTreeView extends ViewPart {
      * @since 1.1.0
      */
     private class DeleteAction extends Action {
-
-
 
         @Override
         public void run() {
@@ -761,37 +760,54 @@ public class NetworkTreeView extends ViewPart {
             if (result != SWT.YES) {
                 return;
             }
-            IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+            final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
 
-            Object element = selection.getFirstElement();
-            NeoNode neoNode = (NeoNode)element;
-            final Node node = neoNode.getNode();
-            String type = getNodeType(node, "");
-            if (INeoConstants.MP_TYPE_NAME.equals(type) || (NetworkElementTypes.SITE.toString().equals(type))
-                    || (INeoConstants.HEADER_MS.equals(type))) {
-                // relink node
-                Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-                if (relation != null) {
-                    Node nodeNext = relation.getEndNode();
-                    Relationship singleRelationship = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
-                            Direction.INCOMING);
-                    if (singleRelationship != null) {
-                        singleRelationship.getStartNode().createRelationshipTo(nodeNext, GeoNeoRelationshipTypes.NEXT);
-                    }
-                    relation.delete();
+            final Iterator iterator = selection.iterator();
+            while (iterator.hasNext()) {
+                Object element = iterator.next();
+                if (!(element instanceof NeoNode)) {
+                    continue;
                 }
+                NeoNode neoNode = (NeoNode)element;
+                Node node = neoNode.getNode();
+                String type = getNodeType(node, "");
+
+                if (INeoConstants.MP_TYPE_NAME.equals(type) || (NetworkElementTypes.SITE.toString().equals(type))
+                        || (INeoConstants.HEADER_MS.equals(type))) {
+                    // relink node
+                    Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                    if (relation != null) {
+                        Node nodeNext = relation.getEndNode();
+                        Relationship singleRelationship = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
+                                Direction.INCOMING);
+                        if (singleRelationship != null) {
+                            singleRelationship.getStartNode().createRelationshipTo(nodeNext, GeoNeoRelationshipTypes.NEXT);
+                        }
+                        relation.delete();
+                    }
+                }
+                // fast delete reference
+                deleteIncomingRelations(node);
             }
-            // fast delete reference
-            deleteIncomingRelations(node);
             viewer.refresh();
+
             NeoServiceProvider.getProvider().commit();
             Job job = new Job(deleteText) {
 
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
+                    final Iterator iterator = selection.iterator();
                     Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
                     try {
-                        NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+                        while (iterator.hasNext()) {
+                            Object element = iterator.next();
+                            if (!(element instanceof NeoNode)) {
+                                continue;
+                            }
+                            NeoNode neoNode = (NeoNode)element;
+                            Node node = neoNode.getNode();
+                            NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+                        }
                         tx.success();
                         NeoServiceProvider.getProvider().commit();
                         return Status.OK_STATUS;
@@ -803,11 +819,15 @@ public class NetworkTreeView extends ViewPart {
             };
             job.schedule();
 
-
         }
+
         @Override
         public String getText() {
             IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+            if (selection.size() != 1) {
+                // type may be different
+                return "Delete " + selection.size() + " nodes";
+            }
             Object element = selection.getFirstElement();
             if (element == null || !(element instanceof NeoNode) || (element instanceof Root)) {
                 return "Delete node";
@@ -819,10 +839,13 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public boolean isEnabled() {
             IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-            if (selection.size() != 1) {
-                return false;
+            final Iterator iterator = selection.iterator();
+            while (iterator.hasNext()) {
+                if (iterator.next() instanceof Root) {
+                    return false;
+                }
             }
-            return super.isEnabled() && !(selection.getFirstElement() instanceof Root);
+            return true;
         }
 
     }
