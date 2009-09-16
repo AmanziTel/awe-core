@@ -419,6 +419,18 @@ public class TEMSLoader {
                 mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
                 double lon = Double.parseDouble(ll[1]);
                 mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+				if (file == null) {
+					Node reference = neo.getReferenceNode();
+					datasetNode=findOrCreateDatasetNode(neo.getReferenceNode(),dataset);
+					file = findOrCreateFileNode(reference,datasetNode);
+					
+					Node mainFileNode=datasetNode==null?file:datasetNode;
+                    file.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
+                    gis = getGISNode(neo, mainFileNode);
+                    bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
+
+					debug("Added '" + mp.getProperty(INeoConstants.PROPERTY_TIME_NAME) + "' as first measurement of '" + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
+				}
                 if (bbox == null) {
                     bbox = new double[] {lon, lon, lat, lat};
                 } else {
@@ -431,17 +443,6 @@ public class TEMSLoader {
                     if (bbox[3] < lat)
                         bbox[3] = lat;
                 }
-				if (file == null) {
-					Node reference = neo.getReferenceNode();
-					datasetNode=findOrCreateDatasetNode(neo.getReferenceNode(),dataset);
-					file = findOrCreateFileNode(reference,datasetNode);
-					
-					Node mainFileNode=datasetNode==null?file:datasetNode;
-                    file.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
-                    gis = getGISNode(neo, mainFileNode);
-
-					debug("Added '" + mp.getProperty(INeoConstants.PROPERTY_TIME_NAME) + "' as first measurement of '" + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
-				}
                 if (crs == null) {
                     crs = CRS.fromLocation(Float.parseFloat(ll[0]), Float.parseFloat(ll[1]), null);
                     file.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
