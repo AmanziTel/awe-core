@@ -218,6 +218,8 @@ public class NetworkRenderer extends RendererImpl {
                                     }
                                     if (key.toLowerCase().contains("beamwidth")) {
                                         beamwidth = (Integer)child.getProperty(key);
+                                    } else if (key.toLowerCase().equals("hbw")) {
+                                        beamwidth = (Integer)child.getProperty(key);
                                     } else if (key.toLowerCase().startsWith("beam")) {
                                         Object value = child.getProperty(key);
                                         if (value instanceof Integer) {
