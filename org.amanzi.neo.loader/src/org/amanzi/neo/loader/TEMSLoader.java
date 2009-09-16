@@ -184,7 +184,7 @@ public class TEMSLoader {
             URL url = new URL("file://" + databaseLocation);
             List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
             for (IService service : services) {
-                System.out.println("TEMS Found catalog service: " + service);
+                //System.out.println("TEMS Found catalog service: " + service);
                 if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
                     catalog.replace(service.getIdentifier(), service);
                 } else {
