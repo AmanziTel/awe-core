@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: AWEScript Interactive Console
 Bundle-SymbolicName: org.amanzi.awe.script.jirb; singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: org.amanzi
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

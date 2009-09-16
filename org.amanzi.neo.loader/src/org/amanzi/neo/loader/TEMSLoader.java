@@ -202,7 +202,7 @@ public class TEMSLoader {
      */
     public static String getAweProjectName() {
         IMap map = ApplicationGIS.getActiveMap();
-        return map == ApplicationGIS.NO_MAP ? null : map.getProject().getName();
+        return map == ApplicationGIS.NO_MAP ? ApplicationGIS.getActiveProject().getName() : map.getProject().getName();
     }
     private String status(){
     	if(started<=0) started = System.currentTimeMillis();

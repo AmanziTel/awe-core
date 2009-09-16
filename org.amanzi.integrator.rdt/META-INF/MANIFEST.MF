@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: RDT/AWE Integrator Plug-in
 Bundle-SymbolicName: org.amanzi.integrator.rdt
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Gersis Software
 Require-Bundle: org.rubypeople.rdt.core,
  org.eclipse.core.runtime,

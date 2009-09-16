@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Testing Plug-in
 Bundle-SymbolicName: org.amanzi.splash.testing
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.splash.testing.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.junit,
