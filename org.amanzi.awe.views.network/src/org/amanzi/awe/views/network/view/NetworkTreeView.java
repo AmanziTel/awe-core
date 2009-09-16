@@ -209,19 +209,20 @@ public class NetworkTreeView extends ViewPart {
             Node lastNode = searchIterator.next();
             viewer.reveal(new NeoNode(lastNode));
             viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(lastNode)}));
-        } catch (Exception e) {
-            e.printStackTrace();
-            // TODO Handle Exception
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            // } catch (Exception e) {
+            // e.printStackTrace();
+            // throw (RuntimeException)new RuntimeException().initCause(e);
         } finally {
             tSearch.setEditable(true);
         }
     }
 
     /**
-     * @param node
-     * @param text
-     * @return
+     * Create iterator of nodes with name, that contains necessary text
+     * 
+     * @param node - start node
+     * @param text text to find
+     * @return search iterator
      */
     private Iterator<Node> createSearchTraverser(Node node, final String text) {
         Traverser traverse = node.traverse(Order.DEPTH_FIRST, getSearchStopEvaluator(), new ReturnableEvaluator() {
