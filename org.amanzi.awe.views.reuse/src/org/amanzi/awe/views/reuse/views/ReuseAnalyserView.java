@@ -28,6 +28,11 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
@@ -119,6 +124,7 @@ public class ReuseAnalyserView extends ViewPart {
     private Button bLogarithmic;
     private ValueAxis axisNumeric;
     private LogarithmicAxis axisLog;
+    private Composite mainView;
     private static final Paint DEFAULT_COLOR = new Color(0.75f,0.7f,0.4f);
     private static final Paint COLOR_SELECTED = Color.RED;
     private static final Paint COLOR_LESS = Color.BLUE;
@@ -132,6 +138,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String ERROR_MSG = "There are too many categories for this selection";
 
     public void createPartControl(Composite parent) {
+        mainView = parent;
         gisSelected = new Label(parent, SWT.NONE);
         gisSelected.setText(GIS_LABEL);
         gisCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -256,8 +263,8 @@ public class ReuseAnalyserView extends ViewPart {
                 if (propertyCombo.getSelectionIndex() < 0) {
                     setVisibleForChart(false);
                 } else {
-                    Node aggrNode = findOrCreateAggregateNode(members.get(gisCombo.getText()), propertyCombo.getText());
-                    chartUpdate(aggrNode);
+                    findOrCreateAggregateNodeInNewThread(members.get(gisCombo.getText()), propertyCombo.getText());
+                    // chartUpdate(aggrNode);
                 }
             }
 
@@ -273,8 +280,8 @@ public class ReuseAnalyserView extends ViewPart {
                 if (!chartFrame.isVisible()) {
                     return;
                 }
-                Node aggrNode = findOrCreateAggregateNode(members.get(gisCombo.getText()), propertyCombo.getText());
-                chartUpdate(aggrNode);
+                findOrCreateAggregateNodeInNewThread(members.get(gisCombo.getText()), propertyCombo.getText());
+                // chartUpdate(aggrNode);
             }
 
             @Override
@@ -471,11 +478,67 @@ public class ReuseAnalyserView extends ViewPart {
      * @param propertyName name of property
      * @return necessary aggregates node
      */
-    protected Node findOrCreateAggregateNode(Node gisNode, final String propertyName) {
+    protected void findOrCreateAggregateNodeInNewThread(final Node gisNode, final String propertyName) {
+        // TODO restore focus after job execute or not necessary?
+        mainView.setEnabled(false);
+        ComputeStatisticsJob job = new ComputeStatisticsJob(gisNode, propertyName, cDistribute.getText(), cSelect.getText());
+        job.schedule();
+    }
+
+    private class ComputeStatisticsJob extends Job {
+
+        private Node gisNode;
+        private String propertyName;
+        private Node node;
+        private final String distribute;
+        private final String select;
+
+        public ComputeStatisticsJob(Node gisNode, String propertyName, String distribute, String select) {
+            super("calculating statistics");
+            this.gisNode = gisNode;
+            this.propertyName = propertyName;
+            this.distribute = distribute;
+            this.select = select;
+        }
+
+        @Override
+        public IStatus run(IProgressMonitor monitor) {
+                node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select);
+                ActionUtil.getInstance().runTask(new Runnable() {
+                    @Override
+                    public void run() {
+                            mainView.setEnabled(true);
+                            chartUpdate(node);
+                    }
+                }, true);
+            return Status.OK_STATUS;
+        }
+
+        /**
+         * @return Returns the node.
+         */
+        public Node getNode() {
+            return node;
+        }
+
+        
+    }
+    /**
+     * Finds aggregate node or creates if nod does not exist
+     * 
+     * @param gisNode GIS node
+     * @param propertyName name of property
+     * @return necessary aggregates node
+     */
+    protected Node findOrCreateAggregateNode(Node gisNode, final String propertyName, final String distribute, final String select) {
         NeoService service = NeoServiceProvider.getProvider().getService();
         final GisTypes typeOfGis = new GeoNeo(service, gisNode).getGisType();
-        final String distribute = cDistribute.getText();
-        final String select = cSelect.getText();
+        final Runnable setAutoDistribute = new Runnable() {
+            @Override
+            public void run() {
+                cDistribute.select(0);
+            }
+        };
         Transaction tx = service.beginTx();
         try {
             Iterator<Node> iterator = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -492,15 +555,16 @@ public class ReuseAnalyserView extends ViewPart {
                                     INeoConstants.PROPERTY_SELECT_NAME, null)));
                 }
             }, NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING).iterator();
-            Distribute distributeColumn = Distribute.findEnumByValue(cDistribute.getText());
+            Distribute distributeColumn = Distribute.findEnumByValue(distribute);
             if (iterator.hasNext()) {
                 Node result = iterator.next();
                 if (distributeColumn != Distribute.AUTO && result.hasProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME)
                         && (Boolean)result.getProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME)) {
                     MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, ERROR_MSG);
                     result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
-                    cDistribute.select(0);
-                    return findOrCreateAggregateNode(gisNode, propertyName);
+                    ActionUtil.getInstance().runTask(setAutoDistribute, true);
+
+                    return findOrCreateAggregateNode(gisNode, propertyName, Distribute.AUTO.toString(), select);
                 }
                 tx.success();
                 return result;
@@ -517,13 +581,13 @@ public class ReuseAnalyserView extends ViewPart {
 
 
             TreeMap<Column, Integer> statistics = computeStatistics(gisNode, propertyName, distributeColumn, Select
-                    .findSelectByValue(cSelect.getText()));
+                    .findSelectByValue(select));
             if (statistics == null && distributeColumn != Distribute.AUTO) {
                 MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, ERROR_MSG);
 
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
-                cDistribute.select(0);
-                return findOrCreateAggregateNode(gisNode, propertyName);
+                ActionUtil.getInstance().runTask(setAutoDistribute, true);
+                return findOrCreateAggregateNode(gisNode, propertyName, Distribute.AUTO.toString(), select);
             }
             Node parentNode = result;
             for (Column key : statistics.keySet()) {
