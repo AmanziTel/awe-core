@@ -125,6 +125,7 @@ public class ReuseAnalyserView extends ViewPart {
     private ValueAxis axisNumeric;
     private LogarithmicAxis axisLog;
     private Composite mainView;
+    private Label lLogarithmic;
     private static final Paint DEFAULT_COLOR = new Color(0.75f,0.7f,0.4f);
     private static final Paint COLOR_SELECTED = Color.RED;
     private static final Paint COLOR_LESS = Color.BLUE;
@@ -169,6 +170,8 @@ public class ReuseAnalyserView extends ViewPart {
         cSelect.setEnabled(false);
         lSelectedInformation = new Label(parent, SWT.NONE);
         lSelectedInformation.setText(LABEL_INFO);
+        lLogarithmic = new Label(parent, SWT.NONE);
+        lLogarithmic.setText("Logarithmic counts");
         bLogarithmic = new Button(parent, SWT.CHECK);
         bLogarithmic.setToolTipText("logarithmic counts");
         bLogarithmic.setSelection(false);
@@ -382,6 +385,8 @@ public class ReuseAnalyserView extends ViewPart {
         chartFrame.setVisible(isVisible);
         lSelectedInformation.setVisible(isVisible);
         tSelectedInformation.setVisible(isVisible);
+        lLogarithmic.setVisible(isVisible);
+        bLogarithmic.setVisible(isVisible);
     }
 
     /**
@@ -1037,14 +1042,9 @@ public class ReuseAnalyserView extends ViewPart {
         dCombo.top = new FormAttachment(0, 2);
         dCombo.right = new FormAttachment(82, -5);
         cSelect.setLayoutData(dCombo);
-        
-        dLabel = new FormData();
-        dLabel.left = new FormAttachment(cSelect, 5);
-        dLabel.top = new FormAttachment(spinAdj, 5, SWT.CENTER);
-        bLogarithmic.setLayoutData(dLabel);
 
         dLabel = new FormData();
-        dLabel.left = new FormAttachment(bLogarithmic, 5);
+        dLabel.left = new FormAttachment(cSelect, 5);
         dLabel.top = new FormAttachment(spinAdj, 5, SWT.CENTER);
         spinLabel.setLayoutData(dLabel);
 
@@ -1055,12 +1055,22 @@ public class ReuseAnalyserView extends ViewPart {
 
         dLabel = new FormData();
         dLabel.left = new FormAttachment(0, 5);
+        dLabel.top = new FormAttachment(bLogarithmic, 5, SWT.CENTER);
+        lLogarithmic.setLayoutData(dLabel);
+
+        dCombo = new FormData(); // bind to label and text
+        dCombo.left = new FormAttachment(lLogarithmic, 2);
+        dCombo.bottom = new FormAttachment(100, -2);
+        bLogarithmic.setLayoutData(dCombo);
+
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(bLogarithmic, 15);
         dLabel.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
         lSelectedInformation.setLayoutData(dLabel);
 
         FormData dText = new FormData();
         dText.left = new FormAttachment(lSelectedInformation, 5);
-        dText.right = new FormAttachment(30, 5);
+        dText.right = new FormAttachment(lSelectedInformation, 200);
         dText.bottom = new FormAttachment(100, -2);
         tSelectedInformation.setLayoutData(dText);
 
