@@ -35,11 +35,7 @@ import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PartInitException;
@@ -62,8 +58,6 @@ import org.neo4j.api.core.Transaction;
  * @author craig
  */
 public class NetworkLoader extends NeoServiceProviderEventAdapter {
-    /** String DELETE_OLD_NETWORK field */
-    private static final String DELETE_OLD_NETWORK = "Delete old network";
     /** String LOAD_NETWORK_TITLE field */
     private static final String LOAD_NETWORK_TITLE = "Load Network";
     private static final String LOAD_NETWORK_MSG = "This network is already loaded into the database.\nDo you wish to overwrite the data?";
@@ -370,6 +364,8 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     else if(header.toLowerCase().startsWith("long")) mainIndexes[5]=index;
                     else if(header.toLowerCase().startsWith("y_wert")) {mainIndexes[4]=index; crsHint="germany";}
                     else if(header.toLowerCase().startsWith("x_wert")) {mainIndexes[5]=index; crsHint="germany";}
+                    else if(header.toLowerCase().startsWith("easting")) mainIndexes[4]=index;
+                    else if(header.toLowerCase().startsWith("northing")) mainIndexes[5]=index;
                     else if(header.toLowerCase().startsWith("trx")) intIndexes.add(index);
                     else stringIndexes.add(index);
 					headerIndex.put(header,index++);
