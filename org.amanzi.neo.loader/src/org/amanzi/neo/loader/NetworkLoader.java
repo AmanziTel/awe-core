@@ -364,8 +364,8 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     else if(header.toLowerCase().startsWith("long")) mainIndexes[5]=index;
                     else if(header.toLowerCase().startsWith("y_wert")) {mainIndexes[4]=index; crsHint="germany";}
                     else if(header.toLowerCase().startsWith("x_wert")) {mainIndexes[5]=index; crsHint="germany";}
-                    else if(header.toLowerCase().startsWith("easting")) mainIndexes[4]=index;
-                    else if(header.toLowerCase().startsWith("northing")) mainIndexes[5]=index;
+                    else if(header.toLowerCase().startsWith("northing")) mainIndexes[4]=index;
+                    else if(header.toLowerCase().startsWith("easting")) mainIndexes[5]=index;
                     else if(header.toLowerCase().startsWith("trx")) intIndexes.add(index);
                     else stringIndexes.add(index);
 					headerIndex.put(header,index++);
