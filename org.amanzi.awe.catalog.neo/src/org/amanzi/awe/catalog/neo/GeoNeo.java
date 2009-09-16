@@ -88,7 +88,11 @@ public class GeoNeo {
             return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString();
         }
         public String getName(){
-            return node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            for(String key:new String[]{"name", "value", "time", "code"}) {
+                Object nameObj = node.getProperty(key, null);
+                if(nameObj!=null) return nameObj.toString();
+            }
+            return node.toString();
         }
         public String toString(){
             return getName();
@@ -181,10 +185,10 @@ public class GeoNeo {
 
     public Traverser makeGeoNeoTraverser(final Envelope searchBounds){
         if(searchBounds==null) {
-            return gisNode.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
+            return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
                     GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         } else {
-            return gisNode.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+            return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     double[] c = GeoNode.getCoords(currentPos.currentNode());
@@ -207,30 +211,44 @@ public class GeoNeo {
             // Create Null envelope
             this.bounds = new ReferencedEnvelope(getCRS());
             // First try to find the BBOX definition in the gisNode directly
-            try{
-                if(gisNode.hasProperty(INeoConstants.PROPERTY_BBOX_NAME)){
+            //Transaction tx = this.neo.beginTx();
+            try {
+                if (gisNode.hasProperty(INeoConstants.PROPERTY_BBOX_NAME)) {
                     double[] bbox = (double[])gisNode.getProperty(INeoConstants.PROPERTY_BBOX_NAME);
-                    this.bounds = new ReferencedEnvelope(bbox[0],bbox[1],bbox[2],bbox[3],crs);
-                }else{
-                    System.err.println("No BBox defined in the GeoNeo object");
+                    this.bounds = new ReferencedEnvelope(bbox[0], bbox[1], bbox[2], bbox[3], crs);
+                } else {
+                    System.err.println("No BBox defined in the GeoNeo object: " + this.name);
                 }
-            }catch(Exception bbox_e){
-                System.err.println("Failed to interpret BBOX: "+bbox_e.getMessage());
+                //tx.success();
+            } catch (Exception bbox_e) {
+                System.err.println("Failed to interpret BBOX: " + bbox_e.getMessage());
                 bbox_e.printStackTrace(System.err);
+            } finally {
+                //tx.finish();
             }
             // Secondly, if bounds is still empty, try find all feature geometries and calculate bounds
-            try{
-                if(this.bounds.isNull()){
+            if (this.bounds.isNull()) {
+                Transaction tx = this.neo.beginTx();
+                try {
+                    System.out.println("Re-determining bounding box for gis data: " + this.name);
                     // Try to create envelope from any data referenced by the gisNode
-                    for(GeoNode node:getGeoNodes(null)){
-                        //TODO: support high dimensions
+                    for (GeoNode node : getGeoNodes(null)) {
+                        // TODO: support high dimensions
                         this.bounds.expandToInclude(node.getCoords()[0], node.getCoords()[1]);
                     }
+                    double bbox[] = new double[] {this.bounds.getMinX(), this.bounds.getMaxX(), this.bounds.getMinY(),
+                            this.bounds.getMaxY()};
+                    gisNode.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
+                    tx.success();
+                } catch (Exception bbox_e) {
+                    System.err.println("Failed to interpret BBOX: " + bbox_e.getMessage());
+                    bbox_e.printStackTrace(System.err);
+                } finally {
+                    tx.finish();
                 }
-            }catch(Exception bbox_e){
-                System.err.println("Failed to interpret BBOX: "+bbox_e.getMessage());
-                bbox_e.printStackTrace(System.err);
             }
+            // System.out.println("Determined bounding box for " + this.name + ": " + this.bounds);
+            // throw new RuntimeException("Escape a deadlock");
         }
         return bounds;
     }
@@ -258,8 +276,8 @@ public class GeoNeo {
         private GeoNode next;
         private Transaction transaction;
         private GeoIterator(Node gisNode, Envelope bounds){
-            this.iterator = makeGeoNeoTraverser(bounds).iterator();
             this.transaction = neo.beginTx();
+            this.iterator = makeGeoNeoTraverser(bounds).iterator();
         }
         public boolean hasNext() {
             while(next==null){

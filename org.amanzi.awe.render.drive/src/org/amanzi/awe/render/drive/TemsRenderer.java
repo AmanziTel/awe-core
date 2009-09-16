@@ -16,7 +16,9 @@ package org.amanzi.awe.render.drive;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
@@ -63,12 +65,11 @@ import com.vividsolutions.jts.geom.Envelope;
 public class TemsRenderer extends RendererImpl implements Renderer {
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
-    // private AffineTransform base_transform = null;
+    private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.BLACK;
     private Color fillColor = new Color(200, 128, 255, (int)(0.6*255.0));
+    private Color labelColor = Color.DARK_GRAY;
     private static final Color COLOR_HIGHLIGHTED = Color.CYAN;
-    private int drawSize = 3;
-    private int drawWidth = 1 + 2*drawSize;
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
     private static final Color COLOR_MORE = Color.GREEN;
@@ -122,18 +123,42 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         monitor.beginTask("render drive test data", IProgressMonitor.UNKNOWN);
         GeoNeo geoNeo = null;
 
-        //TODO: Get the symbol size, transparency and color values from a preference dialog or style dialog
+        // Setup default drawing parameters and thresholds (to be modified by style if found)
+        int maxSitesLabel = 30;
+        int maxSitesFull = 100;
+        int maxSitesLite = 1000;
+        int maxSymbolSize = 40;
         int alpha = (int)(0.6*255.0);
-        drawSize = 3;
-        drawWidth = 1 + 2*drawSize;
+        int drawSize = 3;
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);     
         if (neostyle!=null){
         	fillColor=neostyle.getFill();
         	drawColor=neostyle.getLine();
             alpha = 255 - (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
+            try {
+                fillColor = neostyle.getFill();
+                drawColor = neostyle.getLine();
+                labelColor = neostyle.getLabel();
+                alpha = 255 - (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
+                //drawSize = neostyle.getSymbolSize();
+                drawSize = 3;
+                maxSitesLabel = neostyle.getLabeling();
+                maxSitesFull = neostyle.getSmallSymb();
+                maxSitesLite = neostyle.getSmallestSymb();
+                //scaleSectors = !neostyle.isFixSymbolSize();
+                maxSymbolSize = neostyle.getMaximumSymbolSize();
+                //TODO: Remove these when defaults from style work property
+                maxSitesLabel = 50;
+                maxSitesLite = 500;
+                maxSitesFull = 50;
+            } catch (Exception e) {
+                //TODO: we can get here if an old style exists, and we have added new fields
+            }
         }
         fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
+        int drawWidth = 1 + 2*drawSize;
+        
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -146,14 +171,34 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             // Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
+            Envelope data_bounds = geoNeo.getBounds();
+            boolean drawFull = true;
+            boolean drawLite = true;
+            boolean drawLabels = true;
+            if (bounds_transformed == null) {
+                drawFull = false;
+                drawLite = false;
+                drawLabels = false;
+            }else if (data_bounds != null && data_bounds.getHeight()>0 && data_bounds.getWidth()>0) {
+                double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
+                        / (data_bounds.getHeight() * data_bounds.getWidth());
+                double countScaled = dataScaled * geoNeo.getCount();
+                drawLabels = countScaled < maxSitesLabel;
+                drawFull = countScaled < maxSitesFull;
+                drawLite = countScaled < maxSitesLite;
+            }
 
             g.setColor(drawColor);
             int count = 0;
             monitor.subTask("drawing");
             Coordinate world_location = new Coordinate(); // single object for re-use in transform
+            java.awt.Point prev_p = null;
+            java.awt.Point prev_l_p = null;
+            java.awt.Point cached_l_p = null;
+            GeoNode cached_node = null;
             // below (minimize object creation)
             long startTime = System.currentTimeMillis();
-            for (GeoNode node : geoNeo.getGeoNodes(null)) {
+            for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
                 Coordinate location = node.getCoordinate();
 
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
@@ -166,6 +211,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 }
 
                 java.awt.Point p = getContext().worldToPixel(world_location);
+                if(prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
+                    prev_p = p;
+                    continue;
+                } else {
+                    prev_p = p;
+                }
 
                 Color nodeColor = fillColor;
                 if (selectedProp != null) {
@@ -175,18 +226,64 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 }
                 Color borderColor = g.getColor();
                 boolean selected = false;
-                if (geoNeo.getSelectedNodes().contains(node.getNode())) {
-                    borderColor = COLOR_HIGHLIGHTED;
-                    selected = true;
-                } else {
-                    for (Node rnode:node.getNode().traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH)){
-                        if (geoNeo.getSelectedNodes().contains(rnode)) {
-                            selected = true;
-                            break;
+                Set<Node> selectedNodes = geoNeo.getSelectedNodes();
+                if(selectedNodes.size() > 0) {
+                    if (selectedNodes.contains(node.getNode())) {
+                        borderColor = COLOR_HIGHLIGHTED;
+                        selected = true;
+                    } else {
+                        for (Node rnode:node.getNode().traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH)){
+                            if (selectedNodes.contains(rnode)) {
+                                selected = true;
+                                break;
+                            }
                         }
                     }
                 }
-                renderPoint(g, p, nodeColor, borderColor, selected);
+                renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite, selected);
+                if (drawLabels) {
+                    double theta = 0.0;
+                    double dx = 0.0;
+                    double dy = 0.0;
+                    if (prev_l_p == null) {
+                        prev_l_p = p;
+                        cached_l_p = p;   // so we can draw first point using second point settings
+                        cached_node = node;
+                    } else {
+                        try {
+                            dx = p.x - prev_l_p.x;
+                            dy = p.y - prev_l_p.y;
+                            if (Math.abs(dx) < Math.abs(dy) / 2) {
+                                // drive goes north-south
+                                theta = 0;
+                            } else if (Math.abs(dy) < Math.abs(dx) / 2) {
+                                // drive goes east-west
+                                theta = Math.PI / 2;
+                            } else if (dx * dy < 0) {
+                                // drive has negative slope
+                                theta = -Math.PI / 4;
+                            } else {
+                                theta = Math.PI / 4;
+                            }
+                        } catch (Exception e) {
+                        }
+                    }
+                    if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+                        renderLabel(g, count, node, p, theta);
+                        if(cached_node != null) {
+                            renderLabel(g, 0, cached_node, cached_l_p, theta);   
+                            cached_node = null;
+                            cached_l_p = null;
+                        }
+                        prev_l_p = p;
+                    }
+                }
+                if (base_transform != null) {
+                    // recover the normal transform
+                    g.setTransform(base_transform);
+                    g.setColor(drawColor);
+                    //base_transform = null;
+                }
                 monitor.worked(1);
                 count++;
                 if (monitor.isCanceled())
@@ -206,6 +303,17 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             // geoNeo.close();
             monitor.done();
         }
+    }
+
+    private void renderLabel(Graphics2D g, int count, GeoNode node, java.awt.Point p, double theta) {
+        if (base_transform == null)
+            base_transform = g.getTransform();
+        g.setTransform(base_transform);
+        g.translate(p.x, p.y);
+        g.rotate(-theta);
+        g.setColor(labelColor);
+        //g.drawString(""+Integer.toString(count)+": "+node.toString(), 10, 5);
+        g.drawString(node.toString(), 10, 5);
     }
 
     /**
@@ -297,12 +405,24 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      * @param g
      * @param p
      */
-    private void renderPoint(Graphics2D g, java.awt.Point p, Color fillColor, Color borderColor, boolean selected) {
-        if(selected) renderSelectionGlow(g, p, 20);
-        g.setColor(fillColor);
-        g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
-        g.setColor(borderColor);
-        g.drawRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
+    private void renderPoint(Graphics2D g, java.awt.Point p, Color borderColor, Color fillColor, int drawSize, int drawWidth, boolean drawFull, boolean drawLite, boolean selected) {
+        Color oldColor = g.getColor();
+        if(drawFull) {
+            if(selected) renderSelectionGlow(g, p, drawSize * 4);
+            g.setColor(fillColor);
+            g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
+            g.setColor(borderColor);
+            g.drawRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
+        } else if (drawLite) {
+            if(selected) renderSelectionGlow(g, p, drawSize * 2);
+            g.setColor(fillColor);
+            g.fillOval(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
+        } else {
+            if(selected) renderSelectionGlow(g, p, drawSize);
+            g.setColor(fillColor);
+            g.fillOval(p.x - 1, p.y - 1, 3, 3);
+        }
+        g.setColor(oldColor);
     }
 
     /**
