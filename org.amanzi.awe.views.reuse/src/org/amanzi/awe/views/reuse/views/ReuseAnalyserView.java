@@ -226,6 +226,7 @@ public class ReuseAnalyserView extends ViewPart {
             public void chartMouseMoved(ChartMouseEvent chartmouseevent) {
             }
 
+            @SuppressWarnings("unchecked")
             @Override
             public void chartMouseClicked(ChartMouseEvent chartmouseevent) {
                 if (chartmouseevent.getEntity() instanceof CategoryItemEntity) {
@@ -508,7 +509,7 @@ public class ReuseAnalyserView extends ViewPart {
 
         @Override
         public IStatus run(IProgressMonitor monitor) {
-                node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select);
+                node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select, monitor);
                 ActionUtil.getInstance().runTask(new Runnable() {
                     @Override
                     public void run() {
@@ -535,7 +536,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @param propertyName name of property
      * @return necessary aggregates node
      */
-    protected Node findOrCreateAggregateNode(Node gisNode, final String propertyName, final String distribute, final String select) {
+    protected Node findOrCreateAggregateNode(Node gisNode, final String propertyName, final String distribute, final String select, IProgressMonitor monitor) {
         NeoService service = NeoServiceProvider.getProvider().getService();
         final GisTypes typeOfGis = new GeoNeo(service, gisNode).getGisType();
         final Runnable setAutoDistribute = new Runnable() {
@@ -569,7 +570,7 @@ public class ReuseAnalyserView extends ViewPart {
                     result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
                     ActionUtil.getInstance().runTask(setAutoDistribute, true);
 
-                    return findOrCreateAggregateNode(gisNode, propertyName, Distribute.AUTO.toString(), select);
+                    return findOrCreateAggregateNode(gisNode, propertyName, Distribute.AUTO.toString(), select, monitor);
                 }
                 tx.success();
                 return result;
@@ -586,13 +587,13 @@ public class ReuseAnalyserView extends ViewPart {
 
 
             TreeMap<Column, Integer> statistics = computeStatistics(gisNode, propertyName, distributeColumn, Select
-                    .findSelectByValue(select));
+                    .findSelectByValue(select), monitor);
             if (statistics == null && distributeColumn != Distribute.AUTO) {
                 MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, ERROR_MSG);
 
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
                 ActionUtil.getInstance().runTask(setAutoDistribute, true);
-                return findOrCreateAggregateNode(gisNode, propertyName, Distribute.AUTO.toString(), select);
+                return findOrCreateAggregateNode(gisNode, propertyName, Distribute.AUTO.toString(), select, monitor);
             }
             Node parentNode = result;
             for (Column key : statistics.keySet()) {
@@ -644,11 +645,16 @@ public class ReuseAnalyserView extends ViewPart {
      * 
      * @param gisNode GIS node
      * @param propertyName name of property
-     * @return
+     * @param monitor 
+     * @return a tree-map of the results for the chart
      */
-    private TreeMap<Column, Integer> computeStatistics(Node gisNode, String propertyName, Distribute distribute, Select select) {
+    private TreeMap<Column, Integer> computeStatistics(Node gisNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
-        final GisTypes typeOfGis = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode).getGisType();
+        GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
+        final GisTypes typeOfGis = geoNode.getGisType();
+        int totalWork = (int)geoNode.getCount() * 2;
+        System.out.println("Starting to compute statistics for "+propertyName+" with estimated work size of "+totalWork);
+        monitor.beginTask("Calculating statistics for "+propertyName, totalWork);
         TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
         Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
                 NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
@@ -657,6 +663,8 @@ public class ReuseAnalyserView extends ViewPart {
         Double max = null;
         propertyValue = null;
         int colCount = 0;
+        runGcIfBig(totalWork);
+        monitor.subTask("Searching database");
         // Collection<Node> trav = travers.getAllNodes();
         for (Node node : travers) {
             if (node.hasProperty(propertyName)) {
@@ -670,6 +678,7 @@ public class ReuseAnalyserView extends ViewPart {
                             valueNum = calculateAverageValueOfMpNode(mpNode, propertyName);
                         }
                         mpMap.put(mpNode, valueNum);
+                        monitor.worked(1);
                     } else {
                         switch (select) {
                         case MAX:
@@ -696,11 +705,14 @@ public class ReuseAnalyserView extends ViewPart {
                     max = max == null ? ((Number)propertyValue).doubleValue() : Math
                             .max(((Number)propertyValue).doubleValue(), max);
                 }
+                if(monitor.isCanceled()) break;
             } else {
                 System.out.println("No such property '" + propertyName + "' for node "
                         + (node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
             }
         }
+        runGcIfBig(totalWork);
+        monitor.subTask("Determining statistics type");
         if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
             colCount = mpMap.size();
             min = null;
@@ -757,9 +769,11 @@ public class ReuseAnalyserView extends ViewPart {
                 break;
             }
         }
+        runGcIfBig(totalWork);
         if (typeOfGis == GisTypes.Network || select == Select.EXISTS) {
             travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
                     NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            monitor.subTask("Building results from database");
             for (Node node : travers) {
                 if (node.hasProperty(propertyName)) {
                     double value = ((Number)node.getProperty(propertyName)).doubleValue();
@@ -774,8 +788,11 @@ public class ReuseAnalyserView extends ViewPart {
                     System.out.println("No such property '" + propertyName + "' for node "
                             + (node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
                 }
+                monitor.worked(1);
+                if(monitor.isCanceled()) break;
             }
         } else {
+            monitor.subTask("Building results from memory cache of "+mpMap.size()+" data");
             for (Number mpValue : mpMap.values()) {
                 double value = mpValue.doubleValue();
                 for (Column column : keySet) {
@@ -784,10 +801,14 @@ public class ReuseAnalyserView extends ViewPart {
                         result.put(column, 1 + (count == null ? 0 : count));
                         break;
                     }
+                    monitor.worked(1);
+                    if(monitor.isCanceled()) break;
                 }
             }
         }
+        runGcIfBig(totalWork);
         // Now merge any gaps in the distribution into a single category (TODO: Prevent adjacency jumping this gap)
+        monitor.subTask("Resolving distribution gaps");
         Column prev_col = null;
         for (Column column : keySet) {
             if(prev_col!=null && result.get(prev_col)==0 && result.get(column)==0) {
@@ -798,7 +819,18 @@ public class ReuseAnalyserView extends ViewPart {
             }
             prev_col = column;
         }
+        monitor.subTask("Finalizing results");
         return result;
+    }
+
+    private static void runGcIfBig(int totalWork) {
+        if (totalWork > 1000) {
+            System.gc();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
     /**
@@ -915,35 +947,6 @@ public class ReuseAnalyserView extends ViewPart {
         
     }
 
-    /**
-     * <p>
-     * Wrapper of Node which comparable by it value
-     * </p>
-     * 
-     * @author Cinkel_A
-     * @since 1.1.0
-     */
-    private static class ComapableNode implements Comparable<ComapableNode> {
-        private Number value;
-        private Node node;
-
-        /**
-         * Constructor
-         * 
-         * @param node node
-         * @param value - value of property
-         */
-        public ComapableNode(Node node, Number value) {
-            this.node = node;
-            this.value = value;
-        }
-
-        @Override
-        public int compareTo(ComapableNode o) {
-            return Double.compare(value.doubleValue(), o.value.doubleValue());
-        }
-
-    }
     /**
      * Creation list of property by selected node
      * 
@@ -1155,38 +1158,41 @@ public class ReuseAnalyserView extends ViewPart {
             fireDatasetChanged();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public int getColumnIndex(Comparable comparable) {
             return nodeList.indexOf(comparable);
         }
 
         @Override
-        public Comparable getColumnKey(int i) {
+        public Comparable<ChartNode> getColumnKey(int i) {
             return nodeList.get(i);
         }
 
         @Override
-        public List getColumnKeys() {
+        public List<ChartNode> getColumnKeys() {
             return nodeList;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public int getRowIndex(Comparable comparable) {
             return 0;
         }
 
         @Override
-        public Comparable getRowKey(int i) {
+        public Comparable<String> getRowKey(int i) {
             return ROW_KEY;
         }
 
         @Override
-        public List getRowKeys() {
+        public List<String> getRowKeys() {
             return rowList;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public Number getValue(Comparable comparable, Comparable comparable1) {
+        public Number getValue(Comparable comparable0, Comparable comparable1) {
             if (!(comparable1 instanceof ChartNode)) {
                 return 0;
             }
@@ -1218,7 +1224,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @author Cinkel_A
      * @since 1.1.0
      */
-    private static class ChartNode implements Comparable {
+    private static class ChartNode implements Comparable<ChartNode> {
         private Node node;
         private Double nodeKey;
         private String columnValue;
@@ -1242,9 +1248,8 @@ public class ReuseAnalyserView extends ViewPart {
         }
 
         @Override
-        public int compareTo(Object o) {
-            ChartNode nodeToCompare = (ChartNode)o;
-            return Double.compare(getNodeKey(), nodeToCompare.getNodeKey());
+        public int compareTo(ChartNode o) {
+            return Double.compare(getNodeKey(), o.getNodeKey());
         }
 
         /**
@@ -1270,7 +1275,8 @@ public class ReuseAnalyserView extends ViewPart {
     /**
      * A custom renderer that returns a different color for each items.
      */
-    class CustomRenderer extends BarRenderer {
+    private class CustomRenderer extends BarRenderer {
+        private static final long serialVersionUID = 8572109118229414964L;
 
         /**
          * Returns the paint for an item. Overrides the default behaviour inherited from
