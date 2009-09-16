@@ -352,7 +352,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 			if(headers==null){	// first line
 				headers = fields;
 				headerIndex = new HashMap<String,Integer>();
-				mainIndexes = new int[]{-1,-1,-1,-1,-1,-1};
+                mainIndexes = new int[] {-1, -1, -1, -1, -1, -1, -1};
 				int index=0;
 				for(String header:headers){
 					debug("Added header["+index+"] = "+header);
@@ -366,6 +366,8 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     else if(header.toLowerCase().startsWith("x_wert")) {mainIndexes[5]=index; crsHint="germany";}
                     else if(header.toLowerCase().startsWith("northing")) mainIndexes[4]=index;
                     else if(header.toLowerCase().startsWith("easting")) mainIndexes[5]=index;
+                    else if (isBeamwith(header))
+                        mainIndexes[6] = index;// "beamwith" property
                     else if(header.toLowerCase().startsWith("trx")) intIndexes.add(index);
                     else stringIndexes.add(index);
 					headerIndex.put(header,index++);
@@ -485,6 +487,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                                 emptyFields.add("Empty string at " + lineNumber + ":" + i);
                             }
                         }
+                        if (mainIndexes[6] > -1) {
+                            sector.setProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME, Double.parseDouble(fields[mainIndexes[6]]));
+                        }
                     } catch (ArrayIndexOutOfBoundsException e) {
                         shortLines.add("Empty fields at end of line " + lineNumber + ": "+e.getMessage());
                     }
@@ -506,6 +511,17 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		}
         return true;
 	}
+
+    /**
+     * check header
+     * 
+     * @param header header text
+     * @return true if header is "beamwith" properties
+     */
+    private boolean isBeamwith(String header) {
+        header = header == null ? "null" : header.toLowerCase().trim();
+        return header.contains("beamwidth") || header.startsWith("beam") || "hbw".equals(header);
+    }
 
     private void determineFieldTypes(String[] fields) {
         for(int i : stringIndexes){

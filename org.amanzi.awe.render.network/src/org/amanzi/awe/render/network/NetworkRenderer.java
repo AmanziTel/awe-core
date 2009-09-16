@@ -15,6 +15,7 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -202,7 +203,8 @@ public class NetworkRenderer extends RendererImpl {
                             Node child = relationship.getEndNode();
                             if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
                                 double azimuth = -0.0;
-                                double beamwidth = 360.0;
+                                double beamwidth = ((Number)child.getProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME, 360.0))
+                                        .doubleValue();
                                 Color colorToFill = fillColor;
                                 for (String key : child.getPropertyKeys()) {
                                     if (key.toLowerCase().contains("azimuth")) {
@@ -216,21 +218,21 @@ public class NetworkRenderer extends RendererImpl {
                                             }
                                         }
                                     }
-                                    if (key.toLowerCase().contains("beamwidth")) {
-                                        beamwidth = (Integer)child.getProperty(key);
-                                    } else if (key.toLowerCase().equals("hbw")) {
-                                        beamwidth = (Integer)child.getProperty(key);
-                                    } else if (key.toLowerCase().startsWith("beam")) {
-                                        Object value = child.getProperty(key);
-                                        if (value instanceof Integer) {
-                                            beamwidth = (Integer)value;
-                                        } else {
-                                            try {
-                                                beamwidth = Integer.parseInt(value.toString());
-                                            } catch (Exception e) {
-                                            }
-                                        }
-                                    }
+                                    // if (key.toLowerCase().contains("beamwidth")) {
+                                    // beamwidth = (Integer)child.getProperty(key);
+                                    // } else if (key.toLowerCase().equals("hbw")) {
+                                    // beamwidth = (Integer)child.getProperty(key);
+                                    // } else if (key.toLowerCase().startsWith("beam")) {
+                                    // Object value = child.getProperty(key);
+                                    // if (value instanceof Integer) {
+                                    // beamwidth = (Integer)value;
+                                    // } else {
+                                    // try {
+                                    // beamwidth = Integer.parseInt(value.toString());
+                                    // } catch (Exception e) {
+                                    // }
+                                    // }
+                                    // }
                                     if (selectedProp != null && selectedProp.equals(key)) {
                                         double value = ((Number)child.getProperty(key)).doubleValue();
                                         if (value < redMaxValue || value == redMinValue) {

@@ -318,5 +318,9 @@ public class INeoConstants {
      * name of chart error property
      */
     public static final String PROPERTY_CHART_ERROR_NAME = "error_node";
+    /**
+     * name of "beamwidth" property
+     */
+    public static final String PROPERTY_BEAMWIDTH_NAME = "beamwidth";
    
 }
