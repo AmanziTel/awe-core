@@ -64,10 +64,9 @@ public class DriveRoot extends Root {
                                     INeoConstants.AWE_PROJECT_NODE_TYPE)
                             && (lastRelationshipTraversed.getEndNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
                                     INeoConstants.DATASET_TYPE_NAME) || (lastRelationshipTraversed.getEndNode().getProperty(
-                                    INeoConstants.PROPERTY_TIME_NAME, "").equals(INeoConstants.FILE_TYPE_NAME)));
+                                    INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.FILE_TYPE_NAME)));
                 }
-            }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
-                    SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+            }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
             for (Node node : rootDriveTraverse) {
                 driveNodes.add(new DriveNeoNode(node));
             }
