@@ -366,7 +366,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     else if(header.toLowerCase().startsWith("x_wert")) {mainIndexes[5]=index; crsHint="germany";}
                     else if(header.toLowerCase().startsWith("northing")) mainIndexes[4]=index;
                     else if(header.toLowerCase().startsWith("easting")) mainIndexes[5]=index;
-                    else if (isBeamwith(header))
+                    else if (isBeamwidth(header))
                         mainIndexes[6] = index;// "beamwith" property
                     else if(header.toLowerCase().startsWith("trx")) intIndexes.add(index);
                     else stringIndexes.add(index);
@@ -516,9 +516,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      * check header
      * 
      * @param header header text
-     * @return true if header is "beamwith" properties
+     * @return true if header is "beamwidth" properties
      */
-    private boolean isBeamwith(String header) {
+    private boolean isBeamwidth(String header) {
         header = header == null ? "null" : header.toLowerCase().trim();
         return header.contains("beamwidth") || header.startsWith("beam") || "hbw".equals(header);
     }
