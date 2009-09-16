@@ -581,7 +581,7 @@ public class ReuseAnalyserView extends ViewPart {
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
         final GisTypes typeOfGis = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode).getGisType();
         TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
-        Traverser travers = gisNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
+        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
                 NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
 
         Double min = null;
@@ -689,7 +689,7 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         if (typeOfGis == GisTypes.Network || select == Select.EXISTS) {
-            travers = gisNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
+            travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
                     NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             for (Node node : travers) {
                 if (node.hasProperty(propertyName)) {
