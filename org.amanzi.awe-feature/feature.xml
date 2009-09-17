@@ -22,11 +22,17 @@ HB, AmanziTel AB, Refractions Research, Neotechnology, Geotools,
 the Eclipse Foundation and others.
 
 All code is copyright their respective owners. All code by
-Amanzi HB is licensed using the LGPL version 2.1 or later.
-All code by AmanziTel AB is licensed using the GPL version
-3.0 or later. Each of the copyright owners has licensed their
-work using their prefered licenses, so please refer to each component
-for the specific license.
+Amanzi and AmanziTel is licensed using the Eclipse Public License
+as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+reproduction or distribution of the library constitutes recipient&apos;s
+acceptance of this agreement.
+
+Each of the copyright owners has licensed their work using their
+prefered licenses, so please refer to each component for the specific
+license.
+
+This program is distributed WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
    </license>
 
    <requires>
