@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: AWEScript Interactive Console
 Bundle-SymbolicName: org.amanzi.awe.script.jirb; singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Vendor: org.amanzi
+Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.amanzi.scripting.jirb,

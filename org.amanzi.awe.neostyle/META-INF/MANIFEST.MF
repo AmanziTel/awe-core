@@ -13,3 +13,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.core
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.neostyle
+Bundle-Vendor: amanzi.org

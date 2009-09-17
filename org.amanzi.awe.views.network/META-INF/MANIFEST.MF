@@ -20,3 +20,4 @@ Export-Package: org.amanzi.awe.awe.views.view.provider,
  org.amanzi.awe.views.network.proxy,
  org.amanzi.awe.views.network.view
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Vendor: amanzi.org

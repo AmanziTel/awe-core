@@ -12,3 +12,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.core,
  org.amanzi.awe.neostyle;bundle-version="1.0.0"
 Eclipse-LazyStart: true
+Bundle-Vendor: amanzi.org

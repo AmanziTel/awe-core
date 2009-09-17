@@ -4,7 +4,7 @@ Bundle-Name: JRuby Plug-in
 Bundle-SymbolicName: org.amanzi.scripting.jruby;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-ClassPath: .
-Bundle-Vendor: org.amanzi
+Bundle-Vendor: amanzi.org
 Export-Package: org.amanzi.scripting.jruby
 Require-Bundle: org.jruby,
  org.eclipse.core.runtime,

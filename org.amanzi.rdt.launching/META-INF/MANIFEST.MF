@@ -27,3 +27,4 @@ Export-Package: org.amanzi.rdt.internal.launching,
  org.amanzi.rdt.internal.launching.launcher,
  org.amanzi.rdt.launching.util,
  org.amanzi.rdt.launching.vm
+Bundle-Vendor: amanzi.org

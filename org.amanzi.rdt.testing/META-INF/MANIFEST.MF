@@ -18,3 +18,4 @@ Eclipse-RegisterBuddy: org.jtestr
 Export-Package: org.amanzi.rdt.testing
 Bundle-ClassPath: .
 Import-Package: org.rubypeople.rdt.internal.ui.wizards.buildpaths
+Bundle-Vendor: amanzi.org

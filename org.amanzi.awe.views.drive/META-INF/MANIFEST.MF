@@ -13,3 +13,4 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.views;bundle-version="3.2.101",
  org.amanzi.gef;bundle-version="1.0.0"
 Eclipse-LazyStart: true
+Bundle-Vendor: amanzi.org

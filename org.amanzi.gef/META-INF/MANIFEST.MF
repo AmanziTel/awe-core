@@ -17,4 +17,4 @@ Export-Package: org.eclipse.zest.core.viewers,
  org.eclipse.zest.core.widgets,
  org.eclipse.zest.layouts,
  org.eclipse.zest.layouts.algorithms
-Bundle-Vendor: org.amanzi
+Bundle-Vendor: amanzi.org
