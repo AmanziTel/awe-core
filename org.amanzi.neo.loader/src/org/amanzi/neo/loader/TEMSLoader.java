@@ -27,7 +27,9 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.NetworkLoader.CRS;
+import org.amanzi.neo.loader.dialogs.TEMSDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -190,6 +192,9 @@ public class TEMSLoader {
                 } else {
                     catalog.add(service);
                 }
+            }
+            if (dataset == null) {
+                TEMSDialog.addGisToMap(gis);
             }
         }
     }
@@ -374,27 +379,34 @@ public class TEMSLoader {
         }
 	}
 
-    private static Node getGISNode(NeoService neo, Node tems) {
+    /**
+     * gets GIS node for
+     * 
+     * @param neo neo serice
+     * @param mainNode main drive node
+     * @return gis node for mainNode
+     */
+    private static Node getGISNode(NeoService neo, Node mainNode) {
         Node gis = null;
         Transaction transaction = neo.beginTx();
         try {
             Node reference = neo.getReferenceNode();
-            for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();
+            for (Relationship relationship : mainNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)) {
+                Node node = relationship.getStartNode();
                 if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
                         && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME)
                         && node.hasProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME)
                         && node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString().equals(GisTypes.Tems.getHeader())){
-                	node.createRelationshipTo(tems, GeoNeoRelationshipTypes.NEXT);
+                    node.createRelationshipTo(mainNode, GeoNeoRelationshipTypes.NEXT);
                 	return node;
                 }
             }
             gis = neo.createNode();
             gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
-            gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.GIS_TEMS_NAME);
+            gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, NeoUtils.getNodeName(mainNode));
             gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.Tems.getHeader());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
-            gis.createRelationshipTo(tems, GeoNeoRelationshipTypes.NEXT);
+            gis.createRelationshipTo(mainNode, GeoNeoRelationshipTypes.NEXT);
             transaction.success();
         } finally {
             transaction.finish();
@@ -498,17 +510,34 @@ public class TEMSLoader {
      * @return
      */
     private Node findOrCreateFileNode(Node root, Node datasetNode) {
-        Node file = findFileNode(filename);
-        if (file == null) {
-            file = neo.createNode();
-            file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
-            file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-            file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
+        ReturnableEvaluator fileReturnableEvaluator=new ReturnableEvaluator() {
+            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                final Node currentNode = currentPos.currentNode();
+                return NeoUtils.isFileNode(currentNode) && basename.equals(NeoUtils.getNodeName(currentNode));
+            }
+        };
+        Traverser fileNodeTraverser;
+        if (datasetNode!=null){
+            fileNodeTraverser=datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, fileReturnableEvaluator, GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING);
+        }else{
+            fileNodeTraverser = root.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(2), fileReturnableEvaluator,
+                    GeoNeoRelationshipTypes.NEXT,
+                    Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
         }
+        final Iterator<Node> iterator = fileNodeTraverser.iterator();
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        Node result = neo.createNode();
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
+        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
+        result.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
         if (datasetNode != null) {
-            datasetNode.createRelationshipTo(file, GeoNeoRelationshipTypes.NEXT);
+            datasetNode.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
         }
-        return file;
+        return result;
     }
 
     /**
@@ -516,6 +545,7 @@ public class TEMSLoader {
      * 
      * @param filename file name - value of property INeoConstants.PROPERTY_FILENAME_NAME
      * @return file node or null
+     * @deprecated
      */
     private Node findFileNode(final String filename) {
         Iterator<Node> iterator = neo.getReferenceNode().traverse(Order.DEPTH_FIRST, new StopEvaluator() {
@@ -646,11 +676,18 @@ public class TEMSLoader {
 			transaction.finish();
 		}
 	}
-	
-	//TODO: Lagutko: is this methor required?
-	/**
-	 * @param args
-	 */
+
+    /**
+     * @return Returns the gis.
+     */
+    public Node getGis() {
+        return gis;
+    }
+
+    // TODO: Lagutko: is this methor required?
+    /**
+     * @param args
+     */
 	public static void main(String[] args) {
 		if(args.length<1) args = new String[]{"amanzi/test.FMT","amanzi/0904_90.FMT","amanzi/0905_22.FMT","amanzi/0908_44.FMT"};
 		EmbeddedNeo neo = new EmbeddedNeo("var/neo");

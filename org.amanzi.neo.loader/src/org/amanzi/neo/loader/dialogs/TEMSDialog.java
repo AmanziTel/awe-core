@@ -16,8 +16,8 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.TEMSLoader;
@@ -48,9 +48,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
-import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
 
@@ -568,10 +566,10 @@ public class TEMSDialog {
 			monitor = new NullProgressMonitor();
 		}
 		monitor.beginTask("Importing " + loadedFiles.size() + " drive test files", loadedFiles.size() * TEMSLoader.WORKED_PER_FILE);
-
+        TEMSLoader temsLoader = null;
 		for (String filePath : loadedFiles.values()) {
 			try {
-				TEMSLoader temsLoader = new TEMSLoader(filePath, display, datasetName);
+                temsLoader = new TEMSLoader(filePath, display, datasetName);
 				temsLoader.run(monitor);
 				temsLoader.printStats(false);	// stats for this load
 				if(monitor.isCanceled()) break;
@@ -580,15 +578,29 @@ public class TEMSDialog {
 				NeoLoaderPlugin.exception(e);
 			}
 		}
+
+        if (datasetName != null) {
+            Node gis = temsLoader != null ? temsLoader.getGis() : null;
+            addGisToMap(gis);
+        }
+
+        monitor.done();
+    }
+
+    // TODO move to utility class
+    /**
+     * adds gis to active map
+     * 
+     * @param gis node
+     */
+    public static void addGisToMap(Node gis) {
         try {
             String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
             URL url = new URL("file://" + databaseLocation);
             IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, url, null);
             final IMap map = ApplicationGIS.getActiveMap();
-            Node gis = findMainGisNode();
             if (curService != null && gis != null && NetworkLoader.findLayerByNode(map, gis) == null
-            // file name not using because we can adds only all drive on map
-                    && NetworkLoader.confirmLoadNetworkOnMap(map, "drive")) {
+                    && NetworkLoader.confirmLoadNetworkOnMap(map, NeoUtils.getNodeName(gis))) {
                 java.util.List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
                 for (IGeoResource iGeoResource : curService.resources(null)) {
                     if (iGeoResource.canResolve(Node.class)) {
@@ -607,29 +619,8 @@ public class TEMSDialog {
             // TODO Handle IOException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
-
-		monitor.done();		
-	}
-
-    // TODO move method to utility class?
-    /**
-     *finds main drive gis node
-     * 
-     * @return gis node or null
-     */
-    private Node findMainGisNode() {
-        Node reference = NeoServiceProvider.getProvider().getService().getReferenceNode();
-        for (Relationship relationship : reference.getRelationships(Direction.OUTGOING)) {
-            Node node = relationship.getEndNode();
-            if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                    && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME)
-                    && node.hasProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME)
-                    && node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString().equals(GisTypes.Tems.getHeader())) {
-                return node;
-            }
-        }
-        return null;
     }
+
 
     /**
      * Add file to 'Choose File' list
