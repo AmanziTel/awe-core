@@ -154,7 +154,10 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
     }
 
 	public void run() throws IOException {
-        trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
+        try {
+            trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
+        } catch (Exception e) {
+        }
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         try {
             long startTime = System.currentTimeMillis();
@@ -356,19 +359,18 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 				int index=0;
 				for(String header:headers){
 					debug("Added header["+index+"] = "+header);
-                    if(NetworkElementTypes.BSC.matches(header)) mainIndexes[0]=index;
-                    else if(NetworkElementTypes.CITY.matches(header)) mainIndexes[1]=index;
-					else if(NetworkElementTypes.SITE.matches(header)) mainIndexes[2]=index;
-					else if(NetworkElementTypes.SECTOR.matches(header)) mainIndexes[3]=index;
-                    else if(header.toLowerCase().startsWith("lat")) mainIndexes[4]=index;
-                    else if(header.toLowerCase().startsWith("long")) mainIndexes[5]=index;
-                    else if(header.toLowerCase().startsWith("y_wert")) {mainIndexes[4]=index; crsHint="germany";}
-                    else if(header.toLowerCase().startsWith("x_wert")) {mainIndexes[5]=index; crsHint="germany";}
-                    else if(header.toLowerCase().startsWith("northing")) mainIndexes[4]=index;
-                    else if(header.toLowerCase().startsWith("easting")) mainIndexes[5]=index;
-                    else if ((mainIndexes[6] < 0) && isBeamwidth(header))
-                        mainIndexes[6] = index;// "beamwidth" property
-                    else if(header.toLowerCase().startsWith("trx")) intIndexes.add(index);
+                    if (NetworkElementTypes.BSC.matches(header)) mainIndexes[0]=index;
+                    else if (NetworkElementTypes.CITY.matches(header)) mainIndexes[1]=index;
+					else if (NetworkElementTypes.SITE.matches(header)) mainIndexes[2]=index;
+					else if (NetworkElementTypes.SECTOR.matches(header)) mainIndexes[3]=index;
+                    else if (header.toLowerCase().startsWith("lat")) mainIndexes[4]=index;
+                    else if (header.toLowerCase().startsWith("long")) mainIndexes[5]=index;
+                    else if (header.toLowerCase().startsWith("y_wert")) {mainIndexes[4]=index; crsHint="germany";}
+                    else if (header.toLowerCase().startsWith("x_wert")) {mainIndexes[5]=index; crsHint="germany";}
+                    else if (header.toLowerCase().startsWith("northing")) mainIndexes[4]=index;
+                    else if (header.toLowerCase().startsWith("easting")) mainIndexes[5]=index;
+                    else if ((mainIndexes[6] < 0) && isBeamwidth(header)) mainIndexes[6] = index;// "beamwith" property
+                    else if (header.toLowerCase().startsWith("trx")) intIndexes.add(index);
                     else stringIndexes.add(index);
 					headerIndex.put(header,index++);
 				}
@@ -520,7 +522,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      */
     private boolean isBeamwidth(String header) {
         header = header == null ? "null" : header.toLowerCase().trim();
-        return header.contains("beamwidth") || header.startsWith("beam") || "hbw".equals(header) || "rnc".equals(header);
+        return header.contains("beamwidth") || header.equals("beam") || "hbw".equals(header);
     }
 
     private void determineFieldTypes(String[] fields) {
