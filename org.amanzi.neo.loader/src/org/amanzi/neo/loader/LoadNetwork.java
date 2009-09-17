@@ -3,19 +3,32 @@ package org.amanzi.neo.loader;
 import java.io.File;
 import java.io.IOException;
 
+import net.refractions.udig.project.ui.tool.AbstractActionTool;
+
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.dialogs.TEMSDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 
-public class LoadNetwork {
+/**
+ * This class launches the network loading, by first asking the user for a file, and then scheduling
+ * a job to actually load the file. This class can also be used to support toolbar actions, both
+ * standard eclipse actions using a handler like LoadNetworkhandler which specifically calls the
+ * run() method to load the network, or through the fact that the run() method is actually an
+ * implementation of AbstractActionTool so this can be used as a uDIG specific toolbar action on
+ * open maps. To remove this secondary feature, simply remove the 'extends AbstractActionTool' part
+ * of the class definition.
+ * 
+ * @author craig
+ * @since 1.0.0
+ */
+public class LoadNetwork extends AbstractActionTool {
     /*
      * Names of supported files for Network
      */
@@ -78,36 +91,10 @@ public class LoadNetwork {
 		return directory != null;
 	}
 
-	//TODO: Remove this unused method
-	public void runX() {
-				FileDialog dlg = new FileDialog(display.getActiveShell(), SWT.OPEN);
-				dlg.setText(NeoLoaderPluginMessages.NetworkDialog_DialogTitle);
-				dlg.setFilterNames(NETWORK_FILE_NAMES);
-				dlg.setFilterExtensions(NETWORK_FILE_EXTENSIONS);
-				dlg.setFilterPath(getDirectory());
-				final String filename = dlg.open();
-				if (filename != null) {
-					setDirectory(dlg.getFilterPath());
-					display.asyncExec(new Runnable() {
-						public void run() {
-							NetworkLoader networkLoader;
-							try {
-								networkLoader = new NetworkLoader(filename);
-								networkLoader.run(new NullProgressMonitor());
-								networkLoader.printStats(false);
-							} catch (IOException e) {								
-								NeoCorePlugin.error("Error loading Network file", e);
-							}
-						}
-					});
-				}
-
-	}
-
     /**
      * Run from action handler
      */
-    public void runOnAction() {
+    public void run() {
         final FileDialog dlg = new FileDialog(display.getActiveShell(), SWT.OPEN);
         dlg.setText(NeoLoaderPluginMessages.NetworkDialog_DialogTitle);
         dlg.setFilterNames(NETWORK_FILE_NAMES);

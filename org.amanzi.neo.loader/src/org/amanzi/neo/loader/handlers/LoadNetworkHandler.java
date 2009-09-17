@@ -34,7 +34,7 @@ public class LoadNetworkHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
             LoadNetwork loadNetwork = new LoadNetwork(HandlerUtil.getActiveWorkbenchWindowChecked(event).getWorkbench()
                     .getDisplay());
-            loadNetwork.runOnAction();
+            loadNetwork.run();
             return null;
     }
 
