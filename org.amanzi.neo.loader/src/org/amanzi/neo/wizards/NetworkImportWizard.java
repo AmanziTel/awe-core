@@ -52,7 +52,7 @@ public class NetworkImportWizard extends Wizard implements IImportWizard {
                 NetworkLoader networkLoader;
                 try {
                     networkLoader = new NetworkLoader(mainPage.getFileName());
-                    networkLoader.run();
+                    networkLoader.run(monitor);
                     networkLoader.printStats(false);
                 } catch (IOException e) {
                     NeoCorePlugin.error("Error loading Network file", e);

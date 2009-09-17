@@ -3,20 +3,19 @@ package org.amanzi.neo.loader;
 import java.io.File;
 import java.io.IOException;
 
-import net.refractions.udig.project.ui.tool.AbstractActionTool;
-
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.dialogs.TEMSDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 
-public class LoadNetwork extends AbstractActionTool {
+public class LoadNetwork {
     /*
      * Names of supported files for Network
      */
@@ -79,7 +78,8 @@ public class LoadNetwork extends AbstractActionTool {
 		return directory != null;
 	}
 
-	public void run() {
+	//TODO: Remove this unused method
+	public void runX() {
 				FileDialog dlg = new FileDialog(display.getActiveShell(), SWT.OPEN);
 				dlg.setText(NeoLoaderPluginMessages.NetworkDialog_DialogTitle);
 				dlg.setFilterNames(NETWORK_FILE_NAMES);
@@ -93,7 +93,7 @@ public class LoadNetwork extends AbstractActionTool {
 							NetworkLoader networkLoader;
 							try {
 								networkLoader = new NetworkLoader(filename);
-								networkLoader.run();
+								networkLoader.run(new NullProgressMonitor());
 								networkLoader.printStats(false);
 							} catch (IOException e) {								
 								NeoCorePlugin.error("Error loading Network file", e);
@@ -122,7 +122,7 @@ public class LoadNetwork extends AbstractActionTool {
                         NetworkLoader networkLoader;
                         try {
                             networkLoader = new NetworkLoader(filename);
-                            networkLoader.run();
+                            networkLoader.run(monitor);
                             networkLoader.printStats(false);
                         } catch (IOException e) {
                             NeoCorePlugin.error("Error loading Network file", e);

@@ -2,8 +2,8 @@ package org.amanzi.neo.loader;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,6 +35,7 @@ import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
@@ -153,19 +154,32 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         neoProvider.removeServiceProviderListener(this);        
     }
 
-	public void run() throws IOException {
+	public void run(IProgressMonitor monitor) throws IOException {
         try {
             trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
         } catch (Exception e) {
         }
-        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        CountingFileInputStream is = new CountingFileInputStream(new File(filename));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
+            if(monitor!=null) monitor.beginTask("Importing "+filename, 100);
             long startTime = System.currentTimeMillis();
             String line;
+            int perc = is.percentage();
+            int prevPerc = 0;
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
                 if (!parseLine(line)) {
                     break;
+                }
+                if(monitor!=null){
+                    if(monitor.isCanceled()) break;
+                    perc = is.percentage();
+                    if (perc > prevPerc) {
+                        monitor.subTask("Loading record #"+lineNumber);
+                        monitor.worked(perc - prevPerc);
+                        prevPerc = perc;
+                    }
                 }
             }
             info("Loaded "+filename+" in "+(System.currentTimeMillis()-startTime)/1000.0+"s");
@@ -176,6 +190,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         } finally {
             // Close the file reader
             reader.close();
+            if(monitor!=null) monitor.done();
             // Save the bounding box
             if(gis!=null && bbox!=null){
                 Transaction transaction = neo.beginTx();
@@ -578,6 +593,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		Node network = null;
 		Transaction transaction = neo.beginTx();
 		try {
+	        NeoServiceProvider.getProvider().commit();
             for (Relationship relationship : gis.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
 				Node node = relationship.getEndNode();
                 debug("Testing possible Network node "+node+": "+(node.hasProperty("name") ? node.getProperty("name") : ""));
@@ -725,7 +741,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		try{
 		    long startTime = System.currentTimeMillis();
 			NetworkLoader networkLoader = new NetworkLoader(neo,args.length>0 ? args[0] : "amanzi/network.txt");
-			networkLoader.run();
+			networkLoader.run(null);
 			networkLoader.printStats(true);
             info("Ran test in "+(System.currentTimeMillis()-startTime)/1000.0+"s");
 		} catch (IOException e) {
