@@ -17,6 +17,7 @@ Bundle-ClassPath: .,
  lib/maven-2.0.10-uber.jar,
  lib/testng-5.8-jdk15.jar
 Eclipse-BuddyPolicy: registered
+Bundle-Vendor: org.jtestr
 
 
 

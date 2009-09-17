@@ -124,3 +124,4 @@ Bundle-ClassPath: lib/apoc-examples-0.2.jar,
  lib/remote-neo-0.2.jar,
  lib/shell-1.0-b9.jar,
  .
+Bundle-Vendor: Neo4j
