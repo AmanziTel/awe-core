@@ -367,7 +367,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     else if(header.toLowerCase().startsWith("northing")) mainIndexes[4]=index;
                     else if(header.toLowerCase().startsWith("easting")) mainIndexes[5]=index;
                     else if ((mainIndexes[6] < 0) && isBeamwidth(header))
-                        mainIndexes[6] = index;// "beamwith" property
+                        mainIndexes[6] = index;// "beamwidth" property
                     else if(header.toLowerCase().startsWith("trx")) intIndexes.add(index);
                     else stringIndexes.add(index);
 					headerIndex.put(header,index++);
@@ -520,7 +520,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      */
     private boolean isBeamwidth(String header) {
         header = header == null ? "null" : header.toLowerCase().trim();
-        return header.contains("beamwidth") || header.startsWith("beam") || "hbw".equals(header);
+        return header.contains("beamwidth") || header.startsWith("beam") || "hbw".equals(header) || "rnc".equals(header);
     }
 
     private void determineFieldTypes(String[] fields) {
