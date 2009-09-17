@@ -11,7 +11,7 @@ public enum NetworkElementTypes {
 
     NETWORK(new String[]{"Network"}),
     CITY(new String[]{"City","Town","Ort"}),
-    BSC(new String[]{"BSC","BSC_NAME"}),
+    BSC(new String[]{"BSC","BSC_NAME","RNC"}),
     SITE(new String[]{"Site","Name","IDX"}),
     SECTOR(new String[]{"Sector","Cell","BTS_Name","CELL_NAME"});
 
