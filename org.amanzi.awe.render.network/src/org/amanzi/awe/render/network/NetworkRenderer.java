@@ -218,21 +218,6 @@ public class NetworkRenderer extends RendererImpl {
                                             }
                                         }
                                     }
-                                    // if (key.toLowerCase().contains("beamwidth")) {
-                                    // beamwidth = (Integer)child.getProperty(key);
-                                    // } else if (key.toLowerCase().equals("hbw")) {
-                                    // beamwidth = (Integer)child.getProperty(key);
-                                    // } else if (key.toLowerCase().startsWith("beam")) {
-                                    // Object value = child.getProperty(key);
-                                    // if (value instanceof Integer) {
-                                    // beamwidth = (Integer)value;
-                                    // } else {
-                                    // try {
-                                    // beamwidth = Integer.parseInt(value.toString());
-                                    // } catch (Exception e) {
-                                    // }
-                                    // }
-                                    // }
                                     if (selectedProp != null && selectedProp.equals(key)) {
                                         double value = ((Number)child.getProperty(key)).doubleValue();
                                         if (value < redMaxValue || value == redMinValue) {
