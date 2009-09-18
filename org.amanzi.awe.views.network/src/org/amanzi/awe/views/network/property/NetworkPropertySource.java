@@ -5,7 +5,6 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.neo4j.api.core.Transaction;
-import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.property.NodePropertySource;
 import org.neo4j.neoclipse.property.PropertyTransform;
 import org.neo4j.neoclipse.property.PropertyTransform.PropertyHandler;
@@ -61,7 +60,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
             tx.success();
         } finally {
             tx.finish();
-            Activator.getDefault().getNeoServiceManager().commit();
+            NeoServiceProvider.getProvider().commit();
         }
     }
 }
