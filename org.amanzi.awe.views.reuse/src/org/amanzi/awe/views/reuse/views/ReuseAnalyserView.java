@@ -93,8 +93,8 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String TOOL_TIP_DATA = "Select the set of data to analyse";
     private static final String TOOL_TIP_PROPERTY = "Select which property of the data to calculate the statistics for";
     private static final String TOOL_TIP_DISTRIBUTE = "Decide how to divide the range of values into discrete categories for statistics and charting";
-    private static final String TOOL_TIP_SELECT = "If each data element has multiple values for the selected property, decide how to combine them ";
-    private static final String TOOL_TIP_ADJACENCY = "Add color to additional chart categories when selecting in the chart";
+    private static final String TOOL_TIP_SELECT = "If each data element has multiple values for the selected property, decide how to combine them";
+    private static final String TOOL_TIP_ADJACENCY = "Add color to adjacent chart categories when selecting in the chart";
     private static final String TOOL_TIP_SELECTED_VALUES = "Select a category in the chart for displaying on the map";
     // labels
     private static final String SELECT_LABEL = "Select";
