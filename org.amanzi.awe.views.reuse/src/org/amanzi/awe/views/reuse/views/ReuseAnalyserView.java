@@ -388,6 +388,8 @@ public class ReuseAnalyserView extends ViewPart {
         tSelectedInformation.setVisible(isVisible);
         lLogarithmic.setVisible(isVisible);
         bLogarithmic.setVisible(isVisible);
+        spinLabel.setVisible(isVisible);
+        spinAdj.setVisible(isVisible);
     }
 
     /**
@@ -1047,16 +1049,6 @@ public class ReuseAnalyserView extends ViewPart {
         cSelect.setLayoutData(dCombo);
 
         dLabel = new FormData();
-        dLabel.left = new FormAttachment(cSelect, 5);
-        dLabel.top = new FormAttachment(spinAdj, 5, SWT.CENTER);
-        spinLabel.setLayoutData(dLabel);
-
-        FormData dSpin = new FormData();
-        dSpin.left = new FormAttachment(spinLabel, 5);
-        dSpin.top = new FormAttachment(propertyCombo, 5, SWT.CENTER);
-        spinAdj.setLayoutData(dSpin);
-
-        dLabel = new FormData();
         dLabel.left = new FormAttachment(0, 5);
         dLabel.top = new FormAttachment(bLogarithmic, 5, SWT.CENTER);
         lLogarithmic.setLayoutData(dLabel);
@@ -1076,6 +1068,16 @@ public class ReuseAnalyserView extends ViewPart {
         dText.right = new FormAttachment(lSelectedInformation, 200);
         dText.bottom = new FormAttachment(100, -2);
         tSelectedInformation.setLayoutData(dText);
+
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(tSelectedInformation, 5);
+        dLabel.top = new FormAttachment(spinAdj, 5, SWT.CENTER);
+        spinLabel.setLayoutData(dLabel);
+
+        FormData dSpin = new FormData();
+        dSpin.left = new FormAttachment(spinLabel, 5);
+        dSpin.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
+        spinAdj.setLayoutData(dSpin);
 
         FormData dChart = new FormData(); // bind to label and text
         dChart.left = new FormAttachment(0, 5);
