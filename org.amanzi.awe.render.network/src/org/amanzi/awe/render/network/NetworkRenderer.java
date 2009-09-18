@@ -202,7 +202,7 @@ public class NetworkRenderer extends RendererImpl {
                             // Direction.OUTGOING)){
                             Node child = relationship.getEndNode();
                             if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
-                                double azimuth = -0.0;
+                                double azimuth = Double.NaN;
                                 double beamwidth = ((Number)child.getProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME, 360.0))
                                         .doubleValue();
                                 Color colorToFill = fillColor;
@@ -246,7 +246,7 @@ public class NetworkRenderer extends RendererImpl {
                                         }
                                     }
                                 }
-                                if(azimuth == -0.0) continue;
+                                if(azimuth == Double.NaN) continue;
                                 borderColor = drawColor;
                                 if (geoNeo.getSelectedNodes().contains(child)) {
                                     borderColor = COLOR_SECTOR_SELECTED;
