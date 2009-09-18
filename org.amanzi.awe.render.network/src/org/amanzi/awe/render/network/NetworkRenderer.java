@@ -293,10 +293,11 @@ public class NetworkRenderer extends RendererImpl {
         if (selectedProp == null) {
             return colorToFill;
         }
-        Double value = getNodeValue(node, selectedProp, select, lesMinValue, moreMaxValue);
-        if (value == null) {
+        Double valueD = getNodeValue(node, selectedProp, select, lesMinValue, moreMaxValue);
+        if (valueD == null) {
             return colorToFill;
         }
+        double value = valueD.doubleValue();
         if (value < redMaxValue || value == redMinValue) {
             if (value >= redMinValue) {
                 colorToFill = COLOR_SELECTED;
