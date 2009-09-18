@@ -88,19 +88,36 @@ import org.neo4j.api.core.Traverser.Order;
  * @since 1.1.0
  */
 public class ReuseAnalyserView extends ViewPart {
-    /** Maximum bars in chart */
-    private static final int MAXIMUM_BARS = 500;
+    /** String TOOL_TIP_LOG field */
+    private static final String TOOL_TIP_LOG = "Change the scale of the y-axis to be log10";
+    private static final String TOOL_TIP_DATA = "Select the set of data to analyse";
+    private static final String TOOL_TIP_PROPERTY = "Select which property of the data to calculate the statistics for";
+    private static final String TOOL_TIP_DISTRIBUTE = "Decide how to divide the range of values into discrete categories for statistics and charting";
+    private static final String TOOL_TIP_SELECT = "If each data element has multiple values for the selected property, decide how to combine them ";
+    private static final String TOOL_TIP_ADJACENCY = "Add color to additional chart categories when selecting in the chart";
+    private static final String TOOL_TIP_SELECTED_VALUES = "Select a category in the chart for displaying on the map";
+    // labels
+    private static final String SELECT_LABEL = "Select";
+    private static final String DISTRIBUTE_LABEL = "Distribute";
+    private static final String LABEL_INFO = "Selected values";
+    private static final String ERROR_TITLE = "Chart calculation";
+    private static final String ERROR_MSG = "There are too many categories for this selection";
+    private static final String LOG_LABEL = "Logarithmic counts";
     /** String ADJACENCY field */
     private static final String ADJACENCY = "Adjacency";
     /** String PROPERTY_LABEL field */
     private static final String PROPERTY_LABEL = "Property";
     /** String GIS_LABEL field */
-    private static final String GIS_LABEL = "GIS:";
+    private static final String GIS_LABEL = "Data";
     /** String COUNT_AXIS field */
     private static final String COUNT_AXIS = "Count";
     /** String VALUES_DOMAIN field */
     private static final String VALUES_DOMAIN = "Value";
     private static final String ROW_KEY = "values";
+
+    /** Maximum bars in chart */
+    private static final int MAXIMUM_BARS = 500;
+
     private Label gisSelected;
     private Combo gisCombo;
     private Label propertySelected;
@@ -132,11 +149,6 @@ public class ReuseAnalyserView extends ViewPart {
     private static final Paint COLOR_MORE = Color.GREEN;
     private static final Paint CHART_BACKGROUND = Color.WHITE;
     private static final Paint PLOT_BACKGROUND = new Color(230, 230, 230);
-    private static final String SELECT_LABEL = "Select";
-    private static final String DISTRIBUTE_LABEL = "Distribute";
-    private static final String LABEL_INFO = "Selected bar";
-    private static final String ERROR_TITLE = "Chart calculation";
-    private static final String ERROR_MSG = "There are too many categories for this selection";
 
     public void createPartControl(Composite parent) {
         mainView = parent;
@@ -171,9 +183,8 @@ public class ReuseAnalyserView extends ViewPart {
         lSelectedInformation = new Label(parent, SWT.NONE);
         lSelectedInformation.setText(LABEL_INFO);
         lLogarithmic = new Label(parent, SWT.NONE);
-        lLogarithmic.setText("Logarithmic counts");
+        lLogarithmic.setText(LOG_LABEL);
         bLogarithmic = new Button(parent, SWT.CHECK);
-        bLogarithmic.setToolTipText("logarithmic counts");
         bLogarithmic.setSelection(false);
         tSelectedInformation = new Text(parent, SWT.BORDER);
         spinAdj.addSelectionListener(new SelectionListener() {
@@ -220,6 +231,7 @@ public class ReuseAnalyserView extends ViewPart {
         chartFrame = new ChartComposite(parent, 0, chart, true);
         chartFrame.pack();
         setVisibleForChart(false);
+        setToolTips();
         layoutComponents(parent);
         chartFrame.addChartMouseListener(new ChartMouseListener() {
             @Override
@@ -325,6 +337,29 @@ public class ReuseAnalyserView extends ViewPart {
         axisLog = new LogarithmicAxis(COUNT_AXIS);
         axisLog.setAllowNegativesFlag(true);
         axisLog.setAutoRange(true);
+    }
+
+    /**
+     *
+     */
+    private void setToolTips() {
+        // adds to label
+        lLogarithmic.setToolTipText(TOOL_TIP_LOG);
+        lDistribute.setToolTipText(TOOL_TIP_DISTRIBUTE);
+        lSelect.setToolTipText(TOOL_TIP_SELECT);
+        lSelectedInformation.setToolTipText(TOOL_TIP_SELECTED_VALUES);
+        gisSelected.setToolTipText(TOOL_TIP_DATA);
+        propertySelected.setToolTipText(TOOL_TIP_PROPERTY);
+        spinLabel.setToolTipText(TOOL_TIP_ADJACENCY);
+
+        // adds to fields
+        bLogarithmic.setToolTipText(TOOL_TIP_LOG);
+        cDistribute.setToolTipText(TOOL_TIP_DISTRIBUTE);
+        cSelect.setToolTipText(TOOL_TIP_SELECT);
+        tSelectedInformation.setToolTipText(TOOL_TIP_SELECTED_VALUES);
+        gisCombo.setToolTipText(TOOL_TIP_DATA);
+        propertyCombo.setToolTipText(TOOL_TIP_PROPERTY);
+        spinAdj.setToolTipText(TOOL_TIP_ADJACENCY);
     }
 
     /**
@@ -1048,18 +1083,18 @@ public class ReuseAnalyserView extends ViewPart {
         dCombo.right = new FormAttachment(82, -5);
         cSelect.setLayoutData(dCombo);
 
-        dLabel = new FormData();
-        dLabel.left = new FormAttachment(0, 5);
-        dLabel.top = new FormAttachment(bLogarithmic, 5, SWT.CENTER);
-        lLogarithmic.setLayoutData(dLabel);
-
         dCombo = new FormData(); // bind to label and text
-        dCombo.left = new FormAttachment(lLogarithmic, 2);
+        dCombo.left = new FormAttachment(0, 2);
         dCombo.bottom = new FormAttachment(100, -2);
         bLogarithmic.setLayoutData(dCombo);
 
         dLabel = new FormData();
-        dLabel.left = new FormAttachment(bLogarithmic, 15);
+        dLabel.left = new FormAttachment(bLogarithmic, 2);
+        dLabel.top = new FormAttachment(bLogarithmic, 5, SWT.CENTER);
+        lLogarithmic.setLayoutData(dLabel);
+
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(lLogarithmic, 15);
         dLabel.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
         lSelectedInformation.setLayoutData(dLabel);
 
