@@ -3,6 +3,7 @@ package org.amanzi.awe.catalog.neo;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -49,6 +50,7 @@ public class GeoNeo {
     private String distrName;
     private String selectName;
     private long count = 0;
+    private String[] aggregatedProperties;
 
     /**
      * A class representing a located Node in the database. By convention all GeoNodes
@@ -324,8 +326,10 @@ public class GeoNeo {
      * @param adjacency - adjacency
      * @param maxSelNode
      * @param minSelNode
+     * @param aggregatedProperties
      */
-    public void setPropertyToRefresh(Node aggrNode, Node propertyNode, Node minSelNode, Node maxSelNode) {
+    public void setPropertyToRefresh(Node aggrNode, Node propertyNode, Node minSelNode, Node maxSelNode,
+            Map<String, String[]> aggregatedProperties) {
         if (aggrNode != null && propertyNode != null) {
             distrName = (String)aggrNode.getProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME);
             selectName = (String)aggrNode.getProperty(INeoConstants.PROPERTY_SELECT_NAME, null);
@@ -334,11 +338,15 @@ public class GeoNeo {
             propertyValueMax = (Double)propertyNode.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE);
             minPropertyValue = (Double)minSelNode.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE);
             maxPropertyValue = (Double)maxSelNode.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE);
+            if (propertyName != null) {
+                this.aggregatedProperties = aggregatedProperties.get(propertyName);
+            }
             // propertyAdjacency = adjacency;
         } else {
             propertyName = null;
             minPropertyValue = null;
             maxPropertyValue = null;
+            this.aggregatedProperties = null;
             // propertyAdjacency = 0;
         }
     }
@@ -426,6 +434,13 @@ public class GeoNeo {
 
     public long getCount() {
         return this.count;
+    }
+
+    /**
+     * @return Returns the aggregatedProperties.
+     */
+    public String[] getAggregatedProperties() {
+        return aggregatedProperties;
     }
 
 }

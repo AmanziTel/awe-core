@@ -9,7 +9,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
@@ -92,6 +95,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             return crs;
         }
     }
+
+    private Pattern chanalPattern = Pattern.compile("(^BCCH$)|(^TRX\\d+$)|(^TCH\\d+$)");
+    private Map<Integer, Integer> channalMap;
 	private NeoService neo;
 	private NeoServiceProvider neoProvider;
 	private String siteName = null;
@@ -130,6 +136,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	}
 
 	public NetworkLoader(NeoService neo, String filename) {
+        channalMap = new LinkedHashMap<Integer, Integer>();
 		this.neo = neo;
 		if(this.neo == null) {
 		    //Lagutko 21.07.2009, using of neo.core plugin
@@ -209,6 +216,10 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     network.setProperty("sector_count", sectorNumber);
                     network.setProperty("bsc_count", bsc_s.size());
                     network.setProperty("city_count", city_s.size());
+                    String allChannel = getChannelProperties();
+                    if (!allChannel.isEmpty()){
+                        network.setProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, allChannel);
+                    }
                     transaction.success();
                 }finally{
                     transaction.finish();
@@ -220,6 +231,23 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             }
             NeoServiceProvider.getProvider().commit();
         }
+    }
+
+    /**
+     * gets string of all channels
+     * 
+     * @return string
+     */
+    private String getChannelProperties() {
+
+        StringBuilder result = new StringBuilder("");
+        CharSequence delim = ",";
+        for (Integer ind : channalMap.keySet()) {
+            if (channalMap.get(ind) > 0) {
+                result.append(delim).append(headers[ind]);
+            }
+        }
+        return result.length() == 0 ? result.toString() : result.substring(delim.length());
     }
 
     private static void printWarnings(ArrayList<String> warnings, String warning_type, int limit, long lineNumber) {
@@ -387,6 +415,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     else if ((mainIndexes[6] < 0) && isBeamwidth(header)) mainIndexes[6] = index;// "beamwith" property
                     else if (header.toLowerCase().startsWith("trx")) intIndexes.add(index);
                     else stringIndexes.add(index);
+                    if (chanalPattern.matcher(header).matches()) {
+                        channalMap.put(index, 0);
+                    }
 					headerIndex.put(header,index++);
 				}
 			}else{
@@ -473,6 +504,11 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                         determineFieldTypes(fields);
 					}
 					try {
+                        for (int i : channalMap.keySet()) {
+                            if (fields[i].length() > 0) {
+                                channalMap.put(i, channalMap.get(i) + 1);
+                            }
+                        }
                         for (int i : stringIndexes) {
                             if (fields[i].length() > 0) {
                                 sector.setProperty(headers[i], fields[i]);

@@ -117,7 +117,7 @@ public class ReuseAnalyserView extends ViewPart {
 
     /** Maximum bars in chart */
     private static final int MAXIMUM_BARS = 500;
-
+    private Map<String, String[]> aggregatedProperties = new HashMap<String, String[]>();
     private Label gisSelected;
     private Combo gisCombo;
     private Label propertySelected;
@@ -151,6 +151,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final Paint PLOT_BACKGROUND = new Color(230, 230, 230);
 
     public void createPartControl(Composite parent) {
+        aggregatedProperties.clear();
         mainView = parent;
         gisSelected = new Label(parent, SWT.NONE);
         gisSelected.setText(GIS_LABEL);
@@ -279,7 +280,10 @@ public class ReuseAnalyserView extends ViewPart {
                 if (propertyCombo.getSelectionIndex() < 0) {
                     setVisibleForChart(false);
                 } else {
-                    findOrCreateAggregateNodeInNewThread(members.get(gisCombo.getText()), propertyCombo.getText());
+                    final Node gisNode = members.get(gisCombo.getText());
+                    final String propertyName = propertyCombo.getText();
+                    cSelect.setEnabled(aggregatedProperties.keySet().contains(propertyName));
+                    findOrCreateAggregateNodeInNewThread(gisNode, propertyName);
                     // chartUpdate(aggrNode);
                 }
             }
@@ -503,7 +507,7 @@ public class ReuseAnalyserView extends ViewPart {
                             int minInd = columnKey == null ? 0 : Math.max(colInd - adj, 0);
                             int maxind = columnKey == null ? 0 : Math.min(colInd + adj, dataset.getColumnCount() - 1);
                             geo.setPropertyToRefresh(aggrNode, columnNode,/* adj, */((ChartNode)dataset.getColumnKey(minInd))
-                                    .getNode(), ((ChartNode)dataset.getColumnKey(maxind)).getNode());
+                                    .getNode(), ((ChartNode)dataset.getColumnKey(maxind)).getNode(), aggregatedProperties);
                             layer.refresh(null);
                         }
                     } catch (IOException e) {
@@ -524,7 +528,8 @@ public class ReuseAnalyserView extends ViewPart {
     protected void findOrCreateAggregateNodeInNewThread(final Node gisNode, final String propertyName) {
         // TODO restore focus after job execute or not necessary?
         mainView.setEnabled(false);
-        ComputeStatisticsJob job = new ComputeStatisticsJob(gisNode, propertyName, cDistribute.getText(), cSelect.getText());
+        String select = cSelect.getText();
+        ComputeStatisticsJob job = new ComputeStatisticsJob(gisNode, propertyName, cDistribute.getText(), select);
         job.schedule();
     }
 
@@ -594,8 +599,7 @@ public class ReuseAnalyserView extends ViewPart {
                     // necessary property distribute type
                             && (distribute.equals(arg0.currentNode().getProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, null)))
                             // network of necessary select type
-                            && (typeOfGis == GisTypes.Network || select.equals(arg0.currentNode().getProperty(
-                                    INeoConstants.PROPERTY_SELECT_NAME, null)));
+                            && select.equals(arg0.currentNode().getProperty(INeoConstants.PROPERTY_SELECT_NAME, null));
                 }
             }, NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING).iterator();
             Distribute distributeColumn = Distribute.findEnumByValue(distribute);
@@ -617,9 +621,7 @@ public class ReuseAnalyserView extends ViewPart {
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, propertyName);
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.AGGREGATION_TYPE_NAME);
             result.setProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, distribute);
-            if (typeOfGis == GisTypes.Tems) {
-                result.setProperty(INeoConstants.PROPERTY_SELECT_NAME, select);
-            }
+            result.setProperty(INeoConstants.PROPERTY_SELECT_NAME, select);
             gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
 
 
@@ -686,7 +688,9 @@ public class ReuseAnalyserView extends ViewPart {
      * @return a tree-map of the results for the chart
      */
     private TreeMap<Column, Integer> computeStatistics(Node gisNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
+        boolean isAggregatedProperty = isAggregatedProperty(propertyName);
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
+        List<Number> aggregatedValues = new ArrayList<Number>();
         GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
         final GisTypes typeOfGis = geoNode.getGisType();
         int totalWork = (int)geoNode.getCount() * 2;
@@ -699,12 +703,20 @@ public class ReuseAnalyserView extends ViewPart {
         Double min = null;
         Double max = null;
         propertyValue = null;
-        int colCount = 0;
+        // int colCount = 0;
         runGcIfBig(totalWork);
         monitor.subTask("Searching database");
         // Collection<Node> trav = travers.getAllNodes();
         for (Node node : travers) {
-            if (node.hasProperty(propertyName)) {
+            if (isAggregatedProperty) {
+                Double minValue = getNodeValue(node, propertyName, select, false);
+                Double maxValue = select == Select.EXISTS ? getNodeValue(node, propertyName, select, true) : minValue;
+                if (minValue == null || maxValue == null) {
+                    continue;
+                }
+                min = min == null ? minValue : Math.min(minValue, min);
+                max = max == null ? maxValue : Math.max(maxValue, max);
+            } else if (node.hasProperty(propertyName)) {
                 propertyValue = node.getProperty(propertyName);
                 Number valueNum = (Number)propertyValue;
                 if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
@@ -736,7 +748,7 @@ public class ReuseAnalyserView extends ViewPart {
                     }
 
                 } else {
-                    colCount++;
+                    // colCount++;
                     min = min == null ? ((Number)propertyValue).doubleValue() : Math
                             .min(((Number)propertyValue).doubleValue(), min);
                     max = max == null ? ((Number)propertyValue).doubleValue() : Math
@@ -751,7 +763,7 @@ public class ReuseAnalyserView extends ViewPart {
         runGcIfBig(totalWork);
         monitor.subTask("Determining statistics type");
         if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
-            colCount = mpMap.size();
+            // colCount = mpMap.size();
             min = null;
             max = null;
             for (Number value : mpMap.values()) {
@@ -807,7 +819,24 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         runGcIfBig(totalWork);
-        if (typeOfGis == GisTypes.Network || select == Select.EXISTS) {
+        if (isAggregatedProperty) {
+            travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
+                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            monitor.subTask("Building results from database");
+            for (Node node : travers) {
+                    for (Column column : keySet) {
+                        Double value = getNodeValue(node, propertyName, select, column.minValue, column.range);
+                        if (value != null && column.containsValue(value)) {
+                            Integer count = result.get(column);
+                            result.put(column, 1 + (count == null ? 0 : count));
+                            break;
+                        }
+                    }
+                monitor.worked(1);
+                if (monitor.isCanceled())
+                    break;
+            }
+        } else if (typeOfGis == GisTypes.Network || select == Select.EXISTS) {
             travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
                     NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             monitor.subTask("Building results from database");
@@ -858,6 +887,82 @@ public class ReuseAnalyserView extends ViewPart {
         }
         monitor.subTask("Finalizing results");
         return result;
+    }
+
+    /**
+     * @param node
+     * @param propertyName
+     * @param select
+     * @param minValue
+     * @param range
+     * @return
+     */
+    private Double getNodeValue(Node node, String propertyName, Select select, double minValue, double range) {
+        if (select != Select.EXISTS || !isAggregatedProperty(propertyName)) {
+            return getNodeValue(node, propertyName, select, true);
+        }
+        for (String singleProperties : aggregatedProperties.get(propertyName)) {
+            if (node.hasProperty(singleProperties)) {
+                propertyValue = node.getProperty(singleProperties);
+                double doubleValue = ((Number)propertyValue).doubleValue();
+                if (doubleValue == minValue || (doubleValue >= minValue && doubleValue < minValue + range)) {
+                    return doubleValue;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param node
+     * @param propertyName
+     * @param select
+     * @param isMax
+     * @return
+     */
+    private Double getNodeValue(Node node, String propertyName, Select select, boolean isMax) {
+        if (isAggregatedProperty(propertyName)) {
+            Double min = null;
+            Double max = null;
+            Double first = null;
+            int count = 0;
+            double sum = (double)0;
+            for (String singleProperties : aggregatedProperties.get(propertyName)) {
+                if (node.hasProperty(singleProperties)) {
+                    propertyValue = node.getProperty(singleProperties);
+                    double doubleValue = ((Number)propertyValue).doubleValue();
+                    if (first == null) {
+                        first = doubleValue;
+                    }
+                    min = min == null ? doubleValue : Math.min(doubleValue, min);
+                    max = max == null ? doubleValue : Math.max(doubleValue, max);
+                    sum += doubleValue;
+                    count++;
+                }
+            }
+            switch (select) {
+            case AVERAGE:
+                return count == 0 ? null : sum / (double)count;
+            case MAX:
+                return max;
+            case MIN:
+                return min;
+            case FIRST:
+                return first;
+            case EXISTS:
+                return isMax ? max : min;
+            }
+            return null;
+        }
+        return ((Number)node.getProperty(propertyName, null)).doubleValue();
+    }
+
+    /**
+     * @param propertyName
+     * @return
+     */
+    private boolean isAggregatedProperty(String propertyName) {
+        return aggregatedProperties.keySet().contains(propertyName);
     }
 
     private static void runGcIfBig(int totalWork) {
@@ -990,6 +1095,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @param node - selected node
      */
     private void formPropertyList(Node node) {
+        aggregatedProperties.clear();
         propertyList = new ArrayList<String>();
         Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
                 new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
@@ -1002,6 +1108,17 @@ public class ReuseAnalyserView extends ViewPart {
                 if (propNode.getProperty(propName) instanceof Number) {
                     propertyList.add(propName);
                 }
+            }
+        }
+        final Relationship singleRelationship = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        // add aggregated property
+        if (singleRelationship != null) {
+            final Node rootNode = singleRelationship.getEndNode();
+            if (rootNode.hasProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME)) {
+                propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
+                aggregatedProperties.put(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, rootNode.getProperty(
+                        INeoConstants.PROPERTY_ALL_CHANNELS_NAME).toString().split(","));
+
             }
         }
         setVisibleForChart(false);

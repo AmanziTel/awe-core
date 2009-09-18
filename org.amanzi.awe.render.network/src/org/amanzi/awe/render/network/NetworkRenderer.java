@@ -50,7 +50,8 @@ public class NetworkRenderer extends RendererImpl {
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
 	private Color labelColor;
-
+    private boolean isAggregatedProperties;
+    private String[] aggregationList;
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
@@ -136,6 +137,10 @@ public class NetworkRenderer extends RendererImpl {
             Double redMaxValue = geoNeo.getPropertyValueMax();
             Double lesMinValue = geoNeo.getMinPropertyValue();
             Double moreMaxValue = geoNeo.getMaxPropertyValue();
+            Select select = Select.findSelectByValue(geoNeo.getSelectName());
+            // TODO adds support more then one aggregation properties
+            isAggregatedProperties = selectedProp != null && INeoConstants.PROPERTY_ALL_CHANNELS_NAME.equals(selectedProp);
+            aggregationList = geoNeo.getAggregatedProperties();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
             Envelope data_bounds = geoNeo.getBounds();
@@ -205,7 +210,9 @@ public class NetworkRenderer extends RendererImpl {
                                 double azimuth = Double.NaN;
                                 double beamwidth = ((Number)child.getProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME, 360.0))
                                         .doubleValue();
-                                Color colorToFill = fillColor;
+                                Color colorToFill = getSectorColor(select, child, fillColor, selectedProp, redMinValue,
+                                        redMaxValue, lesMinValue, moreMaxValue);
+
                                 for (String key : child.getPropertyKeys()) {
                                     if (key.toLowerCase().contains("azimuth")) {
                                         Object value = child.getProperty(key);
@@ -216,18 +223,6 @@ public class NetworkRenderer extends RendererImpl {
                                                 azimuth = Integer.parseInt(value.toString());
                                             } catch (Exception e) {
                                             }
-                                        }
-                                    }
-                                    if (selectedProp != null && selectedProp.equals(key)) {
-                                        double value = ((Number)child.getProperty(key)).doubleValue();
-                                        if (value < redMaxValue || value == redMinValue) {
-                                            if (value >= redMinValue) {
-                                                colorToFill = COLOR_SELECTED;
-                                            } else if (value >= lesMinValue) {
-                                                colorToFill = COLOR_LESS;
-                                            }
-                                        } else if (value < moreMaxValue) {
-                                            colorToFill = COLOR_MORE;
                                         }
                                     }
                                 }
@@ -288,10 +283,81 @@ public class NetworkRenderer extends RendererImpl {
     }
 
     /**
-     * Render the sector symbols based on the point and azimuth.
-     * We simply save the graphics transform, then modify the graphics
-     * through the appropriate transformations (origin to site, and rotations
-     * for drawing the lines and arcs).
+     * @param child
+     * @return
+     */
+    private Color getSectorColor(Select select, Node node, Color defColor, String selectedProp, Double redMinValue,
+            Double redMaxValue, Double lesMinValue, Double moreMaxValue) {
+
+        Color colorToFill = defColor;
+        if (selectedProp == null) {
+            return colorToFill;
+        }
+        Double value = getNodeValue(node, selectedProp, select, lesMinValue, moreMaxValue);
+        if (value == null) {
+            return colorToFill;
+        }
+        if (value < redMaxValue || value == redMinValue) {
+            if (value >= redMinValue) {
+                colorToFill = COLOR_SELECTED;
+            } else if (value >= lesMinValue) {
+                colorToFill = COLOR_LESS;
+            }
+        } else if (value < moreMaxValue) {
+            colorToFill = COLOR_MORE;
+        }
+        return colorToFill;
+    }
+
+    /**
+     * @param node
+     * @param propertyName
+     * @param select
+     * @param minValue
+     * @param range
+     * @return
+     */
+    private Double getNodeValue(Node node, String propertyName, Select select, double minValue, double maxValue) {
+
+        if (isAggregatedProperties) {
+            Double min = null;
+            Double max = null;
+            int count = 0;
+            double sum = (double)0;
+            for (String singleProperties : aggregationList) {
+                if (node.hasProperty(singleProperties)) {
+                    double doubleValue = ((Number)node.getProperty(singleProperties)).doubleValue();
+                    if (select == Select.FIRST) {
+                        return doubleValue;
+                    } else if (select == Select.EXISTS) {
+                        if (doubleValue == minValue || (doubleValue >= minValue && doubleValue < maxValue)) {
+                            return doubleValue;
+                        }
+                    }
+                    min = min == null ? doubleValue : Math.min(doubleValue, min);
+                    max = max == null ? doubleValue : Math.max(doubleValue, max);
+                    sum += doubleValue;
+                    count++;
+                }
+            }
+            switch (select) {
+            case AVERAGE:
+                return count == 0 ? null : sum / (double)count;
+            case MAX:
+                return max;
+            case MIN:
+                return min;
+            }
+            return null;
+        }
+        return node.hasProperty(propertyName) ? ((Number)node.getProperty(propertyName)).doubleValue() : null;
+    }
+
+    /**
+     * Render the sector symbols based on the point and azimuth. We simply save the graphics
+     * transform, then modify the graphics through the appropriate transformations (origin to site,
+     * and rotations for drawing the lines and arcs).
+     * 
      * @param g
      * @param p
      * @param azimuth
@@ -369,6 +435,55 @@ public class NetworkRenderer extends RendererImpl {
     public void render( IProgressMonitor monitor ) throws RenderException {
         Graphics2D g = getContext().getImage().createGraphics();
         render(g, monitor);
+    }
+
+    /**
+     * <p>
+     * TODO union with org.amanzi.awe.views.reuse.Select now simple copy enum from
+     * org.amanzi.awe.views.reuse.Select
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.1.0
+     */
+    private enum Select {
+        MAX("max"), MIN("min"), AVERAGE("average"), EXISTS("exists"), FIRST("first");
+        private final String value;
+
+        /**
+         * Constructor
+         * 
+         * @param value - string value
+         */
+        private Select(String value) {
+            this.value = value;
+        }
+
+        public static Select findSelectByValue(String value) {
+            if (value == null) {
+                return null;
+            }
+            for (Select selection : Select.values()) {
+                if (selection.value.equals(value)) {
+                    return selection;
+                }
+            }
+            return null;
+        }
+
+        public static String[] getEnumAsStringArray() {
+            Select[] enums = Select.values();
+            String[] result = new String[enums.length];
+            for (int i = 0; i < enums.length; i++) {
+                result[i] = enums[i].value;
+            }
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
     }
 
 }
