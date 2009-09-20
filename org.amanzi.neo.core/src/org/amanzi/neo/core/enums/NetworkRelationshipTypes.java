@@ -13,5 +13,6 @@ public enum NetworkRelationshipTypes implements RelationshipType {
     AGGREGATION,
     CHILD,
     SIBLING,
-    INTERFERS;
+    INTERFERS,
+    DELTA_REPORT;
 }

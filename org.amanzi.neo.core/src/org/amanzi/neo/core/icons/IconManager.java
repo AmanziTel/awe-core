@@ -16,7 +16,7 @@ import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
  * Class that provides access to Neo icons
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public class IconManager implements IPropertyChangeListener {
@@ -72,20 +72,16 @@ public class IconManager implements IPropertyChangeListener {
 	}
 
 	/**
-	 * Updates UserIcons from given location
-	 * 
-	 * @param newLocation
-	 *            location of UserIcons (if null than location computes from
-	 *            NeoPreferences)
-	 */
+     * Updates UserIcons from given location
+     * 
+     * @param newLocation location of UserIcons (if null than location computes from NeoPreferences)
+     */
 
 	private void updateUserIcons(String newLocation) {
 		if (newLocation == null) {
-			IPreferenceStore store = Activator.getDefault()
-					.getPreferenceStore();
-			newLocation = store
-					.getString(NeoDecoratorPreferences.NODE_ICON_LOCATION);
-		}
+            IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+            newLocation = store.getString(NeoDecoratorPreferences.NODE_ICON_LOCATION);
+        }
 
 		icons = new UserIcons(newLocation);
 	}
@@ -96,14 +92,13 @@ public class IconManager implements IPropertyChangeListener {
 
 	public void propertyChange(PropertyChangeEvent event) {
 		// if location of icons was changes than we must re-initialize UserIcons
-		if (event.getProperty().equals(
-				NeoDecoratorPreferences.NODE_ICON_LOCATION)) {
-			updateUserIcons((String) event.getNewValue());
+		if (event.getProperty().equals(NeoDecoratorPreferences.NODE_ICON_LOCATION)) {
+            updateUserIcons((String)event.getNewValue());
 
-			for (Viewer singleViewer : viewers) {
-				singleViewer.refresh();
-			}
-		}
+            for (Viewer singleViewer : viewers) {
+                singleViewer.refresh();
+            }
+        }
 	}
 
 	/**
@@ -128,19 +123,19 @@ public class IconManager implements IPropertyChangeListener {
 
 	public Image getImage(String name) {
 		if (!name.equals(NEO_ROOT)) {
-			// first search for UserIcons
-			Image result = icons.getImage(name);
-			if (result == null) {
-				// if no such Image in UserIcons than search in NeoIcons
-				name = "TYPE_" + convertName(name);
-				result = NeoIcons.valueOf(name).image();
-			}
+            // first search for UserIcons
+            Image result = icons.getImage(name);
+            if (result == null) {
+                // if no such Image in UserIcons than search in NeoIcons
+                name = "TYPE_" + convertName(name);
+                result = NeoIcons.valueOf(name).image();
+            }
 
-			return result;
-		} else {
-			// if it's name of Root element than compute it
-			return NeoIcons.NEO_ROOT.image();
-		}
+            return result;
+        } else {
+            // if it's name of Root element than compute it
+            return NeoIcons.NEO_ROOT.image();
+        }
 	}
 
 	/**
