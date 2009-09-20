@@ -33,11 +33,8 @@ public class NeoGeoResource extends IGeoResource {
 		this.geoNeo = new GeoNeo(neo, this.gisNode);
 		try {
 			URL serviceUrl = service.getIdentifier();
-			identifierUrl = new URL(serviceUrl
-					+ "#"
-					+ this.gisNode
-							.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-			try {
+            identifierUrl = new URL(serviceUrl + "#" + this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            try {
                 CatalogUIPlugin.getDefault().getImageRegistry().put(this.getIdentifier().toString(),
                         IconManager.getIconManager().getImage(IconManager.NETWORK_ICON));
             } catch (IllegalArgumentException e) {
