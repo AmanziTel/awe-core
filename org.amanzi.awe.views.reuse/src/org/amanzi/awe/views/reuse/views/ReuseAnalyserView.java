@@ -846,7 +846,9 @@ public class ReuseAnalyserView extends ViewPart {
                         if (value != null && column.containsValue(value)) {
                             Integer count = result.get(column);
                             result.put(column, 1 + (count == null ? 0 : count));
+                        if (select != Select.EXISTS) {
                             break;
+                        }
                         }
                     }
                 monitor.worked(1);
