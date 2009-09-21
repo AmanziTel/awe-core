@@ -551,15 +551,21 @@ public class ReuseAnalyserView extends ViewPart {
 
         @Override
         public IStatus run(IProgressMonitor monitor) {
-                node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select, monitor);
-                ActionUtil.getInstance().runTask(new Runnable() {
-                    @Override
-                    public void run() {
-                            mainView.setEnabled(true);
-                            chartUpdate(node);
-                    }
-                }, true);
-            return Status.OK_STATUS;
+                try {
+                    node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select, monitor);
+                    ActionUtil.getInstance().runTask(new Runnable() {
+                        @Override
+                        public void run() {
+                                mainView.setEnabled(true);
+                                chartUpdate(node);
+                        }
+                    }, true);
+         return Status.OK_STATUS;
+                } catch (Exception e) {
+                e.printStackTrace();
+                    // TODO Handle Exception
+                    throw (RuntimeException) new RuntimeException( ).initCause( e );
+                }
         }
 
         /**
@@ -607,7 +613,13 @@ public class ReuseAnalyserView extends ViewPart {
                 Node result = iterator.next();
                 if (distributeColumn != Distribute.AUTO && result.hasProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME)
                         && (Boolean)result.getProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME)) {
-                    MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, ERROR_MSG);
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, ERROR_MSG);
+                        }
+                    }, true);
                     result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
                     ActionUtil.getInstance().runTask(setAutoDistribute, true);
 
