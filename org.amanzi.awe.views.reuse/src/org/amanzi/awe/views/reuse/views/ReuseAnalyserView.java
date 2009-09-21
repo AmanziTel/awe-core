@@ -116,7 +116,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String ROW_KEY = "values";
 
     /** Maximum bars in chart */
-    private static final int MAXIMUM_BARS = 500;
+    private static final int MAXIMUM_BARS = 1500;
     private Map<String, String[]> aggregatedProperties = new HashMap<String, String[]>();
     private Label gisSelected;
     private Combo gisCombo;
@@ -143,6 +143,7 @@ public class ReuseAnalyserView extends ViewPart {
     private LogarithmicAxis axisLog;
     private Composite mainView;
     private Label lLogarithmic;
+    protected String propertyName = null;
     private static final Paint DEFAULT_COLOR = new Color(0.75f,0.7f,0.4f);
     private static final Paint COLOR_SELECTED = Color.RED;
     private static final Paint COLOR_LESS = Color.BLUE;
@@ -281,8 +282,13 @@ public class ReuseAnalyserView extends ViewPart {
                     setVisibleForChart(false);
                 } else {
                     final Node gisNode = members.get(gisCombo.getText());
-                    final String propertyName = propertyCombo.getText();
-                    cSelect.setEnabled(aggregatedProperties.keySet().contains(propertyName));
+                    propertyName = propertyCombo.getText();
+                    boolean isAggrProp = aggregatedProperties.keySet().contains(propertyName);
+                    if (!isAggrProp) {
+                        cSelect.select(0);
+                    }
+                    cSelect.setEnabled(isAggrProp);
+                    IMap map = ApplicationGIS.getActiveMap();
                     findOrCreateAggregateNodeInNewThread(gisNode, propertyName);
                     // chartUpdate(aggrNode);
                 }
@@ -341,6 +347,13 @@ public class ReuseAnalyserView extends ViewPart {
         axisLog = new LogarithmicAxis(COUNT_AXIS);
         axisLog.setAllowNegativesFlag(true);
         axisLog.setAutoRange(true);
+    }
+
+    /**
+     * @return Returns the propertyName.
+     */
+    public String getPropertyName() {
+        return propertyName;
     }
 
     /**
@@ -659,7 +672,7 @@ public class ReuseAnalyserView extends ViewPart {
                 BigDecimal minValue = new BigDecimal(key.getMinValue());
                 BigDecimal maxValue = new BigDecimal(key.getMinValue() + key.getRange());
                 if (distributeColumn == Distribute.INTEGERS) {
-                    nameCol = minValue.setScale(0, RoundingMode.UP).toString();
+                    nameCol = (minValue.add(new BigDecimal(0.5))).setScale(0, RoundingMode.HALF_UP).toString();
                 } else if (propertyValue instanceof Integer) {
                     minValue = minValue.setScale(0, RoundingMode.HALF_UP);
                     maxValue = maxValue.setScale(0, RoundingMode.DOWN);
