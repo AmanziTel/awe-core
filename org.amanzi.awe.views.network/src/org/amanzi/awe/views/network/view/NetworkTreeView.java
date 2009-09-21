@@ -932,10 +932,6 @@ public class NetworkTreeView extends ViewPart {
                             // Take note of GIS relationships, so we can re-link around the
                             // spatial node
                             if (relationship.getType().equals(GeoNeoRelationshipTypes.NEXT)) {
-                                System.out.println("Found GIS relation: "
-                                        + relationship.getStartNode().getProperty("name", null) + " -("
-                                        + relationship.getType().toString() + ")-> "
-                                        + relationship.getEndNode().getProperty("name", null));
                                 if (relationship.getEndNode().equals(node)) {
                                     geoPrev = relationship.getStartNode();
                                 } else {
