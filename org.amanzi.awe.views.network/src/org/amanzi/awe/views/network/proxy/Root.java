@@ -2,6 +2,7 @@ package org.amanzi.awe.views.network.proxy;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -80,24 +81,32 @@ public class Root extends NeoNode {
     
     public NeoNode[] getChildren() {
         ArrayList<NeoNode> networkNodes = new ArrayList<NeoNode>();
-        
+        HashMap<String,NeoNode> deltaNodes = new HashMap<String,NeoNode>();
+
         NeoService service = serviceProvider.getService();
-        
+
         Transaction transaction = service.beginTx();
         try {
             Node reference = service.getReferenceNode();
-            
+
             for (Relationship relationship : reference.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
                 Node gisNode = null;
-                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME.toString()) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) {
-                    gisNode = node;                    
+                if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.GIS_TYPE_NAME.toString())) {
+                    gisNode = node;
                 }
                 if (gisNode != null) {
                     for (Relationship gisRelationship : gisNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
                         node = gisRelationship.getEndNode();
-                        if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NetworkElementTypes.NETWORK.toString()) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) {
+                        if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NetworkElementTypes.NETWORK.toString())) {
                             networkNodes.add(new NeoNode(node));
+                            for (Relationship deltaRelationship : node.getRelationships(NetworkRelationshipTypes.DELTA_REPORT, Direction.INCOMING)) {
+                                Node deltaNode = deltaRelationship.getStartNode();
+                                String deltaName = (String)deltaNode.getProperty("name",null);
+                                if (!deltaNodes.containsKey(deltaName)) {
+                                    deltaNodes.put(deltaName,new NeoNode(deltaNode));
+                                }
+                            }
                         }
                     }
                 }
@@ -108,11 +117,15 @@ public class Root extends NeoNode {
             transaction.finish();
         }
         
-        if (networkNodes.isEmpty()) {
+        if (networkNodes.isEmpty() && deltaNodes.isEmpty()) {
             return NO_NODES;
         } else {
             Collections.sort(networkNodes, new NeoNodeComparator());
-            return networkNodes.toArray(NO_NODES);
+            //Collections.sort(deltaNodes, new NeoNodeComparator());
+            ArrayList<NeoNode> allNodes = new ArrayList<NeoNode>();
+            allNodes.addAll(networkNodes);
+            allNodes.addAll(deltaNodes.values());
+            return allNodes.toArray(NO_NODES);
         }
     }
     

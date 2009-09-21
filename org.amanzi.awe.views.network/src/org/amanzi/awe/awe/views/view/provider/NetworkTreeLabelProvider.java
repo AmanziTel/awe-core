@@ -11,7 +11,7 @@ import org.eclipse.swt.graphics.Image;
  * Label Provider for Network Tree
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public class NetworkTreeLabelProvider extends LabelProvider {

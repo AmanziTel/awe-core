@@ -4,8 +4,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
@@ -65,6 +70,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
@@ -324,6 +330,12 @@ public class NetworkTreeView extends ViewPart {
                 }
             }
         });
+        manager.add(new Action("Refresh") {
+            public void run() {
+                viewer.refresh(((IStructuredSelection)viewer.getSelection()).getFirstElement());
+            }
+        });
+        manager.add(new DeltaReportAction());
         manager.add(new Action("Show in database graph") {
             public void run() {
                 IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
@@ -347,7 +359,7 @@ public class NetworkTreeView extends ViewPart {
                         && ApplicationGIS.getActiveMap() != ApplicationGIS.NO_MAP;
             }
         });
-        manager.add(new DeleteAction());
+        manager.add(new DeleteAction((IStructuredSelection)viewer.getSelection()));
     }
 
     /**
@@ -555,6 +567,11 @@ public class NetworkTreeView extends ViewPart {
                         NetworkElementTypes.SECTOR.toString().equals(nodeType) ||
                         NetworkElementTypes.CITY.toString().equals(nodeType) ||
                         NetworkElementTypes.BSC.toString().equals(nodeType) ||
+                        "delta_network".equals(nodeType) ||
+                        "delta_site".equals(nodeType) ||
+                        "delta_sector".equals(nodeType) ||
+                        "missing_sites".equals(nodeType) ||
+                        "missing_sectors".equals(nodeType) ||
                         INeoConstants.HEADER_MS.toString().equalsIgnoreCase(nodeType) ||
                         INeoConstants.MP_TYPE_NAME.toString().equalsIgnoreCase(nodeType) ||
                         INeoConstants.FILE_TYPE_NAME.toString().equalsIgnoreCase(nodeType) ||
@@ -563,12 +580,6 @@ public class NetworkTreeView extends ViewPart {
                         GeoNeo resource = singleLayer.findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
                         if (containsGisNode(resource, selectedNode)) {
                             resource.addNodeToSelect(selectedNode.getNode());
-                            if (nodeType.equals("city")) {
-                                System.out.println("Adding city node " + selectedNode.toString());
-                                for (Node node : resource.getSelectedNodes()) {
-                                    System.out.println("Have selected nodes: " + node);
-                                }
-                            }
                         }
                     }
                 }
@@ -736,83 +747,345 @@ public class NetworkTreeView extends ViewPart {
     }
 
     /**
-     * delete all incoming reference
+     * delete all incoming references
      * 
      * @param node
      */
     public static void deleteIncomingRelations(Node node) {
-        for (Relationship relation : node.getRelationships(Direction.INCOMING)) {
-            relation.delete();
+        Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
+            for (Relationship relation : node.getRelationships(Direction.INCOMING)) {
+                relation.delete();
+            }
+            transaction.success();
+        } finally {
+            transaction.finish();
         }
     }
 
     /**
-     * <p>
-     * Delete node action
-     * </p>
+     * Action to delete all selected nodes and their child nodes in the graph, but not
+     * nodes related by other geographic relationships. The result is designed to remove
+     * sub-tree's from the tree view, leaving remaining tree nodes in place.
      * 
      * @author Cinkel_A
-     * @since 1.1.0
+     * @author craig
+     * @since 1.0.0
      */
     private class DeleteAction extends Action {
-
-        @Override
-        public void run() {
-            MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
-            msg.setText("Delete node");
-            final String deleteText = getText();
-            msg.setMessage(deleteText + "?");
-            int result = msg.open();
-            if (result != SWT.YES) {
-                return;
-            }
-            final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-
-            final Iterator iterator = selection.iterator();
-            while (iterator.hasNext()) {
+        private List<NeoNode> nodesToDelete;
+        private String text = null;
+        private boolean interactive = false;
+        private DeleteAction(List<NeoNode> nodesToDelete, String text) {
+            this.nodesToDelete = nodesToDelete;
+            this.text = text;
+        }
+        @SuppressWarnings("unchecked")
+        private DeleteAction(IStructuredSelection selection){
+            interactive = true;
+            nodesToDelete = new ArrayList<NeoNode>();
+            Iterator iterator = selection.iterator();
+            HashSet<String> nodeTypes = new HashSet<String>();
+            while(iterator.hasNext()) {
                 Object element = iterator.next();
-                if (!(element instanceof NeoNode)) {
-                    continue;
+                if(element !=null && element instanceof NeoNode && !(element instanceof Root)) {
+                    nodesToDelete.add((NeoNode)element);
+                    nodeTypes.add(getNodeType(((NeoNode)element).getNode()));
                 }
-                NeoNode neoNode = (NeoNode)element;
-                Node node = neoNode.getNode();
-                String type = getNodeType(node, "");
-
-                if (INeoConstants.MP_TYPE_NAME.equals(type) || (NetworkElementTypes.SITE.toString().equals(type))
-                        || (INeoConstants.HEADER_MS.equals(type))) {
-                    // relink node
-                    Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-                    if (relation != null) {
-                        Node nodeNext = relation.getEndNode();
-                        Relationship singleRelationship = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
-                                Direction.INCOMING);
-                        if (singleRelationship != null) {
-                            singleRelationship.getStartNode().createRelationshipTo(nodeNext, GeoNeoRelationshipTypes.NEXT);
-                        }
-                        relation.delete();
+            }
+            String type = nodeTypes.size() == 1 ? nodeTypes.iterator().next() : "node";
+            switch(nodesToDelete.size()) {
+            case 0:
+                text = "Select nodes to delete";
+                break;
+            case 1:
+                text = "Delete " + type + " '" + nodesToDelete.get(0).toString() + "'";
+                break;
+            case 2:
+            case 3:
+            case 4:
+                for(NeoNode node: nodesToDelete) {
+                    if(text == null) {
+                        text = "Delete " + type + "s " + node;
+                    } else {
+                        text += ", " + node;
                     }
                 }
-                // fast delete reference
-                deleteIncomingRelations(node);
+                break;
+            default:
+                text = "Delete " + nodesToDelete.size() + " " + type + "s";
+                break;
             }
-            viewer.refresh();
+            //TODO: Find a more general solution
+            text = text.replaceAll("citys", "cities");
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void run() {
+            if(interactive) {
+                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
+                msg.setText("Delete node");
+                msg.setMessage(getText() + "?\n\nAll contained data will also be deleted!");
+                int result = msg.open();
+                if (result != SWT.YES) {
+                    return;
+                }
+            }
+
+            // Create a job for deleting all the nodes and sub-nodes in the disconnected graph from the database
+            Job job = new Job(getText()) {
+
+                @SuppressWarnings("unchecked")
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    boolean cleaned = false;
+                    int size = 2;
+                    int count = 0;
+                    for(NeoNode neoNode:nodesToDelete) {
+                        size += 2 + getTreeSize(neoNode.getNode());
+                    }
+                    //System.out.println("Deleting tree of estimated size: "+size);
+                    monitor.beginTask(getText(), size);
+                    // First we cut the tree out of the graph so only CHILD relations exist
+                    for (NeoNode neoNode: nodesToDelete) {
+                        if(monitor.isCanceled()) {
+                            break;
+                        }
+                        monitor.subTask("Extracting "+neoNode.toString());
+                        Node node = neoNode.getNode();
+                        cleanTree(node,monitor);    // Delete non-tree relations (and relink gis next links)
+                        deleteIncomingRelations(node);  // cut from the tree
+                        monitor.worked(1);
+                        count++;
+                        //System.out.println("****** Finished main node ["+count+"/"+nodesToDelete.size()+"]: "+neoNode);
+                    }
+                    NeoServiceProvider.getProvider().commit();
+                    // Since nodes are not in the tree anymore, we can re-draw the tree
+                    viewer.getControl().getDisplay().syncExec(new Runnable() {
+                        public void run() {
+                            NetworkTreeView.this.viewer.refresh();
+                        }
+                    });
+                    monitor.worked(1);
+                    monitor.done();
+                    if(!cleaned){
+                        return Status.CANCEL_STATUS;
+                    }
+                    monitor.worked(1);
+                    for (NeoNode neoNode: nodesToDelete) {
+                        if(monitor.isCanceled()) {
+                            break;
+                        }
+                        monitor.subTask("Deleting "+neoNode.toString());
+                        Node node = neoNode.getNode();
+                        NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+                        monitor.worked(1);
+                    }
+                    NeoServiceProvider.getProvider().commit();
+                    monitor.worked(1);
+                    monitor.done();
+                    return Status.OK_STATUS;
+                }
+
+                private int getTreeSize(Node node) {
+                    int size = 0;
+                    Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                    try {
+                        for (Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+                                ReturnableEvaluator.ALL, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                            size++;
+                        }
+                        transaction.success();
+                        return size;
+                    } finally {
+                        transaction.finish();
+                    }
+                }
+
+                private void cleanTree(Node node, IProgressMonitor monitor) {
+                    Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                    try {
+                        for (Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                                ReturnableEvaluator.ALL, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                            cleanNode(nodeToClean);
+                            monitor.worked(1);
+                            if(monitor.isCanceled()) {
+                                break;
+                            }
+                        }
+                        transaction.success();
+                    } finally {
+                        transaction.finish();
+                    }
+                }
+
+                private void cleanNode(Node node) {
+                    Iterator<Relationship> relations = node.getRelationships(Direction.BOTH).iterator();
+                    Node geoPrev = null;
+                    Node geoNext = null;
+                    while (relations.hasNext()) {
+                        Relationship relationship = relations.next();
+                        // Ignore child relationships, so we maintain the tree structure
+                        // (for now)
+                        if (!(relationship.getType().equals(NetworkRelationshipTypes.CHILD))) {
+                            // Take note of GIS relationships, so we can re-link around the
+                            // spatial node
+                            if (relationship.getType().equals(GeoNeoRelationshipTypes.NEXT)) {
+                                System.out.println("Found GIS relation: "
+                                        + relationship.getStartNode().getProperty("name", null) + " -("
+                                        + relationship.getType().toString() + ")-> "
+                                        + relationship.getEndNode().getProperty("name", null));
+                                if (relationship.getEndNode().equals(node)) {
+                                    geoPrev = relationship.getStartNode();
+                                } else {
+                                    geoNext = relationship.getEndNode();
+                                }
+                            }
+                            relationship.delete();
+                        }
+                    }
+                    if (geoPrev != null && geoNext != null) {
+                        //System.out.println("Creating new geo-next relationship: " + geoPrev.getProperty("name", null) + " -("
+                        //        + GeoNeoRelationshipTypes.NEXT + ")-> " + geoNext.getProperty("name", null));
+                        geoPrev.createRelationshipTo(geoNext, GeoNeoRelationshipTypes.NEXT);
+                    }
+                }
+
+            };
+            job.schedule(50);
+
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public boolean isEnabled() {
+            return nodesToDelete.size() > 0;
+        }
+
+    }
+    /**
+     * General a delta report based on two selected networks, sites or sectors
+     * 
+     * @author Craig
+     * @since 1.0.0
+     */
+    private class DeltaReportAction extends Action {
+
+        private ArrayList<NeoNode> validNodes;
+        private String reportText;
+        private String reportName;
+        private NeoNode previousReport;
+        private Node reportNode;
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void run() {
+
+            if(getPreviousReport()!=null) {
+                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
+                msg.setText("Delta Report");
+                msg.setMessage("Delta report already exists: "+getName()+"\n\nThis will be deleted if you continue.\n\n"+getText() + "?");
+                int result = msg.open();
+                if (result != SWT.YES) {
+                    return;
+                }
+                (new DeleteAction(Arrays.asList(new NeoNode[]{previousReport}),"Deleting previous delta report: "+getName())).run();
+            }
+            //TODO: Consider building on previous report instead of rebuilding for performance reasons
+            makePreviousReport();
 
             NeoServiceProvider.getProvider().commit();
-            Job job = new Job(deleteText) {
+            Job job = new Job(getName()) {
 
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                    final Iterator iterator = selection.iterator();
-                    Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                    monitor.beginTask(getName(), 100);
+                    int initPerc = 5;
+                    int searchPerc = 15;
+                    int calcPerc = 80;
+                    NeoService neo = NeoServiceProvider.getProvider().getService();
+                    Transaction tx = neo.beginTx();
                     try {
-                        while (iterator.hasNext()) {
-                            Object element = iterator.next();
-                            if (!(element instanceof NeoNode)) {
-                                continue;
+                        monitor.subTask("Preparing report");
+                        Node deltaSitesNode = null;
+                        //The code below was originally designed for building on a previous report for performance
+                        //but currently has no affect, since we delete previous reports
+                        //TODO: Either enable building on previous reports, or delete this code
+                        HashMap<String,Node> missingSitesNodes = new HashMap<String,Node>();
+                        for (Node node : reportNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+                                ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                            for (NeoNode networkNode : getValidNodes()) {
+                                if (node.getProperty("name", "").equals(networkNode.toString())) {
+                                    missingSitesNodes.put(networkNode.toString(), node);
+                                }
                             }
-                            NeoNode neoNode = (NeoNode)element;
-                            Node node = neoNode.getNode();
-                            NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+                        }
+                        if(deltaSitesNode==null) {
+                            deltaSitesNode = neo.createNode();
+                            deltaSitesNode.setProperty("name", "changed sites");
+                            deltaSitesNode.setProperty("type", "delta_site");
+                            reportNode.createRelationshipTo(deltaSitesNode, NetworkRelationshipTypes.CHILD);
+                        }
+                        for (NeoNode networkNode : getValidNodes()) {
+                            if(!missingSitesNodes.containsKey(networkNode.toString())){
+                                Node node = neo.createNode();
+                                node.setProperty("name", "sites missing from "+networkNode);
+                                node.setProperty("type", "delta_site");
+                                reportNode.createRelationshipTo(deltaSitesNode, NetworkRelationshipTypes.CHILD);
+                                missingSitesNodes.put(networkNode.toString(), node);
+                            }
+                        }
+
+                        //Persist current state
+                        tx = commit(neo, tx);
+                        monitor.worked(initPerc);
+
+                        //Continue working
+                        TreeMap<String,Node> siteMap = null;
+                        TreeMap<String,Node> firstMap = null;
+                        HashMap<String,Integer> firstCounts = new HashMap<String,Integer>();
+                        HashMap<NeoNode,TreeMap<String,Node>> missingMap = new HashMap<NeoNode,TreeMap<String,Node>>();
+                        NeoNode firstNetwork = getValidNodes().get(0);
+                        for(NeoNode networkNode:getValidNodes()){
+                            int count = 0;
+                            siteMap = new TreeMap<String,Node>();
+                            if(firstMap == null) {
+                                firstMap = siteMap;
+                            }
+                            Node missingSitesNode = missingSitesNodes.get(networkNode.toString());
+                            TreeMap missingSites = new TreeMap<String, Node>();
+                            missingMap.put(networkNode, missingSites);
+                            for (Node site : networkNode.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                                    new ReturnableEvaluator() {
+
+                                        @Override
+                                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                                            return currentPos.currentNode().getProperty("type","").toString().equals("site");
+                                        }
+                                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                                String siteName = site.getProperty("name", "").toString();
+                                siteMap.put(siteName,site);
+                                if(networkNode != firstNetwork) {
+                                    Node oSite = firstMap.get(siteName);
+                                    if(oSite==null) {
+                                        missingSites.put(siteName, site);
+                                    } else {
+                                        Integer val = firstCounts.get(siteName);
+                                        firstCounts.put(siteName, val == null ? 1 : val + 1);
+                                    }
+                                    missingSitesNode.setProperty("sites_missing", missingSites.size());
+                                    monitor.worked(calcPerc * count / firstMap.size());
+                                }
+                            }
+                            if(networkNode.equals(firstNetwork)) {
+                                monitor.worked(searchPerc);
+                            }
                         }
                         tx.success();
                         NeoServiceProvider.getProvider().commit();
@@ -822,36 +1095,102 @@ public class NetworkTreeView extends ViewPart {
                     }
                 }
 
+                private Transaction commit(NeoService neo, Transaction tx) {
+                    tx.success();
+                    tx.finish();
+                    NeoServiceProvider.getProvider().commit();
+                    tx = neo.beginTx();
+                    return tx;
+                }
+
             };
             job.schedule();
 
         }
+        
+        private NeoNode getPreviousReport() {
+            if (previousReport == null) {
+                Root rootTree = (Root)((ITreeContentProvider)viewer.getContentProvider()).getElements(0)[0];
+                for (NeoNode neoNode : rootTree.getChildren()) {
+                    if (neoNode.getType().equals("delta_report") && neoNode.toString().equals(getName())) {
+                        previousReport = neoNode;
+                        reportNode = previousReport.getNode();
+                        break;
+                    }
+                }
+            }
+            return previousReport;
+        }
 
-        @Override
-        public String getText() {
-            IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-            if (selection.size() != 1) {
-                // type may be different
-                return "Delete " + selection.size() + " nodes";
+        private NeoNode makePreviousReport() {
+            NeoService neo = NeoServiceProvider.getProvider().getService();
+            Transaction tx = neo.beginTx();
+            try {
+                reportNode = neo.createNode();
+                reportNode.setProperty("type", "delta_report");
+                reportNode.setProperty("name", getName());
+                for(NeoNode networkNode:getValidNodes()){
+                    reportNode.createRelationshipTo(networkNode.getNode(), NetworkRelationshipTypes.DELTA_REPORT);
+                }
+                tx.success();
+                NeoServiceProvider.getProvider().commit();
+            } finally {
+                tx.finish();
             }
-            Object element = selection.getFirstElement();
-            if (element == null || !(element instanceof NeoNode) || (element instanceof Root)) {
-                return "Delete node";
-            }
-            NeoNode neoNode = (NeoNode)element;
-            return "Delete " + getNodeType(neoNode.getNode(), "") + " '" + neoNode.toString() + "'";
+            viewer.refresh();
+            return getPreviousReport();
         }
 
         @Override
-        public boolean isEnabled() {
-            IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-            final Iterator iterator = selection.iterator();
-            while (iterator.hasNext()) {
-                if (iterator.next() instanceof Root) {
-                    return false;
+        public String getText() {
+            if (reportText == null) {
+                if (getValidNodes().size() == 2) {
+                    reportText = "Calculate differences between '" + getValidNodes().get(0) + "' and '" + getValidNodes().get(1)
+                            + "'";
+                } else {
+                    reportText = "Select two networks, sites or sectors to compare";
                 }
             }
-            return true;
+            return reportText;
+        }
+
+        public String getName() {
+            if (reportName == null) {
+                if (getValidNodes().size() == 2) {
+                    reportName = "Delta Report: " + getValidNodes().get(0) + " <=> " + getValidNodes().get(1);
+                } else {
+                    reportName = "Delta Report";
+                }
+            }
+            return reportName;
+        }
+
+        @SuppressWarnings("unchecked")
+        private List<NeoNode> getValidNodes() {
+            if (validNodes == null) {
+                validNodes = new ArrayList<NeoNode>();
+                IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+                final Iterator iterator = selection.iterator();
+                while (iterator.hasNext()) {
+                    Object node = iterator.next();
+                    if (node instanceof NeoNode) {
+                        NeoNode neoNode = (NeoNode)node;
+                        String type = neoNode.getType();
+                        if ("network".equals(type) || "site".equals(type) || "sector".equals(type)) {
+                            NeoNode prevNode = validNodes.size() > 0 ? validNodes.get(0) : null;
+                            if (prevNode == null || prevNode.getType().equals(neoNode.getType())) {
+                                validNodes.add(neoNode);
+                            }
+                        }
+                    }
+                }
+            }
+            return validNodes;
+        }
+        
+        @Override
+        public boolean isEnabled() {
+            return getValidNodes().size() == 2;
         }
 
     }
