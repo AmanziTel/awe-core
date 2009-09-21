@@ -628,7 +628,12 @@ public class ReuseAnalyserView extends ViewPart {
             TreeMap<Column, Integer> statistics = computeStatistics(gisNode, propertyName, distributeColumn, Select
                     .findSelectByValue(select), monitor);
             if (statistics == null && distributeColumn != Distribute.AUTO) {
-                MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, ERROR_MSG);
+                ActionUtil.getInstance().runTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, ERROR_MSG);
+                    }
+                }, false);
 
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
                 ActionUtil.getInstance().runTask(setAutoDistribute, true);
