@@ -841,8 +841,10 @@ public class ReuseAnalyserView extends ViewPart {
                     NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             monitor.subTask("Building results from database");
             for (Node node : travers) {
+                Double value = null;
                 for (Column column : keySet) {
-                    Double value = getNodeValue(node, propertyName, select, column.minValue, column.range);
+                    value = value == null || select == Select.EXISTS ? getNodeValue(node, propertyName, select, column.minValue,
+                            column.range) : value;
                     if (value != null && column.containsValue(value)) {
                         Integer count = result.get(column);
                         result.put(column, 1 + (count == null ? 0 : count));
