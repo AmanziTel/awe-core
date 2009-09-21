@@ -94,7 +94,7 @@ public class NetworkRenderer extends RendererImpl {
         if (monitor == null)
             monitor = new NullProgressMonitor();
 
-        monitor.beginTask("render network sites and sectors", IProgressMonitor.UNKNOWN);    // TODO: Get size from info
+        monitor.beginTask("render network sites and sectors: "+neoGeoResource.getIdentifier(), IProgressMonitor.UNKNOWN);    // TODO: Get size from info
 
         GeoNeo geoNeo = null;
 
@@ -132,6 +132,7 @@ public class NetworkRenderer extends RendererImpl {
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
+            System.out.println("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
             String selectedProp = geoNeo.getPropertyName();
             Double redMinValue = geoNeo.getPropertyValueMin();
             Double redMaxValue = geoNeo.getPropertyValueMax();
@@ -268,7 +269,7 @@ public class NetworkRenderer extends RendererImpl {
                 if (monitor.isCanceled())
                     break;
             }
-            System.out.println("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites");
+            System.out.println("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
         } catch (TransformException e) {
             throw new RenderException(e);
         } catch (FactoryException e) {
