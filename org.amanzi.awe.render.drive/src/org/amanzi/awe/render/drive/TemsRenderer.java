@@ -18,6 +18,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -32,6 +33,7 @@ import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -45,6 +47,7 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -191,13 +194,72 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             g.setColor(drawColor);
             int count = 0;
             monitor.subTask("drawing");
-            Coordinate world_location = new Coordinate(); // single object for re-use in transform
+            // single object for re-use in transform below (minimize object creation)
+            Coordinate world_location = new Coordinate();
             java.awt.Point prev_p = null;
             java.awt.Point prev_l_p = null;
             java.awt.Point cached_l_p = null;
-            GeoNode cached_node = null;
-            // below (minimize object creation)
+            GeoNode cached_node = null;  // for label positioning
             long startTime = System.currentTimeMillis();
+            
+            // First we find all selected points to draw with a highlight behind the main points
+            ArrayList<Node> selectedPoints = new ArrayList<Node>();
+            final Set<Node> selectedNodes = geoNeo.getSelectedNodes();
+            for(Node node: selectedNodes) {
+                if("file".equals(node.getProperty("type",""))){
+                    //Select all 'mp' nodes in that file
+                    for (Node rnode:node.traverse(Traverser.Order.BREADTH_FIRST, new StopEvaluator(){
+                            @Override
+                            public boolean isStopNode(TraversalPosition currentPos) {
+                                return !currentPos.isStartNode() && "file".equals(currentPos.currentNode().getProperty("type", ""));
+                            }}, new ReturnableEvaluator(){
+        
+                                @Override
+                                public boolean isReturnableNode(TraversalPosition currentPos) {
+                                    return "mp".equals(currentPos.currentNode().getProperty("type", ""));
+                                }}, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)){
+                            selectedPoints.add(rnode);
+                        }
+                } else {
+                    //Traverse backwards on CHILD relations to closest 'mp' Point
+                    for (@SuppressWarnings("unused")
+                    Node rnode:node.traverse(Traverser.Order.DEPTH_FIRST, new StopEvaluator(){
+                        @Override
+                        public boolean isStopNode(TraversalPosition currentPos) {
+                            return "mp".equals(currentPos.currentNode().getProperty("type", ""));
+                        }}, new ReturnableEvaluator(){
+    
+                            @Override
+                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                return "mp".equals(currentPos.currentNode().getProperty("type", ""));
+                            }}, NetworkRelationshipTypes.CHILD, Direction.INCOMING)){
+                        selectedPoints.add(rnode);
+                        break;
+                    }
+                }
+            }
+            // Now draw the selected points highlights
+            for(Node rnode:selectedPoints){
+                GeoNode node = new GeoNode(rnode);
+                Coordinate location = node.getCoordinate();
+                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
+                    continue; // Don't draw points outside viewport
+                }
+                try {
+                    JTS.transform(location, world_location, transform_d2w);
+                } catch (Exception e) {
+                    continue;
+                }
+                java.awt.Point p = getContext().worldToPixel(world_location);
+                if(prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
+                    prev_p = p;
+                    continue;
+                } else {
+                    prev_p = p;
+                }
+                renderSelectedPoint(g, p, drawSize, drawFull, drawLite);
+            }
+            // Now draw the actual points
             for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
                 Coordinate location = node.getCoordinate();
 
@@ -225,22 +287,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
                 }
                 Color borderColor = g.getColor();
-                boolean selected = false;
-                Set<Node> selectedNodes = geoNeo.getSelectedNodes();
                 if(selectedNodes.size() > 0) {
                     if (selectedNodes.contains(node.getNode())) {
                         borderColor = COLOR_HIGHLIGHTED;
-                        selected = true;
-                    } else {
-                        for (Node rnode:node.getNode().traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH)){
-                            if (selectedNodes.contains(rnode)) {
-                                selected = true;
-                                break;
-                            }
-                        }
                     }
                 }
-                renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite, selected);
+                renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite);
                 if (drawLabels) {
                     double theta = 0.0;
                     double dx = 0.0;
@@ -405,22 +457,37 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      * @param g
      * @param p
      */
-    private void renderPoint(Graphics2D g, java.awt.Point p, Color borderColor, Color fillColor, int drawSize, int drawWidth, boolean drawFull, boolean drawLite, boolean selected) {
+    private void renderPoint(Graphics2D g, java.awt.Point p, Color borderColor, Color fillColor, int drawSize, int drawWidth, boolean drawFull, boolean drawLite) {
         Color oldColor = g.getColor();
         if(drawFull) {
-            if(selected) renderSelectionGlow(g, p, drawSize * 4);
             g.setColor(fillColor);
             g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
             g.setColor(borderColor);
             g.drawRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
         } else if (drawLite) {
-            if(selected) renderSelectionGlow(g, p, drawSize * 2);
             g.setColor(fillColor);
             g.fillOval(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
         } else {
-            if(selected) renderSelectionGlow(g, p, drawSize);
             g.setColor(fillColor);
             g.fillOval(p.x - 1, p.y - 1, 3, 3);
+        }
+        g.setColor(oldColor);
+    }
+
+    /**
+     * This one is very simple, just draw a rectangle at the point location.
+     * 
+     * @param g
+     * @param p
+     */
+    private void renderSelectedPoint(Graphics2D g, java.awt.Point p, int drawSize, boolean drawFull, boolean drawLite) {
+        Color oldColor = g.getColor();
+        if(drawFull) {
+            renderSelectionGlow(g, p, drawSize * 3);
+        } else if (drawLite) {
+            renderSelectionGlow(g, p, drawSize * 2);
+        } else {
+            renderSelectionGlow(g, p, drawSize);
         }
         g.setColor(oldColor);
     }
@@ -433,6 +500,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      * @param drawSize
      */
     private void renderSelectionGlow(Graphics2D g, java.awt.Point p, int drawSize) {
+        drawSize *= 3;
         Color highColor = new Color(COLOR_HIGHLIGHTED.getRed(), COLOR_HIGHLIGHTED.getGreen(), COLOR_HIGHLIGHTED.getBlue(), 8);
         g.setColor(highColor);
         for(;drawSize > 2; drawSize *= 0.8) {

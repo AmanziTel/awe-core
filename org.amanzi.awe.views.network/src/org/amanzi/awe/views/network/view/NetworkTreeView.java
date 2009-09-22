@@ -27,7 +27,7 @@ import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
+//import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -85,9 +85,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Coordinate;
 
 /**
- * NetworkTree View
+ * This View contains a tree of objects found in the database. The tree is built based on the
+ * existence of the NetworkRelationshipTypes.CHILD relation, and the set of Root nodes defined by
+ * the Root.java class.
  * 
  * @author Lagutko_N
+ * @since 1.0.0
  */
 
 public class NetworkTreeView extends ViewPart {
@@ -457,13 +460,25 @@ public class NetworkTreeView extends ViewPart {
      * 
      * @param nodeToSelect - selected node
      */
-    protected void showSelection(NeoNode nodeToSelect) {
+    private void showSelection(NeoNode nodeToSelect) {
         try {
             IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NeoGraphViewPart.ID);
             NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
             viewGraph.showNode(nodeToSelect.getNode());
             final StructuredSelection selection = new StructuredSelection(new Object[] {nodeToSelect.getNode()});
             viewGraph.getViewer().setSelection(selection, true);
+            showThisView();
+        } catch (Exception e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+    }
+
+    /**
+     * show this view (brings it forward)
+     */
+    protected void showThisView() {
+        try {
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NETWORK_TREE_VIEW_ID);
         } catch (Exception e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -628,7 +643,7 @@ public class NetworkTreeView extends ViewPart {
                     if (resourse != null) {
                         try {
                             GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-                            if (geo.getGisType() == GisTypes.Network) {
+                            if (geo !=null /*&&geo.getGisType() == GisTypes.Network*/) {
                                 result.add(layer);
                             }
                         } catch (IOException e) {

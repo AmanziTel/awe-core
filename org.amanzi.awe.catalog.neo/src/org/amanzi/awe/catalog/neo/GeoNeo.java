@@ -71,7 +71,7 @@ public class GeoNeo {
         private double[] coords;
         private Node node;
         private Coordinate coordinate;
-        private GeoNode(Node node){
+        public GeoNode(Node node){
             this.coords = getCoords(node);
             this.node = node;
         }

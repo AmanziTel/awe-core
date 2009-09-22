@@ -1,23 +1,19 @@
 package org.amanzi.awe.views.drive.views;
 
-import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
 /**
- * <p>
- * Drive Tree view
- * </p>
+ * This View contains a tree of objects found in the database. The tree is built based on the
+ * existence of the NetworkRelationshipTypes.CHILD relation, and the set of Root nodes defined by
+ * the DriveRoot.java class.
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class DriveTreeView extends NetworkTreeView {
 
@@ -34,13 +30,8 @@ public class DriveTreeView extends NetworkTreeView {
     }
 
     @Override
-    protected void showSelection(NeoNode nodeToSelect) {
+    protected void showThisView() {
         try {
-            IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NeoGraphViewPart.ID);
-            NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
-            viewGraph.showNode(nodeToSelect.getNode());
-            final StructuredSelection selection = new StructuredSelection(new Object[] {nodeToSelect.getNode()});
-            viewGraph.getViewer().setSelection(selection, true);
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ID);
         } catch (Exception e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
