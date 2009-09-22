@@ -418,6 +418,23 @@ public class NetworkTreeView extends ViewPart {
     }
 
     /**
+     * Find a parent node of the specified type, following the NEXT relations back up the chain
+     * 
+     * @param node subnode
+     * @return parent node of specified type or null
+     */
+    private Node getParentNode(Node node, final String type) {
+        Traverser traverse = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(type);
+            }
+        }, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+        return traverse.iterator().hasNext() ? traverse.iterator().next() : null;
+    }
+
+    /**
      * Gets GIS node of necessary subnode
      * 
      * @param node subnode
@@ -630,7 +647,7 @@ public class NetworkTreeView extends ViewPart {
      * NeoProvider Event listener for this View
      * 
      * @author Lagutko_N
-     * @since 1.1.0
+     * @since 1.0.0
      */
 
     private class NeoServiceEventListener extends NeoServiceProviderEventAdapter {
@@ -830,6 +847,25 @@ public class NetworkTreeView extends ViewPart {
                     return;
                 }
             }
+            // First we cut the selected nodes out of the tree so the user does not try interact with them
+            final Node gisNode;
+            final Node networkNode;
+            Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+            try {
+                gisNode = getGisNode(nodesToDelete.get(0).getNode());
+                networkNode = getParentNode(nodesToDelete.get(0).getNode(), "network");
+                for (NeoNode neoNode: nodesToDelete) {
+                    Node node = neoNode.getNode();
+                    for(Relationship relation:node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
+                        relation.delete();
+                    }
+                }
+                transaction.success();
+            } finally {
+                transaction.finish();
+            }
+            NeoServiceProvider.getProvider().commit();
+            viewer.refresh();
 
             // Create a job for deleting all the nodes and sub-nodes in the disconnected graph from the database
             Job job = new Job(getText()) {
@@ -837,66 +873,113 @@ public class NetworkTreeView extends ViewPart {
                 @SuppressWarnings("unchecked")
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                    Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-                    try {
-                        boolean cleaned = true;
-                        int size = 2;
-                        int count = 0;
-                        for (NeoNode neoNode : nodesToDelete) {
-                            size += 2 + getTreeSize(neoNode.getNode());
+                    int size = 2;
+                    int count = 0;
+                    for(NeoNode neoNode:nodesToDelete) {
+                        size += 2 + getTreeSize(neoNode.getNode());
+                    }
+                    size = size * 2;
+                    monitor.beginTask(getText(), size);
+                    // First we cut the tree out of the graph so only CHILD relations exist
+                    for (NeoNode neoNode: nodesToDelete) {
+                        if(monitor.isCanceled()) {
+                            break;
                         }
-                        // System.out.println("Deleting tree of estimated size: "+size);
-                        monitor.beginTask(getText(), size);
-                        // First we cut the tree out of the graph so only CHILD relations exist
-                        for (NeoNode neoNode : nodesToDelete) {
-                            if (monitor.isCanceled()) {
-                                cleaned = false;
-                                break;
-                            }
-                            monitor.subTask("Extracting " + neoNode.toString());
-                            Node node = neoNode.getNode();
-                            cleanTree(node, monitor); // Delete non-tree relations (and relink gis
-                            // next links)
-                            deleteIncomingRelations(node); // cut from the tree
-                            monitor.worked(1);
-                            count++;
-                            // System.out.println("****** Finished main node ["+count+"/"+nodesToDelete.size()+"]: "+neoNode);
-                        }
-                        cleaned = !monitor.isCanceled();
-                        if (cleaned) {
-                        NeoServiceProvider.getProvider().commit();
-                        // Since nodes are not in the tree anymore, we can re-draw the tree
-                        viewer.getControl().getDisplay().syncExec(new Runnable() {
-                            public void run() {
-                                NetworkTreeView.this.viewer.refresh();
-                            }
-                        });
+                        monitor.subTask("Extracting "+neoNode.toString());
+                        Node node = neoNode.getNode();
+                        cleanTree(node,monitor);    // Delete non-tree relations (and relink gis next links)
+                        deleteIncomingRelations(node);  // only delete all incoming relations once we've dealt with the GIS relations in cleanTree()
                         monitor.worked(1);
-                        monitor.done();
-                        } else {
-                            // after commit provider failure do not work
-                            // tx.failure();
-                            return Status.CANCEL_STATUS;
+                        count++;
+                    }
+                    // Since nodes are not in the tree anymore, we can re-draw the tree (but don't need to wait for that to happen)
+                    viewer.getControl().getDisplay().asyncExec(new Runnable() {
+                        public void run() {
+                            NetworkTreeView.this.viewer.refresh();
                         }
+                    });
+                    monitor.worked(1);
+                    if(count<nodesToDelete.size()){
+                        return Status.CANCEL_STATUS;
+                    }
+                    monitor.worked(1);
+                    for (NeoNode neoNode: nodesToDelete) {
+                        if(monitor.isCanceled()) {
+                            break;
+                        }
+                        monitor.subTask("Deleting "+neoNode.toString());
+                        Node node = neoNode.getNode();
+                        NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
                         monitor.worked(1);
-                        for (NeoNode neoNode : nodesToDelete) {
-                            if (monitor.isCanceled()) {
-                                // tx.failure();
-                                return Status.CANCEL_STATUS;
-                            }
-                            monitor.subTask("Deleting " + neoNode.toString());
-                            Node node = neoNode.getNode();
-                            NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
-                            monitor.worked(1);
-                        }
-                        // NeoUtils.deleteEmptyGisNodes();
-                        NeoServiceProvider.getProvider().commit();
+                    }
+                    monitor.worked(1);
+                    if(gisNode!=null && networkNode !=null) {
+                        // TODO: Remove this code once we trust the delete function more fully
+                        fixOrphanedNodes(gisNode,networkNode,monitor);
+                    }
+                    monitor.done();
+                    return Status.OK_STATUS;
+                }
 
-                        monitor.worked(1);
-                        monitor.done();
-                        return Status.OK_STATUS;
+                private void fixOrphanedNodes(final Node gisNode, final Node networkNode, IProgressMonitor monitor) {
+                    final ArrayList<Node> orphans = new ArrayList<Node>();
+                    final ArrayList<String> orphanNames = new ArrayList<String>();
+                    Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                    try {
+                        final long refId = NeoServiceProvider.getProvider().getService().getReferenceNode().getId();
+                        final long netId = networkNode.getId();
+                        monitor.subTask("Searching for orphaned nodes");
+                        for (Node node : gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL,
+                                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                            if(!node.traverse(Order.DEPTH_FIRST,StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                                @Override
+                                public boolean isReturnableNode(TraversalPosition currentPos) {
+                                    Node cn = currentPos.currentNode();
+//                                    if(orphans.size()<1){
+//                                        System.out.println("Checking node: "+cn.getProperty("name",cn.toString()));
+//                                        System.out.println("\tnode id = "+cn.getId());
+//                                    }
+                                    return cn.getId() == refId || cn.getId() == netId;
+                                }}, NetworkRelationshipTypes.CHILD, Direction.INCOMING).iterator().hasNext()) {
+                                orphans.add(node);
+                                orphanNames.add(node.getProperty("name",node.toString()).toString());
+                            }
+                        }
+                        transaction.success();
                     } finally {
-                        tx.finish();
+                        transaction.finish();
+                    }
+                    if(orphans.size()>0){
+                        monitor.subTask("Fixing "+orphans.size()+" orphaned nodes");
+                        System.out.println("Found " + orphans.size() + " orphaned nodes from cancelled deletion");
+                        int count=0;
+                        for(String name:orphanNames){
+                            System.out.println("\tOrphan: "+name);
+                            if(count++ > 10) break;
+                        }
+                        transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                        try {
+                            String parentType = "unknown";
+                            try {
+                                parentType = networkNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
+                                        .iterator().next().getEndNode().getProperty("type").toString();
+                            } catch (Exception e) {
+                            }
+                            Node parent = NeoServiceProvider.getProvider().getService().createNode();
+                            parent.setProperty("name", Integer.toString(orphans.size())+" - Orphans from failed deletion");
+                            parent.setProperty("type", parentType);
+                            networkNode.createRelationshipTo(parent, NetworkRelationshipTypes.CHILD);
+                            for (Node node: orphans) {
+                                for(Relationship relation:node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)){
+                                    relation.delete();
+                                }
+                                parent.createRelationshipTo(node, NetworkRelationshipTypes.CHILD);
+                            }
+                            transaction.success();
+                        } finally {
+                            transaction.finish();
+                        }
                     }
                 }
 
@@ -904,7 +987,8 @@ public class NetworkTreeView extends ViewPart {
                     int size = 0;
                     Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
                     try {
-                        for (Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+                        for (@SuppressWarnings("unused")
+                        Node nodeToClean: node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
                                 ReturnableEvaluator.ALL, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                             size++;
                         }
