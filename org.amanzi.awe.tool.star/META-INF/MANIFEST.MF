@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Star tool
+Bundle-SymbolicName: org.amanzi.awe.tool.star;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.tool.star.StarToolPlugin
+Bundle-Vendor: amanzi.org
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ net.refractions.udig.project;bundle-version="1.1.1",
+ net.refractions.udig.project.ui;bundle-version="1.1.1",
+ net.refractions.udig.tool.default;bundle-version="1.1.1",
+ org.amanzi.awe.mapgraphic.star;bundle-version="1.0.0",
+ org.neo4j;bundle-version="1.0.0",
+ net.refractions.udig.mapgraphic;bundle-version="1.1.1"
+Eclipse-LazyStart: true
