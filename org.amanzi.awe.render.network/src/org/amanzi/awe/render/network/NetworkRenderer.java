@@ -2,10 +2,15 @@ package org.amanzi.awe.render.network;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.project.IBlackboard;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IStyleBlackboard;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
@@ -38,6 +43,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
+    public static final String BLACKBOARD_KEY = "org.amanzi.awe.tool.star.StarTool.nodes";
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
     private static final Color COLOR_MORE = Color.GREEN;
@@ -139,6 +145,15 @@ public class NetworkRenderer extends RendererImpl {
             Double lesMinValue = geoNeo.getMinPropertyValue();
             Double moreMaxValue = geoNeo.getMaxPropertyValue();
             Select select = Select.findSelectByValue(geoNeo.getSelectName());
+            IBlackboard blackboard = getContext().getMap().getBlackboard();
+            Map<Node, java.awt.Point> nodesMap = (Map<Node, java.awt.Point>)blackboard.get(BLACKBOARD_KEY);
+            // TODO synchronize?
+            if (nodesMap == null) {
+                nodesMap = Collections.synchronizedMap(new HashMap<Node, java.awt.Point>());
+                blackboard.put(BLACKBOARD_KEY, nodesMap);
+            } else {
+                nodesMap.clear();
+            }
             // TODO adds support more then one aggregation properties
             isAggregatedProperties = selectedProp != null && INeoConstants.PROPERTY_ALL_CHANNELS_NAME.equals(selectedProp);
             aggregationList = geoNeo.getAggregatedProperties();
@@ -232,7 +247,10 @@ public class NetworkRenderer extends RendererImpl {
                                 if (geoNeo.getSelectedNodes().contains(child)) {
                                     borderColor = COLOR_SECTOR_SELECTED;
                                 }
-                                renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor, drawSize);
+                                // put sector information in to blackboard
+
+                                Point centerPoint = renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor, drawSize);
+                                nodesMap.put(child, centerPoint);
                                 if (s < label_position_angles.length) {
                                     label_position_angles[s] = azimuth;
                                 }
@@ -364,8 +382,10 @@ public class NetworkRenderer extends RendererImpl {
      * @param p
      * @param azimuth
      */
-    private void renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth, Color fillColor, Color borderColor, int drawSize) {
+    private java.awt.Point renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth, Color fillColor,
+            Color borderColor, int drawSize) {
         Color oldColor = g.getColor();
+        java.awt.Point result = null;
         if(base_transform==null) base_transform = g.getTransform();
         if(beamwidth<10) beamwidth = 10;
         g.setTransform(base_transform);
@@ -375,17 +395,30 @@ public class NetworkRenderer extends RendererImpl {
             g.fillOval(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize);
             g.setColor(borderColor);
             g.drawOval(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize);
+            result = p;
+
         } else {
-            g.rotate(Math.toRadians(-90 + azimuth - beamwidth / 2.0));
+            double angdeg = -90 + azimuth - beamwidth / 2.0;
+            g.rotate(Math.toRadians(angdeg));
             g.setColor(fillColor);
             g.fillArc(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize, 0, -(int)beamwidth);
+            // TODO correct gets point
+
             g.setColor(borderColor);
             g.drawArc(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize, 0, -(int)beamwidth);
             g.drawLine(0, 0, drawSize, 0);
-            g.rotate(Math.toRadians(beamwidth));
+            g.rotate(Math.toRadians(beamwidth / 2));
+            double xLoc = drawSize / 2;
+            double yLoc = 0;
+            AffineTransform transform = g.getTransform();
+            int x = (int)(transform.getScaleX() * xLoc + transform.getShearX() * yLoc + transform.getTranslateX());
+            int y = (int)(transform.getShearY() * xLoc + transform.getScaleY() * yLoc + transform.getTranslateY());
+            g.rotate(Math.toRadians(beamwidth / 2));
             g.drawLine(0, 0, drawSize, 0);
+            result = new java.awt.Point(x, y);
             g.setColor(oldColor);
         }
+        return result;
     }
 
     /**
