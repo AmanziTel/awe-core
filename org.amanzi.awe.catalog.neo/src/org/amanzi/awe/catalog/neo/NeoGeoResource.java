@@ -9,8 +9,10 @@ import net.refractions.udig.catalog.ui.CatalogUIPlugin;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.icons.IconManager;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Transaction;
 
 /**
  * This class represents a single collection of geographic objects in the Neo4j
@@ -45,11 +47,16 @@ public class NeoGeoResource extends IGeoResource {
 
 	@Override
 	public URL getIdentifier() {
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         try {
+
             return new URL(identifier + this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
         } catch (MalformedURLException e) {
+            e.printStackTrace();
             // TODO Handle MalformedURLException
             throw (RuntimeException)new RuntimeException().initCause(e);
+        } finally {
+            tx.finish();
         }
 	}
 
