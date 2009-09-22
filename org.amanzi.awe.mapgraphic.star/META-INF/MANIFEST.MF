@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Star mapgraphic
+Bundle-SymbolicName: org.amanzi.awe.mapgraphic.star;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.mapgraphic.star.Activator
+Bundle-Vendor: amanzi.org
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ net.refractions.udig.mapgraphic;bundle-version="1.1.1",
+ net.refractions.udig.project.ui;bundle-version="1.1.1",
+ org.amanzi.neo.core;bundle-version="1.0.0",
+ org.neo4j;bundle-version="1.0.0"
+Eclipse-LazyStart: true
+Export-Package: org.amanzi.awe.mapgraphic.star
+Import-Package: org.amanzi.awe.views.reuse.views

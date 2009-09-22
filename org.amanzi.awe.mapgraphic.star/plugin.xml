@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="net.refractions.udig.mapgraphic.mapgraphic">
+      <mapGraphic
+            class="org.amanzi.awe.mapgraphic.star.StarMapGraphic"
+            icon="icons/star.png"
+            id="org.amanzi.awe.mapgraphic.star.mapGraphic"
+            name="Star analysing">
+      </mapGraphic>
+   </extension>
+
+</plugin>
