@@ -1,7 +1,6 @@
 package org.amanzi.awe.catalog.neo;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -11,6 +10,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
 
@@ -28,6 +28,7 @@ public class NeoGeoResource extends IGeoResource {
 	private NeoService service;
 	private Node gisNode;
 	private GeoNeo geoNeo;
+    private URL identifierFull;
 
 	public NeoGeoResource(NeoService service,
 			org.neo4j.api.core.NeoService neo, Node gisNode) {
@@ -38,29 +39,43 @@ public class NeoGeoResource extends IGeoResource {
 			URL serviceUrl = service.getIdentifier();
         identifier = serviceUrl + "#";// +
                                       // this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-            try {
-                CatalogUIPlugin.getDefault().getImageRegistry().put(this.getIdentifier().toString(),
-                        IconManager.getIconManager().getImage(IconManager.NETWORK_ICON));
-            } catch (IllegalArgumentException e) {
-            }
+        identifierFull = this.getIdentifier();
 	}
 
 	@Override
 	public URL getIdentifier() {
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         try {
-
-            return new URL(identifier + this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-        } catch (MalformedURLException e) {
+            URL url = new URL(identifier + this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            if (identifierFull == null || !url.equals(identifierFull)) {
+                changeIconsId(url);
+                NeoCatalogPlugin.getDefault().updateCatalog();
+            }
+            return url;
+        } catch (Exception e) {
             e.printStackTrace();
-            // TODO Handle MalformedURLException
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            return null;
         } finally {
             tx.finish();
         }
 	}
 
-	private NeoGeoResourceInfo info;
+    /**
+     * @param url
+     */
+    private void changeIconsId(URL url) {
+        try {
+            ImageRegistry imageRegistry = CatalogUIPlugin.getDefault().getImageRegistry();
+            if (identifierFull != null) {
+                // imageRegistry.remove(identifierFull.toString());
+            }
+            identifierFull = url;
+            imageRegistry.put(identifierFull.toString(), IconManager.getIconManager().getImage(IconManager.NETWORK_ICON));
+        } catch (IllegalArgumentException e) {
+        }
+    }
+
+    private NeoGeoResourceInfo info;
 
 	public NeoGeoResourceInfo getInfo(IProgressMonitor monitor)
 			throws IOException {

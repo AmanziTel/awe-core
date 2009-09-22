@@ -16,3 +16,5 @@ Export-Package: org.amanzi.awe.catalog.neo;
    com.vividsolutions.jts.geom,
    org.opengis.referencing.crs,
    org.neo4j.api.core"
+Bundle-Activator: org.amanzi.awe.catalog.neo.NeoCatalogPlugin
+Eclipse-LazyStart: true

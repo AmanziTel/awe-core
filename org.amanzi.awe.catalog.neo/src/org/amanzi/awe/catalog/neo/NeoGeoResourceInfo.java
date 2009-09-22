@@ -53,4 +53,14 @@ public class NeoGeoResourceInfo extends IGeoResourceInfo {
             tx.finish();
         }
 	}
+
+    @Override
+    public String getTitle() {
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
+            return gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        } finally {
+            tx.finish();
+        }
+    }
 }
