@@ -17,6 +17,7 @@ package org.amanzi.neo.core.utils;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.api.core.Direction;
@@ -24,7 +25,9 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 
 /**
@@ -136,5 +139,29 @@ public class NeoUtils {
      */
     public static boolean isGisNode(Node node) {
         return node != null && INeoConstants.GIS_TYPE_NAME.equals(getNodeType(node, ""));
+    }
+
+    /**
+     *Delete gis node if it do not have outcoming relations
+     */
+    public static void deleteEmptyGisNodes() {
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
+            Node root = NeoServiceProvider.getProvider().getService().getReferenceNode();
+            Traverser gisTraverser = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return isGisNode(node) && !node.hasRelationship(Direction.OUTGOING);
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+            for (Node gisNode : gisTraverser.getAllNodes()) {
+                NeoCorePlugin.getDefault().getProjectService().deleteNode(gisNode);
+            }
+            tx.success();
+        } finally {
+            tx.finish();
+        }
     }
 }
