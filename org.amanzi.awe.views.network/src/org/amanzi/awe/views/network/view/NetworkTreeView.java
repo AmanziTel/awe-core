@@ -517,12 +517,11 @@ public class NetworkTreeView extends ViewPart {
     }
 
     /**
-     * <p>
-     * Network selection Listener
-     * </p>
+     * Listener handling selection events on the tree view. Selected items are added to a selection
+     * collection provided to the map renderer so that highlighting can be draw on the map.
      * 
      * @author Cinkel_A
-     * @since 1.1.0
+     * @since 1.0.0
      */
     private final class NetworkSelectionListener implements ISelectionChangedListener {
         private List<ILayer> layers = new ArrayList<ILayer>();
