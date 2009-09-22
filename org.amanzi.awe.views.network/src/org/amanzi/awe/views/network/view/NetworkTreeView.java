@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -463,7 +462,6 @@ public class NetworkTreeView extends ViewPart {
         if (neoEventListener != null) {
             neoServiceProvider.removeServiceProviderListener(neoEventListener);
         }
-
         super.dispose();
     }
 
@@ -839,53 +837,67 @@ public class NetworkTreeView extends ViewPart {
                 @SuppressWarnings("unchecked")
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                    boolean cleaned = false;
-                    int size = 2;
-                    int count = 0;
-                    for(NeoNode neoNode:nodesToDelete) {
-                        size += 2 + getTreeSize(neoNode.getNode());
-                    }
-                    //System.out.println("Deleting tree of estimated size: "+size);
-                    monitor.beginTask(getText(), size);
-                    // First we cut the tree out of the graph so only CHILD relations exist
-                    for (NeoNode neoNode: nodesToDelete) {
-                        if(monitor.isCanceled()) {
-                            break;
+                    Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                    try {
+                        boolean cleaned = true;
+                        int size = 2;
+                        int count = 0;
+                        for (NeoNode neoNode : nodesToDelete) {
+                            size += 2 + getTreeSize(neoNode.getNode());
                         }
-                        monitor.subTask("Extracting "+neoNode.toString());
-                        Node node = neoNode.getNode();
-                        cleanTree(node,monitor);    // Delete non-tree relations (and relink gis next links)
-                        deleteIncomingRelations(node);  // cut from the tree
+                        // System.out.println("Deleting tree of estimated size: "+size);
+                        monitor.beginTask(getText(), size);
+                        // First we cut the tree out of the graph so only CHILD relations exist
+                        for (NeoNode neoNode : nodesToDelete) {
+                            if (monitor.isCanceled()) {
+                                cleaned = false;
+                                break;
+                            }
+                            monitor.subTask("Extracting " + neoNode.toString());
+                            Node node = neoNode.getNode();
+                            cleanTree(node, monitor); // Delete non-tree relations (and relink gis
+                            // next links)
+                            deleteIncomingRelations(node); // cut from the tree
+                            monitor.worked(1);
+                            count++;
+                            // System.out.println("****** Finished main node ["+count+"/"+nodesToDelete.size()+"]: "+neoNode);
+                        }
+                        cleaned = !monitor.isCanceled();
+                        if (cleaned) {
+                        NeoServiceProvider.getProvider().commit();
+                        // Since nodes are not in the tree anymore, we can re-draw the tree
+                        viewer.getControl().getDisplay().syncExec(new Runnable() {
+                            public void run() {
+                                NetworkTreeView.this.viewer.refresh();
+                            }
+                        });
                         monitor.worked(1);
-                        count++;
-                        //System.out.println("****** Finished main node ["+count+"/"+nodesToDelete.size()+"]: "+neoNode);
-                    }
-                    NeoServiceProvider.getProvider().commit();
-                    // Since nodes are not in the tree anymore, we can re-draw the tree
-                    viewer.getControl().getDisplay().syncExec(new Runnable() {
-                        public void run() {
-                            NetworkTreeView.this.viewer.refresh();
+                        monitor.done();
+                        } else {
+                            // after commit provider failure do not work
+                            // tx.failure();
+                            return Status.CANCEL_STATUS;
                         }
-                    });
-                    monitor.worked(1);
-                    monitor.done();
-                    if(!cleaned){
-                        return Status.CANCEL_STATUS;
-                    }
-                    monitor.worked(1);
-                    for (NeoNode neoNode: nodesToDelete) {
-                        if(monitor.isCanceled()) {
-                            break;
-                        }
-                        monitor.subTask("Deleting "+neoNode.toString());
-                        Node node = neoNode.getNode();
-                        NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
                         monitor.worked(1);
+                        for (NeoNode neoNode : nodesToDelete) {
+                            if (monitor.isCanceled()) {
+                                // tx.failure();
+                                return Status.CANCEL_STATUS;
+                            }
+                            monitor.subTask("Deleting " + neoNode.toString());
+                            Node node = neoNode.getNode();
+                            NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+                            monitor.worked(1);
+                        }
+                        // NeoUtils.deleteEmptyGisNodes();
+                        NeoServiceProvider.getProvider().commit();
+
+                        monitor.worked(1);
+                        monitor.done();
+                        return Status.OK_STATUS;
+                    } finally {
+                        tx.finish();
                     }
-                    NeoServiceProvider.getProvider().commit();
-                    monitor.worked(1);
-                    monitor.done();
-                    return Status.OK_STATUS;
                 }
 
                 private int getTreeSize(Node node) {
