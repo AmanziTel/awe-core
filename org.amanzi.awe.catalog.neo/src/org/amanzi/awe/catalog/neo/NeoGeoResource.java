@@ -21,7 +21,8 @@ import org.neo4j.api.core.Node;
  * @since 1.0.0
  */
 public class NeoGeoResource extends IGeoResource {
-	private URL identifierUrl;
+    // private URL identifierUrl;
+    private String identifier;
 	private NeoService service;
 	private Node gisNode;
 	private GeoNeo geoNeo;
@@ -31,21 +32,25 @@ public class NeoGeoResource extends IGeoResource {
 		this.service = service;
 		this.gisNode = gisNode;
 		this.geoNeo = new GeoNeo(neo, this.gisNode);
-		try {
+
 			URL serviceUrl = service.getIdentifier();
-            identifierUrl = new URL(serviceUrl + "#" + this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+        identifier = serviceUrl + "#";// +
+                                      // this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             try {
                 CatalogUIPlugin.getDefault().getImageRegistry().put(this.getIdentifier().toString(),
                         IconManager.getIconManager().getImage(IconManager.NETWORK_ICON));
             } catch (IllegalArgumentException e) {
             }
-		} catch (MalformedURLException e) {
-		}
 	}
 
 	@Override
 	public URL getIdentifier() {
-		return identifierUrl;
+        try {
+            return new URL(identifier + this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+        } catch (MalformedURLException e) {
+            // TODO Handle MalformedURLException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
 	}
 
 	private NeoGeoResourceInfo info;
