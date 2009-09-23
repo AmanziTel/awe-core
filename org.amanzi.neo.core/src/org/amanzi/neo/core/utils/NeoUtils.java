@@ -18,6 +18,7 @@ import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.api.core.Direction;
@@ -160,6 +161,32 @@ public class NeoUtils {
                 NeoCorePlugin.getDefault().getProjectService().deleteNode(gisNode);
             }
             tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * Finds gis node by child
+     * 
+     * @param childNode child
+     * @return gis node or null
+     */
+    public static Node findGisNodeByChild(Node childNode) {
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
+            Iterator<Node> gisIterator = childNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    new ReturnableEvaluator() {
+
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            Node node = currentPos.currentNode();
+                            return isGisNode(node);
+                        }
+                    }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)
+                    .iterator();
+            tx.success();
+            return gisIterator.hasNext() ? gisIterator.next() : null;
         } finally {
             tx.finish();
         }
