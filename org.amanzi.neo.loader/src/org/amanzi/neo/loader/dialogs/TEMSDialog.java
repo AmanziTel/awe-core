@@ -50,7 +50,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
+//import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
 
 /**
@@ -283,7 +283,7 @@ public class TEMSDialog {
         combo.setLayoutData(dCombo);
         
         //TODO: Check if the following line is needed
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        //Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         ArrayList<String> datasetList = new ArrayList<String>();
         Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
                 NeoServiceProvider.getProvider().getService().getReferenceNode());

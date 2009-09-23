@@ -230,8 +230,8 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             //If we are not running the command-line test then attach the data to the AWE project
             if (neoProvider!=null) {
                 attachDataToProject();
+                neoProvider.commit();
             }
-            NeoServiceProvider.getProvider().commit();
         }
     }
 
@@ -272,7 +272,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         if (network != null) {
             NeoCorePlugin.getDefault().getProjectService().addNetworkToProject(TEMSLoader.getAweProjectName(), network);
         }
-        NeoServiceProvider.getProvider().commit();
+        neoProvider.commit();
         //Lagutko 21.07.2009, using of neo.core plugin
         unregisterNeoManager();
         // Register the database in the uDIG catalog            
@@ -335,7 +335,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      * 
      * @param layers list of layers
      */
-    public static void zoomToLayer(final List layers) {
+    public static void zoomToLayer(final List<? extends ILayer> layers) {
         ActionUtil.getInstance().runTask(new Runnable() {
             @Override
             public void run() {
@@ -465,7 +465,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 					    System.out.println("debug");
 					}
                     if (network==null){
-                        network = getNetwork(neo, gis, basename);
+                        network = getNetwork(neo, gis, basename, neoProvider);
                         if (network==null){
                             return false;
                         }
@@ -645,11 +645,13 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      * 
      * @param gis gis node
      */
-	public static Node getNetwork(NeoService neo, Node gis, String basename) {
+	private static Node getNetwork(NeoService neo, Node gis, String basename, NeoServiceProvider neoProvider) {
 		Node network = null;
 		Transaction transaction = neo.beginTx();
 		try {
-	        NeoServiceProvider.getProvider().commit();
+		    if(neoProvider!=null) {
+		        neoProvider.commit();
+		    }
             for (Relationship relationship : gis.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
 				Node node = relationship.getEndNode();
                 debug("Testing possible Network node "+node+": "+(node.hasProperty("name") ? node.getProperty("name") : ""));
@@ -664,9 +666,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                         for (Relationship relationshipIn : node.getRelationships(Direction.INCOMING)) {
                             relationshipIn.delete();
                         }
-                        NeoServiceProvider.getProvider().commit();
+                        neoProvider.commit();
                         NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
-                        NeoServiceProvider.getProvider().commit();
+                        neoProvider.commit();
                         // deleteNodeInNewThread(node);
 			        } catch(IllegalStateException e) {
 			            // we are in test mode, automatically agree to overwrite network
