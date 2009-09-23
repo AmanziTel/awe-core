@@ -21,6 +21,7 @@ import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
+import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.INeoConstants;
@@ -40,6 +41,7 @@ import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PartInitException;
@@ -314,7 +316,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     if (iGeoResource.canResolve(Node.class)) {
                         if (iGeoResource.resolve(Node.class, null).equals(gis)) {
                             listGeoRes.add(iGeoResource);
-                            ApplicationGIS.addLayersToMap(map, listGeoRes, 0);
+                            final List< ? extends ILayer> layers = ApplicationGIS.addLayersToMap(map, listGeoRes, 0);
+                            zoomToLayer(layers);
+
                             break;
                         }
                     }
@@ -324,6 +328,22 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             // TODO Handle IOException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
+    }
+
+    /**
+     * Zoom To 1st layers in list
+     * 
+     * @param layers list of layers
+     */
+    public static void zoomToLayer(final List layers) {
+        ActionUtil.getInstance().runTask(new Runnable() {
+            @Override
+            public void run() {
+                ZoomToLayer zoomCommand = new ZoomToLayer();
+                zoomCommand.selectionChanged(null, new StructuredSelection(layers));
+                zoomCommand.runWithEvent(null, null);
+            }
+        }, true);
     }
 
     /**

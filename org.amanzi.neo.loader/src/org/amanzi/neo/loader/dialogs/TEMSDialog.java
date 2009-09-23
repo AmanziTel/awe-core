@@ -11,6 +11,7 @@ import java.util.HashMap;
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
+import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
@@ -602,15 +603,17 @@ public class TEMSDialog {
             if (curService != null && gis != null && NetworkLoader.findLayerByNode(map, gis) == null
                     && NetworkLoader.confirmLoadNetworkOnMap(map, NeoUtils.getNodeName(gis))) {
                 java.util.List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
+                java.util.List<ILayer> layerList = new ArrayList<ILayer>();
                 for (IGeoResource iGeoResource : curService.resources(null)) {
                     if (iGeoResource.canResolve(Node.class)) {
                         if (iGeoResource.resolve(Node.class, null).equals(gis)) {
                             listGeoRes.add(iGeoResource);
-                            ApplicationGIS.addLayersToMap(map, listGeoRes, 0);
+                            layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, 0));
                             break;
                         }
                     }
                 };
+                NetworkLoader.zoomToLayer(layerList);
             }
         } catch (MalformedURLException e) {
             // TODO Handle MalformedURLException
@@ -618,6 +621,9 @@ public class TEMSDialog {
         } catch (IOException e) {
             // TODO Handle IOException
             throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
