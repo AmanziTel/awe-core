@@ -42,10 +42,14 @@ public class NeoGeoResourceInfo extends IGeoResourceInfo {
                 System.err.println("Failed to determine GeoResourceInfo: " + e.getMessage());
                 e.printStackTrace(System.err);
             }
-            final ImageData imageData = IconManager.getIconManager().getImage(IconManager.NETWORK_ICON).getImageData();
             this.icon = new ImageDescriptor() {
+                private ImageData imageData;
+
                 @Override
                 public ImageData getImageData() {
+                    if (imageData == null) {
+                        imageData = IconManager.getIconManager().getImage(IconManager.NETWORK_ICON).getImageData();
+                    }
                     return imageData;
                 }
             };
