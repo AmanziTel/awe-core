@@ -12,11 +12,20 @@
       </service>
    </extension>
    <extension
+         point="net.refractions.udig.project.layerInterceptor">
+      <layerCreated
+            class="org.amanzi.awe.catalog.neo.LayerInterceptor"
+            id="org.amanzi.awe.catalog.neo.layerCreated"
+            name="Layer Interceptor">
+      </layerCreated>
+   </extension>
+<!--
+   <extension
          point="net.refractions.udig.project.mapInterceptor">
       <layerAdded
             class="org.amanzi.awe.catalog.neo.listeners.NeoLayerAdded"
             id="org.amanzi.awe.catalog.neo.listeners.layerAdded">
       </layerAdded>
    </extension>
-
+-->
 </plugin>
