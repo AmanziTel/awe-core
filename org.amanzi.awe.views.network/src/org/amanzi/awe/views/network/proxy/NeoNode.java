@@ -33,6 +33,8 @@ public class NeoNode {
      * Name of Node
      */
     protected String name;
+
+    private ArrayList<NeoNode> children;
     
     /**
      * Creates a proxy element for given Node
@@ -52,7 +54,7 @@ public class NeoNode {
      */
     
     public boolean hasChildren() {
-        return node.hasRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+        return getChildren().length>0;
     }
     
     /**
@@ -70,12 +72,21 @@ public class NeoNode {
      */
     
     public NeoNode[] getChildren() {
-        ArrayList<NeoNode> children = new ArrayList<NeoNode>();
-        
-        for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.CHILD,Direction.OUTGOING)){
-            children.add(new NeoNode(relationship.getEndNode()));
+        if(children==null) {
+            children = new ArrayList<NeoNode>();
+            for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.CHILD,Direction.OUTGOING)){
+                children.add(new NeoNode(relationship.getEndNode()));
+            }
+            if(children.size()==0) {
+                for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.MISSING,Direction.OUTGOING)){
+                    children.add(new NeoNode(relationship.getEndNode()));
+                }
+                for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.DIFFERENT,Direction.OUTGOING)){
+                    children.add(new NeoNode(relationship.getEndNode()));
+                }
+            }
+            Collections.sort(children, new NeoNodeComparator());
         }
-        Collections.sort(children, new NeoNodeComparator());
         return children.toArray(NO_NODES);
     }
     

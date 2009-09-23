@@ -601,6 +601,8 @@ public class NetworkTreeView extends ViewPart {
                         "delta_sector".equals(nodeType) ||
                         "missing_sites".equals(nodeType) ||
                         "missing_sectors".equals(nodeType) ||
+                        "missing_site".equals(nodeType) ||
+                        "missing_sector".equals(nodeType) ||
                         INeoConstants.HEADER_MS.toString().equalsIgnoreCase(nodeType) ||
                         INeoConstants.MP_TYPE_NAME.toString().equalsIgnoreCase(nodeType) ||
                         INeoConstants.FILE_TYPE_NAME.toString().equalsIgnoreCase(nodeType) ||
@@ -862,6 +864,7 @@ public class NetworkTreeView extends ViewPart {
                 }
             }
             // First we cut the selected nodes out of the tree so the user does not try interact with them
+            // and so a delta report action below will not use them
             final Node gisNode;
             final Node networkNode;
             Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
@@ -1114,7 +1117,8 @@ public class NetworkTreeView extends ViewPart {
                     monitor.beginTask(getName(), 100);
                     int initPerc = 5;
                     int searchPerc = 15;
-                    int calcPerc = 80;
+                    int calcPerc = 40;
+                    int reportPerc = 40;
                     NeoService neo = NeoServiceProvider.getProvider().getService();
                     Transaction tx = neo.beginTx();
                     try {
@@ -1142,8 +1146,8 @@ public class NetworkTreeView extends ViewPart {
                             if(!missingSitesNodes.containsKey(networkNode.toString())){
                                 Node node = neo.createNode();
                                 node.setProperty("name", "sites missing from "+networkNode);
-                                node.setProperty("type", "delta_site");
-                                reportNode.createRelationshipTo(deltaSitesNode, NetworkRelationshipTypes.CHILD);
+                                node.setProperty("type", "missing_sites");
+                                reportNode.createRelationshipTo(node, NetworkRelationshipTypes.CHILD);
                                 missingSitesNodes.put(networkNode.toString(), node);
                             }
                         }
@@ -1151,22 +1155,12 @@ public class NetworkTreeView extends ViewPart {
                         //Persist current state
                         tx = commit(neo, tx);
                         monitor.worked(initPerc);
+                        monitor.subTask("Searching for all sites");
 
-                        //Continue working
-                        TreeMap<String,Node> siteMap = null;
-                        TreeMap<String,Node> firstMap = null;
-                        HashMap<String,Integer> firstCounts = new HashMap<String,Integer>();
-                        HashMap<NeoNode,TreeMap<String,Node>> missingMap = new HashMap<NeoNode,TreeMap<String,Node>>();
-                        NeoNode firstNetwork = getValidNodes().get(0);
+                        //Build internal data structures
+                        TreeMap<String,DeltaSite> siteMap = new TreeMap<String,DeltaSite>();
                         for(NeoNode networkNode:getValidNodes()){
-                            int count = 0;
-                            siteMap = new TreeMap<String,Node>();
-                            if(firstMap == null) {
-                                firstMap = siteMap;
-                            }
-                            Node missingSitesNode = missingSitesNodes.get(networkNode.toString());
-                            TreeMap missingSites = new TreeMap<String, Node>();
-                            missingMap.put(networkNode, missingSites);
+                            String networkName = networkNode.toString();
                             for (Node site : networkNode.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
                                     new ReturnableEvaluator() {
 
@@ -1176,25 +1170,72 @@ public class NetworkTreeView extends ViewPart {
                                         }
                                     }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                                 String siteName = site.getProperty("name", "").toString();
-                                siteMap.put(siteName,site);
-                                if(networkNode != firstNetwork) {
-                                    Node oSite = firstMap.get(siteName);
-                                    if(oSite==null) {
-                                        missingSites.put(siteName, site);
-                                    } else {
-                                        Integer val = firstCounts.get(siteName);
-                                        firstCounts.put(siteName, val == null ? 1 : val + 1);
-                                    }
-                                    missingSitesNode.setProperty("sites_missing", missingSites.size());
-                                    monitor.worked(calcPerc * count / firstMap.size());
+                                if(siteMap.containsKey(siteName)){
+                                    siteMap.get(siteName).put(networkName,site);
+                                } else {
+                                    siteMap.put(siteName, new DeltaSite(siteName,networkName,site));
                                 }
                             }
-                            if(networkNode.equals(firstNetwork)) {
-                                monitor.worked(searchPerc);
+                        }
+                        reportNode.setProperty("sites_count", siteMap.size());
+
+                        //Persist current state
+                        tx = commit(neo, tx);
+                        monitor.worked(searchPerc);
+                        monitor.subTask("Calculating differences");
+
+                        HashMap<NeoNode,ArrayList<DeltaSite>> missingSites = new HashMap<NeoNode,ArrayList<DeltaSite>>();
+                        ArrayList<DeltaSite> deltaSites = new ArrayList<DeltaSite>();
+                        for(NeoNode networkNode:getValidNodes()){
+                            missingSites.put(networkNode, new ArrayList<DeltaSite>());
+                        }
+                        for(DeltaSite site: siteMap.values()) {
+                            for(NeoNode networkNode:getValidNodes()){
+                                if(site.missingIn(networkNode.toString())){
+                                    missingSites.get(networkNode).add(site);
+                                }
+                            }
+                            if(site.hasDelta()) {
+                                deltaSites.add(site);
                             }
                         }
+                        deltaSitesNode.setProperty("sites_count", deltaSites.size());
+                        for(NeoNode networkNode:getValidNodes()){
+                            missingSitesNodes.get(networkNode.toString()).setProperty("site_count", missingSites.get(networkNode).size());
+                        }
+                        //Persist current state
+                        tx = commit(neo, tx);
+                        monitor.worked(calcPerc);
+                        monitor.subTask("Building report structures in the database");
+
+                        int reportWorkedUnit = reportPerc/(getValidNodes().size()+1);
+                        for(NeoNode networkNode:getValidNodes()){
+                            for(DeltaSite site:missingSites.get(networkNode)){
+                                Node missingSite = neo.createNode();
+                                missingSite.setProperty("name", site.name);
+                                missingSite.setProperty("type", "missing_site");
+                                missingSitesNodes.get(networkNode.toString()).createRelationshipTo(missingSite, NetworkRelationshipTypes.CHILD);
+                                for(Node node:site.nodes.values()){
+                                    missingSite.createRelationshipTo(node,NetworkRelationshipTypes.MISSING);
+                                }
+                            }
+                            tx = commit(neo, tx);
+                            monitor.worked(reportWorkedUnit);
+                        }
+                        for(DeltaSite site:deltaSites){
+                            Node deltaSite = neo.createNode();
+                            deltaSite.setProperty("name", site.name);
+                            deltaSite.setProperty("type", "delta_site");
+                            deltaSitesNode.createRelationshipTo(deltaSite, NetworkRelationshipTypes.CHILD);
+                            for(Node node:site.nodes.values()){
+                                deltaSite.createRelationshipTo(node,NetworkRelationshipTypes.DIFFERENT);
+                            }
+                        }
+                        tx = commit(neo, tx);
+                        monitor.worked(reportWorkedUnit);
+                        
                         tx.success();
-                        NeoServiceProvider.getProvider().commit();
+                        monitor.done();
                         return Status.OK_STATUS;
                     } finally {
                         tx.finish();
@@ -1204,7 +1245,6 @@ public class NetworkTreeView extends ViewPart {
                 private Transaction commit(NeoService neo, Transaction tx) {
                     tx.success();
                     tx.finish();
-                    NeoServiceProvider.getProvider().commit();
                     tx = neo.beginTx();
                     return tx;
                 }
@@ -1299,6 +1339,51 @@ public class NetworkTreeView extends ViewPart {
             return getValidNodes().size() == 2;
         }
 
+    }
+    
+    private static class DeltaSite {
+        private String name;
+        private HashMap<String,Node> nodes = new HashMap<String,Node>();
+        public DeltaSite(String name, String network, Node node) {
+            this.name = name;
+            this.nodes.put(network,node);
+        }
+        public String getName(){
+            return name;
+        }
+        public String toString(){
+            return name;
+        }
+        public boolean missingIn(String network) {
+            return !nodes.containsKey(network);
+        }
+        public Node nodeIn(String network){
+            return nodes.get(network);
+        }
+        public void put(String network, Node node) {
+            nodes.put(network, node);
+        }
+        public boolean hasDelta() {
+            if(nodes.size()<2){
+                return false;
+            } else {
+                //TODO: cache this in case it is called twice
+                int delta = 0;
+                Integer firstHash = null;
+                for(Node site:nodes.values()){
+                    StringBuffer key = new StringBuffer();
+                    for(String property:site.getPropertyKeys()){
+                        key.append(property).append("=").append(site.getProperty(property).toString()).append(";");
+                    }
+                    if(firstHash==null){
+                        firstHash = new Integer(key.toString().hashCode());
+                    }else if(firstHash.intValue() != key.toString().hashCode()){
+                        delta ++;
+                    }
+                }
+                return delta > 0;
+            }
+        }
     }
 
 }

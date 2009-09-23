@@ -33,6 +33,7 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -208,6 +209,26 @@ public class NetworkRenderer extends RendererImpl {
                         if (geoNeo.getSelectedNodes().contains(rnode)) {
                             selected = true;
                             break;
+                        }
+                    }
+                    if(!selected) {
+                        DELTA_LOOP: for (Node rnode:node.getNode().traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.MISSING, Direction.INCOMING, NetworkRelationshipTypes.DIFFERENT, Direction.INCOMING)){
+                            if (geoNeo.getSelectedNodes().contains(rnode)) {
+                                selected = true;
+                                break;
+                            } else {
+                                for (Node xnode:rnode.traverse(Traverser.Order.BREADTH_FIRST, new StopEvaluator(){
+
+                                    @Override
+                                    public boolean isStopNode(TraversalPosition currentPos) {
+                                        return "delta_report".equals(currentPos.currentNode().getProperty("type",""));
+                                    }}, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.INCOMING)){
+                                    if (geoNeo.getSelectedNodes().contains(xnode)) {
+                                        selected = true;
+                                        break DELTA_LOOP;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
