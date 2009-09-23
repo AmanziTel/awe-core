@@ -362,6 +362,7 @@ public class NetworkTreeView extends ViewPart {
      */
 
     private void fillContextMenu(IMenuManager manager) {
+        // TODO remove all disabled part of menu??
         manager.add(new Action("Properties") {
             public void run() {
                 try {
@@ -371,6 +372,10 @@ public class NetworkTreeView extends ViewPart {
                 }
             }
         });
+        RevertNameAction revertAction = new RevertNameAction((IStructuredSelection)viewer.getSelection());
+        if (revertAction.isEnabled()) {
+            manager.add(revertAction);
+        }
         manager.add(new Action("Refresh") {
             public void run() {
                 viewer.refresh(((IStructuredSelection)viewer.getSelection()).getFirstElement());
@@ -401,6 +406,7 @@ public class NetworkTreeView extends ViewPart {
             }
         });
         manager.add(new DeleteAction((IStructuredSelection)viewer.getSelection()));
+
     }
 
     /**
@@ -833,6 +839,64 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
+    /**
+     * <p>
+     * Action to revert node name
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.1.0
+     */
+    private class RevertNameAction extends Action {
+
+        private boolean enabled;
+        private String text;
+        private Object oldName;
+        private Node node = null;
+
+        /**
+         * @param selection
+         */
+
+        public RevertNameAction(IStructuredSelection selection) {
+            text = "Revert name to '";
+            enabled = selection.size() == 1 && selection.getFirstElement() instanceof NeoNode;
+            if (enabled) {
+                NeoNode neoNode = (NeoNode)selection.getFirstElement();
+                node = neoNode.getNode();
+                enabled = node.hasProperty(INeoConstants.PROPERTY_OLD_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME);
+                if (enabled) {
+                    oldName = node.getProperty(INeoConstants.PROPERTY_OLD_NAME);
+                    text += oldName + "'";
+                }
+            }
+        }
+
+        @Override
+        public void run() {
+            Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+            try {
+                Object name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                node.setProperty(INeoConstants.PROPERTY_NAME_NAME, oldName);
+                node.setProperty(INeoConstants.PROPERTY_OLD_NAME, name);
+                tx.success();
+                NeoServiceProvider.getProvider().commit();// viewer will be refreshed after commit
+            } finally {
+                tx.finish();
+            }
+
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+    }
     /**
      * Action to delete all selected nodes and their child nodes in the graph, but not
      * nodes related by other geographic relationships. The result is designed to remove

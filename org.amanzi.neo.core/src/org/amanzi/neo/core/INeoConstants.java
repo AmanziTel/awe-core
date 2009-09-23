@@ -324,5 +324,7 @@ public class INeoConstants {
     public static final String PROPERTY_BEAMWIDTH_NAME = "beamwidth";
     /** INeoConstants PROPERTY_ALL_CHANNEL_NAME field */
     public static final String PROPERTY_ALL_CHANNELS_NAME = "all_channels";
+    /** INeoConstants PROPERTY_OLD_NAME field */
+    public static final String PROPERTY_OLD_NAME = "old_name";
    
 }
