@@ -44,8 +44,8 @@ import org.neo4j.api.core.Transaction;
  */
 public class LayerInterceptor implements net.refractions.udig.project.interceptor.LayerInterceptor {
 
-    protected static final String RENAME_TITLE = "Rename catalog";
-    protected static final String RENAME_MESSAGE = "Do you also wish to rename the catalog from '%s' to '%s'?";
+    protected static final String RENAME_TITLE = "Rename catalog entry";
+    protected static final String RENAME_MESSAGE = "Do you also wish to rename the catalog entry\nfrom '%s' to '%s'?";
 
     @Override
     public void run(Layer layer) {
