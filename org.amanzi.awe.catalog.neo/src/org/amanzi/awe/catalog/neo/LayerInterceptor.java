@@ -85,7 +85,9 @@ public class LayerInterceptor implements net.refractions.udig.project.intercepto
                 return;
             }
             gisNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+
             NeoServiceProvider.getProvider().commit();
+            layer.setID(geoRes.getIdentifier());
 
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);

@@ -62,16 +62,20 @@ public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServicePro
      *
      */
     public void updateCatalog() {
-        ActionUtil.getInstance().runTask(new Runnable() {
-            @Override
-            public void run() {
-                CatalogView view = (CatalogView)getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
-                        CatalogView.VIEW_ID);
-                if (view != null) {
-                    view.getTreeviewer().refresh();
+        try {
+            ActionUtil.getInstance().runTask(new Runnable() {
+                @Override
+                public void run() {
+                    CatalogView view = (CatalogView)getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
+                            CatalogView.VIEW_ID);
+                    if (view != null) {
+                        view.getTreeviewer().refresh();
+                    }
                 }
-            }
-        }, true);
+            }, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
