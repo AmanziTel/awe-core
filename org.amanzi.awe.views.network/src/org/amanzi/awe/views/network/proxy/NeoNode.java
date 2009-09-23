@@ -6,9 +6,11 @@ import java.util.Comparator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.Transaction;
 
 /**
  * Proxy class that provides access for Node, it's children and properties
@@ -150,6 +152,33 @@ public class NeoNode {
         } else if (!node.equals(other.node))
             return false;
         return true;
+    }
+
+    /**
+     * Sets node name
+     * 
+     * @param value new name
+     */
+    public void setName(String value) {
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
+            value = value == null ? "" : value.trim();
+            if (node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) {
+
+                Object oldName = node.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                if (oldName.equals(value)) {
+                    return;
+                }
+                node.setProperty(INeoConstants.PROPERTY_NAME_NAME, value);
+                name = value;
+                node.setProperty(INeoConstants.PROPERTY_OLD_NAME, oldName.toString());
+                tx.success();
+                NeoServiceProvider.getProvider().commit();
+            }
+        } finally {
+            tx.finish();
+        }
+
     }
 
 }

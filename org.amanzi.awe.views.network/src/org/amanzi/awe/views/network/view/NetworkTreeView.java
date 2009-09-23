@@ -27,7 +27,6 @@ import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-//import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -40,7 +39,9 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -48,6 +49,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -61,6 +63,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
@@ -160,7 +163,7 @@ public class NetworkTreeView extends ViewPart {
         Transaction tx = neoServiceProvider.getService().beginTx();
         try {
             setProviders(neoServiceProvider);
-
+            setEditable();
             viewer.setInput(getSite());
             getSite().setSelectionProvider(viewer);
 
@@ -297,6 +300,42 @@ public class NetworkTreeView extends ViewPart {
     protected void setProviders(NeoServiceProvider neoServiceProvider) {
         viewer.setContentProvider(new NetworkTreeContentProvider(neoServiceProvider));
         viewer.setLabelProvider(new NetworkTreeLabelProvider(viewer));
+    }
+
+    /**
+     * sets edit mode for tree
+     */
+    protected void setEditable() {
+        TextCellEditor textCellEditor = new TextCellEditor(viewer.getTree());
+        viewer.setCellEditors(new CellEditor[] {textCellEditor, textCellEditor, textCellEditor, textCellEditor, textCellEditor});
+        viewer.setColumnProperties(new String[] {"name"});
+        ICellModifier modifier = new ICellModifier() {
+
+            @Override
+            public void modify(Object element, String property, Object value) {
+                String valueStr = value == null ? "" : value.toString().trim();
+                if (valueStr.isEmpty()) {
+                    return;
+                }
+                NeoNode neoNode = element instanceof TreeItem ? (NeoNode)((TreeItem)element).getData() : (NeoNode)element;
+                Node node = neoNode.getNode();
+                neoNode.setName(valueStr);
+                System.out.println(element);
+            }
+
+            @Override
+            public Object getValue(Object element, String property) {
+                System.out.println(element);
+                return ((NeoNode)element).getNode().getProperty(INeoConstants.PROPERTY_NAME_NAME);
+            }
+
+            @Override
+            public boolean canModify(Object element, String property) {
+                System.out.println(element);
+                return !(element instanceof Root)&&((NeoNode)element).getNode().hasProperty(INeoConstants.PROPERTY_NAME_NAME);
+            }
+        };;;
+        viewer.setCellModifier(modifier);
     }
 
     /**
