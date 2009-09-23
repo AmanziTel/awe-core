@@ -1,5 +1,6 @@
 include_class org.amanzi.neo.core.INeoConstants
 include_class org.amanzi.neo.core.enums.NetworkElementTypes
+include_class org.amanzi.neo.core.enums.GisTypes
 
 module AWE
   module ExtendCommandBundle
@@ -7,33 +8,81 @@ module AWE
     #
     # Returns a GIS node by it's name
     #
-    def gis(name)
+    def gis(name, type = nil)
       gis_type = INeoConstants::GIS_TYPE_NAME
       
-      Neo4j::Transaction.run{Neo4j::ref_node.traverse.depth(:all).outgoing(:CHILD, :NEXT).filter{self[:type] == gis_type && self[:name] == name}.first}      
+      transaction = Neo4j::ref_node.traverse.depth(:all).outgoing(:CHILD, :NEXT).filter{self[:type] == gis_type && self[:name] == name}
+      
+      update_transaction(transaction, type) unless type.nil?
+      
+      Neo4j::Transaction.run{transaction.first}      
     end
     
     #
     # Returns all GIS nodes
     #
-    def all_gis
-      result = []
-      
+    def all_gis(type = nil)
       gis_type = INeoConstants::GIS_TYPE_NAME
-      Neo4j::Transaction.run{Neo4j::ref_node.traverse.depth(:all).outgoing(:CHILD, :NEXT).filter{self[:type] == gis_type}.each {|gis| result << gis}}
       
-      result
+      transaction = Neo4j::ref_node.traverse.depth(:all).outgoing(:CHILD, :NEXT).filter{self[:type] == gis_type}
+      
+      update_transaction(transaction, type) unless type.nil?
+      
+      Neo4j::Transaction.run{transaction.to_a}
     end
     
     #
-    # Returns filtered GIS nodes
+    # Returns TEMS dataset node by it's name
     #
-    def gis_by_filter(filter) 
-      result = []
+    def dataset(name, start_node = nil) 
+      node_type = INeoConstants::DATASET_TYPE_NAME    
       
-      Neo4j::Transaction.run{Neo4j::ref_node.traverse.depth(:all).outgoing(:CHILD, :NEXT).filter(filter).each {|gis| result << gis}}
+      tems_element(name, node_type, start_node)
+    end
+    
+    # 
+    # Returns all TEMS Dataset nodes
+    #
+    def all_datasets(start_node = nil) 
+      node_type = INeoConstants::DATASET_TYPE_NAME
       
-      result
+      all_tems_elements(node_type, start_node)
+    end
+    
+    #
+    # Returns TEMS file node by it's name
+    #
+    def tems_file(name, start_node = nil) 
+      node_type = INeoConstants::FILE_TYPE_NAME
+      
+      tems_element(node_type, start_node)
+    end
+    
+    #
+    # Returns all TEMS file nodes
+    #
+    def all_tems_files(start_node = nil)
+      node_type = INeoConstants::FILE_TYPE_NAME
+      
+      all_tems_elements(node_type, start_node)
+    end
+    
+    #
+    # Returns all TEMS mp nodes
+    #
+    def all_tems_mp(start_node = nil)
+      node_type = INeoConstants::MP_TYPE_NAME
+      
+      all_tems_elements(node_type, start_node)
+    end
+    
+    #
+    # Returns all TEMS ms nodes
+    #
+    def all_tems_ms(start_node = nil)
+      node_type = INeoConstants::HEADER_MS
+      
+      all_tems_elements(node_type, start_node)
     end
     
     #
@@ -42,7 +91,7 @@ module AWE
     def network(name, start_node = nil)
       network_type = NetworkElementTypes::NETWORK
       
-      network_element(network_type, name, start_node)      
+      network_element(network_type, start_node)      
     end
     
     #
@@ -51,16 +100,7 @@ module AWE
     def all_networks(start_node = nil)
       network_type = NetworkElementTypes::NETWORK
       
-      all_network_elements(network_type, name, start_node)
-    end
-    
-    #
-    # Returns filtered Network nodes
-    #
-    def networks_by_filter(filter, start_node = nil) 
-      network_type = NetworkElementTypes::NETWORK
-      
-      network_elements_by_filter(network_type, filter, start_node)
+      all_network_elements(network_type, start_node)
     end
     
     #
@@ -78,16 +118,7 @@ module AWE
     def all_cities(start_node = nil)
       city_type = NetworkElementTypes::CITY
       
-      all_network_elements(city_type, name, start_node)
-    end
-    
-    #
-    # Returns filtered City nodes
-    #
-    def cities_by_filter(filter, start_node = nil) 
-      city_type = NetworkElementTypes::CITY
-      
-      network_elements_by_filter(city_type, filter, start_node)
+      all_network_elements(city_type, start_node)
     end
     
     #
@@ -102,19 +133,10 @@ module AWE
     #
     # Returns all BSC nodes
     #
-    def all_bscs(start_node = nil)
+    def all_bsc(start_node = nil)
       bsc_type = NetworkElementTypes::BSC
       
       all_network_elements(bsc_type, start_node)
-    end
-    
-    #
-    # Returns filtered BSC nodes
-    #
-    def bsc_by_filter(filter, start_node = nil)
-      bsc_type = NetworkElementTypes::BSC
-      
-      network_elements_by_filter(bsc_type, filter, start_node)
     end
     
     #
@@ -136,15 +158,6 @@ module AWE
     end
     
     #
-    # Returns filtered Site nodes 
-    #
-    def sites_by_filter(filter, start_node = nil)
-      site_type = NetworkElementTypes::SITE
-      
-      nework_elements_by_filter(site_type, filter, start_node)
-    end
-    
-    #
     # Returns Sector node by it's name
     # 
     def sector(name, start_node = nil)
@@ -162,15 +175,6 @@ module AWE
       all_network_elements(sector_type, start_node)      
     end
     
-    # 
-    # Returns filtered Sector nodes
-    #
-    def sectors_by_filter(filter, start_node = nil) 
-      sector_type = NetworkElementTypes::SECTOR
-      
-      network_elements_by_filter(sector_type, filter, start_node)
-    end
-    
     #
     # Utility function that checks is this type matches to given NetworkElementType
     #
@@ -182,25 +186,20 @@ module AWE
       end
     end
     
+    
+    
     private
     
     #
     # Returns NetworkElement node by given name and NetworkElementType
     #
     def network_element(name, element_type, start_node) 
-     if start_node.nil?        
-        node = Neo4j::ref_node
-      else
-        node = start_node
-      end
+      node = if start_node.nil? then Neo4j::ref_node else start_node end
       
       parent = self
       
-      traverser = node.traverse.depth(:all).outgoing(:CHILD, :NEXT).filter{parent.network_element?(element_type, self[:type]) && self[:name] == name}
-      
-      if (start_node.nil?)
-        traverser.outgoing(:NEXT)
-      end
+      traverser = node.traverse.depth(:all).outgoing(:CHILD).filter{parent.network_element?(element_type, self[:type]) && self[:name] == name}
+      traverser.outgoing(:NEXT) if start_node.nil?
       
       Neo4j::Transaction.run{traverser.first}  
     end
@@ -209,50 +208,69 @@ module AWE
     # Returns all NetworkElement nodes by given NetworkElementType
     #
     def all_network_elements(element_type, start_node) 
-      result = []
-      
-      if start_node.nil?        
-        node = Neo4j::ref_node
-      else
-        node = start_node
-      end
+      node = if start_node.nil? then Neo4j::ref_node else start_node end
       
       parent = self
       
       traverser = node.traverse.depth(:all).outgoing(:CHILD).filter{parent.network_element?(element_type, self[:type])}
+      traverser.outgoing(:NEXT) if start_node.nil?
       
-      if (start_node.nil?)
-        traverser.outgoing(:NEXT)
-      end
-      
-      Neo4j::Transaction.run{traverser.each {|element| result << element}}
-      
-      result
+      Neo4j::Transaction.run{traverser.to_a}
     end
     
     #
-    # Returns filtered NetworkElement nodes by given NetworkelementType
+    # Returns TEMS node by it's type and name
     #
-    def network_elements_by_filter(element_type, filter, start_node)
-      result = []
+    def tems_element(name, element_type, start_node)
+      node = if start_node.nil? then Neo4j::ref_node else start_node end
       
-      if start_node.nil?        
-        node = Neo4j::ref_node
-      else
-        node = start_node
-      end
+      traverser = node.traverse.depth(:all).filter{self[:type] == element_type && self[:name] == name}
+      update_relationship(traverser, start_node)
       
-      parent = self
+      Neo4j::Transaction.run{traverser.first}
+    end
+    
+    #
+    # Returns all TEMS element by given type
+    #
+    def all_tems_elements(element_type, start_node)
+      node = if start_node.nil? then Neo4j::ref_node else start_node end
       
-      traverser = node.traverse.depth(:all).outgoing(:CHILD, :NEXT).filter{parent.network_element?(element_type, self[:type])}.filter{filter}
+      traverser = node.traverse.depth(:all).filter{self[:type] == element_type}
+      update_relationship(traverser, start_node)
       
+      Neo4j::Transaction.run{traverser.to_a}
+    end
+    
+    #
+    # Updates Traverser for searching TEMS nodes with relationship and directions
+    #
+    def update_relationship(traverser, start_node)
       if (start_node.nil?)
-        traverser.outgoing(:NEXT)
+        traverser.outgoing(:NEXT, :CHILD)
+      else
+        case start_node[:type]
+          when INeoConstants::MP_TYPE_NAME
+            traverser.outgoing(:CHILD)
+          when INeoConstants::AWE_PROJECT_NODE_TYPE
+            traverser.outgoing(:CHILD)
+            traverser.outgoing(:NEXT)
+          else
+            traverser.outgoing(:NEXT) 
+        end 
       end
-      
-      Neo4j::Transaction.run{traverser.each {|element| result << element}}
-      
-      result
+    end
+    
+    #
+    # Updates Traverser for searching GIS nodes with GisType
+    #
+    def update_transaction(transaction, type)
+      case type
+        when :network
+          transaction.filter{self[:gis_type] == GisTypes::Network.header}
+        when :tems          
+          transaction.filter{self[:gis_type] == GisTypes::Tems.header}
+      end
     end
     
   end
