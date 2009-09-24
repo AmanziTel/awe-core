@@ -1,5 +1,14 @@
-/**
- * 
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 package org.amanzi.awe.tool.star;
 
@@ -16,6 +25,7 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IResolve;
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.core.Pair;
+import net.refractions.udig.mapgraphic.MapGraphic;
 import net.refractions.udig.mapgraphic.internal.MapGraphicResource;
 import net.refractions.udig.mapgraphic.internal.MapGraphicService;
 import net.refractions.udig.project.IBlackboard;
@@ -39,12 +49,12 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Node;
 
 /**
- * <p>
- * Star analysing tool
- * </p>
+ * Custom uDIG Map Tool for performing a 'star analysis'. This means it interacts with objects on
+ * the map and a custom star mapgraphic is used to draw lines representing relations to the objects
+ * on the map. These lines look like a star, hence the name.
  * 
- * @author Cinkel_A //most code are depends on
- * @since 1.1.0
+ * @author Cinkel_A
+ * @since 1.0.0
  */
 public class StarTool extends AbstractModalTool {
     private boolean dragging=false;
@@ -52,6 +62,9 @@ public class StarTool extends AbstractModalTool {
     private Node gisNode;
 
     private TranslateCommand command;
+    private Map<Node, java.awt.Point> nodesMap;
+    private ILayer starMapGraphicLayer; // cache so that mousemove event does not do so much work
+
     /**
      * Creates an new instance of Pan
      */
@@ -129,7 +142,7 @@ public class StarTool extends AbstractModalTool {
     /**
      *
      */
-    protected void setLayerOnMap(Class resourceClass) {
+    protected void setLayerOnMap(Class<? extends MapGraphic> resourceClass) {
         IMap map = getContext().getMap();
         List<ILayer> layers = map.getMapLayers();
         for (ILayer layer : layers) {
@@ -145,7 +158,7 @@ public class StarTool extends AbstractModalTool {
                 resources = ((MapGraphicService)iResolve).resources(null);
                 for (MapGraphicResource mapGraphicResource : resources) {
                     if (mapGraphicResource.canResolve(resourceClass)) {
-                        List list = new ArrayList();
+                        List<IGeoResource> list = new ArrayList<IGeoResource>();
                         list.add(mapGraphicResource);
                         ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
                         return;
@@ -166,6 +179,7 @@ public class StarTool extends AbstractModalTool {
             dragging = true;
             start = e.getPoint();
             command=context.getDrawFactory().createTranslateCommand(0,0);
+            //TODO: Does this line actually do anything?
             context.sendASyncCommand(command);
         }
     }
@@ -192,14 +206,13 @@ public class StarTool extends AbstractModalTool {
             Point end=e.getPoint();
             NavCommand finalPan = context.getNavigationFactory().createPanCommandUsingScreenCoords(start.x-end.x, start.y-end.y);
             context.sendASyncCommand(new PanAndInvalidate(finalPan, command));
-
+            nodesMap = null;  // after panning the nodes might have changed, so force reload on next mouse released
             dragging = false;
 
         }else{
             final IMap map = getContext().getMap();
             IBlackboard blackboard = map.getBlackboard();
-            Map<Node, java.awt.Point> nodesMap = StarDataVault.getInstance().getCopyOfAllMap();// (Map<Node,
-                                                                                               // java.awt.Point>)blackboard.get(StarMapGraphic.BLACKBOARD_NODE_LIST);
+            Map<Node, java.awt.Point> nodesMap = getNodesMap();
             if (nodesMap == null) {
                 return;
             }
@@ -207,8 +220,18 @@ public class StarTool extends AbstractModalTool {
             blackboard.put(StarMapGraphic.BLACKBOARD_START_ANALYSER, pair);
             updateLayerStarLayer();
         }
+        // clear layer cache in case user deletes or adds star map graphic
+        starMapGraphicLayer = null;
     }
 
+    private Map<Node,java.awt.Point> getNodesMap() {
+        if(nodesMap==null) {
+            //nodesMap = (Map<Node, java.awt.Point>)blackboard.get(StarMapGraphic.BLACKBOARD_NODE_LIST);
+            nodesMap = StarDataVault.getInstance().getCopyOfAllMap();
+        }
+        return nodesMap;
+    }
+    
     /**
      *
      */
@@ -242,23 +265,28 @@ public class StarTool extends AbstractModalTool {
         IMap map = getContext().getMap();
         if (!dragging) {
             map.getBlackboard().put(StarMapGraphic.BLACKBOARD_CENTER_POINT, e.getPoint());
-            updateLayer(StarMapGraphic.class);
+            updateStarMapGraphic();
         } else {
             map.getBlackboard().put(StarMapGraphic.BLACKBOARD_CENTER_POINT, null);
         }
     }
 
     /**
-     *
+     * Tell the star map graphic to redraw the circle on the closest sector
      */
-    private void updateLayer(Class resourceClass) {
-        IMap map = getContext().getMap();
-        List<ILayer> layers = map.getMapLayers();
-        for (ILayer layer : layers) {
-            if (layer.getGeoResource().canResolve(resourceClass)) {
-                layer.refresh(null);
-                return;
+    private void updateStarMapGraphic() {
+        if(starMapGraphicLayer == null) {
+            IMap map = getContext().getMap();
+            List<ILayer> layers = map.getMapLayers();
+            for (ILayer layer : layers) {
+                if (layer.getGeoResource().canResolve(StarMapGraphic.class)) {
+                    starMapGraphicLayer = layer;
+                    break;
+                }
             }
+        }
+        if (starMapGraphicLayer != null) {
+            starMapGraphicLayer.refresh(null);
         }
     }
 
