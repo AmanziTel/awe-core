@@ -5,7 +5,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +21,7 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.utils.StarDataVault;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -44,7 +44,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
-    public static final String BLACKBOARD_KEY = "org.amanzi.awe.tool.star.StarTool.nodes";
+    // public static final String BLACKBOARD_KEY = "org.amanzi.awe.tool.star.StarTool.nodes";
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
     private static final Color COLOR_MORE = Color.GREEN;
@@ -135,7 +135,7 @@ public class NetworkRenderer extends RendererImpl {
         }
         siteColor = new Color(siteColor.getRed(), siteColor.getGreen(), siteColor.getBlue(), alpha);
         fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
-
+        Map<Node, java.awt.Point> nodesMap = new HashMap<Node, java.awt.Point>();
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -147,15 +147,6 @@ public class NetworkRenderer extends RendererImpl {
             Double moreMaxValue = geoNeo.getMaxPropertyValue();
             Select select = Select.findSelectByValue(geoNeo.getSelectName());
             IBlackboard blackboard = getContext().getMap().getBlackboard();
-            Map<Node, java.awt.Point> nodesMap = (Map<Node, java.awt.Point>)blackboard.get(BLACKBOARD_KEY);
-            // TODO synchronize?
-            if (nodesMap == null) {
-                nodesMap = Collections.synchronizedMap(new HashMap<Node, java.awt.Point>());
-                blackboard.put(BLACKBOARD_KEY, nodesMap);
-            } else {
-                nodesMap.clear();
-            }
-            // TODO adds support more then one aggregation properties
             isAggregatedProperties = selectedProp != null && INeoConstants.PROPERTY_ALL_CHANNELS_NAME.equals(selectedProp);
             aggregationList = geoNeo.getAggregatedProperties();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
@@ -316,8 +307,11 @@ public class NetworkRenderer extends RendererImpl {
         } catch (IOException e) {
             throw new RenderException(e); // rethrow any exceptions encountered
         } finally {
-//            if (geoNeo != null)
-//                geoNeo.close();
+            if (geoNeo != null) {
+                StarDataVault.getInstance().setMap(geoNeo.getMainGisNode(), nodesMap);
+            }
+            // if (geoNeo != null)
+            // geoNeo.close();
             monitor.done();
         }
     }

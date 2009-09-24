@@ -28,6 +28,7 @@ import net.refractions.udig.project.ui.render.displayAdapter.ViewportPane;
 import net.refractions.udig.project.ui.tool.AbstractModalTool;
 
 import org.amanzi.awe.mapgraphic.star.StarMapGraphic;
+import org.amanzi.neo.core.utils.StarDataVault;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.api.core.Node;
 
@@ -136,7 +137,8 @@ public class StarTool extends AbstractModalTool {
         }else{
             final IMap map = getContext().getMap();
             IBlackboard blackboard = map.getBlackboard();
-            Map<Node, java.awt.Point> nodesMap = (Map<Node, java.awt.Point>)blackboard.get(StarMapGraphic.BLACKBOARD_NODE_LIST);
+            Map<Node, java.awt.Point> nodesMap = StarDataVault.getInstance().getCopyOfAllMap();// (Map<Node,
+                                                                                               // java.awt.Point>)blackboard.get(StarMapGraphic.BLACKBOARD_NODE_LIST);
             if (nodesMap == null) {
                 return;
             }
