@@ -5,13 +5,16 @@ package org.amanzi.awe.tool.star;
 
 import java.awt.Point;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IResolve;
+import net.refractions.udig.catalog.IService;
 import net.refractions.udig.core.Pair;
 import net.refractions.udig.mapgraphic.internal.MapGraphicResource;
 import net.refractions.udig.mapgraphic.internal.MapGraphicService;
@@ -28,8 +31,11 @@ import net.refractions.udig.project.ui.render.displayAdapter.ViewportPane;
 import net.refractions.udig.project.ui.tool.AbstractModalTool;
 
 import org.amanzi.awe.mapgraphic.star.StarMapGraphic;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.StarDataVault;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Node;
 
 /**
@@ -43,6 +49,7 @@ import org.neo4j.api.core.Node;
 public class StarTool extends AbstractModalTool {
     private boolean dragging=false;
     private Point start=null;
+    private Node gisNode;
 
     private TranslateCommand command;
     /**
@@ -67,32 +74,86 @@ public class StarTool extends AbstractModalTool {
         super.setActive(active);
         // add layer on map if necessary
         if (active) {
-            IMap map = getContext().getMap();
-            List<ILayer> layers = map.getMapLayers();
-            for (ILayer layer : layers) {
-                if (layer.getGeoResource().canResolve(StarMapGraphic.class)) {
-                    return;
+            setsGisLayeronMap();
+            setLayerOnMap(StarMapGraphic.class);
+        }
+    }
+
+    /**
+     *
+     */
+    private void setsGisLayeronMap() {
+        IProgressMonitor monitor = new NullProgressMonitor();
+        if (gisNode == null) {
+            synchronized (this) {
+                if (gisNode == null) {
+                    gisNode = NeoUtils.findOrCreateStarGisNode();
                 }
             }
-            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-            List<IResolve> serv = catalog.find(MapGraphicService.SERVICE_URL, null);
-            try {
-                for (IResolve iResolve : serv) {
-                    List<MapGraphicResource> resources;
-                    resources = ((MapGraphicService)iResolve).resources(null);
+        }
+        IMap map = getContext().getMap();
+        List<ILayer> layers = map.getMapLayers();
+        try {
+            for (ILayer layer : layers) {
+                if (layer.getGeoResource().canResolve(Node.class)) {
+                    Node node = layer.getGeoResource().resolve(Node.class, monitor);
+                    if (node.equals(gisNode)) {
+                        return;
+                    }
 
-                for (MapGraphicResource mapGraphicResource : resources) {
-                        if (mapGraphicResource.canResolve(StarMapGraphic.class)) {
-                            List list = new ArrayList();
-                            list.add(mapGraphicResource);
-                            ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
-                            return;
-                        }
+                }
+            }
+
+            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+            List<IResolve> serv = catalog.find(new URL("file://" + databaseLocation), monitor);
+
+            List<IGeoResource> list = new ArrayList<IGeoResource>();
+            for (IResolve iResolve : serv) {
+                List< ? extends IGeoResource> resources = ((IService)iResolve).resources(null);
+                for (IGeoResource singleResource : resources) {
+                    if (singleResource.canResolve(Node.class) && singleResource.resolve(Node.class, monitor).equals(gisNode)) {
+                        list.add(singleResource);
+                        ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
+                        return;
                     }
                 }
-            } catch (IOException e) {
-                throw (RuntimeException)new RuntimeException().initCause(e);
             }
+            ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+
+    /**
+     *
+     */
+    protected void setLayerOnMap(Class resourceClass) {
+        IMap map = getContext().getMap();
+        List<ILayer> layers = map.getMapLayers();
+        for (ILayer layer : layers) {
+            if (layer.getGeoResource().canResolve(resourceClass)) {
+                return;
+            }
+        }
+        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+        List<IResolve> serv = catalog.find(MapGraphicService.SERVICE_URL, null);
+        try {
+            for (IResolve iResolve : serv) {
+                List<MapGraphicResource> resources;
+                resources = ((MapGraphicService)iResolve).resources(null);
+                for (MapGraphicResource mapGraphicResource : resources) {
+                    if (mapGraphicResource.canResolve(resourceClass)) {
+                        List list = new ArrayList();
+                        list.add(mapGraphicResource);
+                        ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
+                        return;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
     /**
@@ -144,9 +205,30 @@ public class StarTool extends AbstractModalTool {
             }
             Pair<Point, Node> pair = StarMapGraphic.getSector(e.getPoint(), nodesMap);
             blackboard.put(StarMapGraphic.BLACKBOARD_START_ANALYSER, pair);
-            updateStarLayer();
+            updateLayerStarLayer();
         }
     }
+
+    /**
+     *
+     */
+    private void updateLayerStarLayer() {
+        IMap map = getContext().getMap();
+        List<ILayer> layers = map.getMapLayers();
+        try {
+            for (ILayer layer : layers) {
+                if (layer.getGeoResource().canResolve(Node.class)
+                        && gisNode.equals(layer.getGeoResource().resolve(Node.class, null))) {
+                    layer.refresh(null);
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+
     /**
      * @see net.refractions.udig.project.ui.tool.Tool#dispose()
      */
@@ -160,25 +242,24 @@ public class StarTool extends AbstractModalTool {
         IMap map = getContext().getMap();
         if (!dragging) {
             map.getBlackboard().put(StarMapGraphic.BLACKBOARD_CENTER_POINT, e.getPoint());
-            updateStarLayer();
+            updateLayer(StarMapGraphic.class);
         } else {
             map.getBlackboard().put(StarMapGraphic.BLACKBOARD_CENTER_POINT, null);
         }
     }
 
     /**
-     * updates star layer
+     *
      */
-    private void updateStarLayer() {
+    private void updateLayer(Class resourceClass) {
         IMap map = getContext().getMap();
         List<ILayer> layers = map.getMapLayers();
         for (ILayer layer : layers) {
-            if (layer.getGeoResource().canResolve(StarMapGraphic.class)) {
+            if (layer.getGeoResource().canResolve(resourceClass)) {
                 layer.refresh(null);
                 return;
             }
         }
-
     }
 
     /**
@@ -228,4 +309,5 @@ public class StarTool extends AbstractModalTool {
         }
 
     }
+
 }
