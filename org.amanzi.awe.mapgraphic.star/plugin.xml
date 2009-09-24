@@ -6,9 +6,15 @@
       <mapGraphic
             class="org.amanzi.awe.mapgraphic.star.StarMapGraphic"
             icon="icons/star.png"
-            id="org.amanzi.awe.mapgraphic.star.mapGraphic"
-            name="Star analysing">
+            id="org.amanzi.awe.mapgraphic.star.mapGraphic.selection"
+            name="Star selection">
       </mapGraphic>
+      <mapGraphic
+            class="org.amanzi.awe.mapgraphic.star.StarAnalyserGraphic"
+            icon="icons/star.png"
+            id="org.amanzi.awe.mapgraphic.star.mapGraphic.analysing"
+            name="Star analysing">
+      </mapGraphic>      
    </extension>
 
 </plugin>

@@ -17,8 +17,6 @@ package org.amanzi.awe.mapgraphic.star;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.geom.Ellipse2D;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,14 +26,8 @@ import net.refractions.udig.mapgraphic.MapGraphicContext;
 import net.refractions.udig.project.IBlackboard;
 import net.refractions.udig.ui.graphics.ViewportGraphics;
 
-import org.amanzi.awe.views.reuse.views.ReuseAnalyserView;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.PlatformUI;
+import org.amanzi.neo.core.utils.StarDataVault;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
 
 /**
  * <p>
@@ -47,120 +39,26 @@ import org.neo4j.api.core.Transaction;
  */
 public class StarMapGraphic implements MapGraphic {
     public static final String BLACKBOARD_CENTER_POINT = "org.amanzi.awe.tool.star.StarTool.point";
-    public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
     public static final String PROPERTY_KEY = "org.amanzi.awe.tool.star.StarTool.property";
-    private static final Integer MAXIMUM_SELECT_LEN = 40 * 40;
+    public static final Integer MAXIMUM_SELECT_LEN = 40 * 40;
     private IBlackboard blackboard;
     private Map<Node, Point> nodesMap;
 
     @Override
     public void draw(MapGraphicContext context) {
+        // long t1 = System.currentTimeMillis();
         blackboard = context.getMap().getBlackboard();
-        nodesMap = new HashMap<Node, java.awt.Point>();
-        Map<Node, java.awt.Point> savedNodes = (Map<Node, java.awt.Point>)blackboard.get(BLACKBOARD_NODE_LIST);
-        if (savedNodes == null) {
+
+        nodesMap = StarDataVault.getInstance().getCopyOfAllMap();
+        // System.out.println("StarMapGraphic getCopyOfAllMap\t" + (System.currentTimeMillis() -
+        // t1));
+        if (nodesMap == null) {
             return;
         }
-        nodesMap.putAll(Collections.synchronizedMap(savedNodes));
+        // t1 = System.currentTimeMillis();
         drawSelection(context);
-        drawAnalyser(context);
-    }
-
-    /**
-     * perform and draw star analyser
-     * 
-     * @param context context
-     */
-    private void drawAnalyser(MapGraphicContext context) {
-        Pair<Point, Node> pair = (Pair<Point, Node>)blackboard.get(BLACKBOARD_START_ANALYSER);
-        if (pair == null || pair.getRight() == null || !nodesMap.containsKey(pair.getRight())) {
-            return;
-        }
-        Node mainNiode = pair.getRight();
-        drawMainNode(context, mainNiode);
-        String property = getSelectProperty();
-        if (property == null) {
-            return;
-        }
-        Point mainPoint = nodesMap.get(mainNiode);
-        ViewportGraphics g = context.getGraphics();
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-        try {
-            if (!mainNiode.hasProperty(property)) {
-                return;
-            }
-            Object propertyValue = mainNiode.getProperty(property);
-            for (Node node : nodesMap.keySet()) {
-                if (node.hasProperty(property) && propertyValue.equals(node.getProperty(property))) {
-                    Point nodePoint = nodesMap.get(node);
-                    g.setColor(getLineColor(mainNiode, node));
-                    g.setStroke(ViewportGraphics.LINE_SOLID, 1);
-                    g.drawLine(mainPoint.x, mainPoint.y, nodePoint.x, nodePoint.y);
-                }
-            }
-
-        } finally {
-            tx.finish();
-        }
-
-    }
-
-    /**
-     * get Line color
-     * 
-     * @param mainNiode main node
-     * @param node node
-     * @return Line color
-     */
-    private Color getLineColor(Node mainNiode, Node node) {
-        return Color.BLACK;
-    }
-
-    /**
-     * get property to analyze
-     * 
-     * @return property name
-     */
-    private String getSelectProperty() {
-        // String result = (String)blackboard.get(PROPERTY_KEY);
-        // return result;
-        final RunnableWithResult task = new RunnableWithResult() {
-
-            private IViewPart view;
-
-            @Override
-            public void run() {
-                view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
-                "org.amanzi.awe.views.reuse.views.ReuseAnalyserView");
-            }
-
-            @Override
-            public Object getValue() {
-                return view;
-            }
-        };
-        ActionUtil.getInstance().runTaskWithResult(task);
-        IViewPart view = (IViewPart)task.getValue();
-        if (view == null) {
-            return null;
-        }
-        String result = ((ReuseAnalyserView)view).getPropertyName();
-        return result == null || result.isEmpty() ? null : result;
-    }
-
-    /**
-     * Draw selection of main node
-     * 
-     * @param context context
-     * @param mainNiode main node
-     */
-    private void drawMainNode(MapGraphicContext context, Node mainNiode) {
-        ViewportGraphics g = context.getGraphics();
-        g.setColor(Color.RED);
-        g.setStroke(ViewportGraphics.LINE_SOLID, 2);
-        Point point = nodesMap.get(mainNiode);
-        g.fillOval(point.x - 4, point.y - 4, 10, 10);
+        // System.out.println("StarMapGraphic drawSelection\t" + (System.currentTimeMillis() - t1));
     }
 
     /**

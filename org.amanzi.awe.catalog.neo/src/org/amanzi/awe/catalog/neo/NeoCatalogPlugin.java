@@ -74,7 +74,7 @@ public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServicePro
                 }
             }, true);
         } catch (Exception e) {
-            e.printStackTrace();
+            // e.printStackTrace();
         }
 
     }
