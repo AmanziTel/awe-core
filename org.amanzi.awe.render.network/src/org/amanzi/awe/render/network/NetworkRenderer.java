@@ -16,10 +16,12 @@ import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.StarDataVault;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -92,6 +94,22 @@ public class NetworkRenderer extends RendererImpl {
         if(resource != null){
             renderGeoNeo(g,resource,monitor);
         }
+        // TODO its bad way -may be change StarRenderer
+        try {
+            for (ILayer sLayer : getContext().getMap().getMapLayers()) {
+                if (sLayer.getGeoResource().canResolve(NeoGeoResource.class)) {
+                    NeoGeoResource neoGeo = sLayer.getGeoResource().resolve(NeoGeoResource.class, monitor);
+                    if (neoGeo.getGeoNeo(monitor).getGisType() == GisTypes.Star) {
+                        sLayer.refresh(null);
+                        return;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
     }
 
     /**

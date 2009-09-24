@@ -37,10 +37,10 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Renderer for star analyser layer
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
@@ -50,12 +50,18 @@ public class StarRenderer extends RendererImpl {
     private Map<Node, Point> nodesMap;
     @Override
     public void render(Graphics2D destination, IProgressMonitor monitor) throws RenderException {
-        blackboard = context.getMap().getBlackboard();
-        nodesMap = StarDataVault.getInstance().getCopyOfAllMap();
-        if (nodesMap == null) {
-            return;
+        try {
+            blackboard = context.getMap().getBlackboard();
+            nodesMap = StarDataVault.getInstance().getCopyOfAllMap();
+            if (nodesMap == null) {
+                return;
+            }
+            drawAnalyser(destination);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // TODO Handle Exception
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
-        drawAnalyser(destination);
     }
 
     @Override
@@ -70,19 +76,20 @@ public class StarRenderer extends RendererImpl {
      * @param context context
      */
     private void drawAnalyser(Graphics2D g) {
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
         Pair<Point, Node> pair = (Pair<Point, Node>)blackboard.get(StarMapGraphic.BLACKBOARD_START_ANALYSER);
         if (pair == null || pair.getRight() == null || !nodesMap.containsKey(pair.getRight())) {
             return;
         }
         Node mainNiode = pair.getRight();
+            System.out.println(mainNiode.getId());
         drawMainNode(g, mainNiode);
         String property = getSelectProperty();
         if (property == null) {
             return;
         }
-        Point mainPoint = nodesMap.get(mainNiode);
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-        try {
+            Point mainPoint = nodesMap.get(mainNiode);
             if (!mainNiode.hasProperty(property)) {
                 return;
             }

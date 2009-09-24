@@ -20,6 +20,7 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.neo.core.INeoConstants;
@@ -31,6 +32,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -288,7 +290,7 @@ public class ReuseAnalyserView extends ViewPart {
                         cSelect.select(0);
                     }
                     cSelect.setEnabled(isAggrProp);
-                    IMap map = ApplicationGIS.getActiveMap();
+                    updateSelection();
                     findOrCreateAggregateNodeInNewThread(gisNode, propertyName);
                     // chartUpdate(aggrNode);
                 }
@@ -347,6 +349,28 @@ public class ReuseAnalyserView extends ViewPart {
         axisLog = new LogarithmicAxis(COUNT_AXIS);
         axisLog.setAllowNegativesFlag(true);
         axisLog.setAutoRange(true);
+    }
+
+    /**
+     *
+     */
+    protected void updateSelection() {
+        // TODO its bad way -may be change StarRenderer
+        IProgressMonitor monitor = new NullProgressMonitor();
+        try {
+            for (ILayer sLayer : ApplicationGIS.getActiveMap().getMapLayers()) {
+                if (sLayer.getGeoResource().canResolve(NeoGeoResource.class)) {
+                    NeoGeoResource neoGeo = sLayer.getGeoResource().resolve(NeoGeoResource.class, monitor);
+                    if (neoGeo.getGeoNeo(monitor).getGisType() == GisTypes.Star) {
+                        sLayer.refresh(null);
+                        return;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     /**
@@ -1167,10 +1191,12 @@ public class ReuseAnalyserView extends ViewPart {
         NeoService service = NeoServiceProvider.getProvider().getService();
         Node refNode = service.getReferenceNode();
         members = new HashMap<String, Node>();
+        String header = GisTypes.Star.getHeader();
         for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
             Node node = relationship.getEndNode();
             if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-                    && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(INeoConstants.GIS_TYPE_NAME)) {
+                    && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(INeoConstants.GIS_TYPE_NAME)
+                    && !header.equals(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, header))) {
                 String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                 members.put(id, node);
             }
