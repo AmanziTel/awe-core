@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.project.IBlackboard;
+//import net.refractions.udig.project.IBlackboard;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IStyleBlackboard;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
@@ -164,7 +164,7 @@ public class NetworkRenderer extends RendererImpl {
             Double lesMinValue = geoNeo.getMinPropertyValue();
             Double moreMaxValue = geoNeo.getMaxPropertyValue();
             Select select = Select.findSelectByValue(geoNeo.getSelectName());
-            IBlackboard blackboard = getContext().getMap().getBlackboard();
+            //IBlackboard blackboard = getContext().getMap().getBlackboard();
             isAggregatedProperties = selectedProp != null && INeoConstants.PROPERTY_ALL_CHANNELS_NAME.equals(selectedProp);
             aggregationList = geoNeo.getAggregatedProperties();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
@@ -188,6 +188,8 @@ public class NetworkRenderer extends RendererImpl {
                     drawSize *= Math.sqrt(maxSitesFull) / (3 * Math.sqrt(countScaled));
                     drawSize = Math.min(drawSize, maxSymbolSize);
                 }
+                // expand the boundary to include sites just out of view (so partial sectors can be see)
+                bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
             }
 
             g.setColor(drawColor);
