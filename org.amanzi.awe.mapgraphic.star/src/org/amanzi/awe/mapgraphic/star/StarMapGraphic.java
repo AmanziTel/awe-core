@@ -2,21 +2,20 @@
  * http://awe.amanzi.org
  * (C) 2008-2009, AmanziTel AB
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation;
- * version 3.0 of the License.
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+
 package org.amanzi.awe.mapgraphic.star;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.geom.Ellipse2D;
+//import java.awt.geom.Ellipse2D;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,12 +29,10 @@ import org.amanzi.neo.core.utils.StarDataVault;
 import org.neo4j.api.core.Node;
 
 /**
- * <p>
- * Star analyser mapgraphic
- * </p>
+ * Star analyser mapgraphic. Draws lines on the map from a selected point to all related points.
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class StarMapGraphic implements MapGraphic {
     public static final String BLACKBOARD_CENTER_POINT = "org.amanzi.awe.tool.star.StarTool.point";
@@ -89,8 +86,9 @@ public class StarMapGraphic implements MapGraphic {
         ViewportGraphics g = context.getGraphics();
         g.setColor(Color.RED);
         g.setStroke(ViewportGraphics.LINE_SOLID, 2);
-        Ellipse2D e = new Ellipse2D.Double(sector.x - 4, sector.y - 4, 10, 10);
-        g.draw(e);
+        //Ellipse2D e = new Ellipse2D.Double(sector.x - 4, sector.y - 4, 10, 10);
+        //g.draw(e);
+        g.drawOval(sector.x - 4, sector.y - 4, 9, 9);
     }
 
     /**
@@ -101,19 +99,19 @@ public class StarMapGraphic implements MapGraphic {
      * @return closest sector or null
      */
     public static Pair<Point, Node> getSector(Point point, Map<Node, Point> nodesMap) {
-        Integer minLen = null;
-        Pair<Point, Node> result = null;
+        int minLen = Integer.MAX_VALUE;
+        Node result = null;
         final Set<Node> keySet = nodesMap.keySet();
         for (Node node : keySet) {
             Point sectorCenter = nodesMap.get(node);
             int len = (point.x - sectorCenter.x) * (point.x - sectorCenter.x) + (point.y - sectorCenter.y)
                     * (point.y - sectorCenter.y);
-            if (minLen == null || minLen > len) {
-                result = new Pair<Point, Node>(sectorCenter, node);
+            if (len < MAXIMUM_SELECT_LEN && len < minLen) {
+                result = node;
                 minLen = len;
             }
         }
-        return minLen == null || minLen > MAXIMUM_SELECT_LEN ? new Pair<Point, Node>(null, null) : result;
+        return result == null ? new Pair<Point, Node>(null, null) : new Pair<Point, Node>(nodesMap.get(result),result);
     }
 
 }
