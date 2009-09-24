@@ -1652,12 +1652,12 @@ public class NetworkTreeView extends ViewPart {
                 if (left.getClass() == right.getClass()) {
                     return "";
                 } else {
-                    return " (type changed: " + typeString(left) + " <=> " + typeString(right) + ")";
+                    return " (" + typeString(left) + " <=> " + typeString(right) + ")";
                 }
             }
 
             private static String typeString(Object obj) {
-                return obj.getClass().toString().replace("class java.lang", "");
+                return obj.getClass().toString().replace("class java.lang.", "");
             }
         }
     }
