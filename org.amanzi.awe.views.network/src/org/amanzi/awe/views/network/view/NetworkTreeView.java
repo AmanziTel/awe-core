@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -327,7 +328,6 @@ public class NetworkTreeView extends ViewPart {
                         return;
                     }
                     NeoNode neoNode = element instanceof TreeItem ? (NeoNode)((TreeItem)element).getData() : (NeoNode)element;
-                    Node node = neoNode.getNode();
                     neoNode.setName(valueStr);
                     System.out.println(element);
                 }
@@ -1421,7 +1421,8 @@ public class NetworkTreeView extends ViewPart {
                             monitor.worked(reportWorkedUnit);
                         }
                         for(java.util.Map.Entry<String, Node> entry: deltaSitesNodes.entrySet()) {
-                            Node deltaSitesNode = deltaSitesNodes.get(entry.getKey());
+                            String deltaKey = entry.getKey();
+                            Node deltaSitesNode = deltaSitesNodes.get(deltaKey);
                             for (DeltaSite site : deltaSites.get(entry.getKey())) {
                                 Node deltaSite = neo.createNode();
                                 deltaSite.setProperty("name", site.name);
@@ -1429,6 +1430,9 @@ public class NetworkTreeView extends ViewPart {
                                 deltaSitesNode.createRelationshipTo(deltaSite, NetworkRelationshipTypes.CHILD);
                                 for (Node node : site.nodes.values()) {
                                     deltaSite.createRelationshipTo(node, NetworkRelationshipTypes.DIFFERENT);
+                                }
+                                for (Map.Entry<String,DeltaSite.Pair> delta: site.getDelta(deltaKey).entrySet()){
+                                    deltaSite.setProperty("Delta " + delta.getKey(), delta.getValue().toString());
                                 }
                             }
                         }
@@ -1550,6 +1554,7 @@ public class NetworkTreeView extends ViewPart {
     private static class DeltaSite {
         private String name;
         private HashMap<String, Node> nodes = new HashMap<String, Node>();
+        private HashMap<String, HashMap<String,Pair>> deltas = new HashMap<String,HashMap<String,Pair>>();
 
         public DeltaSite(String name, String network, Node node) {
             this.name = name;
@@ -1580,21 +1585,79 @@ public class NetworkTreeView extends ViewPart {
             if (nodes.size() < 2) {
                 return false;
             } else {
-                // TODO: cache this in case it is called twice
-                int delta = 0;
-                Integer firstHash = null;
-                for (Node site : nodes.values()) {
-                    StringBuffer key = new StringBuffer();
-                    for (String property : site.getPropertyKeys()) {
-                        key.append(property).append("=").append(site.getProperty(property).toString()).append(";");
+                if (!deltas.containsKey(deltaKey)) {
+                    HashMap<String, Pair> delta = new HashMap<String, Pair>();
+                    deltas.put(deltaKey, delta);
+                    String[] networks = new String[] {deltaSitesNode.getProperty("network1").toString(),
+                            deltaSitesNode.getProperty("network2").toString()};
+                    for (String network : networks) {
+                        Node site = nodes.get(network);
+                        addProperties(delta, site, null);
+                        for (Node sector : site.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+                                ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                            addProperties(delta, sector, sector.getProperty("name").toString());
+                        }
                     }
-                    if (firstHash == null) {
-                        firstHash = new Integer(key.toString().hashCode());
-                    } else if (firstHash.intValue() != key.toString().hashCode()) {
-                        delta++;
+                    // remove identical properties
+                    ArrayList<String> identical = new ArrayList<String>();
+                    for (Map.Entry<String, Pair> entry : delta.entrySet()) {
+                        if (entry.getValue().same()) {
+                            identical.add(entry.getKey());
+//                        } else {
+//                            System.out.println("Property changed for '"+entry.getKey()+"': "+entry.getValue());
+                        }
+                    }
+                    for (String key : identical) {
+                        delta.remove(key);
                     }
                 }
-                return delta > 0;
+                return deltas.get(deltaKey).size() > 0;
+            }
+        }
+
+        private void addProperties(HashMap<String, Pair> delta, Node node, String prefix) {
+            for (String property : node.getPropertyKeys()) {
+                String key = property;
+                if(prefix!=null) {
+                    key = prefix + " " + property;
+                }
+                Pair properties = delta.get(key);
+                if(properties==null){
+                    properties = new Pair();
+                    delta.put(key, properties);
+                    properties.left = node.getProperty(property);
+                } else {
+                    properties.right = node.getProperty(property);
+                }
+            }
+        }
+
+        public Map<String,Pair> getDelta(String deltaKey) {
+            return deltas.get(deltaKey);
+        }
+
+        private static class Pair {
+            private Object left;
+            private Object right;
+
+            private boolean same() {
+                return left == right || left != null && left.equals(right);
+            }
+
+            public String toString() {
+                return left.toString() + " <=> " + right + typeChanged();
+            }
+
+            public String typeChanged() {
+                if (left.getClass() == right.getClass()) {
+                    return "";
+                } else {
+                    return " (type changed: " + typeString(left) + " <=> " + typeString(right) + ")";
+                }
+            }
+
+            private static String typeString(Object obj) {
+                return obj.getClass().toString().replace("class java.lang", "");
             }
         }
     }
