@@ -5,7 +5,8 @@ Bundle-SymbolicName: org.amanzi.neo.core;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.neo4j.neoclipse,
  org.eclipse.ui,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ net.refractions.udig.project;bundle-version="1.1.1"
 Export-Package: org.amanzi.neo.core,
  org.amanzi.neo.core.database.exception,
  org.amanzi.neo.core.database.listener,

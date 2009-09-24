@@ -294,6 +294,10 @@ public class INeoConstants {
      * Name of drive Gis node
      */
 	public static final String GIS_TEMS_NAME = "drive";
+    /*
+     * Name of star Gis node
+     */
+    public static final String GIS_STAR_NAME = "star";
     /**
      * Name of distribute property
      */

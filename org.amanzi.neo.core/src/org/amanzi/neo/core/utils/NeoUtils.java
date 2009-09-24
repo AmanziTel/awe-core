@@ -14,14 +14,26 @@
  */
 package org.amanzi.neo.core.utils;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Iterator;
+import java.util.List;
+
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
@@ -117,18 +129,18 @@ public class NeoUtils {
      * @return gis node or null
      */
     public static Node findGisNode(final String gisName) {
-        if (gisName==null||gisName.isEmpty()){
+        if (gisName == null || gisName.isEmpty()) {
             return null;
         }
         Node root = NeoServiceProvider.getProvider().getService().getReferenceNode();
-        Iterator<Node> gisIterator=root.traverse(Order.DEPTH_FIRST,StopEvaluator.DEPTH_ONE,new ReturnableEvaluator() {
-            
+        Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node node = currentPos.currentNode();
-                return isGisNode(node)&&getNodeName(node).equals(gisName);
+                return isGisNode(node) && getNodeName(node).equals(gisName);
             }
-        },NetworkRelationshipTypes.CHILD,Direction.OUTGOING).iterator();
+        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         return gisIterator.hasNext() ? gisIterator.next() : null;
     }
 
@@ -189,6 +201,69 @@ public class NeoUtils {
             return gisIterator.hasNext() ? gisIterator.next() : null;
         } finally {
             tx.finish();
+        }
+    }
+
+    /**
+     * @return
+     */
+    public static Node findOrCreateStarGisNode() {
+        final String header = GisTypes.Star.getHeader();
+        NeoService neoService = NeoServiceProvider.getProvider().getService();
+        Transaction tx = neoService.beginTx();
+        try {
+            Node root = neoService.getReferenceNode();
+            Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return isGisNode(node) && header.equals(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, ""));
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+            if (gisIterator.hasNext()) {
+                return gisIterator.next();
+            }
+            Node node = neoService.createNode();
+            node.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.GIS_STAR_NAME);
+            node.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, header);
+            node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
+            root.createRelationshipTo(node, NetworkRelationshipTypes.CHILD);
+            tx.success();
+            NeoServiceProvider.getProvider().commit();
+            resetGeoNeoService();
+            NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
+                    new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
+            return node;
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * @throws MalformedURLException
+     */
+    public static void resetGeoNeoService() {
+        try {
+            // TODO gets service URL from static field
+            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+            List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(
+                    new URL("file://" + databaseLocation));
+            IService curService = null;
+            for (IService service : services) {
+                System.out.println("Found catalog service: " + service);
+                curService = service;
+                if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
+                    catalog.replace(service.getIdentifier(), service);
+                } else {
+                    catalog.add(service);
+                }
+            }
+
+        } catch (MalformedURLException e) {
+            // TODO Handle MalformedURLException
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 }

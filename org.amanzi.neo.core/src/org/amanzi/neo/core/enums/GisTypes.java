@@ -15,7 +15,6 @@
 package org.amanzi.neo.core.enums;
 
 /**
- * TODO Purpose of
  * <p>
  * GIS Types of GIS node
  * </p>
@@ -27,7 +26,8 @@ public enum GisTypes {
     /** GisTypes Network */
     Network("network"),
     /** GisTypes TEMS */
-    Tems("tems");
+    Tems("tems"),
+    Star("star");
 
     private String header;
 
