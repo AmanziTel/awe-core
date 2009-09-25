@@ -15,6 +15,7 @@
 package org.amanzi.awe.render.drive;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
@@ -133,6 +134,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         int maxSymbolSize = 40;
         int alpha = (int)(0.6*255.0);
         int drawSize = 3;
+        Font font = g.getFont();
+        int fontSize = font.getSize();
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);     
         if (neostyle!=null){
@@ -151,6 +154,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 maxSitesLite = neostyle.getSmallestSymb();
                 //scaleSectors = !neostyle.isFixSymbolSize();
                 maxSymbolSize = neostyle.getMaximumSymbolSize();
+                fontSize = neostyle.getFontSize();
                 //TODO: Remove these when defaults from style work property
                 maxSitesLabel = 50;
                 maxSitesLite = 500;
@@ -159,6 +163,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 //TODO: we can get here if an old style exists, and we have added new fields
             }
         }
+        g.setFont(font.deriveFont((float)fontSize));
         fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
         int drawWidth = 1 + 2*drawSize;
         
