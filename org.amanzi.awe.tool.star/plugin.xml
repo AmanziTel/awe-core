@@ -6,11 +6,11 @@
       <modalTool
 			categoryId="StarTool"
             class="org.amanzi.awe.tool.star.StarTool"
-            icon="icons/star_mode.gif"
+            icon="icons/star_32.png"
             id="org.amanzi.awe.tool.star.StarTool"
             name="Star Tool"
             onToolbar="true"
-            tooltip="Star Tool">
+            tooltip="Star mode for selecting network elements to analyse">
       </modalTool>
             <category
             id="StarTool"

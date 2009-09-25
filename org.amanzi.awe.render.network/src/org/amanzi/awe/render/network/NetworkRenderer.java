@@ -7,9 +7,13 @@ import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.core.Pair;
+//import net.refractions.udig.project.IBlackboard;
+import net.refractions.udig.project.IBlackboard;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IStyleBlackboard;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
@@ -20,16 +24,22 @@ import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
+import org.amanzi.awe.views.reuse.views.ReuseAnalyserView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.StarDataVault;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.PlatformUI;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -38,6 +48,7 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.opengis.referencing.FactoryException;
@@ -49,12 +60,14 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
+    public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
     // public static final String BLACKBOARD_KEY = "org.amanzi.awe.tool.star.StarTool.nodes";
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
     private static final Color COLOR_MORE = Color.GREEN;
     private static final Color COLOR_SITE_SELECTED = Color.CYAN;
     private static final Color COLOR_SECTOR_SELECTED = Color.CYAN;
+    private static final Color COLOR_SECTOR_STAR = Color.RED;
     private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
     private Color drawColor = Color.DARK_GRAY;
     private Color siteColor = new Color(128, 128, 128,(int)(0.6*255.0));
@@ -172,6 +185,14 @@ public class NetworkRenderer extends RendererImpl {
             Double moreMaxValue = geoNeo.getMaxPropertyValue();
             Select select = Select.findSelectByValue(geoNeo.getSelectName());
             //IBlackboard blackboard = getContext().getMap().getBlackboard();
+            IBlackboard blackboard = getContext().getMap().getBlackboard();
+            String starProperty = getSelectProperty();
+            Pair<Point,Long> starPoint = (Pair<Point,Long>)blackboard.get(BLACKBOARD_START_ANALYSER);
+            Node starNode = null;
+            if(starPoint != null) {
+                System.out.println("Have star selection: "+starPoint);
+            }
+
             isAggregatedProperties = selectedProp != null && INeoConstants.PROPERTY_ALL_CHANNELS_NAME.equals(selectedProp);
             aggregationList = geoNeo.getAggregatedProperties();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
@@ -288,6 +309,10 @@ public class NetworkRenderer extends RendererImpl {
                                 }
                                 if(azimuth == Double.NaN) continue;
                                 borderColor = drawColor;
+                                if (starPoint != null && starPoint.right().equals(child.getId())) {
+                                    borderColor = COLOR_SECTOR_STAR;
+                                    starNode = child;
+                                } else
                                 if (geoNeo.getSelectedNodes().contains(child)) {
                                     borderColor = COLOR_SECTOR_SELECTED;
                                 }
@@ -331,6 +356,9 @@ public class NetworkRenderer extends RendererImpl {
                 if (monitor.isCanceled())
                     break;
             }
+            if (starNode != null && starProperty != null) {
+                drawAnalyser(g, starNode, starPoint.left(), starProperty, nodesMap);
+            }
             System.out.println("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
         } catch (TransformException e) {
             throw new RenderException(e);
@@ -339,8 +367,12 @@ public class NetworkRenderer extends RendererImpl {
         } catch (IOException e) {
             throw new RenderException(e); // rethrow any exceptions encountered
         } finally {
-            if (geoNeo != null) {
-                StarDataVault.getInstance().setMap(geoNeo.getMainGisNode(), nodesMap);
+            if (neoGeoResource != null) {
+                HashMap<Long,Point> idMap = new HashMap<Long,Point>();
+                for(Node node:nodesMap.keySet()){
+                    idMap.put(node.getId(), nodesMap.get(node));
+                }
+                StarDataVault.getInstance().setMap(neoGeoResource.getIdentifier(), idMap);
             }
             // if (geoNeo != null)
             // geoNeo.close();
@@ -535,6 +567,86 @@ public class NetworkRenderer extends RendererImpl {
         for(;drawSize > 2; drawSize *= 0.8) {
             g.fillOval(p.x - drawSize, p.y - drawSize, 2 * drawSize, 2 * drawSize);
         }
+    }
+
+    /**
+     * perform and draw star analyser
+     * 
+     * @param context context
+     */
+    private void drawAnalyser(Graphics2D g, Node mainNode, Point starPoint, String property, Map<Node, Point> nodesMap) {
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
+            drawMainNode(g, mainNode, starPoint);
+            Object propertyValue = mainNode.getProperty(property,null);
+            if(propertyValue!=null) {
+                for (Node node : nodesMap.keySet()) {
+                    if (node.hasProperty(property) && propertyValue.equals(node.getProperty(property))) {
+                        Point nodePoint = nodesMap.get(node);
+                        g.setColor(getLineColor(mainNode, node));
+                        g.drawLine(starPoint.x, starPoint.y, nodePoint.x, nodePoint.y);
+                    }
+                }
+            }
+
+        } finally {
+            tx.finish();
+        }
+
+    }
+
+    /**
+     * get Line color
+     * 
+     * @param mainNiode main node
+     * @param node node
+     * @return Line color
+     */
+    private Color getLineColor(Node mainNiode, Node node) {
+        return Color.BLACK;
+    }
+
+    /**
+     * get property to analyze
+     * 
+     * @return property name
+     */
+    private String getSelectProperty() {
+        // String result = (String)blackboard.get(PROPERTY_KEY);
+        // return result;
+        final RunnableWithResult task = new RunnableWithResult() {
+
+            private IViewPart view;
+
+            @Override
+            public void run() {
+                view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
+                        "org.amanzi.awe.views.reuse.views.ReuseAnalyserView");
+            }
+
+            @Override
+            public Object getValue() {
+                return view;
+            }
+        };
+        ActionUtil.getInstance().runTaskWithResult(task);
+        IViewPart view = (IViewPart)task.getValue();
+        if (view == null) {
+            return null;
+        }
+        String result = ((ReuseAnalyserView)view).getPropertyName();
+        return result == null || result.isEmpty() ? null : result;
+    }
+
+    /**
+     * Draw selection of main node
+     * 
+     * @param context context
+     * @param mainNiode main node
+     */
+    private void drawMainNode(Graphics2D g, Node mainNode, Point point) {
+        g.setColor(Color.RED);
+        g.fillOval(point.x - 4, point.y - 4, 10, 10);
     }
 
     @Override

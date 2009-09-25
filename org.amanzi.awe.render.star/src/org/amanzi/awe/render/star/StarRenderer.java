@@ -52,7 +52,7 @@ public class StarRenderer extends RendererImpl {
     public void render(Graphics2D destination, IProgressMonitor monitor) throws RenderException {
         try {
             blackboard = context.getMap().getBlackboard();
-            nodesMap = StarDataVault.getInstance().getCopyOfAllMap();
+            nodesMap = null;//StarDataVault.getInstance().getCopyOfAllMap();
             if (nodesMap == null) {
                 return;
             }
@@ -170,7 +170,7 @@ public class StarRenderer extends RendererImpl {
      * @param nodesMap map of nodes
      * @return closest sector or null
      */
-    public static Pair<Point, Node> getSector(Point point, Map<Node, Point> nodesMap) {
+    private static Pair<Point, Node> getSector(Point point, Map<Node, Point> nodesMap) {
         Integer minLen = null;
         Pair<Point, Node> result = null;
         final Set<Node> keySet = nodesMap.keySet();

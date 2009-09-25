@@ -47,12 +47,12 @@ public class StarMapGraphic implements MapGraphic {
         // long t1 = System.currentTimeMillis();
         blackboard = context.getMap().getBlackboard();
 
-        nodesMap = StarDataVault.getInstance().getCopyOfAllMap();
+//        nodesMap = StarDataVault.getInstance().getCopyOfAllMap();
         // System.out.println("StarMapGraphic getCopyOfAllMap\t" + (System.currentTimeMillis() -
         // t1));
-        if (nodesMap == null) {
-            return;
-        }
+//        if (nodesMap == null) {
+//            return;
+//        }
         // t1 = System.currentTimeMillis();
         drawSelection(context);
         // System.out.println("StarMapGraphic drawSelection\t" + (System.currentTimeMillis() - t1));
@@ -68,12 +68,13 @@ public class StarMapGraphic implements MapGraphic {
         if (point == null) {
             return;
         }
+        drawSelected(context, point);
 
-        Point sector = getSector(point, nodesMap).getLeft();
-        if (sector == null) {
-            return;
-        }
-        drawSelected(context, sector);
+//        Point sector = getSector(point, nodesMap).getLeft();
+//        if (sector == null) {
+//            return;
+//        }
+//        drawSelected(context, sector);
     }
 
     /**

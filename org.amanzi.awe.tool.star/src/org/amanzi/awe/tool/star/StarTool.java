@@ -12,41 +12,25 @@
  */
 package org.amanzi.awe.tool.star;
 
+import java.awt.Color;
 import java.awt.Point;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import net.refractions.udig.catalog.CatalogPlugin;
-import net.refractions.udig.catalog.ICatalog;
-import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.catalog.IResolve;
-import net.refractions.udig.catalog.IService;
 import net.refractions.udig.core.Pair;
-import net.refractions.udig.mapgraphic.MapGraphic;
-import net.refractions.udig.mapgraphic.internal.MapGraphicResource;
-import net.refractions.udig.mapgraphic.internal.MapGraphicService;
 import net.refractions.udig.project.IBlackboard;
-import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.command.Command;
 import net.refractions.udig.project.command.NavCommand;
 import net.refractions.udig.project.internal.render.ViewportModel;
-import net.refractions.udig.project.ui.ApplicationGIS;
+import net.refractions.udig.project.ui.internal.commands.draw.DrawShapeCommand;
 import net.refractions.udig.project.ui.internal.commands.draw.TranslateCommand;
 import net.refractions.udig.project.ui.render.displayAdapter.MapMouseEvent;
 import net.refractions.udig.project.ui.render.displayAdapter.ViewportPane;
 import net.refractions.udig.project.ui.tool.AbstractModalTool;
 
-import org.amanzi.awe.mapgraphic.star.StarMapGraphic;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.StarDataVault;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.neo4j.api.core.Node;
 
 /**
  * Custom uDIG Map Tool for performing a 'star analysis'. This means it interacts with objects on
@@ -57,13 +41,18 @@ import org.neo4j.api.core.Node;
  * @since 1.0.0
  */
 public class StarTool extends AbstractModalTool {
+    public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
+    public static final String BLACKBOARD_CENTER_POINT = "org.amanzi.awe.tool.star.StarTool.point";
+    private static final int MAXIMUM_SELECT_LEN = 10000;
     private boolean dragging=false;
     private Point start=null;
-    private Node gisNode;
 
     private TranslateCommand command;
-    private Map<Node, java.awt.Point> nodesMap;
-    private ILayer starMapGraphicLayer; // cache so that mousemove event does not do so much work
+    private Map<Long, java.awt.Point> nodesMap;
+//    private ILayer starMapGraphicLayer; // cache so that mousemove event does not do so much work
+    private DrawShapeCommand drawSelectedSectorCommand;
+    private DrawShapeCommand drawSelectionLineCommand;
+    private Pair<Point, Long> selected;
 
     /**
      * Creates an new instance of Pan
@@ -84,91 +73,93 @@ public class StarTool extends AbstractModalTool {
 
     @Override
     public void setActive(boolean active) {
-        super.setActive(active);
-        // add layer on map if necessary
-        if (active) {
-            setsGisLayeronMap();
-            setLayerOnMap(StarMapGraphic.class);
+        if(super.isActive() != active) {
+            super.setActive(active);
+            // add layer on map if necessary
+            if (active) {
+//                setsGisLayeronMap();
+//                setLayerOnMap(StarMapGraphic.class);
+            }
         }
     }
 
     /**
      *
      */
-    private void setsGisLayeronMap() {
-        IProgressMonitor monitor = new NullProgressMonitor();
-        if (gisNode == null) {
-            synchronized (this) {
-                if (gisNode == null) {
-                    gisNode = NeoUtils.findOrCreateStarGisNode();
-                }
-            }
-        }
-        IMap map = getContext().getMap();
-        List<ILayer> layers = map.getMapLayers();
-        try {
-            for (ILayer layer : layers) {
-                if (layer.getGeoResource().canResolve(Node.class)) {
-                    Node node = layer.getGeoResource().resolve(Node.class, monitor);
-                    if (node.equals(gisNode)) {
-                        return;
-                    }
-
-                }
-            }
-
-            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
-            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-            List<IResolve> serv = catalog.find(new URL("file://" + databaseLocation), monitor);
-
-            List<IGeoResource> list = new ArrayList<IGeoResource>();
-            for (IResolve iResolve : serv) {
-                List< ? extends IGeoResource> resources = ((IService)iResolve).resources(null);
-                for (IGeoResource singleResource : resources) {
-                    if (singleResource.canResolve(Node.class) && singleResource.resolve(Node.class, monitor).equals(gisNode)) {
-                        list.add(singleResource);
-                        ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
-                        return;
-                    }
-                }
-            }
-            ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
-        } catch (IOException e) {
-            // TODO Handle IOException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-    }
+//    private void setsGisLayeronMap() {
+//        IProgressMonitor monitor = new NullProgressMonitor();
+//        if (gisNode == null) {
+//            synchronized (this) {
+//                if (gisNode == null) {
+//                    gisNode = NeoUtils.findOrCreateStarGisNode();
+//                }
+//            }
+//        }
+//        IMap map = getContext().getMap();
+//        List<ILayer> layers = map.getMapLayers();
+//        try {
+//            for (ILayer layer : layers) {
+//                if (layer.getGeoResource().canResolve(Node.class)) {
+//                    Node node = layer.getGeoResource().resolve(Node.class, monitor);
+//                    if (node.equals(gisNode)) {
+//                        return;
+//                    }
+//
+//                }
+//            }
+//
+//            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+//            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+//            List<IResolve> serv = catalog.find(new URL("file://" + databaseLocation), monitor);
+//
+//            List<IGeoResource> list = new ArrayList<IGeoResource>();
+//            for (IResolve iResolve : serv) {
+//                List< ? extends IGeoResource> resources = ((IService)iResolve).resources(null);
+//                for (IGeoResource singleResource : resources) {
+//                    if (singleResource.canResolve(Node.class) && singleResource.resolve(Node.class, monitor).equals(gisNode)) {
+//                        list.add(singleResource);
+//                        ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
+//                        return;
+//                    }
+//                }
+//            }
+//            ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
+//        } catch (IOException e) {
+//            // TODO Handle IOException
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        }
+//    }
 
     /**
      *
      */
-    protected void setLayerOnMap(Class<? extends MapGraphic> resourceClass) {
-        IMap map = getContext().getMap();
-        List<ILayer> layers = map.getMapLayers();
-        for (ILayer layer : layers) {
-            if (layer.getGeoResource().canResolve(resourceClass)) {
-                return;
-            }
-        }
-        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-        List<IResolve> serv = catalog.find(MapGraphicService.SERVICE_URL, null);
-        try {
-            for (IResolve iResolve : serv) {
-                List<MapGraphicResource> resources;
-                resources = ((MapGraphicService)iResolve).resources(null);
-                for (MapGraphicResource mapGraphicResource : resources) {
-                    if (mapGraphicResource.canResolve(resourceClass)) {
-                        List<IGeoResource> list = new ArrayList<IGeoResource>();
-                        list.add(mapGraphicResource);
-                        ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
-                        return;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-    }
+//    protected void setLayerOnMap(Class< ? extends MapGraphic> resourceClass) {
+//        IMap map = getContext().getMap();
+//        List<ILayer> layers = map.getMapLayers();
+//        for (ILayer layer : layers) {
+//            if (layer.getGeoResource().canResolve(resourceClass)) {
+//                return;
+//            }
+//        }
+//        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+//        List<IResolve> serv = catalog.find(MapGraphicService.SERVICE_URL, null);
+//        try {
+//            for (IResolve iResolve : serv) {
+//                List<MapGraphicResource> resources;
+//                resources = ((MapGraphicService)iResolve).resources(null);
+//                for (MapGraphicResource mapGraphicResource : resources) {
+//                    if (mapGraphicResource.canResolve(resourceClass)) {
+//                        List<IGeoResource> list = new ArrayList<IGeoResource>();
+//                        list.add(mapGraphicResource);
+//                        ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
+//                        return;
+//                    }
+//                }
+//            }
+//        } catch (IOException e) {
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        }
+//    }
     /**
      * @see net.refractions.udig.project.ui.tool.AbstractTool#mousePressed(net.refractions.udig.project.render.displayAdapter.MapMouseEvent)
      */
@@ -201,33 +192,64 @@ public class StarTool extends AbstractModalTool {
      * @see net.refractions.udig.project.ui.tool.AbstractTool#mouseReleased(net.refractions.udig.project.render.displayAdapter.MapMouseEvent)
      */
     public void mouseReleased(MapMouseEvent e) {
+        boolean activateStar = true;
         if (dragging) {
+            activateStar = false;
         	((ViewportPane)context.getMapDisplay()).enableDrawCommands(true);
             Point end=e.getPoint();
-            NavCommand finalPan = context.getNavigationFactory().createPanCommandUsingScreenCoords(start.x-end.x, start.y-end.y);
+            int dx = start.x-end.x;
+            int dy = start.y-end.y;
+            if(dx == 0 && dy == 0) {
+                activateStar = true;
+            } else {
+                nodesMap = null;  // after panning the nodes might have changed, so force reload on next mouse released
+            }
+            //TODO: Perhaps only run this if dx||dy non-zero ?
+            NavCommand finalPan = context.getNavigationFactory().createPanCommandUsingScreenCoords(dx, dy);
             context.sendASyncCommand(new PanAndInvalidate(finalPan, command));
-            nodesMap = null;  // after panning the nodes might have changed, so force reload on next mouse released
             dragging = false;
 
-        }else{
+        }
+        if (activateStar) {
             final IMap map = getContext().getMap();
             IBlackboard blackboard = map.getBlackboard();
-            Map<Node, java.awt.Point> nodesMap = getNodesMap();
-            if (nodesMap == null) {
-                return;
+            blackboard.put(BLACKBOARD_START_ANALYSER, selected);
+            if (selected != null) {
+                getContext().getSelectedLayer().refresh(null);
+                // updateLayerStarLayer();
             }
-            Pair<Point, Node> pair = StarMapGraphic.getSector(e.getPoint(), nodesMap);
-            blackboard.put(StarMapGraphic.BLACKBOARD_START_ANALYSER, pair);
-            updateLayerStarLayer();
         }
         // clear layer cache in case user deletes or adds star map graphic
-        starMapGraphicLayer = null;
+        //starMapGraphicLayer = null;
     }
 
-    private Map<Node,java.awt.Point> getNodesMap() {
-        if(nodesMap==null) {
+    /**
+     * gets closest sector
+     * 
+     * @param point start point
+     * @param nodesMap map of nodes
+     * @return closest sector or null
+     */
+    private static Pair<Point, Long> getSector(Point point, Map<Long, Point> nodesMap) {
+        int minLen = Integer.MAX_VALUE;
+        Long result = null;
+        final Set<Long> keySet = nodesMap.keySet();
+        for (Long node : keySet) {
+            Point sectorCenter = nodesMap.get(node);
+            int len = (point.x - sectorCenter.x) * (point.x - sectorCenter.x) + (point.y - sectorCenter.y)
+                    * (point.y - sectorCenter.y);
+            if (len < MAXIMUM_SELECT_LEN && len < minLen) {
+                result = node;
+                minLen = len;
+            }
+        }
+        return result == null ? null : new Pair<Point, Long>(nodesMap.get(result),result);
+    }
+    
+    private Map<Long,java.awt.Point> getNodesMap() {
+        if(true || nodesMap==null) {
             //nodesMap = (Map<Node, java.awt.Point>)blackboard.get(StarMapGraphic.BLACKBOARD_NODE_LIST);
-            nodesMap = StarDataVault.getInstance().getCopyOfAllMap();
+            nodesMap = StarDataVault.getInstance().getCopyOfMap(getContext().getSelectedLayer().getGeoResource().getIdentifier());
         }
         return nodesMap;
     }
@@ -235,22 +257,22 @@ public class StarTool extends AbstractModalTool {
     /**
      *
      */
-    private void updateLayerStarLayer() {
-        IMap map = getContext().getMap();
-        List<ILayer> layers = map.getMapLayers();
-        try {
-            for (ILayer layer : layers) {
-                if (layer.getGeoResource().canResolve(Node.class)
-                        && gisNode.equals(layer.getGeoResource().resolve(Node.class, null))) {
-                    layer.refresh(null);
-                    return;
-                }
-            }
-        } catch (IOException e) {
-            // TODO Handle IOException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-    }
+//    private void updateLayerStarLayer() {
+//        IMap map = getContext().getMap();
+//        List<ILayer> layers = map.getMapLayers();
+//        try {
+//            for (ILayer layer : layers) {
+//                if (layer.getGeoResource().canResolve(Node.class)
+//                        && gisNode.equals(layer.getGeoResource().resolve(Node.class, null))) {
+//                    layer.refresh(null);
+//                    return;
+//                }
+//            }
+//        } catch (IOException e) {
+//            // TODO Handle IOException
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        }
+//    }
 
     /**
      * @see net.refractions.udig.project.ui.tool.Tool#dispose()
@@ -264,31 +286,65 @@ public class StarTool extends AbstractModalTool {
         super.mouseMoved(e);
         IMap map = getContext().getMap();
         if (!dragging) {
-            map.getBlackboard().put(StarMapGraphic.BLACKBOARD_CENTER_POINT, e.getPoint());
-            updateStarMapGraphic();
+            map.getBlackboard().put(BLACKBOARD_CENTER_POINT, e.getPoint());
+            //updateStarMapGraphic();
+
+            if (drawSelectionLineCommand != null) {
+                drawSelectionLineCommand.setValid(false);
+                getContext().sendASyncCommand(drawSelectionLineCommand);
+                drawSelectionLineCommand = null;
+            }
+
+            Pair<Point, Long> pair = getSector(e.getPoint(), getNodesMap());
+            if (selected == null || pair == null || !selected.left().equals(pair.left())) {
+                selected = pair;
+                if (drawSelectedSectorCommand != null) {
+                    System.out.println("Deleting old sector marker: "+drawSelectedSectorCommand.getValidArea());
+                    drawSelectedSectorCommand.setValid(false);
+                    getContext().sendASyncCommand(drawSelectedSectorCommand);
+                    drawSelectedSectorCommand = null;
+                }
+                if (pair != null) {
+                    System.out.println("Drawing sector marker at "+pair.left()+" near point "+e.getPoint());
+                    java.awt.geom.Ellipse2D r = new java.awt.geom.Ellipse2D.Float(pair.left().x - 3, pair.left().y - 3, 7, 7);
+                    // java.awt.geom.Path2D p = new java.awt.geom.Path2D.Float(s );
+                    // Rectangle2D r = new Rectangle2D.Float(pair.left().x-2, pair.left().y-2, 5,
+                    // 5);
+                    drawSelectedSectorCommand = getContext().getDrawFactory().createDrawShapeCommand(r, Color.RED, 1, 2);
+                    java.awt.geom.Line2D l = new java.awt.geom.Line2D.Float(pair.left().x, pair.left().y, e.getPoint().x, e.getPoint().y);
+                    drawSelectionLineCommand = getContext().getDrawFactory().createDrawShapeCommand(l, Color.BLUE);
+
+                    getContext().sendSyncCommand(drawSelectedSectorCommand);
+                    getContext().sendSyncCommand(drawSelectionLineCommand);
+                    getContext().getSelectedLayer().refresh(null);
+                } else {
+                    System.out.println("No sector found near point "+e.getPoint());
+                }
+            }
+
         } else {
-            map.getBlackboard().put(StarMapGraphic.BLACKBOARD_CENTER_POINT, null);
+            map.getBlackboard().put(BLACKBOARD_CENTER_POINT, null);
         }
     }
 
     /**
      * Tell the star map graphic to redraw the circle on the closest sector
      */
-    private void updateStarMapGraphic() {
-        if(starMapGraphicLayer == null) {
-            IMap map = getContext().getMap();
-            List<ILayer> layers = map.getMapLayers();
-            for (ILayer layer : layers) {
-                if (layer.getGeoResource().canResolve(StarMapGraphic.class)) {
-                    starMapGraphicLayer = layer;
-                    break;
-                }
-            }
-        }
-        if (starMapGraphicLayer != null) {
-            starMapGraphicLayer.refresh(null);
-        }
-    }
+//    private void updateStarMapGraphic() {
+//        if(starMapGraphicLayer == null) {
+//            IMap map = getContext().getMap();
+//            List<ILayer> layers = map.getMapLayers();
+//            for (ILayer layer : layers) {
+//                if (layer.getGeoResource().canResolve(StarMapGraphic.class)) {
+//                    starMapGraphicLayer = layer;
+//                    break;
+//                }
+//            }
+//        }
+//        if (starMapGraphicLayer != null) {
+//            starMapGraphicLayer.refresh(null);
+//        }
+//    }
 
     /**
      * Executes the specified pan command, and only after it is executed, expires the last translate

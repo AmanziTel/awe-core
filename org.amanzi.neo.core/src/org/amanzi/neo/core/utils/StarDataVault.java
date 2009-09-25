@@ -14,11 +14,10 @@
 package org.amanzi.neo.core.utils;
 
 import java.awt.Point;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.neo4j.api.core.Node;
 
 /**
  * <p>
@@ -32,43 +31,29 @@ public class StarDataVault {
     private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
     private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
     private static StarDataVault instance = new StarDataVault();
-    private Map<Node, Map<Node, Point>> vault = new HashMap<Node, Map<Node, Point>>();
+    private Map<URL, Map<Long, Point>> vault = new HashMap<URL, Map<Long, Point>>();
 
     private StarDataVault() {
-
     }
 
     public static StarDataVault getInstance() {
         return instance;
     }
 
-    public void setMap(Node gisNode, Map<Node, Point> nodeMap) {
+    public void setMap(URL identifier, Map<Long, Point> nodeMap) {
         writeLock.lock();
         try {
-            vault.put(gisNode, nodeMap);
+            vault.put(identifier, nodeMap);
         } finally {
             writeLock.unlock();
         }
     }
 
-    public Map<Node, Point> getCopyOfAllMap() {
+    public Map<Long, Point> getCopyOfMap(URL identifier) {
         readLock.lock();
         try {
-            Map<Node, Point> result = new HashMap<Node, Point>();
-            for (Map<Node, Point> map : vault.values()) {
-                result.putAll(map);
-            }
-            return result;
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    public Map<Node, Point> getCopyOfMap(Node gisNode) {
-        readLock.lock();
-        try {
-            Map<Node, Point> result = new HashMap<Node, Point>();
-            Map<Node, Point> map = vault.get(gisNode);
+            Map<Long, Point> result = new HashMap<Long, Point>();
+            Map<Long, Point> map = vault.get(identifier);
             if (map != null) {
                 result.putAll(map);
             }
