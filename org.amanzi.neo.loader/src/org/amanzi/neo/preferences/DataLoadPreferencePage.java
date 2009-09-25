@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  */
 public class DataLoadPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
     private static final String LABEL_REMOVE_SITE_NAME = "Remove site name from sector name";
+    private static final String USE_COMBINED_CALCULATION = "Use combined network density calculation";
 
     @Override
     public void init(IWorkbench workbench) {
@@ -38,9 +39,12 @@ public class DataLoadPreferencePage extends FieldEditorPreferencePage implements
 
     @Override
     protected void createFieldEditors() {
-        BooleanFieldEditor helpOnStart = new BooleanFieldEditor(DataLoadPreferences.REMOVE_SITE_NAME, LABEL_REMOVE_SITE_NAME,
+        BooleanFieldEditor editor = new BooleanFieldEditor(DataLoadPreferences.REMOVE_SITE_NAME, LABEL_REMOVE_SITE_NAME,
                 getFieldEditorParent());
-        addField(helpOnStart);
+        addField(editor);
+        editor = new BooleanFieldEditor(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, USE_COMBINED_CALCULATION,
+                getFieldEditorParent());
+        addField(editor);
     }
 
     @Override

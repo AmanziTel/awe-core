@@ -17,6 +17,11 @@
              id="org.amanzi.neo.loader.commands.LoadTEMS"
              name="Load TEMS Data">
        </command>
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadNeighbour"
+             name="Load Neighbour Data">
+       </command>       
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
@@ -27,6 +32,10 @@
        <handler
              class="org.amanzi.neo.loader.handlers.LoadTemsHandler"
              commandId="org.amanzi.neo.loader.commands.LoadTEMS">
+       </handler>
+        <handler
+             class="org.amanzi.neo.loader.handlers.LoadNeighbourHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadNeighbour">
        </handler>
     </extension>
    
@@ -47,6 +56,12 @@
             icon="icons/16/file.png"
             id="org.amanzi.neo.loader.LoadTEMS"
                    tooltip="Load Drive Data">
+             </command>
+             <command 
+             		commandId="org.amanzi.neo.loader.commands.LoadNeighbour"
+            		icon="icons/16/neighbour.png"
+            		id="org.amanzi.neo.loader.LoadNeighbour"
+                   	tooltip="Load Neighbour Data">
              </command>
           </toolbar>
        </menuContribution>
@@ -72,7 +87,17 @@
           <description>
  				Import a data file from the local file system into the project
           </description>
-       </wizard>      
+       </wizard>
+       <wizard  
+             category="org.amanzi.load"
+             class="org.amanzi.neo.wizards.NeighbourImportWizard"
+             icon="icons/16/file.png"
+             id="org.amanzi.neo.wizards.NeighbourImportWizard"
+             name="Import Neighbour data">
+          <description>
+ 				Import a data file from the local file system into the project
+          </description>
+       </wizard>               
        <category
              id="org.amanzi.load"
              name="Amanzi Data">

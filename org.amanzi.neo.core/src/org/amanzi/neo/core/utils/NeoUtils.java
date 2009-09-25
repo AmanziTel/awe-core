@@ -262,4 +262,8 @@ public class NeoUtils {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
+    public static Transaction beginTransaction(){
+        return NeoServiceProvider.getProvider().getService().beginTx();
+        
+    }
 }

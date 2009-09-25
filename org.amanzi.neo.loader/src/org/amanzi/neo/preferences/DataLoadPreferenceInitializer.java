@@ -25,6 +25,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
     public void initializeDefaultPreferences() {
         IPreferenceStore pref = NeoLoaderPlugin.getDefault().getPreferenceStore();
         pref.setDefault(DataLoadPreferences.REMOVE_SITE_NAME, true);
+        pref.setDefault(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, true);
     }
 
 }

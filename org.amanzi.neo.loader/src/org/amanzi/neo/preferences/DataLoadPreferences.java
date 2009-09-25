@@ -25,6 +25,7 @@ package org.amanzi.neo.preferences;
 public class DataLoadPreferences {
     /** DataLoadPreferences REMOVE_SITE_NAME field */
     public static final String REMOVE_SITE_NAME = "REMOVE_SITE_NAME";
+    public static final String NETWORK_COMBINED_CALCULATION = "USE_COMBINED_CALCULATION";
 
     private DataLoadPreferences() {
 

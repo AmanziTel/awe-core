@@ -1,0 +1,66 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+package org.amanzi.neo.wizards;
+
+import java.io.File;
+
+import org.amanzi.neo.loader.NeighbourLoader;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.ui.IImportWizard;
+import org.eclipse.ui.IWorkbench;
+
+/**
+ * TODO Purpose of
+ * <p>
+ * </p>
+ * 
+ * @author Cinkel_A
+ * @since 1.0.0
+ */
+public class NeighbourImportWizard extends Wizard implements IImportWizard {
+
+    private static final String PAGE_TITLE = "Import Neighbour File";
+    private static final String PAGE_DESCR = "Import a file from the local file system into the workspace";
+    private NeighbourImportWizardPage mainPage;
+
+    @Override
+    public boolean performFinish() {
+        Job job = new Job("Load Neighbour '" + (new File(mainPage.getFileName())).getName() + "'") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                NeighbourLoader neighbourLoader;
+                neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName());
+                neighbourLoader.run(monitor);
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule(50);
+        return true;
+    }
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        mainPage = new NeighbourImportWizardPage(PAGE_TITLE, PAGE_DESCR);
+    }
+
+    @Override
+    public void addPages() {
+        super.addPages();
+        addPage(mainPage);
+    }
+}
