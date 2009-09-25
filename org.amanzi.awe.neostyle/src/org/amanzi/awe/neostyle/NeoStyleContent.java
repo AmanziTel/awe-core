@@ -40,6 +40,8 @@ public class NeoStyleContent extends StyleContent {
     public static final Color DEF_COLOR_LABEL = Color.DARK_GRAY;
     /** Color DEF_COLOR_FILL field */
     public static final Color DEF_COLOR_FILL = new Color(255, 255, 128);
+    /** NeoStyleContent DEF_FONT_SIZE field */
+    public static final Integer DEF_FONT_SIZE = 12;
     /** NeoStyleContent DEF_COLOR_SITE field */
     public static final Color DEF_COLOR_SITE = Color.DARK_GRAY;
     public static final String ID = "org.amanzi.awe.neostyle.style";
@@ -56,6 +58,7 @@ public class NeoStyleContent extends StyleContent {
     private static final String SECTOR_TRANSPARENCY = "SECTOR_TRANSPARENCY";
     public static final int DEF_MAXIMUM_SYMBOL_SIZE = 40;
     private static final String MAX_SYMB_SIZE = "MAXIMUM_SYMBOL_SIZE";
+    private static final String FONT_SIZE = "FONT_SIZE";
 
     // private static final String IS_NETWORK_STYLE = "IS_NETWORK";
 
@@ -78,10 +81,12 @@ public class NeoStyleContent extends StyleContent {
                 result.setSectorTransparency(DEF_SECTOR_TR);
                 result.setSiteFill(DEF_COLOR_SITE);
                 result.setMaximumSymbolSize(DEF_MAXIMUM_SYMBOL_SIZE);
+                result.setFontSize(DEF_FONT_SIZE);
                 // result.setNetwork(true);
                 return result;
             } else {
                 NeoStyle result = new NeoStyle(Color.BLACK, new Color(200, 128, 255, (int)(0.6 * 255.0)), Color.BLACK);
+                result.setFontSize(DEF_FONT_SIZE);
                 // result.setNetwork(false);
                 return result;
             }
@@ -109,6 +114,7 @@ public class NeoStyleContent extends StyleContent {
         result.setSymbolSize(memento.getInteger(SYMBOL_SIZE));
         result.setSectorTransparency(memento.getInteger(SECTOR_TRANSPARENCY));
         result.setMaximumSymbolSize(memento.getInteger(MAX_SYMB_SIZE));
+        result.setFontSize(memento.getInteger(FONT_SIZE));
         // result.setNetwork(getBoolean(memento, IS_NETWORK_STYLE, true));
         return result;
     }
@@ -152,6 +158,7 @@ public class NeoStyleContent extends StyleContent {
         memento.putInteger(SYMBOL_SIZE, style.getSymbolSize());
         memento.putInteger(SECTOR_TRANSPARENCY, style.getSectorTransparency());
         memento.putInteger(MAX_SYMB_SIZE, style.getMaximumSymbolSize());
+        memento.putInteger(FONT_SIZE, style.getFontSize());
         // memento.putString(IS_NETWORK_STYLE, String.valueOf(style.isNetwork()));
 
     }

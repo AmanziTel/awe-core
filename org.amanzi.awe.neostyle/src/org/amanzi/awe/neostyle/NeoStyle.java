@@ -22,6 +22,7 @@ public class NeoStyle {
     private Integer symbolSize;
     private Integer sectorTransparency;
     private Integer maximumSymbolSize;
+    private Integer fontSize;
 
     /**
      * sets maximum size of symbol
@@ -203,6 +204,20 @@ public class NeoStyle {
      */
     public int getMaximumSymbolSize() {
         return maximumSymbolSize != null ? maximumSymbolSize : NeoStyleContent.DEF_MAXIMUM_SYMBOL_SIZE;
+    }
+
+    /**
+     * @return Returns the fontSize.
+     */
+    public Integer getFontSize() {
+        return fontSize != null ? fontSize : NeoStyleContent.DEF_FONT_SIZE;
+    }
+
+    /**
+     * @param fontSize The fontSize to set.
+     */
+    public void setFontSize(Integer fontSize) {
+        this.fontSize = fontSize;
     }
 
 }

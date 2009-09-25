@@ -51,6 +51,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     private static final String DRIVE_FILL = "Fill";
 
+    private static final String FONT_SIZE = "Label size";
+
     public NeoStyleConfigurator() {
         super();
     }
@@ -89,6 +91,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private Group grScale;
 
     private boolean isNetwork;
+
+    private Spinner sFontSize;
 
     public void createControl(Composite parent) {
         FormLayout layout = new FormLayout();
@@ -153,6 +157,19 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.left = new FormAttachment(labelFill, 130);
         formData.top = new FormAttachment(labelLine, 10);
         cEdLabel.getButton().setLayoutData(formData);
+        // TODO create group font?
+        Label lFontSize = new Label(xGroup, SWT.NONE);
+        lFontSize.setText(FONT_SIZE);
+        sFontSize = new Spinner(xGroup, SWT.BORDER);
+
+        formData = new FormData();
+        formData.top = new FormAttachment(sFontSize, 5, SWT.CENTER);
+        formData.left = new FormAttachment(2);
+        lFontSize.setLayoutData(formData);
+        formData = new FormData();
+        formData.left = new FormAttachment(labelFill, 130);
+        formData.top = new FormAttachment(labelLabel, 10);
+        sFontSize.setLayoutData(formData);
 
         grSiteSymb = new Group(parent, SWT.NONE);
         grSiteSymb.setText(GROUP_SITE);
@@ -282,6 +299,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         tSmallSymb.setMaximum(10000);
         tSymbolSize.setMinimum(1);
         tSymbolSize.setMaximum(10000);
+        sFontSize.setMinimum(1);
+        tSectorTr.setMaximum(100);
         rButton1.addSelectionListener(new SelectionListener() {
             
             @Override
@@ -316,7 +335,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             tSymbolSize.setSelection(curStyle.getSymbolSize());
             tSectorTr.setSelection(curStyle.getSectorTransparency());
             sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
-
+            sFontSize.setSelection(curStyle.getFontSize());
             if (!isNetwork) {
                 changeToDriveStyle();
             }
@@ -367,8 +386,9 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         curStyle.setFixSymbolSize(rButton2.getSelection());
         curStyle.setSymbolSize(getSymbolSize());
         curStyle.setSectorTransparency(getSectorTransparency());
-        getStyleBlackboard().put(ID, curStyle);
+        curStyle.setFontSize(sFontSize.getSelection());
         curStyle.setMaximumSymbolSize(sMaxSymSize.getSelection());
+        getStyleBlackboard().put(ID, curStyle);
     }
 
     /**
