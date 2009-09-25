@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.refractions.udig.catalog.IGeoResource;
-//import net.refractions.udig.project.IBlackboard;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IStyleBlackboard;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
@@ -21,9 +20,12 @@ import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.StarDataVault;
+import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -180,7 +182,12 @@ public class NetworkRenderer extends RendererImpl {
             }else if (data_bounds != null && data_bounds.getHeight()>0 && data_bounds.getWidth()>0) {
                 double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
                         / (data_bounds.getHeight() * data_bounds.getWidth());
-                double countScaled = dataScaled * geoNeo.getCount();
+                long count = geoNeo.getCount();
+                if (NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME)) {
+                    count = getAverageCount(monitor);
+                }
+
+                double countScaled = dataScaled * count;
                 drawLabels = countScaled < maxSitesLabel;
                 drawFull = countScaled < maxSitesFull;
                 drawLite = countScaled < maxSitesLite;
@@ -334,6 +341,30 @@ public class NetworkRenderer extends RendererImpl {
             // geoNeo.close();
             monitor.done();
         }
+    }
+
+    /**
+     * gets average count of geoNeo.getCount() from all resources in map
+     * 
+     * @return average count
+     */
+    private Long getAverageCount(IProgressMonitor monitor) {
+        long result = 0;
+        long count = 0;
+        try {
+            for (ILayer layer : getContext().getMap().getMapLayers()) {
+                if (layer.getGeoResource().canResolve(GeoNeo.class)) {
+                    GeoNeo resource = layer.getGeoResource().resolve(GeoNeo.class, monitor);
+                    result += resource.getCount();
+                    count++;
+                }
+            }
+        } catch (IOException e) {
+            // TODO Handle IOException
+            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+            return null;
+        }
+        return count == 0 ? null : result / count;
     }
 
     /**
