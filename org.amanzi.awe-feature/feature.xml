@@ -43,181 +43,181 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
          id="org.amanzi.awe"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.ui.operation.shape_export"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.jruby"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.2.0"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.script"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.script.jirb"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.scripting.jirb"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.scripting.jruby"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.catalog.neo"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.render.network"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.integrator.awe"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.integrator.rdt"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.neo.loader"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.kxml2"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="2.1.5"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.catalog.mitab"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.1.1.awe"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.project"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.1.1"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.project.edit"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.1.1"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.project.ui"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.1.1"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.views.network"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.neo.core"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.render.drive"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.views.reuse"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.neostyle"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.views.drive"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.jfree"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="1.0.13"/>
 
    <plugin
          id="org.amanzi.gef"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.tool.star"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
 </feature>
