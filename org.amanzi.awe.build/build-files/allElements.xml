@@ -14,10 +14,6 @@
 			<property name="type" value="feature" />
 			<property name="id" value="org.neo4j.neoclipse_feature" />
 		</ant>
-		<ant antfile="${genericTargets}" target="${target}">
-			<property name="type" value="feature" />
-			<property name="id" value="org.amanzi.awe_feature" />
-		</ant>
 		
 	</target>
 
@@ -35,11 +31,6 @@
 		</ant>
 	</target>
 	<target name="assemble.org.neo4j.neoclipse_feature">
-		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">
-			<property name="zipargs" value="" />
-		</ant>
-	</target>
-	<target name="assemble.org.amanzi.awe_feature">
 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">
 			<property name="zipargs" value="" />
 		</ant>

@@ -1,5 +1,5 @@
-feature@org.amanzi.splash.extras_feature=COPY,/home/amabdelsalam/awe,org.amanzi.splash.extras-feature
-feature@org.neo4j.neoclipse_feature=COPY,/home/amabdelsalam/awe,org.neo4j.neoclipse-feature
-plugin@org.neo4j=COPY,/home/amabdelsalam/awe,org.neo4j
-plugin@org.neo4j.neoclipse=COPY,/home/amabdelsalam/awe,org.neo4j.neoclipse
-plugin@org.amanzi.gef=COPY,/home/amabdelsalam/awe,org.amanzi.gef
+feature@org.amanzi.splash.extras_feature=COPY,/home/amabdelsalam/hudson/jobs/awe/workspace/awe,org.amanzi.splash.extras-feature
+feature@org.neo4j.neoclipse_feature=COPY,/home/amabdelsalam/hudson/jobs/awe/workspace/awe,org.neo4j.neoclipse-feature
+plugin@org.neo4j=COPY,/home/amabdelsalam/hudson/jobs/awe/workspace/awe,org.neo4j
+plugin@org.neo4j.neoclipse=COPY,/home/amabdelsalam/hudson/jobs/awe/workspace/awe,org.neo4j.neoclipse
+plugin@org.amanzi.gef=COPY,/home/amabdelsalam/hudson/jobs/awe/workspace/awe,org.amanzi.gef
