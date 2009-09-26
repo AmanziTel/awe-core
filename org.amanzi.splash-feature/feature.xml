@@ -25,55 +25,55 @@
          id="org.amanzi.rdt.launching"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.splash"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.rubypeople.rdt.core"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.awe"
          unpack="false"/>
 
    <plugin
          id="org.rubypeople.rdt.debug.core"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.awe"
          unpack="false"/>
 
    <plugin
          id="org.rubypeople.rdt.debug.ui"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.awe"
          unpack="false"/>
 
    <plugin
          id="org.rubypeople.rdt.launching"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.awe"
          unpack="false"/>
 
    <plugin
          id="org.rubypeople.rdt.ui"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.awe"
          unpack="false"/>
 
    <plugin
          id="org.jfree"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="1.0.13"/>
 
 </feature>
