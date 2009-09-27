@@ -1,3 +1,4 @@
+#!/bin/sh
 targetDirectory=${HOME}/udig-sdk
 equinoxVersion=1.0.1.R33x_v20080118
 pdeBuildVersion=3.3.2.v20071019
