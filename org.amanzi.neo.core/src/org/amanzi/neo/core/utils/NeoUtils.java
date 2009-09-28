@@ -153,6 +153,16 @@ public class NeoUtils {
     }
 
     /**
+     * check node by type
+     * 
+     * @param node node
+     * @return true if node is gis node
+     */
+    public static boolean isNeighbourNode(Node node) {
+        return node != null && INeoConstants.NEIGHBOUR_TYPE_NAME.equals(getNodeType(node, ""));
+    }
+
+    /**
      *Delete gis node if it do not have outcoming relations
      */
     public static void deleteEmptyGisNodes() {
@@ -262,8 +272,56 @@ public class NeoUtils {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
+
+    /**
+     * begins new neo4j transaction
+     * 
+     * @return transaction
+     */
     public static Transaction beginTransaction(){
         return NeoServiceProvider.getProvider().getService().beginTx();
         
+    }
+
+    /**
+     *Finds Neighbour of network
+     * 
+     * @param network - network GIS node
+     * @param name - Neighbour name
+     * @return Neighbour node or null;
+     */
+    public static Node findNeighbour(Node network, final String name) {
+        if (network == null || name == null) {
+            return null;
+        }
+        Transaction tx = beginTransaction();
+        try {
+            Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return isNeighbourNode(node) && name.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+                }
+            }, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING).iterator();
+            return iterator.hasNext() ? iterator.next() : null;
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * Gets array of Numeric Fields
+     * 
+     * @param node - node
+     * @return array or null if properties do not exist
+     */
+    public static String[] getNumericFields(Node node) {
+        Transaction tx = beginTransaction();
+        try {
+            return (String[])node.getProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, null);
+        } finally {
+            tx.finish();
+        }
     }
 }
