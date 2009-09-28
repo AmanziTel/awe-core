@@ -25,7 +25,7 @@ public class NetworkRenderMetricsFactory implements IRenderMetricsFactory {
         for(IGeoResource resource : context.getLayer().getGeoResources()){
             //TODO: test also that the data is for network only.
             if(resource.canResolve(GeoNeo.class)){
-                return resource.resolve(GeoNeo.class, null).getGisType() == GisTypes.Network;
+                return resource.resolve(GeoNeo.class, null).getGisType() == GisTypes.NETWORK;
             }
         }
         return false;

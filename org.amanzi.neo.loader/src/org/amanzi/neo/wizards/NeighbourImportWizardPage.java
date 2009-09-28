@@ -119,7 +119,7 @@ public class NeighbourImportWizardPage extends WizardPage {
             NeoService service = NeoServiceProvider.getProvider().getService();
             Node refNode = service.getReferenceNode();
             members = new HashMap<String, Node>();
-            String header = GisTypes.Network.getHeader();
+            String header = GisTypes.NETWORK.getHeader();
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
                 if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)

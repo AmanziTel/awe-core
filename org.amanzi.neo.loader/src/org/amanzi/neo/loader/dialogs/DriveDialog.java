@@ -7,6 +7,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.IGeoResource;
@@ -19,8 +21,10 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.NetworkLoader;
+import org.amanzi.neo.loader.RomesLoader;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -54,20 +58,26 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Traverser;
 
 /**
- * Dialog for Loading TEMS data
+ * Dialog for Loading drive test data
  * 
  * @author Lagutko_N
  */
-public class TEMSDialog {
+public class DriveDialog {
     /*
-     * Names of supported files for TEMS data
+     * Names of supported files for Drive data
      */
-    public static final String[] TEMS_FILE_NAMES = {"(*.FMT)"};
+    public static final String[] Drive_FILE_NAMES = {
+            "TEMS Drive Test Export (*.FMT)",
+            "Romes drive test export (*.asc)",
+            "All Files (*.*)"};
     
     /*
-     * Extensions of supported files for TEMS data
+     * Extensions of supported files for Drive data
      */
-    public static final String[] TEMS_FILE_EXTENSIONS = {"*.FMT"};
+    public static final String[] Drive_FILE_EXTENSIONS = {
+        "*.FMT",
+        "*.asc",
+        "*.*"};
 	
     /*
      * Minimum height of Shell
@@ -87,7 +97,7 @@ public class TEMSDialog {
 	/*
 	 * Shell of this Dialog
 	 */
-	private Shell temsShell;
+	private Shell dialogShell;
 	
 	/*
 	 * Button for FileDialog
@@ -145,6 +155,8 @@ public class TEMSDialog {
      */
     private WizardPage wizardPage = null;
 
+    private String extension = null;
+
 	/**
 	 * Creates a Shell and add GUI elements
 	 * 
@@ -152,21 +164,21 @@ public class TEMSDialog {
 	 * @param createNewShell is true than create a child shell of given shell for dialog
 	 */
 	
-	protected TEMSDialog(Shell shell, boolean createNewShell) {
+	protected DriveDialog(Shell shell, boolean createNewShell) {
 		if (createNewShell) {
-			temsShell = new Shell(shell);
+			dialogShell = new Shell(shell);
 		}
 		else {
-			temsShell = shell;
+			dialogShell = shell;
 		}
 		
 		//TODO move to constants
-		temsShell.setMinimumSize(MINIMUM_WIDTH, MINIMUM_HEIGHT);
+		dialogShell.setMinimumSize(MINIMUM_WIDTH, MINIMUM_HEIGHT);
 		
-		temsShell.setText(NeoLoaderPluginMessages.TEMSDialog_DialogTitle);
+		dialogShell.setText(NeoLoaderPluginMessages.DriveDialog_DialogTitle);
 		
-		createControl(temsShell);
-		createActions(temsShell);
+		createControl(dialogShell);
+		createActions(dialogShell);
 	}
 	
 	/**
@@ -175,7 +187,7 @@ public class TEMSDialog {
 	 * @param parentShell
 	 */
 	
-	public TEMSDialog(Shell parentShell) {
+	public DriveDialog(Shell parentShell) {
 		this(parentShell, true);
 	}
 	
@@ -184,7 +196,7 @@ public class TEMSDialog {
 	 * @param display
 	 */
 	
-	public TEMSDialog(Display display) {
+	public DriveDialog(Display display) {
 		this(new Shell(display), false);
 	}
 
@@ -194,12 +206,12 @@ public class TEMSDialog {
      * @param parent - Composite
      * @param wizardPage wizards page
      */
-    public TEMSDialog(Composite parent, WizardPage wizardPage) {
+    public DriveDialog(Composite parent, WizardPage wizardPage) {
         this.wizardPage = wizardPage;
-        temsShell = parent.getShell();
-        temsShell.setText(NeoLoaderPluginMessages.TEMSDialog_DialogTitle);
+        dialogShell = parent.getShell();
+        dialogShell.setText(NeoLoaderPluginMessages.DriveDialog_DialogTitle);
         createControlForDialog(parent);
-        createActions(temsShell);
+        createActions(dialogShell);
     }
 	/**
 	 * Opens a Dialog
@@ -207,8 +219,8 @@ public class TEMSDialog {
 	 */
 	
 	public void open() {		
-		temsShell.pack();
-		temsShell.open();
+		dialogShell.pack();
+		dialogShell.open();
 	}
 	
 	/**
@@ -269,7 +281,7 @@ public class TEMSDialog {
 		panel.setLayoutData(data);
 
 		Label ldataset=new Label(panel, SWT.NONE);
-		ldataset.setText(NeoLoaderPluginMessages.TEMSDialog_DatasetLabel);
+		ldataset.setText(NeoLoaderPluginMessages.DriveDialog_DatasetLabel);
 		combo = new Combo(panel, SWT.NONE);
         FormData dLabel = new FormData(); 
         dLabel.left = new FormAttachment(0, 5);
@@ -304,7 +316,7 @@ public class TEMSDialog {
 		panel.setLayout(layoutOneColumnNotFixedWidth);		
 		panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		folderFilesList = createSelectionList(panel, NeoLoaderPluginMessages.TEMSDialog_FilesToChooseListLabel);
+		folderFilesList = createSelectionList(panel, NeoLoaderPluginMessages.DriveDialog_FilesToChooseListLabel);
 	}
 	
 	/**
@@ -321,16 +333,16 @@ public class TEMSDialog {
 		Composite choosePanel = new Composite(panel, SWT.NONE);
 		choosePanel.setLayout(layoutOneColumnNotFixedWidth);
 		choosePanel.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));		
-		browseDialogButton = createChooseButton(choosePanel, NeoLoaderPluginMessages.TEMSDialog_BrowseButtonText, SWT.TOP);
+		browseDialogButton = createChooseButton(choosePanel, NeoLoaderPluginMessages.DriveDialog_BrowseButtonText, SWT.TOP);
 		
 		Composite actionPanel = new Composite(panel, SWT.NONE);
 		actionPanel.setLayout(layoutOneColumnNotFixedWidth);
 		actionPanel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		
-		addFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.TEMSDialog_AddButtonText, SWT.CENTER);
-        addAllFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.TEMSDialog_AddAllButtonText, SWT.CENTER);
-		removeFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.TEMSDialog_RemoveButtonText, SWT.CENTER);
-        removeAllFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.TEMSDialog_RemoveAllButtonText, SWT.CENTER);
+		addFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_AddButtonText, SWT.CENTER);
+        addAllFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_AddAllButtonText, SWT.CENTER);
+		removeFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_RemoveButtonText, SWT.CENTER);
+        removeAllFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_RemoveAllButtonText, SWT.CENTER);
 	}
 	
 	/**
@@ -344,7 +356,7 @@ public class TEMSDialog {
 		panel.setLayout(layoutOneColumnNotFixedWidth);		
 		panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		filesToLoadList = createSelectionList(panel, NeoLoaderPluginMessages.TEMSDialog_FilesToLoadListLabel);
+		filesToLoadList = createSelectionList(panel, NeoLoaderPluginMessages.DriveDialog_FilesToLoadListLabel);
 	}
 	
 	/**
@@ -360,7 +372,7 @@ public class TEMSDialog {
 		panel.setLayoutData(data);
 		
 		cancelButton = new Button(panel, SWT.CENTER);
-		cancelButton.setText(NeoLoaderPluginMessages.TEMSDialog_CancelButtonText);
+		cancelButton.setText(NeoLoaderPluginMessages.DriveDialog_CancelButtonText);
 		FormData cancelButtonFormData = new FormData();
 		cancelButtonFormData.right = new FormAttachment(100, -10);
 		cancelButtonFormData.bottom = new FormAttachment(100, -10);
@@ -369,7 +381,7 @@ public class TEMSDialog {
 		cancelButton.setLayoutData(cancelButtonFormData);
 		
 		loadButton = new Button(panel, SWT.CENTER);
-		loadButton.setText(NeoLoaderPluginMessages.TEMSDialog_LoadButtonText);
+		loadButton.setText(NeoLoaderPluginMessages.DriveDialog_LoadButtonText);
 		loadButton.setEnabled(false);
 		FormData loadButtonFormData = new FormData();
 		loadButtonFormData.right = new FormAttachment(cancelButton, -10);
@@ -431,30 +443,42 @@ public class TEMSDialog {
 			public void widgetSelected(SelectionEvent e) {
 				// User has selected to open a single file
 		        FileDialog dlg = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
-				dlg.setText(NeoLoaderPluginMessages.TEMSDialog_FileDialogTitle);
-		        dlg.setFilterNames(TEMS_FILE_NAMES);
-		        dlg.setFilterExtensions(TEMS_FILE_EXTENSIONS);
+				dlg.setText(NeoLoaderPluginMessages.DriveDialog_FileDialogTitle);
+		        dlg.setFilterNames(Drive_FILE_NAMES);
+		        dlg.setFilterExtensions(Drive_FILE_EXTENSIONS);
 		        dlg.setFilterPath(getDefaultDirectory());
 				
 		        String fn = dlg.open();
 		      
 		        if (fn != null) {
 		        	setDefaultDirectory(dlg.getFilterPath());
-		        	for (String name : dlg.getFileNames()) {		        		
-		        		addFileToLoad(name, dlg.getFilterPath(), true);
-			        	if (combo.getText().isEmpty()){
-			        		combo.setText(name);
-			        	}
+                    Pattern extRegex = Pattern.compile(".*\\.(\\w+)$");
+		        	FileFilter fileFilter = null;
+		        	for (String name : dlg.getFileNames()) {
+		        	    if(fileFilter == null) {
+		        	        Matcher m = extRegex.matcher(name);
+		        	        if(m.matches()) {
+		        	            String extension = m.group(1);
+		        	            fileFilter = new DriveFileFilter(extension);
+		        	            setExtension(extension);
+		        	        }
+		        	    }
+		        	    if(fileFilter == null || fileFilter.accept(new File(name))) {
+    		        		addFileToLoad(name, dlg.getFilterPath(), true);
+    			        	if (combo.getText().isEmpty()){
+    			        		combo.setText(name);
+    			        	}
+		        	    }
 		        	}
-		        	
-		        	File[] listFiles = new File(getDefaultDirectory()).listFiles(new TEMFFileFilter());
+
+		        	File[] listFiles = new File(getDefaultDirectory()).listFiles(fileFilter);
                     for (File file : listFiles) {
 		        		addFileToChoose(file.getName(), getDefaultDirectory(), true);
 		        	}
 
 		        }
 			}
-			
+
 		});
 		
 		//adds selected files to files to load
@@ -502,12 +526,12 @@ public class TEMSDialog {
 		cancelButton.addSelectionListener(new SelectionAdapter() {
 			
 			public void widgetSelected(SelectionEvent e) {
-				temsShell.close();
+				dialogShell.close();
 			}
 			
 		});
 		
-		//loads TEMS data from chosen files		
+		//loads Drive data from chosen files		
 		loadButton.addSelectionListener(new SelectionAdapter() {
 			
 			public void widgetSelected(SelectionEvent e) {
@@ -528,51 +552,65 @@ public class TEMSDialog {
 	}
 	public void runLoadingJob() {
 		datasetName=combo.getText();
-		LoadTEMSJob job = new LoadTEMSJob(temsShell.getDisplay());
+		LoadDriveJob job = new LoadDriveJob(dialogShell.getDisplay());
 		job.schedule(50);
 	}	
 	/**
-	 * FileFilter for TEMS data files
+	 * FileFilter for Drive data files
 	 * 
 	 * @author Lagutko_N
 	 *
 	 */
 	
-	private class TEMFFileFilter implements FileFilter {
+	private class DriveFileFilter implements FileFilter {
+	    String extension;
+	    public DriveFileFilter(String extension) {
+	        this.extension = extension;
+	    }
 
 		public boolean accept(File pathname) {
-		    for (String extension : TEMS_FILE_EXTENSIONS) {
-                if (pathname.getName().toLowerCase().endsWith(extension.toLowerCase().substring(1))) {
-		            return true;
-		        }
-		    }
-		    return false;
-		}				
+            if (pathname.getName().toLowerCase().endsWith(extension.toLowerCase())) {
+                return true;
+            }
+            return false;
+        }				
 	}
 	
+    private void setExtension(String extension) {
+        this.extension  = extension;
+    }
+    
+
 	/**
-	 * Loads TEMS data from files
+	 * Loads Drive data from files
+	 * @param extension2 
 	 * 
 	 */
 	
-	private void loadTemsData(Display display, IProgressMonitor monitor) {
+	private void loadDriveData(Display display, IProgressMonitor monitor) {
 		
 		display.asyncExec(new Runnable() {
 			public void run() {
-				temsShell.close();
+				dialogShell.close();
 			}
 		});
 		
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();
 		}
-		monitor.beginTask("Importing " + loadedFiles.size() + " drive test files", loadedFiles.size() * TEMSLoader.WORKED_PER_FILE);
-        TEMSLoader temsLoader = null;
+		monitor.beginTask("Importing " + loadedFiles.size() + " drive test files", loadedFiles.size() * DriveLoader.WORKED_PER_FILE);
+        DriveLoader driveLoader = null;
 		for (String filePath : loadedFiles.values()) {
 			try {
-                temsLoader = new TEMSLoader(filePath, display, datasetName);
-				temsLoader.run(monitor);
-				temsLoader.printStats(false);	// stats for this load
+			    if(extension.toLowerCase().equals("fmt")) {
+			        driveLoader = new TEMSLoader(filePath, display, datasetName);
+			    } else if(extension.toLowerCase().equals("asc")) {
+                    driveLoader = new RomesLoader(filePath, display, datasetName);
+			    } else {
+			        NeoLoaderPlugin.error("Unsupported file extension: "+extension);
+			    }
+				driveLoader.run(monitor);
+				driveLoader.printStats(false);	// stats for this load
 				if(monitor.isCanceled()) break;
 			}
 			catch (IOException e) {
@@ -581,7 +619,7 @@ public class TEMSDialog {
 		}
 
         if (datasetName != null) {
-            Node gis = temsLoader != null ? temsLoader.getGis() : null;
+            Node gis = driveLoader != null ? driveLoader.getGisNode() : null;
             addGisToMap(gis);
         }
 
@@ -725,7 +763,7 @@ public class TEMSDialog {
 	}
 	
 	/**
-	 * Returns Default Directory path for file dialogs in TEMSLoad and NetworkLoad
+	 * Returns Default Directory path for file dialogs in DriveLoad and NetworkLoad
 	 * 
 	 * @return default directory
 	 */
@@ -741,7 +779,7 @@ public class TEMSDialog {
 	}
 	
 	/**
-	 * Sets Default Directory path for file dialogs in TEMSLoad and NetworkLoad
+	 * Sets Default Directory path for file dialogs in DriveLoad and NetworkLoad
 	 * 
 	 * @param newDirectory new default directory
 	 */
@@ -763,25 +801,25 @@ public class TEMSDialog {
 	}
 	
 	/**
-	 * Job for loading TEMS data
+	 * Job for loading Drive data
 	 * 
 	 * @author Lagutko_N
 	 *
 	 */
 
-	private class LoadTEMSJob extends Job {
+	private class LoadDriveJob extends Job {
 		
 		private final Display jobDisplay;
 
-		public LoadTEMSJob(Display jobDisplay) {
-			super(NeoLoaderPluginMessages.TEMSDialog_MonitorName);
+		public LoadDriveJob(Display jobDisplay) {
+			super(NeoLoaderPluginMessages.DriveDialog_MonitorName);
 			this.jobDisplay = jobDisplay;					
 		}
 
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			try {
-                loadTemsData(jobDisplay, monitor);
+                loadDriveData(jobDisplay, monitor);
                 
                 return Status.OK_STATUS;
             } catch (Exception e) {

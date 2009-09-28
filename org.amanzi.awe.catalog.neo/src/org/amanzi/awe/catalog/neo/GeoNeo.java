@@ -443,4 +443,10 @@ public class GeoNeo {
         return aggregatedProperties;
     }
 
+    /**
+     * Return an arbitrary property from the representative gis node.
+     */
+    public Object getProperty(String key, Object defaultValue) {
+        return gisNode.getProperty(key, defaultValue);
+    }
 }

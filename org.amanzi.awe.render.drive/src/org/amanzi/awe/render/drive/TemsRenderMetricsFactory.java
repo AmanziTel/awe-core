@@ -40,7 +40,7 @@ public class TemsRenderMetricsFactory implements IRenderMetricsFactory {
     public boolean canRender(IRenderContext context) throws IOException {
         for (IGeoResource resource : context.getLayer().getGeoResources()) {
             if (resource.canResolve(GeoNeo.class)) {
-                return resource.resolve(GeoNeo.class, null).getGisType() == GisTypes.Tems;
+                return resource.resolve(GeoNeo.class, null).getGisType() == GisTypes.DRIVE;
             }
         }
         return false;

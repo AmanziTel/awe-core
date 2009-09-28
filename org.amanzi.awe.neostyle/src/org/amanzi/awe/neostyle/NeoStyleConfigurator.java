@@ -346,7 +346,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     @Override
     public void focus(Layer layer1) {
         try {
-            isNetwork = layer1.findGeoResource(NeoGeoResource.class).resolve(GeoNeo.class, null).getGisType() == GisTypes.Network;
+            isNetwork = layer1.findGeoResource(NeoGeoResource.class).resolve(GeoNeo.class, null).getGisType() == GisTypes.NETWORK;
         } catch (IOException e) {
             // TODO Handle IOException
             e.printStackTrace();

@@ -14,7 +14,7 @@
  */
 package org.amanzi.neo.wizards;
 
-import org.amanzi.neo.loader.dialogs.TEMSDialog;
+import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class TemsImportWizardPage extends WizardPage {
 
-    private TEMSDialog dialog;
+    private DriveDialog dialog;
 
     /**
      * Constructor
@@ -46,14 +46,14 @@ public class TemsImportWizardPage extends WizardPage {
     @Override
     public void createControl(Composite parent) {
         Composite main = new Composite(parent, SWT.FILL);
-        dialog = new TEMSDialog(main, this);
+        dialog = new DriveDialog(main, this);
         setControl(main);
     }
 
     /**
      * @return Returns the dialog.
      */
-    public TEMSDialog getDialog() {
+    public DriveDialog getDialog() {
         return dialog;
     }
 

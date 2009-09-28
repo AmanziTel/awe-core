@@ -18,7 +18,7 @@ import java.io.IOException;
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.loader.dialogs.TEMSDialog;
+import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -71,8 +71,8 @@ public class LoadNetwork extends AbstractActionTool {
 	public static String getDirectory(){
 		//LN, 9.07.2009, if directory in LoadNetwork is null than get DefaultDirectory from TEMSDialog
 		if (directory == null) {
-			if (TEMSDialog.hasDefaultDirectory()) {
-				directory = TEMSDialog.getDefaultDirectory();
+			if (DriveDialog.hasDefaultDirectory()) {
+				directory = DriveDialog.getDefaultDirectory();
 			}
 		}
 		return directory;
@@ -88,7 +88,7 @@ public class LoadNetwork extends AbstractActionTool {
 	public static void setDirectory(String newDirectory) {
 		if (!newDirectory.equals(directory)) {
 			directory = newDirectory;		
-			TEMSDialog.setDefaultDirectory(newDirectory);
+			DriveDialog.setDefaultDirectory(newDirectory);
 		}
 	}
 	

@@ -15,7 +15,7 @@
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadTEMS"
-             name="Load TEMS Data">
+             name="Load Drive Data">
        </command>
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
@@ -30,7 +30,7 @@
              commandId="org.amanzi.neo.loader.commands.LoadNetwork">
        </handler>
        <handler
-             class="org.amanzi.neo.loader.handlers.LoadTemsHandler"
+             class="org.amanzi.neo.loader.handlers.LoadDriveHandler"
              commandId="org.amanzi.neo.loader.commands.LoadTEMS">
        </handler>
         <handler

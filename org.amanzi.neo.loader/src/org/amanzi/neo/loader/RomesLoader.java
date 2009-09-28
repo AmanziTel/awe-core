@@ -17,7 +17,7 @@ import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
 
-public class TEMSLoader extends DriveLoader {
+public class RomesLoader extends DriveLoader {
     private Node point = null;
     private int first_line = 0;
     private int last_line = 0;
@@ -35,8 +35,8 @@ public class TEMSLoader extends DriveLoader {
      * @param display for opening message dialogs
      * @param dataset to add data to
      */
-    public TEMSLoader(String filename, Display display, String dataset) {
-        initialize("TEMS", null, filename, display, dataset);
+    public RomesLoader(String filename, Display display, String dataset) {
+        initialize("Romes", null, filename, display, dataset);
     }
 
     /**
@@ -46,8 +46,8 @@ public class TEMSLoader extends DriveLoader {
      * @param filename of file to load
      * @param display
      */
-    public TEMSLoader(NeoService neo, String filename) {
-        initialize("TEMS", neo, filename, null, null);
+    public RomesLoader(NeoService neo, String filename) {
+        initialize("Romes", neo, filename, null, null);
     }
 
     public void run(IProgressMonitor monitor) throws IOException {
@@ -239,18 +239,18 @@ public class TEMSLoader extends DriveLoader {
      */
     public static void main(String[] args) {
         if (args.length < 1)
-            args = new String[] {"amanzi/test.FMT", "amanzi/0904_90.FMT", "amanzi/0905_22.FMT", "amanzi/0908_44.FMT"};
+            args = new String[] {"amanzi/test.ASC"};
         EmbeddedNeo neo = new EmbeddedNeo("var/neo");
         try {
             for (String filename : args) {
-                TEMSLoader driveLoader = new TEMSLoader(neo, filename);
+                RomesLoader driveLoader = new RomesLoader(neo, filename);
                 driveLoader.setLimit(100);
                 driveLoader.run(null);
                 driveLoader.printStats(true); // stats for this load
             }
             printTimesStats(); // stats for all loads
         } catch (IOException e) {
-            System.err.println("Error loading TEMS data: " + e);
+            System.err.println("Error loading Romes data: " + e);
             e.printStackTrace(System.err);
         } finally {
             neo.shutdown();

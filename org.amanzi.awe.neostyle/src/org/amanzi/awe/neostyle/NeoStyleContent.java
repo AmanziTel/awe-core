@@ -71,7 +71,7 @@ public class NeoStyleContent extends StyleContent {
     public Object createDefaultStyle(IGeoResource resource, Color colour, IProgressMonitor monitor) throws IOException {
         if (resource.canResolve(NeoGeoResource.class)) {
             NeoGeoResource res = resource.resolve(NeoGeoResource.class, monitor);
-            if (res.getGeoNeo(monitor).getGisType() == GisTypes.Network) {
+            if (res.getGeoNeo(monitor).getGisType() == GisTypes.NETWORK) {
                 NeoStyle result = new NeoStyle(DEF_COLOR_LINE, DEF_COLOR_FILL, DEF_COLOR_LABEL);
                 result.setSmallestSymb(DEF_SMALLEST_SYMB);
                 result.setSmallSymb(DEF_SMALL_SYMB);

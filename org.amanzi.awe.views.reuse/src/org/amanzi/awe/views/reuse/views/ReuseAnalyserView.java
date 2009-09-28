@@ -264,10 +264,9 @@ public class ReuseAnalyserView extends ViewPart {
                     setVisibleForChart(false);
                     tSelectedInformation.setText("");
                 } else {
-                    Node gis = members.get(gisCombo.getText());
-                    cSelect
-                            .setEnabled(new GeoNeo(NeoServiceProvider.getProvider().getService(), gis).getGisType() == GisTypes.Tems);
-                    formPropertyList(gis);
+                    Node gisNode = members.get(gisCombo.getText());
+                    cSelect.setEnabled(isAggregatedDataset(gisNode));
+                    formPropertyList(gisNode);
                 }
                 propertyCombo.setItems(propertyList.toArray(new String[] {}));
             }
@@ -285,12 +284,12 @@ public class ReuseAnalyserView extends ViewPart {
                 } else {
                     final Node gisNode = members.get(gisCombo.getText());
                     propertyName = propertyCombo.getText();
+                    boolean isAggregated = isAggregatedDataset(gisNode);
                     boolean isAggrProp = aggregatedProperties.keySet().contains(propertyName);
                     if (!isAggrProp) {
                         cSelect.select(0);
                     }
-                    cSelect.setEnabled(isAggrProp
-                            || gisNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").equals(GisTypes.Tems.getHeader()));
+                    cSelect.setEnabled(isAggregated || isAggrProp);
                     updateSelection();
                     findOrCreateAggregateNodeInNewThread(gisNode, propertyName);
                     // chartUpdate(aggrNode);
@@ -352,6 +351,15 @@ public class ReuseAnalyserView extends ViewPart {
         axisLog.setAutoRange(true);
     }
 
+    private boolean isAggregatedDataset(Node gisNode) {
+        GeoNeo geoNeo = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
+        boolean isAggregated = geoNeo.getGisType() == GisTypes.DRIVE;
+//        if (!isAggregated) {
+//            System.out.println("GIS '" + geoNeo + "' is not drive: " + geoNeo.getGisType());
+//        }
+        return isAggregated;
+    }
+
     /**
      *
      */
@@ -362,7 +370,7 @@ public class ReuseAnalyserView extends ViewPart {
             for (ILayer sLayer : ApplicationGIS.getActiveMap().getMapLayers()) {
                 if (sLayer.getGeoResource().canResolve(NeoGeoResource.class)) {
                     NeoGeoResource neoGeo = sLayer.getGeoResource().resolve(NeoGeoResource.class, monitor);
-                    if (neoGeo.getGeoNeo(monitor).getGisType() == GisTypes.Star) {
+                    if (neoGeo.getGeoNeo(monitor).getGisType() == GisTypes.STAR) {
                         sLayer.refresh(null);
                         return;
                     }
@@ -475,7 +483,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @param aggrNode - new node
      */
     protected void chartUpdate(Node aggrNode) {
-        chart.setTitle(aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+        chart.setTitle(aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME,"").toString());
         dataset.setAggrNode(aggrNode);
         setSelection(null);
         setVisibleForChart(true);
@@ -495,6 +503,7 @@ public class ReuseAnalyserView extends ViewPart {
                 fireLayerDrawEvent(gisNode, aggrNode, selectedColumn);
             } else {
                 // drop old selection
+                selectedGisNode.removeProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION);
                 fireLayerDrawEvent(selectedGisNode, null, null);
                 selectedGisNode = gisNode;
                 fireLayerDrawEvent(selectedGisNode, aggrNode, selectedColumn);
@@ -557,7 +566,7 @@ public class ReuseAnalyserView extends ViewPart {
     }
 
     /**
-     * Finds aggregate node or creates if nod does not exist
+     * Finds aggregate node or creates if node does not exist
      * 
      * @param gisNode GIS node
      * @param propertyName name of property
@@ -589,21 +598,21 @@ public class ReuseAnalyserView extends ViewPart {
 
         @Override
         public IStatus run(IProgressMonitor monitor) {
-                try {
-                    node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select, monitor);
-                    ActionUtil.getInstance().runTask(new Runnable() {
-                        @Override
-                        public void run() {
-                                mainView.setEnabled(true);
-                                chartUpdate(node);
-                        }
-                    }, true);
-         return Status.OK_STATUS;
-                } catch (Exception e) {
+            try {
+                node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select, monitor);
+                ActionUtil.getInstance().runTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        mainView.setEnabled(true);
+                        chartUpdate(node);
+                    }
+                }, true);
+                return Status.OK_STATUS;
+            } catch (Exception e) {
                 e.printStackTrace();
-                    // TODO Handle Exception
-                    throw (RuntimeException) new RuntimeException( ).initCause( e );
-                }
+                // TODO Handle Exception
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
         }
 
         /**
@@ -624,7 +633,7 @@ public class ReuseAnalyserView extends ViewPart {
      */
     protected Node findOrCreateAggregateNode(Node gisNode, final String propertyName, final String distribute, final String select, IProgressMonitor monitor) {
         NeoService service = NeoServiceProvider.getProvider().getService();
-        final GisTypes typeOfGis = new GeoNeo(service, gisNode).getGisType();
+        //final GisTypes typeOfGis = new GeoNeo(service, gisNode).getGisType();
         final Runnable setAutoDistribute = new Runnable() {
             @Override
             public void run() {
@@ -633,6 +642,7 @@ public class ReuseAnalyserView extends ViewPart {
         };
         Transaction tx = service.beginTx();
         try {
+            gisNode.setProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, propertyName);
             Iterator<Node> iterator = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                 @Override
@@ -730,7 +740,7 @@ public class ReuseAnalyserView extends ViewPart {
         } finally {
             tx.finish();
             // fix bug - aggregate data of drive gis node do not save after restart application
-            NeoServiceProvider.getProvider().commit();
+            //NeoServiceProvider.getProvider().commit();
         }
     }
 
@@ -745,7 +755,7 @@ public class ReuseAnalyserView extends ViewPart {
     private TreeMap<Column, Integer> computeStatistics(Node gisNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
         boolean isAggregatedProperty = isAggregatedProperty(propertyName);
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
-        List<Number> aggregatedValues = new ArrayList<Number>();
+        //List<Number> aggregatedValues = new ArrayList<Number>();
         GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
         final GisTypes typeOfGis = geoNode.getGisType();
         int totalWork = (int)geoNode.getCount() * 2;
@@ -774,7 +784,7 @@ public class ReuseAnalyserView extends ViewPart {
             } else if (node.hasProperty(propertyName)) {
                 propertyValue = node.getProperty(propertyName);
                 Number valueNum = (Number)propertyValue;
-                if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
+                if (typeOfGis == GisTypes.DRIVE && select != Select.EXISTS) {
                     Node mpNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
                     Number oldValue = mpMap.get(mpNode);
                     if (oldValue == null) {
@@ -817,7 +827,7 @@ public class ReuseAnalyserView extends ViewPart {
         }
         runGcIfBig(totalWork);
         monitor.subTask("Determining statistics type");
-        if (typeOfGis == GisTypes.Tems && select != Select.EXISTS) {
+        if (typeOfGis == GisTypes.DRIVE && select != Select.EXISTS) {
             // colCount = mpMap.size();
             min = null;
             max = null;
@@ -895,7 +905,7 @@ public class ReuseAnalyserView extends ViewPart {
                 if (monitor.isCanceled())
                     break;
             }
-        } else if (typeOfGis == GisTypes.Network || select == Select.EXISTS) {
+        } else if (typeOfGis == GisTypes.NETWORK || select == Select.EXISTS) {
             travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
                     NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             monitor.subTask("Building results from database");
@@ -1169,7 +1179,7 @@ public class ReuseAnalyserView extends ViewPart {
                 }
             }
         }
-        final Relationship singleRelationship = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        final Relationship singleRelationship = node.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator().next();
         // add aggregated property
         if (singleRelationship != null) {
             final Node rootNode = singleRelationship.getEndNode();
@@ -1192,7 +1202,7 @@ public class ReuseAnalyserView extends ViewPart {
         NeoService service = NeoServiceProvider.getProvider().getService();
         Node refNode = service.getReferenceNode();
         members = new HashMap<String, Node>();
-        String header = GisTypes.Star.getHeader();
+        String header = GisTypes.STAR.getHeader();
         for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
             Node node = relationship.getEndNode();
             if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)

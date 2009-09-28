@@ -215,6 +215,12 @@ public class INeoConstants {
      * Type Aggregation
      */
     public static final String COUNT_TYPE_NAME = "count";
+    /*
+     * Which is the current or most recent selected aggregation for a gis node.
+     * Used by the reuse analyser for saving state, and by the star analysis for
+     * determining property to use.
+     */
+    public static final String PROPERTY_SELECTED_AGGREGATION = "selected_aggregation";
     
     /*
      * ED-VO Message Type

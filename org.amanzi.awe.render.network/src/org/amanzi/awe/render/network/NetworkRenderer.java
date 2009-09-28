@@ -7,39 +7,29 @@ import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.core.Pair;
-//import net.refractions.udig.project.IBlackboard;
-import net.refractions.udig.project.IBlackboard;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IStyleBlackboard;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
-import org.amanzi.awe.views.reuse.views.ReuseAnalyserView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.StarDataVault;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.PlatformUI;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -110,22 +100,6 @@ public class NetworkRenderer extends RendererImpl {
         if(resource != null){
             renderGeoNeo(g,resource,monitor);
         }
-        // TODO its bad way -may be change StarRenderer
-        try {
-            for (ILayer sLayer : getContext().getMap().getMapLayers()) {
-                if (sLayer.getGeoResource().canResolve(NeoGeoResource.class)) {
-                    NeoGeoResource neoGeo = sLayer.getGeoResource().resolve(NeoGeoResource.class, monitor);
-                    if (neoGeo.getGeoNeo(monitor).getGisType() == GisTypes.Star) {
-                        sLayer.refresh(null);
-                        return;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            // TODO Handle IOException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-
     }
 
     /**
@@ -185,9 +159,8 @@ public class NetworkRenderer extends RendererImpl {
             Double moreMaxValue = geoNeo.getMaxPropertyValue();
             Select select = Select.findSelectByValue(geoNeo.getSelectName());
             //IBlackboard blackboard = getContext().getMap().getBlackboard();
-            IBlackboard blackboard = getContext().getMap().getBlackboard();
-            String starProperty = getSelectProperty();
-            Pair<Point,Long> starPoint = (Pair<Point,Long>)blackboard.get(BLACKBOARD_START_ANALYSER);
+            String starProperty = getSelectProperty(geoNeo);
+            Pair<Point,Long> starPoint = (Pair<Point,Long>)getContext().getLayer().getBlackboard().get(BLACKBOARD_START_ANALYSER);
             Node starNode = null;
             if(starPoint != null) {
                 System.out.println("Have star selection: "+starPoint);
@@ -608,33 +581,19 @@ public class NetworkRenderer extends RendererImpl {
 
     /**
      * get property to analyze
+     * @param geoNeo 
      * 
      * @return property name
      */
-    private String getSelectProperty() {
-        // String result = (String)blackboard.get(PROPERTY_KEY);
-        // return result;
-        final RunnableWithResult task = new RunnableWithResult() {
-
-            private IViewPart view;
-
-            @Override
-            public void run() {
-                view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
-                        "org.amanzi.awe.views.reuse.views.ReuseAnalyserView");
-            }
-
-            @Override
-            public Object getValue() {
-                return view;
-            }
-        };
-        ActionUtil.getInstance().runTaskWithResult(task);
-        IViewPart view = (IViewPart)task.getValue();
-        if (view == null) {
-            return null;
+    private String getSelectProperty(GeoNeo geoNeo) {
+        String result = null;
+        Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
+            result = geoNeo.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
+            transaction.success();
+        } finally {
+            transaction.finish();
         }
-        String result = ((ReuseAnalyserView)view).getPropertyName();
         return result == null || result.isEmpty() ? null : result;
     }
 

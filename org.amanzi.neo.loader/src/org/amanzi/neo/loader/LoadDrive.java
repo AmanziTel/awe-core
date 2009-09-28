@@ -1,13 +1,13 @@
 package org.amanzi.neo.loader;
 
-import org.amanzi.neo.loader.dialogs.TEMSDialog;
+import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.eclipse.swt.widgets.Display;
 
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
-public class LoadTEMS extends AbstractActionTool {
+public class LoadDrive extends AbstractActionTool {
 
-	public LoadTEMS() {
+	public LoadDrive() {
 	}
 
 	public void run() {		
@@ -16,7 +16,7 @@ public class LoadTEMS extends AbstractActionTool {
 		this.getContext().updateUI(new Runnable(){
 	
 			public void run() {
-				TEMSDialog dialog = new TEMSDialog(display.getActiveShell());				
+				DriveDialog dialog = new DriveDialog(display.getActiveShell());				
 				dialog.open();
 			}
 		});

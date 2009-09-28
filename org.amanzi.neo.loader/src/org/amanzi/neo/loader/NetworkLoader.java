@@ -153,7 +153,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	}
 
 	//Lagutko 21.07.2009, using of neo.core plugin
-    public void onNeoStop(Object source) {        
+    public void onNeoStop(Object source) {
         unregisterNeoManager();        
     }
     
@@ -270,7 +270,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 
     private void attachDataToProject() throws MalformedURLException {
         if (network != null) {
-            NeoCorePlugin.getDefault().getProjectService().addNetworkToProject(TEMSLoader.getAweProjectName(), network);
+            NeoCorePlugin.getDefault().getProjectService().addNetworkToProject(LoaderUtils.getAweProjectName(), network);
         }
         neoProvider.commit();
         //Lagutko 21.07.2009, using of neo.core plugin
@@ -728,7 +728,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             gis = neo.createNode();
             gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
             gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, gisName);
-            gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.Network.getHeader());
+            gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.NETWORK.getHeader());
             reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
             // gis.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
             transaction.success();

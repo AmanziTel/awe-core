@@ -14,7 +14,7 @@
  */
 package org.amanzi.neo.loader.handlers;
 
-import org.amanzi.neo.loader.dialogs.TEMSDialog;
+import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -28,11 +28,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @author Cinkel_A
  * @since 1.1.0
  */
-public class LoadTemsHandler extends AbstractHandler {
+public class LoadDriveHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent arg0) throws ExecutionException {
-            TEMSDialog dialog = new TEMSDialog(HandlerUtil.getActiveShell(arg0));
+            DriveDialog dialog = new DriveDialog(HandlerUtil.getActiveShell(arg0));
             dialog.open();
             return null;
     }
