@@ -289,7 +289,8 @@ public class ReuseAnalyserView extends ViewPart {
                     if (!isAggrProp) {
                         cSelect.select(0);
                     }
-                    cSelect.setEnabled(isAggrProp);
+                    cSelect.setEnabled(isAggrProp
+                            || gisNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").equals(GisTypes.Tems.getHeader()));
                     updateSelection();
                     findOrCreateAggregateNodeInNewThread(gisNode, propertyName);
                     // chartUpdate(aggrNode);
