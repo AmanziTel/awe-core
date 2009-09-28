@@ -13,8 +13,10 @@
 package org.amanzi.neo.wizards;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.amanzi.neo.loader.NeighbourLoader;
+import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,8 +27,8 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 
 /**
- * TODO Purpose of
  * <p>
+ * NeighbourImportWizard - wizard for import Neighbour data
  * </p>
  * 
  * @author Cinkel_A
@@ -45,11 +47,16 @@ public class NeighbourImportWizard extends Wizard implements IImportWizard {
             protected IStatus run(IProgressMonitor monitor) {
                 NeighbourLoader neighbourLoader;
                 neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName());
-                neighbourLoader.run(monitor);
+                try {
+                    neighbourLoader.run(monitor);
+                } catch (IOException e) {
+                    NeoLoaderPlugin.error(e.getLocalizedMessage());
+                    return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
+                }
                 return Status.OK_STATUS;
             }
         };
-        job.schedule(50);
+        job.schedule();
         return true;
     }
 

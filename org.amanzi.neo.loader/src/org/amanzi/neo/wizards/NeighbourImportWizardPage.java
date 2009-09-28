@@ -18,6 +18,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.loader.LoadNetwork;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -99,6 +100,7 @@ public class NeighbourImportWizardPage extends WizardPage {
                 setFileName(editor.getStringValue());
             }
         });
+        editor.setFileExtensions(LoadNetwork.NETWORK_FILE_EXTENSIONS);
         setControl(main);
     }
 
