@@ -213,7 +213,6 @@ public class NeighbourLoader {
          */
         public void createSectorCache(Node network) {
 
-            cach.clear();
             Transaction tx = NeoUtils.beginTransaction();
             try {
                 index = new LuceneIndexService(NeoServiceProvider.getProvider().getService());
@@ -221,8 +220,10 @@ public class NeighbourLoader {
                 index.enableCache(KEY_ID2, CACH_SIZE);
                 // it useful if neighbour file much bigger then network
                 indexesAllSectors(network, index);
-            } finally {
                 tx.success();
+            } finally {
+                // if tx.finish() - finds work slow but memory do not using
+                // tx.finish();
             }
         }
 
@@ -414,7 +415,8 @@ public class NeighbourLoader {
                 valueToSave = value;
                 clas = STRING;
             }
-            indexMap.put(index, pair.create(key, clas));
+            pair.setRight(clas);
+//            indexMap.put(index, pair.create(key, clas));
             container.setProperty(key, valueToSave);
             return true;
         }
