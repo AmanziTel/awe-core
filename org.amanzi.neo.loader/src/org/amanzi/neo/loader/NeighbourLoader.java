@@ -203,6 +203,7 @@ public class NeighbourLoader {
          */
         public void finish() {
             if (index != null) {
+                NeoServiceProvider.getProvider().commit();
                 index.shutdown();
             }
         }
@@ -305,7 +306,7 @@ public class NeighbourLoader {
                     neighbourNode = index.getSingleNode(KEY_ID, neighbourId);
                     if (neighbourNode == null) {
                         neighbourId = neighbourNodeName.getId2();
-                        neighbourNode = index.getSingleNode(KEY_ID, neighbourId);
+                        neighbourNode = index.getSingleNode(KEY_ID2, neighbourId);
                     }
                 }
                 // Pair<Node, Integer> pairServ = cach.get(servId);
