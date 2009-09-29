@@ -347,6 +347,8 @@ public class NeighbourLoader {
                 // pairServ.setRight(count);
                 updateCount(serverNode, servCounName);
                 tx.success();
+            } catch (Exception e) {
+                NeoLoaderPlugin.error(line + "\n" + e.getLocalizedMessage());
             } finally {
                 tx.finish();
             }
