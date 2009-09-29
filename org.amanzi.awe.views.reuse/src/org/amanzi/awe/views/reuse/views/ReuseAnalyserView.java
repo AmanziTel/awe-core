@@ -1380,30 +1380,36 @@ public class ReuseAnalyserView extends ViewPart {
         aggregatedProperties.clear();
         propertyList = new ArrayList<String>();
         if (NeoUtils.isGisNode(node)) {
-        Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
-                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-        if (iteratorProperties.hasNext()) {
-            Node propNode = iteratorProperties.next();
-            Iterator<String> iteratorProper = propNode.getPropertyKeys().iterator();
-            while (iteratorProper.hasNext()) {
-                String propName = iteratorProper.next();
-                if (propNode.getProperty(propName) instanceof Number) {
-                    propertyList.add(propName);
+            propertyList.addAll(Arrays.asList(new PropertyHeader(node).getNetworkNumericFields()));
+            Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+            if (iteratorProperties.hasNext()) {
+                Node propNode = iteratorProperties.next();
+                Iterator<String> iteratorProper = propNode.getPropertyKeys().iterator();
+                while (iteratorProper.hasNext()) {
+                    String propName = iteratorProper.next();
+                    if (propNode.getProperty(propName) instanceof Number) {
+                        propertyList.add(propName);
+                    }
                 }
             }
-        }
-        final Relationship singleRelationship = node.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator().next();
-        // add aggregated property
-        if (singleRelationship != null) {
-            final Node rootNode = singleRelationship.getEndNode();
-            if (rootNode.hasProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME)) {
-                propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
-                aggregatedProperties.put(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, rootNode.getProperty(
-                        INeoConstants.PROPERTY_ALL_CHANNELS_NAME).toString().split(","));
+            final Relationship singleRelationship = node.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
+                    .iterator().next();
+            // add aggregated property
+            if (singleRelationship != null) {
+                final Node rootNode = singleRelationship.getEndNode();
+                if (rootNode.hasProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME)) {
+                    propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
+                    aggregatedProperties.put(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, rootNode.getProperty(
+                            INeoConstants.PROPERTY_ALL_CHANNELS_NAME).toString().split(","));
 
+                }
             }
-        }
+            if (GisTypes.NETWORK.getHeader().equals(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, ""))) {
+                // propertyList.addAll(Arrays.asList(new
+                // PropertyHeader(node).getNetworkNumericFields()));
+            }
         } else {
             propertyList.addAll(Arrays.asList(new PropertyHeader(node).getNumericFields()));
         }

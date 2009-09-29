@@ -13,7 +13,13 @@
 
 package org.amanzi.neo.core.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 
 /**
  * TODO Purpose of 
@@ -59,5 +65,18 @@ public class PropertyHeader {
      */
     public String[] getNumericFields() {
         return NeoUtils.getNumericFields(node);
+    }
+
+    /**
+     * @return
+     */
+    public String[] getNetworkNumericFields() {
+        // TODO refactored
+        List<String> result = new ArrayList<String>();
+        for (Relationship relation : node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
+            String name = String.format("# '%s' neighbours", NeoUtils.getSimpleNodeName(relation.getOtherNode(node), ""));
+            result.add(name);
+        }
+        return result.toArray(new String[0]);
     }
 }

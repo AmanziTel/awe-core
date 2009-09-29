@@ -24,9 +24,7 @@ public enum GisTypes {
     /** GisTypes Network */
     NETWORK("network"),
     /** GisTypes TEMS */
-    DRIVE("drive"),
-    //TODO: Remove STAR since this layer was refactored into the network renderer for now
-    STAR("star");
+    DRIVE("drive");
 
     private String header;
 

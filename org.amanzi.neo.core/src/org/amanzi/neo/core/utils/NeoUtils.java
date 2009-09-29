@@ -16,6 +16,7 @@ package org.amanzi.neo.core.utils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -76,10 +77,10 @@ public class NeoUtils {
     }
 
     /**
-     * Gets node type
+     * Gets node name
      * 
      * @param node node
-     * @return node type or empty string
+     * @return node name or empty string
      */
     public static String getNodeName(Node node) {
         String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
@@ -90,7 +91,18 @@ public class NeoUtils {
             return node.getProperty(INeoConstants.PROPERTY_CODE_NAME, "").toString();
 
         }
-        return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
+        return getSimpleNodeName(node, "");
+    }
+
+    /**
+     * Gets node name
+     * 
+     * @param node node
+     * @param defValue default value
+     * @return node name or empty string
+     */
+    public static String getSimpleNodeName(Node node, String defValue) {
+        return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
     }
 
     /**
@@ -286,4 +298,38 @@ public class NeoUtils {
             tx.finish();
         }
     }
+
+    /**
+     * Gets Neighbour name of relation
+     * 
+     * @param relation relation
+     * @param defValue default value
+     * @return name or default value if property do not exist
+     */
+    public static String getNeighbourName(Relationship relation, String defValue) {
+        return relation.getProperty(INeoConstants.NEIGHBOUR_NAME, defValue).toString();
+    }
+
+    /**
+     * Return neighbour relations of selected neighbour list
+     * 
+     * @param node node
+     * @param neighbourName neighbour list name (if null then will returns all neighbour relations
+     *        of this node)
+     * @return neighbour relations of selected neighbour list
+     */
+    public static Iterable<Relationship> getNeighbourRelations(Node node, String neighbourName) {
+        Iterable<Relationship> relationships = node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR, Direction.OUTGOING);
+        if (neighbourName == null) {
+            return relationships;
+        }
+        ArrayList<Relationship> result=new ArrayList<Relationship>();
+        for (Relationship relation : relationships) {
+            if (neighbourName.equals(getNeighbourName(relation, null))) {
+                result.add(relation);
+            }
+        }
+        return result;
+    }
+
 }
