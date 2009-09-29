@@ -6,9 +6,11 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,6 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.neo.core.INeoConstants;
@@ -30,9 +31,10 @@ import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -352,6 +354,9 @@ public class ReuseAnalyserView extends ViewPart {
     }
 
     private boolean isAggregatedDataset(Node gisNode) {
+        if (!NeoUtils.isGisNode(gisNode)) {
+            return true;
+        }
         GeoNeo geoNeo = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
         boolean isAggregated = geoNeo.getGisType() == GisTypes.DRIVE;
 //        if (!isAggregated) {
@@ -365,21 +370,21 @@ public class ReuseAnalyserView extends ViewPart {
      */
     protected void updateSelection() {
         // TODO its bad way -may be change StarRenderer
-        IProgressMonitor monitor = new NullProgressMonitor();
-        try {
-            for (ILayer sLayer : ApplicationGIS.getActiveMap().getMapLayers()) {
-                if (sLayer.getGeoResource().canResolve(NeoGeoResource.class)) {
-                    NeoGeoResource neoGeo = sLayer.getGeoResource().resolve(NeoGeoResource.class, monitor);
-                    if (neoGeo.getGeoNeo(monitor).getGisType() == GisTypes.STAR) {
-                        sLayer.refresh(null);
-                        return;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            // TODO Handle IOException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
+        // IProgressMonitor monitor = new NullProgressMonitor();
+        // try {
+        // for (ILayer sLayer : ApplicationGIS.getActiveMap().getMapLayers()) {
+        // if (sLayer.getGeoResource().canResolve(NeoGeoResource.class)) {
+        // NeoGeoResource neoGeo = sLayer.getGeoResource().resolve(NeoGeoResource.class, monitor);
+        // if (neoGeo.getGeoNeo(monitor).getGisType() == GisTypes.STAR) {
+        // sLayer.refresh(null);
+        // return;
+        // }
+        // }
+        // }
+        // } catch (IOException e) {
+        // // TODO Handle IOException
+        // throw (RuntimeException)new RuntimeException().initCause(e);
+        // }
     }
 
     /**
@@ -753,6 +758,9 @@ public class ReuseAnalyserView extends ViewPart {
      * @return a tree-map of the results for the chart
      */
     private TreeMap<Column, Integer> computeStatistics(Node gisNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
+        if (NeoUtils.isNeighbourNode(gisNode)) {
+            return computeNeighbourStatistics(gisNode, propertyName, distribute, select, monitor);
+        }
         boolean isAggregatedProperty = isAggregatedProperty(propertyName);
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
         //List<Number> aggregatedValues = new ArrayList<Number>();
@@ -959,6 +967,168 @@ public class ReuseAnalyserView extends ViewPart {
     }
 
     /**
+     * @param gisNode
+     * @param propertyName2
+     * @param distribute
+     * @param select
+     * @param monitor
+     * @return
+     */
+    private TreeMap<Column, Integer> computeNeighbourStatistics(Node neighbour, String propertyName2, Distribute distribute,
+            Select select, IProgressMonitor monitor) {
+        Node gisNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING).getOtherNode(
+                neighbour);
+        final String neighbourName = NeoUtils.getSimpleNodeName(neighbour, "");
+        Map<Node, Number> mpMap = new HashMap<Node, Number>();
+        // List<Number> aggregatedValues = new ArrayList<Number>();
+        GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
+        int totalWork = (int)geoNode.getCount() * 2;
+        System.out.println("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
+        monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
+        TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
+        ReturnableEvaluator returnableEvaluator = new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                boolean result = false;
+                Node node = currentPos.currentNode();
+                for (Relationship relation : node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR, Direction.OUTGOING)) {
+                    result = NeoUtils.getNeighbourName(relation, "").equals(neighbourName);
+                    if (result) {
+                        break;
+                    }
+                }
+                return result;
+            }
+        };
+        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator,
+                NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+
+        Double min = null;
+        Double max = null;
+        propertyValue = null;
+        // int colCount = 0;
+        runGcIfBig(totalWork);
+        monitor.subTask("Searching database");
+        // Collection<Node> trav = travers.getAllNodes();
+        for (Node node : travers) {
+            Double minValue = getNeighbourValue(node, neighbourName, propertyName, select, false);
+            Double maxValue = select == Select.EXISTS ? getNeighbourValue(node, neighbourName, propertyName, select, true)
+                    : minValue;
+            if (minValue == null || maxValue == null) {
+                continue;
+            }
+            min = min == null ? minValue : Math.min(minValue, min);
+            max = max == null ? maxValue : Math.max(maxValue, max);
+        }
+        runGcIfBig(totalWork);
+        monitor.subTask("Determining statistics type");
+        double range = 0;
+        switch (distribute) {
+        case I10:
+            range = (max - min) / 9;
+            break;
+        case I50:
+            range = (max - min) / 49;
+            break;
+        case I20:
+            range = (max - min) / 19;
+            break;
+        case AUTO:
+            range = (max - min);
+            if (range >= 5 && range <= 30) {
+                range = 1;
+            } else if (range < 5) {
+                if (propertyValue instanceof Integer) {
+                    range = 1;
+                } else {
+                    range = range / 19;
+                }
+            } else {
+                range = range / 19;
+            }
+            break;
+        case INTEGERS:
+            min = Math.rint(min) - 0.5;
+            max = Math.rint(max) + 0.5;
+            range = 1;
+            break;
+        default:
+            break;
+        }
+        if (distribute != Distribute.AUTO && range > 0 && (double)(max - min) / (double)range > MAXIMUM_BARS) {
+            return null;
+        }
+        ArrayList<Column> keySet = new ArrayList<Column>();
+        double curValue = min;
+        while (curValue <= max) {
+            Column col = new Column(curValue, range);
+            keySet.add(col);
+            result.put(col, 0); // make sure distribution is continuous (includes gaps)
+            curValue += range;
+            if (range == 0) {
+                break;
+            }
+        }
+        runGcIfBig(totalWork);
+        travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator,
+                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            monitor.subTask("Building results from database");
+            for (Node node : travers) {
+                Double value = null;
+                for (Column column : keySet) {
+                value = value == null || select == Select.EXISTS ? getNeighbourValue(node, neighbourName, propertyName, select,
+                        column.minValue, column.range) : value;
+                    if (value != null && column.containsValue(value)) {
+                        Integer count = result.get(column);
+                        result.put(column, 1 + (count == null ? 0 : count));
+                        if (select != Select.EXISTS) {
+                            break;
+                        }
+                    }
+                }
+                monitor.worked(1);
+                if (monitor.isCanceled())
+                    break;
+            }
+        runGcIfBig(totalWork);
+        // Now merge any gaps in the distribution into a single category (TODO: Prevent adjacency
+        // jumping this gap)
+        monitor.subTask("Resolving distribution gaps");
+        Column prev_col = null;
+        for (Column column : keySet) {
+            if (prev_col != null && result.get(prev_col) == 0 && result.get(column) == 0) {
+                result.remove(prev_col);
+                column.minValue = prev_col.minValue;
+                column.range += prev_col.range;
+                column.setSpacer(true);
+            }
+            prev_col = column;
+        }
+        monitor.subTask("Finalizing results");
+        return result;
+
+    }
+
+    private Double getNeighbourValue(Node node, String neighbourName, String propertyName, Select select, Double minValue,
+            Double range) {
+        if (select != Select.EXISTS) {
+            return getNeighbourValue(node, neighbourName, propertyName, select, true);
+        }
+        Iterable<Relationship> neighbourRelations = NeoUtils.getNeighbourRelations(node, neighbourName);
+        for (Relationship relationship : neighbourRelations) {
+            if (relationship.hasProperty(propertyName)) {
+                propertyValue = relationship.getProperty(propertyName);
+                double doubleValue = ((Number)propertyValue).doubleValue();
+                if (doubleValue == minValue || (doubleValue >= minValue && doubleValue < minValue + range)) {
+                    return doubleValue;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * @param node
      * @param propertyName
      * @param select
@@ -1026,6 +1196,48 @@ public class ReuseAnalyserView extends ViewPart {
         return ((Number)node.getProperty(propertyName, null)).doubleValue();
     }
 
+    /**
+     * @param node
+     * @param neighbourName
+     * @param propertyName
+     * @param select
+     * @param isMax
+     * @return
+     */
+    private Double getNeighbourValue(Node node, String neighbourName, String propertyName, Select select, boolean isMax) {
+        Double min = null;
+        Double max = null;
+        Double first = null;
+        int count = 0;
+        double sum = (double)0;
+        for (Relationship relation : NeoUtils.getNeighbourRelations(node, neighbourName)) {
+
+            if (relation.hasProperty(propertyName)) {
+                propertyValue = relation.getProperty(propertyName);
+                double doubleValue = ((Number)propertyValue).doubleValue();
+                if (first == null) {
+                    first = doubleValue;
+                }
+                min = min == null ? doubleValue : Math.min(doubleValue, min);
+                max = max == null ? doubleValue : Math.max(doubleValue, max);
+                sum += doubleValue;
+                count++;
+            }
+        }
+        switch (select) {
+        case AVERAGE:
+            return count == 0 ? null : sum / (double)count;
+        case MAX:
+            return max;
+        case MIN:
+            return min;
+        case FIRST:
+            return first;
+        case EXISTS:
+            return isMax ? max : min;
+        }
+        return null;
+    }
     /**
      * @param propertyName
      * @return
@@ -1164,8 +1376,10 @@ public class ReuseAnalyserView extends ViewPart {
      * @param node - selected node
      */
     private void formPropertyList(Node node) {
+
         aggregatedProperties.clear();
         propertyList = new ArrayList<String>();
+        if (NeoUtils.isGisNode(node)) {
         Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
                 new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
                 GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
@@ -1190,6 +1404,9 @@ public class ReuseAnalyserView extends ViewPart {
 
             }
         }
+        } else {
+            propertyList.addAll(Arrays.asList(new PropertyHeader(node).getNumericFields()));
+        }
         setVisibleForChart(false);
     }
 
@@ -1201,18 +1418,24 @@ public class ReuseAnalyserView extends ViewPart {
     private String[] getGisItems() {
         NeoService service = NeoServiceProvider.getProvider().getService();
         Node refNode = service.getReferenceNode();
-        members = new HashMap<String, Node>();
-        String header = GisTypes.STAR.getHeader();
+        members = new LinkedHashMap<String, Node>();
         for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
             Node node = relationship.getEndNode();
+            Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "");
             if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-                    && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(INeoConstants.GIS_TYPE_NAME)
-                    && !header.equals(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, header))) {
+                    && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(INeoConstants.GIS_TYPE_NAME)) {
                 String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                 members.put(id, node);
+                if (GisTypes.NETWORK.getHeader().equals(type)) {
+                    for (Relationship ret : node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
+                        Node neigh = ret.getOtherNode(node);
+                        members.put(id + ": " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
+                    }
+                }
             }
         }
         return members.keySet().toArray(new String[] {});
+
     }
 
     /**
