@@ -218,6 +218,7 @@ public class NeighbourLoader {
             try {
                 index = new LuceneIndexService(NeoServiceProvider.getProvider().getService());
                 index.enableCache(KEY_ID, CACH_SIZE);
+                index.enableCache(KEY_ID2, CACH_SIZE);
                 // it useful if neighbour file much bigger then network
                 indexesAllSectors(network, index);
             } finally {
@@ -508,7 +509,7 @@ public class NeighbourLoader {
         }
 
         public static String getId2(Node node) {
-            return (String)node.getProperty("BTS_NAME", null);
+            return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
         }
         /**
          * Checks node
