@@ -163,6 +163,7 @@ public class NeighbourLoader {
         private static final String INTEGER = "INTEGER";
         private static final int CACH_SIZE = 10000;
         private static final String KEY_ID = "name";
+        private static final String KEY_ID2 = "name2";
         private Integer btsName = null;
         private Integer ci = null;
         private Integer lac = null;
@@ -238,7 +239,14 @@ public class NeighbourLoader {
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
             while (iterator.hasNext()) {
                 Node node = (Node)iterator.next();
-                index.index(node, KEY_ID, NodeName.getId(node));
+                String id1 = NodeName.getId1(node);
+                if (id1 != null) {
+                    index.index(node, KEY_ID, id1);
+                }
+                String id2 = NodeName.getId2(node);
+                if (id2 != null) {
+                    index.index(node, KEY_ID2, id2);
+                }
             }
             System.out.println("INDEXES=\t" + (System.currentTimeMillis() - t1));
         }
@@ -282,12 +290,27 @@ public class NeighbourLoader {
                 serverNodeName.setFieldValues(fields);
                 neighbourNodeName.setFieldValues(fields);
                 // TODO may be using cache (Map<NodeName,Node>)or indexes for sectors? Because finding is not very fast.
-                String servId = serverNodeName.getId();
-                String neighbourId = neighbourNodeName.getId();
-                Pair<Node, Integer> pairServ = cach.get(servId);
-                Integer count;
-                Node serverNode = index.getSingleNode(KEY_ID, servId);
-                Node neighbourNode = index.getSingleNode(KEY_ID, neighbourId);
+                String servId = serverNodeName.getId1();
+                Node serverNode = null;
+                if (servId != null) {
+                    serverNode = index.getSingleNode(KEY_ID, servId);
+                    if (serverNode == null) {
+                        servId = serverNodeName.getId2();
+                        serverNode = index.getSingleNode(KEY_ID2, servId);
+                    }
+                }
+                Node neighbourNode = null;
+                String neighbourId = neighbourNodeName.getId1();
+                if (neighbourId != null) {
+                    neighbourNode = index.getSingleNode(KEY_ID, neighbourId);
+                    if (neighbourNode == null) {
+                        neighbourId = neighbourNodeName.getId2();
+                        neighbourNode = index.getSingleNode(KEY_ID, neighbourId);
+                    }
+                }
+                // Pair<Node, Integer> pairServ = cach.get(servId);
+                // Integer count;
+
                 // if (pairServ == null) {
                 // serverNode = findSectors(serverNodeName, network);
                 // count = 0;
@@ -444,35 +467,46 @@ public class NeighbourLoader {
         }
 
 
-        public String getId() {
+        public String getId1() {
             String ci = valuesMap.get("CI");
-            if (ci == null) {
-                ci = "null";
+            if (ci == null || ci.isEmpty()) {
+                return null;
             }
             String lac = valuesMap.get("LAC");
-            if (lac == null) {
-                lac = "null";
+            if (lac == null || lac.isEmpty()) {
+                return null;
             }
+            return ci + "\t" + lac;
+        }
+
+        public String getId2() {
+
             String bts = valuesMap.get("BTS_NAME");
-            if (lac == null) {
-                lac = "null";
+            if (bts == null || bts.isEmpty()) {
+                return null;
             }
-            return ci + "/t" + lac + "\t" + bts;
+            return bts;
         }
 
         /**
          * @param node
          * @return
          */
-        public static String getId(Node node) {
-            StringBuilder result = new StringBuilder(node.getProperty("CI", "null").toString());
-            result.append("\t");
-            result.append(node.getProperty("LAC", "null").toString());
-            result.append("\t");
-            result.append(node.getProperty("BTS_NAME", "null").toString());
-            return result.toString();
+        public static String getId1(Node node) {
+            Object ci = node.getProperty("CI", null);
+            if (ci == null) {
+                return null;
+            }
+            Object lac = node.getProperty("LAC", null);
+            if (lac == null) {
+                return null;
+            }
+            return ci.toString() + "\t" + lac.toString();
         }
 
+        public static String getId2(Node node) {
+            return (String)node.getProperty("BTS_NAME", null);
+        }
         /**
          * Checks node
          * 
