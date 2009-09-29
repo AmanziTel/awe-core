@@ -1,9 +1,10 @@
 require 'java'
 require $jrubyPath + "/lib/ruby/1.8/erb"
+require 'cell'
 
 awe_console_plugin = Java::org.eclipse.core.runtime.Platform.getBundle("org.amanzi.awe.script.jirb").getEntry("/")
 awe_console_path = Java::org.eclipse.core.runtime.FileLocator.resolve(awe_console_plugin).getFile
-require awe_console_path + 'neoSetup.rb'
+#require awe_console_path + 'neoSetup.rb'
 
 def method_missing(method_id, *args)  
   if method_id.to_s =~ /([a-z]{1,3})([0-9]+)/      
@@ -19,8 +20,7 @@ end
 # Returns value of Cell by given ID
 #
 def find_cell(cell_id)    
-  cell = $tableModel.getCellByID(cell_id.to_s)    
-  cell.getValue
+  $tableModel.getCellByID(cell_id.to_s)  
 end
 
 def max(*args)
@@ -66,14 +66,14 @@ def update(currentCellId, formula)
   $idArray = []
   if formula[0] == '='[0]    
     formula = formula[1..formula.length]
-    display = ERB.new("<%= #{formula} %>").result
+    display = ERB.new("<%= #{formula} %>").result  
   else        
     display = ERB.new(formula).result
   end
-    
+  
   #if the formula was interpreted than update References of Cell
   $tableModel.updateCellReferences(currentCellId.to_s, $idArray)
-  display    
+  display  
 end
 
 class Charts

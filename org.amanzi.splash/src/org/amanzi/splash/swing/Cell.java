@@ -34,6 +34,39 @@ public class Cell
 	private boolean hasReference;
 	
 	/**
+	 * Enum that describes type of Data stored in Cell
+	 * 
+	 * @author Lagutko_N
+	 * @since 1.0.0
+	 */
+	public enum CellDataType {
+	    DEFAULT (0),
+        STRING(1),
+        INTEGER(2),
+        FLOAT(3);
+	    
+	    private int typeIndex;
+	    
+	    private CellDataType(int index) {
+	        typeIndex = index;
+	    }
+	    
+	    public int getIndex() {
+	        return typeIndex;
+	    }
+	    
+	    public static CellDataType getDataTypeByIndex(int index) {
+	        for (CellDataType type : values()) {
+	            if (type.getIndex() == index) {
+	                return type;
+	            }
+	        }
+	        return null;
+	    }
+	}
+	
+	
+	/**
 	 * Another constructor (create an expression using definition and value), used with 
 	 * file loading mechanism
 	 * @param definition
@@ -67,6 +100,7 @@ public class Cell
 		this.row    = row;
 		this.column = column;
 		cellFormat = new CellFormat();
+		hasReference = false;
 	}
 
 	public Cell(int row, int column, String definition, String value,
@@ -81,6 +115,7 @@ public class Cell
 		this.cellID = new CellID(row, column);
 		
 		cellFormat = c;
+		hasReference = false;
 	}
 	
 	public Cell(Object value, Object definition,
@@ -93,6 +128,7 @@ public class Cell
 		cellFormat = new CellFormat();
 		
 		this.cellFormat = cellFormat;
+		hasReference = false;
 	}
 
 	public Cell(Object value, Object definition,
@@ -102,6 +138,7 @@ public class Cell
 		this.definition = definition;
 		this.cellGraphInfo = cellGraphInfo;
 		cellFormat = new CellFormat();
+		hasReference = false;
 	}
 
 	/**
@@ -110,8 +147,7 @@ public class Cell
 	 */
 	public Object getValue ()
 	{
-		String s = (String) value;
-		return s.replace("\n", "");
+		return value;
 	}
 
 	/**
@@ -233,5 +269,16 @@ public class Cell
 	 */
 	public boolean hasReference() {
 		return hasReference;
+	}
+	
+	/**
+	 * Returns type of data stored in Cell
+	 * 
+	 * TODO: Lagutko: It's only initial implementation of this method and returns DEFAULT data type
+	 *
+	 * @return type of data stored in Cell
+	 */
+	public CellDataType getCellDataType() {
+	    return CellDataType.DEFAULT;
 	}
 }
