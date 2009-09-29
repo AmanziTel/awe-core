@@ -24,13 +24,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import net.refractions.udig.core.Pair;
-
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -44,6 +43,7 @@ import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.util.index.LuceneIndexService;
 
 /**
  * <p>
@@ -98,6 +98,7 @@ public class NeighbourLoader {
             }
             header = new Header(line);
             neighbour = getNeighbour(network, baseName);
+            header.createSectorCache(network);
             while ((line = reader.readLine()) != null) {
                 header.parseLine(line, network, baseName);
                 if (monitor.isCanceled())
@@ -109,6 +110,7 @@ public class NeighbourLoader {
                 }
             }
             header.saveNumericList(neighbour);
+            header.finish();
             monitor.done();
         } finally {
             if (reader != null) {
@@ -159,6 +161,8 @@ public class NeighbourLoader {
         private static final String DOUBLE = "DOUBLE";
         /** String INTEGER field */
         private static final String INTEGER = "INTEGER";
+        private static final int CACH_SIZE = 10000;
+        private static final String KEY_ID = "name";
         private Integer btsName = null;
         private Integer ci = null;
         private Integer lac = null;
@@ -169,6 +173,8 @@ public class NeighbourLoader {
         private NodeName serverNodeName;
         private NodeName neighbourNodeName;
         private String[] headers;
+        private Map<String, Pair<Node, Integer>> cach = new HashMap<String, Pair<Node, Integer>>();
+        private LuceneIndexService index;
 
         /**
          * Constructor
@@ -189,6 +195,52 @@ public class NeighbourLoader {
                     indexMap.put(i, new Pair<String, String>(fieldHeader, null));
                 }
             }
+        }
+
+        /**
+         *
+         */
+        public void finish() {
+            if (index != null) {
+                index.shutdown();
+            }
+        }
+
+        /**
+         * @param network
+         */
+        public void createSectorCache(Node network) {
+
+            cach.clear();
+            Transaction tx = NeoUtils.beginTransaction();
+            try {
+                index = new LuceneIndexService(NeoServiceProvider.getProvider().getService());
+                index.enableCache(KEY_ID, CACH_SIZE);
+                // it useful if neighbour file much bigger then network
+                indexesAllSectors(network, index);
+            } finally {
+                tx.success();
+            }
+        }
+
+        /**
+         * @param network
+         * @param index2
+         */
+        private void indexesAllSectors(Node network, LuceneIndexService index) {
+            long t1 = System.currentTimeMillis();
+            Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals("sector");
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+            while (iterator.hasNext()) {
+                Node node = (Node)iterator.next();
+                index.index(node, KEY_ID, NodeName.getId(node));
+            }
+            System.out.println("INDEXES=\t" + (System.currentTimeMillis() - t1));
         }
 
         /**
@@ -230,13 +282,36 @@ public class NeighbourLoader {
                 serverNodeName.setFieldValues(fields);
                 neighbourNodeName.setFieldValues(fields);
                 // TODO may be using cache (Map<NodeName,Node>)or indexes for sectors? Because finding is not very fast.
-                Node serverNode = findSectors(serverNodeName, network);
-                Node neighbourNode = findSectors(neighbourNodeName, network);
-                
+                String servId = serverNodeName.getId();
+                String neighbourId = neighbourNodeName.getId();
+                Pair<Node, Integer> pairServ = cach.get(servId);
+                Integer count;
+                Node serverNode = index.getSingleNode(KEY_ID, servId);
+                Node neighbourNode = index.getSingleNode(KEY_ID, neighbourId);
+                // if (pairServ == null) {
+                // serverNode = findSectors(serverNodeName, network);
+                // count = 0;
+                // pairServ = new Pair<Node, Integer>(serverNode, count);
+                // cach.put(servId, pairServ);
+                // } else {
+                // serverNode = pairServ.left();
+                // count = pairServ.right();
+                // }
+                //                
+                // Node neighbourNode;
+                // Pair<Node, Integer> pairNeigh = cach.get(neighbourId);
+                // if (pairNeigh == null) {
+                // neighbourNode = findSectors(neighbourNodeName, network);
+                // pairNeigh = new Pair<Node, Integer>(neighbourNode, 0);
+                // cach.put(neighbourId, pairNeigh);
+                // } else {
+                // neighbourNode = pairNeigh.left();
+                // }
                 if (serverNode == null || neighbourNode == null) {
                     NeoLoaderPlugin.error("Not found sectors for line:\n" + line);
                     return;
                 }
+
                 Relationship relation = serverNode.createRelationshipTo(neighbourNode, NetworkRelationshipTypes.NEIGHBOUR);
                 relation.setProperty(INeoConstants.NEIGHBOUR_NAME, fileName);
                 for (Integer index : indexMap.keySet()) {
@@ -245,6 +320,8 @@ public class NeighbourLoader {
                         saveValue(relation, index, value);
                     }
                 }
+                // count++;
+                // pairServ.setRight(count);
                 updateCount(serverNode, servCounName);
                 tx.success();
             } finally {
@@ -359,10 +436,41 @@ public class NeighbourLoader {
          * @param btsName name of "BTS_NAME" properties
          */
         public NodeName(String ci, String lac, String btsName) {
+
             nameMap.put(ci, "CI");
             nameMap.put(lac, "LAC");
             nameMap.put(btsName, "BTS_NAME");
 
+        }
+
+
+        public String getId() {
+            String ci = valuesMap.get("CI");
+            if (ci == null) {
+                ci = "null";
+            }
+            String lac = valuesMap.get("LAC");
+            if (lac == null) {
+                lac = "null";
+            }
+            String bts = valuesMap.get("BTS_NAME");
+            if (lac == null) {
+                lac = "null";
+            }
+            return ci + "/t" + lac + "\t" + bts;
+        }
+
+        /**
+         * @param node
+         * @return
+         */
+        public static String getId(Node node) {
+            StringBuilder result = new StringBuilder(node.getProperty("CI", "null").toString());
+            result.append("\t");
+            result.append(node.getProperty("LAC", "null").toString());
+            result.append("\t");
+            result.append(node.getProperty("BTS_NAME", "null").toString());
+            return result.toString();
         }
 
         /**
