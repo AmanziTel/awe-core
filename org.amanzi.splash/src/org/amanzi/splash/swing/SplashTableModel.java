@@ -370,13 +370,8 @@ public class SplashTableModel extends DefaultTableModel {
 				+ cellID);
 		NeoSplashUtil.logn("cellID.toLowerCase():" + cellID.toLowerCase());
 
-		//TODO: This hack only necessary because we STILL are doing too much in Java
-		if(formula.contains("'")) {
-            formula = "\"" + formula + "\"";
-		} else {
-            formula = "'" + formula + "'";
-		}
-        String input = "update('" + cellID.toLowerCase() + "', " + formula + ")";
+		//Lagutko, 30.09.2009, use %Q[] for String instead of quots		
+        String input = "update('" + cellID.toLowerCase() + "', %Q[" + formula + "])";
 
 		NeoSplashUtil.logn("ERB Input: " + input);
 
