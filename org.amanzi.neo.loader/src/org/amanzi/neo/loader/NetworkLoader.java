@@ -543,71 +543,67 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         }
 
         /**
-         * @param header
-         * @return
+         * @param header column name
+         * @return true if it Azimut property
          */
         private boolean isAzimut(String header) {
             return header.toLowerCase().startsWith("azimut");
         }
 
         /**
-         *
-         * @return
+         * @return BSC index
          */
         public int getBscIndex() {
             return mainIndexes[0];
         }
 
         /**
-         *
-         * @return
+         * @return CityIndex
          */
         public int getCityIndex() {
             return mainIndexes[1];
         }
 
         /**
-         *
-         * @return
+         * @return SiteIndex
          */
         public int getSiteIndex() {
             return mainIndexes[2];
         }
 
         /**
-         *
-         * @return
+         * @return SectorIndex
          */
         public int getSectorIndex() {
             return mainIndexes[3];
         }
 
         /**
-         *
-         * @return
+         * @return LatIndex
          */
         public int getLatIndex() {
             return mainIndexes[4];
         }
 
         /**
-         *
-         * @return
+         * @return LonIndex(
          */
         public int getLonIndex() {
             return mainIndexes[5];
         }
 
         /**
-         * @return
+         * @return CrsHint
          */
         public String getCrsHint() {
             return crsHint;
         }
 
         /**
-         * @param sector
-         * @param fields
+         * Parse array of field
+         * 
+         * @param sector node to save
+         * @param fields array of fieldsd
          */
         public void parseLine(Node sector, String[] fields) {
             // channel
