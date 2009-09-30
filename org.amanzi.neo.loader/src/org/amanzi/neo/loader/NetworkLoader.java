@@ -43,6 +43,9 @@ import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
@@ -336,6 +339,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 
         try {
             IMap map = ApplicationGIS.getActiveMap();
+            final IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
+            System.out.println(preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER));
+
             if (curService != null && gis != null && findLayerByNode(map, gis) == null && confirmLoadNetworkOnMap(map, basename)) {
                 List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
                 for (IGeoResource iGeoResource : curService.resources(null)) {
@@ -343,7 +349,10 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                         if (iGeoResource.resolve(Node.class, null).equals(gis)) {
                             listGeoRes.add(iGeoResource);
                             final List< ? extends ILayer> layers = ApplicationGIS.addLayersToMap(map, listGeoRes, 0);
-                            zoomToLayer(layers);
+                            if (preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER)) {
+                                System.out.println("zoom");
+                                zoomToLayer(layers);
+                            }
 
                             break;
                         }
@@ -380,26 +389,35 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      * @return true or false
      */
     public static boolean confirmLoadNetworkOnMap(final IMap map, final String fileName) {
+
+        final IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
         return (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
             int result;
 
             @Override
             public void run() {
+                boolean boolean1 = preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER);
                 String message = String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, fileName, map.getName());
                 if (map == ApplicationGIS.NO_MAP) {
                     message = String.format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, fileName);
                 }
-                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
-                msg.setText(NeoLoaderPluginMessages.ADD_LAYER_TITLE);
-                msg.setMessage(message);
-                result = msg.open();
+//                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
+//                msg.setText(NeoLoaderPluginMessages.ADD_LAYER_TITLE);
+//                msg.setMessage(message);
+                MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(PlatformUI.getWorkbench()
+                        .getActiveWorkbenchWindow().getShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE, message,
+                        NeoLoaderPluginMessages.TOGLE_MESSAGE, boolean1, preferenceStore, DataLoadPreferences.ZOOM_TO_LAYER);
+                result = dialog.getReturnCode();
+                if (result == IDialogConstants.YES_ID) {
+                    preferenceStore.putValue(DataLoadPreferences.ZOOM_TO_LAYER, String.valueOf(dialog.getToggleState()));
+                }
             }
 
             @Override
             public Object getValue() {
                 return result;
             }
-        }) == SWT.YES;
+        }) == IDialogConstants.YES_ID;
     }
 
     /**

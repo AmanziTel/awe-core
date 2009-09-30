@@ -26,6 +26,7 @@ public class DataLoadPreferences {
     /** DataLoadPreferences REMOVE_SITE_NAME field */
     public static final String REMOVE_SITE_NAME = "REMOVE_SITE_NAME";
     public static final String NETWORK_COMBINED_CALCULATION = "USE_COMBINED_CALCULATION";
+    public static final String ZOOM_TO_LAYER = "ZOOM_TO_LAYER";
 
     private DataLoadPreferences() {
 

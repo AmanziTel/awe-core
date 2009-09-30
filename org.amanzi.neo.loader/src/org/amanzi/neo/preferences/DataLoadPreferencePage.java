@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 public class DataLoadPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
     private static final String LABEL_REMOVE_SITE_NAME = "Remove site name from sector name";
     private static final String USE_COMBINED_CALCULATION = "Use combined network density calculation";
+    private static final String ZOOM_TO_DATA = "Zoom to data";
 
     @Override
     public void init(IWorkbench workbench) {
@@ -44,6 +45,8 @@ public class DataLoadPreferencePage extends FieldEditorPreferencePage implements
         addField(editor);
         editor = new BooleanFieldEditor(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, USE_COMBINED_CALCULATION,
                 getFieldEditorParent());
+        addField(editor);
+        editor = new BooleanFieldEditor(DataLoadPreferences.ZOOM_TO_LAYER, ZOOM_TO_DATA, getFieldEditorParent());
         addField(editor);
     }
 
