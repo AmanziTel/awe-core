@@ -25,7 +25,6 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.PropertyHeader;
-import org.amanzi.neo.core.utils.StarDataVault;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -51,8 +50,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
+    public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
-    // public static final String BLACKBOARD_KEY = "org.amanzi.awe.tool.star.StarTool.nodes";
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
     private static final Color COLOR_MORE = Color.GREEN;
@@ -350,7 +349,7 @@ public class NetworkRenderer extends RendererImpl {
                 for(Node node:nodesMap.keySet()){
                     idMap.put(node.getId(), nodesMap.get(node));
                 }
-                StarDataVault.getInstance().setMap(neoGeoResource.getIdentifier(), idMap);
+                getContext().getMap().getBlackboard().put(BLACKBOARD_NODE_LIST, idMap);
             }
             // if (geoNeo != null)
             // geoNeo.close();
@@ -555,6 +554,10 @@ public class NetworkRenderer extends RendererImpl {
     private void drawAnalyser(Graphics2D g, Node mainNode, Point starPoint, String property, Map<Node, Point> nodesMap) {
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         try {
+            Point point = nodesMap.get(mainNode);
+            if (point != null) {
+                starPoint = point;
+            }
             drawMainNode(g, mainNode, starPoint);
             Object propertyValue = mainNode.getProperty(property,null);
             if(propertyValue!=null) {
