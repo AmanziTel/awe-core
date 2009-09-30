@@ -796,6 +796,9 @@ public class ReuseAnalyserView extends ViewPart {
                     Node mpNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
                     Number oldValue = mpMap.get(mpNode);
                     if (oldValue == null) {
+                        if (select == Select.FIRST) {
+                            valueNum = getFirstValueOfMpNode(mpNode, propertyName);
+                        }
                         if (select == Select.AVERAGE) {
                             valueNum = calculateAverageValueOfMpNode(mpNode, propertyName);
                         }
@@ -964,6 +967,39 @@ public class ReuseAnalyserView extends ViewPart {
         }
         monitor.subTask("Finalizing results");
         return result;
+    }
+
+    /**
+     * Gets first value of mp Node
+     * 
+     * @param mpNode mp Node
+     * @param propertyName -name of properties
+     * @return first value
+     */
+    private Number getFirstValueOfMpNode(Node mpNode, String propertyName) {
+        Double result = null;
+        Iterator<Node> iterator = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return !currentPos.currentNode().hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+            }
+        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+        if (!iterator.hasNext()) {
+            return null;
+        }
+        Node node = iterator.next();
+        do {
+            if (node.hasProperty(propertyName)) {
+                return (Number)node.getProperty(propertyName);
+            }
+            Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            if (relation == null) {
+                return null;
+            }
+            node = relation.getOtherNode(node);
+
+        } while (true);
     }
 
     /**

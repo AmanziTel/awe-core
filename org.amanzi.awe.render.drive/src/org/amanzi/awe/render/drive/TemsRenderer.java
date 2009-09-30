@@ -20,6 +20,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -50,6 +51,7 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
+import org.neo4j.api.core.Traverser.Order;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -391,7 +393,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         case AVERAGE:
         case MAX:
         case MIN:
-        case FIRST:
+
             Double sum = new Double(0);
             int count = 0;
             Double min = null;
@@ -448,6 +450,38 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         }
                     }
                 }
+            }
+            return colorToFill;
+        case FIRST:
+            Double result = null;
+            Iterator<Node> iterator = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return !currentPos.currentNode().hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+            if (!iterator.hasNext()) {
+                return colorToFill;
+            }
+            Node node = iterator.next();
+            while (!node.hasProperty(selectedProp)) {
+                Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                if (relation == null) {
+                    return colorToFill;
+                }
+                node = relation.getOtherNode(node);
+
+            }
+            checkValue = ((Number)node.getProperty(selectedProp)).doubleValue();
+            if (checkValue < redMaxValue || checkValue == redMinValue) {
+                if (checkValue >= redMinValue) {
+                    colorToFill = COLOR_SELECTED;
+                } else if (checkValue >= lesMinValue) {
+                    colorToFill = COLOR_LESS;
+                }
+            } else if (checkValue < moreMaxValue) {
+                colorToFill = COLOR_MORE;
             }
             return colorToFill;
         default:
