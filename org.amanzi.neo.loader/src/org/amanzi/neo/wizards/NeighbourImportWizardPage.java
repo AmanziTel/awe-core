@@ -39,8 +39,8 @@ import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
 
 /**
- * TODO Purpose of
  * <p>
+ * Main page if NeighbourImportWizard
  * </p>
  * 
  * @author Cinkel_A
@@ -64,8 +64,8 @@ public class NeighbourImportWizardPage extends WizardPage {
     }
 
     /**
-     *
-     * @return
+     *check page
+     * @return true if page valid
      */
     protected boolean isValidPage() {
         return fileName != null && networkNode != null;
@@ -103,7 +103,10 @@ public class NeighbourImportWizardPage extends WizardPage {
         editor.setFileExtensions(LoadNetwork.NETWORK_FILE_EXTENSIONS);
         setControl(main);
     }
-
+/**
+ * Sets file name
+ * @param fileName file name
+ */
     protected void setFileName(String fileName) {
         this.fileName = fileName;
         setPageComplete(isValidPage());

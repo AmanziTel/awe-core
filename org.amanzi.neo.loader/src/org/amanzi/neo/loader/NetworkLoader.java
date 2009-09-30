@@ -7,11 +7,12 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.CatalogPlugin;
@@ -35,6 +36,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -50,6 +52,7 @@ import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.PropertyContainer;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
 
@@ -98,7 +101,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         }
     }
 
-    private Pattern chanalPattern = Pattern.compile("(^BCCH$)|(^TRX\\d+$)|(^TCH\\d+$)");
+    private static Pattern chanalPattern = Pattern.compile("(^BCCH$)|(^TRX\\d+$)|(^TCH\\d+$)");
     private Map<Integer, Integer> channalMap;
 	private NeoService neo;
 	private NeoServiceProvider neoProvider;
@@ -113,13 +116,13 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
     private Node network = null;
 	private Node gis = null;
 	private CRS crs = null;
-	private String[] headers = null;
-	private HashMap<String,Integer> headerIndex = null;
-	private int[] mainIndexes = null;
-	private boolean haveTypedIndexes = false;
-    private ArrayList<Integer> stringIndexes = new ArrayList<Integer>();
-    private ArrayList<Integer> intIndexes = new ArrayList<Integer>();
-    private ArrayList<Integer> floatIndexes = new ArrayList<Integer>();
+    // private String[] headers = null;
+    // private HashMap<String,Integer> headerIndex = null;
+    // private int[] mainIndexes = null;
+    // private boolean haveTypedIndexes = false;
+    // private ArrayList<Integer> stringIndexes = new ArrayList<Integer>();
+    // private ArrayList<Integer> intIndexes = new ArrayList<Integer>();
+    // private ArrayList<Integer> floatIndexes = new ArrayList<Integer>();
     private ArrayList<String> shortLines = new ArrayList<String>();
     private ArrayList<String> emptyFields = new ArrayList<String>();
     private ArrayList<String> badFields = new ArrayList<String>();
@@ -127,11 +130,12 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	private String filename;
 	private String basename;
 	private double[] bbox;
-    private String crsHint;
+    // private String crsHint;
     private long lineNumber = 0;
     private long siteNumber = 0;
     private long sectorNumber = 0;
     private boolean trimSectorName = true;
+    private Header header;
 
 	public NetworkLoader(String filename) {
 		this(null, filename);
@@ -173,7 +177,24 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         try {
             if(monitor!=null) monitor.beginTask("Importing "+filename, 100);
             long startTime = System.currentTimeMillis();
-            String line;
+            String line = reader.readLine();
+            if (line == null) {
+                return;
+            }
+            Transaction transaction = neo.beginTx();
+            try {
+            header = new Header(line);
+            gis = getGISNode(neo, INeoConstants.GIS_PREFIX + basename);
+            network = getNetwork(neo, gis, basename, neoProvider);
+            if (network==null){
+                return ;
+            }
+            
+            network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
+            transaction.success();
+            }finally{
+                transaction.finish();
+            }
             int perc = is.percentage();
             int prevPerc = 0;
             while ((line = reader.readLine()) != null) {
@@ -197,6 +218,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             printWarnings(shortLines, "missing fields", 10, lineNumber);
             printWarnings(lineErrors, "uncaught errors", 10, lineNumber);
         } finally {
+            try{
             // Close the file reader
             reader.close();
             if(monitor!=null) monitor.done();
@@ -214,14 +236,16 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             if(network!=null){
                 Transaction transaction = neo.beginTx();
                 try {
+                    header.saveStatistic(network);
                     network.setProperty("site_count", siteNumber);
                     network.setProperty("sector_count", sectorNumber);
                     network.setProperty("bsc_count", bsc_s.size());
                     network.setProperty("city_count", city_s.size());
-                    String allChannel = getChannelProperties();
-                    if (!allChannel.isEmpty()){
-                        network.setProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, allChannel);
-                    }
+
+                    // String allChannel = header.getChannelProperties();
+                    // if (!allChannel.isEmpty()){
+                    // network.setProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, allChannel);
+                    // }
                     transaction.success();
                 }finally{
                     transaction.finish();
@@ -230,27 +254,29 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
             //If we are not running the command-line test then attach the data to the AWE project
             if (neoProvider!=null) {
                 attachDataToProject();
-                neoProvider.commit();
+            }
+            }finally{
+                NeoServiceProvider.getProvider().commit(); 
             }
         }
     }
 
-    /**
-     * gets string of all channels
-     * 
-     * @return string
-     */
-    private String getChannelProperties() {
-
-        StringBuilder result = new StringBuilder("");
-        CharSequence delim = ",";
-        for (Integer ind : channalMap.keySet()) {
-            if (channalMap.get(ind) > 0) {
-                result.append(delim).append(headers[ind]);
-            }
-        }
-        return result.length() == 0 ? result.toString() : result.substring(delim.length());
-    }
+    // /**
+    // * gets string of all channels
+    // *
+    // * @return string
+    // */
+    // private String getChannelProperties() {
+    //
+    // StringBuilder result = new StringBuilder("");
+    // CharSequence delim = ",";
+    // for (Integer ind : channalMap.keySet()) {
+    // if (channalMap.get(ind) > 0) {
+    // result.append(delim).append(headers[ind]);
+    // }
+    // }
+    // return result.length() == 0 ? result.toString() : result.substring(delim.length());
+    // }
 
     private static void printWarnings(ArrayList<String> warnings, String warning_type, int limit, long lineNumber) {
         if(warnings.size()>0){
@@ -410,67 +436,273 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	private static void error(String line){
 		System.err.println(line);
 	}
-	
+
+    private static class Header {
+        /** String STRING field */
+        private static final String STRING = "STRING";
+        /** String DOUBLE field */
+        private static final String DOUBLE = "DOUBLE";
+        /** String INTEGER field */
+        private static final String INTEGER = "INTEGER";
+        private String[] headers = null;
+        private int[] mainIndexes = null;
+        private boolean haveTypedIndexes = false;
+        private String crsHint = null;
+        private Map<Integer, Pair<String, String>> indexes = new HashMap<Integer, Pair<String, String>>();
+        private Map<Integer, String> beamwith = new HashMap<Integer, String>();
+        private Map<Integer, String> azimut = new HashMap<Integer, String>();
+        private Map<Integer, Integer> channalMap = new HashMap<Integer, Integer>();
+        /**
+         * @param line
+         */
+        public Header(String line) {
+            String fields[] = line.split("\\t");
+            headers = fields;
+            mainIndexes = new int[] {-1, -1, -1, -1, -1, -1};
+            for (int index = 0; index < headers.length; index++) {
+                String header = headers[index];
+                debug("Added header[" + index + "] = " + header);
+                if (NetworkElementTypes.BSC.matches(header))
+                    mainIndexes[0] = index;
+                else if (NetworkElementTypes.CITY.matches(header))
+                    mainIndexes[1] = index;
+                else if (NetworkElementTypes.SITE.matches(header))
+                    mainIndexes[2] = index;
+                else if (NetworkElementTypes.SECTOR.matches(header))
+                    mainIndexes[3] = index;
+                else if (header.toLowerCase().startsWith("lat"))
+                    mainIndexes[4] = index;
+                else if (header.toLowerCase().startsWith("long"))
+                    mainIndexes[5] = index;
+                else if (header.toLowerCase().startsWith("y_wert")) {
+                    mainIndexes[4] = index;
+                    crsHint = "germany";
+                } else if (header.toLowerCase().startsWith("x_wert")) {
+                    mainIndexes[5] = index;
+                    crsHint = "germany";
+                } else if (header.toLowerCase().startsWith("northing"))
+                    mainIndexes[4] = index;
+                else if (header.toLowerCase().startsWith("easting"))
+                    mainIndexes[5] = index;
+                else if (beamwith.isEmpty() && isBeamwidth(header))
+                    beamwith.put(index, header);// "beamwith" property
+                else if (isAzimut(header))
+                    azimut.put(index, header);
+                else if (chanalPattern.matcher(header).matches()) {
+                    channalMap.put(index, 0);
+                } else {
+                    indexes.put(index, new Pair<String, String>(header, null));
+                }
+            }
+
+        }
+
+        /**
+         * @param gis
+         */
+        public void saveStatistic(Node vault) {
+            List<String> result = new ArrayList<String>();
+            for (Integer ind : channalMap.keySet()) {
+                if (channalMap.get(ind) > 0) {
+                    result.add(headers[ind]);
+                }
+            }
+            vault.setProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, result.toArray(new String[0]));
+            vault.setProperty(INeoConstants.PROPERTY_AZIMUT_NAME, azimut.values().toArray(new String[0]));
+            vault.setProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME, beamwith.values().toArray(new String[0]));
+            Set<String> propertyes = new HashSet<String>();
+            for (Pair<String, String> pair : indexes.values()) {
+                String clas = pair.getRight();
+                if (INTEGER.equals(clas) || DOUBLE.equals(clas)) {
+                    propertyes.add(pair.getLeft());
+
+                }
+            }
+            vault.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, propertyes.toArray(new String[0]));
+        }
+
+        /**
+         * @param header
+         * @return
+         */
+        private boolean isAzimut(String header) {
+            return header.toLowerCase().startsWith("azimut");
+        }
+
+        /**
+         *
+         * @return
+         */
+        public int getBscIndex() {
+            return mainIndexes[0];
+        }
+
+        /**
+         *
+         * @return
+         */
+        public int getCityIndex() {
+            return mainIndexes[1];
+        }
+
+        /**
+         *
+         * @return
+         */
+        public int getSiteIndex() {
+            return mainIndexes[2];
+        }
+
+        /**
+         *
+         * @return
+         */
+        public int getSectorIndex() {
+            return mainIndexes[3];
+        }
+
+        /**
+         *
+         * @return
+         */
+        public int getLatIndex() {
+            return mainIndexes[4];
+        }
+
+        /**
+         *
+         * @return
+         */
+        public int getLonIndex() {
+            return mainIndexes[5];
+        }
+
+        /**
+         * @return
+         */
+        public String getCrsHint() {
+            return crsHint;
+        }
+
+        /**
+         * @param sector
+         * @param fields
+         */
+        public void parseLine(Node sector, String[] fields) {
+            // channel
+            for (int i : channalMap.keySet()) {
+                if (i < fields.length && fields[i].length() > 0) {
+                    channalMap.put(i, channalMap.get(i) + 1);
+                    sector.setProperty(headers[i], Double.parseDouble(fields[i]));
+                }
+            }
+            // beamwith
+            for (Integer index : beamwith.keySet()) {
+                if (index < fields.length) {
+                    String value = fields[index];
+                    if (value.length() > 0) {
+                        sector.setProperty(headers[index], Double.parseDouble(fields[index]));
+                    }
+                }
+            }
+            // azimuth
+            for (Integer index : azimut.keySet()) {
+                if (index < fields.length) {
+                    String value = fields[index];
+                    if (value.length() > 0) {
+                        sector.setProperty(headers[index], Double.parseDouble(fields[index]));
+                    }
+                }
+            }
+            // save others value
+            for (Integer index : indexes.keySet()) {
+                if (index < fields.length) {
+                    String value = fields[index];
+                    if (value.length() > 0) {
+                        saveValue(sector, index, value);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Save value in property container
+         * 
+         * @param container property container
+         * @param index index of property
+         * @param value value of property
+         * @return true if save is successful
+         */
+        private boolean saveValue(PropertyContainer container, Integer index, String value) {
+            Pair<String, String> pair = indexes.get(index);
+
+            if (pair == null || pair.left() == null) {
+                return false;
+            }
+            String key = pair.left();
+            Object valueToSave;
+            String clas = pair.right();
+            try {
+                if (clas == null) {
+                    try {
+                        valueToSave = Integer.parseInt(value);
+                        clas = INTEGER;
+                    } catch (NumberFormatException e) {
+                        valueToSave = Double.parseDouble(value);
+                        clas = DOUBLE;
+                    }
+                } else if (INTEGER.equals(clas)) {
+                    try {
+                        valueToSave = Integer.parseInt(value);
+                    } catch (NumberFormatException e) {
+                        valueToSave = Double.parseDouble(value);
+                        clas = DOUBLE;
+                    }
+                } else if (DOUBLE.equals(clas)) {
+                    valueToSave = Double.parseDouble(value);
+                } else {
+                    valueToSave = value;
+                    clas = STRING;
+                }
+            } catch (NumberFormatException e) {
+                clas = STRING;
+                valueToSave = value;
+            }
+            if (!valueToSave.toString().equals(value)) {
+                valueToSave = value;
+                clas = STRING;
+            }
+            pair.setRight(clas);
+            // indexMap.put(index, pair.create(key, clas));
+            container.setProperty(key, valueToSave);
+            return true;
+        }
+
+    }
 	private boolean parseLine(String line){
 		debug(line);
         String fields[] = line.split("\\t");
 		if(fields.length>2){
-			if(headers==null){	// first line
-				headers = fields;
-				headerIndex = new HashMap<String,Integer>();
-                mainIndexes = new int[] {-1, -1, -1, -1, -1, -1, -1};
-				int index=0;
-				for(String header:headers){
-					debug("Added header["+index+"] = "+header);
-                    if (NetworkElementTypes.BSC.matches(header)) mainIndexes[0]=index;
-                    else if (NetworkElementTypes.CITY.matches(header)) mainIndexes[1]=index;
-					else if (NetworkElementTypes.SITE.matches(header)) mainIndexes[2]=index;
-					else if (NetworkElementTypes.SECTOR.matches(header)) mainIndexes[3]=index;
-                    else if (header.toLowerCase().startsWith("lat")) mainIndexes[4]=index;
-                    else if (header.toLowerCase().startsWith("long")) mainIndexes[5]=index;
-                    else if (header.toLowerCase().startsWith("y_wert")) {mainIndexes[4]=index; crsHint="germany";}
-                    else if (header.toLowerCase().startsWith("x_wert")) {mainIndexes[5]=index; crsHint="germany";}
-                    else if (header.toLowerCase().startsWith("northing")) mainIndexes[4]=index;
-                    else if (header.toLowerCase().startsWith("easting")) mainIndexes[5]=index;
-                    else if ((mainIndexes[6] < 0) && isBeamwidth(header)) mainIndexes[6] = index;// "beamwith" property
-                    else if (header.toLowerCase().startsWith("trx")) intIndexes.add(index);
-                    else stringIndexes.add(index);
-                    if (chanalPattern.matcher(header).matches()) {
-                        channalMap.put(index, 0);
-                    }
-					headerIndex.put(header,index++);
-				}
-			}else{
 				Transaction transaction = neo.beginTx();
 				try {
-                    if (gis == null) {
-                        gis = getGISNode(neo, INeoConstants.GIS_PREFIX + basename);
-                    }
                     String bscField = null;
                     String cityField = null;
                     try {
-                        bscField = fields[mainIndexes[0]];
+                        bscField = fields[header.getBscIndex()];
                     } catch (RuntimeException e1) {
                     }
                     try {
-                        cityField = fields[mainIndexes[1]];
+                        cityField = fields[header.getCityIndex()];
                     } catch (RuntimeException e1) {
                     }
-					String siteField = fields[mainIndexes[2]];
-					String sectorField = fields[mainIndexes[3]];
+					String siteField = fields[header.getSiteIndex()];
+					String sectorField = fields[header.getSectorIndex()];
 					if (trimSectorName) {
                         sectorField = sectorField.replaceAll(siteField + "[\\:\\-]?", "");
                     }
 					if(siteField.contains("306460123A")) {
 					    System.out.println("debug");
 					}
-                    if (network==null){
-                        network = getNetwork(neo, gis, basename, neoProvider);
-                        if (network==null){
-                            return false;
-                        }
-                        network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-                    }
                     if (cityField!=null && !cityField.equals(cityName)) {
                         cityName = cityField;
                         city = city_s.get(cityField);
@@ -497,10 +729,10 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 				        (site==null ? network : site).createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
 				        site = newSite;
 				        siteNumber++;
-						float lat = Float.parseFloat(fields[mainIndexes[4]]);
-						float lon = Float.parseFloat(fields[mainIndexes[5]]);
+						float lat = Float.parseFloat(fields[header.getLatIndex()]);
+						float lon = Float.parseFloat(fields[header.getLonIndex()]);
 						if(crs==null){
-							crs = CRS.fromLocation(lat, lon, crsHint);
+                        crs = CRS.fromLocation(lat, lon, header.getCrsHint());
                             //network.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
                             //network.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
                             gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
@@ -520,52 +752,57 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 					debug("New Sector: " + sectorField);
 					Node sector = addChild(site, NetworkElementTypes.SECTOR.toString(), sectorField);
                     sectorNumber++;
-					if(!haveTypedIndexes){
-                        determineFieldTypes(fields);
-					}
-					try {
-                        for (int i : channalMap.keySet()) {
-                            if (fields[i].length() > 0) {
-                                channalMap.put(i, channalMap.get(i) + 1);
-                            }
-                        }
-                        for (int i : stringIndexes) {
-                            if (fields[i].length() > 0) {
-                                sector.setProperty(headers[i], fields[i]);
-                            } else {
-                                emptyFields.add("Empty string at " + lineNumber + ":" + i);
-                            }
-                        }
-                        for (int i : intIndexes) {
-                            if (fields[i].length() > 0) {
-                                try {
-                                    sector.setProperty(headers[i], Integer.parseInt(fields[i]));
-                                } catch (NumberFormatException e) {
-                                    badFields.add("Invalid integer '" + fields[i] + "' at " + lineNumber + ":" + i + " ("
-                                            + headers[i] + ")");
-                                }
-                            } else {
-                                emptyFields.add("Empty string at " + lineNumber + ":" + i);
-                            }
-                        }
-                        for (int i : floatIndexes) {
-                            if (fields[i].length() > 0) {
-                                try {
-                                    sector.setProperty(headers[i], Float.parseFloat(fields[i]));
-                                } catch (NumberFormatException e) {
-                                    badFields.add("Invalid float '" + fields[i] + "' at " + lineNumber + ":" + i + " ("
-                                            + headers[i] + ")");
-                                }
-                            } else {
-                                emptyFields.add("Empty string at " + lineNumber + ":" + i);
-                            }
-                        }
-                        if (mainIndexes[6] > -1) {
-                            sector.setProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME, Double.parseDouble(fields[mainIndexes[6]]));
-                        }
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        shortLines.add("Empty fields at end of line " + lineNumber + ": "+e.getMessage());
-                    }
+                header.parseLine(sector, fields);
+                // if(!haveTypedIndexes){
+                // determineFieldTypes(fields);
+                // }
+                // try {
+                // for (int i : channalMap.keySet()) {
+                // if (fields[i].length() > 0) {
+                // channalMap.put(i, channalMap.get(i) + 1);
+                // }
+                // }
+                // for (int i : stringIndexes) {
+                // if (fields[i].length() > 0) {
+                // sector.setProperty(headers[i], fields[i]);
+                // } else {
+                // emptyFields.add("Empty string at " + lineNumber + ":" + i);
+                // }
+                // }
+                // for (int i : intIndexes) {
+                // if (fields[i].length() > 0) {
+                // try {
+                // sector.setProperty(headers[i], Integer.parseInt(fields[i]));
+                // } catch (NumberFormatException e) {
+                // badFields.add("Invalid integer '" + fields[i] + "' at " + lineNumber + ":" + i +
+                // " ("
+                // + headers[i] + ")");
+                // }
+                // } else {
+                // emptyFields.add("Empty string at " + lineNumber + ":" + i);
+                // }
+                // }
+                // for (int i : floatIndexes) {
+                // if (fields[i].length() > 0) {
+                // try {
+                // sector.setProperty(headers[i], Float.parseFloat(fields[i]));
+                // } catch (NumberFormatException e) {
+                // badFields.add("Invalid float '" + fields[i] + "' at " + lineNumber + ":" + i +
+                // " ("
+                // + headers[i] + ")");
+                // }
+                // } else {
+                // emptyFields.add("Empty string at " + lineNumber + ":" + i);
+                // }
+                // }
+                // if (mainIndexes[6] > -1) {
+                // sector.setProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME,
+                // Double.parseDouble(fields[mainIndexes[6]]));
+                // }
+                // } catch (ArrayIndexOutOfBoundsException e) {
+                // shortLines.add("Empty fields at end of line " + lineNumber +
+                // ": "+e.getMessage());
+                // }
 					transaction.success();
 					return true;
 				} catch(Exception e) {
@@ -581,7 +818,6 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 					transaction.finish();
 				}
 			}
-		}
         return true;
 	}
 
@@ -591,33 +827,33 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      * @param header header text
      * @return true if header is "beamwidth" properties
      */
-    private boolean isBeamwidth(String header) {
+    private static boolean isBeamwidth(String header) {
         header = header == null ? "null" : header.toLowerCase().trim();
         return header.contains("beamwidth") || header.equals("beam") || "hbw".equals(header);
     }
 
-    private void determineFieldTypes(String[] fields) {
-        for(int i : stringIndexes){
-            try {
-                Float.parseFloat(fields[i]);
-                floatIndexes.add(i);
-                Integer.parseInt(fields[i]);
-                floatIndexes.remove(floatIndexes.size()-1);
-                intIndexes.add(i);
-            }catch(Exception e){
-            }
-        }
-        for(int i:intIndexes) {
-            stringIndexes.remove((Integer)i);
-        }
-        for(int i:floatIndexes) {
-            stringIndexes.remove((Integer)i);
-        }
-        Collections.sort(stringIndexes);
-        Collections.sort(intIndexes);
-        Collections.sort(floatIndexes);
-        haveTypedIndexes = true;
-    }
+    // private void determineFieldTypes(String[] fields) {
+    // for(int i : stringIndexes){
+    // try {
+    // Float.parseFloat(fields[i]);
+    // floatIndexes.add(i);
+    // Integer.parseInt(fields[i]);
+    // floatIndexes.remove(floatIndexes.size()-1);
+    // intIndexes.add(i);
+    // }catch(Exception e){
+    // }
+    // }
+    // for(int i:intIndexes) {
+    // stringIndexes.remove((Integer)i);
+    // }
+    // for(int i:floatIndexes) {
+    // stringIndexes.remove((Integer)i);
+    // }
+    // Collections.sort(stringIndexes);
+    // Collections.sort(intIndexes);
+    // Collections.sort(floatIndexes);
+    // haveTypedIndexes = true;
+    // }
 
 	private static void deleteTree(Node root) {
         if (root != null) {

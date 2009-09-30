@@ -27,6 +27,7 @@ import net.refractions.udig.catalog.IService;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -293,6 +294,33 @@ public class NeoUtils {
     public static String[] getNumericFields(Node node) {
         Transaction tx = beginTransaction();
         try {
+            // TODO remove this after refactoring tems loader
+
+            if (node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME,"").equals(GisTypes.DRIVE.getHeader())) {
+                List<String> result = new ArrayList<String>();
+                Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                        new ReturnableEvaluator() {
+
+                            @Override
+                            public boolean isReturnableNode(TraversalPosition traversalposition) {
+                                Node curNode = traversalposition.currentNode();
+                                Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
+                                return type != null && (INeoConstants.HEADER_MS.equals(type.toString()));
+                            }
+                        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
+                        .iterator();
+                if (iteratorProperties.hasNext()) {
+                    Node propNode = iteratorProperties.next();
+                    Iterator<String> iteratorProper = propNode.getPropertyKeys().iterator();
+                    while (iteratorProper.hasNext()) {
+                        String propName = iteratorProper.next();
+                        if (propNode.getProperty(propName) instanceof Number) {
+                            result.add(propName);
+                        }
+                    }
+                }
+                return result.toArray(new String[0]);
+            }
             return (String[])node.getProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, null);
         } finally {
             tx.finish();
@@ -330,6 +358,10 @@ public class NeoUtils {
             }
         }
         return result;
+    }
+
+    public static String getNeighbourPropertyName(String aNeighbourName) {
+        return String.format("# '%s' neighbours", aNeighbourName);
     }
 
 }

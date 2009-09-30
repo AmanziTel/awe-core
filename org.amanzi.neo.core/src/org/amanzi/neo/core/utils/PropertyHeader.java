@@ -14,17 +14,21 @@
 package org.amanzi.neo.core.utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.Transaction;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Contains information of property
  * </p>
  * @author Cinkel_A
  * @since 1.0.0
@@ -33,6 +37,8 @@ public class PropertyHeader {
 
 
     private final Node node;
+    private boolean isGis;
+    private GisTypes gisType;
 
     /**
      * Constructor
@@ -40,6 +46,8 @@ public class PropertyHeader {
      * @param node - gis Node
      */
     public PropertyHeader(Node node) {
+        isGis=NeoUtils.isGisNode(node);
+            gisType=isGis?GisTypes.findGisTypeByHeader((String)node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME,null)):null;
         this.node = node;
     }
 
@@ -64,7 +72,12 @@ public class PropertyHeader {
      * @return array or null
      */
     public String[] getNumericFields() {
-        return NeoUtils.getNumericFields(node);
+        
+        return isGis?(gisType==GisTypes.DRIVE?NeoUtils.getNumericFields(node):getDataVault().getNumericFields()):NeoUtils.getNumericFields(node);
+    }
+
+    public PropertyHeader getDataVault() {
+        return isGis?new PropertyHeader(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node)):this;
     }
 
     /**
@@ -78,5 +91,73 @@ public class PropertyHeader {
             result.add(name);
         }
         return result.toArray(new String[0]);
+    }
+
+    public static PropertyHeader getNetworkVault(Node gisNode) {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            Relationship singleRelationship = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            if (singleRelationship == null) {
+                return null;
+            }
+            return new PropertyHeader(singleRelationship.getOtherNode(gisNode));
+        } finally {
+            tx.finish();
+        }
+    }
+
+    public Double getAzimuth(Node node){
+        String[] azimuthList=getAzimuthList();
+        for (String property : azimuthList) {
+            if (node.hasProperty(property)){
+                return ((Number) node.getProperty(property)).doubleValue();
+            }
+        }
+        return null;
+    }
+
+    public String[] getAzimuthList() {
+        return (String[])node.getProperty(INeoConstants.PROPERTY_AZIMUT_NAME, null);
+    }
+
+    /**
+     * @param child
+     * @param d
+     * @return
+     */
+    public double getBeamwidth(Node child, Double defValue) {
+        String[] beamwidt = getBeamwidthList();// TODO use cache?
+        if (beamwidt == null) {
+            return defValue;
+        }
+        for (String property : beamwidt) {
+            if (child.hasProperty(property)) {
+                return ((Number)child.getProperty(property)).doubleValue();
+            }
+        }
+        return defValue;
+    }
+
+    public String[] getBeamwidthList() {
+        return (String[])node.getProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME, null);
+    }
+
+    public String[] getAllChannels() {
+        return isGis?getDataVault().getAllChannels():(String[])node.getProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, null);
+    }
+
+    /**
+     * @return
+     */
+    public Collection<String> getNeighbourList() {
+        List<String> result = new ArrayList<String>();
+        if (!isGis || gisType == GisTypes.DRIVE) {
+            return result;
+        }
+        Iterable<Relationship> neighb = node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING);
+        for (Relationship relationship : neighb) {
+            result.add(NeoUtils.getNeighbourPropertyName(NeoUtils.getSimpleNodeName(relationship.getOtherNode(node), "")));
+        }
+        return result;
     }
 }

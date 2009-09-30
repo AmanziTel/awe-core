@@ -331,9 +331,10 @@ public class INeoConstants {
     /**
      * name of "beamwidth" property
      */
-    public static final String PROPERTY_BEAMWIDTH_NAME = "beamwidth";
+    public static final String PROPERTY_BEAMWIDTH_NAME = "beamwidth list";
     /** INeoConstants PROPERTY_ALL_CHANNEL_NAME field */
     public static final String PROPERTY_ALL_CHANNELS_NAME = "All Channels";
+    public static final String PROPERTY_AZIMUT_NAME = "azimut_list";
     /** INeoConstants PROPERTY_OLD_NAME field */
     public static final String PROPERTY_OLD_NAME = "old_name";
     /** INeoConstants NEIGHBOUR_TYPE_NAME field */

@@ -289,7 +289,7 @@ public class NeighbourLoader {
             NeoService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
-                String servCounName = String.format("# '%s' neighbours", fileName);
+                String servCounName = NeoUtils.getNeighbourPropertyName(fileName);
                 serverNodeName.setFieldValues(fields);
                 neighbourNodeName.setFieldValues(fields);
                 // TODO may be using cache (Map<NodeName,Node>)or indexes for sectors? Because finding is not very fast.

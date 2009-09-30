@@ -24,6 +24,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.core.utils.StarDataVault;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
@@ -151,6 +152,7 @@ public class NetworkRenderer extends RendererImpl {
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
+            PropertyHeader handler =  PropertyHeader.getNetworkVault(geoNeo.getMainGisNode());
             System.out.println("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
             String selectedProp = geoNeo.getPropertyName();
             Double redMinValue = geoNeo.getPropertyValueMin();
@@ -261,26 +263,29 @@ public class NetworkRenderer extends RendererImpl {
                             // Direction.OUTGOING)){
                             Node child = relationship.getEndNode();
                             if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
-                                double azimuth = Double.NaN;
-                                double beamwidth = ((Number)child.getProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME, 360.0))
-                                        .doubleValue();
+                                // double azimuth = Double.NaN;
+                                double beamwidth = handler.getBeamwidth(child, 360.0);
                                 Color colorToFill = getSectorColor(select, child, fillColor, selectedProp, redMinValue,
                                         redMaxValue, lesMinValue, moreMaxValue);
 
-                                for (String key : child.getPropertyKeys()) {
-                                    if (key.toLowerCase().contains("azimuth")) {
-                                        Object value = child.getProperty(key);
-                                        if (value instanceof Integer) {
-                                            azimuth = (Integer)value;
-                                        } else {
-                                            try {
-                                                azimuth = Integer.parseInt(value.toString());
-                                            } catch (Exception e) {
-                                            }
-                                        }
-                                    }
+                                // for (String key : child.getPropertyKeys()) {
+                                // if (key.toLowerCase().contains("azimuth")) {
+                                // Object value = child.getProperty(key);
+                                // if (value instanceof Integer) {
+                                // azimuth = (Integer)value;
+                                // } else {
+                                // try {
+                                // azimuth = Integer.parseInt(value.toString());
+                                // } catch (Exception e) {
+                                // }
+                                // }
+                                // }
+                                // }
+                                Double azimuth = handler.getAzimuth(child);
+                                if (azimuth == null) {
+                                    azimuth = Double.NaN;
+                                    continue;
                                 }
-                                if(azimuth == Double.NaN) continue;
                                 borderColor = drawColor;
                                 if (starPoint != null && starPoint.right().equals(child.getId())) {
                                     borderColor = COLOR_SECTOR_STAR;
