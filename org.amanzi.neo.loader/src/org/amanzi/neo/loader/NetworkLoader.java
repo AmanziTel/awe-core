@@ -519,7 +519,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
          * @param gis
          */
         public void saveStatistic(Node vault) {
-            List<String> result = new ArrayList<String>();
+            Set<String> result = new HashSet<String>();
             for (Integer ind : channalMap.keySet()) {
                 if (channalMap.get(ind) > 0) {
                     result.add(headers[ind]);
@@ -536,6 +536,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 
                 }
             }
+            propertyes.addAll(result);
+            propertyes.addAll(azimut.values());
+            propertyes.addAll(beamwith.values());
             vault.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, propertyes.toArray(new String[0]));
         }
 
