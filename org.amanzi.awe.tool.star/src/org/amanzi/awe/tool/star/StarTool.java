@@ -39,7 +39,6 @@ import net.refractions.udig.project.ui.tool.AbstractModalTool;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.StarDataVault;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -64,6 +63,7 @@ import org.neo4j.api.core.Traverser.Order;
  */
 public class StarTool extends AbstractModalTool {
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
+    public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     public static final String BLACKBOARD_CENTER_POINT = "org.amanzi.awe.tool.star.StarTool.point";
     private static final int MAXIMUM_SELECT_LEN = 10000; // find sectors in 100x100 pixels
     private boolean dragging = false;
@@ -397,9 +397,10 @@ public class StarTool extends AbstractModalTool {
             int dy = start.y-end.y;
             if(dx == 0 && dy == 0) {
                 activateStar = true;
-            } else {
-                nodesMap = null;  // after panning the nodes might have changed, so force reload on next mouse released
-            }
+            }// else {
+            // nodesMap = null; // after panning the nodes might have changed, so force reload on
+            // next mouse released
+            // }
             //TODO: Perhaps only run this if dx||dy non-zero ?
             NavCommand finalPan = context.getNavigationFactory().createPanCommandUsingScreenCoords(dx, dy);
             context.sendASyncCommand(new PanAndInvalidate(finalPan, command));
@@ -439,9 +440,8 @@ public class StarTool extends AbstractModalTool {
     }
     
     private Map<Long,java.awt.Point> getNodesMap() {
-        if(nodesMap==null && selectedLayer !=null) {
-            //TODO: Move this information to the layer blackboard
-            nodesMap = StarDataVault.getInstance().getCopyOfMap(selectedLayer.getGeoResource().getIdentifier());
+        if (selectedLayer != null) {
+            nodesMap = (Map<Long, Point>)getContext().getMap().getBlackboard().get(BLACKBOARD_NODE_LIST);
         }
         return nodesMap;
     }
