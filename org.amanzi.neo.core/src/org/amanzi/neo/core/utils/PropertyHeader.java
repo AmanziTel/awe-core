@@ -76,6 +76,11 @@ public class PropertyHeader {
         return isGis?(gisType==GisTypes.DRIVE?NeoUtils.getNumericFields(node):getDataVault().getNumericFields()):NeoUtils.getNumericFields(node);
     }
 
+    /**
+     * get data vault
+     * 
+     * @return data vault
+     */
     public PropertyHeader getDataVault() {
         return isGis?new PropertyHeader(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node)):this;
     }
@@ -93,6 +98,12 @@ public class PropertyHeader {
         return result.toArray(new String[0]);
     }
 
+    /**
+     * Get network vault
+     * 
+     * @param gisNode - gis node
+     * @return network vault
+     */
     public static PropertyHeader getNetworkVault(Node gisNode) {
         Transaction tx = NeoUtils.beginTransaction();
         try {
@@ -106,8 +117,14 @@ public class PropertyHeader {
         }
     }
 
+    /**
+     * get Azimuth
+     * 
+     * @param node node, that contains information
+     * @return Azimuth
+     */
     public Double getAzimuth(Node node){
-        String[] azimuthList=getAzimuthList();
+        String[] azimuthList = getAzimuthList();// use cache?
         for (String property : azimuthList) {
             if (node.hasProperty(property)){
                 return ((Number) node.getProperty(property)).doubleValue();
@@ -116,14 +133,21 @@ public class PropertyHeader {
         return null;
     }
 
+    /**
+     * get list of properties
+     * 
+     * @return azimuth properties
+     */
     public String[] getAzimuthList() {
         return (String[])node.getProperty(INeoConstants.PROPERTY_AZIMUT_NAME, null);
     }
 
     /**
-     * @param child
-     * @param d
-     * @return
+     * Get beamwidth
+     * 
+     * @param child node
+     * @param defValue default value
+     * @return beamwidth
      */
     public double getBeamwidth(Node child, Double defValue) {
         String[] beamwidt = getBeamwidthList();// TODO use cache?
@@ -138,16 +162,28 @@ public class PropertyHeader {
         return defValue;
     }
 
+    /**
+     * get list of properties
+     * 
+     * @return Beamwidth properties
+     */
     public String[] getBeamwidthList() {
         return (String[])node.getProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME, null);
     }
 
+    /**
+     * get list of properties
+     * 
+     * @return AllChannels properties
+     */
     public String[] getAllChannels() {
         return isGis?getDataVault().getAllChannels():(String[])node.getProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, null);
     }
 
     /**
-     * @return
+     * gets list of Neighbour properties in network
+     * 
+     * @return Collection
      */
     public Collection<String> getNeighbourList() {
         List<String> result = new ArrayList<String>();
