@@ -9,5 +9,5 @@ import org.neo4j.api.core.RelationshipType;
  * @since 1.0.0
  */
 public enum GeoNeoRelationshipTypes implements RelationshipType {
-    NEXT;
+    NEXT, PROPERTIES, CHILD;
 }

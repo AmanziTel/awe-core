@@ -1416,6 +1416,7 @@ public class ReuseAnalyserView extends ViewPart {
         aggregatedProperties.clear();
         propertyList = new ArrayList<String>();
         PropertyHeader propertyHeader = new PropertyHeader(node);
+        propertyList.addAll(Arrays.asList(propertyHeader.getDefinedNumericFields()));
         propertyList.addAll(Arrays.asList(propertyHeader.getNumericFields()));
         propertyList.addAll(propertyHeader.getNeighbourList());
         String[] channels = propertyHeader.getAllChannels();

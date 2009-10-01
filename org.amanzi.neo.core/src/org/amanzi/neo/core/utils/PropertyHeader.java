@@ -14,6 +14,7 @@
 package org.amanzi.neo.core.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,7 +25,10 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * <p>
@@ -95,6 +99,30 @@ public class PropertyHeader {
             String name = String.format("# '%s' neighbours", NeoUtils.getSimpleNodeName(relation.getOtherNode(node), ""));
             result.add(name);
         }
+        return result.toArray(new String[0]);
+    }
+    
+    public String[] getDefinedNumericFields() {
+        List<String> ints = new ArrayList<String>();
+        List<String> floats = new ArrayList<String>();
+        List<String> result = new ArrayList<String>();
+        Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+        if(propRel!=null){
+            Node propNode = propRel.getEndNode();
+            for(Node node: propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)){
+                String propType = (String)node.getProperty("name", null);
+                if(propType != null) {
+                    if(propType.equals("integer")){
+                        ints.addAll(Arrays.asList(node.getProperty("properties","").toString().split("[\\n\\,]")));
+                    } else
+                    if(propType.equals("float")){
+                        floats.addAll(Arrays.asList(node.getProperty("properties","").toString().split("[\\n\\,]")));
+                    }
+                }
+            }
+        }
+        result.addAll(ints);
+        result.addAll(floats);
         return result.toArray(new String[0]);
     }
 

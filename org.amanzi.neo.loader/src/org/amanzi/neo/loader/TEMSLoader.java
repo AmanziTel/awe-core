@@ -58,7 +58,7 @@ public class TEMSLoader extends DriveLoader {
             String line;
             while ((line = reader.readLine()) != null) {
                 line_number++;
-                if (!haveHeader())
+                if (!haveHeaders())
                     parseHeader(line);
                 else
                     parseLine(line);

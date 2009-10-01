@@ -4,10 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.TreeSet;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
@@ -49,8 +54,126 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     protected String basename = null;
     protected String dataset=null;
     private long started = System.currentTimeMillis();
-    private String[] headers = null;
-    private HashMap<String,Integer> headerIndex = null;
+    private LinkedHashMap<String, String> knownHeaders = new LinkedHashMap<String, String>();
+    private LinkedHashMap<String,Header> headers = new LinkedHashMap<String,Header>();
+    protected class Header {
+        int index;
+        String key;
+        String name;
+        HashMap<Class<? extends Object>,Integer> parseTypes = new HashMap<Class<? extends Object>,Integer>();
+        int parseCount = 0;
+        Header(String name, String key, int index) {
+            this.index = index;
+            this.name = name;
+            this.key = key;
+            for(Class<? extends Object> klass: KNOWN_PROPERTY_TYPES){
+                parseTypes.put(klass,0);
+            }
+        }
+        protected boolean invalid(String field) {
+            return field==null || field.length()<1 || field.equals("?");
+        }
+        Object parse(String field) {
+            if(invalid(field)) return null;
+            parseCount++;
+            try {
+                int value = Integer.parseInt(field);
+                incType(Integer.class);
+                return value;
+            } catch (Exception e) {
+                try {
+                    float value = Float.parseFloat(field);
+                    incType(Float.class);
+                    return value;
+                } catch (Exception e2) {
+                    incType(String.class);
+                    return field;
+                }
+            }
+        }
+        private void incType(Class<? extends Object> klass) {
+            parseTypes.put(klass, parseTypes.get(klass)+1);
+        }
+        boolean shouldConvert() {
+            return parseCount > 10;
+        }
+        Class<? extends Object> knownType() {
+            Class<? extends Object> best = String.class;
+            int maxCount = 0;
+            int countFound = 0;
+            for(Class<? extends Object> klass:parseTypes.keySet()){
+                int count = parseTypes.get(klass);
+                if(maxCount<parseTypes.get(klass)){
+                    maxCount = count;
+                    best = klass;
+                }
+                if(count>0){
+                    countFound++;
+                }
+            }
+            if(countFound>1){
+                DriveLoader.this.notify("Header "+key+" had multiple type matches: ");
+                for(Class<? extends Object> klass:parseTypes.keySet()){
+                    int count = parseTypes.get(klass);
+                    if(count>0){
+                        DriveLoader.this.notify("\t"+count+": "+klass+" => "+key);
+                    }
+                }
+            }
+            return best;
+        }
+    }
+    protected class IntegerHeader extends Header {
+        IntegerHeader(Header old){
+            super(old.name,old.key,old.index);
+            this.parseCount = old.parseCount;
+        }
+        Integer parse(String field){
+            if(invalid(field)) return null;
+            parseCount++;
+            return Integer.parseInt(field);
+        }
+        boolean shouldConvert() {
+            return false;
+        }
+        Class<Integer> knownType() {
+            return Integer.class;
+        }
+    }
+    protected class FloatHeader extends Header {
+        FloatHeader(Header old){
+            super(old.name,old.key,old.index);
+            this.parseCount = old.parseCount;
+        }
+        Float parse(String field){
+            if(invalid(field)) return null;
+            parseCount++;
+            return Float.parseFloat(field);
+        }
+        boolean shouldConvert() {
+            return false;
+        }
+        Class<Float> knownType() {
+            return Float.class;
+        }
+    }
+    protected class StringHeader extends Header {
+        StringHeader(Header old){
+            super(old.name,old.key,old.index);
+            this.parseCount = old.parseCount;
+        }
+        String parse(String field){
+            if(invalid(field)) return null;
+            parseCount++;
+            return field;
+        }
+        boolean shouldConvert() {
+            return false;
+        }
+        Class<String> knownType() {
+            return String.class;
+        }
+    }
     protected int line_number = 0;
     private int limit = 0;
     private CRS crs = null;
@@ -70,6 +193,8 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     private String[] possibleFieldSepRegexes = new String[]{"\\t","\\,","\\;"};
     /** How many units of work for the progress monitor for each file */
     public static final int WORKED_PER_FILE = 10;
+    @SuppressWarnings("unchecked")
+    public static final Class[] KNOWN_PROPERTY_TYPES = new Class[]{Integer.class, Float.class, String.class};
 
     /**
      * Initialize Loader with a specified set of parameters 
@@ -122,23 +247,24 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
      * @return edited String
      */
     protected final static String cleanHeader(String header) {
-        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.]+", "_").replaceAll("\\_$", "").toLowerCase();
+        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
     }
 
-    protected boolean haveHeader() {
-        return headers != null;
+    protected boolean haveHeaders() {
+        return headers.size()>0;
     }
     private void determineFieldSepRegex(String line){
-        if(fieldSepRegex == null){
-            int maxMatch = 0;
-            for(String regex:possibleFieldSepRegexes){
-                String[] fields = line.split(regex);
-                if(fields.length > maxMatch){
-                    maxMatch = fields.length;
-                    fieldSepRegex = regex;
-                }
+        int maxMatch = 0;
+        for(String regex:possibleFieldSepRegexes){
+            String[] fields = line.split(regex);
+            if(fields.length > maxMatch){
+                maxMatch = fields.length;
+                fieldSepRegex = regex;
             }
         }
+    }
+    protected void addKnownHeader(String key, String regex) {
+        knownHeaders.put(key, regex);
     }
     protected String[] splitLine(String line){
         return line.split(fieldSepRegex);
@@ -148,17 +274,91 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
         determineFieldSepRegex(line);
         String fields[] = splitLine(line);
         if(fields.length<2) return;
-        headers = fields;
-        headerIndex = new HashMap<String,Integer>();
         int index=0;
-        for(String header:headers){
-            header = cleanHeader(header);
+        for(String headerName:fields){
+            boolean added = false;
+            String header = cleanHeader(headerName);
             debug("Added header["+index+"] = "+header);
-            headerIndex.put(header,index++);
+            for(String key:knownHeaders.keySet()){
+                if (!headers.containsKey(key) && header.matches(knownHeaders.get(key))) {
+                    debug("Added known header[" + index + "] = " + key);
+                    headers.put(key, new Header(headerName, key, index));
+                    added = true;
+                    break;
+                }
+            }
+            if(!added/*!headers.containsKey(header)*/){
+                headers.put(header, new Header(headerName, header, index));
+            }
+            index++;
         }
     }
+    private HashMap<Class<? extends Object>,List<String>> typedProperties = null;
+    protected List<String> getIntegerProperties() {
+        return getProperties(Integer.class);
+    }
+    protected List<String> getFloatProperties() {
+        return getProperties(Integer.class);
+    }
+    protected List<String> getStringProperties() {
+        return getProperties(Integer.class);
+    }
+    protected List<String> getProperties(Class<? extends Object> klass) {
+        if(typedProperties==null) {
+            makeTypedProperties();
+        }
+        return typedProperties.get(klass);
+    }
+    private void makeTypedProperties() {
+        this.typedProperties = new HashMap<Class<? extends Object>,List<String>>();
+        this.typedProperties.put(Integer.class, new ArrayList<String>());
+        this.typedProperties.put(Float.class, new ArrayList<String>());
+        this.typedProperties.put(String.class, new ArrayList<String>());
+        for(String key: headers.keySet()){
+            Header header = headers.get(key);
+            if(header.parseCount>0){
+                for(Class<? extends Object> klass:KNOWN_PROPERTY_TYPES){
+                    if(header.knownType() == klass){
+                        this.typedProperties.get(klass).add(header.key);
+                    }
+                }
+            }
+        }
+    }
+    
+    protected final LinkedHashMap<String, Object> makeDataMap(String[] fields) {
+        LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
+        for (String key : headers.keySet()) {
+            try {
+                Header header = headers.get(key);
+                String field = fields[header.index];
+                if(field == null || field.length()<1 || field.equals("?")){
+                    continue;
+                }
+                Object value = header.parse(field);
+                map.put(key, value); // TODO: Decide if we should actually use the name here
+                
+                //Now speed up parsing once we are certain of the column types
+                if (header.shouldConvert()) {
+                    Class<? extends Object> klass = header.knownType();
+                    if (klass == Integer.class) {
+                        headers.put(key, new IntegerHeader(header));
+                    } else if (klass == Float.class) {
+                        headers.put(key, new FloatHeader(header));
+                    } else {
+                        headers.put(key, new StringHeader(header));
+                    }
+                }
+            } catch (Exception e) {
+                // TODO Handle Exception
+            }
+        }
+        return map;
+    }
+
     protected final int i_of(String header){
-        return headerIndex.get(header);
+        debug("Looking up header index for "+header);
+        return headers.get(header).index;
     }
     
     protected final String status(){
@@ -306,6 +506,66 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
         }
     }
 
+    protected final void saveProperties() {
+        if (gis != null) {
+            Transaction transaction = neo.beginTx();
+            try {
+                Node propNode;
+                Relationship propRel = gis.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+                if(propRel==null){
+                    propNode = neo.createNode();
+                    propNode.setProperty("name", NeoUtils.getNodeName(gis));
+                    propNode.setProperty("type", "gis_properties");
+                    gis.createRelationshipTo(propNode, GeoNeoRelationshipTypes.PROPERTIES);
+                }else{
+                    propNode = propRel.getEndNode();
+                }
+                HashMap<String,Node> propTypeNodes = new HashMap<String,Node>();
+                for(Node node: propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)){
+                    propTypeNodes.put(node.getProperty("name").toString(), node);
+                }
+                for(Class<? extends Object> klass:KNOWN_PROPERTY_TYPES){
+                    String typeName = makePropertyTypeName(klass);
+                    List<String> properties = getProperties(klass);
+                    if(properties!=null && properties.size()>0){
+                        Node propTypeNode = propTypeNodes.get(typeName);
+                        if(propTypeNode==null){
+                            propTypeNode = neo.createNode();
+                            propTypeNode.setProperty("name", typeName);
+                            propTypeNode.setProperty("type", "gis_property_type");
+                            savePropertiesToNode(propTypeNode,properties);
+                            propNode.createRelationshipTo(propTypeNode, GeoNeoRelationshipTypes.CHILD);
+                        } else {
+                            TreeSet<String> combinedProperties = new TreeSet<String>();
+                            String previousProperties = propTypeNode.getProperty("properties", "").toString();
+                            combinedProperties.addAll(Arrays.asList(previousProperties.split("[\\n\\,]")));
+                            combinedProperties.addAll(properties);
+                            savePropertiesToNode(propTypeNode,combinedProperties);
+                        }
+                    }
+                }
+                transaction.success();
+            } finally {
+                transaction.finish();
+            }
+        }
+    }
+    
+    private void savePropertiesToNode(Node propTypeNode, Collection<String> properties) {
+        StringBuffer sb = new StringBuffer();
+        for(String prop:properties) {
+            if(sb.length()>0) {
+                sb.append("\n");
+            }
+            sb.append(prop);
+        }
+        propTypeNode.setProperty("properties", sb.toString());
+    }
+    
+    public static String makePropertyTypeName(Class<? extends Object> klass){
+        return klass.getName().replaceAll("java.lang.", "").toLowerCase();
+    }
+
     /**
      * gets GIS node for
      * 
@@ -389,10 +649,9 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
      * @return dataset node
      */
     protected final Node findOrCreateDatasetNode(Node root, final String datasetName) {
-        Transaction tx = null;
+        Transaction tx = neo.beginTx();
         Node result;
         try {
-            tx = neo.beginTx();
             if (datasetName == null || datasetName.isEmpty()) {
                 return null;
             }
@@ -417,11 +676,24 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
         for(String property:node.getPropertyKeys()) {
             if(properties.length()>0) properties.append(", ");
             properties.append(property).append(" => ").append(node.getProperty(property));
+            if(properties.length()>80) {
+                properties.append("...");
+                break;
+            }
         }
         return properties.toString();
     }
 
+    private void printHeaderStats() {
+        notify("Determined Columns:");
+        for(String key: headers.keySet()){
+            Header header = headers.get(key);
+            System.out.println("\t"+header.knownType()+" loaded: "+header.parseCount+" => "+key);
+        }
+    }
+
     public void printStats(boolean verbose) {
+        printHeaderStats();
         long taken = System.currentTimeMillis() - started;
         addTimes(taken);
         notify("Finished loading " + basename + " data in " + (taken / 1000.0) + " seconds");
@@ -450,9 +722,13 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
         for(Relationship relationship:node.getRelationships(MeasurementRelationshipTypes.CHILD,Direction.OUTGOING)){
             if(sb.length()>0) sb.append(", ");
             Node ms = relationship.getEndNode();
-            sb.append(ms.getProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME)).append(":");
-            sb.append(ms.getProperty(INeoConstants.PROPERTY_CODE_NAME)).append("=");
-            sb.append((ms.getProperty(INeoConstants.PROPERTY_DBM_NAME).toString()+"000000").substring(0,6));
+            if(ms.hasProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME)){
+                sb.append(ms.getProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME)).append(":");
+                sb.append(ms.getProperty(INeoConstants.PROPERTY_CODE_NAME)).append("=");
+                sb.append((ms.getProperty(INeoConstants.PROPERTY_DBM_NAME).toString()+"000000").substring(0,6));
+            }else{
+                sb.append(propertiesString(ms));
+            }
         }
         return sb.toString();       
     }
@@ -461,7 +737,8 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
             return;
         Transaction transaction = neo.beginTx();
         try {
-            for (Relationship relationship : file.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
+            int count = 0;
+            MEASUREMENTS: for (Relationship relationship : file.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
                 Node measurement = relationship.getEndNode();
                 printMeasurement(measurement);
                 Iterator<Relationship> relationships = measurement.getRelationships(GeoNeoRelationshipTypes.NEXT,
@@ -472,6 +749,11 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
                     printMeasurement(measurement);
                     relationships = measurement.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
                             .iterator();
+                    count++;
+                    if(count>20) {
+                        notify("Exciting statistics after 100 measurement points");
+                        break MEASUREMENTS;
+                    }
                 }
             }
             transaction.success();
