@@ -24,10 +24,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Load Neighbour command handler
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */

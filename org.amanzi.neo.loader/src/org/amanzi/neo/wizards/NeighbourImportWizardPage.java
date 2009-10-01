@@ -55,6 +55,12 @@ public class NeighbourImportWizardPage extends WizardPage {
     private HashMap<String, Node> members;
     protected Node networkNode;
 
+    /**
+     * Constructor
+     * 
+     * @param pageName page name
+     * @param description page description
+     */
     public NeighbourImportWizardPage(String pageName, String description) {
         super(pageName);
         setTitle(pageName);
@@ -65,30 +71,31 @@ public class NeighbourImportWizardPage extends WizardPage {
 
     /**
      *check page
+     * 
      * @return true if page valid
      */
     protected boolean isValidPage() {
         return fileName != null && networkNode != null;
     }
-     
+
     @Override
     public void createControl(Composite parent) {
-        main=new Group(parent,SWT.NULL);
+        main = new Group(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
-        Label label=new Label(main, SWT.LEFT);
+        Label label = new Label(main, SWT.LEFT);
         label.setText("Networks");
-        label.setLayoutData( new GridData(SWT.FILL, SWT.DEFAULT, true, false ,1,1) );
+        label.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 1, 1));
         network = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
-        network.setLayoutData( new GridData(SWT.FILL, SWT.DEFAULT, true, false ,2,1) );
+        network.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
         network.setItems(getGisItems());
         network.addSelectionListener(new SelectionListener() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 networkNode = network.getSelectionIndex() < 0 ? null : members.get(network.getText());
                 setPageComplete(isValidPage());
             }
-            
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
@@ -103,14 +110,17 @@ public class NeighbourImportWizardPage extends WizardPage {
         editor.setFileExtensions(LoadNetwork.NETWORK_FILE_EXTENSIONS);
         setControl(main);
     }
-/**
- * Sets file name
- * @param fileName file name
- */
+
+    /**
+     * Sets file name
+     * 
+     * @param fileName file name
+     */
     protected void setFileName(String fileName) {
         this.fileName = fileName;
         setPageComplete(isValidPage());
     }
+
     /**
      * Forms list of GIS nodes
      * 

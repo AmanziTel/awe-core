@@ -199,7 +199,7 @@ public class NeighbourLoader {
         }
 
         /**
-         *
+         * finish work with header
          */
         public void finish() {
             if (index != null) {
@@ -209,7 +209,9 @@ public class NeighbourLoader {
         }
 
         /**
-         * @param network
+         * create cache
+         * 
+         * @param network - network node
          */
         public void createSectorCache(Node network) {
 
@@ -228,8 +230,10 @@ public class NeighbourLoader {
         }
 
         /**
-         * @param network
-         * @param index2
+         * Indexes all sectors
+         * 
+         * @param network network node
+         * @param index LuceneIndexService
          */
         private void indexesAllSectors(Node network, LuceneIndexService index) {
             long t1 = System.currentTimeMillis();
@@ -472,7 +476,11 @@ public class NeighbourLoader {
 
         }
 
-
+        /**
+         * get Id1 (CI+LAC)
+         * 
+         * @return id
+         */
         public String getId1() {
             String ci = valuesMap.get("CI");
             if (ci == null || ci.isEmpty()) {
@@ -485,6 +493,11 @@ public class NeighbourLoader {
             return ci + "\t" + lac;
         }
 
+        /**
+         * get Id2 (BTS_NAME)
+         * 
+         * @return id
+         */
         public String getId2() {
 
             String bts = valuesMap.get("BTS_NAME");
@@ -495,8 +508,10 @@ public class NeighbourLoader {
         }
 
         /**
-         * @param node
-         * @return
+         * get Id1 (CI+LAC) of node
+         * 
+         * @param node node
+         * @return id
          */
         public static String getId1(Node node) {
             Object ci = node.getProperty("CI", null);
@@ -510,6 +525,12 @@ public class NeighbourLoader {
             return ci.toString() + "\t" + lac.toString();
         }
 
+        /**
+         * get Id2 (BTS_NAME)
+         * 
+         * @param node node
+         * @return id
+         */
         public static String getId2(Node node) {
             return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
         }
