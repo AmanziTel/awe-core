@@ -22,6 +22,7 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.PropertyHeader;
@@ -369,8 +370,10 @@ public class NetworkRenderer extends RendererImpl {
             for (ILayer layer : getContext().getMap().getMapLayers()) {
                 if (layer.getGeoResource().canResolve(GeoNeo.class)) {
                     GeoNeo resource = layer.getGeoResource().resolve(GeoNeo.class, monitor);
-                    result += resource.getCount();
-                    count++;
+                    if(resource.getGisType().equals(GisTypes.NETWORK)) {
+                        result += resource.getCount();
+                        count++;
+                    }
                 }
             }
         } catch (IOException e) {
