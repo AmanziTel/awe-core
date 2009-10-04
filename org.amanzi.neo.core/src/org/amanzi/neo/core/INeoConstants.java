@@ -334,7 +334,7 @@ public class INeoConstants {
     public static final String PROPERTY_BEAMWIDTH_NAME = "beamwidth list";
     /** INeoConstants PROPERTY_ALL_CHANNEL_NAME field */
     public static final String PROPERTY_ALL_CHANNELS_NAME = "All Channels";
-    public static final String PROPERTY_AZIMUT_NAME = "azimut_list";
+    public static final String PROPERTY_AZIMUTH_NAME = "azimuth_list";
     /** INeoConstants PROPERTY_OLD_NAME field */
     public static final String PROPERTY_OLD_NAME = "old_name";
     /** INeoConstants NEIGHBOUR_TYPE_NAME field */
@@ -343,5 +343,9 @@ public class INeoConstants {
     /** INeoConstants LIST_NUMERIC_PROPERTIES field */
     public static final String LIST_NUMERIC_PROPERTIES = "list_numeric_field";
     public static final String NEIGHBOUR_NUMBER = "# neighbours listname";
-   
+    
+    /*
+     * Constants for DriveLoader data structures
+     */
+    public static final String NODE_TYPE_PROPERTIES = "properties";   
 }

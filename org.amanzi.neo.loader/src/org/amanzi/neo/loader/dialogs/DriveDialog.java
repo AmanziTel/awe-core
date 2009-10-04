@@ -617,6 +617,7 @@ public class DriveDialog {
 				NeoLoaderPlugin.exception(e);
 			}
 		}
+		DriveLoader.printTimesStats();
 
         if (datasetName != null) {
             Node gis = driveLoader != null ? driveLoader.getGisNode() : null;

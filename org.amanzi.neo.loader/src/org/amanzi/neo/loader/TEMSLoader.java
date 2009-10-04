@@ -1,8 +1,10 @@
 package org.amanzi.neo.loader;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -50,31 +52,16 @@ public class TEMSLoader extends DriveLoader {
         initialize("TEMS", neo, filename, null, null);
     }
 
-    public void run(IProgressMonitor monitor) throws IOException {
-        if (monitor != null)
-            monitor.subTask(filename);
-        BufferedReader reader = new BufferedReader(new FileReader(filename));
-        try {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line_number++;
-                if (!haveHeaders())
-                    parseHeader(line);
-                else
-                    parseLine(line);
-                if (monitor != null && monitor.isCanceled())
-                    break;
-            }
-        } finally {
-            reader.close();
-            saveData();
-            if (monitor != null)
-                monitor.worked(WORKED_PER_FILE);
-            addToMap();
-        }
+    /**
+     * After all lines have been parsed, this method is called. In this loader we save remaining
+     * cached data, and also the properties map.
+     */
+    protected void finishUp() {
+        saveData();
+        saveProperties();
     }
 
-    private void parseLine(String line) {
+    protected void parseLine(String line) {
         // debug(line);
         String fields[] = splitLine(line);
         if (fields.length < 2)

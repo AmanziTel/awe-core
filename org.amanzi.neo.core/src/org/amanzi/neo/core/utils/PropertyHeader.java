@@ -107,16 +107,17 @@ public class PropertyHeader {
         List<String> floats = new ArrayList<String>();
         List<String> result = new ArrayList<String>();
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
-        if(propRel!=null){
+        if (propRel != null) {
             Node propNode = propRel.getEndNode();
-            for(Node node: propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)){
-                String propType = (String)node.getProperty("name", null);
-                if(propType != null) {
-                    if(propType.equals("integer")){
-                        ints.addAll(Arrays.asList(node.getProperty("properties","").toString().split("[\\n\\,]")));
-                    } else
-                    if(propType.equals("float")){
-                        floats.addAll(Arrays.asList(node.getProperty("properties","").toString().split("[\\n\\,]")));
+            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                String[] properties = (String[])node.getProperty(INeoConstants.NODE_TYPE_PROPERTIES, null);
+                if (propType != null && properties != null) {
+                    if (propType.equals("integer")) {
+                        ints.addAll(Arrays.asList(properties));
+                    } else if (propType.equals("float")) {
+                        floats.addAll(Arrays.asList(properties));
                     }
                 }
             }
@@ -167,7 +168,7 @@ public class PropertyHeader {
      * @return azimuth properties
      */
     public String[] getAzimuthList() {
-        return (String[])node.getProperty(INeoConstants.PROPERTY_AZIMUT_NAME, null);
+        return (String[])node.getProperty(INeoConstants.PROPERTY_AZIMUTH_NAME, null);
     }
 
     /**

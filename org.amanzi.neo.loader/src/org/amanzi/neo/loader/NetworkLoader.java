@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+//import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,7 +105,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
     }
 
     private static Pattern chanalPattern = Pattern.compile("(^BCCH$)|(^TRX\\d+$)|(^TCH\\d+$)");
-    private Map<Integer, Integer> channalMap;
+    //private Map<Integer, Integer> channalMap;
 	private NeoService neo;
 	private NeoServiceProvider neoProvider;
 	private String siteName = null;
@@ -145,7 +145,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 	}
 
 	public NetworkLoader(NeoService neo, String filename) {
-        channalMap = new LinkedHashMap<Integer, Integer>();
+        //channalMap = new LinkedHashMap<Integer, Integer>();
 		this.neo = neo;
 		if(this.neo == null) {
 		    //Lagutko 21.07.2009, using of neo.core plugin
@@ -209,7 +209,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                     if(monitor.isCanceled()) break;
                     perc = is.percentage();
                     if (perc > prevPerc) {
-                        monitor.subTask("Loading record #"+lineNumber);
+                        monitor.subTask(Long.toString(lineNumber));
                         monitor.worked(perc - prevPerc);
                         prevPerc = perc;
                     }
@@ -464,11 +464,11 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         private static final String INTEGER = "INTEGER";
         private String[] headers = null;
         private int[] mainIndexes = null;
-        private boolean haveTypedIndexes = false;
+        //private boolean haveTypedIndexes = false;
         private String crsHint = null;
         private Map<Integer, Pair<String, String>> indexes = new HashMap<Integer, Pair<String, String>>();
         private Map<Integer, String> beamwith = new HashMap<Integer, String>();
-        private Map<Integer, String> azimut = new HashMap<Integer, String>();
+        private Map<Integer, String> azimuth = new HashMap<Integer, String>();
         private Map<Integer, Integer> channalMap = new HashMap<Integer, Integer>();
         /**
          * @param line
@@ -505,7 +505,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                 else if (beamwith.isEmpty() && isBeamwidth(header))
                     beamwith.put(index, header);// "beamwith" property
                 else if (isAzimut(header))
-                    azimut.put(index, header);
+                    azimuth.put(index, header);
                 else if (chanalPattern.matcher(header).matches()) {
                     channalMap.put(index, 0);
                 } else {
@@ -526,7 +526,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                 }
             }
             vault.setProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, result.toArray(new String[0]));
-            vault.setProperty(INeoConstants.PROPERTY_AZIMUT_NAME, azimut.values().toArray(new String[0]));
+            vault.setProperty(INeoConstants.PROPERTY_AZIMUTH_NAME, azimuth.values().toArray(new String[0]));
             vault.setProperty(INeoConstants.PROPERTY_BEAMWIDTH_NAME, beamwith.values().toArray(new String[0]));
             Set<String> propertyes = new HashSet<String>();
             for (Pair<String, String> pair : indexes.values()) {
@@ -537,14 +537,14 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                 }
             }
             propertyes.addAll(result);
-            propertyes.addAll(azimut.values());
+            propertyes.addAll(azimuth.values());
             propertyes.addAll(beamwith.values());
             vault.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, propertyes.toArray(new String[0]));
         }
 
         /**
          * @param header column name
-         * @return true if it Azimut property
+         * @return true if it Azimuth property
          */
         private boolean isAzimut(String header) {
             return header.toLowerCase().startsWith("azimut");
@@ -623,7 +623,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                 }
             }
             // azimuth
-            for (Integer index : azimut.keySet()) {
+            for (Integer index : azimuth.keySet()) {
                 if (index < fields.length) {
                     String value = fields[index];
                     if (value.length() > 0) {

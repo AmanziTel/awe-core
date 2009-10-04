@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
@@ -149,6 +151,8 @@ public class NetworkRenderer extends RendererImpl {
         siteColor = new Color(siteColor.getRed(), siteColor.getGreen(), siteColor.getBlue(), alpha);
         fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
         Map<Node, java.awt.Point> nodesMap = new HashMap<Node, java.awt.Point>();
+        NeoService neo = NeoServiceProvider.getProvider().getService();
+        Transaction tx = neo.beginTx();
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -167,6 +171,7 @@ public class NetworkRenderer extends RendererImpl {
             if(starPoint != null) {
                 System.out.println("Have star selection: "+starPoint);
             }
+            ArrayList<Pair<String,Integer>> multiOmnis = new ArrayList<Pair<String,Integer>>();
 
             isAggregatedProperties = selectedProp != null && INeoConstants.PROPERTY_ALL_CHANNELS_NAME.equals(selectedProp);
             aggregationList = geoNeo.getAggregatedProperties();
@@ -316,7 +321,8 @@ public class NetworkRenderer extends RendererImpl {
                         }
                     }
                     if (countOmnis>1) {
-                        System.err.println("Site "+node+" had "+countOmnis+" omni antennas");
+                        //System.err.println("Site "+node+" had "+countOmnis+" omni antennas");
+                        multiOmnis.add(new Pair<String,Integer>(node.toString(),countOmnis));
                     }
                     if (drawLabels) {
                         double label_position_angle = Math.toRadians(-90 + (label_position_angles[0] + label_position_angles[1]) / 2.0);
@@ -334,10 +340,31 @@ public class NetworkRenderer extends RendererImpl {
                 if (monitor.isCanceled())
                     break;
             }
+            if(multiOmnis.size()>0){
+                //TODO: Move this to utility class
+                StringBuffer sb = new StringBuffer();
+                int llen=0;
+                for (Pair<String, Integer> pair : multiOmnis) {
+                    if (sb.length() > 1)
+                        sb.append(", ");
+                    else
+                        sb.append("\t");
+                    if (sb.length() > 100 + llen) {
+                        llen = sb.length();
+                        sb.append("\n\t");
+                    }
+                    sb.append(pair.left()).append(":").append(pair.right());
+                    if (sb.length() > 1000)
+                        break;
+                }
+                System.err.println("There were "+multiOmnis.size()+" sites with more than one omni antenna: ");
+                System.err.println(sb.toString());
+            }
             if (starNode != null && starProperty != null) {
                 drawAnalyser(g, starNode, starPoint.left(), starProperty, nodesMap);
             }
             System.out.println("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
+            tx.success();
         } catch (TransformException e) {
             throw new RenderException(e);
         } catch (FactoryException e) {
@@ -355,6 +382,7 @@ public class NetworkRenderer extends RendererImpl {
             // if (geoNeo != null)
             // geoNeo.close();
             monitor.done();
+            tx.finish();
         }
     }
 

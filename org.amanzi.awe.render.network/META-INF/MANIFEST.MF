@@ -9,8 +9,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
  net.refractions.udig.project,
  org.amanzi.awe.catalog.neo,
- org.neo4j,
- org.amanzi.neo.core,
+ org.amanzi.neo.core;bundle-version="1.0.0",
  org.amanzi.awe.neostyle;bundle-version="1.0.0",
- org.amanzi.neo.loader;bundle-version="1.0.0"
+ org.amanzi.neo.loader;bundle-version="1.0.0",
+ org.neo4j
 Eclipse-LazyStart: true

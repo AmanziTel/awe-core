@@ -20,6 +20,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -38,6 +39,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -45,10 +47,12 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
@@ -168,7 +172,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         g.setFont(font.deriveFont((float)fontSize));
         fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
         int drawWidth = 1 + 2*drawSize;
-        
+        NeoService neo = NeoServiceProvider.getProvider().getService();
+        Transaction tx = neo.beginTx();
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -266,6 +271,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 }
                 renderSelectedPoint(g, p, drawSize, drawFull, drawLite);
             }
+            HashMap<String,Integer> colorErrors = new HashMap<String,Integer>();
             // Now draw the actual points
             for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
                 Coordinate location = node.getCoordinate();
@@ -289,8 +295,17 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
                 Color nodeColor = fillColor;
                 if (selectedProp != null) {
-                    nodeColor = getColorOfMpNode(select, node.getNode(), fillColor, selectedProp, redMinValue, redMaxValue,
-                            lesMinValue, moreMaxValue);
+                    try {
+                        nodeColor = getColorOfMpNode(select, node.getNode(), fillColor, selectedProp, redMinValue, redMaxValue,
+                                lesMinValue, moreMaxValue);
+                    } catch (RuntimeException e) {
+                        String errName = e.toString();
+                        if(colorErrors.containsKey(errName)) {
+                            colorErrors.put(errName, colorErrors.get(errName) + 1);
+                        }else{
+                            colorErrors.put(errName, 1);
+                        }
+                    }
 
                 }
                 Color borderColor = g.getColor();
@@ -348,7 +363,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 if (monitor.isCanceled())
                     break;
             }
+            for(String errName:colorErrors.keySet()){
+                int errCount = colorErrors.get(errName);
+                System.err.println("Error determining color of "+errCount+" nodes: "+errName);
+            }
             System.out.println("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " points");
+            tx.success();
         } catch (TransformException e) {
             throw new RenderException(e);
         } catch (FactoryException e) {
@@ -361,6 +381,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             // if (geoNeo != null)
             // geoNeo.close();
             monitor.done();
+            tx.finish();
         }
     }
 

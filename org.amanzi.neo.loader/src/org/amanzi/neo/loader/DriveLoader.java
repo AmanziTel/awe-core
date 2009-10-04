@@ -1,7 +1,9 @@
 package org.amanzi.neo.loader;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -192,7 +194,7 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     private String fieldSepRegex;
     private String[] possibleFieldSepRegexes = new String[]{"\\t","\\,","\\;"};
     /** How many units of work for the progress monitor for each file */
-    public static final int WORKED_PER_FILE = 10;
+    public static final int WORKED_PER_FILE = 100;
     @SuppressWarnings("unchecked")
     public static final Class[] KNOWN_PROPERTY_TYPES = new Class[]{Integer.class, Float.class, String.class};
 
@@ -531,16 +533,17 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
                         Node propTypeNode = propTypeNodes.get(typeName);
                         if(propTypeNode==null){
                             propTypeNode = neo.createNode();
-                            propTypeNode.setProperty("name", typeName);
-                            propTypeNode.setProperty("type", "gis_property_type");
+                            propTypeNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, typeName);
+                            propTypeNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "gis_property_type");
                             savePropertiesToNode(propTypeNode,properties);
                             propNode.createRelationshipTo(propTypeNode, GeoNeoRelationshipTypes.CHILD);
                         } else {
                             TreeSet<String> combinedProperties = new TreeSet<String>();
-                            String previousProperties = propTypeNode.getProperty("properties", "").toString();
-                            combinedProperties.addAll(Arrays.asList(previousProperties.split("[\\n\\,]")));
+                            String[] previousProperties = (String[])propTypeNode.getProperty(INeoConstants.NODE_TYPE_PROPERTIES, null);
+                            if (previousProperties != null)
+                                combinedProperties.addAll(Arrays.asList(previousProperties));
                             combinedProperties.addAll(properties);
-                            savePropertiesToNode(propTypeNode,combinedProperties);
+                            savePropertiesToNode(propTypeNode, combinedProperties);
                         }
                     }
                 }
@@ -552,14 +555,7 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     }
     
     private void savePropertiesToNode(Node propTypeNode, Collection<String> properties) {
-        StringBuffer sb = new StringBuffer();
-        for(String prop:properties) {
-            if(sb.length()>0) {
-                sb.append("\n");
-            }
-            sb.append(prop);
-        }
-        propTypeNode.setProperty("properties", sb.toString());
+        propTypeNode.setProperty("properties", properties.toArray(new String[properties.size()]));
     }
     
     public static String makePropertyTypeName(Class<? extends Object> klass){
@@ -798,14 +794,65 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     }
 
     /**
-     * This is the main method of the class and needs to be implemented by subclasses. It should
-     * open the file, iterate over its contents and build the appropriate data structures in the
-     * database.
+     * This is the main method of the class. It opens the file, iterates over the contents and calls
+     * parseLine(String) on each line. The subclass needs to implement parseLine(String) to
+     * interpret the data and save it to the database.
      * 
      * @param monitor
-     * @throws IOException 
+     * @throws IOException
      */
-    public abstract void run(IProgressMonitor monitor) throws IOException;
+    public void run(IProgressMonitor monitor) throws IOException {
+        if (monitor != null)
+            monitor.subTask(filename);
+        CountingFileInputStream is = new CountingFileInputStream(new File(filename));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        //BufferedReader reader = new BufferedReader(new FileReader(filename));
+        try {
+            int perc = is.percentage();
+            int prevPerc = 0;
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line_number++;
+                if (!haveHeaders())
+                    parseHeader(line);
+                else
+                    parseLine(line);
+                if (monitor != null) {
+                    if (monitor.isCanceled())
+                        break;
+                    perc = is.percentage();
+                    if (perc > prevPerc) {
+                        monitor.subTask(filename+":" + line_number + " ("+perc+"%)");
+                        monitor.worked(perc - prevPerc);
+                        prevPerc = perc;
+                    }
+                }
+            }
+        } finally {
+            reader.close();
+            finishUp();
+            addToMap();
+        }
+    }
+
+    /**
+     * This method must be implemented by all readers to parse the data lines. It might save data
+     * directly to the database, or it might keep it in a cache for saving later, in the finishUp
+     * method. A common pattern is to block data into chunks, saving these to the database at
+     * reasonable points, and then using finishUp() to save any remaining data.
+     * 
+     * @param line
+     */
+    protected abstract void parseLine(String line);
+    
+    /**
+     * After all lines have been parsed, this method is called, allowing the implementing class the
+     * opportunity to save any cached information, or write any final statistics. It is not abstract
+     * because it is possible, or even probable, to write an importer that does not need it.
+     */
+    protected void finishUp() {
+        saveProperties();
+    }
 
     @Override
     public void onNeoStop(Object source) {

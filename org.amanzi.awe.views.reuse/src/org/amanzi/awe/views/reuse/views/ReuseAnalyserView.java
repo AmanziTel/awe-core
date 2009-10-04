@@ -776,6 +776,7 @@ public class ReuseAnalyserView extends ViewPart {
         Double min = null;
         Double max = null;
         propertyValue = null;
+        int missingPropertyCount = 0;
         // int colCount = 0;
         runGcIfBig(totalWork);
         monitor.subTask("Searching database");
@@ -832,9 +833,13 @@ public class ReuseAnalyserView extends ViewPart {
                 }
                 if(monitor.isCanceled()) break;
             } else {
-                System.out.println("No such property '" + propertyName + "' for node "
-                        + (node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
+                missingPropertyCount ++;
+//                System.out.println("No such property '" + propertyName + "' for node "
+//                        + (node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
             }
+        }
+        if(missingPropertyCount>0) {
+            System.out.println("Property '" + propertyName + "' not found for " + missingPropertyCount + " nodes");
         }
         runGcIfBig(totalWork);
         monitor.subTask("Determining statistics type");
