@@ -3,7 +3,6 @@ package org.amanzi.splash.database.services;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
-import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
@@ -14,6 +13,10 @@ public class Messages extends NLS {
     public static String Copy_Error_Title;
     public static String Open_Spreadsheet_Error_Title;
     public static String Open_Spreadsheet_Error_Message;
+    
+    public static String Format_Error_Title;
+    public static String Format_Error_Message;
+    
     
     private Messages() {
     }
@@ -27,7 +30,7 @@ public class Messages extends NLS {
     }
 
     static {
-        NLS.initializeMessages(BUNDLE_NAME, SplashDatabaseExceptionMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, Messages.class);
     }
     
 }

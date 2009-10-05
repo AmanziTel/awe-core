@@ -1,8 +1,15 @@
 package org.amanzi.splash.swing;
 
 import java.net.URI;
+import java.text.MessageFormat;
+import java.text.ParseException;
 
 import org.amanzi.neo.core.database.nodes.CellID;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.splash.database.services.Messages;
+import org.amanzi.splash.ui.SplashPlugin;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -33,38 +40,10 @@ public class Cell
 	private URI scriptURI;
 	private boolean hasReference;
 	
-	/**
-	 * Enum that describes type of Data stored in Cell
-	 * 
-	 * @author Lagutko_N
-	 * @since 1.0.0
+	/*
+	 * Is exception appeared on formatting a value
 	 */
-	public enum CellDataType {
-	    DEFAULT (0),
-        STRING(1),
-        INTEGER(2),
-        FLOAT(3);
-	    
-	    private int typeIndex;
-	    
-	    private CellDataType(int index) {
-	        typeIndex = index;
-	    }
-	    
-	    public int getIndex() {
-	        return typeIndex;
-	    }
-	    
-	    public static CellDataType getDataTypeByIndex(int index) {
-	        for (CellDataType type : values()) {
-	            if (type.getIndex() == index) {
-	                return type;
-	            }
-	        }
-	        return null;
-	    }
-	}
-	
+	private boolean isFormatError;
 	
 	/**
 	 * Another constructor (create an expression using definition and value), used with 
@@ -103,7 +82,7 @@ public class Cell
 		hasReference = false;
 	}
 
-	public Cell(int row, int column, String definition, String value,
+	public Cell(int row, int column, String definition, Object value,
 			CellFormat c) {
 		this.row    = row;
 		this.column = column;
@@ -179,14 +158,59 @@ public class Cell
 	}
 
 	public void setCellFormat(CellFormat cellFormat) {
-		this.cellFormat = cellFormat;
+	    //Lagutko, 5.10.2009, if format was changed than we should update value of Cell with new format
+	    boolean formatChanged = this.cellFormat.getFormat() != cellFormat.getFormat();
+	    CellFormat previousFormat = this.cellFormat;
+	    this.cellFormat = cellFormat;
+	    
+	    if (formatChanged) {
+	        setValue(getValue().toString());
+	        //if there was an error on changing format than set previous format
+	        if (isFormatError) {
+	            this.cellFormat = previousFormat;
+	        }
+	    }
 	}
 
-	public void setValue(Object value) {
-		this.value = value;
+	public void setValue(String value) {
+	    isFormatError = false;
+
+	    //Lagutko, 5.10.2009, format a value from String to Object 
+	    if ((cellFormat.getFormat() == null) || 
+	        (value == null) || 
+	        (value.length() == 0) ||
+	        (cellFormat.getFormat() instanceof MessageFormat)) {
+	        
+	        //if there are no format or value is empty than didn't convert a value
+	        this.value = value;
+	    }
+	    else {
+	        try {
+	            //otherwise try to convert to given type
+	            this.value = cellFormat.getFormat().parseObject(value);	            
+	        }
+	        catch (final ParseException e) {
+	            //if it's unable to convert than show a Error Dialog
+	            ActionUtil.getInstance().runTask(new Runnable() {
+	                public void run() {	                    
+	                    ErrorDialog.openError(null, Messages.Format_Error_Title,	                                          
+	                                          Messages.Format_Error_Message, 
+	                                          new Status(Status.ERROR, SplashPlugin.getId(), e.getMessage()));
+	                }
+	            }, false);	
+	            isFormatError = true;
+	        }
+	    }
 	}
 	
-
+	/**
+	 * Returns is Exception appeared on formatting a value
+	 *
+	 * @return is exception appeared
+	 */
+	public boolean isFormatError() {
+	    return isFormatError;
+	}
 
 	public CellID getCellID() {
 		return cellID;
@@ -269,16 +293,5 @@ public class Cell
 	 */
 	public boolean hasReference() {
 		return hasReference;
-	}
-	
-	/**
-	 * Returns type of data stored in Cell
-	 * 
-	 * TODO: Lagutko: It's only initial implementation of this method and returns DEFAULT data type
-	 *
-	 * @return type of data stored in Cell
-	 */
-	public CellDataType getCellDataType() {
-	    return CellDataType.DEFAULT;
 	}
 }

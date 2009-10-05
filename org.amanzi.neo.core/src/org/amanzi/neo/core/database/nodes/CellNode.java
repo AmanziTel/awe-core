@@ -97,7 +97,7 @@ public class CellNode extends AbstractNode {
      * @param value value of Cell
      */
     
-    public void setValue(String value) {
+    public void setValue(Object value) {
         setParameter(CELL_VALUE, value);
     }
     
@@ -107,8 +107,8 @@ public class CellNode extends AbstractNode {
      * @return value of Cell
      */
     
-    public String getValue() {
-        return (String)getParameter(CELL_VALUE);
+    public Object getValue() {
+        return (Object)getParameter(CELL_VALUE);
     }
     
     /**

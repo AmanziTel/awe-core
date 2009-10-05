@@ -3,6 +3,8 @@ package org.amanzi.splash.swing;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.text.Format;
+import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,13 +75,14 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 		Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		
 		Cell c = (Cell)value;
-		setValue(c.getValue());
+		Object cellValue = getExpressionValue(c);
+		setValue(cellValue);
 		setBackground(c.getCellFormat().getBackgroundColor());
 		
 		setForeground(c.getCellFormat().getFontColor());
 
 		setFont(new Font(c.getCellFormat().getFontName(), c.getCellFormat().getFontStyle(), c.getCellFormat().getFontSize()));
-		String cell_value = (String)((Cell)value).getValue();
+		String cell_value = cellValue.toString();
 		String regex = "\\d+";
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(cell_value);
@@ -126,7 +129,20 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 	 */
 	public Object getExpressionValue (Object expression)
 	{
-		return ((Cell)expression).getValue ();
+	    Cell cell = (Cell)expression;
+	    
+	    //Lagutko, 5.10.2009, format value of Cell to String
+	    Format format = cell.getCellFormat().getFormat();
+	    Object value = cell.getValue();
+	    //start formatting only if Format is set and Value not empty
+	    if ((format != null) && 
+	        (value != null) && 
+	        (value.toString().length() > 0) &&
+	        !(format instanceof MessageFormat)) {
+	        return format.format(value);	        
+	    }
+	    
+		return value;
 	}
 }
 

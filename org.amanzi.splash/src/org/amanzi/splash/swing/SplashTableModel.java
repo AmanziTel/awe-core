@@ -422,7 +422,8 @@ public class SplashTableModel extends DefaultTableModel {
         se.setDefinition(definition);
 
         NeoSplashUtil.logn("Setting cell value:" + (String) s1);
-        se.setValue((String) s1);
+        
+        se.setValue(s1.toString());        
 
 		setValueAt(se, row, column, oldDefinition);
 
@@ -654,8 +655,8 @@ public class SplashTableModel extends DefaultTableModel {
 	 *            cell
 	 * @author Lagutko_N
 	 */
-	public void updateCellFormat(Cell cell) {
-		service.updateCell(spreadsheet, cell);
+	public void updateCellFormat(Cell cell) {	    
+	    service.updateCell(spreadsheet, cell);
 	}
 
 	/**

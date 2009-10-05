@@ -344,7 +344,7 @@ public class SpreadsheetService {
 		Transaction transaction = neoService.beginTx();
 
 		try {
-			node.setValue((String) cell.getValue());
+			node.setValue(cell.getValue());
 			node.setDefinition((String) cell.getDefinition());
 
 			if (cell.hasReference()) {
@@ -415,7 +415,7 @@ public class SpreadsheetService {
 			transaction.finish();
 		}
 	}
-
+	
 	private void setSplashFormat(SplashFormatNode sfNode, CellFormat format){
 		sfNode.setBackgroundColorB(format.getBackgroundColor().getBlue());
 		sfNode.setBackgroundColorG(format.getBackgroundColor().getGreen());
@@ -428,6 +428,8 @@ public class SpreadsheetService {
 		sfNode.setFontStyle(format.getFontStyle());
 		sfNode.setVerticalAlignment(format.getVerticalAlignment());
 		sfNode.setHorizontalAlignment(format.getHorizontalAlignment());
+		//Lagutko, 5.10.2009, also store a Data Format of Cell
+		sfNode.setFormat(format.getFormat());
 	}
 
 	/**
@@ -546,6 +548,8 @@ public class SpreadsheetService {
 		
 		SplashFormatNode sfNode = node.getSplashFormat();
 		
+		//Lagutko, 5.10.2009, get a Data Format from Node
+		cellFormat.setFormat(sfNode.getFormat());
 		
 		Integer bgColorB = sfNode.getBackgroundColorB();
 		Integer bgColorG = sfNode.getBackgroundColorG();
@@ -571,7 +575,7 @@ public class SpreadsheetService {
 		cellFormat.setHorizontalAlignment(sfNode.getHorizontalAlignment());
 		cellFormat.setVerticalAlignment(sfNode.getVerticalAlignment());
 
-		String value = node.getValue();
+		Object value = node.getValue();
 		if (value == null) {
 			value = DEFAULT_VALUE;
 		}

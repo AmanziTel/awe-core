@@ -6,11 +6,11 @@ awe_console_plugin = Java::org.eclipse.core.runtime.Platform.getBundle("org.aman
 awe_console_path = Java::org.eclipse.core.runtime.FileLocator.resolve(awe_console_plugin).getFile
 #require awe_console_path + 'neoSetup.rb'
 
-def method_missing(method_id, *args)  
+def method_missing(method_id, *args)
   if method_id.to_s =~ /([a-z]{1,3})([0-9]+)/      
     #if method_missing was called with ID of Cell than put this ID to array
     $idArray << method_id
-    find_cell(method_id)
+    find_cell(method_id)  
   else
     super.method_missing(method_id.to_s, *args)
   end

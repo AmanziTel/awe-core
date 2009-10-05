@@ -1,12 +1,16 @@
 package org.amanzi.neo.core.database.nodes;
 
-import java.util.Iterator;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.text.Format;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
 
 /**
  * Wrapper of Spreadsheet Column
@@ -16,7 +20,9 @@ import org.neo4j.api.core.Relationship;
 
 public class SplashFormatNode extends AbstractNode {
 
-	/*
+	/** String CELL_FORMAT_TYPE field */
+    private static final String CELL_FORMAT_TYPE = "format";
+    /*
 	 * Type of this Node
 	 */
 	private static final String SPLASH_FORMAT_NODE_TYPE = "splash_format";
@@ -75,8 +81,7 @@ public class SplashFormatNode extends AbstractNode {
 	 */
 	private static final String CELL_FONT_NAME = "font_name";
 	
-
-    /**
+	/**
      * Constructor for wrapping existing column nodes. To reduce API confusion,
      * this constructor is private, and users should use the factory method instead.
      * @param node
@@ -304,4 +309,69 @@ public class SplashFormatNode extends AbstractNode {
 	public void addCell(CellNode cell) {
 		addRelationship(SplashRelationshipTypes.SPLASH_FORMAT, cell.getUnderlyingNode());
 	}
+	
+	/**
+	 * Sets a format of Cell
+	 *
+	 * @param format format
+	 */
+	public void setFormat(Format format) {
+	    try {
+	        setParameter(CELL_FORMAT_TYPE, serializeFormat(format));
+	    }
+	    catch (Exception e) {
+	        NeoCorePlugin.error(null, e);
+	    }
+	}
+	
+	/**
+	 * Returns a format of Cell
+	 *
+	 * @return format of Cell
+	 */
+	public Format getFormat() {
+	    try {
+	        return deserializeFormat((byte[])getParameter(CELL_FORMAT_TYPE));
+	    }
+	    catch (Exception e) {
+	        NeoCorePlugin.error(null, e);
+	        return null;
+	    }
+	}
+	
+	/**
+	 * Utility method that serializes Format object to byte array
+	 *
+	 * @param format format of Cell 
+	 * @return byte array of serialized format
+	 * @throws IOException
+	 */
+	private byte[] serializeFormat(Format format) throws IOException {
+	    ByteArrayOutputStream s = new ByteArrayOutputStream();
+	    ObjectOutputStream o = new ObjectOutputStream(s);
+	    o.writeObject(format);
+	    o.close();
+	    s.close();	    
+	    
+	    return s.toByteArray();	    
+	}
+	
+	/**
+	 * Utility method that deserializes Format object from byte array
+	 *
+	 * @param format byte array of serialized Format
+	 * @return Format object
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	private Format deserializeFormat(byte[] format) throws IOException, ClassNotFoundException {
+	    ByteArrayInputStream s = new ByteArrayInputStream(format);
+	    ObjectInputStream o = new ObjectInputStream(s);
+	    
+	    o.close();
+	    s.close();
+	    
+	    return (Format)o.readObject();
+	}
+	
 }

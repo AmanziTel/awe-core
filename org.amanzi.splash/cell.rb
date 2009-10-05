@@ -24,7 +24,25 @@ class Cell
     args[0] = other_value
     
     #call a method for values 
-    result = first_value.send(method_id, *args).to_s    
+    result = first_value.send(method_id, *args)
+        
+    Cell.new(row, column, definition, result, CellFormat.new)
+  end
+  
+  #
+  # Operation +
+  #
+  def + (other_value)
+    #gets a value of this Cell
+    first_value = get_typed_value
+    
+    #gets a value of other Cell
+    other_value = get_cell_value(other_value)
+    
+    #updates type of other Cell
+    other_value = update_type(first_value, other_value)
+    
+    result = first_value + other_value
     
     Cell.new(row, column, definition, result, CellFormat.new)
   end
@@ -33,36 +51,50 @@ class Cell
   # ERB.result method returns not Cell object but Cell.to_s
   # so we should correct method to_s to have a value of Cell
   #
-  def to_s
-    value
+  def to_s     
+    value.to_s
   end
   
   #
   # Return a Value of Cell by it's type
   #
   def get_typed_value
-    case cell_data_type      
-      when Cell::CellDataType::DEFAULT
-        #If type was DEFAULT than it can be String, Integer or Float
+    #If type was DEFAULT than it can be String, Integer or Float
+    if (cell_format.format.nil?)
+      begin 
+        result = Integer(value)
+      rescue
         begin 
-          result = Integer(value)
+          result = Float(value)
         rescue
-          begin 
-            result = Float(value)
-          rescue
-            result = value
-          end
+          result = value
         end
-        result
-      when Cell::CellDataType::STRING     
-        result
-      when Cell::CellDataType::INTEGER
-        Integer(value)
-      when Cell::CellDataType::FLOAT
-        Float(value)
-      else
-        raise "Not supported type"
-    end    
+      end
+    else
+      result = value
+    end
+    result
+  end
+  
+  #
+  # Converts Cell to String
+  #
+  def to_str
+    value
+  end
+  
+  #
+  # Converts Cell to Integer
+  #
+  def to_int 
+    Integer(value)
+  end
+  
+  #
+  # Converts Cell to Float
+  #
+  def to_flt
+    Float(value)
   end
   
   private
@@ -73,7 +105,7 @@ class Cell
   #
   # Not implemented yet.
   #
-  def update_type(first_value, other_value) 
+  def update_type(first_value, other_value)    
     other_value
   end
   
