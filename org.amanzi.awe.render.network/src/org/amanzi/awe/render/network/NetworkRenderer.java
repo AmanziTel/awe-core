@@ -370,7 +370,7 @@ public class NetworkRenderer extends RendererImpl {
             if (neiName != null) {
                 Object properties = geoNeo.getProperties(GeoNeo.NEIGH_RELATION);
                 if (properties != null) {
-                    drawRelation(g, neiName, (Relationship)properties, lineColor, nodesMap);
+                    drawRelation(g, (Relationship)properties, lineColor, nodesMap);
                 }
                 properties = geoNeo.getProperties(GeoNeo.NEIGH_MAIN_NODE);
                 if (properties != null) {
@@ -401,11 +401,13 @@ public class NetworkRenderer extends RendererImpl {
     }
 
     /**
-     * @param g
-     * @param neiName
-     * @param node
-     * @param lineColor
-     * @param nodesMap
+     * draws neighbour relations
+     * 
+     * @param g Graphics2D
+     * @param neiName name of neighbour list
+     * @param node serve node
+     * @param lineColor - line color
+     * @param nodesMap map of nodes
      */
     private void drawNeighbour(Graphics2D g, String neiName, Node node, Color lineColor, Map<Node, Point> nodesMap) {
         g.setColor(lineColor);
@@ -421,16 +423,17 @@ public class NetworkRenderer extends RendererImpl {
     }
 
     /**
-     * @param g
-     * @param neiName
-     * @param properties
-     * @param lineColor
-     * @param nodesMap
+     * draws neighbour relation
+     * 
+     * @param g Graphics2D
+     * @param relation relation
+     * @param lineColor - line color
+     * @param nodesMap map of nodes
      */
-    private void drawRelation(Graphics2D g, String neiName, Relationship properties, Color lineColor, Map<Node, Point> nodesMap) {
+    private void drawRelation(Graphics2D g, Relationship relation, Color lineColor, Map<Node, Point> nodesMap) {
         g.setColor(lineColor);
-        Point point1 = nodesMap.get(properties.getStartNode());
-        Point point2 = nodesMap.get(properties.getEndNode());
+        Point point1 = nodesMap.get(relation.getStartNode());
+        Point point2 = nodesMap.get(relation.getEndNode());
         if (point1 != null && point2 != null) {
             g.drawLine(point1.x, point1.y, point2.x, point2.y);
         }
