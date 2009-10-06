@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -22,6 +23,7 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeLabelProvider;
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.views.neighbours.views.NeighboursView;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
@@ -33,6 +35,7 @@ import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -420,6 +423,8 @@ public class NetworkTreeView extends ViewPart {
                         && ApplicationGIS.getActiveMap() != ApplicationGIS.NO_MAP;
             }
         });
+        NeighbourAction neighb = new NeighbourAction((IStructuredSelection)viewer.getSelection());
+        manager.add(neighb);
         manager.add(new DeleteAction((IStructuredSelection)viewer.getSelection()));
 
     }
@@ -884,6 +889,86 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void run() {
             neoNode.setName(getNewName(node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()));
+        }
+    }
+
+    /**
+     * <p>
+     * Action for start neighbour analyser
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
+    private class NeighbourAction extends Action {
+
+        private boolean enabled;
+        private String text;
+        private IStructuredSelection selection;
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        public NeighbourAction(IStructuredSelection selection) {
+            text = "analyse neighbours";
+            enabled = true;// selection.getFirstElement() instanceof NeoNode &&
+                           // !(selection.getFirstElement() instanceof Root);
+            if (enabled) {
+                this.selection = selection;
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+            ActionUtil.getInstance().runTask(new Runnable() {
+
+                @Override
+                public void run() {
+                    IViewPart neighbourView;
+                    try {
+                        neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
+                                NeighboursView.ID);
+                    } catch (PartInitException e) {
+                        NeoCorePlugin.error(e.getLocalizedMessage(), e);
+                        neighbourView = null;
+                    }
+                    if (neighbourView != null) {
+                        ((NeighboursView)neighbourView).setInput(getInputNodes(selection));
+                    }
+                }
+            }, true);
+        }
+
+        /**
+         * get set of input nodes from selection
+         * 
+         * @param selection - selection
+         * @return set of input nodes
+         */
+        protected Set<Node> getInputNodes(IStructuredSelection selection) {
+            Set<Node> result = new HashSet<Node>();
+            Iterator iterator = selection.iterator();
+            while (iterator.hasNext()) {
+                Object element = iterator.next();
+                if (element instanceof Root || !(element instanceof NeoNode)) {
+                    continue;
+                }
+                result.add(((NeoNode)element).getNode());
+
+            }
+            return result;
         }
     }
     /**
