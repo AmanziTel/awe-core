@@ -26,6 +26,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
@@ -70,6 +71,7 @@ public class NetworkRenderer extends RendererImpl {
 	private Color labelColor;
     private boolean isAggregatedProperties;
     private String[] aggregationList;
+    private Color lineColor;
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
@@ -148,6 +150,7 @@ public class NetworkRenderer extends RendererImpl {
             }
         }
         g.setFont(font.deriveFont((float)fontSize));
+        lineColor = new Color(drawColor.getRed(), drawColor.getGreen(), drawColor.getBlue(), alpha);
         siteColor = new Color(siteColor.getRed(), siteColor.getGreen(), siteColor.getBlue(), alpha);
         fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
         Map<Node, java.awt.Point> nodesMap = new HashMap<Node, java.awt.Point>();
@@ -363,6 +366,17 @@ public class NetworkRenderer extends RendererImpl {
             if (starNode != null && starProperty != null) {
                 drawAnalyser(g, starNode, starPoint.left(), starProperty, nodesMap);
             }
+            String neiName = (String)geoNeo.getProperties(GeoNeo.NEIGH_NAME);
+            if (neiName != null) {
+                Object properties = geoNeo.getProperties(GeoNeo.NEIGH_RELATION);
+                if (properties != null) {
+                    drawRelation(g, neiName, (Relationship)properties, lineColor, nodesMap);
+                }
+                properties = geoNeo.getProperties(GeoNeo.NEIGH_MAIN_NODE);
+                if (properties != null) {
+                    drawNeighbour(g, neiName, (Node)properties, lineColor, nodesMap);
+                }
+            }
             System.out.println("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
             tx.success();
         } catch (TransformException e) {
@@ -383,6 +397,42 @@ public class NetworkRenderer extends RendererImpl {
             // geoNeo.close();
             monitor.done();
             tx.finish();
+        }
+    }
+
+    /**
+     * @param g
+     * @param neiName
+     * @param node
+     * @param lineColor
+     * @param nodesMap
+     */
+    private void drawNeighbour(Graphics2D g, String neiName, Node node, Color lineColor, Map<Node, Point> nodesMap) {
+        g.setColor(lineColor);
+        Point point1 = nodesMap.get(node);
+        if (point1 != null) {
+            for (Relationship relation : NeoUtils.getNeighbourRelations(node, neiName)) {
+                Point point2 = nodesMap.get(relation.getOtherNode(node));
+                if (point2 != null) {
+                    g.drawLine(point1.x, point1.y, point2.x, point2.y);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param g
+     * @param neiName
+     * @param properties
+     * @param lineColor
+     * @param nodesMap
+     */
+    private void drawRelation(Graphics2D g, String neiName, Relationship properties, Color lineColor, Map<Node, Point> nodesMap) {
+        g.setColor(lineColor);
+        Point point1 = nodesMap.get(properties.getStartNode());
+        Point point2 = nodesMap.get(properties.getEndNode());
+        if (point1 != null && point2 != null) {
+            g.drawLine(point1.x, point1.y, point2.x, point2.y);
         }
     }
 
