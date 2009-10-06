@@ -1,6 +1,8 @@
 package org.amanzi.awe.catalog.neo;
 
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -34,6 +36,14 @@ import com.vividsolutions.jts.geom.Envelope;
  * @author craig
  */
 public class GeoNeo {
+    /** String NEIGH_RELATION field */
+    public static final String NEIGH_RELATION = "NEIGH_RELATION";
+
+    /** String NEIGH_MAIN_NODE field */
+    public static final String NEIGH_MAIN_NODE = "NEIGH_MAIN_NODE";
+
+    /** GeoNeo NEIGH_NAME field */
+    public static final String NEIGH_NAME = "NEIGH_NAME";
     private Node gisNode;   // the root of some specific GIS information in the Neo4j database
     private CoordinateReferenceSystem crs;
     private ReferencedEnvelope bounds;
@@ -51,6 +61,7 @@ public class GeoNeo {
     private String selectName;
     private long count = 0;
     private String[] aggregatedProperties;
+    Map<String, Object> properties = Collections.synchronizedMap(new HashMap<String, Object>());
 
     /**
      * A class representing a located Node in the database. By convention all GeoNodes
@@ -448,5 +459,18 @@ public class GeoNeo {
      */
     public Object getProperty(String key, Object defaultValue) {
         return gisNode.getProperty(key, defaultValue);
+    }
+
+    /**
+     * Sets properties
+     * 
+     * @param properties
+     */
+    public void setProperties(HashMap<String, Object> properties) {
+        this.properties.putAll(properties);
+    }
+
+    public Object getProperties(String key) {
+        return properties.get(key);
     }
 }
