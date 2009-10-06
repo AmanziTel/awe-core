@@ -1,6 +1,7 @@
 package org.amanzi.splash.swing;
 
 import java.net.URI;
+import java.text.Format;
 import java.text.MessageFormat;
 import java.text.ParseException;
 
@@ -163,22 +164,50 @@ public class Cell
 	    CellFormat previousFormat = this.cellFormat;
 	    this.cellFormat = cellFormat;
 	    
+	    //Lagutko, 6.10.2009, if Format of Cell was not changed
+	    //than it's no need to update value
+	    Format prevDataFormat = previousFormat.getFormat();
+	    Format currentDataFormat = cellFormat.getFormat();
+	    if ((prevDataFormat != null) &&
+	        (currentDataFormat != null) &&
+	        previousFormat.getFormat().getClass().equals(cellFormat.getFormat().getClass())) {
+	        return;
+	    }
+	    
 	    if (formatChanged) {
-	        setValue(getValue().toString());
+	        Object value = getValue();
+	        //Lagutko, 6.10.2009, if Value is Date than convert is to String using Format
+	        if ((prevDataFormat != null) && !isEmpty(value)) {
+	            setValue(previousFormat.getFormat().format(value));
+	        }
+	        else {
+	            //otherwise use only toString()
+	            setValue(value.toString());
+	        }
 	        //if there was an error on changing format than set previous format
 	        if (isFormatError) {
 	            this.cellFormat = previousFormat;
 	        }
 	    }
 	}
-
+	
+	/**
+	 * Is Value empty?
+	 *
+	 * @param value value to check
+	 * @return is contains null or empty string
+	 */
+	private boolean isEmpty(Object value) {
+	    String stringValue = value.toString();
+	    return ((value == null) || (stringValue.length() == 0));
+	}
+	
 	public void setValue(String value) {
 	    isFormatError = false;
 
 	    //Lagutko, 5.10.2009, format a value from String to Object 
 	    if ((cellFormat.getFormat() == null) || 
-	        (value == null) || 
-	        (value.length() == 0) ||
+	        isEmpty(value) ||
 	        (cellFormat.getFormat() instanceof MessageFormat)) {
 	        
 	        //if there are no format or value is empty than didn't convert a value
@@ -186,7 +215,7 @@ public class Cell
 	    }
 	    else {
 	        try {
-	            //otherwise try to convert to given type
+	            //otherwise try to convert to given type	            
 	            this.value = cellFormat.getFormat().parseObject(value);	            
 	        }
 	        catch (final ParseException e) {

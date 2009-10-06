@@ -3,6 +3,7 @@ package org.amanzi.neo.core.database.nodes;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -39,6 +40,11 @@ public class CellNode extends AbstractNode {
     private static final String CELL_VALUE = "value";
     
     /*
+     * Name of Date Value property
+     */
+    private static final String CELL_DATE_VALUE = "date_value";
+    
+    /*
      * Name of Script URI property
      */
     
@@ -60,7 +66,7 @@ public class CellNode extends AbstractNode {
      * @param node database node
      */
     public CellNode(Node node) {
-        super(node);
+        super(node);        
         setParameter(INeoConstants.PROPERTY_TYPE_NAME, CELL_NODE_TYPE);
     }
     
@@ -98,9 +104,38 @@ public class CellNode extends AbstractNode {
      */
     
     public void setValue(Object value) {
-        setParameter(CELL_VALUE, value);
+        if (value instanceof Date) {
+            setDateValue((Date)value);
+        }
+        else {
+            setObjectValue(value);
+        }
     }
     
+    /**
+     * Sets a Date value of Cell
+     *
+     * @param value Date Value of Cell
+     */
+    private void setDateValue(Date value) {
+        if (node.hasProperty(CELL_VALUE)) {
+            node.removeProperty(CELL_VALUE);
+        }
+        setParameter(CELL_DATE_VALUE, value.getTime());
+    }
+    
+    /**
+     * Sets a Object value of Cell
+     *
+     * @param value Object Value of Cell
+     */
+    private void setObjectValue(Object value) {
+        if (node.hasProperty(CELL_DATE_VALUE)) {
+            node.removeProperty(CELL_DATE_VALUE);
+        }
+        setParameter(CELL_VALUE, value);
+    }
+     
     /**
      * Returns the value of Cell
      *
@@ -108,7 +143,26 @@ public class CellNode extends AbstractNode {
      */
     
     public Object getValue() {
-        return (Object)getParameter(CELL_VALUE);
+        Date date = getDateValue();
+        if (date == null) {
+            return (Object)getParameter(CELL_VALUE);
+        }
+        else {
+            return date;
+        }
+    }
+    
+    /**
+     * Returns a Date value of Cell (if it was set)
+     *
+     * @return Date value of Cell
+     */
+    private Date getDateValue() {
+        Object dateValue = getParameter(CELL_DATE_VALUE);
+        if (dateValue != null) {
+            return new Date((Long)dateValue);
+        }
+        return null;
     }
     
     /**
