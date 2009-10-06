@@ -109,7 +109,7 @@ public class NeighbourLoader {
                     prevPerc = perc;
                 }
             }
-            header.saveNumericList(neighbour);
+            header.saveStatistic(neighbour);
             header.finish();
             monitor.done();
         } finally {
@@ -199,6 +199,16 @@ public class NeighbourLoader {
         }
 
         /**
+         * save statistic information in node
+         * 
+         * @param neighbour
+         */
+        public void saveStatistic(Node neighbour) {
+            saveNumericList(neighbour);
+            saveAllFields(neighbour);
+        }
+
+        /**
          * finish work with header
          */
         public void finish() {
@@ -275,6 +285,38 @@ public class NeighbourLoader {
                     }
                 }
                 neighbour.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, propertyes.toArray(new String[0]));
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
+
+        /**
+         * Save list of All properties in database
+         * 
+         * @param neighbour neighbour node
+         */
+        public void saveAllFields(Node neighbour) {
+            Transaction tx = NeoUtils.beginTransaction();
+
+            try {
+                Set<String> integer = new HashSet<String>();
+                Set<String> doubl = new HashSet<String>();
+                Set<String> propertyes = new HashSet<String>();
+                for (Pair<String, String> pair : indexMap.values()) {
+                    String clas = pair.getRight();
+                    if (INTEGER.equals(clas)) {
+                        integer.add(pair.getLeft());
+
+                    } else if (DOUBLE.equals(clas)) {
+                        doubl.add(pair.getLeft());
+                    }
+                    propertyes.add(pair.getLeft());
+
+                }
+                neighbour.setProperty(INeoConstants.LIST_ALL_PROPERTIES, propertyes.toArray(new String[0]));
+                neighbour.setProperty(INeoConstants.LIST_DOUBLE_PROPERTIES, doubl.toArray(new String[0]));
+                neighbour.setProperty(INeoConstants.LIST_INTEGER_PROPERTIES, integer.toArray(new String[0]));
                 tx.success();
             } finally {
                 tx.finish();
