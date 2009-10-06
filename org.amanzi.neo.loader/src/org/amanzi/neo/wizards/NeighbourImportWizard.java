@@ -36,8 +36,8 @@ import org.eclipse.ui.IWorkbench;
  */
 public class NeighbourImportWizard extends Wizard implements IImportWizard {
 
-    private static final String PAGE_TITLE = "Import Neighbour File";
-    private static final String PAGE_DESCR = "Import a file from the local file system into the workspace";
+    private static final String PAGE_TITLE = "Import Neighbours";
+    private static final String PAGE_DESCR = "Import a neighbour list file into a previously loaded network";
     private NeighbourImportWizardPage mainPage;
 
     @Override

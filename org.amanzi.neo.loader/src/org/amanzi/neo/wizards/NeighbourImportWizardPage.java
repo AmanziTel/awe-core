@@ -83,10 +83,10 @@ public class NeighbourImportWizardPage extends WizardPage {
         main = new Group(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
         Label label = new Label(main, SWT.LEFT);
-        label.setText("Networks");
-        label.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 1, 1));
+        label.setText("Network:");
+        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         network = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
-        network.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+        network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
         network.setItems(getGisItems());
         network.addSelectionListener(new SelectionListener() {
 
@@ -101,7 +101,7 @@ public class NeighbourImportWizardPage extends WizardPage {
                 widgetSelected(e);
             }
         });
-        editor = new FileFieldEditor("fileSelect", "Select File: ", main); // NON-NLS-1
+        editor = new FileFieldEditor("fileSelect", "File: ", main); // NON-NLS-1
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());

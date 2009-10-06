@@ -313,7 +313,7 @@ public class TipDialog extends Dialog {
 						.getNamespaceIdentifier(), tipElem.getAttribute("icon")); //$NON-NLS-1$
 			} else {
 				image = AbstractUIPlugin.imageDescriptorFromPlugin(UiPlugin.ID,
-						"icons/elcl16/light.GIF"); //$NON-NLS-1$
+						"icons/elcl16/light_small.png"); //$NON-NLS-1$
 			}
 		}
 	}

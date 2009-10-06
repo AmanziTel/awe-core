@@ -912,7 +912,7 @@ public class NetworkTreeView extends ViewPart {
          * @param selection - selection
          */
         public NeighbourAction(IStructuredSelection selection) {
-            text = "analyse neighbours";
+            text = "Analyse neighbours";
             enabled = true;// selection.getFirstElement() instanceof NeoNode &&
                            // !(selection.getFirstElement() instanceof Root);
             if (enabled) {
