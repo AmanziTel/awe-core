@@ -342,10 +342,16 @@ public class INeoConstants {
     public static final String NEIGHBOUR_NAME = "neighbours_list";
     /** INeoConstants LIST_NUMERIC_PROPERTIES field */
     public static final String LIST_NUMERIC_PROPERTIES = "list_numeric_field";
+    /** INeoConstants LIST_ALL_PROPERTIES field */
+    public static final String LIST_ALL_PROPERTIES = "list_all_field";
     public static final String NEIGHBOUR_NUMBER = "# neighbours listname";
     
     /*
      * Constants for DriveLoader data structures
      */
-    public static final String NODE_TYPE_PROPERTIES = "properties";   
+    public static final String NODE_TYPE_PROPERTIES = "properties";
+    /** INeoConstants LIST_DOUBLE_PROPERTIES field */
+    public static final String LIST_DOUBLE_PROPERTIES = "list_double_field";
+    /** INeoConstants LIST_INTEGER_PROPERTIES field */
+    public static final String LIST_INTEGER_PROPERTIES = "list_integer_field";
 }

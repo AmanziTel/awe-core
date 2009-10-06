@@ -33,6 +33,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.PropertyContainer;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
@@ -102,7 +103,7 @@ public class NeoUtils {
      * @param defValue default value
      * @return node name or empty string
      */
-    public static String getSimpleNodeName(Node node, String defValue) {
+    public static String getSimpleNodeName(PropertyContainer node, String defValue) {
         return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
     }
 
@@ -362,6 +363,50 @@ public class NeoUtils {
 
     public static String getNeighbourPropertyName(String aNeighbourName) {
         return String.format("# '%s' neighbours", aNeighbourName);
+    }
+
+    /**
+     * Finds node by child
+     * 
+     * @param node - node
+     * @param nodeType - type of finding node
+     * @return node or null
+     */
+    public static Node findNodeByChild(Node node, final String nodeType) {
+        if (nodeType == null || nodeType.isEmpty()) {
+            return null;
+        }
+        Transaction tx = beginTransaction();
+        try {
+            Iterator<Node> iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return nodeType.equals(getNodeType(node, ""));
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
+            tx.success();
+            return iterator.hasNext() ? iterator.next() : null;
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * Get all fields property
+     * 
+     * @param node - node
+     * @return array of fields or null
+     */
+    public static String[] getAllFields(Node node) {
+        Transaction tx = beginTransaction();
+        try {
+            return (String[])node.getProperty(INeoConstants.LIST_ALL_PROPERTIES, null);
+        } finally {
+            tx.finish();
+        }
+
     }
 
 }

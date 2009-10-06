@@ -71,6 +71,21 @@ public class PropertyHeader {
     }
 
     /**
+     * get All Fields of Neighbour
+     * 
+     * @param neighbourName name of neighbour
+     * @return array or null
+     */
+    public String[] getNeighbourAllFields(String neighbourName) {
+        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        if (neighbour == null) {
+            return null;
+        }
+        String[] result = NeoUtils.getAllFields(neighbour);
+        return result;
+    }
+
+    /**
      * get Numeric Fields of current node
      * 
      * @return array or null
@@ -223,6 +238,32 @@ public class PropertyHeader {
         for (Relationship relationship : neighb) {
             result.add(NeoUtils.getNeighbourPropertyName(NeoUtils.getSimpleNodeName(relationship.getOtherNode(node), "")));
         }
+        return result;
+    }
+
+    /**
+     * @param neighbourName
+     * @return
+     */
+    public String[] getNeighbourIntegerFields(String neighbourName) {
+        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        if (neighbour == null) {
+            return null;
+        }
+        String[] result = (String[])neighbour.getProperty(INeoConstants.LIST_INTEGER_PROPERTIES, null);
+        return result;
+    }
+
+    /**
+     * @param neighbourName
+     * @return
+     */
+    public String[] getNeighbourDoubleFields(String neighbourName) {
+        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        if (neighbour == null) {
+            return null;
+        }
+        String[] result = (String[])neighbour.getProperty(INeoConstants.LIST_DOUBLE_PROPERTIES, null);
         return result;
     }
 }
