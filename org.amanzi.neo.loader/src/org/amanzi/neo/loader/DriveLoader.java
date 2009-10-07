@@ -296,6 +296,7 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
         }
     }
     private HashMap<Class<? extends Object>,List<String>> typedProperties = null;
+    private Transaction mainTx;
     protected List<String> getIntegerProperties() {
         return getProperties(Integer.class);
     }
@@ -806,10 +807,11 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
             monitor.subTask(filename);
         CountingFileInputStream is = new CountingFileInputStream(new File(filename));
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        //BufferedReader reader = new BufferedReader(new FileReader(filename));
+        mainTx = neo.beginTx();
         try {
             int perc = is.percentage();
             int prevPerc = 0;
+            int prevLineNumber = 0;
             String line;
             while ((line = reader.readLine()) != null) {
                 line_number++;
@@ -827,14 +829,35 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
                         prevPerc = perc;
                     }
                 }
+                // Commit external transaction on large blocks of code
+                if(line_number > prevLineNumber + 10000) {
+                    commit(true);
+                    prevLineNumber = line_number;
+                }
             }
         } finally {
+            commit(true);
             reader.close();
             finishUp();
             addToMap();
+            commit(false);
+            mainTx = null;
         }
     }
 
+    protected void commit(boolean restart){
+        if(mainTx!=null) {
+            mainTx.success();
+            mainTx.finish();
+            //System.out.println("Commit: Memory: "+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+            if(restart){
+                mainTx = neo.beginTx();
+            }else{
+                mainTx = null;
+            }
+        }
+    }
+    
     /**
      * This method must be implemented by all readers to parse the data lines. It might save data
      * directly to the database, or it might keep it in a cache for saving later, in the finishUp

@@ -600,6 +600,8 @@ public class DriveDialog {
 		}
 		monitor.beginTask("Importing " + loadedFiles.size() + " drive test files", loadedFiles.size() * DriveLoader.WORKED_PER_FILE);
         DriveLoader driveLoader = null;
+        long memBefore = calculateMemoryUsage();
+        ArrayList<Long> memoryConsumption = new ArrayList<Long>();
 		for (String filePath : loadedFiles.values()) {
 			try {
 			    if(extension.toLowerCase().equals("fmt")) {
@@ -611,6 +613,10 @@ public class DriveDialog {
 			    }
 				driveLoader.run(monitor);
 				driveLoader.printStats(false);	// stats for this load
+		        long memAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+		        driveLoader = null;
+		        memoryConsumption.add(memAfter);
+                NeoLoaderPlugin.debug("Memory usage was "+memAfter+" after loading "+filePath);
 				if(monitor.isCanceled()) break;
 			}
 			catch (IOException e) {
@@ -618,6 +624,18 @@ public class DriveDialog {
 			}
 		}
 		DriveLoader.printTimesStats();
+        long memAfter = calculateMemoryUsage();
+        NeoLoaderPlugin.info("Memory profile for drive load went from "+memBefore+" to "+memAfter);
+        long maxMem = 0;
+		for(long mem: memoryConsumption){
+		    NeoLoaderPlugin.info("\t"+(mem - memBefore)+" ("+(int)((mem - memBefore)/(1024*1024))+"MB)");
+		    if(mem>maxMem){
+		        maxMem = mem;
+		    }
+		}
+        NeoLoaderPlugin.info("\t"+memText(memAfter, memBefore));
+        NeoLoaderPlugin.info("Transient  memory change: "+memText(maxMem, memBefore));
+        NeoLoaderPlugin.info("Persistent memory change: "+memText(memAfter, memBefore));
 
         if (datasetName != null) {
             Node gis = driveLoader != null ? driveLoader.getGisNode() : null;
@@ -626,7 +644,19 @@ public class DriveDialog {
 
         monitor.done();
     }
+	
+	private static String memText(long memAfter, long memBefore){
+        return ""+(memAfter - memBefore)+" ("+(int)((memAfter - memBefore)/(1024*1024))+"MB)";
+	}
 
+	public static long calculateMemoryUsage() {
+        System.gc(); System.gc(); System.gc(); System.gc();
+        try {Thread.sleep(50);} catch (InterruptedException e) {}
+        System.gc(); System.gc(); System.gc(); System.gc();
+        try {Thread.sleep(50);} catch (InterruptedException e) {}
+        return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+	}
+	
     // TODO move to utility class
     /**
      * adds gis to active map
