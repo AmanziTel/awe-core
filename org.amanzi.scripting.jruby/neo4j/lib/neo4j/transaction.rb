@@ -61,7 +61,7 @@ module Neo4j
           #Lagutko, 24.08.2009, since we use Neo4j RubyGem in AWE we didn't start NeoService using RubyCode
           #but using Neoclipse functionality, and because of this here we will have a Placebo Transaction without
           #any running Transactions in Neo4j RubyGem
-          #raise "Expected NOT placebo transaction since no TX is running" if placebo?(tx)          
+          raise "Expected NOT placebo transaction since no TX is running" if placebo?(tx)          
           super(tx)
         end
       end
