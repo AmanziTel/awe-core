@@ -296,7 +296,6 @@ public class NeoUtils {
         Transaction tx = beginTransaction();
         try {
             // TODO remove this after refactoring tems loader
-
             if (node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME,"").equals(GisTypes.DRIVE.getHeader())) {
                 List<String> result = new ArrayList<String>();
                 Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
@@ -407,6 +406,49 @@ public class NeoUtils {
             tx.finish();
         }
 
+    }
+
+    /**
+     * @param node
+     */
+    public static void deleteSingleNode(Node node) {
+        Transaction tx = beginTransaction();
+        try {
+            for (Relationship relation : node.getRelationships()) {
+                relation.delete();
+            }
+            node.delete();
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * Gets chart node of current node
+     * 
+     * @param node node
+     * @param aggNode aggregation node
+     * @return node or null
+     */
+    public static Node getChartNode(Node node, Node aggNode) {
+        if (node == null || aggNode == null) {
+            return null;
+        }
+        Transaction tx = beginTransaction();
+        final long nodeId = aggNode.getId();
+        try {
+            Iterator<Node> iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return nodeId == (Long)currentPos.currentNode().getProperty(INeoConstants.PROPERTY_AGGR_PARENT_ID, nodeId - 1);
+                }
+            }, NetworkRelationshipTypes.AGGREGATE, Direction.INCOMING).iterator();
+            return iterator.hasNext() ? iterator.next() : null;
+        } finally {
+            tx.finish();
+        }
     }
 
 }

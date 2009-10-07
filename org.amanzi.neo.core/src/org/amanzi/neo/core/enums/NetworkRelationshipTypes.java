@@ -17,5 +17,5 @@ public enum NetworkRelationshipTypes implements RelationshipType {
     DELTA_REPORT,
     MISSING,
  NEIGHBOUR,
- DIFFERENT, NEIGHBOUR_DATA;
+ DIFFERENT, NEIGHBOUR_DATA, AGGREGATE;
 }

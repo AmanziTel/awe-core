@@ -63,6 +63,8 @@ public class GeoNeo {
     private String[] aggregatedProperties;
     Map<String, Object> properties = Collections.synchronizedMap(new HashMap<String, Object>());
 
+    private Node aggrNode = null;
+
     /**
      * A class representing a located Node in the database. By convention all GeoNodes
      * are expected to contain properties for "type" and "name". In addition they should contain
@@ -341,6 +343,8 @@ public class GeoNeo {
      */
     public void setPropertyToRefresh(Node aggrNode, Node propertyNode, Node minSelNode, Node maxSelNode,
             Map<String, String[]> aggregatedProperties) {
+        // TODO remove unusual fields and method signatures
+        this.aggrNode = aggrNode;
         if (aggrNode != null && propertyNode != null) {
             distrName = (String)aggrNode.getProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME);
             selectName = (String)aggrNode.getProperty(INeoConstants.PROPERTY_SELECT_NAME, null);
@@ -360,6 +364,13 @@ public class GeoNeo {
             this.aggregatedProperties = null;
             // propertyAdjacency = 0;
         }
+    }
+
+    /**
+     * @return Returns the aggrNode.
+     */
+    public Node getAggrNode() {
+        return aggrNode;
     }
 
     /**

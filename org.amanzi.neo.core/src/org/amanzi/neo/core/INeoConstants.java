@@ -354,4 +354,10 @@ public class INeoConstants {
     public static final String LIST_DOUBLE_PROPERTIES = "list_double_field";
     /** INeoConstants LIST_INTEGER_PROPERTIES field */
     public static final String LIST_INTEGER_PROPERTIES = "list_integer_field";
+    /** INeoConstants PALETTE_NAME field */
+    public static final String PALETTE_NAME = "palette";
+    /** INeoConstants AGGREGATION_COLOR field */
+    public static final String AGGREGATION_COLOR = "column color";
+    /** INeoConstants PROPERTY_AGGR_PARENT_ID field */
+    public static final String PROPERTY_AGGR_PARENT_ID = "agr node id";
 }

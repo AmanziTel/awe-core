@@ -21,7 +21,6 @@ import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -37,9 +36,9 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -49,13 +48,11 @@ import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -79,6 +76,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private Color drawColor = Color.BLACK;
     private Color fillColor = new Color(200, 128, 255, (int)(0.6*255.0));
     private Color labelColor = Color.DARK_GRAY;
+    private Node aggNode;
     private static final Color COLOR_HIGHLIGHTED = Color.CYAN;
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
@@ -178,11 +176,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String selectedProp = geoNeo.getPropertyName();
-            Double redMinValue = geoNeo.getPropertyValueMin();
-            Double redMaxValue = geoNeo.getPropertyValueMax();
-            Double lesMinValue = geoNeo.getMinPropertyValue();
-            Double moreMaxValue = geoNeo.getMaxPropertyValue();
-            Select select = Select.findSelectByValue(geoNeo.getSelectName());
+            aggNode = geoNeo.getAggrNode();
+
             // Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -294,10 +289,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 }
 
                 Color nodeColor = fillColor;
-                if (selectedProp != null) {
                     try {
-                        nodeColor = getColorOfMpNode(select, node.getNode(), fillColor, selectedProp, redMinValue, redMaxValue,
-                                lesMinValue, moreMaxValue);
+                        nodeColor = getNodeColor(node.getNode(), fillColor);
+                        // nodeColor = getColorOfMpNode(select, node.getNode(), fillColor,
+                        // selectedProp, redMinValue, redMaxValue,
+                        // lesMinValue, moreMaxValue);
                     } catch (RuntimeException e) {
                         String errName = e.toString();
                         if(colorErrors.containsKey(errName)) {
@@ -306,8 +302,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             colorErrors.put(errName, 1);
                         }
                     }
-
-                }
                 Color borderColor = g.getColor();
                 if(selectedNodes.size() > 0) {
                     if (selectedNodes.contains(node.getNode())) {
@@ -397,119 +391,149 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     }
 
     /**
-     * @param select
-     * @param moreMaxValue
-     * @param lesMinValue
-     * @param redMaxValue
-     * @param redMinValue
-     * @param selectedProp
-     * @param node
-     * @param fillColor2
-     * @return
+     * gets sector color
+     * 
+     * @param child - sector node
+     * @param defColor - default value
+     * @return color
      */
-    private Color getColorOfMpNode(Select select, Node mpNode, Color defColor, String selectedProp, Double redMinValue,
-            Double redMaxValue, Double lesMinValue, Double moreMaxValue) {
-        Color colorToFill = defColor;
-        switch (select) {
-        case AVERAGE:
-        case MAX:
-        case MIN:
-
-            Double sum = new Double(0);
-            int count = 0;
-            Double min = null;
-            Double max = null;
-            Double average = null;
-            Double firstValue = null;
-            for (Relationship relation : mpNode.getRelationships(MeasurementRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                Node node = relation.getEndNode();
-                if (INeoConstants.HEADER_MS.equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""))
-                        && node.hasProperty(selectedProp)) {
-                    double value = ((Number)node.getProperty(selectedProp)).doubleValue();
-                    min = min == null ? value : Math.min(min, value);
-                    max = max == null ? value : Math.max(max, value);
-                    // TODO hande gets firstValue by other way
-                    firstValue = firstValue == null ? value : firstValue;
-                    sum = sum + value;
-                    count++;
-                }
+    private Color getNodeColor(Node node, Color defColor) {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            if (aggNode == null) {
+                return defColor;
             }
-            average = (double)sum / (double)count;
-            double checkValue = select == Select.MAX ? max : select == Select.MIN ? min : select == Select.AVERAGE ? average
-                    : firstValue;
-
-            if (checkValue < redMaxValue || checkValue == redMinValue) {
-                if (checkValue >= redMinValue) {
-                    colorToFill = COLOR_SELECTED;
-                } else if (checkValue >= lesMinValue) {
-                    colorToFill = COLOR_LESS;
-                }
-            } else if (checkValue < moreMaxValue) {
-                colorToFill = COLOR_MORE;
+            Node chartNode = NeoUtils.getChartNode(node, aggNode);
+            if (chartNode == null) {
+                return defColor;
             }
-            return colorToFill;
-        case EXISTS:
-            int priority = -1;
-            for (Relationship relation : mpNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                Node child = relation.getEndNode();
-
-                for (String key : child.getPropertyKeys()) {
-                    if (selectedProp.equals(key)) {
-                        double value = ((Number)child.getProperty(selectedProp)).doubleValue();
-                        if (value < redMaxValue || value == redMinValue) {
-                            if (value >= redMinValue) {
-                                colorToFill = COLOR_SELECTED;
-                                priority = 3;
-                            } else if (value >= lesMinValue && (priority < 2)) {
-                                colorToFill = COLOR_LESS;
-                                priority = 1;
-
-                            }
-                        } else if (value < moreMaxValue && priority < 3) {
-                            colorToFill = COLOR_MORE;
-                            priority = 2;
-                        }
-                    }
-                }
-            }
-            return colorToFill;
-        case FIRST:
-            Double result = null;
-            Iterator<Node> iterator = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return !currentPos.currentNode().hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-            if (!iterator.hasNext()) {
-                return colorToFill;
-            }
-            Node node = iterator.next();
-            while (!node.hasProperty(selectedProp)) {
-                Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-                if (relation == null) {
-                    return colorToFill;
-                }
-                node = relation.getOtherNode(node);
-
-            }
-            checkValue = ((Number)node.getProperty(selectedProp)).doubleValue();
-            if (checkValue < redMaxValue || checkValue == redMinValue) {
-                if (checkValue >= redMinValue) {
-                    colorToFill = COLOR_SELECTED;
-                } else if (checkValue >= lesMinValue) {
-                    colorToFill = COLOR_LESS;
-                }
-            } else if (checkValue < moreMaxValue) {
-                colorToFill = COLOR_MORE;
-            }
-            return colorToFill;
-        default:
-            break;
+            return new Color((Integer)chartNode.getProperty(INeoConstants.AGGREGATION_COLOR, defColor.getRGB()));
+        } finally {
+            tx.finish();
         }
-        return defColor;
     }
+
+    // /**
+    // * @param select
+    // * @param moreMaxValue
+    // * @param lesMinValue
+    // * @param redMaxValue
+    // * @param redMinValue
+    // * @param selectedProp
+    // * @param node
+    // * @param fillColor2
+    // * @return
+    // */
+    // private Color getColorOfMpNode(Select select, Node mpNode, Color defColor, String
+    // selectedProp, Double redMinValue,
+    // Double redMaxValue, Double lesMinValue, Double moreMaxValue) {
+    // Color colorToFill = defColor;
+    // switch (select) {
+    // case AVERAGE:
+    // case MAX:
+    // case MIN:
+    //
+    // Double sum = new Double(0);
+    // int count = 0;
+    // Double min = null;
+    // Double max = null;
+    // Double average = null;
+    // Double firstValue = null;
+    // for (Relationship relation : mpNode.getRelationships(MeasurementRelationshipTypes.CHILD,
+    // Direction.OUTGOING)) {
+    // Node node = relation.getEndNode();
+    // if (INeoConstants.HEADER_MS.equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""))
+    // && node.hasProperty(selectedProp)) {
+    // double value = ((Number)node.getProperty(selectedProp)).doubleValue();
+    // min = min == null ? value : Math.min(min, value);
+    // max = max == null ? value : Math.max(max, value);
+    // // TODO hande gets firstValue by other way
+    // firstValue = firstValue == null ? value : firstValue;
+    // sum = sum + value;
+    // count++;
+    // }
+    // }
+    // average = (double)sum / (double)count;
+    // double checkValue = select == Select.MAX ? max : select == Select.MIN ? min : select ==
+    // Select.AVERAGE ? average
+    // : firstValue;
+    //
+    // if (checkValue < redMaxValue || checkValue == redMinValue) {
+    // if (checkValue >= redMinValue) {
+    // colorToFill = COLOR_SELECTED;
+    // } else if (checkValue >= lesMinValue) {
+    // colorToFill = COLOR_LESS;
+    // }
+    // } else if (checkValue < moreMaxValue) {
+    // colorToFill = COLOR_MORE;
+    // }
+    // return colorToFill;
+    // case EXISTS:
+    // int priority = -1;
+    // for (Relationship relation : mpNode.getRelationships(NetworkRelationshipTypes.CHILD,
+    // Direction.OUTGOING)) {
+    // Node child = relation.getEndNode();
+    //
+    // for (String key : child.getPropertyKeys()) {
+    // if (selectedProp.equals(key)) {
+    // double value = ((Number)child.getProperty(selectedProp)).doubleValue();
+    // if (value < redMaxValue || value == redMinValue) {
+    // if (value >= redMinValue) {
+    // colorToFill = COLOR_SELECTED;
+    // priority = 3;
+    // } else if (value >= lesMinValue && (priority < 2)) {
+    // colorToFill = COLOR_LESS;
+    // priority = 1;
+    //
+    // }
+    // } else if (value < moreMaxValue && priority < 3) {
+    // colorToFill = COLOR_MORE;
+    // priority = 2;
+    // }
+    // }
+    // }
+    // }
+    // return colorToFill;
+    // case FIRST:
+    // Double result = null;
+    // Iterator<Node> iterator = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new
+    // ReturnableEvaluator() {
+    //
+    // @Override
+    // public boolean isReturnableNode(TraversalPosition currentPos) {
+    // return !currentPos.currentNode().hasRelationship(GeoNeoRelationshipTypes.NEXT,
+    // Direction.INCOMING);
+    // }
+    // }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+    // if (!iterator.hasNext()) {
+    // return colorToFill;
+    // }
+    // Node node = iterator.next();
+    // while (!node.hasProperty(selectedProp)) {
+    // Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
+    // Direction.OUTGOING);
+    // if (relation == null) {
+    // return colorToFill;
+    // }
+    // node = relation.getOtherNode(node);
+    //
+    // }
+    // checkValue = ((Number)node.getProperty(selectedProp)).doubleValue();
+    // if (checkValue < redMaxValue || checkValue == redMinValue) {
+    // if (checkValue >= redMinValue) {
+    // colorToFill = COLOR_SELECTED;
+    // } else if (checkValue >= lesMinValue) {
+    // colorToFill = COLOR_LESS;
+    // }
+    // } else if (checkValue < moreMaxValue) {
+    // colorToFill = COLOR_MORE;
+    // }
+    // return colorToFill;
+    // default:
+    // break;
+    // }
+    // return defColor;
+    // }
 
     /**
      * This one is very simple, just draw a rectangle at the point location.

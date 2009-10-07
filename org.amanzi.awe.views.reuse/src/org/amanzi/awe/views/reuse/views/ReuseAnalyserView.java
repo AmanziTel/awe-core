@@ -20,6 +20,7 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
+import net.refractions.udig.ui.PlatformGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.reuse.Distribute;
@@ -56,6 +57,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
+import org.geotools.brewer.color.BrewerPalette;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -118,6 +120,7 @@ public class ReuseAnalyserView extends ViewPart {
     /** String VALUES_DOMAIN field */
     private static final String VALUES_DOMAIN = "Value";
     private static final String ROW_KEY = "values";
+    private static final String COLOR_LABEL = "color properties";
 
     /** Maximum bars in chart */
     private static final int MAXIMUM_BARS = 1500;
@@ -148,12 +151,20 @@ public class ReuseAnalyserView extends ViewPart {
     private Composite mainView;
     private Label lLogarithmic;
     protected String propertyName = null;
-    private static final Paint DEFAULT_COLOR = new Color(0.75f,0.7f,0.4f);
-    private static final Paint COLOR_SELECTED = Color.RED;
-    private static final Paint COLOR_LESS = Color.BLUE;
-    private static final Paint COLOR_MORE = Color.GREEN;
-    private static final Paint CHART_BACKGROUND = Color.WHITE;
-    private static final Paint PLOT_BACKGROUND = new Color(230, 230, 230);
+    private Button bColorProperties;
+    private Label lColorProperties;
+    private boolean colorThema;
+    private BrewerPalette currentPalette = null;
+    private Label lPalette;
+    private Combo cPalette;
+    private static final Color DEFAULT_COLOR = new Color(0.75f, 0.7f, 0.4f);
+    private static final Color COLOR_SELECTED = Color.RED;
+    private static final Color COLOR_LESS = Color.BLUE;
+    private static final Color COLOR_MORE = Color.GREEN;
+    private static final Color CHART_BACKGROUND = Color.WHITE;
+    private static final Color PLOT_BACKGROUND = new Color(230, 230, 230);
+    private static final String PALETTE_LABEL = "Palette";
+
 
     public void createPartControl(Composite parent) {
         aggregatedProperties.clear();
@@ -193,6 +204,41 @@ public class ReuseAnalyserView extends ViewPart {
         bLogarithmic = new Button(parent, SWT.CHECK);
         bLogarithmic.setSelection(false);
         tSelectedInformation = new Text(parent, SWT.BORDER);
+        bColorProperties = new Button(parent, SWT.CHECK);
+        bColorProperties.setSelection(false);
+        lColorProperties = new Label(parent, SWT.NONE);
+        lColorProperties.setText(COLOR_LABEL);
+        lPalette = new Label(parent, SWT.NONE);
+        lPalette.setText(PALETTE_LABEL);
+        cPalette = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cPalette.setItems(PlatformGIS.getColorBrewer().getPaletteNames());
+        cPalette.select(0);
+        lPalette.setVisible(false);
+        cPalette.setVisible(false);
+        cPalette.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changePalette();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        bColorProperties.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeThema(bColorProperties.getSelection());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         spinAdj.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -351,6 +397,44 @@ public class ReuseAnalyserView extends ViewPart {
         axisLog = new LogarithmicAxis(COUNT_AXIS);
         axisLog.setAllowNegativesFlag(true);
         axisLog.setAutoRange(true);
+        setColorThema(false);
+    }
+
+    /**
+     *
+     */
+    protected void changePalette() {
+        if (cPalette.getSelectionIndex() >= 0) {
+        String name = cPalette.getText();
+        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalette(name);
+        if (palette == null) {
+            return;
+        }
+        currentPalette = palette;
+        } else {
+            currentPalette = null;
+        }
+        dataset.setPalette(currentPalette);
+        chartUpdate();
+    }
+
+    /**
+     * Change theme
+     * 
+     * @param coloredTheme - is colored theme?
+     */
+    protected void changeThema(boolean coloredTheme) {
+        if (isColorThema() == coloredTheme) {
+            return;
+        }
+        setColorThema(coloredTheme);
+        setVisibleForColoredTheme(coloredTheme);
+        setVisibleForNotColoredTheme(!coloredTheme);
+        if (coloredTheme) {
+        } else {
+
+        }
+        chartUpdate();
     }
 
     private boolean isAggregatedDataset(Node gisNode) {
@@ -473,11 +557,36 @@ public class ReuseAnalyserView extends ViewPart {
      * @param isVisible - visibility
      */
     private void setVisibleForChart(boolean isVisible) {
+        lColorProperties.setVisible(isVisible);
+        bColorProperties.setVisible(isVisible);
         chartFrame.setVisible(isVisible);
-        lSelectedInformation.setVisible(isVisible);
-        tSelectedInformation.setVisible(isVisible);
         lLogarithmic.setVisible(isVisible);
         bLogarithmic.setVisible(isVisible);
+        if (!isColorThema()) {
+            setVisibleForNotColoredTheme(isVisible);
+        } else {
+            setVisibleForColoredTheme(isVisible);
+        }
+    }
+
+    /**
+     *sets visibility for colored theme
+     * 
+     * @param isVisible - visibility
+     */
+    private void setVisibleForColoredTheme(boolean isVisible) {
+        lPalette.setVisible(isVisible);
+        cPalette.setVisible(isVisible);
+    }
+
+    /**
+     *sets visibility for not colored theme
+     * 
+     * @param isVisible - visibility
+     */
+    private void setVisibleForNotColoredTheme(boolean isVisible) {
+        lSelectedInformation.setVisible(isVisible);
+        tSelectedInformation.setVisible(isVisible);
         spinLabel.setVisible(isVisible);
         spinAdj.setVisible(isVisible);
     }
@@ -489,11 +598,76 @@ public class ReuseAnalyserView extends ViewPart {
      */
     protected void chartUpdate(Node aggrNode) {
         chart.setTitle(aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME,"").toString());
+        currentPalette = getPalette(aggrNode);
+        Combo acPalette;
+        String[] array = cPalette.getItems();
+        int index = -1;
+        if (currentPalette != null) {
+            for (int i = 0; i < array.length; i++) {
+                if (currentPalette.getName().equals(array[i])) {
+                    index = i;
+                    break;
+                }
+
+            }
+        }
         dataset.setAggrNode(aggrNode);
+        if (index < 0) {
+            changePalette();
+        } else {
+            cPalette.select(index);
+        }
         setSelection(null);
         setVisibleForChart(true);
     }
 
+    /**
+     * Updates chart and redraw layer
+     * 
+     * @param aggrNode - new node
+     */
+    protected void chartUpdate() {
+        Node gisNode = members.get(gisCombo.getText());
+        Node aggrNode = dataset.getAggrNode();
+        changeBarColor();
+        chart.fireChartChanged();
+        fireLayerDrawEvent(gisNode, aggrNode, null);
+    }
+
+    protected void changeBarColor() {
+        ChartNode selColumn = getSelectedColumn();
+        int columnIndex = selColumn == null ? -1 : dataset.getColumnIndex(selColumn);
+        for (int i = 0; i < dataset.nodeList.size(); i++) {
+            ChartNode chart = dataset.nodeList.get(i);
+            if (isColorThema()) {
+                if (currentPalette == null) {
+                    chart.saveColor(null);
+                } else {
+                    Color[] colors = currentPalette.getColors(currentPalette.getMaxColors());
+                    int index = i % colors.length;
+                    chart.saveColor(colors[index]);
+                }
+
+            } else {
+                if (selColumn == null || columnIndex < 0) {
+                    // we must clear color of node
+                    chart.saveColor(null);
+                } else {
+                    if (i == columnIndex) {
+                        chart.saveColor(COLOR_SELECTED);
+                        continue;
+                    }
+                    if (Math.abs(i - columnIndex) <= spinAdj.getSelection()) {
+                        Color paint = i > columnIndex ? COLOR_MORE : COLOR_LESS;
+                        chart.saveColor(paint);
+                    } else {
+                        // we must clear color of node
+                        chart.saveColor(null);
+                    }
+                }
+            }
+        }
+    }
     /**
      * Select column
      * 
@@ -502,6 +676,7 @@ public class ReuseAnalyserView extends ViewPart {
     private void setSelection(ChartNode columnKey) {
         Node gisNode = members.get(gisCombo.getText());
         Node aggrNode = dataset.getAggrNode();
+        changeBarColor();
         if (selectedColumn != null) {
             selectedColumn = columnKey;
             if (selectedGisNode.equals(gisNode)) {
@@ -519,6 +694,7 @@ public class ReuseAnalyserView extends ViewPart {
             fireLayerDrawEvent(gisNode, aggrNode, selectedColumn);
         }
         setSelectionName(columnKey);
+
         chart.fireChartChanged();
     }
 
@@ -546,6 +722,8 @@ public class ReuseAnalyserView extends ViewPart {
      * @param columnKey property node for redraw action
      */
     protected void fireLayerDrawEvent(Node gisNode, Node aggrNode, ChartNode columnKey) {
+        // necessary for visible changes in renderers
+        NeoServiceProvider.getProvider().commit();
         int adj = spinAdj.getSelection();
         Node columnNode = columnKey == null ? null : columnKey.getNode();
         for (IMap activeMap : ApplicationGIS.getOpenMaps()) {
@@ -690,9 +868,9 @@ public class ReuseAnalyserView extends ViewPart {
             gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
 
 
-            TreeMap<Column, Integer> statistics = computeStatistics(gisNode, propertyName, distributeColumn, Select
+            boolean noError = computeStatistics(gisNode, result, propertyName, distributeColumn, Select
                     .findSelectByValue(select), monitor);
-            if (statistics == null && distributeColumn != Distribute.AUTO) {
+            if (!noError && distributeColumn != Distribute.AUTO) {
                 ActionUtil.getInstance().runTask(new Runnable() {
                     @Override
                     public void run() {
@@ -704,48 +882,10 @@ public class ReuseAnalyserView extends ViewPart {
                 ActionUtil.getInstance().runTask(setAutoDistribute, true);
                 return findOrCreateAggregateNode(gisNode, propertyName, Distribute.AUTO.toString(), select, monitor);
             }
-            Node parentNode = result;
-            for (Column key : statistics.keySet()) {
-                Node childNode = service.createNode();
-                String nameCol;
-
-                BigDecimal minValue = new BigDecimal(key.getMinValue());
-                BigDecimal maxValue = new BigDecimal(key.getMinValue() + key.getRange());
-                if (distributeColumn == Distribute.INTEGERS) {
-                    nameCol = (minValue.add(new BigDecimal(0.5))).setScale(0, RoundingMode.HALF_UP).toString();
-                } else if (propertyValue instanceof Integer) {
-                    minValue = minValue.setScale(0, RoundingMode.HALF_UP);
-                    maxValue = maxValue.setScale(0, RoundingMode.DOWN);
-                    if (maxValue.subtract(minValue).compareTo(BigDecimal.ONE) < 1) {
-                        nameCol = minValue.toString();
-                    } else {
-                        nameCol = minValue.toString() + "-" + maxValue.toString();
-                    }
-                } else {
-                    // TODO calculate scale depending on key.getRange()
-                    minValue = minValue.setScale(3, RoundingMode.HALF_UP);
-                    maxValue = maxValue.setScale(3, RoundingMode.HALF_UP);
-                    if (key.getRange() == 0) {
-                        nameCol = minValue.toString();
-                    } else {
-                        nameCol = minValue.toString() + "-" + maxValue.toString();
-                    }
-                }
-                childNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.COUNT_TYPE_NAME);
-                childNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, nameCol);
-                childNode.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, key.getMinValue());
-                childNode.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, key.getMinValue() + key.getRange());
-                childNode.setProperty(INeoConstants.PROPERTY_VALUE_NAME, statistics.get(key));
-                if(key.isSpacer()) childNode.setProperty("spacer", true);
-                parentNode.createRelationshipTo(childNode, NetworkRelationshipTypes.CHILD);
-                parentNode = childNode;
-            }
             tx.success();
             return result;
         } finally {
             tx.finish();
-            // fix bug - aggregate data of drive gis node do not save after restart application
-            //NeoServiceProvider.getProvider().commit();
         }
     }
 
@@ -753,13 +893,15 @@ public class ReuseAnalyserView extends ViewPart {
      * Collect statistics on the selected property.
      * 
      * @param gisNode GIS node
+     * @param aggrNode
      * @param propertyName name of property
-     * @param monitor 
+     * @param monitor
      * @return a tree-map of the results for the chart
      */
-    private TreeMap<Column, Integer> computeStatistics(Node gisNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
+    private boolean computeStatistics(Node gisNode, Node aggrNode, String propertyName, Distribute distribute,
+            Select select, IProgressMonitor monitor) {
         if (NeoUtils.isNeighbourNode(gisNode)) {
-            return computeNeighbourStatistics(gisNode, propertyName, distribute, select, monitor);
+            return computeNeighbourStatistics(gisNode, aggrNode, propertyName, distribute, select, monitor);
         }
         boolean isAggregatedProperty = isAggregatedProperty(propertyName);
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
@@ -886,12 +1028,14 @@ public class ReuseAnalyserView extends ViewPart {
             break;
         }
         if (distribute != Distribute.AUTO && range > 0 && (double)(max - min) / (double)range > MAXIMUM_BARS) {
-            return null;
+            return false;
         }
         ArrayList<Column> keySet = new ArrayList<Column>();
         double curValue = min;
+        Node parentNode = aggrNode;
         while (curValue <= max) {
-            Column col = new Column(curValue, range);
+            Column col = new Column(aggrNode, parentNode, curValue, range, distribute, propertyValue);
+            parentNode = col.getNode();
             keySet.add(col);
             result.put(col, 0); // make sure distribution is continuous (includes gaps)
             curValue += range;
@@ -910,8 +1054,10 @@ public class ReuseAnalyserView extends ViewPart {
                     value = value == null || select == Select.EXISTS ? getNodeValue(node, propertyName, select, column.minValue,
                             column.range) : value;
                     if (value != null && column.containsValue(value)) {
+                        column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
                         Integer count = result.get(column);
-                        result.put(column, 1 + (count == null ? 0 : count));
+                        int countNode = 1 + (count == null ? 0 : count);
+                        result.put(column, countNode);
                         if (select != Select.EXISTS) {
                             break;
                         }
@@ -931,6 +1077,7 @@ public class ReuseAnalyserView extends ViewPart {
                     for (Column column : keySet) {
                         if (column.containsValue(value)) {
                             Integer count = result.get(column);
+                            column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
                             result.put(column, 1 + (count == null ? 0 : count));
                             break;
                         }
@@ -944,11 +1091,13 @@ public class ReuseAnalyserView extends ViewPart {
             }
         } else {
             monitor.subTask("Building results from memory cache of "+mpMap.size()+" data");
-            for (Number mpValue : mpMap.values()) {
+            for (Node node : mpMap.keySet()) {
+                Number mpValue = mpMap.get(node);
                 double value = mpValue.doubleValue();
                 for (Column column : keySet) {
                     if (column.containsValue(value)) {
                         Integer count = result.get(column);
+                        column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
                         result.put(column, 1 + (count == null ? 0 : count));
                         break;
                     }
@@ -963,15 +1112,17 @@ public class ReuseAnalyserView extends ViewPart {
         Column prev_col = null;
         for (Column column : keySet) {
             if(prev_col!=null && result.get(prev_col)==0 && result.get(column)==0) {
+                column.merge(prev_col);
                 result.remove(prev_col);
-                column.minValue = prev_col.minValue;
-                column.range += prev_col.range;
-                column.setSpacer(true);
+
             }
             prev_col = column;
         }
         monitor.subTask("Finalizing results");
-        return result;
+        for (Column column : result.keySet()) {
+            column.setValue(result.get(column));
+        }
+        return true;
     }
 
     /**
@@ -1015,7 +1166,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @param monitor
      * @return
      */
-    private TreeMap<Column, Integer> computeNeighbourStatistics(Node neighbour, String propertyName2, Distribute distribute,
+    private boolean computeNeighbourStatistics(Node neighbour, Node aggrNode, String propertyName2, Distribute distribute,
             Select select, IProgressMonitor monitor) {
         Node gisNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING).getOtherNode(
                 neighbour);
@@ -1098,12 +1249,14 @@ public class ReuseAnalyserView extends ViewPart {
             break;
         }
         if (distribute != Distribute.AUTO && range > 0 && (double)(max - min) / (double)range > MAXIMUM_BARS) {
-            return null;
+            return false;
         }
         ArrayList<Column> keySet = new ArrayList<Column>();
         double curValue = min;
+        Node parentNode = aggrNode;
         while (curValue <= max) {
-            Column col = new Column(curValue, range);
+            Column col = new Column(aggrNode, parentNode, curValue, range, distribute, propertyValue);
+            parentNode = col.getNode();
             keySet.add(col);
             result.put(col, 0); // make sure distribution is continuous (includes gaps)
             curValue += range;
@@ -1122,6 +1275,7 @@ public class ReuseAnalyserView extends ViewPart {
                         column.minValue, column.range) : value;
                     if (value != null && column.containsValue(value)) {
                         Integer count = result.get(column);
+                    column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
                         result.put(column, 1 + (count == null ? 0 : count));
                         if (select != Select.EXISTS) {
                             break;
@@ -1140,14 +1294,15 @@ public class ReuseAnalyserView extends ViewPart {
         for (Column column : keySet) {
             if (prev_col != null && result.get(prev_col) == 0 && result.get(column) == 0) {
                 result.remove(prev_col);
-                column.minValue = prev_col.minValue;
-                column.range += prev_col.range;
-                column.setSpacer(true);
+                column.merge(prev_col);
             }
             prev_col = column;
         }
         monitor.subTask("Finalizing results");
-        return result;
+        for (Column column : result.keySet()) {
+            column.setValue(result.get(column));
+        }
+        return true;
 
     }
 
@@ -1327,6 +1482,9 @@ public class ReuseAnalyserView extends ViewPart {
         private Double minValue;
         private Double range;
         private boolean spacer = false;
+        private Node node;
+        private Distribute distribute;
+        private Object propertyValue;
 
         /**
          * Constructor
@@ -1337,10 +1495,103 @@ public class ReuseAnalyserView extends ViewPart {
         public Column(double curValue, double range) {
             minValue = curValue;
             this.range = range;
+            node = null;
+        }
+
+        /**
+         * @param prevCol
+         */
+        public void merge(Column prevCol) {
+            minValue = prevCol.minValue;
+            range += prevCol.range;
+            node.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, minValue);
+            node.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, minValue + range);
+            for (Relationship relation : prevCol.getNode().getRelationships(NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING)) {
+                node.createRelationshipTo(relation.getOtherNode(node), NetworkRelationshipTypes.AGGREGATE);
+            }
+            NeoUtils.deleteSingleNode(prevCol.getNode());
+            prevCol.setNode(null);
+            setSpacer(true);
+        }
+
+        /**
+         * @param object
+         */
+        private void setNode(Node node) {
+            this.node = node;
+        }
+
+        /**
+         * @param countNode
+         */
+        public void setValue(int countNode) {
+            if (node != null) {
+                node.setProperty(INeoConstants.PROPERTY_VALUE_NAME, countNode);
+            }
+        }
+
+        /**
+         * @return
+         */
+        public Node getNode() {
+            return node;
+        }
+
+        /**
+         * @param parentNode
+         * @param curValue
+         * @param range2
+         * @param range2
+         */
+        public Column(Node aggrNode, Node parentNode, double curValue, double range, Distribute distribute, Object propertyValue) {
+            this(curValue, range);
+            this.distribute = distribute;
+            this.propertyValue = propertyValue;
+            node = NeoServiceProvider.getProvider().getService().createNode();
+            node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.COUNT_TYPE_NAME);
+            node.setProperty(INeoConstants.PROPERTY_NAME_NAME, getColumnName());
+            node.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, minValue);
+            node.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, minValue + range);
+            node.setProperty(INeoConstants.PROPERTY_VALUE_NAME, 0);
+            node.setProperty(INeoConstants.PROPERTY_AGGR_PARENT_ID, aggrNode.getId());
+            parentNode.createRelationshipTo(node, NetworkRelationshipTypes.CHILD);
+
+        }
+
+        /**
+         * @return
+         */
+        private String getColumnName() {
+            String nameCol;
+
+            BigDecimal minValue = new BigDecimal(this.minValue);
+            BigDecimal maxValue = new BigDecimal(this.minValue + this.range);
+            if (distribute == Distribute.INTEGERS) {
+                nameCol = (minValue.add(new BigDecimal(0.5))).setScale(0, RoundingMode.HALF_UP).toString();
+            } else if (propertyValue instanceof Integer) {
+                minValue = minValue.setScale(0, RoundingMode.HALF_UP);
+                maxValue = maxValue.setScale(0, RoundingMode.DOWN);
+                if (maxValue.subtract(minValue).compareTo(BigDecimal.ONE) < 1) {
+                    nameCol = minValue.toString();
+                } else {
+                    nameCol = minValue.toString() + "-" + maxValue.toString();
+                }
+            } else {
+                // TODO calculate scale depending on key.getRange()
+                minValue = minValue.setScale(3, RoundingMode.HALF_UP);
+                maxValue = maxValue.setScale(3, RoundingMode.HALF_UP);
+                if (range == 0) {
+                    nameCol = minValue.toString();
+                } else {
+                    nameCol = minValue.toString() + "-" + maxValue.toString();
+                }
+            }
+            return nameCol;
         }
 
         /**
          * Whether or not this column is a chart spacer column
+         * 
          * @return true if this column is only a chart spacer
          */
         public boolean isSpacer() {
@@ -1353,6 +1604,7 @@ public class ReuseAnalyserView extends ViewPart {
          */
         public void setSpacer(boolean value) {
             spacer = value;
+            node.setProperty("spacer", value);
         }
 
         /**
@@ -1519,6 +1771,16 @@ public class ReuseAnalyserView extends ViewPart {
         dCombo = new FormData(); // bind to label and text
         dCombo.left = new FormAttachment(0, 2);
         dCombo.bottom = new FormAttachment(100, -2);
+        bColorProperties.setLayoutData(dCombo);
+
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(bColorProperties, 2);
+        dLabel.top = new FormAttachment(bColorProperties, 5, SWT.CENTER);
+        lColorProperties.setLayoutData(dLabel);
+
+        dCombo = new FormData(); // bind to label and text
+        dCombo.left = new FormAttachment(lColorProperties, 2);
+        dCombo.bottom = new FormAttachment(100, -2);
         bLogarithmic.setLayoutData(dCombo);
 
         dLabel = new FormData();
@@ -1528,14 +1790,26 @@ public class ReuseAnalyserView extends ViewPart {
 
         dLabel = new FormData();
         dLabel.left = new FormAttachment(lLogarithmic, 15);
+        dLabel.top = new FormAttachment(cPalette, 5, SWT.CENTER);
+        lPalette.setLayoutData(dLabel);
+
+        FormData dText = new FormData();
+        dText.left = new FormAttachment(lPalette, 5);
+        dText.right = new FormAttachment(lPalette, 200);
+        dText.bottom = new FormAttachment(100, -2);
+        cPalette.setLayoutData(dText);
+
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(lLogarithmic, 15);
         dLabel.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
         lSelectedInformation.setLayoutData(dLabel);
 
-        FormData dText = new FormData();
+        dText = new FormData();
         dText.left = new FormAttachment(lSelectedInformation, 5);
         dText.right = new FormAttachment(lSelectedInformation, 200);
         dText.bottom = new FormAttachment(100, -2);
         tSelectedInformation.setLayoutData(dText);
+
 
         dLabel = new FormData();
         dLabel.left = new FormAttachment(tSelectedInformation, 5);
@@ -1594,6 +1868,30 @@ public class ReuseAnalyserView extends ViewPart {
         private Node aggrNode;
         private List<String> rowList = new ArrayList<String>();
         private List<ChartNode> nodeList = Collections.synchronizedList(new LinkedList<ChartNode>());
+
+        /**
+         * @return Returns the nodeList.
+         */
+        public List<ChartNode> getNodeList() {
+            return nodeList;
+        }
+
+        /**
+         * sets palette name into aggregation node
+         * 
+         * @param currentPalette
+         */
+        public void setPalette(BrewerPalette currentPalette) {
+
+            if (aggrNode != null) {
+                if (currentPalette != null) {
+                    aggrNode.setProperty(INeoConstants.PALETTE_NAME, currentPalette.getName());
+                } else {
+                    aggrNode.removeProperty(INeoConstants.PALETTE_NAME);
+                }
+            }
+        }
+
 
         PropertyCategoryDataset() {
             super();
@@ -1698,6 +1996,7 @@ public class ReuseAnalyserView extends ViewPart {
         private Node node;
         private Double nodeKey;
         private String columnValue;
+        private Color color;
 
         ChartNode(Node aggrNode) {
             node = aggrNode;
@@ -1740,6 +2039,41 @@ public class ReuseAnalyserView extends ViewPart {
         public Double getNodeKey() {
             return nodeKey;
         }
+
+        /**
+         * save colors
+         * 
+         * @param color - color
+         */
+        public void saveColor(Color color) {
+            if (this.color != null && this.color.equals(color)) {
+                return;
+            }
+            this.color = color;
+            if (node != null) {
+                Transaction tx = NeoUtils.beginTransaction();
+                try {
+                    Integer valueToSave = color == null ? null : color.getRGB();
+                    if (valueToSave == null) {
+                        node.removeProperty(INeoConstants.AGGREGATION_COLOR);
+                    } else {
+                        node.setProperty(INeoConstants.AGGREGATION_COLOR, valueToSave);
+                    }
+                    tx.success();
+                } finally {
+                    tx.finish();
+                }
+            }
+        }
+
+        /**
+         * gets column color
+         * 
+         * @return color
+         */
+        public Color getColor() {
+            return color;
+        }
     }
 
     /**
@@ -1757,18 +2091,9 @@ public class ReuseAnalyserView extends ViewPart {
          * @return The item color.
          */
         public Paint getItemPaint(final int row, final int column) {
-            ChartNode selColumn = getSelectedColumn();
-            if (selColumn == null) {
-                return DEFAULT_COLOR;
-            }
-            int columnIndex = dataset.getColumnIndex(selColumn);
-            if (column == columnIndex) {
-                return COLOR_SELECTED;
-            }
-            if (Math.abs(column - columnIndex) <= spinAdj.getSelection()) {
-                return column > columnIndex ? COLOR_MORE : COLOR_LESS;
-            }
-            return DEFAULT_COLOR;
+            ChartNode col = dataset.getNodeList().get(column);
+            return col == null || col.getColor() == null ? DEFAULT_COLOR : col.getColor();
+
         }
     }
 
@@ -1781,5 +2106,45 @@ public class ReuseAnalyserView extends ViewPart {
         gisCombo.setItems(gisItems);
         propertyCombo.setItems(new String[] {});
         setVisibleForChart(false);
+    }
+
+    /**
+     * @param column
+     * @param color
+     */
+    public void setColumnColor(int column, Color color) {
+        if (dataset != null) {
+            ChartNode child = dataset.getNodeList().get(column);
+            child.saveColor(color);
+        }
+    }
+
+    /**
+     * @param colorThema The colorThema to set.
+     */
+    private void setColorThema(boolean colorThema) {
+        this.colorThema = colorThema;
+    }
+
+    /**
+     * @return Returns the colorThema.
+     */
+    private boolean isColorThema() {
+        return colorThema;
+    }
+
+    /**
+     * gets palette
+     * 
+     * @return palette or null
+     */
+    public BrewerPalette getPalette(Node aggrNode) {
+        if (aggrNode != null) {
+            String palName = (String)aggrNode.getProperty(INeoConstants.PALETTE_NAME, null);
+            if (palName != null) {
+                return PlatformGIS.getColorBrewer().getPalette(palName);
+            }
+        }
+        return null;
     }
 }

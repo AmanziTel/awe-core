@@ -69,9 +69,8 @@ public class NetworkRenderer extends RendererImpl {
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
 	private Color labelColor;
-    private boolean isAggregatedProperties;
-    private String[] aggregationList;
     private Color lineColor;
+    private Node aggNode;
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
@@ -175,9 +174,7 @@ public class NetworkRenderer extends RendererImpl {
                 System.out.println("Have star selection: "+starPoint);
             }
             ArrayList<Pair<String,Integer>> multiOmnis = new ArrayList<Pair<String,Integer>>();
-
-            isAggregatedProperties = selectedProp != null && INeoConstants.PROPERTY_ALL_CHANNELS_NAME.equals(selectedProp);
-            aggregationList = geoNeo.getAggregatedProperties();
+            aggNode = geoNeo.getAggrNode();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
             Envelope data_bounds = geoNeo.getBounds();
@@ -273,8 +270,7 @@ public class NetworkRenderer extends RendererImpl {
                             if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
                                 // double azimuth = Double.NaN;
                                 double beamwidth = handler.getBeamwidth(child, 360.0);
-                                Color colorToFill = getSectorColor(select, child, fillColor, selectedProp, redMinValue,
-                                        redMaxValue, lesMinValue, moreMaxValue);
+                                Color colorToFill = getSectorColor(child, fillColor);
 
                                 // for (String key : child.getPropertyKeys()) {
                                 // if (key.toLowerCase().contains("azimuth")) {
@@ -466,76 +462,73 @@ public class NetworkRenderer extends RendererImpl {
     }
 
     /**
-     * @param child
-     * @return
+     * gets sector color
+     * 
+     * @param child - sector node
+     * @param defColor - default value
+     * @return color
      */
-    private Color getSectorColor(Select select, Node node, Color defColor, String selectedProp, Double redMinValue,
-            Double redMaxValue, Double lesMinValue, Double moreMaxValue) {
-
-        Color colorToFill = defColor;
-        if (selectedProp == null) {
-            return colorToFill;
-        }
-        Double valueD = getNodeValue(node, selectedProp, select, lesMinValue, moreMaxValue);
-        if (valueD == null) {
-            return colorToFill;
-        }
-        double value = valueD.doubleValue();
-        if (value < redMaxValue || value == redMinValue) {
-            if (value >= redMinValue) {
-                colorToFill = COLOR_SELECTED;
-            } else if (value >= lesMinValue) {
-                colorToFill = COLOR_LESS;
+    private Color getSectorColor(Node node, Color defColor) {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            if (aggNode == null) {
+                return defColor;
             }
-        } else if (value < moreMaxValue) {
-            colorToFill = COLOR_MORE;
+            Node chartNode = NeoUtils.getChartNode(node, aggNode);
+            if (chartNode == null) {
+                return defColor;
+            }
+            return new Color((Integer)chartNode.getProperty(INeoConstants.AGGREGATION_COLOR, defColor.getRGB()));
+        } finally {
+            tx.finish();
         }
-        return colorToFill;
     }
 
-    /**
-     * @param node
-     * @param propertyName
-     * @param select
-     * @param minValue
-     * @param range
-     * @return
-     */
-    private Double getNodeValue(Node node, String propertyName, Select select, double minValue, double maxValue) {
-
-        if (isAggregatedProperties) {
-            Double min = null;
-            Double max = null;
-            int count = 0;
-            double sum = (double)0;
-            for (String singleProperties : aggregationList) {
-                if (node.hasProperty(singleProperties)) {
-                    double doubleValue = ((Number)node.getProperty(singleProperties)).doubleValue();
-                    if (select == Select.FIRST) {
-                        return doubleValue;
-                    } else if (select == Select.EXISTS) {
-                        if (doubleValue == minValue || (doubleValue >= minValue && doubleValue < maxValue)) {
-                            return doubleValue;
-                        }
-                    }
-                    min = min == null ? doubleValue : Math.min(doubleValue, min);
-                    max = max == null ? doubleValue : Math.max(doubleValue, max);
-                    sum += doubleValue;
-                    count++;
-                }
-            }
-            switch (select) {
-            case AVERAGE:
-                return count == 0 ? null : sum / (double)count;
-            case MAX:
-                return max;
-            case MIN:
-                return min;
-            }
-            return null;
-        }
-        return node.hasProperty(propertyName) ? ((Number)node.getProperty(propertyName)).doubleValue() : null;
-    }
+    // /**
+    // * @param node
+    // * @param propertyName
+    // * @param select
+    // * @param minValue
+    // * @param range
+    // * @return
+    // */
+    // private Double getNodeValue(Node node, String propertyName, Select select, double minValue,
+    // double maxValue) {
+    //
+    // if (isAggregatedProperties) {
+    // Double min = null;
+    // Double max = null;
+    // int count = 0;
+    // double sum = (double)0;
+    // for (String singleProperties : aggregationList) {
+    // if (node.hasProperty(singleProperties)) {
+    // double doubleValue = ((Number)node.getProperty(singleProperties)).doubleValue();
+    // if (select == Select.FIRST) {
+    // return doubleValue;
+    // } else if (select == Select.EXISTS) {
+    // if (doubleValue == minValue || (doubleValue >= minValue && doubleValue < maxValue)) {
+    // return doubleValue;
+    // }
+    // }
+    // min = min == null ? doubleValue : Math.min(doubleValue, min);
+    // max = max == null ? doubleValue : Math.max(doubleValue, max);
+    // sum += doubleValue;
+    // count++;
+    // }
+    // }
+    // switch (select) {
+    // case AVERAGE:
+    // return count == 0 ? null : sum / (double)count;
+    // case MAX:
+    // return max;
+    // case MIN:
+    // return min;
+    // }
+    // return null;
+    // }
+    // return node.hasProperty(propertyName) ?
+    // ((Number)node.getProperty(propertyName)).doubleValue() : null;
+    // }
 
     /**
      * Render the sector symbols based on the point and azimuth. We simply save the graphics
@@ -638,19 +631,24 @@ public class NetworkRenderer extends RendererImpl {
     private void drawAnalyser(Graphics2D g, Node mainNode, Point starPoint, String property, Map<Node, Point> nodesMap) {
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         try {
+            if (aggNode == null) {
+                return;
+            }
+            Node chart = NeoUtils.getChartNode(mainNode, aggNode);
+            if (chart == null) {
+                return;
+            }
             Point point = nodesMap.get(mainNode);
             if (point != null) {
                 starPoint = point;
             }
             drawMainNode(g, mainNode, starPoint);
-            Object propertyValue = mainNode.getProperty(property,null);
-            if(propertyValue!=null) {
-                for (Node node : nodesMap.keySet()) {
-                    if (node.hasProperty(property) && propertyValue.equals(node.getProperty(property))) {
-                        Point nodePoint = nodesMap.get(node);
-                        g.setColor(getLineColor(mainNode, node));
-                        g.drawLine(starPoint.x, starPoint.y, nodePoint.x, nodePoint.y);
-                    }
+            for (Relationship relation : chart.getRelationships(NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING)) {
+                Node node = relation.getOtherNode(chart);
+                Point nodePoint = nodesMap.get(node);
+                if (nodePoint != null) {
+                    g.setColor(getLineColor(mainNode, node));
+                    g.drawLine(starPoint.x, starPoint.y, nodePoint.x, nodePoint.y);
                 }
             }
 
