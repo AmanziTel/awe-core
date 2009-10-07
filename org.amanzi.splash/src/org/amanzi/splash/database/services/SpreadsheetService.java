@@ -283,7 +283,7 @@ public class SpreadsheetService {
 	 * @return created Cell
 	 */
 	public CellNode createCell(SpreadsheetNode spreadsheet, CellID id) {
-		Transaction transaction = neoService.beginTx();
+	    Transaction transaction = neoService.beginTx();
 
 		try {
 			RowNode rowNode = spreadsheet.getRow(id.getRowName());
@@ -333,7 +333,7 @@ public class SpreadsheetService {
 	 * @return updated Cell
 	 */
 	public CellNode updateCell(SpreadsheetNode sheet, Cell cell) {
-		CellID id = new CellID(cell.getRow(), cell.getColumn());
+	    CellID id = new CellID(cell.getRow(), cell.getColumn());
 
 		CellNode node = getCellNode(sheet, id);
 
@@ -605,13 +605,21 @@ public class SpreadsheetService {
 	 * @return converted Cell from Database
 	 */
 	public Cell getCell(SpreadsheetNode sheet, CellID id) {
-		CellNode node = getCellNode(sheet, id);
+	    CellNode node = getCellNode(sheet, id);
 
-		if (node != null) {
-			return convertNodeToCell(node, id.getRowName(), id.getColumnName(), false);
-		}
+	    if (node != null) {
+	    	//Lagutko, 6.10.2009, convertNodeToCell use access to database and should be wrapped in transaction
+	    	Transaction transaction = neoService.beginTx();
+	    	try {
+	    		return convertNodeToCell(node, id.getRowName(), id.getColumnName(), false);
+	    	}
+	    	finally {
+	    		transaction.success();
+	    		transaction.finish();
+	    	}
+	    }
 
-		return new Cell(id.getRowIndex(), id.getColumnIndex(), DEFAULT_DEFINITION, DEFAULT_VALUE, new CellFormat());
+	    return new Cell(id.getRowIndex(), id.getColumnIndex(), DEFAULT_DEFINITION, DEFAULT_VALUE, new CellFormat());	    
 	}
 
 	/**
@@ -624,7 +632,7 @@ public class SpreadsheetService {
 	 * @return CellNode by ID or null if Cell doesn't exists
 	 */
 	public CellNode getCellNode(SpreadsheetNode sheet, CellID id) {
-		Transaction transaction = neoService.beginTx();
+	    Transaction transaction = neoService.beginTx();
 
 		try {
 			CellNode result = sheet.getCell(id.getRowName(), id.getColumnName());

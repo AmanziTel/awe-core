@@ -92,6 +92,14 @@ public abstract class AbstractNode {
 	 */
 
 	protected void setParameter(String name, Object value) {
+		//Lagutko, 6.10.2009, if Node already has this value than wouldn't change it
+		//this fix will resolve problem with deadlocks on read
+	    if (node.hasProperty(name)) {
+	        Object previousValue = node.getProperty(name);
+	        if (previousValue.equals(value)) {
+	            return;
+	        }
+	    }
 		node.setProperty(name, value);
 	}
 

@@ -182,6 +182,10 @@ public class AweProjectService {
             return result;
         } finally {
             transaction.finish();
+            //Lagutko, 6.10.2009, we should call commit() of NeoManager to be sure
+            //that there will be no deadlocks if this spreadsheet 
+            //will be used in transaction from other thread
+            provider.commit();
         }
     }
 
@@ -236,8 +240,8 @@ public class AweProjectService {
 			}
 			transaction.success();
 			return result;
-		} finally {
-			transaction.finish();
+		} finally {		    
+			transaction.finish();			
 		}
 	}
 

@@ -123,7 +123,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 	 * @see org.eclipse.ui.IWorkbenchPart#dispose()
 	 */
 	public void dispose() {
-		super.dispose();
+	    super.dispose();	    
 		NeoServiceProvider.getProvider().removeServiceProviderListener(this);
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 		NeoCorePlugin.getDefault().getUpdateDatabaseManager().removeListener(this);

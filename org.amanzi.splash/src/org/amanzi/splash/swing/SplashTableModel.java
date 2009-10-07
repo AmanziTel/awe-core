@@ -13,11 +13,13 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.database.services.SpreadsheetService;
+import org.amanzi.splash.job.InitializeSplashTask;
+import org.amanzi.splash.job.InterpretTask;
+import org.amanzi.splash.job.SplashJob;
+import org.amanzi.splash.job.SplashJobTask;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.FileLocator;
@@ -28,8 +30,6 @@ import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
-
-import com.eteks.openjeks.format.CellFormat;
 
 public class SplashTableModel extends DefaultTableModel {
 	/*
@@ -89,6 +89,12 @@ public class SplashTableModel extends DefaultTableModel {
 	private SpreadsheetService service;
 
 	private RubyProjectNode rubyProjectNode;
+	
+	
+	/*
+	 * Job for this Spreadsheet 
+	 */
+	private SplashJob splashJob;
 
 	/**
 	 * Creates a SplashTableModel by given SpreadsheetNode
@@ -213,6 +219,9 @@ public class SplashTableModel extends DefaultTableModel {
 	 */
 
 	private void initialize(String splash_name, RubyProjectNode root) throws IOException {
+	    //Lagutko, 6.10.2009, initialize and run Splash Job
+	    splashJob = new SplashJob();
+        splashJob.schedule();
 
 		this.rubyProjectNode = root;
 		initializeSpreadsheet(splash_name, root);
@@ -279,7 +288,8 @@ public class SplashTableModel extends DefaultTableModel {
 		globals.put(JRUBY_PATH_RUBY_NAME, ScriptUtils.getJRubyHome());
 		makeRubyGlobals(runtime, globals);
 
-		runtime.evalScriptlet(input);
+		//Lagutko, 6.10.2009, run a Job that initialize Splash in Ruby in not-main thread		
+		splashJob.addTask(new InitializeSplashTask(runtime, input));
 	}
 
 	/**
@@ -401,33 +411,11 @@ public class SplashTableModel extends DefaultTableModel {
 	// TODO: Lagutko: do we need oldDefinition param?
 	public Cell interpret(String definition, String oldDefinition, int row,
 			int column) {
-		String cellID = new CellID(row, column).getFullID();
-		String formula1 = definition;
-		NeoSplashUtil
-				.logn("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
-		NeoSplashUtil.logn("Start interpreting a cell...");
-		NeoSplashUtil.logn("CellID = " + cellID);
-
-		Cell se = getCellByID(cellID);
-
-		if (se == null) {
-			NeoSplashUtil.logn("WARNING: se = null");
-			se = new Cell(row, column, Cell.DEFAULT_VALUE,
-					Cell.DEFAULT_DEFINITION, new CellFormat());
-		}
-
-		Object s1 = interpret_erb(cellID, formula1);
-		
-		NeoSplashUtil.logn("Setting cell definition: " + definition);
-        se.setDefinition(definition);
-
-        NeoSplashUtil.logn("Setting cell value:" + (String) s1);
-        
-        se.setValue(s1.toString());        
-
-		setValueAt(se, row, column, oldDefinition);
-
-		return se;
+		//Lagutko, 6.10.2009, run Interpret task
+	    InterpretTask job = new InterpretTask(this, row, column, definition);
+	    splashJob.addTask(job);
+	    
+		return job.getResultCell();
 	}
 
 	/**
@@ -456,22 +444,8 @@ public class SplashTableModel extends DefaultTableModel {
 		if (column >= getColumnCount())
 			throw new ArrayIndexOutOfBoundsException(column);
 
-		Cell result = (Cell) ActionUtil.getInstance().runTaskWithResult(
-				new RunnableWithResult() {
-					private Cell result = null;
-
-					public Object getValue() {
-						return result;
-					}
-
-					public void run() {
-						result = service.getCell(spreadsheet, new CellID(row,
-								column));
-					}
-				});
-
-		return result;
-
+		//Lagutko, 6.10.2009, no longer use ActionUtil here
+		return service.getCell(spreadsheet, new CellID(row, column));
 	}
 
 	/**
@@ -487,23 +461,16 @@ public class SplashTableModel extends DefaultTableModel {
 	public void setValueAt(final Object value, int row, int column) {
 		// row and column index are checked but storing in a Hashtable
 		// won't cause real problems
-//		NeoSplashUtil.logn("row = " + row + " - getRowCount () = "
-//				+ getRowCount() + " - column: " + column + " - getColumnCount: ");
+		NeoSplashUtil.logn("row = " + row + " - getRowCount () = "
+				+ getRowCount() + " - column: " + column + " - getColumnCount: ");
 		if (row >= getRowCount())
 			throw new ArrayIndexOutOfBoundsException(row);
 		if (column >= getColumnCount()) {
 			throw new ArrayIndexOutOfBoundsException(column);
 		}
 
-		ActionUtil.getInstance().runTask(new Runnable() {
-			public void run() {
-				service.updateCell(spreadsheet, (Cell) value);
-			}
-		}, true);
+		service.updateCell(spreadsheet, (Cell) value);
 		
-		
-		
-
 		fireTableChanged(new TableModelEvent(this, row, row, column));
 	}
 
@@ -528,11 +495,8 @@ public class SplashTableModel extends DefaultTableModel {
 		if (column >= getColumnCount())
 			throw new ArrayIndexOutOfBoundsException(column);
 
-		ActionUtil.getInstance().runTask(new Runnable() {
-			public void run() {
-				updateCellWithDependencies((Cell) value);
-			}
-		}, false);
+		//Lagutko, 6.10.2009, no longer use ActionUtil here
+		updateCellWithDependencies((Cell) value);
 
 		fireTableChanged(new TableModelEvent(this, row, row, column));
 	}
@@ -547,12 +511,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 */
 	public void updateCellReferences(final String cellID,
 			final RubyArray referencedIDs) {
-		ActionUtil.getInstance().runTask(new Runnable() {
-			public void run() {
-				service.updateCellReferences(spreadsheet, cellID,
-								referencedIDs);
-			}
-		}, false);
+		service.updateCellReferences(spreadsheet, cellID, referencedIDs);
 	}
 
 	/**
@@ -634,7 +593,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 * @return Cell
 	 */
 	public Cell getCellByID(String cellID) {
-		CellID id = new CellID(cellID);
+	    CellID id = new CellID(cellID);
 
 		return (Cell) getValueAt(id.getRowIndex(), id.getColumnIndex());
 	}
@@ -655,10 +614,19 @@ public class SplashTableModel extends DefaultTableModel {
 	 *            cell
 	 * @author Lagutko_N
 	 */
-	public void updateCellFormat(Cell cell) {	    
-	    service.updateCell(spreadsheet, cell);
+	public void updateCellFormat(final Cell cell) {
+		//Lagutko, 6.10.2009, run updating of Splash Format as a SplashJobTask
+	    splashJob.addTask(new SplashJobTask(){
+            
+            @Override
+            public SplashJobTaskResult execute() {
+                service.updateCell(spreadsheet, cell);
+                return SplashJobTaskResult.CONTINUE;
+            }
+        });
+	            	    
 	}
-
+	
 	/**
 	 * Returns Spreadsheet Service
 	 * 

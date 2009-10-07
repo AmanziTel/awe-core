@@ -180,8 +180,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	 * @param c
 	 * @param cf
 	 */
-	private void updateCellFormat(int r, int c, CellFormat cf) {
-		Cell cell = (Cell) table.getValueAt(r, c);
+	private void updateCellFormat(int r, int c, CellFormat cf) {	    
+	    Cell cell = (Cell) table.getValueAt(r, c);
 		cell.setCellFormat(cf);
 		((SplashTableModel) (table.getModel())).updateCellFormat(cell);
 	}
