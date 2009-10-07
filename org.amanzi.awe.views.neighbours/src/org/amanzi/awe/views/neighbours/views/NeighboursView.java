@@ -354,6 +354,7 @@ public class NeighboursView extends ViewPart {
             table.setHeaderVisible(true);
             table.setLinesVisible(true);
             viewer.setLabelProvider(this);
+            viewer.refresh();
         }
 	}
 	class NameSorter extends ViewerSorter {
