@@ -685,7 +685,9 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
         notify("Determined Columns:");
         for(String key: headers.keySet()){
             Header header = headers.get(key);
-            System.out.println("\t"+header.knownType()+" loaded: "+header.parseCount+" => "+key);
+            if(header.parseCount>0){
+                notify("\t"+header.knownType()+" loaded: "+header.parseCount+" => "+key);
+            }
         }
     }
 
