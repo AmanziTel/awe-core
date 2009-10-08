@@ -1030,6 +1030,9 @@ public class ReuseAnalyserView extends ViewPart {
         if (distribute != Distribute.AUTO && range > 0 && (double)(max - min) / (double)range > MAXIMUM_BARS) {
             return false;
         }
+        if (propertyValue instanceof Integer) {
+            range = 1;
+        }
         ArrayList<Column> keySet = new ArrayList<Column>();
         double curValue = min;
         Node parentNode = aggrNode;
@@ -1509,8 +1512,12 @@ public class ReuseAnalyserView extends ViewPart {
             for (Relationship relation : prevCol.getNode().getRelationships(NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING)) {
                 node.createRelationshipTo(relation.getOtherNode(node), NetworkRelationshipTypes.AGGREGATE);
             }
+            Node parentMain = prevCol.getNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)
+                    .getOtherNode(prevCol.getNode());
             NeoUtils.deleteSingleNode(prevCol.getNode());
+            node.setProperty(INeoConstants.PROPERTY_NAME_NAME, getColumnName());
             prevCol.setNode(null);
+            parentMain.createRelationshipTo(node, GeoNeoRelationshipTypes.CHILD);
             setSpacer(true);
         }
 
@@ -1569,13 +1576,14 @@ public class ReuseAnalyserView extends ViewPart {
             if (distribute == Distribute.INTEGERS) {
                 nameCol = (minValue.add(new BigDecimal(0.5))).setScale(0, RoundingMode.HALF_UP).toString();
             } else if (propertyValue instanceof Integer) {
-                minValue = minValue.setScale(0, RoundingMode.HALF_UP);
+                minValue = minValue.setScale(0, RoundingMode.UP);
                 maxValue = maxValue.setScale(0, RoundingMode.DOWN);
                 if (maxValue.subtract(minValue).compareTo(BigDecimal.ONE) < 1) {
                     nameCol = minValue.toString();
                 } else {
                     nameCol = minValue.toString() + "-" + maxValue.toString();
                 }
+
             } else {
                 // TODO calculate scale depending on key.getRange()
                 minValue = minValue.setScale(3, RoundingMode.HALF_UP);
@@ -1604,6 +1612,11 @@ public class ReuseAnalyserView extends ViewPart {
          */
         public void setSpacer(boolean value) {
             spacer = value;
+            // if (propertyValue instanceof Integer && range < 1) {
+            // node.setProperty(INeoConstants.PROPERTY_NAME_NAME, "");
+            // } else {
+            // node.setProperty(INeoConstants.PROPERTY_NAME_NAME, getColumnName());
+            // }
             node.setProperty("spacer", value);
         }
 
