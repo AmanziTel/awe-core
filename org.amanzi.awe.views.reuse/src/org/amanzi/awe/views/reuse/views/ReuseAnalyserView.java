@@ -1031,9 +1031,9 @@ public class ReuseAnalyserView extends ViewPart {
         if (distribute != Distribute.AUTO && range > 0 && (double)(max - min) / (double)range > MAXIMUM_BARS) {
             return false;
         }
-//        if (propertyValue instanceof Integer) {
-//            range = 1;
-//        }
+        if (propertyValue instanceof Integer && range < 1) {
+            range = 1;
+        }
         ArrayList<Column> keySet = new ArrayList<Column>();
         double curValue = min;
         Node parentNode = aggrNode;
