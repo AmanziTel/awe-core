@@ -676,9 +676,9 @@ public class ReuseAnalyserView extends ViewPart {
     private void setSelection(ChartNode columnKey) {
         Node gisNode = members.get(gisCombo.getText());
         Node aggrNode = dataset.getAggrNode();
-        changeBarColor();
         if (selectedColumn != null) {
             selectedColumn = columnKey;
+            changeBarColor();
             if (selectedGisNode.equals(gisNode)) {
                 fireLayerDrawEvent(gisNode, aggrNode, selectedColumn);
             } else {
@@ -691,6 +691,7 @@ public class ReuseAnalyserView extends ViewPart {
         } else {
             selectedColumn = columnKey;
             selectedGisNode = gisNode;
+            changeBarColor();
             fireLayerDrawEvent(gisNode, aggrNode, selectedColumn);
         }
         setSelectionName(columnKey);
