@@ -59,10 +59,12 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     private LinkedHashMap<String, String> knownHeaders = new LinkedHashMap<String, String>();
     private LinkedHashMap<String,Header> headers = new LinkedHashMap<String,Header>();
     protected class Header {
+        private static final int MAX_PROPERTY_VALUE_COUNT = 100;
         int index;
         String key;
         String name;
         HashMap<Class<? extends Object>,Integer> parseTypes = new HashMap<Class<? extends Object>,Integer>();
+        HashMap<Object,Integer> values = new HashMap<Object,Integer>();
         int parseCount = 0;
         Header(String name, String key, int index) {
             this.index = index;
@@ -72,6 +74,11 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
                 parseTypes.put(klass,0);
             }
         }
+        Header(Header old){
+            this(old.name,old.key,old.index);
+            this.parseCount = old.parseCount;
+            this.values = old.values;
+        }
         protected boolean invalid(String field) {
             return field==null || field.length()<1 || field.equals("?");
         }
@@ -80,14 +87,17 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
             parseCount++;
             try {
                 int value = Integer.parseInt(field);
+                incValue(value);
                 incType(Integer.class);
                 return value;
             } catch (Exception e) {
                 try {
                     float value = Float.parseFloat(field);
+                    incValue(value);
                     incType(Float.class);
                     return value;
                 } catch (Exception e2) {
+                    incValue(field);
                     incType(String.class);
                     return field;
                 }
@@ -95,6 +105,22 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
         }
         private void incType(Class<? extends Object> klass) {
             parseTypes.put(klass, parseTypes.get(klass)+1);
+        }
+        protected Object incValue(Object value) {
+            if(values!=null) {
+                Integer count = values.get(value);
+                if (count == null) {
+                    count = 0;
+                }
+                if(count == 0 && values.size() >= MAX_PROPERTY_VALUE_COUNT) {
+                    //About to exceed maximum number of unique allowed values, stop counting
+                    System.out.println("Property exceeded max value count: "+this.key);
+                    values = null;
+                } else {
+                    values.put(value, count + 1);
+                }
+            }
+            return value;
         }
         boolean shouldConvert() {
             return parseCount > 10;
@@ -127,13 +153,12 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     }
     protected class IntegerHeader extends Header {
         IntegerHeader(Header old){
-            super(old.name,old.key,old.index);
-            this.parseCount = old.parseCount;
+            super(old);
         }
         Integer parse(String field){
             if(invalid(field)) return null;
             parseCount++;
-            return Integer.parseInt(field);
+            return (Integer)incValue(Integer.parseInt(field));
         }
         boolean shouldConvert() {
             return false;
@@ -144,13 +169,12 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     }
     protected class FloatHeader extends Header {
         FloatHeader(Header old){
-            super(old.name,old.key,old.index);
-            this.parseCount = old.parseCount;
+            super(old);
         }
         Float parse(String field){
             if(invalid(field)) return null;
             parseCount++;
-            return Float.parseFloat(field);
+            return (Float)incValue(Float.parseFloat(field));
         }
         boolean shouldConvert() {
             return false;
@@ -161,13 +185,12 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     }
     protected class StringHeader extends Header {
         StringHeader(Header old){
-            super(old.name,old.key,old.index);
-            this.parseCount = old.parseCount;
+            super(old);
         }
         String parse(String field){
             if(invalid(field)) return null;
             parseCount++;
-            return field;
+            return (String)incValue(field);
         }
         boolean shouldConvert() {
             return false;
@@ -557,6 +580,46 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     
     private void savePropertiesToNode(Node propTypeNode, Collection<String> properties) {
         propTypeNode.setProperty("properties", properties.toArray(new String[properties.size()]));
+        HashMap<String,Node> valueNodes = new HashMap<String,Node>();
+        for(Relationship relation: propTypeNode.getRelationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)){
+            Node valueNode = relation.getEndNode();
+            String property = relation.getProperty("property", "").toString();
+            valueNodes.put(property, valueNode);
+        }
+        for(String property: properties){
+            Node valueNode = valueNodes.get(property);
+            Header header = headers.get(property);
+            HashMap<Object,Integer> values = header.values;
+            if(values==null) {
+                if(valueNode != null){
+                    for(Relationship relation: valueNode.getRelationships()){
+                        relation.delete();
+                    }
+                    valueNode.delete();
+                }
+            }else{
+                if(valueNode == null){
+                    valueNode = neo.createNode();
+                    Relationship relation = propTypeNode.createRelationshipTo(valueNode, GeoNeoRelationshipTypes.PROPERTIES);
+                    relation.setProperty("property", property);
+                } else {
+                    for(Object key: valueNode.getPropertyKeys()) {
+                        Integer oldCount = (Integer)valueNode.getProperty(key.toString(),null);
+                        if(oldCount == null) {
+                            oldCount = 0;
+                        }
+                        Integer newCount = values.get(key);
+                        if(newCount == null) {
+                            newCount = 0;
+                        }
+                        values.put(key,oldCount + newCount);
+                    }
+                }
+                for(Object key: values.keySet()) {
+                    valueNode.setProperty(key.toString(), values.get(key));
+                }
+            }
+        }
     }
     
     public static String makePropertyTypeName(Class<? extends Object> klass){
@@ -750,7 +813,7 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
                             .iterator();
                     count++;
                     if(count>20) {
-                        notify("Exciting statistics after 100 measurement points");
+                        notify("Exiting statistics after 100 measurement points");
                         break MEASUREMENTS;
                     }
                 }
