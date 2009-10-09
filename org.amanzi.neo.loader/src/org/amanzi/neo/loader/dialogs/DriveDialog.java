@@ -67,18 +67,20 @@ public class DriveDialog {
      * Names of supported files for Drive data
      */
     public static final String[] Drive_FILE_NAMES = {
-            "TEMS Drive Test Export (*.FMT)",
-            "Romes drive test export (*.asc)",
-            "All Files (*.*)"};
-    
+        "Drive Test Data (*.FMT; *.ASC)",
+        "TEMS Drive Test Export (*.FMT)",
+        "Romes drive test export (*.ASC)",
+        "All Files (*.*)"};
+
     /*
      * Extensions of supported files for Drive data
      */
     public static final String[] Drive_FILE_EXTENSIONS = {
-        "*.FMT",
-        "*.asc",
+        "*.FMT;*.fmt;*.ASC;*.asc",
+        "*.FMT;*.fmt",
+        "*.ASC;*.asc",
         "*.*"};
-	
+
     /*
      * Minimum height of Shell
      */
