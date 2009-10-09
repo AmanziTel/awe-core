@@ -166,7 +166,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
     
     //Lagutko 21.07.2009, using of neo.core plugin
     private void unregisterNeoManager(){        
-        neoProvider.commit();
+        //neoProvider.commit();
         neoProvider.removeServiceProviderListener(this);        
     }
 
@@ -259,7 +259,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                 attachDataToProject();
             }
             }finally{
-                NeoServiceProvider.getProvider().commit(); 
+                //NeoServiceProvider.getProvider().commit(); 
             }
         }
     }
@@ -301,7 +301,7 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         if (network != null) {
             NeoCorePlugin.getDefault().getProjectService().addNetworkToProject(LoaderUtils.getAweProjectName(), network);
         }
-        neoProvider.commit();
+        //neoProvider.commit();
         //Lagutko 21.07.2009, using of neo.core plugin
         unregisterNeoManager();
         // Register the database in the uDIG catalog            
@@ -900,12 +900,12 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
      */
 	private static Node getNetwork(NeoService neo, Node gis, String basename, NeoServiceProvider neoProvider) {
 		Node network = null;
+		if(neoProvider!=null) {
+            //neoProvider.commit();
+        }
 		Transaction transaction = neo.beginTx();
 		try {
-		    if(neoProvider!=null) {
-		        neoProvider.commit();
-		    }
-            for (Relationship relationship : gis.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
+		    for (Relationship relationship : gis.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
 				Node node = relationship.getEndNode();
                 debug("Testing possible Network node "+node+": "+(node.hasProperty("name") ? node.getProperty("name") : ""));
 				if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NetworkElementTypes.NETWORK.toString()) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
@@ -919,9 +919,9 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
                         for (Relationship relationshipIn : node.getRelationships(Direction.INCOMING)) {
                             relationshipIn.delete();
                         }
-                        neoProvider.commit();
+                        //neoProvider.commit();
                         NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
-                        neoProvider.commit();
+                        //neoProvider.commit();
                         // deleteNodeInNewThread(node);
 			        } catch(IllegalStateException e) {
 			            // we are in test mode, automatically agree to overwrite network
