@@ -4,14 +4,10 @@
 
    <extension
          point="org.eclipse.ui.views">
-      <category
-            name="General"
-            id="org.amanzi.awe.networktree">
-      </category>
       <view
             name="Network Tree"
             icon="icons/network.png"
-            category="org.amanzi.awe.networktree"
+            category="org.amanzi.awe.script"
             class="org.amanzi.awe.views.network.view.NetworkTreeView"
             id="org.amanzi.awe.networktree.views.NetworkTreeView">
       </view>
