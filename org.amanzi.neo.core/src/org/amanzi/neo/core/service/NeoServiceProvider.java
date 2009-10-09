@@ -161,6 +161,13 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     }
     
     /**
+     * Rollback changes
+     */
+    public void rollback() {
+        neoManager.rollback();
+    }
+    
+    /**
      * Listener that listens for event of NeoServiceManager and provides them
      * to listeners of NeoServiceProvides
      * 

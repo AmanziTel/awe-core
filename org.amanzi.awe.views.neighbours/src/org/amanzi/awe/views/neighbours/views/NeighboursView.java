@@ -20,9 +20,9 @@ import org.amanzi.awe.views.neighbours.RelationWrapper;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -57,7 +57,6 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
-import org.neo4j.neoclipse.NeoIcons;
 
 
 /**
@@ -94,9 +93,6 @@ public class NeighboursView extends ViewPart {
 	public static final String ID = "org.amanzi.awe.views.neighbours.views.NeighboursView";
 
 	private TableViewer viewer;
-	private Action actionCommit;
-	private Action actionRollback;
-	private Action doubleClickAction;
     private Node network;
     private Node gis = null;
     private ViewContentProvider provider;
@@ -129,6 +125,10 @@ public class NeighboursView extends ViewPart {
 
 
         public void inputChanged(Viewer v, Object oldInput, Object newInput) {
+            //Lagutko, 9.10.2009, if newInput is null than AWE closes and no need to update view
+            if (newInput == null) {
+                return;
+            }
             if (!(newInput instanceof Collection)) {
                 input = new ArrayList<Node>(0);
                 network = null;
@@ -188,7 +188,6 @@ public class NeighboursView extends ViewPart {
          */
         public class InputIterator implements Iterator<Relationship> {
 
-            private final Collection<Node> input;
             private String name;
             private Iterator<Node> iterator1;
             private Iterator<Node> nodeIterator;
@@ -199,7 +198,6 @@ public class NeighboursView extends ViewPart {
              * @param neighbour
              */
             public InputIterator(Collection<Node> input, Node neighbour) {
-                this.input = input;
                 name = NeoUtils.getSimpleNodeName(neighbour, null);
                 iterator1 = input.iterator();
                 nodeIterator = new ArrayList<Node>().iterator();
@@ -463,10 +461,10 @@ public class NeighboursView extends ViewPart {
             }
         });
         commit.setToolTipText(COMMIT);
-        commit.setImage(NeoIcons.COMMIT_ENABLED.image());
+        commit.setImage(IconManager.getIconManager().getCommitImage());
 
         rollback = new Button(child, SWT.BORDER | SWT.PUSH);
-        rollback.setImage(NeoIcons.ROLLBACK_ENABLED.image());
+        rollback.setImage(IconManager.getIconManager().getRollbackImage());
         rollback.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -610,73 +608,6 @@ public class NeighboursView extends ViewPart {
     }
 
     /**
-     * get all Neighbour properties
-     * 
-     * @return list of properties name
-     */
-    private List<String> getNeighbourNumericProperties() {
-        List<String> result = new ArrayList<String>();
-        if (gis == null || neighbour.getSelectionIndex() < 0) {
-            return result;
-        }
-        String[] array = new PropertyHeader(gis).getNeighbourNumericFields(neighbour.getText());
-        return array == null ? result : Arrays.asList(array);
-    }
-
-    // private void hookContextMenu() {
-    // MenuManager menuMgr = new MenuManager("#PopupMenu");
-    // menuMgr.setRemoveAllWhenShown(true);
-    // menuMgr.addMenuListener(new IMenuListener() {
-    // public void menuAboutToShow(IMenuManager manager) {
-    // NeighboursView.this.fillContextMenu(manager);
-    // }
-    // });
-    // Menu menu = menuMgr.createContextMenu(viewer.getControl());
-    // viewer.getControl().setMenu(menu);
-    // getSite().registerContextMenu(menuMgr, viewer);
-    // }
-
-    // private void contributeToActionBars() {
-    // IActionBars bars = getViewSite().getActionBars();
-    // // fillLocalPullDown(bars.getMenuManager());
-    // bars.getToolBarManager().removeAll();
-    // fillLocalToolBar(bars.getToolBarManager());
-    // bars.updateActionBars();
-    // }
-
-    // private void fillLocalPullDown(IMenuManager manager) {
-    // manager.add(actionCommit);
-    // manager.add(new Separator());
-    // manager.add(actionRollback);
-    // }
-    //
-    // private void fillContextMenu(IMenuManager manager) {
-    // manager.add(actionCommit);
-    // manager.add(actionRollback);
-    // // Other plug-ins can contribute there actions here
-    // manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-    // }
-    //	
-    // private void fillLocalToolBar(IToolBarManager manager) {
-    // manager.add(actionCommit);
-    // manager.add(actionRollback);
-    // }
-
-    // private void makeActions() {
-    // actionCommit = new CommitAction();
-    //		
-    // actionRollback = new RollbackAction();
-    //
-    // }
-    //
-    // private void showMessage(String message) {
-    // MessageDialog.openInformation(
-    // viewer.getControl().getShell(),
-    // "Neighbours",
-    // message);
-    // }
-
-	/**
 	 * Passing the focus request to the viewer's control.
 	 */
 	public void setFocus() {
@@ -772,47 +703,5 @@ public class NeighboursView extends ViewPart {
         }
 
     }
-
-    // public class CommitAction extends Action {
-    // public CommitAction() {
-    // super();
-    // setText("Commit");
-    // setImageDescriptor(NeoIcons.COMMIT_ENABLED.descriptor());
-    // setDisabledImageDescriptor(NeoIcons.COMMIT_DISABLED.descriptor());
-    // }
-    //
-    // @Override
-    // public void run() {
-    // NeighboursPlugin.getDefault().commit();
-    // editMode = false;
-    // viewer.refresh();
-    // }
-    //
-    // @Override
-    // public boolean isEnabled() {
-    // return super.isEnabled() && editMode;
-    // }
-    // }
-    //
-    // public class RollbackAction extends Action {
-    // public RollbackAction() {
-    // super();
-    // setText("Rollback");
-    // setImageDescriptor(NeoIcons.ROLLBACK_ENABLED.descriptor());
-    // setDisabledImageDescriptor(NeoIcons.ROLLBACK_DISABLED.descriptor());
-    // }
-    //
-    // @Override
-    // public void run()
-    // {
-    // NeighboursPlugin.getDefault().rollback();
-    // editMode = false;
-    // viewer.refresh();
-    // }
-    //
-    // @Override
-    // public boolean isEnabled() {
-    // return super.isEnabled() && editMode;
-    // }
-    // }
+    
 }

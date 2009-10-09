@@ -1,10 +1,8 @@
 package org.amanzi.awe.views.neighbours;
 
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.neoclipse.Activator;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -18,8 +16,6 @@ public class NeighboursPlugin extends AbstractUIPlugin {
 	// The shared instance
     private static NeighboursPlugin plugin;
 
-    private Transaction tx;
-
     /**
      * The constructor
      */
@@ -31,7 +27,6 @@ public class NeighboursPlugin extends AbstractUIPlugin {
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
      */
     public void start(BundleContext context) throws Exception {
-        tx = Activator.getDefault().getNeoServiceManager().getNeoService().beginTx();
         super.start(context);
         plugin = this;
     }
@@ -41,8 +36,8 @@ public class NeighboursPlugin extends AbstractUIPlugin {
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
     public void stop(BundleContext context) throws Exception {
-        tx.failure();
-        tx.finish();
+        //Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
+        NeoServiceProvider.getProvider().commit();
         plugin = null;
         super.stop(context);
     }
@@ -67,16 +62,12 @@ public class NeighboursPlugin extends AbstractUIPlugin {
     }
 
     public void commit() {
-        tx.success();
-        tx.finish();
-        Activator.getDefault().getNeoServiceManager().commit();
-        tx = NeoUtils.beginTransaction();
+        //Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
+        NeoServiceProvider.getProvider().commit();      
     }
 
     public void rollback() {
-        tx.failure();
-        tx.finish();
-        Activator.getDefault().getNeoServiceManager().rollback();
-        tx = NeoUtils.beginTransaction();
+        //Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
+        NeoServiceProvider.getProvider().rollback();
     }
 }

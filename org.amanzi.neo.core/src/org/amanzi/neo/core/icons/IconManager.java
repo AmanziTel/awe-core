@@ -137,6 +137,24 @@ public class IconManager implements IPropertyChangeListener {
             return NeoIcons.NEO_ROOT.image();
         }
 	}
+	
+	/**
+	 * Returns Image for Rollback Button
+	 *
+	 * @return rollback image
+	 */
+	public Image getRollbackImage() {
+	    return NeoIcons.ROLLBACK_ENABLED.image();
+	}
+	
+	/**
+	 * Returns Image for Commit Button
+	 *
+	 * @return commit image
+	 */
+	public Image getCommitImage() {
+	    return NeoIcons.COMMIT_ENABLED.image();
+	}
 
 	/**
 	 * Converts name of Type to name that provides by NeoIcons
