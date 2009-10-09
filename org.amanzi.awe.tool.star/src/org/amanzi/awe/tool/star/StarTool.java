@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.refractions.udig.core.Pair;
+import net.refractions.udig.project.IBlackboard;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.command.Command;
@@ -62,8 +63,11 @@ import org.neo4j.api.core.Traverser.Order;
  * @since 1.0.0
  */
 public class StarTool extends AbstractModalTool {
+    /** StarTool BLACKBOARD_START_ANALYSER field */
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
+    /** StarTool BLACKBOARD_NODE_LIST field */
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
+    /** StarTool BLACKBOARD_CENTER_POINT field */
     public static final String BLACKBOARD_CENTER_POINT = "org.amanzi.awe.tool.star.StarTool.point";
     private static final int MAXIMUM_SELECT_LEN = 10000; // find sectors in 100x100 pixels
     private boolean dragging = false;
@@ -105,6 +109,23 @@ public class StarTool extends AbstractModalTool {
 //                setsGisLayeronMap();
 //                setLayerOnMap(StarMapGraphic.class);
                 chooseAnalysisData();
+            } else {
+                IBlackboard blackboard = getContext().getMap().getBlackboard();
+                blackboard.put(BLACKBOARD_START_ANALYSER, null);
+                blackboard.put(BLACKBOARD_CENTER_POINT, null);
+                blackboard.put(BLACKBOARD_NODE_LIST, null);
+                blackboard = getContext().getSelectedLayer().getBlackboard();
+                blackboard.put(BLACKBOARD_START_ANALYSER, null);
+                blackboard.put(BLACKBOARD_CENTER_POINT, null);
+                blackboard.put(BLACKBOARD_NODE_LIST, null);
+                    if (drawSelectedSectorCommand != null) {
+                        System.out.println("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
+                        drawSelectedSectorCommand.setValid(false);
+                        getContext().sendASyncCommand(drawSelectedSectorCommand);
+                        drawSelectedSectorCommand = null;
+                    }
+                getContext().getSelectedLayer().refresh(null);
+
             }
         }
     }
@@ -484,33 +505,37 @@ public class StarTool extends AbstractModalTool {
             Pair<Point, Long> pair = getSector(e.getPoint(), getNodesMap());
             if (selected == null || pair == null || !selected.left().equals(pair.left())) {
                 selected = pair;
-//                if (drawSelectionLineCommand != null) {
-//                    drawSelectionLineCommand.setValid(false);
-//                    getContext().sendASyncCommand(drawSelectionLineCommand);
-//                    drawSelectionLineCommand = null;
-//                }
+                // if (drawSelectionLineCommand != null) {
+                // drawSelectionLineCommand.setValid(false);
+                // getContext().sendASyncCommand(drawSelectionLineCommand);
+                // drawSelectionLineCommand = null;
+                // }
                 if (drawSelectedSectorCommand != null) {
-                    System.out.println("Deleting old sector marker: "+drawSelectedSectorCommand.getValidArea());
+                    System.out.println("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
                     drawSelectedSectorCommand.setValid(false);
                     getContext().sendASyncCommand(drawSelectedSectorCommand);
                     drawSelectedSectorCommand = null;
                 }
                 if (pair != null) {
-                    System.out.println("Drawing sector marker at "+pair.left()+" near point "+e.getPoint());
+                    System.out.println("Drawing sector marker at " + pair.left() + " near point " + e.getPoint());
                     java.awt.geom.Ellipse2D r = new java.awt.geom.Ellipse2D.Float(pair.left().x - 3, pair.left().y - 3, 7, 7);
                     // java.awt.geom.Path2D p = new java.awt.geom.Path2D.Float(s );
-                    // Rectangle2D r = new Rectangle2D.Float(pair.left().x-2, pair.left().y-2, 5,
+                    // Rectangle2D r = new Rectangle2D.Float(pair.left().x-2, pair.left().y-2,
+                    // 5,
                     // 5);
                     drawSelectedSectorCommand = getContext().getDrawFactory().createDrawShapeCommand(r, Color.RED, 1, 2);
                     getContext().sendSyncCommand(drawSelectedSectorCommand);
 
-//                    java.awt.geom.Line2D l = new java.awt.geom.Line2D.Float(pair.left().x, pair.left().y, e.getPoint().x, e.getPoint().y);
-//                    drawSelectionLineCommand = getContext().getDrawFactory().createDrawShapeCommand(l, Color.BLUE, 1, 2);
-//                    getContext().sendSyncCommand(drawSelectionLineCommand);
+                    // java.awt.geom.Line2D l = new java.awt.geom.Line2D.Float(pair.left().x,
+                    // pair.left().y, e.getPoint().x, e.getPoint().y);
+                    // drawSelectionLineCommand =
+                    // getContext().getDrawFactory().createDrawShapeCommand(l, Color.BLUE, 1,
+                    // 2);
+                    // getContext().sendSyncCommand(drawSelectionLineCommand);
 
                     selectedLayer.refresh(null);
                 } else {
-//                    System.out.println("No sector found near point "+e.getPoint());
+                    // System.out.println("No sector found near point "+e.getPoint());
                 }
             }
 
