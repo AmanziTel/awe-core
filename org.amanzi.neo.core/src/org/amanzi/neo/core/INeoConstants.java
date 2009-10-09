@@ -360,4 +360,8 @@ public class INeoConstants {
     public static final String AGGREGATION_COLOR = "column color";
     /** INeoConstants PROPERTY_AGGR_PARENT_ID field */
     public static final String PROPERTY_AGGR_PARENT_ID = "agr node id";
+    /** INeoConstants COLOR_LEFT field */
+    public static final String COLOR_LEFT = "color left";
+    /** INeoConstants COLOR_RIGHT field */
+    public static final String COLOR_RIGHT = "color right";
 }
