@@ -75,9 +75,7 @@ public class StarTool extends AbstractModalTool {
 
     private TranslateCommand command;
     private Map<Long, java.awt.Point> nodesMap;
-//    private ILayer starMapGraphicLayer; // cache so that mousemove event does not do so much work
     private DrawShapeCommand drawSelectedSectorCommand;
-    //private DrawShapeCommand drawSelectionLineCommand;
     private Pair<Point, Long> selected;
     private Node gisNode;
     private ILayer selectedLayer;
@@ -106,18 +104,13 @@ public class StarTool extends AbstractModalTool {
             super.setActive(active);
             // add layer on map if necessary
             if (active) {
-//                setsGisLayeronMap();
-//                setLayerOnMap(StarMapGraphic.class);
                 chooseAnalysisData();
             } else {
                 IBlackboard blackboard = getContext().getMap().getBlackboard();
-                blackboard.put(BLACKBOARD_START_ANALYSER, null);
                 blackboard.put(BLACKBOARD_CENTER_POINT, null);
                 blackboard.put(BLACKBOARD_NODE_LIST, null);
                 blackboard = getContext().getSelectedLayer().getBlackboard();
                 blackboard.put(BLACKBOARD_START_ANALYSER, null);
-                blackboard.put(BLACKBOARD_CENTER_POINT, null);
-                blackboard.put(BLACKBOARD_NODE_LIST, null);
                     if (drawSelectedSectorCommand != null) {
                         System.out.println("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
                         drawSelectedSectorCommand.setValid(false);
@@ -242,7 +235,6 @@ public class StarTool extends AbstractModalTool {
             }
             if(gisNode == null) {
                 // no selected layer matches, ask use to select a layer
-                //throw new Exception("Unimplemented: support user selection of dataset");
                 gisNode = validNodes.get(0);
                 String message = "Several datasets are available for star analysis: \n";
                 for(Node node:validNodes){
@@ -253,27 +245,7 @@ public class StarTool extends AbstractModalTool {
                 tellUser(message);
             }
         }else if(selectedGisNodes.size()>0){
-            // No valid nodes found, none of the reuse analyser gis nodes are layers in the map, add
-            // a layer to the map
-            //throw new Exception("Unimplemented: support automatic addition of distribution analysis layer to the map");
             tellUser("The star analysis requires the distribution analysis to provide the data for geographic display");
-
-//            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
-//            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-//            List<IResolve> serv = catalog.find(new URL("file://" + databaseLocation), monitor);
-//
-//            List<IGeoResource> list = new ArrayList<IGeoResource>();
-//            for (IResolve iResolve : serv) {
-//                List< ? extends IGeoResource> resources = ((IService)iResolve).resources(null);
-//                for (IGeoResource singleResource : resources) {
-//                    if (singleResource.canResolve(Node.class) && singleResource.resolve(Node.class, monitor).equals(gisNode)) {
-//                        list.add(singleResource);
-//                        ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
-//                        return;
-//                    }
-//                }
-//            }
-//            ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
         } else {
             // No layers or reuse analyser nodes found, we cannot do the star analysis
             String message = "No dataset is available for star analysis.\n\n";
@@ -300,83 +272,6 @@ public class StarTool extends AbstractModalTool {
         msg.open();
     }
     
-    /**
-     *
-     */
-//    private void setsGisLayeronMap() {
-//        IProgressMonitor monitor = new NullProgressMonitor();
-//        if (gisNode == null) {
-//            synchronized (this) {
-//                if (gisNode == null) {
-//                    gisNode = NeoUtils.findOrCreateStarGisNode();
-//                }
-//            }
-//        }
-//        IMap map = getContext().getMap();
-//        List<ILayer> layers = map.getMapLayers();
-//        try {
-//            for (ILayer layer : layers) {
-//                if (layer.getGeoResource().canResolve(Node.class)) {
-//                    Node node = layer.getGeoResource().resolve(Node.class, monitor);
-//                    if (node.equals(gisNode)) {
-//                        return;
-//                    }
-//
-//                }
-//            }
-//
-//            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
-//            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-//            List<IResolve> serv = catalog.find(new URL("file://" + databaseLocation), monitor);
-//
-//            List<IGeoResource> list = new ArrayList<IGeoResource>();
-//            for (IResolve iResolve : serv) {
-//                List< ? extends IGeoResource> resources = ((IService)iResolve).resources(null);
-//                for (IGeoResource singleResource : resources) {
-//                    if (singleResource.canResolve(Node.class) && singleResource.resolve(Node.class, monitor).equals(gisNode)) {
-//                        list.add(singleResource);
-//                        ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
-//                        return;
-//                    }
-//                }
-//            }
-//            ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
-//        } catch (IOException e) {
-//            // TODO Handle IOException
-//            throw (RuntimeException)new RuntimeException().initCause(e);
-//        }
-//    }
-
-    /**
-     *
-     */
-//    protected void setLayerOnMap(Class< ? extends MapGraphic> resourceClass) {
-//        IMap map = getContext().getMap();
-//        List<ILayer> layers = map.getMapLayers();
-//        for (ILayer layer : layers) {
-//            if (layer.getGeoResource().canResolve(resourceClass)) {
-//                return;
-//            }
-//        }
-//        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-//        List<IResolve> serv = catalog.find(MapGraphicService.SERVICE_URL, null);
-//        try {
-//            for (IResolve iResolve : serv) {
-//                List<MapGraphicResource> resources;
-//                resources = ((MapGraphicService)iResolve).resources(null);
-//                for (MapGraphicResource mapGraphicResource : resources) {
-//                    if (mapGraphicResource.canResolve(resourceClass)) {
-//                        List<IGeoResource> list = new ArrayList<IGeoResource>();
-//                        list.add(mapGraphicResource);
-//                        ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
-//                        return;
-//                    }
-//                }
-//            }
-//        } catch (IOException e) {
-//            throw (RuntimeException)new RuntimeException().initCause(e);
-//        }
-//    }
     /**
      * @see net.refractions.udig.project.ui.tool.AbstractTool#mousePressed(net.refractions.udig.project.render.displayAdapter.MapMouseEvent)
      */
@@ -468,26 +363,6 @@ public class StarTool extends AbstractModalTool {
     }
     
     /**
-     *
-     */
-//    private void updateLayerStarLayer() {
-//        IMap map = getContext().getMap();
-//        List<ILayer> layers = map.getMapLayers();
-//        try {
-//            for (ILayer layer : layers) {
-//                if (layer.getGeoResource().canResolve(Node.class)
-//                        && gisNode.equals(layer.getGeoResource().resolve(Node.class, null))) {
-//                    layer.refresh(null);
-//                    return;
-//                }
-//            }
-//        } catch (IOException e) {
-//            // TODO Handle IOException
-//            throw (RuntimeException)new RuntimeException().initCause(e);
-//        }
-//    }
-
-    /**
      * @see net.refractions.udig.project.ui.tool.Tool#dispose()
      */
     public void dispose() {
@@ -500,16 +375,9 @@ public class StarTool extends AbstractModalTool {
         IMap map = getContext().getMap();
         if (!dragging && selectedLayer != null) {
             map.getBlackboard().put(BLACKBOARD_CENTER_POINT, e.getPoint());
-            //updateStarMapGraphic();
-
             Pair<Point, Long> pair = getSector(e.getPoint(), getNodesMap());
             if (selected == null || pair == null || !selected.left().equals(pair.left())) {
                 selected = pair;
-                // if (drawSelectionLineCommand != null) {
-                // drawSelectionLineCommand.setValid(false);
-                // getContext().sendASyncCommand(drawSelectionLineCommand);
-                // drawSelectionLineCommand = null;
-                // }
                 if (drawSelectedSectorCommand != null) {
                     System.out.println("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
                     drawSelectedSectorCommand.setValid(false);
@@ -519,20 +387,8 @@ public class StarTool extends AbstractModalTool {
                 if (pair != null) {
                     System.out.println("Drawing sector marker at " + pair.left() + " near point " + e.getPoint());
                     java.awt.geom.Ellipse2D r = new java.awt.geom.Ellipse2D.Float(pair.left().x - 3, pair.left().y - 3, 7, 7);
-                    // java.awt.geom.Path2D p = new java.awt.geom.Path2D.Float(s );
-                    // Rectangle2D r = new Rectangle2D.Float(pair.left().x-2, pair.left().y-2,
-                    // 5,
-                    // 5);
                     drawSelectedSectorCommand = getContext().getDrawFactory().createDrawShapeCommand(r, Color.RED, 1, 2);
                     getContext().sendSyncCommand(drawSelectedSectorCommand);
-
-                    // java.awt.geom.Line2D l = new java.awt.geom.Line2D.Float(pair.left().x,
-                    // pair.left().y, e.getPoint().x, e.getPoint().y);
-                    // drawSelectionLineCommand =
-                    // getContext().getDrawFactory().createDrawShapeCommand(l, Color.BLUE, 1,
-                    // 2);
-                    // getContext().sendSyncCommand(drawSelectionLineCommand);
-
                     selectedLayer.refresh(null);
                 } else {
                     // System.out.println("No sector found near point "+e.getPoint());
@@ -543,25 +399,6 @@ public class StarTool extends AbstractModalTool {
             map.getBlackboard().put(BLACKBOARD_CENTER_POINT, null);
         }
     }
-
-    /**
-     * Tell the star map graphic to redraw the circle on the closest sector
-     */
-//    private void updateStarMapGraphic() {
-//        if(starMapGraphicLayer == null) {
-//            IMap map = getContext().getMap();
-//            List<ILayer> layers = map.getMapLayers();
-//            for (ILayer layer : layers) {
-//                if (layer.getGeoResource().canResolve(StarMapGraphic.class)) {
-//                    starMapGraphicLayer = layer;
-//                    break;
-//                }
-//            }
-//        }
-//        if (starMapGraphicLayer != null) {
-//            starMapGraphicLayer.refresh(null);
-//        }
-//    }
 
     /**
      * Executes the specified pan command, and only after it is executed, expires the last translate
