@@ -20,6 +20,7 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
+import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 import net.refractions.udig.ui.PlatformGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
@@ -34,6 +35,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -46,6 +48,7 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -157,6 +160,10 @@ public class ReuseAnalyserView extends ViewPart {
     private BrewerPalette currentPalette = null;
     private Label lPalette;
     private Combo cPalette;
+    private Button blend;
+    private ColorEditor colorLeft;
+    private ColorEditor colorRight;
+    private Label lBlend;
     private static final Color DEFAULT_COLOR = new Color(0.75f, 0.7f, 0.4f);
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
@@ -164,6 +171,11 @@ public class ReuseAnalyserView extends ViewPart {
     private static final Color CHART_BACKGROUND = Color.WHITE;
     private static final Color PLOT_BACKGROUND = new Color(230, 230, 230);
     private static final String PALETTE_LABEL = "Palette";
+    private static final String BLEND = "blend";
+    private static final String TT_LEFT_BAR = "left bar color ";
+    private static final String TT_RIGHT_BAR = "right bar color";
+    private static final RGB DEFAULT_LEFT = new RGB(255, 0, 0);
+    private static final RGB DEFAULT_RIGHT = new RGB(0, 255, 0);
 
 
     public void createPartControl(Composite parent) {
@@ -208,6 +220,18 @@ public class ReuseAnalyserView extends ViewPart {
         bColorProperties.setSelection(false);
         lColorProperties = new Label(parent, SWT.NONE);
         lColorProperties.setText(COLOR_LABEL);
+        blend = new Button(parent, SWT.CHECK);
+        blend.setSelection(true);
+        lBlend = new Label(parent, SWT.NONE);
+        lBlend.setText(BLEND);
+        colorLeft = new ColorEditor(parent);
+        colorLeft.getButton().setToolTipText(TT_LEFT_BAR);
+        colorRight = new ColorEditor(parent);
+        colorRight.getButton().setToolTipText(TT_RIGHT_BAR);
+        lBlend.setVisible(false);
+        blend.setVisible(false);
+        colorLeft.getButton().setVisible(false);
+        colorRight.getButton().setVisible(false);
         lPalette = new Label(parent, SWT.NONE);
         lPalette.setText(PALETTE_LABEL);
         cPalette = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -215,6 +239,32 @@ public class ReuseAnalyserView extends ViewPart {
         cPalette.select(0);
         lPalette.setVisible(false);
         cPalette.setVisible(false);
+        SelectionListener listener = new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeBlendColors();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        };
+        colorLeft.addSelectionListener(listener);
+        colorRight.addSelectionListener(listener);
+        blend.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeBlendTheme();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         cPalette.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -401,6 +451,55 @@ public class ReuseAnalyserView extends ViewPart {
     }
 
     /**
+     *change blend colors
+     */
+    protected void changeBlendColors() {
+        saveColors();
+        chartUpdate();
+    }
+
+    /**
+     *save blend colors in aggregation node
+     */
+    private void saveColors() {
+        RGB rgbLeft = colorLeft.getColorValue();
+        if (rgbLeft != null) {
+            saveColor(dataset.getAggrNode(), INeoConstants.COLOR_LEFT, rgbLeft);
+        }
+        RGB rgbRight = colorRight.getColorValue();
+        if (rgbRight != null) {
+            saveColor(dataset.getAggrNode(), INeoConstants.COLOR_RIGHT, rgbRight);
+        }
+    }
+
+    /**
+     * Save color in database
+     * 
+     * @param node node
+     * @param property property name
+     * @param rgb color
+     */
+    private void saveColor(Node node, String property, RGB rgb) {
+        if (node == null || property == null || rgb == null) {
+            return;
+        }
+        int[] array = new int[3];
+        array[0] = rgb.red;
+        array[1] = rgb.green;
+        array[2] = rgb.blue;
+        node.setProperty(property, array);
+    }
+
+    /**
+     * change theme to blend
+     */
+    protected void changeBlendTheme() {
+        boolean blendTheme = blend.getSelection();
+        setVisibleForColoredTheme(true);
+        chartUpdate();
+    }
+
+    /**
      *
      */
     protected void changePalette() {
@@ -575,8 +674,13 @@ public class ReuseAnalyserView extends ViewPart {
      * @param isVisible - visibility
      */
     private void setVisibleForColoredTheme(boolean isVisible) {
-        lPalette.setVisible(isVisible);
-        cPalette.setVisible(isVisible);
+        boolean blendTheme = blend.getSelection();
+        blend.setVisible(isVisible);
+        lBlend.setVisible(isVisible);
+        lPalette.setVisible(isVisible && !blendTheme);
+        cPalette.setVisible(isVisible && !blendTheme);
+        colorLeft.getButton().setVisible(isVisible && blendTheme);
+        colorRight.getButton().setVisible(isVisible && blendTheme);
     }
 
     /**
@@ -599,6 +703,8 @@ public class ReuseAnalyserView extends ViewPart {
     protected void chartUpdate(Node aggrNode) {
         chart.setTitle(aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME,"").toString());
         currentPalette = getPalette(aggrNode);
+        colorLeft.setColorValue(getColorLeft(aggrNode));
+        colorRight.setColorValue(getColorRight(aggrNode));
         Combo acPalette;
         String[] array = cPalette.getItems();
         int index = -1;
@@ -617,8 +723,41 @@ public class ReuseAnalyserView extends ViewPart {
         } else {
             cPalette.select(index);
         }
+
         setSelection(null);
         setVisibleForChart(true);
+    }
+
+    /**
+     * Gets color of right bar
+     * 
+     * @param aggrNode aggregation node
+     * @return RGB
+     */
+    private RGB getColorRight(Node aggrNode) {
+        if (aggrNode != null) {
+            int[] colors = (int[])aggrNode.getProperty(INeoConstants.COLOR_RIGHT, null);
+            if (colors != null) {
+                return new RGB(colors[0], colors[1], colors[2]);
+            }
+        }
+        return DEFAULT_RIGHT;
+    }
+
+    /**
+     * Gets color of left bar
+     * 
+     * @param aggrNode aggregation node
+     * @return RGB
+     */
+    private RGB getColorLeft(Node aggrNode) {
+        if (aggrNode != null) {
+            int[] colors = (int[])aggrNode.getProperty(INeoConstants.COLOR_LEFT, null);
+            if (colors != null) {
+                return new RGB(colors[0], colors[1], colors[2]);
+            }
+        }
+        return DEFAULT_LEFT;
     }
 
     /**
@@ -637,15 +776,28 @@ public class ReuseAnalyserView extends ViewPart {
     protected void changeBarColor() {
         ChartNode selColumn = getSelectedColumn();
         int columnIndex = selColumn == null ? -1 : dataset.getColumnIndex(selColumn);
+        RGB leftRgb = colorLeft.getColorValue();
+        RGB rightRgb = colorRight.getColorValue();
+        int size = dataset.nodeList.size() - 1;
+        float ratio = 0;
+        float perc = size <= 0 ? 1 : (float)1 / size;
         for (int i = 0; i < dataset.nodeList.size(); i++) {
             ChartNode chart = dataset.nodeList.get(i);
             if (isColorThema()) {
-                if (currentPalette == null) {
-                    chart.saveColor(null);
+                if (blend.getSelection()) {
+                    if (leftRgb != null && rightRgb != null) {
+                        RGB colrRgb = blend(leftRgb, rightRgb, ratio);
+                        ratio += perc;
+                        chart.saveColor(new Color(colrRgb.red, colrRgb.green, colrRgb.blue));
+                    }
                 } else {
-                    Color[] colors = currentPalette.getColors(currentPalette.getMaxColors());
-                    int index = i % colors.length;
-                    chart.saveColor(colors[index]);
+                    if (currentPalette == null) {
+                        chart.saveColor(null);
+                    } else {
+                        Color[] colors = currentPalette.getColors(currentPalette.getMaxColors());
+                        int index = i % colors.length;
+                        chart.saveColor(colors[index]);
+                    }
                 }
 
             } else {
@@ -1803,11 +1955,31 @@ public class ReuseAnalyserView extends ViewPart {
         lLogarithmic.setLayoutData(dLabel);
 
         dLabel = new FormData();
-        dLabel.left = new FormAttachment(lLogarithmic, 15);
+        dLabel.left = new FormAttachment(blend, 5);
+        dLabel.top = new FormAttachment(blend, 5, SWT.CENTER);
+        lBlend.setLayoutData(dLabel);
+
+        FormData dText = new FormData();
+        dText.left = new FormAttachment(lLogarithmic, 15);
+        dText.bottom = new FormAttachment(100, -2);
+        blend.setLayoutData(dText);
+        // ---
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(lBlend, 15);
+        dLabel.bottom = new FormAttachment(100, -2);
+        colorLeft.getButton().setLayoutData(dLabel);
+
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(colorLeft.getButton(), 15);
+        dLabel.bottom = new FormAttachment(100, -2);
+        colorRight.getButton().setLayoutData(dLabel);
+        // ---
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(lBlend, 15);
         dLabel.top = new FormAttachment(cPalette, 5, SWT.CENTER);
         lPalette.setLayoutData(dLabel);
 
-        FormData dText = new FormData();
+        dText = new FormData();
         dText.left = new FormAttachment(lPalette, 5);
         dText.right = new FormAttachment(lPalette, 200);
         dText.bottom = new FormAttachment(100, -2);
@@ -2160,5 +2332,22 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         return null;
+    }
+
+    /**
+     * Blend color
+     * 
+     * @param bg left
+     * @param fg right
+     * @param factor factor (0-1)
+     * @return RGB
+     */
+    public static RGB blend(RGB bg, RGB fg, float factor) {
+        Assert.isLegal(bg != null);
+        Assert.isLegal(fg != null);
+        Assert.isLegal(factor >= 0.0F && factor <= 1.0F);
+        float complement = 1.0F - factor;
+        return new RGB((int)(complement * (float)bg.red + factor * (float)fg.red), (int)(complement * (float)bg.green + factor
+                * (float)fg.green), (int)(complement * (float)bg.blue + factor * (float)fg.blue));
     }
 }
