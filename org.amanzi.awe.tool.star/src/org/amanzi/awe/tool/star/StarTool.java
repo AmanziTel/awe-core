@@ -313,10 +313,7 @@ public class StarTool extends AbstractModalTool {
             int dy = start.y-end.y;
             if(dx == 0 && dy == 0) {
                 activateStar = true;
-            }// else {
-            // nodesMap = null; // after panning the nodes might have changed, so force reload on
-            // next mouse released
-            // }
+            }
             //TODO: Perhaps only run this if dx||dy non-zero ?
             NavCommand finalPan = context.getNavigationFactory().createPanCommandUsingScreenCoords(dx, dy);
             context.sendASyncCommand(new PanAndInvalidate(finalPan, command));
