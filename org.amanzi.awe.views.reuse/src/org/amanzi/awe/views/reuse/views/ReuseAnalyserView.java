@@ -343,12 +343,19 @@ public class ReuseAnalyserView extends ViewPart {
             @SuppressWarnings("unchecked")
             @Override
             public void chartMouseClicked(ChartMouseEvent chartmouseevent) {
-                if (chartmouseevent.getEntity() instanceof CategoryItemEntity) {
-                    CategoryItemEntity entity = (CategoryItemEntity)chartmouseevent.getEntity();
-                    Comparable columnKey = entity.getColumnKey();
-                    setSelection((ChartNode)columnKey);
-                } else {
-                    setSelection(null);
+                if (!isColorThema()) {
+                    if (chartmouseevent.getEntity() instanceof CategoryItemEntity) {
+                        CategoryItemEntity entity = (CategoryItemEntity)chartmouseevent.getEntity();
+                        Comparable columnKey = entity.getColumnKey();
+                        ChartNode chartColumn = (ChartNode)columnKey;
+                        if (selectedColumn == null || !selectedColumn.equals(chartColumn)) {
+                            setSelection(chartColumn);
+                        }
+                    } else {
+                        if (selectedColumn != null) {
+                            setSelection(null);
+                        }
+                    }
                 }
             }
         });
