@@ -2352,7 +2352,9 @@ public class ReuseAnalyserView extends ViewPart {
     public static RGB blend(RGB bg, RGB fg, float factor) {
         Assert.isLegal(bg != null);
         Assert.isLegal(fg != null);
-        Assert.isLegal(factor >= 0.0F && factor <= 1.0F);
+        Assert.isLegal(factor >= -0.0001F && factor <= 1.0001F);
+        if(factor<0.0) factor = 0F;
+        if(factor>1.0) factor = 1F;
         float complement = 1.0F - factor;
         return new RGB((int)(complement * (float)bg.red + factor * (float)fg.red), (int)(complement * (float)bg.green + factor
                 * (float)fg.green), (int)(complement * (float)bg.blue + factor * (float)fg.blue));
