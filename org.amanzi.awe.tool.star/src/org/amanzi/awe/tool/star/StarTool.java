@@ -245,7 +245,27 @@ public class StarTool extends AbstractModalTool {
                 tellUser(message);
             }
         }else if(selectedGisNodes.size()>0){
+            // No valid nodes found, none of the reuse analyser gis nodes are layers in the map, add
+            // a layer to the map
+            //throw new Exception("Unimplemented: support automatic addition of distribution analysis layer to the map");
             tellUser("The star analysis requires the distribution analysis to provide the data for geographic display");
+
+//            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+//            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+//            List<IResolve> serv = catalog.find(new URL("file://" + databaseLocation), monitor);
+//
+//            List<IGeoResource> list = new ArrayList<IGeoResource>();
+//            for (IResolve iResolve : serv) {
+//                List< ? extends IGeoResource> resources = ((IService)iResolve).resources(null);
+//                for (IGeoResource singleResource : resources) {
+//                    if (singleResource.canResolve(Node.class) && singleResource.resolve(Node.class, monitor).equals(gisNode)) {
+//                        list.add(singleResource);
+//                        ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
+//                        return;
+//                    }
+//                }
+//            }
+//            ApplicationGIS.addLayersToMap(map, list, map.getMapLayers().size());
         } else {
             // No layers or reuse analyser nodes found, we cannot do the star analysis
             String message = "No dataset is available for star analysis.\n\n";
@@ -313,7 +333,10 @@ public class StarTool extends AbstractModalTool {
             int dy = start.y-end.y;
             if(dx == 0 && dy == 0) {
                 activateStar = true;
-            }
+            }// else {
+            // nodesMap = null; // after panning the nodes might have changed, so force reload on
+            // next mouse released
+            // }
             //TODO: Perhaps only run this if dx||dy non-zero ?
             NavCommand finalPan = context.getNavigationFactory().createPanCommandUsingScreenCoords(dx, dy);
             context.sendASyncCommand(new PanAndInvalidate(finalPan, command));
