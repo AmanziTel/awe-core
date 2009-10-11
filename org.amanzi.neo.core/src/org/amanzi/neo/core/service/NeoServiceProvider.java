@@ -6,6 +6,8 @@ import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.neo.NeoServiceEvent;
@@ -52,6 +54,8 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * Location of Neo-database
      */
     private String databaseLocation;
+
+    private Display display;
     
     /**
      * Creates an instance of NeoServiceProvider
@@ -72,7 +76,12 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      */
     
     protected NeoServiceProvider() {
-        //do nothing
+        try {
+            this.display = PlatformUI.getWorkbench().getDisplay();
+        } catch (RuntimeException e) {
+            //We are probably running unit tests, log and error and continue
+            System.err.println("Failed to get display: "+e);
+        }
     }
     
     /**
@@ -155,16 +164,35 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     /**
      * Commits changes
      */
-    
     public void commit() {
-        neoManager.commit();
+        if (display == null || Thread.currentThread().equals(display.getThread())) {
+            neoManager.commit();
+        } else {
+            display.asyncExec(new Runnable() {
+
+                @Override
+                public void run() {
+                    neoManager.commit();
+                }
+            });
+        }
     }
     
     /**
      * Rollback changes
      */
     public void rollback() {
-        neoManager.rollback();
+        if (display == null || Thread.currentThread().equals(display.getThread())) {
+            neoManager.rollback();
+        } else {
+            display.asyncExec(new Runnable() {
+
+                @Override
+                public void run() {
+                    neoManager.rollback();
+                }
+            });
+        }
     }
     
     /**

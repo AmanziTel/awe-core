@@ -1574,7 +1574,7 @@ public class NetworkTreeView extends ViewPart {
                     reportNode.createRelationshipTo(networkNode.getNode(), NetworkRelationshipTypes.DELTA_REPORT);
                 }
                 tx.success();
-                NeoServiceProvider.getProvider().commit();
+                //NeoServiceProvider.getProvider().commit();
             } finally {
                 tx.finish();
             }
