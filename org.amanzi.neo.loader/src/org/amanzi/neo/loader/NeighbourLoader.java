@@ -82,6 +82,7 @@ public class NeighbourLoader {
     public void run(IProgressMonitor monitor) throws IOException{
         CountingFileInputStream stream = null;
         BufferedReader reader = null;
+        Transaction tx = NeoUtils.beginTransaction();
         try {
             if (monitor == null) {
                 monitor = new NullProgressMonitor();
@@ -110,12 +111,15 @@ public class NeighbourLoader {
                 }
             }
             header.saveStatistic(neighbour);
-            header.finish();
             monitor.done();
+            tx.success();
         } finally {
             if (reader != null) {
                 reader.close();
             }
+            tx.finish();
+            header.finish();
+            NeoServiceProvider.getProvider().commit();
         }
         
     }
@@ -212,8 +216,7 @@ public class NeighbourLoader {
          * finish work with header
          */
         public void finish() {
-            if (index != null) {
-                NeoServiceProvider.getProvider().commit();
+            if (index != null) {                
                 index.shutdown();
             }
         }
@@ -235,7 +238,7 @@ public class NeighbourLoader {
                 tx.success();
             } finally {
                 // if tx.finish() - finds work slow but memory do not using
-                // tx.finish();
+                tx.finish();
             }
         }
 
@@ -397,7 +400,7 @@ public class NeighbourLoader {
                 updateCount(serverNode, servCounName);
                 tx.success();
             } catch (Exception e) {
-                NeoLoaderPlugin.error(line + "\n" + e.getLocalizedMessage());
+                NeoLoaderPlugin.error(line + "\n" + e.getLocalizedMessage());                
             } finally {
                 tx.finish();
             }
