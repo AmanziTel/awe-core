@@ -37,7 +37,7 @@ public class NeighboursPlugin extends AbstractUIPlugin {
      */
     public void stop(BundleContext context) throws Exception {
         //Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
-        NeoServiceProvider.getProvider().commit();
+        NeoServiceProvider.getProvider().rollback();
         plugin = null;
         super.stop(context);
     }
