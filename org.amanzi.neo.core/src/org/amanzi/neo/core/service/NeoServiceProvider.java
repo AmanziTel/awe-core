@@ -165,7 +165,11 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * Commits changes
      */
     public void commit() {
-        if (display == null || Thread.currentThread().equals(display.getThread())) {
+        //Lagutko, 12.10.2009, also check is Workbech closing?
+        boolean currentThread = PlatformUI.getWorkbench().isClosing() || 
+                                (display == null) || 
+                                Thread.currentThread().equals(display.getThread());
+        if (currentThread) {
             neoManager.commit();
         } else {
             display.asyncExec(new Runnable() {
@@ -182,7 +186,11 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * Rollback changes
      */
     public void rollback() {
-        if (display == null || Thread.currentThread().equals(display.getThread())) {
+        //Lagutko, 12.10.2009, also check is Workbech closing?
+        boolean currentThread = PlatformUI.getWorkbench().isClosing() || 
+                                (display == null) || 
+                                Thread.currentThread().equals(display.getThread());
+        if (currentThread) {
             neoManager.rollback();
         } else {
             display.asyncExec(new Runnable() {
