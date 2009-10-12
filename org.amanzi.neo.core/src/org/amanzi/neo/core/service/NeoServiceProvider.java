@@ -219,8 +219,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
             for (INeoServiceProviderListener listener : copiedListener) {
                 Object source = event.getSource();
                 switch (event.getStatus()) {
-                case STOPPED:
-                    copiedListener.remove(listener);
+                case STOPPED:                    
                     listener.onNeoStop(source);
                     shutdown();
                     break;
