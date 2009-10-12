@@ -136,7 +136,7 @@
             class="org.amanzi.neo.loader.actions.NewNeighbourAction"
             icon="icons/16/neighbour.png"
             id="org.amanzi.neo.loader.newNeighbour"
-            label="New neighbour">
+            label="New neighbours">
       </action>
    </extension>
 
