@@ -731,8 +731,11 @@ public class NetworkTreeView extends ViewPart {
             neoServiceProvider.shutdown();
         }
 
+        /**
+         * If some data was committed to database than we must refresh content of TreeView
+         */
         public void onNeoCommit(Object source) {
-            // if some data was commited to database than we must refresh content of TreeView
+            //TODO: Only modify part of tree specific to data modified
             viewer.getControl().getDisplay().syncExec(new Runnable() {
                 public void run() {
                     NetworkTreeView.this.viewer.refresh();

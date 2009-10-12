@@ -285,7 +285,7 @@ public class NetworkLoader {
 
     private void attachDataToProject() throws MalformedURLException {
         if (network != null) {
-            NeoCorePlugin.getDefault().getProjectService().addNetworkToProject(LoaderUtils.getAweProjectName(), network);
+            NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(LoaderUtils.getAweProjectName(), network);
         }
         // Register the database in the uDIG catalog            
         String databaseLocation = neoProvider.getDefaultDatabaseLocation();

@@ -3,27 +3,16 @@ package org.amanzi.neo.loader.dialogs;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.refractions.udig.catalog.CatalogPlugin;
-import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.catalog.IService;
-import net.refractions.udig.project.ILayer;
-import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.ui.ApplicationGIS;
-
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.LoadNetwork;
-import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.RomesLoader;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -616,7 +605,7 @@ public class DriveDialog {
 				driveLoader.run(monitor);
 				driveLoader.printStats(false);	// stats for this load
 		        long memAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		        driveLoader = null;
+		        driveLoader.clearCaches();
 		        memoryConsumption.add(memAfter);
                 NeoLoaderPlugin.debug("Memory usage was "+memAfter+" after loading "+filePath);
 				if(monitor.isCanceled()) break;
@@ -639,9 +628,8 @@ public class DriveDialog {
         NeoLoaderPlugin.info("Transient  memory change: "+memText(maxMem, memBefore));
         NeoLoaderPlugin.info("Persistent memory change: "+memText(memAfter, memBefore));
 
-        if (datasetName != null) {
-            Node gis = driveLoader != null ? driveLoader.getGisNode() : null;
-            addGisToMap(gis);
+        if(driveLoader!=null) {
+            driveLoader.addLayerToMap();
         }
 
         monitor.done();
@@ -659,46 +647,6 @@ public class DriveDialog {
         return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 	}
 	
-    // TODO move to utility class
-    /**
-     * adds gis to active map
-     * 
-     * @param gis node
-     */
-    public static void addGisToMap(Node gis) {
-        try {
-            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
-            URL url = new URL("file://" + databaseLocation);
-            IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, url, null);
-            final IMap map = ApplicationGIS.getActiveMap();
-            if (curService != null && gis != null && NetworkLoader.findLayerByNode(map, gis) == null
-                    && NetworkLoader.confirmLoadNetworkOnMap(map, NeoUtils.getNodeName(gis))) {
-                java.util.List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
-                java.util.List<ILayer> layerList = new ArrayList<ILayer>();
-                for (IGeoResource iGeoResource : curService.resources(null)) {
-                    if (iGeoResource.canResolve(Node.class)) {
-                        if (iGeoResource.resolve(Node.class, null).equals(gis)) {
-                            listGeoRes.add(iGeoResource);
-                            layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, 0));
-                            break;
-                        }
-                    }
-                };
-                NetworkLoader.zoomToLayer(layerList);
-            }
-        } catch (MalformedURLException e) {
-            // TODO Handle MalformedURLException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (IOException e) {
-            // TODO Handle IOException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (Exception e) {
-            e.printStackTrace();
-            e.printStackTrace();
-        }
-    }
-
-
     /**
      * Add file to 'Choose File' list
      * 

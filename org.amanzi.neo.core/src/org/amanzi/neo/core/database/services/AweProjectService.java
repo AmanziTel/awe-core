@@ -625,31 +625,21 @@ public class AweProjectService {
      * Adds network node to necessary awe project node
      * 
      * @param aweProjectName name of awe project
-     * @param network network node
+     * @param data network node
      */
-    public void addNetworkToProject(String aweProjectName, Node network) {
-        if (aweProjectName == null || network == null) {
+    public void addDataNodeToProject(String aweProjectName, Node data) {
+        if (aweProjectName == null || data == null) {
             return;
         }
         Transaction transacation = neoService.beginTx();
 
         try {
             AweProjectNode project = findOrCreateAweProject(aweProjectName);
-            project.addNetworkNode(network);
+            project.addChildNode(data);
             transacation.success();
         } finally {
             transacation.finish();
         }
-    }
-
-    /**
-     * Adds TEMS node to necessary awe project node
-     * 
-     * @param aweProjectName name of awe project
-     * @param mainNode drive node
-     */
-    public void addDriveToProject(String aweProjectName, Node mainNode) {
-        addNetworkToProject(aweProjectName, mainNode);
     }
 
     /**

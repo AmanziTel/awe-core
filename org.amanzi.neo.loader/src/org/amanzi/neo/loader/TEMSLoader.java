@@ -1,10 +1,6 @@
 package org.amanzi.neo.loader;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -12,7 +8,6 @@ import java.util.TreeMap;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
@@ -54,11 +49,12 @@ public class TEMSLoader extends DriveLoader {
 
     /**
      * After all lines have been parsed, this method is called. In this loader we save remaining
-     * cached data, and also the properties map.
+     * cached data, and call the super method to finalize saving of data to gis node and the
+     * properties map.
      */
     protected void finishUp() {
         saveData();
-        saveProperties();
+        super.finishUp();
     }
 
     protected void parseLine(String line) {
@@ -210,7 +206,7 @@ public class TEMSLoader extends DriveLoader {
                     }
                     prev_ms = ms;
                 }
-                savedData++;
+                incSaved();
                 transaction.success();
             } finally {
                 transaction.finish();

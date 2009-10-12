@@ -112,12 +112,12 @@ public class AweProjectNode extends AbstractNode {
 	}
 
     /**
-     *Adds a Network to Project
+     * Adds a child node to Project. This is normally a network node or drive data node.
      * 
-     * @param network network node
+     * @param Node to add as child
      */
-    public void addNetworkNode(Node network) {
-        addRelationship(NetworkRelationshipTypes.CHILD, network);
+    public void addChildNode(Node child) {
+        addRelationship(NetworkRelationshipTypes.CHILD, child);
     }
 
 }
