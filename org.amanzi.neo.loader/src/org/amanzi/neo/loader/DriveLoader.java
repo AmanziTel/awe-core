@@ -907,6 +907,9 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
             addToMap();
             commit(false);
             mainTx = null;
+            //Lagutko, 12.10.2009, call commit to see changes in views
+            NeoServiceProvider.getProvider().commit();
+            unregisterNeoManager();
         }
     }
 

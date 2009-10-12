@@ -172,7 +172,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
         if (currentThread) {
             neoManager.commit();
         } else {
-            display.asyncExec(new Runnable() {
+            display.syncExec(new Runnable() {
 
                 @Override
                 public void run() {
@@ -193,7 +193,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
         if (currentThread) {
             neoManager.rollback();
         } else {
-            display.asyncExec(new Runnable() {
+            display.syncExec(new Runnable() {
 
                 @Override
                 public void run() {
@@ -214,10 +214,13 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     private class DefaultServiceListener implements NeoServiceEventListener {
 
         public void serviceChanged(NeoServiceEvent event) {
-            for (INeoServiceProviderListener listener : listeners) {
+            //Lagutko, 12.10.2009, copy list of listeners to local variable
+            ArrayList<INeoServiceProviderListener> copiedListener = (ArrayList<INeoServiceProviderListener>)listeners.clone();
+            for (INeoServiceProviderListener listener : copiedListener) {
                 Object source = event.getSource();
                 switch (event.getStatus()) {
                 case STOPPED:
+                    copiedListener.remove(listener);
                     listener.onNeoStop(source);
                     shutdown();
                     break;
