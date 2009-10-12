@@ -29,7 +29,6 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.dialogs.DriveDialog;
@@ -49,7 +48,7 @@ import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 
-public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
+public abstract class DriveLoader {
     private String typeName = "Drive";
     protected NeoService neo;
     protected String filename = null;
@@ -263,7 +262,6 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
     private void initializeNeo() {
         if(this.neoProvider == null) this.neoProvider = NeoServiceProvider.getProvider();
         if(this.neo == null) this.neo = this.neoProvider.getService();
-        this.neoProvider.addServiceProviderListener(this);
     }
 
     /**
@@ -909,7 +907,6 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
             mainTx = null;
             //Lagutko, 12.10.2009, call commit to see changes in views
             NeoServiceProvider.getProvider().commit();
-            unregisterNeoManager();
         }
     }
 
@@ -943,17 +940,6 @@ public abstract class DriveLoader extends NeoServiceProviderEventAdapter {
      */
     protected void finishUp() {
         saveProperties();
-    }
-
-    @Override
-    public void onNeoStop(Object source) {
-        unregisterNeoManager();        
-    }
-    
-    //Lagutko 21.07.2009, using of neo.core plugin
-    private void unregisterNeoManager(){        
-//        neoProvider.commit();
-        neoProvider.removeServiceProviderListener(this);        
-    }
+    }    
 
 }

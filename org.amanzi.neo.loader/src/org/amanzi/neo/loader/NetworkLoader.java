@@ -33,7 +33,6 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
@@ -68,7 +67,7 @@ import org.neo4j.api.core.Transaction;
  * 
  * @author craig
  */
-public class NetworkLoader extends NeoServiceProviderEventAdapter {
+public class NetworkLoader {
     /** String LOAD_NETWORK_TITLE field */
     private static final String LOAD_NETWORK_TITLE = "Load Network";
     private static final String LOAD_NETWORK_MSG = "This network is already loaded into the database.\nDo you wish to overwrite the data?";
@@ -150,24 +149,12 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
 		    //Lagutko 21.07.2009, using of neo.core plugin
 		    neoProvider = NeoServiceProvider.getProvider();
             this.neo = neoProvider.getService();  // Call this first as it initializes everything
-            neoProvider.addServiceProviderListener(this);
 		}
 		this.filename = filename;
 		this.basename = (new File(filename)).getName();
 		//TODO: Enabled user preferences
 		//this.trimSectorName = get from preferences
 	}
-
-	//Lagutko 21.07.2009, using of neo.core plugin
-    public void onNeoStop(Object source) {
-        unregisterNeoManager();        
-    }
-    
-    //Lagutko 21.07.2009, using of neo.core plugin
-    private void unregisterNeoManager(){        
-        //neoProvider.commit();
-        neoProvider.removeServiceProviderListener(this);        
-    }
 
 	public void run(IProgressMonitor monitor) throws IOException {
         try {
@@ -300,9 +287,6 @@ public class NetworkLoader extends NeoServiceProviderEventAdapter {
         if (network != null) {
             NeoCorePlugin.getDefault().getProjectService().addNetworkToProject(LoaderUtils.getAweProjectName(), network);
         }
-        //neoProvider.commit();
-        //Lagutko 21.07.2009, using of neo.core plugin
-        unregisterNeoManager();
         // Register the database in the uDIG catalog            
         String databaseLocation = neoProvider.getDefaultDatabaseLocation();
         ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
