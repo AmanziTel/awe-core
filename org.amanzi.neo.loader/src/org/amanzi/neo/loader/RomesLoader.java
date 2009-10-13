@@ -8,10 +8,8 @@ import java.util.Date;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
-import org.amanzi.neo.loader.AbstractLoader.MappedHeaderRule;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.EmbeddedNeo;
