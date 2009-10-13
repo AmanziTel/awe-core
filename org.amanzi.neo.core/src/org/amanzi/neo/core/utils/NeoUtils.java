@@ -16,7 +16,10 @@ package org.amanzi.neo.core.utils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -449,6 +452,26 @@ public class NeoUtils {
         } finally {
             tx.finish();
         }
+    }
+
+    /**
+     * @param node
+     * @return
+     */
+    public static Long getNodeTime(Node node) {
+        String time = (String)node.getProperty("time", null);
+        if (time == null) {
+            return null;
+        }
+        SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+        Date timeD;
+        try {
+            timeD = df.parse(time);
+        } catch (ParseException e) {
+            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+            return null;
+        }
+        return timeD.getTime();
     }
 
 }

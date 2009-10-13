@@ -16,7 +16,10 @@ package org.amanzi.neo.core.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -28,6 +31,7 @@ import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
 
 /**
@@ -264,6 +268,38 @@ public class PropertyHeader {
             return null;
         }
         String[] result = (String[])neighbour.getProperty(INeoConstants.LIST_DOUBLE_PROPERTIES, null);
+        return result;
+    }
+
+    /**
+     * @return list of possible event
+     */
+    public Collection<String> getEvents() {
+        if (GisTypes.DRIVE != gisType) {
+            return null;
+        }
+        Set<String> result = new HashSet<String>();
+        Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+        if (propRel != null) {
+            Node propNode = propRel.getEndNode();
+            Iterator<Node> iterator = propNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    if (currentPos.isStartNode()) {
+                        return false;
+                    }
+                    return currentPos.lastRelationshipTraversed().hasProperty("events");
+                }
+            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)
+                    .iterator();
+            if (iterator.hasNext()) {
+                Iterator<String> propertyKeys = iterator.next().getPropertyKeys().iterator();
+                while (propertyKeys.hasNext()) {
+                    result.add(propertyKeys.next());
+                }
+            }
+        }
         return result;
     }
 }
