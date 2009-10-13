@@ -64,12 +64,14 @@ public abstract class AbstractLoader {
     private long savedData = 0;
     private long started = System.currentTimeMillis();
     private LinkedHashMap<String, String> knownHeaders = new LinkedHashMap<String, String>();
-    private LinkedHashMap<String,Header> headers = new LinkedHashMap<String,Header>();
+    private LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
     @SuppressWarnings("unchecked")
     public static final Class[] KNOWN_PROPERTY_TYPES = new Class[]{Integer.class, Float.class, String.class};
 
     protected class Header {
-        private static final int MAX_PROPERTY_VALUE_COUNT = 100;
+        private static final int MAX_PROPERTY_VALUE_COUNT = 200;        // discard value sets if count exceeds 1000
+        private static final float MAX_PROPERTY_VALUE_SPREAD = 0.5f;    // discard value sets if spread exceeds 50%
+        private static final int MIN_PROPERTY_VALUE_SPREAD_COUNT = 50;  // only calculate spread after this number of data points
         int index;
         String key;
         String name;
@@ -122,9 +124,26 @@ public abstract class AbstractLoader {
                 if (count == null) {
                     count = 0;
                 }
-                if(count == 0 && values.size() >= MAX_PROPERTY_VALUE_COUNT) {
-                    //About to exceed maximum number of unique allowed values, stop counting
-                    System.out.println("Property exceeded max value count: "+this.key);
+                boolean discard = false;
+                if(count == 0) {
+                    // We have a new value, so adding it will increase the size of the map
+                    // We should perform threshold tests to decide whether to drop the map or not
+                    if(values.size() >= MAX_PROPERTY_VALUE_COUNT) {
+                        // Exceeded absolute threashold, drop map
+                        System.out.println("Property values exceeded maximum count, no longer tracking value set: "+this.key);
+                        discard = true;
+                    } else if(values.size() >= MIN_PROPERTY_VALUE_SPREAD_COUNT) {
+                        // Exceeded minor threshold, test spread and then decide
+                        float spread = (float)values.size() / (float)parseCount;
+                        if(spread > MAX_PROPERTY_VALUE_SPREAD) {
+                            // Exceeded maximum spread, too much property variety, drop map
+                            System.out.println("Property shows excessive variation, no longer tracking value set: "+this.key);
+                            discard = true;
+                        }
+                    }
+                }
+                if(discard) {
+                    // Detected too much variety in property values, stop counting
                     values = null;
                 } else {
                     values.put(value, count + 1);
@@ -207,6 +226,25 @@ public abstract class AbstractLoader {
         }
         Class<String> knownType() {
             return String.class;
+        }
+    }
+    protected interface StringPropertyMapper {
+        public String mapValue(String originalValue);
+    }
+    protected class MappedStringHeader extends StringHeader {
+        private StringPropertyMapper mapper;
+        MappedStringHeader(Header old, String name, String key, StringPropertyMapper mapper){
+            super(old);
+            this.key = key;
+            this.name = name;
+            this.mapper = mapper;
+        }
+        String parse(String field){
+            if(invalid(field)) return null;
+            field = mapper.mapValue(field);
+            if(invalid(field)) return null;
+            parseCount++;
+            return (String)incValue(field);
         }
     }
 
@@ -313,6 +351,22 @@ public abstract class AbstractLoader {
         }
     }
 
+    /**
+     * Add a special header that creates a new property based on the existance of another property.
+     * This includes a mapper that modifies the contents of the value interpreted.
+     *
+     * @param property
+     * @param name
+     * @param key
+     * @param mapper
+     */
+    protected final void addMappedHeader(String property, String name, String key, StringPropertyMapper mapper) {
+        Header original = headers.get(property);
+        if (original != null) {
+            headers.put(key, new MappedStringHeader(original, name, key, mapper));
+        }
+    }
+
     private HashMap<Class<? extends Object>,List<String>> typedProperties = null;
     private Transaction mainTx;
     protected List<String> getIntegerProperties() {
@@ -346,7 +400,6 @@ public abstract class AbstractLoader {
             }
         }
     }
-    
     protected final LinkedHashMap<String, Object> makeDataMap(String[] fields) {
         LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
         for (String key : headers.keySet()) {

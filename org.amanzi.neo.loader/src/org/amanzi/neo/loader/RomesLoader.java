@@ -55,7 +55,7 @@ public class RomesLoader extends DriveLoader {
         addKnownHeader("latitude", ".*latitude.*");
         addKnownHeader("longitude", ".*longitude.*");
     }
-    
+    private boolean haveAddedMappedHeader = false;
     protected void parseLine(String line) {
         // debug(line);
         String fields[] = splitLine(line);
@@ -68,6 +68,16 @@ public class RomesLoader extends DriveLoader {
         if (first_line == 0)
             first_line = line_number;
         last_line = line_number;
+        if(!haveAddedMappedHeader) {
+            addMappedHeader("events", "Event Type", "event_type", new StringPropertyMapper(){
+
+                @Override
+                public String mapValue(String originalValue) {
+                    String result = originalValue.replaceAll("HO Command.*", "HO Command");
+                    return result;
+                }});
+            haveAddedMappedHeader = true;
+        }
         Map<String,Object> lineData = makeDataMap(fields);
         this.time = lineData.get("time").toString();
         Object latitude = lineData.get("latitude");
