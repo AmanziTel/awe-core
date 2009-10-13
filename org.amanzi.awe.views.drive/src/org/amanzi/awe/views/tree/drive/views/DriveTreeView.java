@@ -1,4 +1,4 @@
-package org.amanzi.awe.views.drive.views;
+package org.amanzi.awe.views.tree.drive.views;
 
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
@@ -20,7 +20,7 @@ public class DriveTreeView extends NetworkTreeView {
     /**
      * The ID of the view as specified by the extension.
      */
-    public static final String ID = "org.amanzi.awe.views.drive.views.DriveTreeView";
+    public static final String ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
 
     @Override
     protected void setProviders(NeoServiceProvider neoServiceProvider) {

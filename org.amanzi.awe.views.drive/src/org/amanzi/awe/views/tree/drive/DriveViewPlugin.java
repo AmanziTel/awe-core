@@ -1,4 +1,4 @@
-package org.amanzi.awe.views.drive;
+package org.amanzi.awe.views.tree.drive;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -10,7 +10,7 @@ import org.osgi.framework.BundleContext;
 public class DriveViewPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.amanzi.awe.views.drive";
+    public static final String PLUGIN_ID = "org.amanzi.awe.views.tree.drive";
 
 	// The shared instance
 	private static DriveViewPlugin plugin;

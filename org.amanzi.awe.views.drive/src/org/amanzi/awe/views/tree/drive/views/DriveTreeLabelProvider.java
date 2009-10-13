@@ -1,4 +1,4 @@
-package org.amanzi.awe.views.drive.views;
+package org.amanzi.awe.views.tree.drive.views;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;

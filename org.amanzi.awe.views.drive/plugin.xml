@@ -8,8 +8,8 @@
             name="Data Tree"
             icon="icons/drive.png"
             category="org.amanzi.awe.script"
-            class="org.amanzi.awe.views.drive.views.DriveTreeView"
-            id="org.amanzi.awe.views.drive.views.DriveTreeView">
+            class="org.amanzi.awe.views.tree.drive.views.DriveTreeView"
+            id="org.amanzi.awe.views.tree.drive.views.DriveTreeView">
       </view>
    </extension>
    <extension
@@ -20,7 +20,7 @@
                ratio="0.5"
                relative="org.amanzi.awe.networktree.views.NetworkTreeView"
                relationship="stack"
-               id="org.amanzi.awe.views.drive.views.DriveTreeView">
+               id="org.amanzi.awe.views.tree.drive.views.DriveTreeView">
          </view>
       </perspectiveExtension>
    </extension>

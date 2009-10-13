@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Drive
-Bundle-SymbolicName: org.amanzi.awe.views.drive; singleton:=true
+Bundle-SymbolicName: org.amanzi.awe.views.tree.drive;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: org.amanzi.awe.views.drive.DriveViewPlugin
+Bundle-Activator: org.amanzi.awe.views.tree.drive.DriveViewPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.amanzi.awe.views.network;bundle-version="1.0.0",
