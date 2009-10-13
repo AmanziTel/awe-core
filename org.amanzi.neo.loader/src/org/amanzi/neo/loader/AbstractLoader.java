@@ -67,7 +67,7 @@ public abstract class AbstractLoader {
     private LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
     private LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
     @SuppressWarnings("unchecked")
-    public static final Class[] KNOWN_PROPERTY_TYPES = new Class[]{Integer.class, Float.class, String.class};
+    public static final Class[] KNOWN_PROPERTY_TYPES = new Class[]{Integer.class, Long.class, Float.class, Double.class, String.class};
 
     protected class Header {
         private static final int MAX_PROPERTY_VALUE_COUNT = 200;        // discard value sets if count exceeds 1000
@@ -197,6 +197,22 @@ public abstract class AbstractLoader {
             return Integer.class;
         }
     }
+    protected class LongHeader extends Header {
+        LongHeader(Header old){
+            super(old);
+        }
+        Long parse(String field){
+            if(invalid(field)) return null;
+            parseCount++;
+            return (Long)incValue(Long.parseLong(field));
+        }
+        boolean shouldConvert() {
+            return false;
+        }
+        Class<Long> knownType() {
+            return Long.class;
+        }
+    }
     protected class FloatHeader extends Header {
         FloatHeader(Header old){
             super(old);
@@ -229,34 +245,44 @@ public abstract class AbstractLoader {
             return String.class;
         }
     }
-    protected interface StringPropertyMapper {
-        public String mapValue(String originalValue);
+    protected interface PropertyMapper {
+        public Object mapValue(String originalValue);
     }
     protected class MappedHeaderRule {
         private String name;
         private String key;
-        private StringPropertyMapper mapper;
-        MappedHeaderRule(String name, String key, StringPropertyMapper mapper){
+        private PropertyMapper mapper;
+        MappedHeaderRule(String name, String key, PropertyMapper mapper){
             this.key = key;
             this.name = name;
             this.mapper = mapper;
         }
     }
-    protected class MappedStringHeader extends StringHeader {
-        private StringPropertyMapper mapper;
-        MappedStringHeader(Header old, MappedHeaderRule mapRule){
+    protected class MappedHeader extends Header {
+        protected PropertyMapper mapper;
+        Class<? extends Object> knownClass = null;
+        MappedHeader(Header old, MappedHeaderRule mapRule){
             super(old);
             this.key = mapRule.key;
             this.name = mapRule.name;
             this.mapper = mapRule.mapper;
             this.values = new HashMap<Object,Integer>();    // need to make a new values list, otherwise we share the same data as the original
         }
-        String parse(String field){
+        Object parse(String field){
             if(invalid(field)) return null;
-            field = mapper.mapValue(field);
-            if(invalid(field)) return null;
+            Object result = mapper.mapValue(field);
             parseCount++;
-            return (String)incValue(field);
+            if(knownClass == null && result != null) {
+                //Determine converted class from very first conversion
+                knownClass = result.getClass();
+            }
+            return incValue(result);
+        }
+        boolean shouldConvert() {
+            return false;
+        }
+        Class<? extends Object> knownType() {
+            return knownClass;
         }
     }
 
@@ -363,7 +389,7 @@ public abstract class AbstractLoader {
      * you want to create a new property called 'active' that contains only 'yes/no' values and is
      * based on finding the text 'on air' inside another property, use this:
      * <pre>
-     * addMappedHeader(&quot;status&quot;, &quot;Active&quot;, &quot;active&quot;, new StringPropertyMapper() {
+     * addMappedHeader(&quot;status&quot;, &quot;Active&quot;, &quot;active&quot;, new PropertyMapper() {
      *     public String mapValue(String originalValue) {
      *         return originalValue.toLowerCase().contains(&quot;on air&quot;) ? &quot;yes&quot; : &quot;no&quot;;
      *     }
@@ -375,7 +401,7 @@ public abstract class AbstractLoader {
      * @param key of new header
      * @param mapper the mapper required to convert values from the old to the new
      */
-    protected final void addMappedHeader(String original, String name, String key, StringPropertyMapper mapper) {
+    protected final void addMappedHeader(String original, String name, String key, PropertyMapper mapper) {
         mappedHeaders.put(original, new MappedHeaderRule(name, key, mapper));
     }
 
@@ -420,7 +446,7 @@ public abstract class AbstractLoader {
                 if(headers.containsKey(mapRule.key)){
                     notify("Cannot add mapped header with key '"+mapRule.key+"': header with that name already exists");
                 } else {
-                    headers.put(mapRule.key, new MappedStringHeader(headers.get(key), mapRule));
+                    headers.put(mapRule.key, new MappedHeader(headers.get(key), mapRule));
                 }
             }else{
                 notify("No original header found matching mapped header key: "+key);
@@ -430,15 +456,6 @@ public abstract class AbstractLoader {
 
     private HashMap<Class<? extends Object>,List<String>> typedProperties = null;
     private Transaction mainTx;
-    protected List<String> getIntegerProperties() {
-        return getProperties(Integer.class);
-    }
-    protected List<String> getFloatProperties() {
-        return getProperties(Integer.class);
-    }
-    protected List<String> getStringProperties() {
-        return getProperties(Integer.class);
-    }
     protected List<String> getProperties(Class<? extends Object> klass) {
         if(typedProperties==null) {
             makeTypedProperties();
@@ -447,9 +464,9 @@ public abstract class AbstractLoader {
     }
     private void makeTypedProperties() {
         this.typedProperties = new HashMap<Class<? extends Object>,List<String>>();
-        this.typedProperties.put(Integer.class, new ArrayList<String>());
-        this.typedProperties.put(Float.class, new ArrayList<String>());
-        this.typedProperties.put(String.class, new ArrayList<String>());
+        for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
+            this.typedProperties.put(klass, new ArrayList<String>());
+        }
         for(String key: headers.keySet()){
             Header header = headers.get(key);
             if(header.parseCount>0){

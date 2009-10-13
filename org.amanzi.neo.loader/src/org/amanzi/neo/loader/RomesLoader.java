@@ -1,10 +1,14 @@
 package org.amanzi.neo.loader;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.loader.AbstractLoader.MappedHeaderRule;
@@ -55,12 +59,25 @@ public class RomesLoader extends DriveLoader {
         addKnownHeader("time", "time.*");
         addKnownHeader("latitude", ".*latitude.*");
         addKnownHeader("longitude", ".*longitude.*");
-        addMappedHeader("events", "Event Type", "event_type", new StringPropertyMapper(){
+        addMappedHeader("events", "Event Type", "event_type", new PropertyMapper(){
 
             @Override
-            public String mapValue(String originalValue) {
-                String result = originalValue.replaceAll("HO Command.*", "HO Command");
-                return result;
+            public Object mapValue(String originalValue) {
+                return originalValue.replaceAll("HO Command.*", "HO Command");
+            }});
+        addMappedHeader("time", "Timestamp", "timestamp", new PropertyMapper(){
+
+            @Override
+            public Object mapValue(String time) {
+                SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+                Date datetime;
+                try {
+                    datetime = df.parse(time);
+                } catch (ParseException e) {
+                    error(e.getLocalizedMessage());
+                    return 0L;
+                }
+                return datetime.getTime();
             }});
     }
     protected void parseLine(String line) {
