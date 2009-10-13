@@ -459,6 +459,7 @@ public class NeoUtils {
      * @return
      */
     public static Long getNodeTime(Node node) {
+        //TODO: This code only supports Romes data, we need TEMS support also (later)
         String time = (String)node.getProperty("time", null);
         if (time == null) {
             return null;

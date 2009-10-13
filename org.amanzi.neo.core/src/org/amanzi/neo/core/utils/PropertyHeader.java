@@ -289,6 +289,7 @@ public class PropertyHeader {
                     if (currentPos.isStartNode()) {
                         return false;
                     }
+                    //TODO: Change to use the new 'event_type' property
                     return currentPos.lastRelationshipTraversed().hasProperty("events");
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)
