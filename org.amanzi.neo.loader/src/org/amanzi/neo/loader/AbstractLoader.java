@@ -64,6 +64,7 @@ public abstract class AbstractLoader {
     private long savedData = 0;
     private long started = System.currentTimeMillis();
     private LinkedHashMap<String, String> knownHeaders = new LinkedHashMap<String, String>();
+    private LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
     private LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
     @SuppressWarnings("unchecked")
     public static final Class[] KNOWN_PROPERTY_TYPES = new Class[]{Integer.class, Float.class, String.class};
@@ -231,13 +232,24 @@ public abstract class AbstractLoader {
     protected interface StringPropertyMapper {
         public String mapValue(String originalValue);
     }
-    protected class MappedStringHeader extends StringHeader {
+    protected class MappedHeaderRule {
+        private String name;
+        private String key;
         private StringPropertyMapper mapper;
-        MappedStringHeader(Header old, String name, String key, StringPropertyMapper mapper){
-            super(old);
+        MappedHeaderRule(String name, String key, StringPropertyMapper mapper){
             this.key = key;
             this.name = name;
             this.mapper = mapper;
+        }
+    }
+    protected class MappedStringHeader extends StringHeader {
+        private StringPropertyMapper mapper;
+        MappedStringHeader(Header old, MappedHeaderRule mapRule){
+            super(old);
+            this.key = mapRule.key;
+            this.name = mapRule.name;
+            this.mapper = mapRule.mapper;
+            this.values = new HashMap<Object,Integer>();    // need to make a new values list, otherwise we share the same data as the original
         }
         String parse(String field){
             if(invalid(field)) return null;
@@ -319,13 +331,65 @@ public abstract class AbstractLoader {
         return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
     }
 
+    /**
+     * @return true if we have parsed the header line and know the properties to load
+     */
     protected boolean haveHeaders() {
         return headers.size()>0;
     }
+
+    /**
+     * Add a property name and regular expression for a known header. This is used if we want the
+     * property name in the database to be some specific text, not the header text in the file. The
+     * regular expression is used to find the header in the file to associate with the new property
+     * name. Note that the original property will not be saved using its original name. It will be
+     * saved with the specified name provided.
+     * 
+     * For example, if you want the first field found that starts with 'lat' to be saved in a property called 'y', then you would call this using:
+     * <pre>
+     * addKnownHeader("y", "lat.*");
+     * </pre>
+     * 
+     * @param key the name to use for the property
+     * @param regex a regular expression to use to find the property
+     */
     protected void addKnownHeader(String key, String regex) {
         knownHeaders.put(key, regex);
     }
 
+    /**
+     * Add a special header that creates a new property based on the existence of another property.
+     * This includes a mapper that modifies the contents of the value interpreted. For example, if
+     * you want to create a new property called 'active' that contains only 'yes/no' values and is
+     * based on finding the text 'on air' inside another property, use this:
+     * <pre>
+     * addMappedHeader(&quot;status&quot;, &quot;Active&quot;, &quot;active&quot;, new StringPropertyMapper() {
+     *     public String mapValue(String originalValue) {
+     *         return originalValue.toLowerCase().contains(&quot;on air&quot;) ? &quot;yes&quot; : &quot;no&quot;;
+     *     }
+     * });
+     * </pre>
+     * 
+     * @param original header key to base new header on
+     * @param name of new header
+     * @param key of new header
+     * @param mapper the mapper required to convert values from the old to the new
+     */
+    protected final void addMappedHeader(String original, String name, String key, StringPropertyMapper mapper) {
+        mappedHeaders.put(original, new MappedHeaderRule(name, key, mapper));
+    }
+
+    /**
+     * Parse possible header lines and build a set of header objects to be used to parse all data lines later. This allows us to deal with several requirements:
+     * <ul>
+     * <li>Know when we have passed the header and are in the data body of the file</li>
+     * <li>Have objects that automatically learn the tyep of the data as the data is parsed</li>
+     * <li>Support mapping headers to known specific names</li>
+     * <li>Support mapping values to different values using pre-defined mapper code</li>
+     * </ul>
+     *
+     * @param line to parse as the header line
+     */
     protected final void parseHeader(String line){
         debug(line);
         determineFieldSepRegex(line);
@@ -349,21 +413,18 @@ public abstract class AbstractLoader {
             }
             index++;
         }
-    }
-
-    /**
-     * Add a special header that creates a new property based on the existance of another property.
-     * This includes a mapper that modifies the contents of the value interpreted.
-     *
-     * @param property
-     * @param name
-     * @param key
-     * @param mapper
-     */
-    protected final void addMappedHeader(String property, String name, String key, StringPropertyMapper mapper) {
-        Header original = headers.get(property);
-        if (original != null) {
-            headers.put(key, new MappedStringHeader(original, name, key, mapper));
+        // Now add any new properties created from other existing properties using mapping rules
+        for(String key: mappedHeaders.keySet()) {
+            if(headers.containsKey(key)){
+                MappedHeaderRule mapRule = mappedHeaders.get(key);
+                if(headers.containsKey(mapRule.key)){
+                    notify("Cannot add mapped header with key '"+mapRule.key+"': header with that name already exists");
+                } else {
+                    headers.put(mapRule.key, new MappedStringHeader(headers.get(key), mapRule));
+                }
+            }else{
+                notify("No original header found matching mapped header key: "+key);
+            }
         }
     }
 
