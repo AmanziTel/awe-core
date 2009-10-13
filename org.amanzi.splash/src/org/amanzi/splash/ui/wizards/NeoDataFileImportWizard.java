@@ -9,6 +9,9 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.lang.reflect.InvocationTargetException;
 
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.swing.SplashTable;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.AbstractSplashEditor;
@@ -44,31 +47,38 @@ public class NeoDataFileImportWizard extends Wizard implements IImportWizard {
 
 		NeoSplashUtil.logn("containerName: " + containerName);
 
-		final String fileName = mainPage.getFileName();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
 			public void run(final IProgressMonitor monitor) throws InvocationTargetException {
+			    monitor.beginTask("Loading", 100);
 				try {
-					getShell().getDisplay().asyncExec(new Runnable() {
-						public void run() {
-							AbstractSplashEditor editor = (AbstractSplashEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+				    AbstractSplashEditor editor = (AbstractSplashEditor)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult(){
+				        
+				        private AbstractSplashEditor editor;
+                        
+                        @Override
+                        public void run() {
+                            editor = (AbstractSplashEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+                        }
+                        
+                        @Override
+                        public Object getValue() {
+                            return editor;
+                        }
+                    });
 
-							SplashTable table = editor.getTable();
+					SplashTable table = editor.getTable();
 
-							SplashTableModel model = (SplashTableModel) table.getModel();
+					SplashTableModel model = (SplashTableModel) table.getModel();
 
-							monitor.beginTask("Loading ", 100);
+					monitor.beginTask("Loading ", 100);
 
-							IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+					monitor.worked(1);
 
-							monitor.worked(1);
+					monitor.setTaskName("Loading records from file...");
 
-							monitor.setTaskName("Loading records from file...");
-
-							NeoSplashUtil.LoadFileIntoSpreadsheet(file.getLocation().toString(), model, monitor);		
-						}
-					});
-
-
+					NeoSplashUtil.LoadFileIntoSpreadsheet(file.getLocation().toString(), model, monitor);
+						
+					table.repaint();
 					//doFinish(file, monitor);
 				} finally {
 					monitor.done();

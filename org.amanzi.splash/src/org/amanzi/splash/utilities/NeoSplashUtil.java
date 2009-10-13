@@ -26,18 +26,24 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.SplashEditorInput;
+import org.amanzi.splash.ui.SplashPlugin;
+import org.amanzi.splash.views.importbuilder.ImportBuilderView;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.neo4j.api.core.Transaction;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -290,42 +296,16 @@ public class NeoSplashUtil {
 		
 	}
 
-	/**
-	 * A class that extends FileInputStream and enabled counting of the bytes read and calculation of the percentage read
-	 * @author craig
-	 * @since 1.0.0
-	 */
-	public static class CountingFileInputStream extends FileInputStream {
-        long bytesRead = 0;
-        long totalBytes = 0;
-
-        public CountingFileInputStream(File arg0) throws FileNotFoundException {
-            super(arg0);
-        }
-
-        public int read(byte[] b) {
-            int ans = this.read(b);
-            if (ans > 0)
-                bytesRead += ans;
-            return ans;
-        }
-
-        public long tell() {
-            return bytesRead;
-        }
-
-        public int percentage() {
-            return (int)(100.0 * (float)bytesRead / (float)totalBytes);
-        }
-    }
-
 	public static void LoadFileIntoSpreadsheet(String path, SplashTableModel model, IProgressMonitor monitor){
 		//String path = "c:\\sample.txt";
 		//NeoSplashUtil.logn("path: " + path);
+	    Transaction tx = NeoUtils.beginTransaction();
 		try {
-		    CountingFileInputStream is = new CountingFileInputStream(new File(path));
+		    File csvFile = new File(path);
+		    FileInputStream is = new FileInputStream(csvFile);
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 			String line;
+			
 			line = reader.readLine();
 			
 			int i=0;
@@ -342,7 +322,9 @@ public class NeoSplashUtil {
 			}
 			
 			CSVParser parser = new CSVParser(sep);
-			int perc = is.percentage();
+			int perc = 0;
+			long totalBytes = csvFile.length();
+			long bytesRead = 0;
             int prevPerc = 0;
 			while (line != null  && line.lastIndexOf(sep) > 0){
 				NeoSplashUtil.logn("loading line #" + i);
@@ -351,11 +333,12 @@ public class NeoSplashUtil {
 				Iterator<String> it = list.iterator();
 				j = 0;
 				while (it.hasNext()) {
-					model.setValueAt(new Cell(i, j, "",(String) it.next(), new CellFormat()), i, j);
+					model.setValueAt(new Cell(i, j, "",(String) it.next(), new CellFormat()), i, j);				    
 					j++;
 				}
 
-	            perc = is.percentage();
+		        bytesRead += line.length();
+	            perc = (int)(100.0 * (float)bytesRead / (float)totalBytes);
 	            if (perc > prevPerc) {
 	                monitor.setTaskName("Loading record #" + i);
                     monitor.worked(perc - prevPerc);
@@ -363,12 +346,18 @@ public class NeoSplashUtil {
                 }
 
 				line = reader.readLine();
-				i++;
+				i++;				
 			}
+			tx.success();
 		} catch (FileNotFoundException e) {
+		    tx.failure();
 			e.printStackTrace();
 		} catch (IOException e) {
+		    tx.failure();
 			e.printStackTrace();
+		}
+		finally {		    
+		    tx.finish();
 		}
 
 	}
@@ -495,5 +484,20 @@ public class NeoSplashUtil {
 	    String fullPath = "file://" + databaseLocation + "?" + INeoConstants.PROPERTY_NAME_NAME + "=" + name;
 	    
 	    return new URL(fullPath);	    
+	}
+	
+	public static IViewPart getImportBuilderView() {
+	    IViewPart result = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ImportBuilderView.IMPORT_BUILDER_VIEW_ID);
+	    
+	    if (result == null) {
+	        try {
+	            result = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ImportBuilderView.IMPORT_BUILDER_VIEW_ID);
+	        }
+	        catch (PartInitException e) {
+	            SplashPlugin.error(null, e);
+	        }
+	    }
+	    
+	    return result;
 	}
 }

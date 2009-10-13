@@ -29,6 +29,8 @@ public class ImportBuilderView extends ViewPart {
 	private Action action1;
 	private Action action2;
 	private Action doubleClickAction;
+	
+	public static final String IMPORT_BUILDER_VIEW_ID = "org.amanzi.splash.views.ImportBuilderView";
 
 	/*
 	 * The content provider class is responsible for

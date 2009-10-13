@@ -661,8 +661,7 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 			String srcDefinition = (String) ((Cell) getModel().getValueAt(srcRow, srcColumn)).getDefinition();
 			String srcValue = (String) ((Cell) getModel().getValueAt(srcRow, srcColumn)).getValue();
 			Cell dstCell = new Cell(row, column, srcDefinition, srcValue, new CellFormat());
-			String oldDstDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
-			((SplashTableModel) getModel()).interpret(srcDefinition, oldDstDefinition, row, column);
+			((SplashTableModel) getModel()).interpret(srcDefinition, row, column);
 
 			getModel().setValueAt(dstCell, row, column);
 
@@ -674,8 +673,7 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 			NeoSplashUtil.logn("srcColumn: " + srcColumn);
 			NeoSplashUtil.logn("srcRow: " + srcRow);
 			Cell dstCell = new Cell(row, column, cutDefinition, cutValue, new CellFormat());
-			String oldDstDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
-			((SplashTableModel) getModel()).interpret(cutDefinition, oldDstDefinition, row, column);
+			((SplashTableModel) getModel()).interpret(cutDefinition, row, column);
 
 			getModel().setValueAt(dstCell, row, column);
 		}

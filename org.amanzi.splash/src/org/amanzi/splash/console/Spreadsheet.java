@@ -49,13 +49,7 @@ public class Spreadsheet {
 	
 	public void setValue(String cellID, String newFormula) {
 	    CellID id = new CellID(cellID);
-        Cell cell = (Cell)model.getValueAt(id.getRowIndex(), id.getColumnIndex());
-		
-		String oldFormula = (String)cell.getDefinition();
-		
-		model.interpret(newFormula, oldFormula, id.getRowIndex(), id.getColumnIndex());
-		
-		//TODO: Lagutko: is it needs?
-		//model.updateCellsAndTableModelReferences(row, column, oldFormula, newFormula);
+        
+		model.interpret(newFormula, id.getRowIndex(), id.getColumnIndex());
 	}
 }

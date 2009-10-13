@@ -44,7 +44,9 @@ public class SplashJob extends Job {
      * Creates a SplashJob
      */
     public SplashJob() {
-        super(SPLASH_JOB_NAME);        
+        super(SPLASH_JOB_NAME);
+        //Lagutko, 12.10.2009, set this Job as System to have no Monitor 
+        setSystem(true);
     }
     
     /**
@@ -69,8 +71,8 @@ public class SplashJob extends Job {
     }
 
     @Override
-    protected IStatus run(IProgressMonitor monitor) {     
-    	//Job will be runned until it not execute Task that returns EXIT result 
+    protected IStatus run(IProgressMonitor monitor) {
+        //Job will be runned until it not execute Task that returns EXIT result 
         SplashJobTaskResult result = SplashJobTaskResult.CONTINUE;
         do {
             try {

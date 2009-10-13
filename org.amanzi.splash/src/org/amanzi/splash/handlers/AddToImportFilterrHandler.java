@@ -1,5 +1,6 @@
 package org.amanzi.splash.handlers;
 
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.splash.ui.AbstractSplashEditor;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -27,11 +28,17 @@ public class AddToImportFilterrHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 
-		AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
+		final AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
 
-
-		editor.LoadHeadings();
-		editor.addNewFilter();
+		ActionUtil.getInstance().runTask(new Runnable() {
+		    
+		    @Override
+		    public void run() {
+		        editor.LoadHeadings();
+//		        editor.addNewFilter();
+		    }
+		    
+		}, true);		
 		return null;
 	}
 }

@@ -57,6 +57,7 @@ import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.ColumnHeaderRenderer;
@@ -1034,8 +1035,14 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		addToImportFilterMenu.setText("Add to Import Filter");
 		addToImportFilterMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-					
-				addNewFilter();
+			    ActionUtil.getInstance().runTask(new Runnable() {
+			        
+			        @Override
+			        public void run() {
+			            addNewFilter();
+			        }
+			    }, true);
+				
 			}
 		});
 		contextMenu.add(addToImportFilterMenu);
@@ -1045,9 +1052,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	}
 	
 	public void addNewFilter(){
-		ImportBuilderView view = 
-			(ImportBuilderView) PlatformUI.getWorkbench().
-		getActiveWorkbenchWindow().getActivePage().findView("org.amanzi.splash.views.ImportBuilderView");
+		ImportBuilderView view = (ImportBuilderView)NeoSplashUtil.getImportBuilderView();
 		
 		ImportBuilderTableViewer iv = view.getImportBuilderTableViewer();
 		
@@ -1086,9 +1091,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		
 		
 		
-		ImportBuilderView view = 
-			(ImportBuilderView) PlatformUI.getWorkbench().
-		getActiveWorkbenchWindow().getActivePage().findView("org.amanzi.splash.views.ImportBuilderView");
+		ImportBuilderView view = (ImportBuilderView) NeoSplashUtil.getImportBuilderView();
 		
 		ImportBuilderTableViewer iv = view.getImportBuilderTableViewer();
 		

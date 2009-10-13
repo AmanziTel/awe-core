@@ -322,8 +322,7 @@ public class SplashTableModel extends DefaultTableModel {
 	public void updateCellFromScript(Cell cell) {
 		updateDefinitionFromScript(cell);
 
-		interpret((String) cell.getDefinition(), Cell.DEFAULT_DEFINITION, cell
-				.getRow(), cell.getColumn());
+		interpret((String) cell.getDefinition(), cell.getRow(), cell.getColumn());
 	}
 
 	/**
@@ -337,31 +336,6 @@ public class SplashTableModel extends DefaultTableModel {
 	public void updateDefinitionFromScript(Cell cell) {
 		String content = NeoSplashUtil.getScriptContent(cell.getScriptURI());
 		cell.setDefinition(content);
-	}
-
-	/**
-	 * Interprets a definition of Cell by row and column
-	 * 
-	 * @param definition
-	 *            definition of Cell
-	 * @param row
-	 *            row index of Cell
-	 * @param column
-	 *            column index of Cell
-	 * @return Cell with updated value
-	 */
-	public Cell interpret(String definition, int row, int column) {
-		String cellID = new CellID(row, column).getFullID();
-		String formula1 = definition;
-		Cell se = getCellByID(cellID);
-
-		Object s1 = interpret_erb(cellID, formula1);
-
-		se.setDefinition(definition);
-		se.setValue((String) s1);
-
-		this.setValueAt(se, row, column);
-		return se;
 	}
 
 	/**
@@ -408,9 +382,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 *            column of Cell
 	 * @return Cell with interpeted values
 	 */
-	// TODO: Lagutko: do we need oldDefinition param?
-	public Cell interpret(String definition, String oldDefinition, int row,
-			int column) {
+	public Cell interpret(String definition, int row, int column) {
 		//Lagutko, 6.10.2009, run Interpret task
 	    InterpretTask job = new InterpretTask(this, row, column, definition);
 	    splashJob.addTask(job);

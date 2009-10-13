@@ -58,7 +58,7 @@ public class ImportBuilderFilterList {
 		
 		String[] ret = new String[filter_headings.size()];
 		for (int i=0;i<filter_headings.size();i++) ret[i] = filter_headings.get(i);
-		return ret;
+		return ret;	    
 		
 	}
 	
