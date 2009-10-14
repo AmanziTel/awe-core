@@ -10,6 +10,9 @@ import net.refractions.udig.catalog.IService;
 import net.refractions.udig.catalog.ServiceExtension;
 import net.refractions.udig.catalog.URLUtils;
 
+import org.amanzi.awe.startup.splash.Activator;
+import org.eclipse.core.runtime.IProgressMonitor;
+
 public class NeoServiceExtension implements ServiceExtension {
     private static final String NEOSTORE_DIR = "neostore";
     private static final String FILE_PROTOCOL = "file";
@@ -45,6 +48,16 @@ public class NeoServiceExtension implements ServiceExtension {
     
     public IService createService(URL id, Map<String, Serializable> params) {
         // good defensive programming
+
+        try {
+            IProgressMonitor monitor = Activator.getDefault().getSpalhMonitor();
+            if (monitor != null) {
+                monitor.subTask("Initialize Neo Service");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         if (params == null) {
             return null;
         }

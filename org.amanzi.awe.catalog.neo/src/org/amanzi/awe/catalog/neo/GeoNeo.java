@@ -44,6 +44,9 @@ public class GeoNeo {
 
     /** GeoNeo NEIGH_NAME field */
     public static final String NEIGH_NAME = "NEIGH_NAME";
+
+    /** GeoNeo DRIVE_INQUIRER field */
+    public static final String DRIVE_INQUIRER = "DRIVE_INQUIRER";
     private Node gisNode;   // the root of some specific GIS information in the Neo4j database
     private CoordinateReferenceSystem crs;
     private ReferencedEnvelope bounds;
@@ -483,5 +486,15 @@ public class GeoNeo {
 
     public Object getProperties(String key) {
         return properties.get(key);
+    }
+
+    /**
+     *Sets properties
+     * 
+     * @param key - property key
+     * @param value - property value
+     */
+    public void setProperty(String key, Object value) {
+        properties.put(key, value);
     }
 }
