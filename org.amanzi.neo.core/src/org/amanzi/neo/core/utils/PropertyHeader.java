@@ -290,7 +290,7 @@ public class PropertyHeader {
                         return false;
                     }
                     //TODO: Change to use the new 'event_type' property
-                    return currentPos.lastRelationshipTraversed().hasProperty("events");
+                    return "event_type".equals(currentPos.lastRelationshipTraversed().getProperty("property", ""));
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)
                     .iterator();

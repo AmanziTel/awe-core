@@ -459,6 +459,12 @@ public class NeoUtils {
      * @return
      */
     public static Long getNodeTime(Node node) {
+        if (node.hasProperty("timestamp")) {
+            Object time = node.getProperty("timestamp");
+            if (time instanceof Long) {
+                return (Long)time;
+            }
+        }
         //TODO: This code only supports Romes data, we need TEMS support also (later)
         String time = (String)node.getProperty("time", null);
         if (time == null) {
@@ -473,6 +479,19 @@ public class NeoUtils {
             return null;
         }
         return timeD.getTime();
+    }
+
+    /**
+     * @param gis
+     */
+    public static Traverser getAllFileNodes(Node gis) {
+        return gis.traverse(Order.DEPTH_FIRST, getStopEvaluator(3), new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return isFileNode(currentPos.currentNode());
+            }
+        }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
     }
 
 }
