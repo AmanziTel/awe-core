@@ -608,7 +608,7 @@ public class ReuseAnalyserView extends ViewPart {
     }
 
     /**
-     *
+     *change logarithmicSelection
      */
     protected void logarithmicSelection() {
             CategoryPlot plot = (CategoryPlot)chart.getPlot();
