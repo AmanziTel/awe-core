@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.ui.PlatformGIS;
 
+import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -677,6 +679,42 @@ public class DriveInquirerView extends ViewPart {
      * @param geo
      */
     private void setProperty(GeoNeo geo) {
+        Node gisNode = getGisNode();
+        if (!geo.getMainGisNode().equals(gisNode)) {
+            return;
+        }
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        Long beginTime = getBeginTime();
+        map.put(GeoConstant.Drive.BEGIN_TIME, beginTime);
+        map.put(GeoConstant.Drive.END_TIME, beginTime + getLength());
+        double crosshair = ((XYPlot)chart.getPlot()).getDomainCrosshairValue();
+        Integer nodeId = getSelectedProperty1(crosshair);
+        map.put(GeoConstant.Drive.SELECT_PROPERTY1, nodeId);
+        nodeId = getSelectedProperty2(crosshair);
+        map.put(GeoConstant.Drive.SELECT_PROPERTY2, nodeId);
+        geo.setProperty(GeoNeo.DRIVE_INQUIRER, map);
+    }
+
+    /**
+     * get id of selected ms node for property 2
+     * 
+     * @param crosshair - crosshair value
+     * @return node id or null
+     */
+    private Integer getSelectedProperty2(double crosshair) {
+        int[] item = xydataset2.collection.getSurroundingItems(0, (long)crosshair);
+        return item[0] >= 0 ? item[0] : item[1] > 0 ? item[1] : null;
+    }
+
+    /**
+     * get id of selected ms node for property 1
+     * 
+     * @param crosshair - crosshair value
+     * @return node id or null
+     */
+    private Integer getSelectedProperty1(double crosshair) {
+        int[] item = xydataset1.collection.getSurroundingItems(0, (long)crosshair);
+        return item[0] >= 0 ? item[0] : item[1] > 0 ? item[1] : null;
     }
 
     /**

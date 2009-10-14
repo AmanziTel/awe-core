@@ -21,6 +21,8 @@ import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -30,6 +32,7 @@ import net.refractions.udig.project.internal.render.Renderer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
+import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.neostyle.NeoStyle;
@@ -106,8 +109,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         CoordinateReferenceSystem worldCrs = context.getCRS();
         this.transform_d2w = CRS.findMathTransform(dataCrs, worldCrs, lenient);
         this.transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient); // could use
-        // transform_d2w.inverse()
-        // also
     }
 
     private Envelope getTransformedBounds() throws TransformException {
@@ -177,7 +178,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String selectedProp = geoNeo.getPropertyName();
             aggNode = geoNeo.getAggrNode();
-
+            Map<String, Object> selectionMap = (Map<String, Object>)geoNeo.getProperties(GeoNeo.DRIVE_INQUIRER);
             // Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -211,7 +212,21 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             
             // First we find all selected points to draw with a highlight behind the main points
             ArrayList<Node> selectedPoints = new ArrayList<Node>();
-            final Set<Node> selectedNodes = geoNeo.getSelectedNodes();
+            final Set<Node> selectedNodes = new HashSet<Node>(geoNeo.getSelectedNodes());
+            // TODO refactor selection point (for example: in draws mp node add method
+            // isSelected(node))
+            if (selectionMap != null) {
+                Long beginTime = (Long)selectionMap.get(GeoConstant.Drive.BEGIN_TIME);
+                Long endTime = (Long)selectionMap.get(GeoConstant.Drive.END_TIME);
+                if (beginTime != null && endTime != null && beginTime <= endTime) {
+                    for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
+                        Long time = NeoUtils.getNodeTime(node.getNode());
+                        if (time != null && time >= beginTime && time <= endTime) {
+                            selectedNodes.add(node.getNode());
+                        }
+                    }
+                }
+            }
             for(Node node: selectedNodes) {
                 if("file".equals(node.getProperty("type",""))){
                     //Select all 'mp' nodes in that file
@@ -309,6 +324,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     }
                 }
                 renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite);
+
                 if (drawLabels) {
                     double theta = 0.0;
                     double dx = 0.0;

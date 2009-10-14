@@ -9,8 +9,10 @@ Require-Bundle: org.eclipse.ui,
  org.jfree;bundle-version="1.0.13",
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.neo4j;bundle-version="1.0.0",
- net.refractions.udig.project.ui;bundle-version="1.1.1"
+ net.refractions.udig.project.ui;bundle-version="1.1.1",
+ org.amanzi.awe.catalog.neo;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: amanzi.org
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ lib/jfreechart-1.0.13-demo-all.jar
