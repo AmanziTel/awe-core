@@ -108,7 +108,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         // bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
         this.transform_d2w = CRS.findMathTransform(dataCrs, worldCrs, lenient);
-        this.transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient); // could use
+        this.transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient);
     }
 
     private Envelope getTransformedBounds() throws TransformException {
