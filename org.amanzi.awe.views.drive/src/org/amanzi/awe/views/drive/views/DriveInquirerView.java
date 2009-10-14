@@ -688,10 +688,34 @@ public class DriveInquirerView extends ViewPart {
         map.put(GeoConstant.Drive.BEGIN_TIME, beginTime);
         map.put(GeoConstant.Drive.END_TIME, beginTime + getLength());
         double crosshair = ((XYPlot)chart.getPlot()).getDomainCrosshairValue();
-        Integer nodeId = getSelectedProperty1(crosshair);
-        map.put(GeoConstant.Drive.SELECT_PROPERTY1, nodeId);
+        Long nodeId = getSelectedProperty1(crosshair);
+        Long id = null;
+        // gets id of parent mp node
+        if (nodeId != null) {
+            Node node = NeoUtils.getNodeById(nodeId);
+            if (node != null) {
+                Relationship singleRelationship = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+                if (singleRelationship != null) {
+                    node = singleRelationship.getOtherNode(node);
+                    id = node.getId();
+                }
+            }
+        }
+        map.put(GeoConstant.Drive.SELECT_PROPERTY1, id);
         nodeId = getSelectedProperty2(crosshair);
-        map.put(GeoConstant.Drive.SELECT_PROPERTY2, nodeId);
+        id = null;
+        // gets id of parent mp node
+        if (nodeId != null) {
+            Node node = NeoUtils.getNodeById(nodeId);
+            if (node != null) {
+                Relationship singleRelationship = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+                if (singleRelationship != null) {
+                    node = singleRelationship.getOtherNode(node);
+                    id = node.getId();
+                }
+            }
+        }
+        map.put(GeoConstant.Drive.SELECT_PROPERTY2, id);
         geo.setProperty(GeoNeo.DRIVE_INQUIRER, map);
     }
 
@@ -701,9 +725,19 @@ public class DriveInquirerView extends ViewPart {
      * @param crosshair - crosshair value
      * @return node id or null
      */
-    private Integer getSelectedProperty2(double crosshair) {
+    private Long getSelectedProperty2(double crosshair) {
         int[] item = xydataset2.collection.getSurroundingItems(0, (long)crosshair);
-        return item[0] >= 0 ? item[0] : item[1] > 0 ? item[1] : null;
+        Integer result = null;
+        if (item[0] > 0) {
+            result = item[0];
+        } else if (item[1] > 0) {
+            result = item[1];
+        }
+        if (result != null) {
+            return xydataset1.collection.getSeries(0).getDataItem(result).getValue().longValue();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -712,9 +746,19 @@ public class DriveInquirerView extends ViewPart {
      * @param crosshair - crosshair value
      * @return node id or null
      */
-    private Integer getSelectedProperty1(double crosshair) {
+    private Long getSelectedProperty1(double crosshair) {
         int[] item = xydataset1.collection.getSurroundingItems(0, (long)crosshair);
-        return item[0] >= 0 ? item[0] : item[1] > 0 ? item[1] : null;
+        Integer result=null;
+        if (item[0] > 0){
+         result=  item[0]; 
+        }else if ( item[1] > 0 ){
+            result = item[1];
+        }
+        if (result != null) {
+            return xydataset1.collection.getSeries(0).getDataItem(result).getValue().longValue();
+        } else {
+            return null;
+        }
     }
 
     /**
