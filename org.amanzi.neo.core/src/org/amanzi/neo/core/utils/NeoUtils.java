@@ -494,4 +494,12 @@ public class NeoUtils {
         }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
     }
 
+    /**
+     * @param nodeId
+     * @return
+     */
+    public static Node getNodeById(Long nodeId) {
+        return nodeId == null ? null : NeoServiceProvider.getProvider().getService().getNodeById(nodeId);
+    }
+
 }
