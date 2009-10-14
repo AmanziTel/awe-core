@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
@@ -57,46 +58,57 @@ public abstract class AbstractLoader {
     protected String basename = null;
     private Display display;
     private String fieldSepRegex;
-    private String[] possibleFieldSepRegexes = new String[]{"\\t","\\,","\\;"};
+    private String[] possibleFieldSepRegexes = new String[] {"\\t", "\\,", "\\;"};
     protected int line_number = 0;
     private int limit = 0;
     private double[] bbox;
     private long savedData = 0;
     private long started = System.currentTimeMillis();
+    private ArrayList<Pattern> headerFilters = new ArrayList<Pattern>();
     private LinkedHashMap<String, String> knownHeaders = new LinkedHashMap<String, String>();
     private LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
     private LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
     @SuppressWarnings("unchecked")
-    public static final Class[] KNOWN_PROPERTY_TYPES = new Class[]{Integer.class, Long.class, Float.class, Double.class, String.class};
+    public static final Class[] KNOWN_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class,
+            String.class};
 
     protected class Header {
-        private static final int MAX_PROPERTY_VALUE_COUNT = 200;        // discard value sets if count exceeds 1000
-        private static final float MAX_PROPERTY_VALUE_SPREAD = 0.5f;    // discard value sets if spread exceeds 50%
-        private static final int MIN_PROPERTY_VALUE_SPREAD_COUNT = 50;  // only calculate spread after this number of data points
+        private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard value sets if count
+                                                                    // exceeds 100
+        private static final float MAX_PROPERTY_VALUE_SPREAD = 0.5f; // discard value sets if
+                                                                        // spread exceeds 50%
+        private static final int MIN_PROPERTY_VALUE_SPREAD_COUNT = 50; // only calculate spread
+                                                                        // after this number of data
+                                                                        // points
         int index;
         String key;
         String name;
-        HashMap<Class<? extends Object>,Integer> parseTypes = new HashMap<Class<? extends Object>,Integer>();
-        HashMap<Object,Integer> values = new HashMap<Object,Integer>();
+        HashMap<Class< ? extends Object>, Integer> parseTypes = new HashMap<Class< ? extends Object>, Integer>();
+        HashMap<Object, Integer> values = new HashMap<Object, Integer>();
         int parseCount = 0;
+
         Header(String name, String key, int index) {
             this.index = index;
             this.name = name;
             this.key = key;
-            for(Class<? extends Object> klass: KNOWN_PROPERTY_TYPES){
-                parseTypes.put(klass,0);
+            for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
+                parseTypes.put(klass, 0);
             }
         }
-        Header(Header old){
-            this(old.name,old.key,old.index);
+
+        Header(Header old) {
+            this(old.name, old.key, old.index);
             this.parseCount = old.parseCount;
             this.values = old.values;
         }
+
         protected boolean invalid(String field) {
-            return field==null || field.length()<1 || field.equals("?");
+            return field == null || field.length() < 1 || field.equals("?");
         }
+
         Object parse(String field) {
-            if(invalid(field)) return null;
+            if (invalid(field))
+                return null;
             parseCount++;
             try {
                 int value = Integer.parseInt(field);
@@ -116,34 +128,36 @@ public abstract class AbstractLoader {
                 }
             }
         }
-        private void incType(Class<? extends Object> klass) {
-            parseTypes.put(klass, parseTypes.get(klass)+1);
+
+        private void incType(Class< ? extends Object> klass) {
+            parseTypes.put(klass, parseTypes.get(klass) + 1);
         }
+
         protected Object incValue(Object value) {
-            if(values!=null) {
+            if (values != null) {
                 Integer count = values.get(value);
                 if (count == null) {
                     count = 0;
                 }
                 boolean discard = false;
-                if(count == 0) {
+                if (count == 0) {
                     // We have a new value, so adding it will increase the size of the map
                     // We should perform threshold tests to decide whether to drop the map or not
-                    if(values.size() >= MAX_PROPERTY_VALUE_COUNT) {
+                    if (values.size() >= MAX_PROPERTY_VALUE_COUNT) {
                         // Exceeded absolute threashold, drop map
-                        System.out.println("Property values exceeded maximum count, no longer tracking value set: "+this.key);
+                        System.out.println("Property values exceeded maximum count, no longer tracking value set: " + this.key);
                         discard = true;
-                    } else if(values.size() >= MIN_PROPERTY_VALUE_SPREAD_COUNT) {
+                    } else if (values.size() >= MIN_PROPERTY_VALUE_SPREAD_COUNT) {
                         // Exceeded minor threshold, test spread and then decide
                         float spread = (float)values.size() / (float)parseCount;
-                        if(spread > MAX_PROPERTY_VALUE_SPREAD) {
+                        if (spread > MAX_PROPERTY_VALUE_SPREAD) {
                             // Exceeded maximum spread, too much property variety, drop map
-                            System.out.println("Property shows excessive variation, no longer tracking value set: "+this.key);
+                            System.out.println("Property shows excessive variation, no longer tracking value set: " + this.key);
                             discard = true;
                         }
                     }
                 }
-                if(discard) {
+                if (discard) {
                     // Detected too much variety in property values, stop counting
                     values = null;
                 } else {
@@ -152,142 +166,175 @@ public abstract class AbstractLoader {
             }
             return value;
         }
+
         boolean shouldConvert() {
             return parseCount > 10;
         }
-        Class<? extends Object> knownType() {
-            Class<? extends Object> best = String.class;
+
+        Class< ? extends Object> knownType() {
+            Class< ? extends Object> best = String.class;
             int maxCount = 0;
             int countFound = 0;
-            for(Class<? extends Object> klass:parseTypes.keySet()){
+            for (Class< ? extends Object> klass : parseTypes.keySet()) {
                 int count = parseTypes.get(klass);
-                if(maxCount<parseTypes.get(klass)){
+                if (maxCount < parseTypes.get(klass)) {
                     maxCount = count;
                     best = klass;
                 }
-                if(count>0){
+                if (count > 0) {
                     countFound++;
                 }
             }
-            if(countFound>1){
-                AbstractLoader.this.notify("Header "+key+" had multiple type matches: ");
-                for(Class<? extends Object> klass:parseTypes.keySet()){
+            if (countFound > 1) {
+                AbstractLoader.this.notify("Header " + key + " had multiple type matches: ");
+                for (Class< ? extends Object> klass : parseTypes.keySet()) {
                     int count = parseTypes.get(klass);
-                    if(count>0){
-                        AbstractLoader.this.notify("\t"+count+": "+klass+" => "+key);
+                    if (count > 0) {
+                        AbstractLoader.this.notify("\t" + count + ": " + klass + " => " + key);
                     }
                 }
             }
             return best;
         }
     }
+
     protected class IntegerHeader extends Header {
-        IntegerHeader(Header old){
+        IntegerHeader(Header old) {
             super(old);
         }
-        Integer parse(String field){
-            if(invalid(field)) return null;
+
+        Integer parse(String field) {
+            if (invalid(field))
+                return null;
             parseCount++;
             return (Integer)incValue(Integer.parseInt(field));
         }
+
         boolean shouldConvert() {
             return false;
         }
+
         Class<Integer> knownType() {
             return Integer.class;
         }
     }
+
     protected class LongHeader extends Header {
-        LongHeader(Header old){
+        LongHeader(Header old) {
             super(old);
         }
-        Long parse(String field){
-            if(invalid(field)) return null;
+
+        Long parse(String field) {
+            if (invalid(field))
+                return null;
             parseCount++;
             return (Long)incValue(Long.parseLong(field));
         }
+
         boolean shouldConvert() {
             return false;
         }
+
         Class<Long> knownType() {
             return Long.class;
         }
     }
+
     protected class FloatHeader extends Header {
-        FloatHeader(Header old){
+        FloatHeader(Header old) {
             super(old);
         }
-        Float parse(String field){
-            if(invalid(field)) return null;
+
+        Float parse(String field) {
+            if (invalid(field))
+                return null;
             parseCount++;
             return (Float)incValue(Float.parseFloat(field));
         }
+
         boolean shouldConvert() {
             return false;
         }
+
         Class<Float> knownType() {
             return Float.class;
         }
     }
+
     protected class StringHeader extends Header {
-        StringHeader(Header old){
+        StringHeader(Header old) {
             super(old);
         }
-        String parse(String field){
-            if(invalid(field)) return null;
+
+        String parse(String field) {
+            if (invalid(field))
+                return null;
             parseCount++;
             return (String)incValue(field);
         }
+
         boolean shouldConvert() {
             return false;
         }
+
         Class<String> knownType() {
             return String.class;
         }
     }
+
     protected interface PropertyMapper {
         public Object mapValue(String originalValue);
     }
+
     protected class MappedHeaderRule {
         private String name;
         private String key;
         private PropertyMapper mapper;
-        MappedHeaderRule(String name, String key, PropertyMapper mapper){
+
+        MappedHeaderRule(String name, String key, PropertyMapper mapper) {
             this.key = key;
             this.name = name;
             this.mapper = mapper;
         }
     }
+
     protected class MappedHeader extends Header {
         protected PropertyMapper mapper;
-        Class<? extends Object> knownClass = null;
-        MappedHeader(Header old, MappedHeaderRule mapRule){
+        Class< ? extends Object> knownClass = null;
+
+        MappedHeader(Header old, MappedHeaderRule mapRule) {
             super(old);
             this.key = mapRule.key;
             this.name = mapRule.name;
             this.mapper = mapRule.mapper;
-            this.values = new HashMap<Object,Integer>();    // need to make a new values list, otherwise we share the same data as the original
+            this.values = new HashMap<Object, Integer>(); // need to make a new values list,
+                                                            // otherwise we share the same data as
+                                                            // the original
         }
-        Object parse(String field){
-            if(invalid(field)) return null;
+
+        Object parse(String field) {
+            if (invalid(field))
+                return null;
             Object result = mapper.mapValue(field);
             parseCount++;
-            if(knownClass == null && result != null) {
-                //Determine converted class from very first conversion
+            if (knownClass == null && result != null) {
+                // Determine converted class from very first conversion
                 knownClass = result.getClass();
             }
             return incValue(result);
         }
+
         boolean shouldConvert() {
             return false;
         }
-        Class<? extends Object> knownType() {
+
+        Class< ? extends Object> knownType() {
             return knownClass;
         }
     }
 
     /**
-     * Initialize Loader with a specified set of parameters 
+     * Initialize Loader with a specified set of parameters
      * 
      * @param type defaults to 'CSV' if empty
      * @param neoService defaults to looking up from Neoclipse if null
@@ -305,8 +352,8 @@ public abstract class AbstractLoader {
     }
 
     private void initializeNeo(NeoService neoService, Display display) {
-        if(neoService == null) {
-            //if Display is given than start Neo using syncExec
+        if (neoService == null) {
+            // if Display is given than start Neo using syncExec
             if (display != null) {
                 display.syncExec(new Runnable() {
                     public void run() {
@@ -314,7 +361,7 @@ public abstract class AbstractLoader {
                     }
                 });
             }
-            //if Display is not given than initialize Neo as usual
+            // if Display is not given than initialize Neo as usual
             else {
                 initializeNeo();
             }
@@ -322,7 +369,7 @@ public abstract class AbstractLoader {
             this.neo = neoService;
         }
     }
-    
+
     private void initializeNeo() {
         if (this.neoProvider == null)
             this.neoProvider = NeoServiceProvider.getProvider();
@@ -330,18 +377,18 @@ public abstract class AbstractLoader {
             this.neo = this.neoProvider.getService();
     }
 
-    private void determineFieldSepRegex(String line){
+    private void determineFieldSepRegex(String line) {
         int maxMatch = 0;
-        for(String regex:possibleFieldSepRegexes){
+        for (String regex : possibleFieldSepRegexes) {
             String[] fields = line.split(regex);
-            if(fields.length > maxMatch){
+            if (fields.length > maxMatch) {
                 maxMatch = fields.length;
                 fieldSepRegex = regex;
             }
         }
     }
 
-    protected String[] splitLine(String line){
+    protected String[] splitLine(String line) {
         return line.split(fieldSepRegex);
     }
 
@@ -354,14 +401,31 @@ public abstract class AbstractLoader {
      * @return edited String
      */
     protected final static String cleanHeader(String header) {
-        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
+        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_")
+                .replaceAll("\\_$", "").toLowerCase();
     }
 
     /**
      * @return true if we have parsed the header line and know the properties to load
      */
     protected boolean haveHeaders() {
-        return headers.size()>0;
+        return headers.size() > 0;
+    }
+
+    /**
+     * Add a number of regular expression strings to use as filters for deciding which properties to
+     * save. If this method is never used, and the filters are empty, then all properties are
+     * processed. Since the saving code is done in the specific loader, not using this method can
+     * cause a lot more parsing of data than is necessary, so it is advised to use this. Note also
+     * that the filter regular expressions are applied to the cleaned headers, not the original ones
+     * found in the file.
+     * 
+     * @param filters
+     */
+    protected void addHeaderFilters(String[] filters) {
+        for (String filter : filters) {
+            headerFilters.add(Pattern.compile(filter));
+        }
     }
 
     /**
@@ -369,11 +433,11 @@ public abstract class AbstractLoader {
      * property name in the database to be some specific text, not the header text in the file. The
      * regular expression is used to find the header in the file to associate with the new property
      * name. Note that the original property will not be saved using its original name. It will be
-     * saved with the specified name provided.
+     * saved with the specified name provided. For example, if you want the first field found that
+     * starts with 'lat' to be saved in a property called 'y', then you would call this using:
      * 
-     * For example, if you want the first field found that starts with 'lat' to be saved in a property called 'y', then you would call this using:
      * <pre>
-     * addKnownHeader("y", "lat.*");
+     * addKnownHeader(&quot;y&quot;, &quot;lat.*&quot;);
      * </pre>
      * 
      * @param key the name to use for the property
@@ -388,6 +452,7 @@ public abstract class AbstractLoader {
      * This includes a mapper that modifies the contents of the value interpreted. For example, if
      * you want to create a new property called 'active' that contains only 'yes/no' values and is
      * based on finding the text 'on air' inside another property, use this:
+     * 
      * <pre>
      * addMappedHeader(&quot;status&quot;, &quot;Active&quot;, &quot;active&quot;, new PropertyMapper() {
      *     public String mapValue(String originalValue) {
@@ -406,93 +471,112 @@ public abstract class AbstractLoader {
     }
 
     /**
-     * Parse possible header lines and build a set of header objects to be used to parse all data lines later. This allows us to deal with several requirements:
+     * Parse possible header lines and build a set of header objects to be used to parse all data
+     * lines later. This allows us to deal with several requirements:
      * <ul>
      * <li>Know when we have passed the header and are in the data body of the file</li>
      * <li>Have objects that automatically learn the tyep of the data as the data is parsed</li>
      * <li>Support mapping headers to known specific names</li>
      * <li>Support mapping values to different values using pre-defined mapper code</li>
      * </ul>
-     *
+     * 
      * @param line to parse as the header line
      */
-    protected final void parseHeader(String line){
+    protected final void parseHeader(String line) {
         debug(line);
         determineFieldSepRegex(line);
         String fields[] = splitLine(line);
-        if(fields.length<2) return;
-        int index=0;
-        for(String headerName:fields){
-            boolean added = false;
+        if (fields.length < 2)
+            return;
+        int index = 0;
+        for (String headerName : fields) {
             String header = cleanHeader(headerName);
-            debug("Added header["+index+"] = "+header);
-            for(String key:knownHeaders.keySet()){
-                if (!headers.containsKey(key) && header.matches(knownHeaders.get(key))) {
-                    debug("Added known header[" + index + "] = " + key);
-                    headers.put(key, new Header(headerName, key, index));
-                    added = true;
-                    break;
+            if (headerAllowed(header)) {
+                boolean added = false;
+                debug("Added header[" + index + "] = " + header);
+                for (String key : knownHeaders.keySet()) {
+                    if (!headers.containsKey(key) && header.matches(knownHeaders.get(key))) {
+                        debug("Added known header[" + index + "] = " + key);
+                        headers.put(key, new Header(headerName, key, index));
+                        added = true;
+                        break;
+                    }
                 }
-            }
-            if(!added/*!headers.containsKey(header)*/){
-                headers.put(header, new Header(headerName, header, index));
+                if (!added/* !headers.containsKey(header) */) {
+                    headers.put(header, new Header(headerName, header, index));
+                }
             }
             index++;
         }
         // Now add any new properties created from other existing properties using mapping rules
-        for(String key: mappedHeaders.keySet()) {
-            if(headers.containsKey(key)){
+        for (String key : mappedHeaders.keySet()) {
+            if (headers.containsKey(key)) {
                 MappedHeaderRule mapRule = mappedHeaders.get(key);
-                if(headers.containsKey(mapRule.key)){
-                    notify("Cannot add mapped header with key '"+mapRule.key+"': header with that name already exists");
+                if (headers.containsKey(mapRule.key)) {
+                    notify("Cannot add mapped header with key '" + mapRule.key + "': header with that name already exists");
                 } else {
                     headers.put(mapRule.key, new MappedHeader(headers.get(key), mapRule));
                 }
-            }else{
-                notify("No original header found matching mapped header key: "+key);
+            } else {
+                notify("No original header found matching mapped header key: " + key);
             }
         }
     }
 
-    private HashMap<Class<? extends Object>,List<String>> typedProperties = null;
+    private boolean headerAllowed(String header) {
+        if (headerFilters == null || headerFilters.size() < 1) {
+            return true;
+        }
+        for (Pattern filter : headerFilters) {
+            if (filter.matcher(header).matches()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
     private Transaction mainTx;
-    protected List<String> getProperties(Class<? extends Object> klass) {
-        if(typedProperties==null) {
+
+    protected List<String> getProperties(Class< ? extends Object> klass) {
+        if (typedProperties == null) {
             makeTypedProperties();
         }
         return typedProperties.get(klass);
     }
+
     private void makeTypedProperties() {
-        this.typedProperties = new HashMap<Class<? extends Object>,List<String>>();
+        this.typedProperties = new HashMap<Class< ? extends Object>, List<String>>();
         for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
             this.typedProperties.put(klass, new ArrayList<String>());
         }
-        for(String key: headers.keySet()){
+        for (String key : headers.keySet()) {
             Header header = headers.get(key);
-            if(header.parseCount>0){
-                for(Class<? extends Object> klass:KNOWN_PROPERTY_TYPES){
-                    if(header.knownType() == klass){
+            if (header.parseCount > 0) {
+                for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
+                    if (header.knownType() == klass) {
                         this.typedProperties.get(klass).add(header.key);
                     }
                 }
             }
         }
     }
+
     protected final LinkedHashMap<String, Object> makeDataMap(String[] fields) {
         LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
         for (String key : headers.keySet()) {
             try {
                 Header header = headers.get(key);
                 String field = fields[header.index];
-                if(field == null || field.length()<1 || field.equals("?")){
+                if (field == null || field.length() < 1 || field.equals("?")) {
                     continue;
                 }
                 Object value = header.parse(field);
                 map.put(key, value); // TODO: Decide if we should actually use the name here
-                
-                //Now speed up parsing once we are certain of the column types
+
+                // Now speed up parsing once we are certain of the column types
                 if (header.shouldConvert()) {
-                    Class<? extends Object> klass = header.knownType();
+                    Class< ? extends Object> klass = header.knownType();
                     if (klass == Integer.class) {
                         headers.put(key, new IntegerHeader(header));
                     } else if (klass == Float.class) {
@@ -508,57 +592,53 @@ public abstract class AbstractLoader {
         return map;
     }
 
-    protected final int i_of(String header){
-        debug("Looking up header index for "+header);
-        return headers.get(header).index;
-    }
-
-    protected final void debug(final String line){
+    protected final void debug(final String line) {
         runInDisplay(new Runnable() {
             public void run() {
-                NeoLoaderPlugin.debug(typeName + ":"+basename+":"+status()+": "+line);
+                NeoLoaderPlugin.debug(typeName + ":" + basename + ":" + status() + ": " + line);
             }
         });
     }
-    
-    protected final void info(final String line){
+
+    protected final void info(final String line) {
         runInDisplay(new Runnable() {
             public void run() {
-                NeoLoaderPlugin.notify(typeName + ":"+basename+":"+status()+": "+line);
+                NeoLoaderPlugin.notify(typeName + ":" + basename + ":" + status() + ": " + line);
             }
-        }); 
+        });
     }
-    
-    protected final void notify(final String line){
+
+    protected final void notify(final String line) {
         runInDisplay(new Runnable() {
             public void run() {
-                NeoLoaderPlugin.notify(typeName + ":"+basename+":"+status()+": "+line);
+                NeoLoaderPlugin.notify(typeName + ":" + basename + ":" + status() + ": " + line);
             }
-        });     
+        });
     }
-    
-    protected final void error(final String line){
+
+    protected final void error(final String line) {
         runInDisplay(new Runnable() {
             public void run() {
-                NeoLoaderPlugin.notify(typeName + ":"+basename+":"+status()+": "+line);
+                NeoLoaderPlugin.notify(typeName + ":" + basename + ":" + status() + ": " + line);
             }
-        }); 
+        });
     }
 
     private final void runInDisplay(Runnable runnable) {
-        if(display!=null){
+        if (display != null) {
             PlatformUI.getWorkbench().getDisplay().asyncExec(runnable);
         } else {
             runnable.run();
         }
     }
-    
-    protected final String status(){
-        if(started<=0) started = System.currentTimeMillis();
-        return (line_number>0 ? "line:"+line_number : ""+((System.currentTimeMillis()-started)/1000.0)+"s");
+
+    protected final String status() {
+        if (started <= 0)
+            started = System.currentTimeMillis();
+        return (line_number > 0 ? "line:" + line_number : "" + ((System.currentTimeMillis() - started) / 1000.0) + "s");
     }
 
-    public void setLimit(int value){
+    public void setLimit(int value) {
         this.limit = value;
     }
 
@@ -600,16 +680,19 @@ public abstract class AbstractLoader {
                         break;
                     perc = is.percentage();
                     if (perc > prevPerc) {
-                        monitor.subTask(basename+":" + line_number + " ("+perc+"%)");
+                        monitor.subTask(basename + ":" + line_number + " (" + perc + "%)");
                         monitor.worked(perc - prevPerc);
                         prevPerc = perc;
                     }
                 }
                 // Commit external transaction on large blocks of code
-                if(line_number > prevLineNumber + 1000) {
+                if (line_number > prevLineNumber + 1000) {
                     commit(true);
                     prevLineNumber = line_number;
                 }
+                if (isOverLimit())
+                    break;
+
             }
             commit(true);
             reader.close();
@@ -620,19 +703,20 @@ public abstract class AbstractLoader {
         }
     }
 
-    protected void commit(boolean restart){
-        if(mainTx!=null) {
+    protected void commit(boolean restart) {
+        if (mainTx != null) {
             mainTx.success();
             mainTx.finish();
-            //System.out.println("Commit: Memory: "+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
-            if(restart){
+            // System.out.println("Commit: Memory: "+(Runtime.getRuntime().totalMemory() -
+            // Runtime.getRuntime().freeMemory()));
+            if (restart) {
                 mainTx = neo.beginTx();
-            }else{
+            } else {
                 mainTx = null;
             }
         }
     }
-    
+
     /**
      * This method must be implemented by all readers to parse the data lines. It might save data
      * directly to the database, or it might keep it in a cache for saving later, in the finishUp
@@ -642,7 +726,7 @@ public abstract class AbstractLoader {
      * @param line
      */
     protected abstract void parseLine(String line);
-    
+
     /**
      * After all lines have been parsed, this method is called, allowing the implementing class the
      * opportunity to save any cached information, or write any final statistics. It is not abstract
@@ -669,7 +753,7 @@ public abstract class AbstractLoader {
      * @return gis node for mainNode
      */
     protected final Node findOrCreateGISNode(Node mainNode, String gisType) {
-        if(gis == null) {
+        if (gis == null) {
             Transaction transaction = neo.beginTx();
             try {
                 Node reference = neo.getReferenceNode();
@@ -678,8 +762,8 @@ public abstract class AbstractLoader {
                     if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
                             && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME)
                             && node.hasProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME)
-                            && node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString().equals(GisTypes.DRIVE.getHeader())){
-                        if(!node.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator().hasNext()) {
+                            && node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString().equals(GisTypes.DRIVE.getHeader())) {
+                        if (!node.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator().hasNext()) {
                             node.createRelationshipTo(mainNode, GeoNeoRelationshipTypes.NEXT);
                         }
                         gis = node;
@@ -687,7 +771,7 @@ public abstract class AbstractLoader {
                         break;
                     }
                 }
-                if(gis == null) {
+                if (gis == null) {
                     gis = neo.createNode();
                     gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
                     gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, NeoUtils.getNodeName(mainNode));
@@ -709,32 +793,34 @@ public abstract class AbstractLoader {
             try {
                 Node propNode;
                 Relationship propRel = gis.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
-                if(propRel==null){
+                if (propRel == null) {
                     propNode = neo.createNode();
                     propNode.setProperty("name", NeoUtils.getNodeName(gis));
                     propNode.setProperty("type", "gis_properties");
                     gis.createRelationshipTo(propNode, GeoNeoRelationshipTypes.PROPERTIES);
-                }else{
+                } else {
                     propNode = propRel.getEndNode();
                 }
-                HashMap<String,Node> propTypeNodes = new HashMap<String,Node>();
-                for(Node node: propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)){
+                HashMap<String, Node> propTypeNodes = new HashMap<String, Node>();
+                for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                        ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
                     propTypeNodes.put(node.getProperty("name").toString(), node);
                 }
-                for(Class<? extends Object> klass:KNOWN_PROPERTY_TYPES){
+                for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
                     String typeName = makePropertyTypeName(klass);
                     List<String> properties = getProperties(klass);
-                    if(properties!=null && properties.size()>0){
+                    if (properties != null && properties.size() > 0) {
                         Node propTypeNode = propTypeNodes.get(typeName);
-                        if(propTypeNode==null){
+                        if (propTypeNode == null) {
                             propTypeNode = neo.createNode();
                             propTypeNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, typeName);
                             propTypeNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "gis_property_type");
-                            savePropertiesToNode(propTypeNode,properties);
+                            savePropertiesToNode(propTypeNode, properties);
                             propNode.createRelationshipTo(propTypeNode, GeoNeoRelationshipTypes.CHILD);
                         } else {
                             TreeSet<String> combinedProperties = new TreeSet<String>();
-                            String[] previousProperties = (String[])propTypeNode.getProperty(INeoConstants.NODE_TYPE_PROPERTIES, null);
+                            String[] previousProperties = (String[])propTypeNode.getProperty(INeoConstants.NODE_TYPE_PROPERTIES,
+                                    null);
                             if (previousProperties != null)
                                 combinedProperties.addAll(Arrays.asList(previousProperties));
                             combinedProperties.addAll(properties);
@@ -748,52 +834,52 @@ public abstract class AbstractLoader {
             }
         }
     }
-    
+
     private void savePropertiesToNode(Node propTypeNode, Collection<String> properties) {
         propTypeNode.setProperty("properties", properties.toArray(new String[properties.size()]));
-        HashMap<String,Node> valueNodes = new HashMap<String,Node>();
-        for(Relationship relation: propTypeNode.getRelationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)){
+        HashMap<String, Node> valueNodes = new HashMap<String, Node>();
+        for (Relationship relation : propTypeNode.getRelationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)) {
             Node valueNode = relation.getEndNode();
             String property = relation.getProperty("property", "").toString();
             valueNodes.put(property, valueNode);
         }
-        for(String property: properties){
+        for (String property : properties) {
             Node valueNode = valueNodes.get(property);
             Header header = headers.get(property);
-            HashMap<Object,Integer> values = header.values;
-            if(values==null) {
-                if(valueNode != null){
-                    for(Relationship relation: valueNode.getRelationships()){
+            HashMap<Object, Integer> values = header.values;
+            if (values == null) {
+                if (valueNode != null) {
+                    for (Relationship relation : valueNode.getRelationships()) {
                         relation.delete();
                     }
                     valueNode.delete();
                 }
-            }else{
-                if(valueNode == null){
+            } else {
+                if (valueNode == null) {
                     valueNode = neo.createNode();
                     Relationship relation = propTypeNode.createRelationshipTo(valueNode, GeoNeoRelationshipTypes.PROPERTIES);
                     relation.setProperty("property", property);
                 } else {
-                    for(Object key: valueNode.getPropertyKeys()) {
-                        Integer oldCount = (Integer)valueNode.getProperty(key.toString(),null);
-                        if(oldCount == null) {
+                    for (Object key : valueNode.getPropertyKeys()) {
+                        Integer oldCount = (Integer)valueNode.getProperty(key.toString(), null);
+                        if (oldCount == null) {
                             oldCount = 0;
                         }
                         Integer newCount = values.get(key);
-                        if(newCount == null) {
+                        if (newCount == null) {
                             newCount = 0;
                         }
-                        values.put(key,oldCount + newCount);
+                        values.put(key, oldCount + newCount);
                     }
                 }
-                for(Object key: values.keySet()) {
+                for (Object key : values.keySet()) {
                     valueNode.setProperty(key.toString(), values.get(key));
                 }
             }
         }
     }
-    
-    public static String makePropertyTypeName(Class<? extends Object> klass){
+
+    public static String makePropertyTypeName(Class< ? extends Object> klass) {
         return klass.getName().replaceAll("java.lang.", "").toLowerCase();
     }
 
@@ -809,7 +895,7 @@ public abstract class AbstractLoader {
      * <li>Then the data is added to the current AWE project</li>
      * <li>The catalog for Neo data is created or updated</li>
      * </ul>
-     *
+     * 
      * @param mainNode to use to connect to the AWE project
      * @throws MalformedURLException
      */
@@ -822,8 +908,9 @@ public abstract class AbstractLoader {
     }
 
     /**
-     * This method adds the loaded data to the GIS catalog. The neo-catalog entry is created or updated.
-     *
+     * This method adds the loaded data to the GIS catalog. The neo-catalog entry is created or
+     * updated.
+     * 
      * @throws MalformedURLException
      */
     protected void addDataToCatalog() throws MalformedURLException {
@@ -846,7 +933,7 @@ public abstract class AbstractLoader {
 
     /**
      * Clean the gis node of any old statistics, and then update the basic statistics
-     *
+     * 
      * @param mainNode to use to connect to the AWE project
      * @throws MalformedURLException
      */
@@ -909,7 +996,7 @@ public abstract class AbstractLoader {
             e.printStackTrace();
         }
     }
-    
+
     /**
      * @return Time in milliseconds since this loader started running
      */
@@ -934,10 +1021,10 @@ public abstract class AbstractLoader {
 
     private void printHeaderStats() {
         notify("Determined Columns:");
-        for(String key: headers.keySet()){
+        for (String key : headers.keySet()) {
             Header header = headers.get(key);
-            if(header.parseCount>0){
-                notify("\t"+header.knownType()+" loaded: "+header.parseCount+" => "+key);
+            if (header.parseCount > 0) {
+                notify("\t" + header.knownType() + " loaded: " + header.parseCount + " => " + key);
             }
         }
     }

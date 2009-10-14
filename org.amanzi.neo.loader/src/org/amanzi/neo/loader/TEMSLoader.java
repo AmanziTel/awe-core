@@ -1,6 +1,9 @@
 package org.amanzi.neo.loader;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -23,6 +26,7 @@ public class TEMSLoader extends DriveLoader {
     private int previous_pn_code = -1;
     private String latlong = null;
     private String time = null;
+    private long timestamp = 0L;
     private HashMap<String, float[]> signals = new HashMap<String, float[]>();
 
     /**
@@ -34,6 +38,7 @@ public class TEMSLoader extends DriveLoader {
      */
     public TEMSLoader(String filename, Display display, String dataset) {
         initialize("TEMS", null, filename, display, dataset);
+        initializeKnownHeaders();
     }
 
     /**
@@ -45,6 +50,31 @@ public class TEMSLoader extends DriveLoader {
      */
     public TEMSLoader(NeoService neo, String filename) {
         initialize("TEMS", neo, filename, null, null);
+        initializeKnownHeaders();
+    }
+
+    /**
+     * Build a map of internal header names to format specific names for types that need to be known
+     * in the algorithms later.
+     */
+    private void initializeKnownHeaders() {
+        addHeaderFilters(new String[]{"time","ms","message_type","event",".*latitude",".*longitude",".*active_set.*1",".*pilot_set.*"});
+        addKnownHeader("latitude", ".*latitude");
+        addKnownHeader("longitude", ".*longitude");
+        addMappedHeader("time", "Timestamp", "timestamp", new PropertyMapper(){
+
+            @Override
+            public Object mapValue(String time) {
+                SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss.S");
+                Date datetime;
+                try {
+                    datetime = df.parse(time);
+                } catch (ParseException e) {
+                    error(e.getLocalizedMessage());
+                    return 0L;
+                }
+                return datetime.getTime();
+            }});
     }
 
     /**
@@ -62,16 +92,18 @@ public class TEMSLoader extends DriveLoader {
         String fields[] = splitLine(line);
         if (fields.length < 2)
             return;
+        if (this.isOverLimit())
+            return;
+        Map<String,Object> lineData = makeDataMap(fields);
+        // debug(line);
 
-        this.time = fields[i_of(INeoConstants.PROPERTY_TIME_NAME)];
-        String ms = fields[i_of(INeoConstants.HEADER_MS)];
-        String event = fields[i_of(INeoConstants.HEADER_EVENT)]; // currently only getting this
-                                                                    // as a change marker
-        String message_type = fields[i_of(INeoConstants.HEADER_MESSAGE_TYPE)]; // need this to
-                                                                                // filter for only
-                                                                                // relevant messages
-        // message_id = fields[i_of("message_id")]; // parsing this is not faster
-        if (!INeoConstants.MESSAGE_TYPE_EV_DO.equals(message_type))
+        this.time = lineData.get("time").toString();
+        this.timestamp = (Long)lineData.get("timestamp");
+        String ms = (String)lineData.get("ms");
+        String event = (String)lineData.get("event"); // currently only getting this as a change marker
+        String message_type = (String)lineData.get("message_type"); // need this to filter for only relevant messages
+        // message_id = lineData.get("message_id"); // parsing this is not faster
+        if (!"EV-DO Pilot Sets Ver2".equals(message_type))
             return;
         this.incValidMessage();
         // return unless message_id == '27019' // not faster
@@ -82,15 +114,16 @@ public class TEMSLoader extends DriveLoader {
         // TODO: If number of PN codes does not match number of EC-IO make sure to align correct
         // values to PNs
 
-        String latitude = fields[i_of(INeoConstants.HEADER_ALL_LATITUDE)];
-        String longitude = fields[i_of(INeoConstants.HEADER_ALL_LONGITUDE)];
-        String thisLatLong = latitude + "\t" + longitude;
+        Object latitude = lineData.get("latitude");
+        Object longitude = lineData.get("longitude");
+        if(time==null || latitude==null || longitude==null){
+            return;
+        }
+        String thisLatLong = latitude.toString() + "\t" + longitude.toString();
         if (!thisLatLong.equals(this.latlong)) {
             saveData(); // persist the current data to database
             this.latlong = thisLatLong;
         }
-        if (latitude.length() == 0 || longitude.length() == 0)
-            return;
         this.incValidLocation();
 
         int channel = 0;
@@ -98,10 +131,10 @@ public class TEMSLoader extends DriveLoader {
         int ec_io = 0;
         int measurement_count = 0;
         try {
-            channel = Integer.parseInt(fields[i_of(INeoConstants.HEADER_ALL_ACTIVE_SET_CHANNEL_1)]);
-            pn_code = Integer.parseInt(fields[i_of(INeoConstants.HEADER_ALL_ACTIVE_SET_PN_1)]);
-            ec_io = Integer.parseInt(fields[i_of(INeoConstants.HEADER_ALL_ACTIVE_SET_EC_IO_1)]);
-            measurement_count = Integer.parseInt(fields[i_of(INeoConstants.HEADER_ALL_PILOT_SET_COUNT)]);
+            channel = (Integer)(lineData.get("all_active_set_channel_1"));
+            pn_code = (Integer)(lineData.get("all_active_set_pn_1"));
+            ec_io = (Integer)(lineData.get("all_active_set_ec_io_1"));
+            measurement_count = (Integer)(lineData.get("all_pilot_set_count"));
         } catch (NumberFormatException e) {
             error("Failed to parse a field on line " + line_number + ": " + e.getMessage());
         }
@@ -125,7 +158,7 @@ public class TEMSLoader extends DriveLoader {
             changed = true;
             this.previous_pn_code = pn_code;
         }
-        if (measurement_count > 0 && (changed || event.length() > 0)) {
+        if (measurement_count > 0 && (changed || (event != null && event.length() > 0))) {
             if (this.isOverLimit())
                 return;
             if (first_line == 0)
@@ -138,9 +171,9 @@ public class TEMSLoader extends DriveLoader {
                 // Delete invalid data, as you can have empty ec_io
                 // zero ec_io is correct, but empty ec_io is not
                 try {
-                    ec_io = Integer.parseInt(fields[i_of(INeoConstants.HEADER_PREFIX_ALL_PILOT_SET_EC_IO + i)]);
-                    channel = Integer.parseInt(fields[i_of(INeoConstants.HEADER_PREFIX_ALL_PILOT_SET_CHANNEL + i)]);
-                    pn_code = Integer.parseInt(fields[i_of(INeoConstants.HEADER_PREFIX_ALL_PILOT_SET_PN + i)]);
+                    ec_io = (Integer)(lineData.get("all_pilot_set_ec_io_" + i));
+                    channel = (Integer)(lineData.get("all_pilot_set_channel_" + i));
+                    pn_code = (Integer)(lineData.get("all_pilot_set_pn_" + i));
                     debug("\tchannel[" + channel + "] pn[" + pn_code + "] Ec/Io[" + ec_io + "]");
                     addStats(pn_code, ec_io);
                     String chan_code = "" + channel + "\t" + pn_code;
@@ -167,6 +200,7 @@ public class TEMSLoader extends DriveLoader {
                 Node mp = neo.createNode();
                 mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
                 mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
+                mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                 String[] ll = latlong.split("\\t");
@@ -197,12 +231,15 @@ public class TEMSLoader extends DriveLoader {
                     ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
                     ms.setProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME, Integer.parseInt(cc[0]));
                     ms.setProperty(INeoConstants.PROPERTY_CODE_NAME, Integer.parseInt(cc[1]));
-                    ms.setProperty(INeoConstants.PROPERTY_DBM_NAME, LoaderUtils.mw2dbm(mw));
+                    float dbm = LoaderUtils.mw2dbm(mw);
+                    ms.setProperty(INeoConstants.PROPERTY_DBM_NAME, dbm);
                     ms.setProperty(INeoConstants.PROPERTY_MW_NAME, mw);
                     debug("\tAdded measurement: " + propertiesString(ms));
                     point.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
                     if (prev_ms != null) {
                         prev_ms.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
+                    } else {
+                        mp.setProperty("name", Integer.toString((int)Math.rint(dbm)));
                     }
                     prev_ms = ms;
                 }

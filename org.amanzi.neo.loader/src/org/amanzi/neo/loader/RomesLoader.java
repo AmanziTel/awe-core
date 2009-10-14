@@ -23,6 +23,7 @@ public class RomesLoader extends DriveLoader {
     private int last_line = 0;
     private String latlong = null;
     private String time = null;
+    private long timestamp = 0L;
     private ArrayList<Map<String,Object>> data = new ArrayList<Map<String,Object>>();
 
     /**
@@ -54,6 +55,8 @@ public class RomesLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
+        addHeaderFilters(new String[] {"time.*", "events", ".*latitude.*", ".*longitude.*", ".*server_report.*",
+                ".*state_machine.*", ".*layer_3_message.*", ".*handover_analyzer.*"});
         addKnownHeader("time", "time.*");
         addKnownHeader("latitude", ".*latitude.*");
         addKnownHeader("longitude", ".*longitude.*");
@@ -78,6 +81,7 @@ public class RomesLoader extends DriveLoader {
                 return datetime.getTime();
             }});
     }
+
     protected void parseLine(String line) {
         // debug(line);
         String fields[] = splitLine(line);
@@ -91,7 +95,8 @@ public class RomesLoader extends DriveLoader {
             first_line = line_number;
         last_line = line_number;
         Map<String,Object> lineData = makeDataMap(fields);
-        this.time = lineData.get("time").toString();
+        this.time = (String)lineData.get("time");
+        this.timestamp = (Long)lineData.get("timestamp");
         Object latitude = lineData.get("latitude");
         Object longitude = lineData.get("longitude");
         if(time==null || latitude==null || longitude==null){
@@ -129,6 +134,7 @@ public class RomesLoader extends DriveLoader {
                 Node mp = neo.createNode();
                 mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
                 mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
+                mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                 String[] ll = latlong.split("\\t");

@@ -87,6 +87,7 @@ public class INeoConstants {
      * Name of 'time' property of Node
      */
     public static final String PROPERTY_TIME_NAME = "time";
+    public static final String PROPERTY_TIMESTAMP_NAME = "timestamp";
     
     /*
      * Name of 'crs_href' property of Node
@@ -119,41 +120,6 @@ public class INeoConstants {
     public static final String PROPERTY_PROJECT_NAME = "project";
     
     /*
-     * All pilot set header
-     */
-    public static final String HEADER_PREFIX_ALL_PILOT_SET_PN = "all_pilot_set_pn_";
-    
-    /*
-     * All pilot set channel header prefix
-     */
-    public static final String HEADER_PREFIX_ALL_PILOT_SET_CHANNEL = "all_pilot_set_channel_";
-    
-    /*
-     * All pilot set ec io header prefix
-     */
-    public static final String HEADER_PREFIX_ALL_PILOT_SET_EC_IO = "all_pilot_set_ec_io_";
-    
-    /*
-     * All pilot set count header
-     */
-    public static final String HEADER_ALL_PILOT_SET_COUNT = "all_pilot_set_count";
-    
-    /*
-     * All active set ec io header
-     */
-    public static final String HEADER_ALL_ACTIVE_SET_EC_IO_1 = "all_active_set_ec_io_1";
-    
-    /*
-     * All active set pn header
-     */
-    public static final String HEADER_ALL_ACTIVE_SET_PN_1 = "all_active_set_pn_1";
-    
-    /*
-     * All active set channel header
-     */
-    public static final String HEADER_ALL_ACTIVE_SET_CHANNEL_1 = "all_active_set_channel_1";
-    
-    /*
      * All longited header
      */
     public static final String HEADER_ALL_LONGITUDE = "all_longitude";
@@ -162,16 +128,6 @@ public class INeoConstants {
      * All latitued header
      */
     public static final String HEADER_ALL_LATITUDE = "all_latitude";
-    
-    /*
-     * Message Hedaer 
-     */
-    public static final String HEADER_MESSAGE_TYPE = "message_type";
-    
-    /*
-     * Event header
-     */
-    public static final String HEADER_EVENT = "event";
     
     /*
      * MS header
@@ -222,11 +178,6 @@ public class INeoConstants {
      */
     public static final String PROPERTY_SELECTED_AGGREGATION = "selected_aggregation";
     
-    /*
-     * ED-VO Message Type
-     */    
-    public static final String MESSAGE_TYPE_EV_DO = "EV-DO Pilot Sets Ver2";
-
     /*
      * Name of Background Color (Blue) property
      */
