@@ -3,6 +3,7 @@ package org.amanzi.awe.views.drive.views;
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Shape;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,8 +12,13 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.project.ILayer;
+import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.ui.PlatformGIS;
 
+import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
@@ -626,8 +632,51 @@ public class DriveInquirerView extends ViewPart {
      *fires event for chart changed
      */
     private void fireEventUpdateChart() {
-        // TODO update layers
+        IMap activeMap = ApplicationGIS.getActiveMap();
+        Node gis = getGisNode();
+        if (activeMap != ApplicationGIS.NO_MAP) {
+            try {
+                for (ILayer layer : activeMap.getMapLayers()) {
+                    IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
+                    if (resourse != null) {
+                        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
+                        if (gis != null && geo.getMainGisNode().equals(gis)) {
+                            setProperty(geo);
+                            layer.refresh(null);
+                        } else {
+                            dropProperty(geo);
+                        }
+
+                    }
+                }
+            } catch (IOException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        }
         chart.fireChartChanged();
+    }
+
+    /**
+     *remove property from geo
+     * 
+     * @param geo
+     */
+    private void dropProperty(GeoNeo geo) {
+        if (geo.getGisType() != GisTypes.DRIVE) {
+            return;
+        }
+        Object map = geo.getProperties(GeoNeo.DRIVE_INQUIRER);
+        if (map != null) {
+            geo.setProperty(GeoNeo.DRIVE_INQUIRER, null);
+        }
+    }
+
+    /**
+     * Sets property in geo for necessary
+     * 
+     * @param geo
+     */
+    private void setProperty(GeoNeo geo) {
     }
 
     /**
@@ -784,9 +833,12 @@ public class DriveInquirerView extends ViewPart {
         xyplot.setRangeAxis(1, numberaxis);
         xyplot.setRangeAxisLocation(1, AxisLocation.BOTTOM_OR_LEFT);
         xyplot.mapDatasetToRangeAxis(1, 1);
-
+        xyplot.setDomainCrosshairVisible(true);
+        xyplot.setDomainCrosshairLockedOnData(false);
+        xyplot.setRangeCrosshairVisible(false);
         JFreeChart jfreechart = new JFreeChart(CHART_TITLE, JFreeChart.DEFAULT_TITLE_FONT, xyplot, true);
         ChartUtilities.applyCurrentTheme(jfreechart);
+
         axisNumeric1 = xyplot.getRangeAxis(2);
         axisNumeric2 = xyplot.getRangeAxis(1);
         axisLog1 = new LogarithmicAxis(axisNumeric1.getLabel());
