@@ -84,6 +84,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
     private static final Color COLOR_MORE = Color.GREEN;
+    private static final Color COLOR_HIGHLIGHTED_SELECTED = Color.RED;
 
     @Override
     public void render(Graphics2D destination, IProgressMonitor monitor) throws RenderException {
@@ -179,6 +180,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             String selectedProp = geoNeo.getPropertyName();
             aggNode = geoNeo.getAggrNode();
             Map<String, Object> selectionMap = (Map<String, Object>)geoNeo.getProperties(GeoNeo.DRIVE_INQUIRER);
+            Long crossHairId1 = null;
+            Long crossHairId2 = null;
+            if (selectionMap != null) {
+                crossHairId1 = (Long)selectionMap.get(GeoConstant.Drive.SELECT_PROPERTY1);
+                crossHairId2 = (Long)selectionMap.get(GeoConstant.Drive.SELECT_PROPERTY2);
+            }
             // Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -323,6 +330,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         borderColor = COLOR_HIGHLIGHTED;
                     }
                 }
+                long id = node.getNode().getId();
+                if ((crossHairId1 != null && id == crossHairId1) || (crossHairId2 != null && crossHairId2 == id)) {
+                    borderColor = COLOR_HIGHLIGHTED_SELECTED;
+                }
                 renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite);
 
                 if (drawLabels) {
@@ -429,127 +440,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         }
     }
 
-    // /**
-    // * @param select
-    // * @param moreMaxValue
-    // * @param lesMinValue
-    // * @param redMaxValue
-    // * @param redMinValue
-    // * @param selectedProp
-    // * @param node
-    // * @param fillColor2
-    // * @return
-    // */
-    // private Color getColorOfMpNode(Select select, Node mpNode, Color defColor, String
-    // selectedProp, Double redMinValue,
-    // Double redMaxValue, Double lesMinValue, Double moreMaxValue) {
-    // Color colorToFill = defColor;
-    // switch (select) {
-    // case AVERAGE:
-    // case MAX:
-    // case MIN:
-    //
-    // Double sum = new Double(0);
-    // int count = 0;
-    // Double min = null;
-    // Double max = null;
-    // Double average = null;
-    // Double firstValue = null;
-    // for (Relationship relation : mpNode.getRelationships(MeasurementRelationshipTypes.CHILD,
-    // Direction.OUTGOING)) {
-    // Node node = relation.getEndNode();
-    // if (INeoConstants.HEADER_MS.equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""))
-    // && node.hasProperty(selectedProp)) {
-    // double value = ((Number)node.getProperty(selectedProp)).doubleValue();
-    // min = min == null ? value : Math.min(min, value);
-    // max = max == null ? value : Math.max(max, value);
-    // // TODO hande gets firstValue by other way
-    // firstValue = firstValue == null ? value : firstValue;
-    // sum = sum + value;
-    // count++;
-    // }
-    // }
-    // average = (double)sum / (double)count;
-    // double checkValue = select == Select.MAX ? max : select == Select.MIN ? min : select ==
-    // Select.AVERAGE ? average
-    // : firstValue;
-    //
-    // if (checkValue < redMaxValue || checkValue == redMinValue) {
-    // if (checkValue >= redMinValue) {
-    // colorToFill = COLOR_SELECTED;
-    // } else if (checkValue >= lesMinValue) {
-    // colorToFill = COLOR_LESS;
-    // }
-    // } else if (checkValue < moreMaxValue) {
-    // colorToFill = COLOR_MORE;
-    // }
-    // return colorToFill;
-    // case EXISTS:
-    // int priority = -1;
-    // for (Relationship relation : mpNode.getRelationships(NetworkRelationshipTypes.CHILD,
-    // Direction.OUTGOING)) {
-    // Node child = relation.getEndNode();
-    //
-    // for (String key : child.getPropertyKeys()) {
-    // if (selectedProp.equals(key)) {
-    // double value = ((Number)child.getProperty(selectedProp)).doubleValue();
-    // if (value < redMaxValue || value == redMinValue) {
-    // if (value >= redMinValue) {
-    // colorToFill = COLOR_SELECTED;
-    // priority = 3;
-    // } else if (value >= lesMinValue && (priority < 2)) {
-    // colorToFill = COLOR_LESS;
-    // priority = 1;
-    //
-    // }
-    // } else if (value < moreMaxValue && priority < 3) {
-    // colorToFill = COLOR_MORE;
-    // priority = 2;
-    // }
-    // }
-    // }
-    // }
-    // return colorToFill;
-    // case FIRST:
-    // Double result = null;
-    // Iterator<Node> iterator = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new
-    // ReturnableEvaluator() {
-    //
-    // @Override
-    // public boolean isReturnableNode(TraversalPosition currentPos) {
-    // return !currentPos.currentNode().hasRelationship(GeoNeoRelationshipTypes.NEXT,
-    // Direction.INCOMING);
-    // }
-    // }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-    // if (!iterator.hasNext()) {
-    // return colorToFill;
-    // }
-    // Node node = iterator.next();
-    // while (!node.hasProperty(selectedProp)) {
-    // Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
-    // Direction.OUTGOING);
-    // if (relation == null) {
-    // return colorToFill;
-    // }
-    // node = relation.getOtherNode(node);
-    //
-    // }
-    // checkValue = ((Number)node.getProperty(selectedProp)).doubleValue();
-    // if (checkValue < redMaxValue || checkValue == redMinValue) {
-    // if (checkValue >= redMinValue) {
-    // colorToFill = COLOR_SELECTED;
-    // } else if (checkValue >= lesMinValue) {
-    // colorToFill = COLOR_LESS;
-    // }
-    // } else if (checkValue < moreMaxValue) {
-    // colorToFill = COLOR_MORE;
-    // }
-    // return colorToFill;
-    // default:
-    // break;
-    // }
-    // return defColor;
-    // }
+
 
     /**
      * This one is very simple, just draw a rectangle at the point location.
