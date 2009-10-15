@@ -11,11 +11,10 @@ package org.amanzi.splash.ui;
  */
 
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -28,7 +27,6 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import javax.swing.CellEditor;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -36,7 +34,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -454,25 +452,9 @@ public abstract class AbstractSplashEditor extends EditorPart implements
                 // add listener for resizing row
                 new TableRowResizer(table.rowHeader, table);
 				table.addKeyListener(new KeyListener() {
-
+				    
 					public void keyPressed(KeyEvent e) {
-					    //Lagutko, 15.10.2009, actions with pressed ctrls
-					    int row = table.getSelectedRow();
-                        int column = table.getSelectedColumn();
 					    
-					    if (e.isControlDown()) {
-					        switch (e.getKeyCode()) {
-					        case KeyEvent.VK_C:
-					            table.copyCell(row, column);
-					            break;
-					        case KeyEvent.VK_V:
-					            table.pasteCell(row, column);
-					            break;
-					        case KeyEvent.VK_X:
-					            table.cutCell(row, column);
-					            break;
-					        }
-					    }
 					}
 
 					@SuppressWarnings("static-access")
@@ -497,95 +479,6 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 								setIsDirty(true);
 							}
 						}
-
-						if (e.getKeyCode() == 66 || e.getKeyCode() == 73 || e.getKeyCode() == 85) {
-							if (table.isEditing() == false) {
-								table.editCellAt(table.getSelectedRow(), table.getSelectedColumn());
-								DefaultCellEditor editor = (DefaultCellEditor) table.getCellEditor();
-								JTextField textfield = (JTextField) editor.getComponent();
-								String s = textfield.getText();
-								if (Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK) == true) {
-									s += e.getKeyText(e.getKeyCode()).toUpperCase();
-								} else {
-									s += e.getKeyText(e.getKeyCode()).toLowerCase();
-								}
-								textfield.setText(s);
-								textfield.setCaretPosition(textfield.getText().length());
-								textfield.getCaret().setVisible(true);
-							}
-						}
-
-						if (e.isControlDown() && e.getKeyCode() == 66) {
-
-							Cell cell = (Cell) table.getValueAt(row, column);
-							CellFormat cf = cell.getCellFormat();
-
-							Integer fs = cf.getFontStyle().intValue();
-
-							switch (fs) {
-							case Font.PLAIN:
-								fs = Font.BOLD;
-								break;
-							case Font.BOLD:
-								fs = Font.PLAIN;
-								break;
-							case Font.ITALIC:
-								fs = Font.BOLD + Font.ITALIC;
-								break;
-							case Font.BOLD + Font.ITALIC:
-								fs = Font.ITALIC;
-								break;
-							}
-
-							cf.setFontStyle(fs);
-							updateCellFormat(row, column, cf);
-
-							table.repaint();
-							// setIsDirty(true);
-						} else if (e.isControlDown() && e.getKeyCode() == 73) {
-
-							Cell cell = (Cell) table.getValueAt(row, column);
-							CellFormat cf = cell.getCellFormat();
-
-							Integer fs = cf.getFontStyle().intValue();
-
-							switch (fs) {
-							case Font.PLAIN:
-								fs = Font.ITALIC;
-								break;
-							case Font.BOLD:
-								fs = Font.BOLD + Font.ITALIC;
-								break;
-							case Font.ITALIC:
-								fs = Font.PLAIN;
-								break;
-							case Font.BOLD + Font.ITALIC:
-								fs = Font.BOLD;
-								break;
-							}
-
-							cf.setFontStyle(fs);
-							updateCellFormat(row, column, cf);
-							table.repaint();
-							// setIsDirty(true);
-						} else if (e.isControlDown() && e.getKeyCode() == 85) {
-
-							Cell cell = (Cell) table.getValueAt(row, column);
-
-							String old_value = (String) cell.getValue();
-							String new_value = "";
-							if (old_value.contains("<HTML><U>") && old_value.contains("</U></HTML>")) {
-								new_value = old_value.replace("<HTML><U>", "");
-								new_value = new_value.replace("</U></HTML>", "");
-							} else {
-								new_value = "<HTML><U>" + old_value + "</U></HTML>";
-							}
-
-							cell.setValue(new_value);
-							table.setValueAt(cell, row, column);
-							setIsDirty(true);
-						}
-
 					}
 
 					public void keyTyped(KeyEvent e) {
@@ -971,7 +864,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		JPopupMenu contextMenu = new JPopupMenu();
 
 		JMenuItem cellCopyMenu = new JMenuItem();
-		cellCopyMenu.setText("Copy \t\t Ctrl+C");
+		cellCopyMenu.setText("Copy");
+		cellCopyMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
 		cellCopyMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				table.copyCell(rowIndex, columnIndex);
@@ -980,7 +874,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		contextMenu.add(cellCopyMenu);
 
 		JMenuItem cellCutMenu = new JMenuItem();
-		cellCutMenu.setText("Cut \t\t Ctrl+X");
+		cellCutMenu.setText("Cut");
+		cellCopyMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
 		cellCutMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				table.cutCell(rowIndex, columnIndex);
@@ -989,7 +884,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		contextMenu.add(cellCutMenu);
 
 		JMenuItem cellPasteMenu = new JMenuItem();
-		cellPasteMenu.setText("Paste \t\t Ctrl+V");
+		cellPasteMenu.setText("Paste");
+		cellCopyMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 		cellPasteMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				table.pasteCell(rowIndex, columnIndex);

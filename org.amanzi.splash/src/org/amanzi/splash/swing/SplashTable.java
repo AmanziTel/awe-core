@@ -1,6 +1,7 @@
 package org.amanzi.splash.swing;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 
@@ -678,36 +679,106 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 			getModel().setValueAt(dstCell, row, column);
 		}
 	}
+	
+	private void updateFont(Cell cell, Integer fontStyle) {
+	    CellFormat format = cell.getCellFormat();
+        Integer currentFont = format.getFontStyle().intValue();
+         
+        if (currentFont == fontStyle) {
+            currentFont = Font.PLAIN;
+        }
+        else {
+            switch (currentFont) {
+            case Font.PLAIN:
+                currentFont = fontStyle;
+                break;
+            case Font.BOLD:
+                currentFont = fontStyle + Font.BOLD;
+                break;
+            case Font.ITALIC:
+                currentFont = fontStyle + Font.ITALIC;
+                break;
+            case Font.BOLD + Font.ITALIC:
+                currentFont = currentFont - fontStyle;
+                break;
+            }
+        }
+         
+        format.setFontStyle(currentFont);
+         
+        ((SplashTableModel) (getModel())).updateCellFormat(cell);
+         
+        repaint();
+    }
 
 	/**
 	 * Handles hot keys
 	 */
+	@Override
 	protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-		int row = getSelectedRow();
-		int column = getSelectedColumn();
+	    //Lagutko, 15.10.2009, actions with pressed ctrls
+        int row = getSelectedRow();
+        int column = getSelectedColumn();
+        
+        boolean result = false;
+        
+        if (pressed) {
+            if (e.isControlDown()) {
+                switch (e.getKeyCode()) {
+                case KeyEvent.VK_C:
+                    copyCell(row, column);
+                    result = true;
+                    break;
+                case KeyEvent.VK_V:
+                    pasteCell(row, column);
+                    result = true;
+                    break;
+                case KeyEvent.VK_X:
+                    cutCell(row, column);
+                    result = true;
+                    break;
+                case KeyEvent.VK_B:
+                    Cell cell = (Cell) getValueAt(row, column);
 
-		switch (ks.getKeyCode()) {
-		case 66: // Ctrl+B
+                    updateFont(cell, Font.BOLD);
+                    result = true;
+                    break;
+                case KeyEvent.VK_I:
+                    cell = (Cell) getValueAt(row, column);
+                
+                    updateFont(cell, Font.ITALIC);
+                    result = true;
+                    break;
+                case KeyEvent.VK_U:
+                    cell = (Cell) getValueAt(row, column);
 
-			return false;
-		case 73:
-			NeoSplashUtil.logn("CTRL+i has been pressed ");
+                    String old_value = (String) cell.getValue();
+                    String new_value = "";
+                    if (old_value.contains("<HTML><U>") && old_value.contains("</U></HTML>")) {
+                        new_value = old_value.replace("<HTML><U>", "");
+                        new_value = new_value.replace("</U></HTML>", "");
+                    } else {
+                        new_value = "<HTML><U>" + old_value + "</U></HTML>";
+                    }
 
-			return false;
-
-		case 85:
-			NeoSplashUtil.logn("CTRL+U has been pressed ");
-			return false;
-
-		case 127:
-			deleteCell(row, column);
-			return false;
-
-		default:
-			return super.processKeyBinding(ks, e, condition, pressed);
-		}
-
-		// return false;
+                    cell.setValue(new_value);
+                    setValueAt(cell, row, column);
+                    repaint();
+                    result = true;
+                    break;
+                }
+            }
+            else {
+                switch (e.getKeyCode()) {
+                case KeyEvent.VK_DELETE:
+                    deleteCell(row, column);
+                    result = true;
+                    break;
+                }
+            }
+        }
+        
+        return result;
 	}
 
 	/**
