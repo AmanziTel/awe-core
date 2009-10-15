@@ -109,7 +109,7 @@ public class NetworkTreeView extends ViewPart {
     /*
      * ID of this View
      */
-    public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.networktree.views.NetworkTreeView";
+    public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
 
     private static final String RENAME_MSG = "Enter new Name";
 

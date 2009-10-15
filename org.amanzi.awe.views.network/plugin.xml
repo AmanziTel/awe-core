@@ -9,7 +9,7 @@
             icon="icons/network.png"
             category="org.amanzi.awe.script"
             class="org.amanzi.awe.views.network.view.NetworkTreeView"
-            id="org.amanzi.awe.networktree.views.NetworkTreeView">
+            id="org.amanzi.awe.views.network.views.NetworkTreeView">
       </view>
    </extension>
 

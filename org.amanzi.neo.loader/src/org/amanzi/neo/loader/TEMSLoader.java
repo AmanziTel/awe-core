@@ -135,8 +135,9 @@ public class TEMSLoader extends DriveLoader {
             pn_code = (Integer)(lineData.get("all_active_set_pn_1"));
             ec_io = (Integer)(lineData.get("all_active_set_ec_io_1"));
             measurement_count = (Integer)(lineData.get("all_pilot_set_count"));
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             error("Failed to parse a field on line " + line_number + ": " + e.getMessage());
+            return;
         }
         if (measurement_count > 12) {
             error("Measurement count " + measurement_count + " > 12");

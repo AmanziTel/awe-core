@@ -176,6 +176,12 @@
     </antcall>
     <antcall target="svn.co">
       <param name="target" value="plugins"/>
+      <param name="element.id" value="org.amanzi.awe.views.tree.drive"/>
+      <param name="project.name" value="/trunk/awe/org.amanzi.awe.views.tree.drive"/>
+      <param name="url" value="svn+ssh://amabdelsalam@svn.amanzi.org/var/lib/svn"/>
+    </antcall>
+    <antcall target="svn.co">
+      <param name="target" value="plugins"/>
       <param name="element.id" value="org.jfree"/>
       <param name="project.name" value="/trunk/awe/org.jfree"/>
       <param name="url" value="svn+ssh://amabdelsalam@svn.amanzi.org/var/lib/svn"/>
