@@ -57,7 +57,6 @@ import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.ColumnHeaderRenderer;
@@ -75,8 +74,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.ISelection;
@@ -92,6 +89,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.part.EditorPart;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
@@ -458,7 +456,23 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 				table.addKeyListener(new KeyListener() {
 
 					public void keyPressed(KeyEvent e) {
-
+					    //Lagutko, 15.10.2009, actions with pressed ctrls
+					    int row = table.getSelectedRow();
+                        int column = table.getSelectedColumn();
+					    
+					    if (e.isControlDown()) {
+					        switch (e.getKeyCode()) {
+					        case KeyEvent.VK_C:
+					            table.copyCell(row, column);
+					            break;
+					        case KeyEvent.VK_V:
+					            table.pasteCell(row, column);
+					            break;
+					        case KeyEvent.VK_X:
+					            table.cutCell(row, column);
+					            break;
+					        }
+					    }
 					}
 
 					@SuppressWarnings("static-access")
@@ -501,14 +515,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 							}
 						}
 
-						if (e.isControlDown() && e.getKeyCode() == 67) {
-							table.copyCell(row, column);
-
-						} else if (e.isControlDown() && e.getKeyCode() == 88) {
-							table.cutCell(row, column);
-						} else if (e.isControlDown() && e.getKeyCode() == 86) {
-							table.pasteCell(row, column);
-						} else if (e.isControlDown() && e.getKeyCode() == 66) {
+						if (e.isControlDown() && e.getKeyCode() == 66) {
 
 							Cell cell = (Cell) table.getValueAt(row, column);
 							CellFormat cf = cell.getCellFormat();
@@ -645,7 +652,11 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
 		splashID = sei.getName().replace(".splash", "");
 		RubyProjectNode root = sei.getRoot();
-
+		
+		//Lagutko, 15.10.2009, fix to be able to process Ctrl+... events
+		IBindingService bindingService = (IBindingService)getSite().getService(IBindingService.class);
+		bindingService.setKeyFilterEnabled(false);
+		
 		NeoSplashUtil.logn("splashID = " + splashID);
 
 		try {
