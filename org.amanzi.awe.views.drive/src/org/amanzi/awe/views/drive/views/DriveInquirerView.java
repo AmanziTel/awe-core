@@ -18,6 +18,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.ui.PlatformGIS;
+import net.refractions.udig.ui.graphics.Glyph;
 
 import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
@@ -28,9 +29,16 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -42,6 +50,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.part.ViewPart;
 import org.geotools.brewer.color.BrewerPalette;
 import org.jfree.chart.ChartUtilities;
@@ -51,6 +61,8 @@ import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.event.ChartProgressEvent;
+import org.jfree.chart.event.ChartProgressListener;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
@@ -95,7 +107,7 @@ public class DriveInquirerView extends ViewPart {
     private static final String LOG_LABEL = "Logarithmic counts";
     private static final String PALETTE_LABEL = "Palette";
     private static final String ALL_EVENTS = "all events";
-    protected static final String EVENT = "events";
+    protected static final String EVENT = "event_type";
     private JFreeChart chart;
     private ChartComposite chartFrame;
     private Combo cDrive;
@@ -126,12 +138,21 @@ public class DriveInquirerView extends ViewPart {
     private Long endGisTime;
     private List<Node> dataset;
     private int currentIndex;
+    private TableViewer table;
+    private TableLabelProvider labelProvider;
+    private TableContentProvider provider;
 
     public void createPartControl(Composite parent) {
-        Composite child = new Composite(parent, SWT.FILL);
+        Composite frame = new Composite(parent, SWT.FILL);
+        FormLayout formLayout = new FormLayout();
+        formLayout.marginHeight = 0;
+        formLayout.marginWidth = 0;
+        formLayout.spacing = 0;
+        frame.setLayout(formLayout);
+
+        Composite child = new Composite(frame, SWT.FILL);
         final GridLayout layout = new GridLayout(12, false);
         child.setLayout(layout);
-
         Label label = new Label(child, SWT.FLAT);
         label.setText("Drive:");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
@@ -172,15 +193,34 @@ public class DriveInquirerView extends ViewPart {
         dateStart.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
         chart = createChart();
-        chartFrame = new ChartComposite(child, SWT.NONE, chart, true);
-        GridData data = new GridData(GridData.FILL_BOTH | GridData.GRAB_HORIZONTAL | GridData.GRAB_VERTICAL);
-        data.horizontalSpan = layout.numColumns;
-        chartFrame.setLayoutData(data);
-        buttonLine = new Composite(child, SWT.NONE);
-        data = new GridData(GridData.FILL_HORIZONTAL | GridData.GRAB_HORIZONTAL);
-        data.horizontalSpan = layout.numColumns;
-        buttonLine.setLayoutData(data);
-        FormLayout formLayout = new FormLayout();
+        chartFrame = new ChartComposite(frame, SWT.NONE, chart, true);
+        FormData fData = new FormData();
+        fData.top = new FormAttachment(child, 2);
+        fData.left = new FormAttachment(0, 2);
+        fData.right = new FormAttachment(100, -2);
+        fData.bottom = new FormAttachment(70, -2);
+
+        chartFrame.setLayoutData(fData);
+        table = new TableViewer(frame, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.right = new FormAttachment(100, 0);
+        fData.top = new FormAttachment(chartFrame, 2);
+        fData.bottom = new FormAttachment(100, -30);
+        table.getControl().setLayoutData(fData);
+
+        labelProvider = new TableLabelProvider();
+        labelProvider.createTableColumn();
+        provider = new TableContentProvider();
+        table.setContentProvider(provider);
+
+        buttonLine = new Composite(frame, SWT.NONE);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 2);
+        fData.right = new FormAttachment(100, -2);
+        fData.bottom = new FormAttachment(100, -2);
+        buttonLine.setLayoutData(fData);
+        formLayout = new FormLayout();
         buttonLine.setLayout(formLayout);
 
         bLeft = new Button(buttonLine, SWT.PUSH);
@@ -252,6 +292,7 @@ public class DriveInquirerView extends ViewPart {
      */
     private void setsVisible(boolean visible) {
         chartFrame.setVisible(visible);
+        table.getControl().setVisible(visible);
         buttonLine.setVisible(visible);
     }
 
@@ -391,6 +432,25 @@ public class DriveInquirerView extends ViewPart {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
+            }
+        });
+        // chart.addChangeListener(new ChartChangeListener() {
+        //
+        // @Override
+        // public void chartChanged(ChartChangeEvent chartchangeevent) {
+        // table.setInput(0);
+        // table.refresh();
+        // }
+        // });
+        chart.addProgressListener(new ChartProgressListener() {
+
+            @Override
+            public void chartProgress(ChartProgressEvent chartprogressevent) {
+                if (chartprogressevent.getType() != 2) {
+                    return;
+                }
+                table.setInput(0);
+                table.refresh();
             }
         });
     }
@@ -726,13 +786,7 @@ public class DriveInquirerView extends ViewPart {
      * @return node id or null
      */
     private Long getSelectedProperty2(double crosshair) {
-        int[] item = xydataset2.collection.getSurroundingItems(0, (long)crosshair);
-        Integer result = null;
-        if (item[0] > 0) {
-            result = item[0];
-        } else if (item[1] > 0) {
-            result = item[1];
-        }
+        Integer result = getCrosshairIndex(xydataset2, crosshair);
         if (result != null) {
             return xydataset1.collection.getSeries(0).getDataItem(result).getValue().longValue();
         } else {
@@ -747,18 +801,31 @@ public class DriveInquirerView extends ViewPart {
      * @return node id or null
      */
     private Long getSelectedProperty1(double crosshair) {
-        int[] item = xydataset1.collection.getSurroundingItems(0, (long)crosshair);
-        Integer result=null;
-        if (item[0] > 0){
-         result=  item[0]; 
-        }else if ( item[1] > 0 ){
-            result = item[1];
-        }
+        Integer result = getCrosshairIndex(xydataset1, crosshair);
         if (result != null) {
             return xydataset1.collection.getSeries(0).getDataItem(result).getValue().longValue();
         } else {
             return null;
         }
+    }
+
+    /**
+     * Gets index of crosshair data item
+     * 
+     * @param xydataset
+     * @param crosshair
+     * @return index or null
+     */
+    private Integer getCrosshairIndex(TimeDataset dataset, Number crosshair) {
+        int[] item = dataset.collection.getSurroundingItems(0, crosshair.longValue());
+        xydataset1.collection.getSeries(0).getItemCount();
+        Integer result = null;
+        if (item[0] >= 0) {
+            result = item[0];
+        } else if (item[1] >= 0) {
+            result = item[1];
+        }
+        return result;
     }
 
     /**
@@ -1235,5 +1302,263 @@ public class DriveInquirerView extends ViewPart {
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         return iterator.hasNext() ? iterator.next() : null;
+    }
+
+    private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
+
+        private ArrayList<String> columns = new ArrayList<String>();
+        /** int DEF_SIZE field */
+        protected static final int DEF_SIZE = 150;
+        @Override
+        public Image getColumnImage(Object element, int columnIndex) {
+            NodeWrapper wr = (NodeWrapper)element;
+            if (columnIndex == 3 && wr.node != null) {
+                Color eventColor = getEventColor(wr.node);
+                return Glyph.palette(new Color[] {eventColor}).createImage();
+            }
+            return getImage(element);
+        }
+
+        /**
+         *create column table
+         */
+        public void createTableColumn() {
+            Table tabl = table.getTable();
+            TableViewerColumn column;
+            TableColumn col;
+            if (columns.isEmpty()) {
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("Property");
+                columns.add(col.getText());
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("Enum");
+                columns.add(col.getText());
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("Property value");
+                columns.add(col.getText());
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("Event");
+                columns.add(col.getText());
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+
+            }
+            tabl.setHeaderVisible(true);
+            tabl.setLinesVisible(true);
+            table.setLabelProvider(this);
+            table.refresh();
+        }
+
+        @Override
+        public String getColumnText(Object element, int columnIndex) {
+            NodeWrapper wr = (NodeWrapper)element;
+            String result = "";
+            if (columnIndex == 0) {
+                result = wr.propertyName;
+            } else if (columnIndex == 1) {
+                result = wr.nodsEnum.name;
+            } else if (wr.node != null) {
+                if (columnIndex == 2) {
+                    result = wr.node.getProperty(wr.propertyName, "").toString();
+                } else if (columnIndex == 3) {
+                    result = wr.node.getProperty(EVENT, ALL_EVENTS).toString();
+                }
+            }
+
+            return result;
+        }
+
+    }
+
+    /*
+     * The content provider class is responsible for providing objects to the view. It can wrap
+     * existing objects in adapters or simply return objects as-is. These objects may be sensitive
+     * to the current input of the view, or ignore it and always show the same content (like Task
+     * List, for example).
+     */
+
+    private class TableContentProvider implements IStructuredContentProvider {
+
+        private List<NodeWrapper> list;
+
+        public TableContentProvider() {
+            list = new ArrayList<NodeWrapper>(3);
+            NodeWrapper node = new NodeWrapper();
+            node.setNodsEnum(NodesEnum.PREVIOUS);
+            list.add(node);
+            node = new NodeWrapper();
+            node.setNodsEnum(NodesEnum.SELECTED);
+            list.add(node);
+            node = new NodeWrapper();
+            node.setNodsEnum(NodesEnum.NEXT);
+            list.add(node);
+
+            node = new NodeWrapper();
+            node.setNodsEnum(NodesEnum.PREVIOUS);
+            list.add(node);
+            node = new NodeWrapper();
+            node.setNodsEnum(NodesEnum.SELECTED);
+            list.add(node);
+            node = new NodeWrapper();
+            node.setNodsEnum(NodesEnum.NEXT);
+            list.add(node);
+        }
+
+        @Override
+        public Object[] getElements(Object inputElement) {
+            return list.toArray(new NodeWrapper[0]);
+        }
+
+        @Override
+        public void dispose() {
+        }
+
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+            if (newInput == null) {
+                return;
+            }
+            double crosshair = ((XYPlot)chart.getPlot()).getDomainCrosshairValue();
+            for (int i = 0; i < list.size(); i++) {
+                NodeWrapper nodewr = list.get(i);
+                nodewr.setNode(null);
+                nodewr.setPropertyName(getPropertyName(i));
+            }
+            if (crosshair < 0.1) {
+                return;
+            }
+            Integer index1 = getCrosshairIndex(xydataset1, crosshair);
+            if (index1 != null) {
+                list.get(1).setNode(
+                        NeoUtils.getNodeById(xydataset1.collection.getSeries(0).getDataItem(index1).getValue().longValue()));
+                if (index1 > 0) {
+                    list.get(0)
+                            .setNode(
+                                    NeoUtils.getNodeById(xydataset1.collection.getSeries(0).getDataItem(index1 - 1).getValue()
+                                            .longValue()));
+                }
+                if (index1 + 1 < xydataset1.collection.getSeries(0).getItemCount()) {
+                    list.get(2)
+                            .setNode(
+                                    NeoUtils.getNodeById(xydataset1.collection.getSeries(0).getDataItem(index1 + 1).getValue()
+                                            .longValue()));
+                }
+            }
+            if (list.size() > 3) {
+                Integer index2 = getCrosshairIndex(xydataset2, crosshair);
+                if (index2 != null) {
+                    list.get(4).setNode(
+                            NeoUtils.getNodeById(xydataset2.collection.getSeries(0).getDataItem(index2).getValue().longValue()));
+                    if (index2 > 0) {
+                        list.get(3).setNode(
+                                NeoUtils.getNodeById(xydataset2.collection.getSeries(0).getDataItem(index2 - 1).getValue()
+                                        .longValue()));
+                    }
+                    if (index2 + 1 < xydataset2.collection.getSeries(0).getItemCount()) {
+                        list.get(5).setNode(
+                                NeoUtils.getNodeById(xydataset2.collection.getSeries(0).getDataItem(index2 + 1).getValue()
+                                        .longValue()));
+                    }
+                }
+            }
+        }
+
+        /**
+         * @param i
+         * @return
+         */
+        private String getPropertyName(int i) {
+            return i < 3 ? cProperty1.getText() : cProperty2.getText();
+        }
+
+    }
+
+    private class NodeWrapper {
+        NodesEnum nodsEnum;
+        String propertyName;
+        Node node;
+
+        /**
+         * @return Returns the nodsEnum.
+         */
+        public NodesEnum getNodsEnum() {
+            return nodsEnum;
+        }
+
+        /**
+         * @param nodsEnum The nodsEnum to set.
+         */
+        public void setNodsEnum(NodesEnum nodsEnum) {
+            this.nodsEnum = nodsEnum;
+        }
+
+        /**
+         * @return Returns the propertyName.
+         */
+        public String getPropertyName() {
+            return propertyName;
+        }
+
+        /**
+         * @param propertyName The propertyName to set.
+         */
+        public void setPropertyName(String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+        /**
+         * @return Returns the node.
+         */
+        public Node getNode() {
+            return node;
+        }
+
+        /**
+         * @param node The node to set.
+         */
+        public void setNode(Node node) {
+            this.node = node;
+        }
+
+    }
+
+    /**
+     * <p>
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
+    private enum NodesEnum {
+        PREVIOUS("previous node"), SELECTED("selected node"), NEXT("next node");
+        private final String name;
+
+        /**
+         * 
+         */
+        private NodesEnum(String name) {
+            this.name = name;
+        }
+
+        /**
+         * @return Returns the name.
+         */
+        public String getName() {
+            return name;
+        }
+
     }
 }
