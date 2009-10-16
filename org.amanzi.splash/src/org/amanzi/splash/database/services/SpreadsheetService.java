@@ -605,28 +605,21 @@ public class SpreadsheetService {
 	 * @return converted Cell from Database
 	 */
 	public Cell getCell(SpreadsheetNode sheet, CellID id) {
-//	    try {
-	    
 	    CellNode node = getCellNode(sheet, id);
 	    
 	    if (node != null) {
-//	    	//Lagutko, 6.10.2009, convertNodeToCell use access to database and should be wrapped in transaction
-//	    	Transaction transaction = neoService.beginTx();
-//	    	try {
+	        //Lagutko, 6.10.2009, convertNodeToCell use access to database and should be wrapped in transaction
+	    	Transaction transaction = neoService.beginTx();
+	    	try {
 	    		return convertNodeToCell(node, id.getRowName(), id.getColumnName(), false);
-//	    	}
-//	    	finally {
-//	    		transaction.success();
-//	    		transaction.finish();
-//	    	}
+	    	}
+	    	finally {
+	    		transaction.success();
+	    		transaction.finish();
+	    	}
 	    }
 
 	    return new Cell(id.getRowIndex(), id.getColumnIndex(), DEFAULT_DEFINITION, DEFAULT_VALUE, new CellFormat());
-//	    }
-//	    finally {
-//	        tx.success();
-//	        tx.finish();
-//	    }
 	}
 
 	/**
