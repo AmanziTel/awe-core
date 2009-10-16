@@ -6,6 +6,9 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -118,6 +121,10 @@ public class NetworkRenderer extends RendererImpl {
     private void renderGeoNeo( Graphics2D g, IGeoResource neoGeoResource, IProgressMonitor monitor ) throws RenderException {
         if (monitor == null)
             monitor = new NullProgressMonitor();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         monitor.beginTask("render network sites and sectors: "+neoGeoResource.getIdentifier(), IProgressMonitor.UNKNOWN);    // TODO: Get size from info
 
@@ -354,10 +361,19 @@ public class NetworkRenderer extends RendererImpl {
                         }
                         if (drawsLabel) {
                             labelRec.add(rect);
-                            g.setColor(COLOR_SURROUND);
-                            g.drawString(drawString, x + 1, y + 1);
-                            g.setColor(labelColor);
-                            g.drawString(drawString, x, y);
+                            TextLayout text = new TextLayout(drawString, g.getFont(), g.getFontRenderContext());
+                            g.setPaint(labelColor);
+                            AffineTransform at = AffineTransform.getTranslateInstance(x, y);
+                            Shape outline = text.getOutline(at);
+                            g.fill(outline);
+                            g.setPaint(COLOR_SURROUND);
+                            g.draw(outline);
+                            g.setPaint(labelColor);
+                            text.draw(g, x, y);
+                            // g.setColor(COLOR_SURROUND);
+                            // g.drawString(drawString, x + 1, y + 1);
+                            // g.setColor(labelColor);
+                            // g.drawString(drawString, x, y);
                         }
 
                     }
