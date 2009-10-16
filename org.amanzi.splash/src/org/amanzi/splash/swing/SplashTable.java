@@ -2,6 +2,7 @@ package org.amanzi.splash.swing;
 
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 
@@ -16,12 +17,14 @@ import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.ui.PlatformUI;
+import org.neo4j.api.core.Transaction;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -100,7 +103,7 @@ public class SplashTable extends JTable {
 
 		editor = new SplashCellEditor();
 
-		setDefaultRenderer(Cell.class, new SplashCellRenderer(null, null));
+		setDefaultRenderer(Cell.class, new SplashCellRenderer());		
 
 		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		setRowSelectionAllowed(false);
@@ -142,7 +145,7 @@ public class SplashTable extends JTable {
 			editor = new SplashCellEditor();
 		}
 
-		setDefaultRenderer(Cell.class, new SplashCellRenderer(null, null));
+		setDefaultRenderer(Cell.class, new SplashCellRenderer());
 
 		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		setRowSelectionAllowed(false);
@@ -174,12 +177,7 @@ public class SplashTable extends JTable {
 	 * @return CellRenderer by given row and column
 	 */
 	public TableCellRenderer getCellRenderer(int row, int column) {
-		Object value = getValueAt(row, column);
-		if (value != null) {
-			return getDefaultRenderer(getValueAt(row, column).getClass());
-		} else {
-			return super.getCellRenderer(row, column);
-		}
+		return getDefaultRenderer(Cell.class);		
 	}
 
 	/**
@@ -850,4 +848,19 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 	public void setRoot(RubyProjectNode root) {
 		this.root = root;
 	}
+	
+	@Override
+	public void paint(Graphics g) {
+	    //Lagutko, 16.10.2009, paint should run in single real transaction
+	    Transaction tx = NeoUtils.beginTransaction();
+	    try {
+	        super.paint(g);
+	    }
+	    finally {
+	        tx.success();
+	        tx.finish();	        
+	    }
+	}
+	
+	
 }

@@ -397,7 +397,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 			protected JComponent createSwingComponent() {
 
 				JScrollPane scrollPane = new JScrollPane(table);
-
+				
 				table.setOpaque(true);
 				table.setBackground(getAWTHierarchyRoot().getBackground());
 

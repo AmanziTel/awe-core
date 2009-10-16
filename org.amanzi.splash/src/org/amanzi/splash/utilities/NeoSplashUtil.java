@@ -3,9 +3,7 @@ package org.amanzi.splash.utilities;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,7 +11,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -25,8 +22,8 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.SplashEditorInput;
@@ -35,7 +32,6 @@ import org.amanzi.splash.views.importbuilder.ImportBuilderView;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewPart;
@@ -43,9 +39,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.neo4j.api.core.Transaction;
-
-import com.eteks.openjeks.format.CellFormat;
 
 public class NeoSplashUtil {
 
@@ -295,79 +288,22 @@ public class NeoSplashUtil {
 		return result;
 		
 	}
-
-	public static void LoadFileIntoSpreadsheet(String path, SplashTableModel model, IProgressMonitor monitor){
-		//String path = "c:\\sample.txt";
-		//NeoSplashUtil.logn("path: " + path);
-	    Transaction tx = NeoUtils.beginTransaction();
-		try {
-		    File csvFile = new File(path);
-		    FileInputStream is = new FileInputStream(csvFile);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-			String line;
-			
-			line = reader.readLine();
-			
-			int i=0;
-			int j=0;
-			
-			// detecting type of separator;
-			char sep=';';
-			if (line.contains(";") == true){
-				sep = ';';
-			}else if (line.contains("\t")){
-				sep = '\t';
-			}else if (line.contains(",")){
-				sep = ',';
-			}
-			
-			CSVParser parser = new CSVParser(sep);
-			int perc = 0;
-			long totalBytes = csvFile.length();
-			long bytesRead = 0;
-            int prevPerc = 0;
-			while (line != null  && line.lastIndexOf(sep) > 0){
-				NeoSplashUtil.logn("loading line #" + i);
-
-				List<String> list = parser.parse(line);
-				Iterator<String> it = list.iterator();
-				j = 0;
-				while (it.hasNext()) {
-					model.setValueAt(new Cell(i, j, "",(String) it.next(), new CellFormat()), i, j);				    
-					j++;
-				}
-
-		        bytesRead += line.length();
-	            perc = (int)(100.0 * (float)bytesRead / (float)totalBytes);
-	            if (perc > prevPerc) {
-	                monitor.setTaskName("Loading record #" + i);
-                    monitor.worked(perc - prevPerc);
-                    prevPerc = perc;
-                }
-
-				line = reader.readLine();
-				i++;				
-			}
-			tx.success();
-		} catch (FileNotFoundException e) {
-		    tx.failure();
-			e.printStackTrace();
-		} catch (IOException e) {
-		    tx.failure();
-			e.printStackTrace();
-		}
-		finally {		    
-		    tx.finish();
-		}
-
-	}
 	
-	public static void LoadExcelFileIntoSpreadsheet(String path, SplashTableModel model, IProgressMonitor monitor){
-		POIExcelReader poiExample = new POIExcelReader ();
-		String         xlsPath    = "c:\\test.xls";
-		poiExample.loadDataFromExcelFile (xlsPath, model);
-	}
-	
+	public static IEditorPart openSpreadsheet(IWorkbench workbench, SpreadsheetNode node) {
+        IEditorPart result = null;
+        try {
+            IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
+            if (page != null) {             
+                IEditorInput fi = new SplashEditorInput(node);              
+                result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
+            }
+
+        } catch (PartInitException e) {
+            result = null;
+        }
+        return result;
+        
+    }	
 	
 	/**
 	 * Returns content of script
@@ -486,10 +422,16 @@ public class NeoSplashUtil {
 	    return new URL(fullPath);	    
 	}
 	
+	/**
+	 * Return ImportBuilder view
+	 *
+	 * @return view part of ImoprtBuilder
+	 */
 	public static IViewPart getImportBuilderView() {
 	    IViewPart result = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ImportBuilderView.IMPORT_BUILDER_VIEW_ID);
 	    
 	    if (result == null) {
+	        //if ImportBuilder is not shown in active page than open it
 	        try {
 	            result = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ImportBuilderView.IMPORT_BUILDER_VIEW_ID);
 	        }

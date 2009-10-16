@@ -409,14 +409,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 * 
 	 */
 	public Object getValueAt(final int row, final int column) {
-		// row and column index are checked but storing in a Hashtable
-		// won't cause real problems
-		if (row >= getRowCount())
-			throw new ArrayIndexOutOfBoundsException(row);
-		if (column >= getColumnCount())
-			throw new ArrayIndexOutOfBoundsException(column);
-
-		//Lagutko, 6.10.2009, no longer use ActionUtil here
+		//Lagutko, 6.10.2009, no longer use ActionUtil here		
 		return service.getCell(spreadsheet, new CellID(row, column));
 	}
 

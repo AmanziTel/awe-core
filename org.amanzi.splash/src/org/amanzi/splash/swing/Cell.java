@@ -29,7 +29,7 @@ public class Cell
     public static final String CELL_CYLIC_ERROR = "ERROR:cyclic";
     
 	private transient Object value;
-	private Object definition;
+	private String definition;
 	private Cell cellGraphInfo;
 	private CellFormat cellFormat;
 	
@@ -98,7 +98,7 @@ public class Cell
 		hasReference = false;
 	}
 	
-	public Cell(Object value, Object definition,
+	public Cell(Object value, String definition,
 			Cell cellGraphInfo, CellFormat cellFormat) {
 		super();
 		this.value = value;
@@ -111,7 +111,7 @@ public class Cell
 		hasReference = false;
 	}
 
-	public Cell(Object value, Object definition,
+	public Cell(Object value, String definition,
 			Cell cellGraphInfo) {
 		super();
 		this.value = value;
@@ -138,11 +138,11 @@ public class Cell
 		value = null;
 	}
 
-	public Object getDefinition() {
+	public String getDefinition() {
 		return definition;
 	}
 
-	public void setDefinition(Object definition) {
+	public void setDefinition(String definition) {
 		this.definition = definition;
 	}
 

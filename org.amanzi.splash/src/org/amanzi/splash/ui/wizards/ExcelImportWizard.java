@@ -12,23 +12,20 @@ package org.amanzi.splash.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.amanzi.splash.swing.SplashTable;
-import org.amanzi.splash.swing.SplashTableModel;
-import org.amanzi.splash.ui.AbstractSplashEditor;
+import org.amanzi.splash.database.services.Messages;
 import org.amanzi.splash.utilities.NeoSplashUtil;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.amanzi.splash.views.importbuilder.ExcelImporter;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.rubypeople.rdt.core.IRubyElement;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
-public class ExcelImportWizard extends Wizard implements IImportWizard {
+public class ExcelImportWizard extends NewRubyElementCreationWizard implements IImportWizard {
 	
 	ExcelImportWizardPage mainPage;
 
@@ -40,51 +37,22 @@ public class ExcelImportWizard extends Wizard implements IImportWizard {
 	 * @see org.eclipse.jface.wizard.Wizard#performFinish()
 	 */
 	public boolean performFinish() {
-		final IFile file = mainPage.createNewFile();
-
-		final String containerName = "project.AWEScript";
-
-		NeoSplashUtil.logn("containerName: " + containerName);
-
-		final String fileName = mainPage.getFileName();
-		IRunnableWithProgress op = new IRunnableWithProgress() {
-			public void run(final IProgressMonitor monitor) throws InvocationTargetException {
-				try {
-					getShell().getDisplay().asyncExec(new Runnable() {
-						public void run() {
-							AbstractSplashEditor editor = (AbstractSplashEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-
-							SplashTable table = editor.getTable();
-
-							SplashTableModel model = (SplashTableModel) table.getModel();
-
-							//monitor.beginTask("Loading ", getLinesCount(file));
-
-							IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-
-							monitor.worked(1);
-
-							monitor.setTaskName("Loading records from excel file...");
-
-							NeoSplashUtil.LoadExcelFileIntoSpreadsheet(file.getLocation().toString(), model, monitor);		
-						}
-					});
-
-
-					//doFinish(file, monitor);
-				} finally {
-					monitor.done();
-				}
-			}
-		};
+		ExcelImporter importer = null;
 		try {
-			getContainer().run(true, false, op);
+		    importer = new ExcelImporter(mainPage.getContainerFullPath(), 
+                    mainPage.getFileName(),
+                    mainPage.getInitialContents(),
+                    mainPage.getFileSize());
+			getContainer().run(true, false, importer);
 		} catch (InterruptedException e) {
 			return false;
 		} catch (InvocationTargetException e) {
 			Throwable realException = e.getTargetException();
-			MessageDialog.openError(getShell(), "Error", realException.getMessage());
+			MessageDialog.openError(getShell(), Messages.Wizard_Error_Message, realException.getMessage());
 			return false;
+		}
+		finally {
+		    NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), importer.getSpreadsheet());
 		}
 		return true;
 	}
@@ -93,9 +61,10 @@ public class ExcelImportWizard extends Wizard implements IImportWizard {
 	 * @see org.eclipse.ui.IWorkbenchWizard#init(org.eclipse.ui.IWorkbench, org.eclipse.jface.viewers.IStructuredSelection)
 	 */
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		setWindowTitle("File Import Wizard"); //NON-NLS-1
+	    super.init(workbench, selection);
+		setWindowTitle(Messages.File_Import_Wizard_Title); //NON-NLS-1
 		setNeedsProgressMonitor(true);
-		mainPage = new ExcelImportWizardPage("Import Excel File",selection); //NON-NLS-1
+		mainPage = new ExcelImportWizardPage(Messages.Excel_Import_Title, selection); //NON-NLS-1
 	}
 	
 	/* (non-Javadoc)
@@ -104,6 +73,17 @@ public class ExcelImportWizard extends Wizard implements IImportWizard {
     public void addPages() {
         super.addPages(); 
         addPage(mainPage);        
+    }
+
+    @Override
+    protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
+        //no need
+    }
+
+    @Override
+    public IRubyElement getCreatedElement() {
+        //no need
+        return null;
     }
 
 }
