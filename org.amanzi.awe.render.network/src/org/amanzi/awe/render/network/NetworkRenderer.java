@@ -362,11 +362,11 @@ g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                         if (drawsLabel) {
                             labelRec.add(rect);
                             TextLayout text = new TextLayout(drawString, g.getFont(), g.getFontRenderContext());
-                            g.setPaint(labelColor);
+
                             AffineTransform at = AffineTransform.getTranslateInstance(x, y);
                             Shape outline = text.getOutline(at);
+                            g.setPaint(Color.WHITE);
                             g.fill(outline);
-                            g.setPaint(COLOR_SURROUND);
                             g.draw(outline);
                             g.setPaint(labelColor);
                             text.draw(g, x, y);
