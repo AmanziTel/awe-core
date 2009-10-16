@@ -266,6 +266,7 @@ public class AweProjectService {
 			return result;
 		} finally {
 			transaction.finish();
+			provider.commit();
 		}
 	}
 	
@@ -286,6 +287,7 @@ public class AweProjectService {
 	    }
 	    finally {
 	        transaction.finish();
+	        provider.commit();
 	    }
 	    
 	    return result;
