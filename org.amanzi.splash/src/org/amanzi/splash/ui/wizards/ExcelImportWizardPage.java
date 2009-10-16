@@ -16,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import org.amanzi.splash.database.services.Messages;
-import org.amanzi.splash.ui.SplashPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -95,7 +94,7 @@ public class ExcelImportWizardPage extends WizardNewFileCreationPage {
 	 * @see org.eclipse.ui.dialogs.WizardNewFileCreationPage#getNewFileLabel()
 	 */
 	protected String getNewFileLabel() {
-		return null; //NON-NLS-1
+		return Messages.Import_Wizard_New_File_Name; //NON-NLS-1
 	}
 
 	/* (non-Javadoc)

@@ -15,6 +15,7 @@ package org.amanzi.splash.views.importbuilder;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
@@ -32,6 +33,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.ui.SplashPlugin;
+import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -207,7 +209,15 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         } while (spreadsheetNode != null);
         
         //create a new Spreadsheet
-        spreadsheetNode = projectService.findOrCreateSpreadSheet(rubyProjectNode, spreadsheetName);        
+        spreadsheetNode = projectService.findOrCreateSpreadSheet(rubyProjectNode, spreadsheetName);
+        
+        //also create a Spreadsheet in AWE Project Structure
+        try {
+            AWEProjectManager.createNeoSpreadsheet(rubyProject, spreadsheetName, NeoSplashUtil.getSpeadsheetURL(spreadsheetName));
+        }
+        catch (MalformedURLException e) {
+            //can't happen
+        }
     }
     
     /**

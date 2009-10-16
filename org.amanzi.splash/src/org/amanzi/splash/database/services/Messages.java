@@ -24,7 +24,7 @@ public class Messages extends NLS {
     public static String File_Editor_Text;
     public static String CSV_Import_Title;
     public static String CSV_Imoprt_Page_Description;
-    
+    public static String Import_Wizard_New_File_Name;
     
     private Messages() {
     }

@@ -48,7 +48,7 @@ public class NeoDataImportWizardPage extends WizardNewFileCreationPage {
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.dialogs.WizardNewFileCreationPage#createAdvancedControls(org.eclipse.swt.widgets.Composite)
 	 */	
-	protected void createAdvancedControls(Composite parent) {
+	protected void createAdvancedControls(Composite parent) {	    
 		Composite fileSelectionArea = new Composite(parent, SWT.NONE);
 		GridData fileSelectionData = new GridData(GridData.GRAB_HORIZONTAL
 				| GridData.FILL_HORIZONTAL);
@@ -100,7 +100,7 @@ public class NeoDataImportWizardPage extends WizardNewFileCreationPage {
 	 * @see org.eclipse.ui.dialogs.WizardNewFileCreationPage#getNewFileLabel()
 	 */
 	protected String getNewFileLabel() {
-		return null; //NON-NLS-1
+		return Messages.Import_Wizard_New_File_Name; //NON-NLS-1
 	}
 
 	/* (non-Javadoc)
