@@ -2,13 +2,17 @@ package org.amanzi.awe.render.network;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.core.Pair;
@@ -54,6 +58,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
+    /** Color COLOR_SURROUND field */
+    private static final Color COLOR_SURROUND = new Color(255, 255, 255, 255);
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
     private static final Color COLOR_SELECTED = Color.RED;
@@ -174,6 +180,7 @@ public class NetworkRenderer extends RendererImpl {
                 System.out.println("Have star selection: "+starPoint);
             }
             ArrayList<Pair<String,Integer>> multiOmnis = new ArrayList<Pair<String,Integer>>();
+            Set<Rectangle> labelRec = new HashSet<Rectangle>();
             aggNode = geoNeo.getAggrNode();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -319,16 +326,40 @@ public class NetworkRenderer extends RendererImpl {
                             g.setColor(drawColor);
                         }
                     }
+                    String drawString = node.toString();
                     if (countOmnis>1) {
                         //System.err.println("Site "+node+" had "+countOmnis+" omni antennas");
-                        multiOmnis.add(new Pair<String,Integer>(node.toString(),countOmnis));
+                        multiOmnis.add(new Pair<String, Integer>(drawString, countOmnis));
                     }
                     if (drawLabels) {
                         double label_position_angle = Math.toRadians(-90 + (label_position_angles[0] + label_position_angles[1]) / 2.0);
                         int label_x = 5 + (int)(10 * Math.cos(label_position_angle));
                         int label_y = (int)(10 * Math.sin(label_position_angle));
-                        g.setColor(labelColor);
-                        g.drawString(node.toString(), p.x + label_x, p.y + label_y);
+                        FontMetrics metrics = g.getFontMetrics(font);
+                        // get the height of a line of text in this font and render context
+                        int hgt = metrics.getHeight();
+                        // get the advance of my text in this font and render context
+                        int adv = metrics.stringWidth(drawString);
+                        // calculate the size of a box to hold the text with some padding.
+
+                        int x = p.x + label_x;
+                        int y = p.y + label_y;
+                        Rectangle rect = new Rectangle(x, y, adv + 2, hgt + 2);
+                        boolean drawsLabel = true;
+                        for (Rectangle rectangl : labelRec) {
+                            if (rectangl.intersects(rect)) {
+                                drawsLabel = false;
+                                break;
+                            }
+                        }
+                        if (drawsLabel) {
+                            labelRec.add(rect);
+                            g.setColor(COLOR_SURROUND);
+                            g.drawString(drawString, x + 1, y + 1);
+                            g.setColor(labelColor);
+                            g.drawString(drawString, x, y);
+                        }
+
                     }
                     if (base_transform != null) {
                         g.setTransform(base_transform);
