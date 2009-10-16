@@ -764,6 +764,8 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
                     repaint();
                     result = true;
                     break;
+                default:
+                    return super.processKeyBinding(ks, e, condition, pressed);
                 }
             }
             else {
@@ -772,6 +774,8 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
                     deleteCell(row, column);
                     result = true;
                     break;
+                default:
+                    return super.processKeyBinding(ks, e, condition, pressed);
                 }
             }
         }
