@@ -77,9 +77,6 @@ public class NetworkRenderer extends RendererImpl {
     private static final Color COLOR_SURROUND = new Color(255, 255, 255, 255);
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
-    private static final Color COLOR_SELECTED = Color.RED;
-    private static final Color COLOR_LESS = Color.BLUE;
-    private static final Color COLOR_MORE = Color.GREEN;
     private static final Color COLOR_SITE_SELECTED = Color.CYAN;
     private static final Color COLOR_SECTOR_SELECTED = Color.CYAN;
     private static final Color COLOR_SECTOR_STAR = Color.RED;
@@ -133,10 +130,8 @@ public class NetworkRenderer extends RendererImpl {
     private void renderGeoNeo( Graphics2D g, IGeoResource neoGeoResource, IProgressMonitor monitor ) throws RenderException {
         if (monitor == null)
             monitor = new NullProgressMonitor();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         monitor.beginTask("render network sites and sectors: "+neoGeoResource.getIdentifier(), IProgressMonitor.UNKNOWN);    // TODO: Get size from info
 
@@ -178,6 +173,7 @@ g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
         siteColor = new Color(siteColor.getRed(), siteColor.getGreen(), siteColor.getBlue(), alpha);
         fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
         Map<Node, java.awt.Point> nodesMap = new HashMap<Node, java.awt.Point>();
+        Map<Point, String> labelsMap = new HashMap<Point, String>();
         NeoService neo = NeoServiceProvider.getProvider().getService();
         Transaction tx = neo.beginTx();
         try {
@@ -185,12 +181,6 @@ g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             PropertyHeader handler =  PropertyHeader.getNetworkVault(geoNeo.getMainGisNode());
             System.out.println("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
-            String selectedProp = geoNeo.getPropertyName();
-            Double redMinValue = geoNeo.getPropertyValueMin();
-            Double redMaxValue = geoNeo.getPropertyValueMax();
-            Double lesMinValue = geoNeo.getMinPropertyValue();
-            Double moreMaxValue = geoNeo.getMaxPropertyValue();
-            Select select = Select.findSelectByValue(geoNeo.getSelectName());
             //IBlackboard blackboard = getContext().getMap().getBlackboard();
             String starProperty = getSelectProperty(geoNeo);
             Pair<Point,Long> starPoint = (Pair<Point,Long>)getContext().getLayer().getBlackboard().get(BLACKBOARD_START_ANALYSER);
@@ -199,7 +189,6 @@ g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 System.out.println("Have star selection: "+starPoint);
             }
             ArrayList<Pair<String,Integer>> multiOmnis = new ArrayList<Pair<String,Integer>>();
-            Set<Rectangle> labelRec = new HashSet<Rectangle>();
             aggNode = geoNeo.getAggrNode();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -289,28 +278,11 @@ g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                     try {
                         int s = 0;
                         for (Relationship relationship : node.getNode().getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                            // for(Relationship
-                            // relationship:node.getNode().getRelationships(NetworkLoader.NetworkRelationshipTypes.CHILD,
-                            // Direction.OUTGOING)){
                             Node child = relationship.getEndNode();
                             if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
                                 // double azimuth = Double.NaN;
                                 double beamwidth = handler.getBeamwidth(child, 360.0);
                                 Color colorToFill = getSectorColor(child, fillColor);
-
-                                // for (String key : child.getPropertyKeys()) {
-                                // if (key.toLowerCase().contains("azimuth")) {
-                                // Object value = child.getProperty(key);
-                                // if (value instanceof Integer) {
-                                // azimuth = (Integer)value;
-                                // } else {
-                                // try {
-                                // azimuth = Integer.parseInt(value.toString());
-                                // } catch (Exception e) {
-                                // }
-                                // }
-                                // }
-                                // }
                                 Double azimuth = handler.getAzimuth(child);
                                 if (azimuth == null) {
                                     azimuth = Double.NaN;
@@ -345,58 +317,72 @@ g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                             g.setColor(drawColor);
                         }
                     }
+                    if (base_transform != null) {
+                        g.setTransform(base_transform);
+                    }
                     String drawString = node.toString();
                     if (countOmnis>1) {
                         //System.err.println("Site "+node+" had "+countOmnis+" omni antennas");
                         multiOmnis.add(new Pair<String, Integer>(drawString, countOmnis));
                     }
                     if (drawLabels) {
-                        double label_position_angle = Math.toRadians(-90 + (label_position_angles[0] + label_position_angles[1]) / 2.0);
-                        int label_x = 5 + (int)(10 * Math.cos(label_position_angle));
-                        int label_y = (int)(10 * Math.sin(label_position_angle));
-                        FontMetrics metrics = g.getFontMetrics(font);
-                        // get the height of a line of text in this font and render context
-                        int hgt = metrics.getHeight();
-                        // get the advance of my text in this font and render context
-                        int adv = metrics.stringWidth(drawString);
-                        // calculate the size of a box to hold the text with some padding.
-
-                        int x = p.x + label_x;
-                        int y = p.y + label_y;
-                        Rectangle rect = new Rectangle(x, y, adv + 2, hgt + 2);
-                        boolean drawsLabel = true;
-                        for (Rectangle rectangl : labelRec) {
-                            if (rectangl.intersects(rect)) {
-                                drawsLabel = false;
-                                break;
-                            }
-                        }
-                        if (drawsLabel) {
-                            labelRec.add(rect);
-                            TextLayout text = new TextLayout(drawString, g.getFont(), g.getFontRenderContext());
-
-                            AffineTransform at = AffineTransform.getTranslateInstance(x, y);
-                            Shape outline = text.getOutline(at);
-                            g.setPaint(Color.WHITE);
-                            g.fill(outline);
-                            g.draw(outline);
-                            g.setPaint(labelColor);
-                            text.draw(g, x, y);
-                            // g.setColor(COLOR_SURROUND);
-                            // g.drawString(drawString, x + 1, y + 1);
-                            // g.setColor(labelColor);
-                            // g.drawString(drawString, x, y);
-                        }
-
-                    }
-                    if (base_transform != null) {
-                        g.setTransform(base_transform);
+//                        double label_position_angle = Math.toRadians(-90 + (label_position_angles[0] + label_position_angles[1]) / 2.0);
+//                        int label_x = 5 + (int)(10 * Math.cos(label_position_angle));
+//                        int label_y = (int)(10 * Math.sin(label_position_angle));
+//                        labelsMap.put(new Point(p.x + label_x, p.y + label_y), drawString);
+                        labelsMap.put(p, drawString);
                     }
                 }
                 monitor.worked(1);
                 count++;
                 if (monitor.isCanceled())
                     break;
+            }
+            if (drawLabels && labelsMap.size() > 0) {
+                Set<Rectangle> labelRec = new HashSet<Rectangle>();
+                FontMetrics metrics = g.getFontMetrics(font);
+                // get the height of a line of text in this font and render context
+                int hgt = metrics.getHeight();
+                for(Point p: labelsMap.keySet()) {
+                    String drawString = labelsMap.get(p);
+                    int label_x = drawSize > 15 ? 15 : drawSize;
+                    int label_y = hgt / 3;
+                    p = new Point(p.x + label_x, p.y + label_y);
+
+                    // get the advance of my text in this font and render context
+                    int adv = metrics.stringWidth(drawString);
+                    // calculate the size of a box to hold the text with some padding.
+                    Rectangle rect = new Rectangle(p.x -1 , p.y - hgt + 1, adv + 2, hgt + 2);
+                    boolean drawsLabel = true;
+                    if (!labelSafe(rect, labelRec)) {
+                        drawsLabel = false;
+                        Rectangle tryRect = new Rectangle(rect);
+                        RECT: for (int tries : new int[] {1, -1}) {
+                            for (int shift = 0; shift != tries * hgt; shift += tries) {
+                                tryRect.setLocation(rect.x, rect.y + shift);
+                                if (labelSafe(tryRect,labelRec)) {
+                                    drawsLabel = true;
+                                    p.y = p.y + shift;
+                                    rect.setLocation(tryRect.getLocation());
+                                    break RECT;
+                                }
+                            }
+                        }
+                    }
+                    if (drawsLabel) {
+//                        g.setPaint(Color.BLUE);
+//                        g.draw(rect);
+                        labelRec.add(rect);
+                        TextLayout text = new TextLayout(drawString, g.getFont(), g.getFontRenderContext());
+                        AffineTransform at = AffineTransform.getTranslateInstance(p.x, p.y);
+                        Shape outline = text.getOutline(at);
+                        drawSoftSurround(g, outline);
+                        g.setPaint(COLOR_SURROUND);
+                        g.fill(outline);g.draw(outline);
+                        g.setPaint(labelColor);
+                        text.draw(g, p.x, p.y);
+                    }
+                }
             }
             if(multiOmnis.size()>0){
                 //TODO: Move this to utility class
@@ -455,6 +441,24 @@ g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
         }
     }
 
+    private void drawSoftSurround(Graphics2D g, Shape outline) {
+        g.setPaint(new Color(COLOR_SURROUND.getRed(),COLOR_SURROUND.getGreen(),COLOR_SURROUND.getBlue(),128));
+        g.translate( 1, 0); g.fill(outline);g.draw(outline);
+        g.translate(-1, 1); g.fill(outline);g.draw(outline);
+        g.translate(-1,-1); g.fill(outline);g.draw(outline);
+        g.translate( 1,-1); g.fill(outline);g.draw(outline);
+        g.translate( 0, 1);
+    }
+
+    private boolean labelSafe(Rectangle rect, Set<Rectangle> labelRectangles) {
+        for (Rectangle rectangle : labelRectangles) {
+            if (rectangle.intersects(rect)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     /**
      * draws neighbour relations
      * 
@@ -542,52 +546,6 @@ g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
             tx.finish();
         }
     }
-
-    // /**
-    // * @param node
-    // * @param propertyName
-    // * @param select
-    // * @param minValue
-    // * @param range
-    // * @return
-    // */
-    // private Double getNodeValue(Node node, String propertyName, Select select, double minValue,
-    // double maxValue) {
-    //
-    // if (isAggregatedProperties) {
-    // Double min = null;
-    // Double max = null;
-    // int count = 0;
-    // double sum = (double)0;
-    // for (String singleProperties : aggregationList) {
-    // if (node.hasProperty(singleProperties)) {
-    // double doubleValue = ((Number)node.getProperty(singleProperties)).doubleValue();
-    // if (select == Select.FIRST) {
-    // return doubleValue;
-    // } else if (select == Select.EXISTS) {
-    // if (doubleValue == minValue || (doubleValue >= minValue && doubleValue < maxValue)) {
-    // return doubleValue;
-    // }
-    // }
-    // min = min == null ? doubleValue : Math.min(doubleValue, min);
-    // max = max == null ? doubleValue : Math.max(doubleValue, max);
-    // sum += doubleValue;
-    // count++;
-    // }
-    // }
-    // switch (select) {
-    // case AVERAGE:
-    // return count == 0 ? null : sum / (double)count;
-    // case MAX:
-    // return max;
-    // case MIN:
-    // return min;
-    // }
-    // return null;
-    // }
-    // return node.hasProperty(propertyName) ?
-    // ((Number)node.getProperty(propertyName)).doubleValue() : null;
-    // }
 
     /**
      * Render the sector symbols based on the point and azimuth. We simply save the graphics
@@ -761,55 +719,6 @@ g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
     public void render( IProgressMonitor monitor ) throws RenderException {
         Graphics2D g = getContext().getImage().createGraphics();
         render(g, monitor);
-    }
-
-    /**
-     * <p>
-     * TODO union with org.amanzi.awe.views.reuse.Select now simple copy enum from
-     * org.amanzi.awe.views.reuse.Select
-     * </p>
-     * 
-     * @author Cinkel_A
-     * @since 1.1.0
-     */
-    private enum Select {
-        MAX("max"), MIN("min"), AVERAGE("average"), EXISTS("exists"), FIRST("first");
-        private final String value;
-
-        /**
-         * Constructor
-         * 
-         * @param value - string value
-         */
-        private Select(String value) {
-            this.value = value;
-        }
-
-        public static Select findSelectByValue(String value) {
-            if (value == null) {
-                return null;
-            }
-            for (Select selection : Select.values()) {
-                if (selection.value.equals(value)) {
-                    return selection;
-                }
-            }
-            return null;
-        }
-
-        public static String[] getEnumAsStringArray() {
-            Select[] enums = Select.values();
-            String[] result = new String[enums.length];
-            for (int i = 0; i < enums.length; i++) {
-                result[i] = enums[i].value;
-            }
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return value;
-        }
     }
 
 }
