@@ -142,8 +142,8 @@ public class NeoStyleContent extends StyleContent {
         result.setMaximumSymbolSize(memento.getInteger(MAX_SYMB_SIZE));
         result.setFontSize(memento.getInteger(FONT_SIZE));
         result.setSectorFontSize(memento.getInteger(FONT_SIZE_SECTOR));
-        result.setSiteName((memento.getString(DEF_SITE_NAME)));
-        result.setSectorName((memento.getString(DEF_SECTOR_NAME)));
+        result.setSiteName((memento.getString(SITE_NAME)));
+        result.setSectorName((memento.getString(SECTOR_NAME)));
         // result.setNetwork(getBoolean(memento, IS_NETWORK_STYLE, true));
         return result;
     }
