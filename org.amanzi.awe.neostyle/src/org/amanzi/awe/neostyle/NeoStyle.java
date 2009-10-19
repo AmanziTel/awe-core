@@ -35,7 +35,9 @@ public class NeoStyle {
     private Integer sectorTransparency;
     private Integer maximumSymbolSize;
     private Integer fontSize;
-
+    private Integer sectorFontSize;
+    private String siteName;
+    private String sectorName;
     /**
      * sets maximum size of symbol
      * 
@@ -43,6 +45,48 @@ public class NeoStyle {
      */
     public void setMaximumSymbolSize(Integer maximumSymbolSize) {
         this.maximumSymbolSize = maximumSymbolSize;
+    }
+
+    /**
+     * @return Returns the siteName.
+     */
+    public String getSiteName() {
+        return siteName != null ? siteName : NeoStyleContent.DEF_SITE_NAME;
+    }
+
+    /**
+     * @param siteName The siteName to set.
+     */
+    public void setSiteName(String siteName) {
+        this.siteName = siteName;
+    }
+
+    /**
+     * @return Returns the sectorName.
+     */
+    public String getSectorName() {
+        return sectorName != null ? sectorName : NeoStyleContent.DEF_SECTOR_NAME;
+    }
+
+    /**
+     * @param sectorName The sectorName to set.
+     */
+    public void setSectorName(String sectorName) {
+        this.sectorName = sectorName;
+    }
+
+    /**
+     * @return Returns the sectorFontSize.
+     */
+    public Integer getSectorFontSize() {
+        return sectorFontSize != null ? sectorFontSize : NeoStyleContent.DEF_FONT_SIZE_SECTOR;
+    }
+
+    /**
+     * @param sectorFontSize The sectorFontSize to set.
+     */
+    public void setSectorFontSize(Integer sectorFontSize) {
+        this.sectorFontSize = sectorFontSize;
     }
 
     /**

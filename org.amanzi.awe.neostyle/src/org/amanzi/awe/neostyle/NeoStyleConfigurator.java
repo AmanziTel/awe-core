@@ -14,6 +14,9 @@ package org.amanzi.awe.neostyle;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
@@ -22,6 +25,7 @@ import net.refractions.udig.style.IStyleConfigurator;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -29,7 +33,10 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -63,7 +70,13 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     private static final String DRIVE_FILL = "Fill";
 
-    private static final String FONT_SIZE = "Label size";
+    private static final String FONT_SIZE = "Site font size";
+    private static final String FONT_SIZE_SECTOR = "Sector font size";
+
+    private static final String[] FONT_SIZE_ARRAY = new String[] {"8", "9", "10", "11", "12", "14", "16", "18", "20", "24"};
+
+    private static final String SITE_NAME = "Site name";
+    private static final String SECTOR_NAME = "Sector name";
 
     public NeoStyleConfigurator() {
         super();
@@ -104,7 +117,13 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     private boolean isNetwork;
 
-    private Spinner sFontSize;
+    private Combo sFontSize;
+
+    private Combo cSiteName;
+
+    private Combo cSectorName;
+
+    private Combo sSectorFontSize;
 
     public void createControl(Composite parent) {
         FormLayout layout = new FormLayout();
@@ -169,24 +188,53 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.left = new FormAttachment(labelFill, 130);
         formData.top = new FormAttachment(labelLine, 10);
         cEdLabel.getButton().setLayoutData(formData);
-        // TODO create group font?
-        Label lFontSize = new Label(xGroup, SWT.NONE);
-        lFontSize.setText(FONT_SIZE);
-        sFontSize = new Spinner(xGroup, SWT.BORDER);
 
+        Group lGroup = new Group(parent, SWT.NONE);
+        lGroup.setText("Labels");
         formData = new FormData();
-        formData.top = new FormAttachment(sFontSize, 5, SWT.CENTER);
-        formData.left = new FormAttachment(2);
-        lFontSize.setLayoutData(formData);
-        formData = new FormData();
-        formData.left = new FormAttachment(labelFill, 130);
-        formData.top = new FormAttachment(labelLabel, 10);
-        sFontSize.setLayoutData(formData);
+        formData.top = new FormAttachment(xGroup, 5);
+        formData.left = new FormAttachment(0, 5);
+        formData.right = new FormAttachment(70, -10);
+        lGroup.setLayoutData(formData);
+        lGroup.setLayout(new GridLayout(2, false));
+
+        Label lFontSize = new Label(lGroup, SWT.NONE);
+        lFontSize.setText(FONT_SIZE);
+        lFontSize.setLayoutData(new GridData(SWT.LEFT));
+        sFontSize = new Combo(lGroup, SWT.DROP_DOWN|SWT.RIGHT);
+        sFontSize.setItems(getDefaultFontItem());
+        sFontSize.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
+        Label lSiteName = new Label(lGroup, SWT.NONE);
+        lSiteName.setText(SITE_NAME);
+        lSiteName.setLayoutData(new GridData(SWT.LEFT));
+        cSiteName = new Combo(lGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cSiteName.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
+
+        lFontSize = new Label(lGroup, SWT.NONE);
+        lFontSize.setText(FONT_SIZE_SECTOR);
+        lFontSize.setLayoutData(new GridData(SWT.LEFT));
+        sSectorFontSize = new Combo(lGroup, SWT.DROP_DOWN | SWT.RIGHT);
+        sSectorFontSize.setItems(getDefaultFontItem());
+        sSectorFontSize.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
+        Label lSectorName = new Label(lGroup, SWT.NONE);
+        lSectorName.setText(SECTOR_NAME);
+        lSectorName.setLayoutData(new GridData(SWT.LEFT));
+        cSectorName = new Combo(lGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cSectorName.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
+
+        // formData = new FormData();
+        // formData.top = new FormAttachment(sFontSize, 5, SWT.CENTER);
+        // formData.left = new FormAttachment(2);
+        // lFontSize.setLayoutData(formData);
+        // formData = new FormData();
+        // formData.left = new FormAttachment(labelFill, 130);
+        // formData.top = new FormAttachment(labelLabel, 10);
+        // sFontSize.setLayoutData(formData);
 
         grSiteSymb = new Group(parent, SWT.NONE);
         grSiteSymb.setText(GROUP_SITE);
         formData = new FormData();
-        formData.top = new FormAttachment(xGroup, 15);
+        formData.top = new FormAttachment(lGroup, 15);
         formData.left = new FormAttachment(0, 5);
         formData.right = new FormAttachment(70, -10);
         grSiteSymb.setLayout(new FormLayout());
@@ -311,7 +359,6 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         tSmallSymb.setMaximum(10000);
         tSymbolSize.setMinimum(1);
         tSymbolSize.setMaximum(10000);
-        sFontSize.setMinimum(1);
         tSectorTr.setMaximum(100);
         rButton1.addSelectionListener(new SelectionListener() {
             
@@ -326,6 +373,14 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
                 widgetSelected(e);
             }
         });
+    }
+
+    /**
+     * @return
+     */
+    private String[] getDefaultFontItem() {
+
+        return FONT_SIZE_ARRAY;
     }
 
     @Override
@@ -344,14 +399,54 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             } else {
                 rButton1.setSelection(true);
             }
+
             tSymbolSize.setSelection(curStyle.getSymbolSize());
             tSectorTr.setSelection(curStyle.getSectorTransparency());
             sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
-            sFontSize.setSelection(curStyle.getFontSize());
+            sFontSize.setText(String.valueOf(curStyle.getFontSize()));
+            sSectorFontSize.setText(String.valueOf(curStyle.getSectorFontSize()));
+            cSectorName.setItems(getSectorsNames());
+            cSiteName.setItems(getSiteName());
+            cSectorName.setText(curStyle.getSectorName());
+            cSiteName.setText(curStyle.getSiteName());
+
             if (!isNetwork) {
                 changeToDriveStyle();
             }
         } finally {
+        }
+    }
+
+    /**
+     * get array of possible site names
+     * 
+     * @return String[]
+     */
+    private String[] getSiteName() {
+        return new String[] {NeoStyleContent.DEF_SITE_NAME, "lat", "lon"};
+    }
+
+    /**
+     *get array of sector names
+     * 
+     * @return array
+     */
+    private String[] getSectorsNames() {
+        List<String> result = new ArrayList<String>();
+        result.add(NeoStyleContent.DEF_SECTOR_NAME);
+        try {
+            GeoNeo resource = getLayer().findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
+            if (resource.getGisType() == GisTypes.NETWORK) {
+                String[] allFields = new PropertyHeader(resource.getMainGisNode()).getAllFields();
+                if (allFields != null) {
+                    result.addAll(Arrays.asList(allFields));
+                }
+            }
+            return result.toArray(new String[0]);
+        } catch (IOException e) {
+            // TODO Handle IOException
+            e.printStackTrace();
+            return result.toArray(new String[0]);
         }
     }
 
@@ -398,9 +493,41 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         curStyle.setFixSymbolSize(rButton2.getSelection());
         curStyle.setSymbolSize(getSymbolSize());
         curStyle.setSectorTransparency(getSectorTransparency());
-        curStyle.setFontSize(sFontSize.getSelection());
+        // font
+        curStyle.setFontSize(getLabelFontSize());
+        curStyle.setSectorFontSize(getSectorFontSize());
+
         curStyle.setMaximumSymbolSize(sMaxSymSize.getSelection());
+        // property names
+        curStyle.setSiteName(cSiteName.getText());
+        curStyle.setSectorName(cSectorName.getText());
         getStyleBlackboard().put(ID, curStyle);
+    }
+
+    /**
+     * gets sector font size
+     * 
+     * @return font size
+     */
+    private Integer getSectorFontSize() {
+        try {
+            return Integer.parseInt(sFontSize.getText());
+        } catch (NumberFormatException e) {
+            return NeoStyleContent.DEF_FONT_SIZE_SECTOR;
+        }
+    }
+
+    /**
+     * gets label (site for network) font size
+     * 
+     * @return font size
+     */
+    private Integer getLabelFontSize() {
+        try {
+            return Integer.parseInt(sFontSize.getText());
+        } catch (NumberFormatException e) {
+            return NeoStyleContent.DEF_FONT_SIZE;
+        }
     }
 
     /**
