@@ -254,7 +254,7 @@ public class ProjectExplorer extends ViewPart implements IMenuListener, ISetSele
                 final Object obj = ((IStructuredSelection) treeViewer.getSelection())
                         .getFirstElement();
                 //Lagutko, 19.10.2009, expand not only Project but also RubyProject
-                if (!(obj instanceof IProjectElement) && (obj instanceof IRubyProject)) {
+                if (!(obj instanceof IProjectElement) || (obj instanceof IRubyProject)) {
                     Display.getDefault().asyncExec(new Runnable(){
 
                         public void run() {
