@@ -20,6 +20,7 @@ import net.refractions.udig.internal.ui.IDropTargetProvider;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.IProjectElement;
+import net.refractions.udig.project.IRubyProject;
 import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.internal.Map;
 import net.refractions.udig.project.internal.Project;
@@ -252,7 +253,8 @@ public class ProjectExplorer extends ViewPart implements IMenuListener, ISetSele
 
                 final Object obj = ((IStructuredSelection) treeViewer.getSelection())
                         .getFirstElement();
-                if (!(obj instanceof IProjectElement)) {
+                //Lagutko, 19.10.2009, expand not only Project but also RubyProject
+                if (!(obj instanceof IProjectElement) && (obj instanceof IRubyProject)) {
                     Display.getDefault().asyncExec(new Runnable(){
 
                         public void run() {
