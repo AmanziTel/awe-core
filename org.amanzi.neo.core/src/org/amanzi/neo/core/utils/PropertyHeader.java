@@ -352,7 +352,7 @@ public class PropertyHeader {
                     return false;
                 }
                 Relationship relation = currentPos.lastRelationshipTraversed();
-                return relation.getType().equals(NetworkRelationshipTypes.CHILD) && relation.hasProperty(RELATION_PROPERTY)
+                return relation.getType().equals(GeoNeoRelationshipTypes.PROPERTIES) && relation.hasProperty(RELATION_PROPERTY)
                         && relation.getProperty(RELATION_PROPERTY).equals(propertyName);
             }
         }, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
