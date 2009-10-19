@@ -44,6 +44,8 @@ import org.neo4j.api.core.Traverser.Order;
 public class PropertyHeader {
 
 
+    /** String RELATION_PROPERTY field */
+    private static final String RELATION_PROPERTY = "property";
     private final Node node;
     private boolean isGis;
     private GisTypes gisType;
@@ -96,7 +98,8 @@ public class PropertyHeader {
      */
     public String[] getNumericFields() {
         
-        return isGis?(gisType==GisTypes.DRIVE?NeoUtils.getNumericFields(node):getDataVault().getNumericFields()):NeoUtils.getNumericFields(node);
+        return isGis ? (gisType == GisTypes.DRIVE ? getDefinedNumericFields() : getDataVault().getNumericFields()) : NeoUtils
+                .getNumericFields(node);
     }
 
     /**
@@ -106,6 +109,34 @@ public class PropertyHeader {
      */
     public PropertyHeader getDataVault() {
         return isGis?new PropertyHeader(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node)):this;
+    }
+
+    public String[] getAllFields() {
+        return isGis ? (gisType == GisTypes.DRIVE ? getDefinedAllFields() : getDataVault().getAllFields()) : NeoUtils
+                .getAllFields(node);
+    }
+
+    /**
+     *Get all defined fields from drive gis node
+     * 
+     * @return
+     */
+    private String[] getDefinedAllFields() {
+        List<String> result = new ArrayList<String>();
+        Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+        if (propRel != null) {
+            Node propNode = propRel.getEndNode();
+            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                String[] properties = (String[])node.getProperty(INeoConstants.NODE_TYPE_PROPERTIES, null);
+                if (propType != null && properties != null) {
+                    result.addAll(Arrays.asList(properties));
+                }
+            }
+
+        }
+        return result.toArray(new String[0]);
     }
 
     /**
@@ -121,7 +152,7 @@ public class PropertyHeader {
         return result.toArray(new String[0]);
     }
     
-    public String[] getDefinedNumericFields() {
+    private String[] getDefinedNumericFields() {
         List<String> ints = new ArrayList<String>();
         List<String> floats = new ArrayList<String>();
         List<String> result = new ArrayList<String>();
@@ -289,7 +320,7 @@ public class PropertyHeader {
                     if (currentPos.isStartNode()) {
                         return false;
                     }
-                    return "event_type".equals(currentPos.lastRelationshipTraversed().getProperty("property", ""));
+                    return "event_type".equals(currentPos.lastRelationshipTraversed().getProperty(RELATION_PROPERTY, ""));
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)
                     .iterator();
@@ -301,5 +332,30 @@ public class PropertyHeader {
             }
         }
         return result;
+    }
+
+    /**
+     * Get property node of necessary property
+     * 
+     * @param propertyName - property name
+     * @return node
+     */
+    public Node getPropertyNode(final String propertyName) {
+        if (GisTypes.DRIVE != gisType || propertyName == null) {
+            return null;
+        }
+        Iterator<Node> iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                if (currentPos.isStartNode()) {
+                    return false;
+                }
+                Relationship relation = currentPos.lastRelationshipTraversed();
+                return relation.getType().equals(NetworkRelationshipTypes.CHILD) && relation.hasProperty(RELATION_PROPERTY)
+                        && relation.getProperty(RELATION_PROPERTY).equals(propertyName);
+            }
+        }, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+        return iterator.hasNext() ? iterator.next() : null;
     }
 }
