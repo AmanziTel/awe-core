@@ -55,6 +55,7 @@ import org.neo4j.util.index.LuceneIndexService;
  */
 public class NeighbourLoader {
 
+    private static final int COMMIT_MAX = 1000;
     private Node network;
     private String fileName;
     private Header header;
@@ -100,6 +101,7 @@ public class NeighbourLoader {
             header = new Header(line);
             neighbour = getNeighbour(network, baseName);
             header.createSectorCache(network);
+            int commit = 0;
             while ((line = reader.readLine()) != null) {
                 header.parseLine(line, network, baseName);
                 if (monitor.isCanceled())
@@ -108,6 +110,12 @@ public class NeighbourLoader {
                 if (perc > prevPerc) {
                     monitor.worked(perc - prevPerc);
                     prevPerc = perc;
+                }
+                if (++commit > COMMIT_MAX) {
+                    tx.success();
+                    tx.finish();
+                    tx = NeoUtils.beginTransaction();
+                    commit = 0;
                 }
             }
             header.saveStatistic(neighbour);
