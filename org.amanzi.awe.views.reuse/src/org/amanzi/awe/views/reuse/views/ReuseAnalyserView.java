@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
@@ -176,6 +177,8 @@ public class ReuseAnalyserView extends ViewPart {
     private ColorEditor colorLeft;
     private ColorEditor colorRight;
     private Label lBlend;
+    private List<String> allFields;
+    private List<String> numericFields;
     private static final Color DEFAULT_COLOR = new Color(0.75f, 0.7f, 0.4f);
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
@@ -401,12 +404,18 @@ public class ReuseAnalyserView extends ViewPart {
                 } else {
                     final Node gisNode = members.get(gisCombo.getText());
                     propertyName = propertyCombo.getText();
-                    boolean isAggregated = isAggregatedDataset(gisNode);
-                    boolean isAggrProp = aggregatedProperties.keySet().contains(propertyName);
-                    if (!isAggrProp) {
-                        cSelect.select(0);
+                    if (isStringProperty(propertyName)) {
+                        cDistribute.setEnabled(false);
+                        cSelect.setEnabled(false);
+                    } else {
+                        cDistribute.setEnabled(true);
+                        boolean isAggregated = isAggregatedDataset(gisNode);
+                        boolean isAggrProp = aggregatedProperties.keySet().contains(propertyName);
+                        if (!isAggrProp) {
+                            cSelect.select(0);
+                        }
+                        cSelect.setEnabled(isAggregated || isAggrProp);
                     }
-                    cSelect.setEnabled(isAggregated || isAggrProp);
                     updateSelection();
                     findOrCreateAggregateNodeInNewThread(gisNode, propertyName);
                     // chartUpdate(aggrNode);
@@ -467,6 +476,14 @@ public class ReuseAnalyserView extends ViewPart {
         axisLog.setAllowNegativesFlag(true);
         axisLog.setAutoRange(true);
         setColorThema(false);
+    }
+
+    /**
+     * @param propertyName name of property
+     * @return true if propertyName is String property
+     */
+    protected boolean isStringProperty(String propertyName) {
+        return !numericFields.contains(propertyName) && !isAggregatedProperty(propertyName);
     }
 
     /**
@@ -1074,6 +1091,8 @@ public class ReuseAnalyserView extends ViewPart {
             Select select, IProgressMonitor monitor) {
         if (NeoUtils.isNeighbourNode(gisNode)) {
             return computeNeighbourStatistics(gisNode, aggrNode, propertyName, distribute, select, monitor);
+        } else if (isStringProperty(propertyName)) {
+            return createStringChart(gisNode, aggrNode, propertyName, distribute, select, monitor);
         }
         boolean isAggregatedProperty = isAggregatedProperty(propertyName);
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
@@ -1298,6 +1317,68 @@ public class ReuseAnalyserView extends ViewPart {
             column.setValue(result.get(column));
         }
         return true;
+    }
+
+    /**
+     * @param gisNode
+     * @param aggrNode
+     * @param propertyName
+     * @param distribute
+     * @param select
+     * @param monitor available
+     * @return true if no error present
+     */
+    private boolean createStringChart(Node gisNode, Node aggrNode, String propertyName, Distribute distribute, Select select,
+            IProgressMonitor monitor) {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            Node propertyNode = new PropertyHeader(gisNode).getPropertyNode(propertyName);
+            if (propertyNode == null) {
+                return false;
+            }
+            ArrayList<Column> columns = new ArrayList<Column>();
+            // fill the column
+            TreeSet<String> propertyValue = new TreeSet<String>();
+            for (String property : propertyNode.getPropertyKeys()) {
+                propertyValue.add(property);
+            }
+            Node parent = aggrNode;
+            for (String property : propertyValue) {
+                Column column = new Column(aggrNode, parent, 0, 0.0, distribute, property);
+                column.setValue(((Number)propertyNode.getProperty(property)).intValue());
+                parent = column.getNode();
+                columns.add(column);
+            }
+            // linked node
+            Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
+                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            for (Node node : travers) {
+                if (node.hasProperty(propertyName)) {
+                    String propertyVal = node.getProperty(propertyName).toString();
+                    for (Column column : columns) {
+                        if (propertyVal.equals(column.propertyValue)) {
+                            column.getNode().createRelationshipTo(getNodeToLink(node), NetworkRelationshipTypes.AGGREGATE);
+                            break;
+                        }
+                    }
+                }
+            }
+            tx.success();
+           return true;
+        }finally{
+            tx.finish();
+        }
+    }
+
+    /**
+     * @param node
+     * @return
+     */
+    private Node getNodeToLink(Node node) {
+        if (NeoUtils.getNodeType(node, "").equals(INeoConstants.HEADER_MS)) {
+            return node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(node);
+        }
+        return node;
     }
 
     /**
@@ -1745,6 +1826,9 @@ public class ReuseAnalyserView extends ViewPart {
 
             BigDecimal minValue = new BigDecimal(this.minValue);
             BigDecimal maxValue = new BigDecimal(this.minValue + this.range);
+            if (propertyValue instanceof String) {
+                return propertyValue.toString();
+            }
             if (distribute == Distribute.INTEGERS) {
                 nameCol = (minValue.add(new BigDecimal(0.5))).setScale(0, RoundingMode.HALF_UP).toString();
             } else if (propertyValue instanceof Integer) {
@@ -1858,8 +1942,9 @@ public class ReuseAnalyserView extends ViewPart {
         aggregatedProperties.clear();
         propertyList = new ArrayList<String>();
         PropertyHeader propertyHeader = new PropertyHeader(node);
-        propertyList.addAll(Arrays.asList(propertyHeader.getDefinedNumericFields()));
-        propertyList.addAll(Arrays.asList(propertyHeader.getNumericFields()));
+        allFields = Arrays.asList(propertyHeader.getAllFields());
+        numericFields = Arrays.asList(propertyHeader.getNumericFields());
+        propertyList.addAll(allFields);
         propertyList.addAll(propertyHeader.getNeighbourList());
         String[] channels = propertyHeader.getAllChannels();
         if (channels != null && channels.length > 0) {
