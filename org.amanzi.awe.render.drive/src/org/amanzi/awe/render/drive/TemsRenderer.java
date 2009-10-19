@@ -78,10 +78,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private Color fillColor = new Color(200, 128, 255, (int)(0.6*255.0));
     private Color labelColor = Color.DARK_GRAY;
     private Node aggNode;
-    private static final Color COLOR_HIGHLIGHTED = Color.CYAN;
-    private static final Color COLOR_SELECTED = Color.RED;
-    private static final Color COLOR_LESS = Color.BLUE;
-    private static final Color COLOR_MORE = Color.GREEN;
+    private static final Color COLOR_HIGHLIGHTED = Color.CYAN;;
     private static final Color COLOR_HIGHLIGHTED_SELECTED = Color.RED;
 
     @Override
@@ -135,7 +132,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         int maxSitesLabel = 30;
         int maxSitesFull = 100;
         int maxSitesLite = 1000;
-        int maxSymbolSize = 40;
+        // int maxSymbolSize = 40;
         int alpha = (int)(0.6*255.0);
         int drawSize = 3;
         Font font = g.getFont();
@@ -157,7 +154,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 maxSitesFull = neostyle.getSmallSymb();
                 maxSitesLite = neostyle.getSmallestSymb();
                 //scaleSectors = !neostyle.isFixSymbolSize();
-                maxSymbolSize = neostyle.getMaximumSymbolSize();
+                // maxSymbolSize = neostyle.getMaximumSymbolSize();
                 fontSize = neostyle.getFontSize();
                 //TODO: Remove these when defaults from style work property
                 maxSitesLabel = 50;
@@ -168,7 +165,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             }
         }
         g.setFont(font.deriveFont((float)fontSize));
-        fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
+
         int drawWidth = 1 + 2*drawSize;
         NeoService neo = NeoServiceProvider.getProvider().getService();
         Transaction tx = neo.beginTx();
@@ -203,7 +200,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 drawFull = countScaled < maxSitesFull;
                 drawLite = countScaled < maxSitesLite;
             }
-
+            int trans = alpha;
+            if (haveSelectedNodes()) {
+                trans = 25;
+            }
+            fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), trans);
             g.setColor(drawColor);
             int count = 0;
             monitor.subTask("drawing");
@@ -402,6 +403,13 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.done();
             tx.finish();
         }
+    }
+
+    /**
+     * @return true if drive have selected node
+     */
+    private boolean haveSelectedNodes() {
+        return aggNode != null;
     }
 
     private void renderLabel(Graphics2D g, int count, GeoNode node, java.awt.Point p, double theta) {
