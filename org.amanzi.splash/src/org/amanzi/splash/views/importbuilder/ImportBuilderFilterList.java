@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.Vector;
 
 /**
  * Class that plays the role of the domain model in the ImportBuilderTableViewer
@@ -27,42 +26,19 @@ import java.util.Vector;
 
 public class ImportBuilderFilterList {
 
-	private final int COUNT = 100;
 	//private Vector filters = new Vector(COUNT);
-	private Set changeListeners = new HashSet();
+	private Set<IImportBuilderFilterListViewer> changeListeners = new HashSet<IImportBuilderFilterListViewer>();
 
 	ArrayList<ImportBuilderFilter> filters = new ArrayList<ImportBuilderFilter>();
 	ArrayList<String> filter_headings = new ArrayList<String>();
-	
-	// Combo box choices
-	static final String[] FILTER_HEADINGS_ARRAY = { "?", "Nancy", "Larry", "Joe" };
 	
 	/**
 	 * Constructor
 	 */
 	public ImportBuilderFilterList() {
 		super();
-		this.initData();
 	}
 	
-	/*
-	 * Initialize the table data.
-	 * Create COUNT filters and add them them to the 
-	 * collection of filters
-	 */
-	private void initData() {
-		ImportBuilderFilter filter;
-		//filter_headings.add("Message Type");
-		//filter_headings.add("Heading2");
-		//filter_headings.add("Heading3");
-		//for (int i = 0; i < 3; i++) {
-			//filter = new ImportBuilderFilter(filter_headings.get(i),"Text" + i);
-			//filters.add(filter);
-		//}
-		
-		
-	}
-
 	/**
 	 * Return the array of owners   
 	 */
@@ -85,7 +61,7 @@ public class ImportBuilderFilterList {
 	/**
 	 * Return the collection of filters
 	 */
-	public ArrayList getFilters() {
+	public ArrayList<ImportBuilderFilter> getFilters() {
 		return filters;
 	}
 	
@@ -95,9 +71,9 @@ public class ImportBuilderFilterList {
 	public void addFilter() {
 		ImportBuilderFilter filter = new ImportBuilderFilter("Filter Heading", "Filter Text");
 		filters.add(filters.size(), filter);
-		Iterator iterator = changeListeners.iterator();
+		Iterator<IImportBuilderFilterListViewer> iterator = changeListeners.iterator();
 		while (iterator.hasNext())
-			((IImportBuilderFilterListViewer) iterator.next()).addFilter(filter);
+			iterator.next().addFilter(filter);
 	}
 	
 	/**
@@ -106,9 +82,9 @@ public class ImportBuilderFilterList {
 	public void addFilter(String heading, String text) {
 		ImportBuilderFilter filter = new ImportBuilderFilter(heading, text);
 		filters.add(filters.size(), filter);
-		Iterator iterator = changeListeners.iterator();
+		Iterator<IImportBuilderFilterListViewer> iterator = changeListeners.iterator();
 		while (iterator.hasNext())
-			((IImportBuilderFilterListViewer) iterator.next()).addFilter(filter);
+			iterator.next().addFilter(filter);
 		
 		
 	}
@@ -118,18 +94,18 @@ public class ImportBuilderFilterList {
 	 */
 	public void removeFilter(ImportBuilderFilter filter) {
 		filters.remove(filter);
-		Iterator iterator = changeListeners.iterator();
+		Iterator<IImportBuilderFilterListViewer> iterator = changeListeners.iterator();
 		while (iterator.hasNext())
-			((IImportBuilderFilterListViewer) iterator.next()).removeFilter(filter);
+			iterator.next().removeFilter(filter);
 	}
 
 	/**
 	 * @param filter
 	 */
 	public void filterChanged(ImportBuilderFilter filter) {
-		Iterator iterator = changeListeners.iterator();
+		Iterator<IImportBuilderFilterListViewer> iterator = changeListeners.iterator();
 		while (iterator.hasNext())
-			((IImportBuilderFilterListViewer) iterator.next()).updateFilter(filter);
+			iterator.next().updateFilter(filter);
 	}
 
 	/**

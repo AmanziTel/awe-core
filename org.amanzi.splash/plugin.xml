@@ -167,7 +167,7 @@
           point="org.eclipse.ui.importWizards">
        <wizard
              category="org.amanzi.splash"
-             class="org.amanzi.splash.ui.wizards.NeoDataFileImportWizard"
+             class="org.amanzi.splash.ui.importWizards.NeoDataFileImportWizard"
              icon="icons/splash_16.png"
              id="org.amanzi.splash.importWizards.NeoDataFileImportWizard"
              name="Import Data Into Splash">
@@ -185,7 +185,7 @@
        </category>
        <wizard
              category="org.amanzi.splash.importWizards.sampleCategory"
-             class="org.amanzi.splash.ui.wizards.ExcelImportWizard"
+             class="org.amanzi.splash.ui.importWizards.ExcelImportWizard"
              icon="icons/excel_table.ico"
              id="org.amanzi.splash.importWizards.ExcelImportWizard"
              name="Import Excel File">

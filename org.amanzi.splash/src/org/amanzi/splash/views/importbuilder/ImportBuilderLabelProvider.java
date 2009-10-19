@@ -56,14 +56,6 @@ public class ImportBuilderLabelProvider
 	}
 	
 	/**
-	 * Returns the image with the given key, or <code>null</code> if not found.
-	 */
-	private Image getImage(boolean isSelected) {
-		String key = isSelected ? CHECKED_IMAGE : UNCHECKED_IMAGE;
-		return  imageRegistry.get(key);
-	}
-
-	/**
 	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
 	 */
 	public String getColumnText(Object element, int columnIndex) {

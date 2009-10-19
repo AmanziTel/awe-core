@@ -12,44 +12,31 @@
  */
 
 package org.amanzi.splash.views.importbuilder;
+
+
 import java.util.Arrays;
+import java.util.List;
 
-
-import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.RubyScriptNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.splash.database.services.SpreadsheetService;
-import org.amanzi.splash.swing.Cell;
-import org.amanzi.splash.swing.SplashTable;
-import org.amanzi.splash.swing.SplashTableModel;
-import org.amanzi.splash.ui.AbstractSplashEditor;
-import org.amanzi.splash.ui.SplashPlugin;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Path;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.splash.ui.importWizards.ExportBuilderScriptWizard;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.rubypeople.rdt.core.ISourceFolder;
-import org.rubypeople.rdt.core.RubyModelException;
-import org.rubypeople.rdt.internal.core.CreateRubyScriptOperation;
-import org.rubypeople.rdt.internal.core.RubyProject;
-import org.rubypeople.rdt.internal.core.SourceFolder;
-import org.rubypeople.rdt.internal.core.SourceFolderRoot;
-
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Text;
 
 
 public class ImportBuilderTableViewer {
-/**
+    /**
 	 * @param parent
 	 */
 	public ImportBuilderTableViewer(Composite parent) {
@@ -78,48 +65,6 @@ public class ImportBuilderTableViewer {
 			FILTER_HEADING_COLUMN,
 			FILTER_TEXT_COLUMN
 			};
-
-	/**
-	 * Main method to launch the window 
-	 */
-	public static void main(String[] args) {
-
-		Shell shell = new Shell();
-		shell.setText("Import Builder");
-
-		// Set layout for shell
-		GridLayout layout = new GridLayout();
-		shell.setLayout(layout);
-		
-		// Create a composite to hold the children
-		Composite composite = new Composite(shell, SWT.NONE);
-		final ImportBuilderTableViewer tableViewerExample = new ImportBuilderTableViewer(composite);
-		
-		tableViewerExample.getControl().addDisposeListener(new DisposeListener() {
-
-			public void widgetDisposed(DisposeEvent e) {
-				tableViewerExample.dispose();			
-			}
-			
-		});
-
-		// Ask the shell to display its content
-		shell.open();
-		tableViewerExample.run(shell);
-	}
-
-	/**
-	 * Run and wait for a close event
-	 * @param shell Instance of Shell
-	 */
-	private void run(Shell shell) {
-		
-		Display display = shell.getDisplay();
-		while (!shell.isDisposed()) {
-			if (!display.readAndDispatch())
-				display.sleep();
-		}
-	}
 
 	/**
 	 * Release resources
@@ -166,8 +111,6 @@ public class ImportBuilderTableViewer {
 	private void createTable(Composite parent) {
 		int style = SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | 
 					SWT.FULL_SELECTION | SWT.HIDE_SELECTION;
-
-		final int NUMBER_COLUMNS = columnNames.length;
 
 		table = new Table(parent, style);
 		
@@ -378,41 +321,23 @@ public class ImportBuilderTableViewer {
 		runButton = new Button(parent, SWT.PUSH | SWT.CENTER);
 		runButton.setText("Run");
 		gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
-		gridData.widthHint = 80; 
+		gridData.widthHint = 80;
+		
 		runButton.setLayoutData(gridData); 	
 		runButton.addSelectionListener(new SelectionAdapter() {
 	       	
 			//	Remove the selection and refresh the view
 			public void widgetSelected(SelectionEvent e) {
-				String filter_code = filtersList.getFilterRubyCode();
-				System.out.println(filter_code);
-				
-
-				AbstractSplashEditor editor = (AbstractSplashEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-				SplashTable table = editor.getTable();
-				final Cell cell = new Cell (filter_code, filter_code);
-				editor.exportCell(((SplashTableModel) table.getModel()).getSpreadsheet(), cell);
-				
-//				SplashTable table = editor.getTable();
-//				SpreadsheetNode spreadsheetNode = ((SplashTableModel) table.getModel()).getSpreadsheet();
-//				SpreadsheetService spreadsheetService = SplashPlugin
-//				.getDefault().getSpreadsheetService();
-//				SplashTableModel model = (SplashTableModel) table.getModel();
-//				Cell c = (Cell) model.getValueAt(0, 0);
-//				
-//				CellNode cellNode = spreadsheetService.getCellNode(
-//						spreadsheetNode, c.getCellID());
-//				NeoCorePlugin.getDefault().getProjectService().createScript(
-//						cellNode, filenameTextBox.getText());
-				
-				//SourceFolderRoot root1 = new SourceFolderRoot(resource, (RubyProject) AWEProjectManager.getAllRubyProjects()[0]);
-				
-				
-				
-//				NeoCorePlugin.getDefault().getProjectService().createScript(
-//						cellNode, modifiedResource.getName());
-				
-				
+			    ActionUtil.getInstance().runTask(new Runnable() {
+			        
+			        @Override
+			        public void run() {
+			            String filter_code = filtersList.getFilterRubyCode();
+			            
+			            WizardDialog dialog = new WizardDialog(table.getShell(), new ExportBuilderScriptWizard(filter_code));			            
+			            dialog.open();
+			        }
+			    }, true);
 			}
 		});
 		
@@ -423,8 +348,8 @@ public class ImportBuilderTableViewer {
 	 * 
 	 * @return List  containing column names
 	 */
-	public java.util.List getColumnNames() {
-		return Arrays.asList(columnNames);
+	public List<String> getColumnNames() {
+		return (List<String>)Arrays.asList(columnNames);
 	}
 
 	/**

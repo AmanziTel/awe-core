@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.splash.views.importbuilder;
+package org.amanzi.splash.importer;
 
 import java.io.IOException;
 import java.io.InputStream;

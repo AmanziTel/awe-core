@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.amanzi.splash.ui.wizards;
+package org.amanzi.splash.ui.importWizards;
 
 import java.io.File;
 import java.io.FileInputStream;

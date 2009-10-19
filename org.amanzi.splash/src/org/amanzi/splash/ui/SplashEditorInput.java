@@ -117,6 +117,7 @@ public class SplashEditorInput implements IEditorInput, IPersistableElement {
 		return sheetName;
 	}
 
+	@SuppressWarnings("unchecked")
 	public Object getAdapter(Class adapter) {
 		return null;
 	}

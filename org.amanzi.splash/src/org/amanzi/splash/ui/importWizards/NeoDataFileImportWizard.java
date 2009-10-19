@@ -10,14 +10,14 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.splash.ui.wizards;
+package org.amanzi.splash.ui.importWizards;
 
 import java.lang.reflect.InvocationTargetException;
 
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.splash.database.services.Messages;
 import org.amanzi.splash.utilities.NeoSplashUtil;
-import org.amanzi.splash.views.importbuilder.CSVImporter;
+import org.amanzi.splash.importer.CSVImporter;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;

@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.TableItem;
 
 public class ImportBuilderCellModifier implements ICellModifier {
 	private ImportBuilderTableViewer tableViewer;
-	private String[] columnNames;
 
 	/**
 	 * Constructor 

@@ -217,31 +217,7 @@ public class SplashTable extends JTable {
 	 */
 	public String getColumnName(int column) {
 		return super.getColumnName(column);
-	}
-
-	/**
-	 * utility function for swapping cell contents
-	 * 
-	 * @param firstCellRow
-	 *            row index of first cell
-	 * @param firstCellColumn
-	 *            column index of first cell
-	 * @param secondCellRow
-	 *            row index of second cell
-	 * @param secondCellColumn
-	 *            column index of second cell
-	 */
-	private void swapCells(int firstCellRow, int firstCellColumn, int secondCellRow, int secondCellColumn) {
-		String firstCellId = new CellID(firstCellRow, firstCellColumn).getFullID();
-		String secondCellId = new CellID(secondCellRow, secondCellColumn).getFullID();
-
-		SplashTableModel model = (SplashTableModel) getModel();
-
-		Cell firstCell = model.getCellByID(firstCellId);
-		Cell secondCell = model.getCellByID(secondCellId);
-		model.setValueAt(firstCell, secondCellRow, secondCellColumn);
-		model.setValueAt(secondCell, firstCellRow, firstCellColumn);
-	}
+	}	
 
 	/**
 	 * move row down

@@ -560,14 +560,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
         }
 		table.getModel().addTableModelListener(this);
 
-		createTable(parent);
-
-		IWorkspaceRoot root1 = ResourcesPlugin.getWorkspace().getRoot();
-		final IProject resource = root1.getProject("project.AWEScript");
-		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
-		SplashTableModel model = (SplashTableModel) table.getModel();
-		SpreadsheetNode spreadsheet = model.getSpreadsheet();
-		int chartsCount = spreadsheet.getChartsCount();
+		createTable(parent);				
 	}
 
 	/**
