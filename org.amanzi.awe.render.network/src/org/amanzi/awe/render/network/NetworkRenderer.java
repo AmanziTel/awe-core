@@ -89,6 +89,10 @@ public class NetworkRenderer extends RendererImpl {
 	private Color labelColor;
     private Color lineColor;
     private Node aggNode;
+    private String siteName;
+    private boolean normalSiteName;
+    private String sectorName;
+    private boolean sectorLabeling;
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
@@ -146,10 +150,13 @@ public class NetworkRenderer extends RendererImpl {
         int maxSymbolSize = 40;
         Font font = g.getFont();
         int fontSize = font.getSize();
+        int sectorFontSize = font.getSize();
         boolean scaleSectors = true;
 
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID );     
+        siteName = NeoStyleContent.DEF_SITE_NAME;
+        sectorName = NeoStyleContent.DEF_SECTOR_NAME;
         if (neostyle!=null){
             try {
                 siteColor = neostyle.getSiteFill();
@@ -164,15 +171,21 @@ public class NetworkRenderer extends RendererImpl {
                 scaleSectors = !neostyle.isFixSymbolSize();
                 maxSymbolSize = neostyle.getMaximumSymbolSize();
                 fontSize = neostyle.getFontSize();
+                sectorFontSize = neostyle.getSectorFontSize();
+                siteName = neostyle.getSiteName();
+                sectorName = neostyle.getSectorName();
             } catch (Exception e) {
                 //TODO: we can get here if an old style exists, and we have added new fields
             }
         }
+        normalSiteName = NeoStyleContent.DEF_SITE_NAME.equals(siteName);
+        sectorLabeling = !NeoStyleContent.DEF_SECTOR_NAME.equals(sectorName);
         g.setFont(font.deriveFont((float)fontSize));
         lineColor = new Color(drawColor.getRed(), drawColor.getGreen(), drawColor.getBlue(), alpha);
         siteColor = new Color(siteColor.getRed(), siteColor.getGreen(), siteColor.getBlue(), alpha);
         fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), alpha);
         Map<Node, java.awt.Point> nodesMap = new HashMap<Node, java.awt.Point>();
+        Map<Node, java.awt.Point> sectorMap = new HashMap<Node, java.awt.Point>();
         Map<Point, String> labelsMap = new HashMap<Point, String>();
         NeoService neo = NeoServiceProvider.getProvider().getService();
         Transaction tx = neo.beginTx();
@@ -298,8 +311,11 @@ public class NetworkRenderer extends RendererImpl {
                                 }
                                 // put sector information in to blackboard
 
-                                Point centerPoint = renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor, drawSize);
-                                nodesMap.put(child, centerPoint);
+                                Pair<Point, Point> centerPoint = renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor, drawSize);
+                                nodesMap.put(child, centerPoint.getLeft());
+                                if (sectorLabeling){
+                                    sectorMap.put(child, centerPoint.getRight());
+                                }
                                 if (s < label_position_angles.length) {
                                     label_position_angles[s] = azimuth;
                                 }
@@ -320,7 +336,7 @@ public class NetworkRenderer extends RendererImpl {
                     if (base_transform != null) {
                         g.setTransform(base_transform);
                     }
-                    String drawString = node.toString();
+                    String drawString = getSiteName(node);
                     if (countOmnis>1) {
                         //System.err.println("Site "+node+" had "+countOmnis+" omni antennas");
                         multiOmnis.add(new Pair<String, Integer>(drawString, countOmnis));
@@ -384,6 +400,41 @@ public class NetworkRenderer extends RendererImpl {
                     }
                 }
             }
+            // draw sector name
+            if (drawLabels && sectorLabeling) {
+                Map<Node, Point> map = nodesMap;
+                Font fontOld = g.getFont();
+                Font fontSector=fontOld.deriveFont((float)sectorFontSize);
+                g.setFont(fontSector);
+                FontMetrics metric = g.getFontMetrics(fontSector);
+                int h = metric.getHeight() / 3;
+                for (Node sector : nodesMap.keySet()) {
+                    String name = getSectorName(sector);
+                    if (name.isEmpty()) {
+                        continue;
+                    }
+                    TextLayout text = new TextLayout(name, fontSector, g.getFontRenderContext());
+                    int w=metric.stringWidth(name);
+                    Point pSector = nodesMap.get(sector);
+                    Point endLine = sectorMap.get(sector);
+                    // calculate p
+                    int x = (endLine.x < pSector.x) ? endLine.x - w : endLine.x;
+                    int y = (endLine.y < pSector.y) ? endLine.y - h : endLine.y;
+                    Point p = new Point(x, y);
+                    if (p != null) {
+
+                        AffineTransform at = AffineTransform.getTranslateInstance(p.x, p.y);
+                        Shape outline = text.getOutline(at);
+                        drawSoftSurround(g, outline);
+                        g.setPaint(COLOR_SURROUND);
+                        g.fill(outline);
+                        g.draw(outline);
+                        g.setPaint(labelColor);
+                        text.draw(g, p.x, p.y);
+                    }
+                }
+                g.setFont(fontOld);
+            }
             if(multiOmnis.size()>0){
                 //TODO: Move this to utility class
                 StringBuffer sb = new StringBuffer();
@@ -439,6 +490,24 @@ public class NetworkRenderer extends RendererImpl {
             monitor.done();
             tx.finish();
         }
+    }
+
+    /**
+     * @param sector
+     * @return
+     */
+    private String getSectorName(Node sector) {
+        return sector.getProperty(sectorName, "").toString();
+    }
+
+    /**
+     * Gets Site name
+     * 
+     * @param node geo node
+     * @return site name
+     */
+    private String getSiteName(GeoNode node) {
+        return normalSiteName ? node.toString() : node.getNode().getProperty(siteName, node.toString()).toString();
     }
 
     private void drawSoftSurround(Graphics2D g, Shape outline) {
@@ -556,20 +625,22 @@ public class NetworkRenderer extends RendererImpl {
      * @param p
      * @param azimuth
      */
-    private java.awt.Point renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth, Color fillColor,
+    private Pair<java.awt.Point, java.awt.Point> renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth,
+            Color fillColor,
             Color borderColor, int drawSize) {
         Color oldColor = g.getColor();
-        java.awt.Point result = null;
+        Pair<java.awt.Point, java.awt.Point> result = null;
         if(base_transform==null) base_transform = g.getTransform();
         if(beamwidth<10) beamwidth = 10;
         g.setTransform(base_transform);
         g.translate(p.x, p.y);
+        int draw2 = drawSize + 3;
         if (beamwidth >= 360.0) {
             g.setColor(fillColor);
             g.fillOval(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize);
             g.setColor(borderColor);
             g.drawOval(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize);
-            result = p;
+            result = new Pair<java.awt.Point, java.awt.Point>(p, new java.awt.Point(p.x + draw2, p.y));
 
         } else {
             double angdeg = -90 + azimuth - beamwidth / 2.0;
@@ -587,9 +658,16 @@ public class NetworkRenderer extends RendererImpl {
             AffineTransform transform = g.getTransform();
             int x = (int)(transform.getScaleX() * xLoc + transform.getShearX() * yLoc + transform.getTranslateX());
             int y = (int)(transform.getShearY() * xLoc + transform.getScaleY() * yLoc + transform.getTranslateY());
+
+            int x2 = (int)(transform.getScaleX() * draw2 + transform.getShearX() * yLoc + transform.getTranslateX());
+            int y2 = (int)(transform.getShearY() * draw2 + transform.getScaleY() * yLoc + transform.getTranslateY());
+
             g.rotate(Math.toRadians(beamwidth / 2));
             g.drawLine(0, 0, drawSize, 0);
-            result = new java.awt.Point(x, y);
+            Point result1 = new java.awt.Point(x, y);
+            Point result2 = new java.awt.Point(x2, y2);
+            result = new Pair<java.awt.Point, java.awt.Point>(result1, result2);
+
             g.setColor(oldColor);
         }
         return result;
