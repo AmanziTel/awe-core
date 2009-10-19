@@ -152,7 +152,7 @@ public class PropertyHeader {
         return result.toArray(new String[0]);
     }
     
-    private String[] getDefinedNumericFields() {
+    public String[] getDefinedNumericFields() {
         List<String> ints = new ArrayList<String>();
         List<String> floats = new ArrayList<String>();
         List<String> result = new ArrayList<String>();
