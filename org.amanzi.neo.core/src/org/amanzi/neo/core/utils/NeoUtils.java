@@ -402,7 +402,8 @@ public class NeoUtils {
     public static String[] getAllFields(Node node) {
         Transaction tx = beginTransaction();
         try {
-            return (String[])node.getProperty(INeoConstants.LIST_ALL_PROPERTIES, null);
+            String[] result = (String[])node.getProperty(INeoConstants.LIST_ALL_PROPERTIES, null);
+            return result == null ? new String[0] : result;
         } finally {
             tx.finish();
         }
