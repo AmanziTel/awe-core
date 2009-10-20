@@ -325,9 +325,9 @@ public class BlackboardImpl extends EObjectImpl implements Blackboard {
 
                     ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(bout));
                     out.writeObject(value);
-
-                    entry.setMemento(new String(bout.toByteArray()));
                     out.close();
+                    
+                    entry.setMemento(new String(bout.toByteArray()));                    
                 }
             }
         } catch (Exception e) {
