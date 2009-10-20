@@ -120,9 +120,11 @@ public class LoadNetwork extends AbstractActionTool {
                 protected IStatus run(IProgressMonitor monitor) {
                         NetworkLoader networkLoader;
                         try {
-                            networkLoader = new NetworkLoader(filename);
+                            networkLoader = new NetworkLoader(filename, dlg.getParent().getDisplay());
+                            networkLoader.setup();
                             networkLoader.run(monitor);
                             networkLoader.printStats(false);
+                            networkLoader.addLayerToMap();
                         } catch (IOException e) {
                             NeoCorePlugin.error("Error loading Network file", e);
                         }

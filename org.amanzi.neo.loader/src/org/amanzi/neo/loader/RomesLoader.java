@@ -13,10 +13,7 @@
 package org.amanzi.neo.loader;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -78,20 +75,7 @@ public class RomesLoader extends DriveLoader {
             public Object mapValue(String originalValue) {
                 return originalValue.replaceAll("HO Command.*", "HO Command");
             }});
-        addMappedHeader("time", "Timestamp", "timestamp", new PropertyMapper(){
-
-            @Override
-            public Object mapValue(String time) {
-                SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
-                Date datetime;
-                try {
-                    datetime = df.parse(time);
-                } catch (ParseException e) {
-                    error(e.getLocalizedMessage());
-                    return 0L;
-                }
-                return datetime.getTime();
-            }});
+        addMappedHeader("time", "Timestamp", "timestamp", new DateTimeMapper("HH:mm:ss"));
     }
 
     protected void parseLine(String line) {
@@ -104,8 +88,8 @@ public class RomesLoader extends DriveLoader {
         this.incValidMessage(); // we have not filtered the message out on non-accepted content
         this.incValidChanged(); // we have not filtered the message out on lack of data change
         if (first_line == 0)
-            first_line = line_number;
-        last_line = line_number;
+            first_line = lineNumber;
+        last_line = lineNumber;
         Map<String,Object> lineData = makeDataMap(fields);
         this.time = (String)lineData.get("time");
         this.timestamp = (Long)lineData.get("timestamp");
@@ -156,7 +140,7 @@ public class RomesLoader extends DriveLoader {
                 mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
                 findOrCreateFileNode(mp);
                 updateBBox(lat, lon);
-                checkCRS(ll);
+                checkCRS((float)lat, (float)lon, null);
                 //debug("Added measurement point: " + propertiesString(mp));
                 if (point != null) {
                     point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
@@ -192,7 +176,7 @@ public class RomesLoader extends DriveLoader {
         NeoLoaderPlugin.debug = false;
         if (args.length < 1)
             args = new String[] {"amanzi/test.ASC"};
-        EmbeddedNeo neo = new EmbeddedNeo("var/neo");
+        EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
         try {
             for (String filename : args) {
                 RomesLoader driveLoader = new RomesLoader(neo, filename);

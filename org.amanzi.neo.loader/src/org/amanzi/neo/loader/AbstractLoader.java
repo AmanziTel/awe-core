@@ -18,9 +18,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -35,20 +38,29 @@ import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
+import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
@@ -58,6 +70,8 @@ import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 
 public abstract class AbstractLoader {
@@ -71,18 +85,19 @@ public abstract class AbstractLoader {
     private Display display;
     private String fieldSepRegex;
     private String[] possibleFieldSepRegexes = new String[] {"\\t", "\\,", "\\;"};
-    protected int line_number = 0;
+    protected int lineNumber = 0;
     private int limit = 0;
     private double[] bbox;
     private long savedData = 0;
     private long started = System.currentTimeMillis();
     private ArrayList<Pattern> headerFilters = new ArrayList<Pattern>();
-    private LinkedHashMap<String, String> knownHeaders = new LinkedHashMap<String, String>();
+    private LinkedHashMap<String, List<String>> knownHeaders = new LinkedHashMap<String, List<String>>();
     private LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
     private LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
     @SuppressWarnings("unchecked")
-    public static final Class[] KNOWN_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class,
-            String.class};
+    public static final Class[] NUMERIC_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class};
+    @SuppressWarnings("unchecked")
+    public static final Class[] KNOWN_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class, String.class};
 
     protected class Header {
         private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard value sets if count
@@ -189,6 +204,8 @@ public abstract class AbstractLoader {
             int countFound = 0;
             for (Class< ? extends Object> klass : parseTypes.keySet()) {
                 int count = parseTypes.get(klass);
+                // Bias towards Strings
+                if (klass == String.class) count *= 2;
                 if (maxCount < parseTypes.get(klass)) {
                     maxCount = count;
                     best = klass;
@@ -310,6 +327,11 @@ public abstract class AbstractLoader {
         }
     }
 
+    /**
+     * This class allows for either replacing of duplicating properties. See addMappedHeader for details.
+     * @author craig
+     * @since 1.0.0
+     */
     protected class MappedHeader extends Header {
         protected PropertyMapper mapper;
         Class< ? extends Object> knownClass = null;
@@ -317,7 +339,11 @@ public abstract class AbstractLoader {
         MappedHeader(Header old, MappedHeaderRule mapRule) {
             super(old);
             this.key = mapRule.key;
-            this.name = mapRule.name;
+            if(mapRule.name != null) {
+                //We only replace the name if the new one is valid, otherwise inherit from the old header
+                //This allows for support of header replacing rules, as well as duplicating rules
+                this.name = mapRule.name;
+            }
             this.mapper = mapRule.mapper;
             this.values = new HashMap<Object, Integer>(); // need to make a new values list,
                                                             // otherwise we share the same data as
@@ -342,6 +368,55 @@ public abstract class AbstractLoader {
 
         Class< ? extends Object> knownType() {
             return knownClass;
+        }
+    }
+
+    /**
+     * Convenience implementation of a property mapper that understands date and time formats.
+     * Construct with a date-time pattern understood by java.text.SimpleDateFormat. If you pass null
+     * of an invalid format, then the default of "HH:mm:ss" will be used.
+     * 
+     * @author craig
+     * @since 1.0.0
+     */
+    protected class DateTimeMapper implements PropertyMapper {
+        private SimpleDateFormat format;
+
+        protected DateTimeMapper(String format) {
+            try {
+                this.format = new SimpleDateFormat(format);
+            } catch (Exception e) {
+                this.format = new SimpleDateFormat("HH:mm:ss");
+            }
+        }
+
+        @Override
+        public Object mapValue(String time) {
+            Date datetime;
+            try {
+                datetime = format.parse(time);
+            } catch (ParseException e) {
+                error(e.getLocalizedMessage());
+                return 0L;
+            }
+            return datetime.getTime();
+        }
+    }
+
+    /**
+     * Convenience implementation of a property mapper that assumes the object is a String. This is
+     * useful for overriding the default behavior of detecting field formats, and simply keeping the
+     * original strings. For example if the site name happens to contain only numbers, but we still
+     * want to see it as a string because it is the name.
+     * 
+     * @author craig
+     * @since 1.0.0
+     */
+    protected class StringMapper implements PropertyMapper {
+
+        @Override
+        public Object mapValue(String value) {
+            return value;
         }
     }
 
@@ -425,6 +500,17 @@ public abstract class AbstractLoader {
     }
 
     /**
+     * Get the header name for the specified key, if it exists
+     *
+     * @param key
+     * @return
+     */
+    protected String headerName(String key) {
+        Header header = headers.get(key);
+        return header == null ? null : header.name;
+    }
+    
+    /**
      * Add a number of regular expression strings to use as filters for deciding which properties to
      * save. If this method is never used, and the filters are empty, then all properties are
      * processed. Since the saving code is done in the specific loader, not using this method can
@@ -456,7 +542,33 @@ public abstract class AbstractLoader {
      * @param regex a regular expression to use to find the property
      */
     protected void addKnownHeader(String key, String regex) {
-        knownHeaders.put(key, regex);
+        addKnownHeader(key, new String[]{regex});
+    }
+
+    /**
+     * Add a property name and list of regular expressions for a single known header. This is used
+     * if we want the property name in the database to be some specific text, not the header text in
+     * the file. The regular expressions are used to find the header in the file to associate with
+     * the new property name. Note that the original property will not be saved using its original
+     * name. It will be saved with the specified name provided. For example, if you want the first
+     * field found that starts with either 'lat' or 'y_wert' to be saved in a property called 'y',
+     * then you would call this using:
+     * 
+     * <pre>
+     * addKnownHeader(&quot;y&quot;, Arrays.asList(new String[] {&quot;lat.*&quot;, &quot;y_wert.*&quot;}));
+     * </pre>
+     * 
+     * @param key the name to use for the property
+     * @param array of regular expressions to use to find the single property
+     */
+    protected void addKnownHeader(String key, String[] regexes) {
+        if(knownHeaders.containsKey(key)) {
+            List<String> value = knownHeaders.get(key);
+            value.addAll(Arrays.asList(regexes));
+            knownHeaders.put(key, value);
+        } else {
+            knownHeaders.put(key, Arrays.asList(regexes));
+        }
     }
 
     /**
@@ -474,12 +586,30 @@ public abstract class AbstractLoader {
      * </pre>
      * 
      * @param original header key to base new header on
-     * @param name of new header
+     * @param name of new header, or null to use the old header (and replace it)
      * @param key of new header
      * @param mapper the mapper required to convert values from the old to the new
      */
     protected final void addMappedHeader(String original, String name, String key, PropertyMapper mapper) {
         mappedHeaders.put(original, new MappedHeaderRule(name, key, mapper));
+    }
+
+    /**
+     * This uses the same PropertyMapper mechanism as the addMappedHeader() method, but does not
+     * create a new property, instead it replaces the original property. Internally it uses the same
+     * key for original and new property and also sets the new name to null to signal the system to
+     * do replacement. This is especially useful if you want to override the default header parsing
+     * logic with your own custom logic. For example, to keep string values for a property:
+     * 
+     * <pre>
+     * useMapper(&quot;site&quot;, new StringMapper());
+     * </pre>
+     * 
+     * @param key of header/property
+     * @param mapper the mapper required to convert values
+     */
+    protected final void useMapper(String key, PropertyMapper mapper) {
+        mappedHeaders.put(key, new MappedHeaderRule(null, key, mapper));
     }
 
     /**
@@ -506,12 +636,18 @@ public abstract class AbstractLoader {
             if (headerAllowed(header)) {
                 boolean added = false;
                 debug("Added header[" + index + "] = " + header);
-                for (String key : knownHeaders.keySet()) {
-                    if (!headers.containsKey(key) && header.matches(knownHeaders.get(key))) {
-                        debug("Added known header[" + index + "] = " + key);
-                        headers.put(key, new Header(headerName, key, index));
-                        added = true;
-                        break;
+                KNOWN: for (String key : knownHeaders.keySet()) {
+                    if (!headers.containsKey(key)) {
+                        for (String regex : knownHeaders.get(key)) {
+                            for (String testString : new String[] {header, headerName}) {
+                                if (testString.toLowerCase().matches(regex.toLowerCase())) {
+                                    debug("Added known header[" + index + "] = " + key);
+                                    headers.put(key, new Header(headerName, key, index));
+                                    added = true;
+                                    break KNOWN;
+                                }
+                            }
+                        }
                     }
                 }
                 if (!added/* !headers.containsKey(header) */) {
@@ -525,7 +661,12 @@ public abstract class AbstractLoader {
             if (headers.containsKey(key)) {
                 MappedHeaderRule mapRule = mappedHeaders.get(key);
                 if (headers.containsKey(mapRule.key)) {
-                    notify("Cannot add mapped header with key '" + mapRule.key + "': header with that name already exists");
+                    //We only allow replacement if the user passed null for the name
+                    if(mapRule.name == null) {
+                        headers.put(mapRule.key, new MappedHeader(headers.get(key), mapRule));
+                    } else {
+                        notify("Cannot add mapped header with key '" + mapRule.key + "': header with that name already exists");
+                    }
                 } else {
                     headers.put(mapRule.key, new MappedHeader(headers.get(key), mapRule));
                 }
@@ -557,6 +698,25 @@ public abstract class AbstractLoader {
         return typedProperties.get(klass);
     }
 
+    protected List<String> getNumericProperties() {
+        ArrayList<String> results = new ArrayList<String>();
+        for (Class< ? extends Object> klass : NUMERIC_PROPERTY_TYPES) {
+            results.addAll(getProperties(klass));
+        }
+        return results;
+    }
+    
+    protected List<String> getDataProperties() {
+        ArrayList<String> results = new ArrayList<String>();
+        results.addAll(getNumericProperties());
+        for(String key: getProperties(String.class)) {
+            if(headers.get(key).parseCount > 0) {
+                results.add(key);
+            }
+        }
+        return results;
+    }
+    
     private void makeTypedProperties() {
         this.typedProperties = new HashMap<Class< ? extends Object>, List<String>>();
         for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
@@ -647,7 +807,7 @@ public abstract class AbstractLoader {
     protected final String status() {
         if (started <= 0)
             started = System.currentTimeMillis();
-        return (line_number > 0 ? "line:" + line_number : "" + ((System.currentTimeMillis() - started) / 1000.0) + "s");
+        return (lineNumber > 0 ? "line:" + lineNumber : "" + ((System.currentTimeMillis() - started) / 1000.0) + "s");
     }
 
     public void setLimit(int value) {
@@ -682,7 +842,7 @@ public abstract class AbstractLoader {
             int prevLineNumber = 0;
             String line;
             while ((line = reader.readLine()) != null) {
-                line_number++;
+                lineNumber++;
                 if (!haveHeaders())
                     parseHeader(line);
                 else
@@ -692,15 +852,15 @@ public abstract class AbstractLoader {
                         break;
                     perc = is.percentage();
                     if (perc > prevPerc) {
-                        monitor.subTask(basename + ":" + line_number + " (" + perc + "%)");
+                        monitor.subTask(basename + ":" + lineNumber + " (" + perc + "%)");
                         monitor.worked(perc - prevPerc);
                         prevPerc = perc;
                     }
                 }
                 // Commit external transaction on large blocks of code
-                if (line_number > prevLineNumber + 1000) {
+                if (lineNumber > prevLineNumber + 1000) {
                     commit(true);
-                    prevLineNumber = line_number;
+                    prevLineNumber = lineNumber;
                 }
                 if (isOverLimit())
                     break;
@@ -747,9 +907,9 @@ public abstract class AbstractLoader {
     protected void finishUp() {
     }
 
-    protected final void checkCRS(String[] latlon) {
+    protected final void checkCRS(float lat, float lon, String hint) {
         if (crs == null) {
-            crs = CRS.fromLocation(Float.parseFloat(latlon[0]), Float.parseFloat(latlon[1]), null);
+            crs = CRS.fromLocation(lat, lon, hint);
             gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
             gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
         }
@@ -768,13 +928,11 @@ public abstract class AbstractLoader {
         if (gis == null) {
             Transaction transaction = neo.beginTx();
             try {
+                String name = NeoUtils.getNodeName(mainNode);
                 Node reference = neo.getReferenceNode();
                 for (Relationship relationship : mainNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)) {
                     Node node = relationship.getStartNode();
-                    if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                            && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.GIS_TYPE_NAME)
-                            && node.hasProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME)
-                            && node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString().equals(GisTypes.DRIVE.getHeader())) {
+                    if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.GIS_TYPE_NAME)) {
                         if (!node.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator().hasNext()) {
                             node.createRelationshipTo(mainNode, GeoNeoRelationshipTypes.NEXT);
                         }
@@ -784,12 +942,25 @@ public abstract class AbstractLoader {
                     }
                 }
                 if (gis == null) {
-                    gis = neo.createNode();
-                    gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
-                    gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, NeoUtils.getNodeName(mainNode));
-                    gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
-                    reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
-                    gis.createRelationshipTo(mainNode, GeoNeoRelationshipTypes.NEXT);
+                    gis = findMatchingGisNode(name, gisType);
+                    if (gis == null) {
+                        gis = neo.createNode();
+                        gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
+                        gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+                        gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
+                        reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
+                    } else {
+                        deleteOldGisNodes(name, gisType, gis);
+                    }
+                    boolean hasRelationship = false;
+                    for(Relationship relation: gis.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        if(relation.getEndNode().equals(mainNode)) {
+                            hasRelationship = true;
+                        }
+                    }
+                    if(!hasRelationship) {
+                        gis.createRelationshipTo(mainNode, GeoNeoRelationshipTypes.NEXT);
+                    }
                 }
                 transaction.success();
             } finally {
@@ -798,6 +969,70 @@ public abstract class AbstractLoader {
         }
         return gis;
     }
+
+    private Traverser makeGisTraverser(final String name, final String gisType) {
+        Traverser tr = neo.getReferenceNode().traverse(
+                Order.BREADTH_FIRST,
+                new StopEvaluator() {
+
+                    @Override
+                    public boolean isStopNode(TraversalPosition currentPos) {
+                        return currentPos.depth() > 3;
+                    }
+                },
+                new ReturnableEvaluator() {
+
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
+                                INeoConstants.GIS_TYPE_NAME)
+                                && currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(name)
+                                && currentPos.currentNode().getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").equals(gisType);
+                    }
+                }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        return tr;
+    }
+
+    private Node findMatchingGisNode(String name, String gisType) {
+        java.util.Iterator<Node> it = makeGisTraverser(name, gisType).iterator();
+        return it.hasNext() ? it.next() : null;
+    }
+
+    private final void deleteOldGisNodes(String name, String gisType, Node gisNode) {
+        for (Node node : makeGisTraverser(name, gisType)) {
+            debug("Testing possible Network node " + node + ": " + node.getProperty("name", "").toString());
+            if (!node.equals(gisNode)) {
+                // remove all incoming relationships
+                for (Relationship relationshipIn : node.getRelationships(Direction.INCOMING)) {
+                    relationshipIn.delete();
+                }
+                deleteTree(node);
+                deleteNode(node);
+            }
+        }
+    }
+
+    protected void deleteTree(Node root) {
+        if (root != null) {
+            for (Relationship relationship : root.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                deleteTree(node);
+                debug("Deleting node " + node + ": " + (node.hasProperty("name") ? node.getProperty("name") : ""));
+                deleteNode(node);
+            }
+        }
+    }
+    
+    protected void deleteNode(Node node) {
+        if (node != null) {
+            for (Relationship relationship : node.getRelationships()) {
+                relationship.delete();
+            }
+            node.delete();
+        }
+    }
+
 
     protected final void saveProperties() {
         if (gis != null) {
@@ -867,11 +1102,13 @@ public abstract class AbstractLoader {
                     valueNode.delete();
                 }
             } else {
+                Relationship valueRelation = null;
                 if (valueNode == null) {
                     valueNode = neo.createNode();
-                    Relationship relation = propTypeNode.createRelationshipTo(valueNode, GeoNeoRelationshipTypes.PROPERTIES);
-                    relation.setProperty("property", property);
+                    valueRelation = propTypeNode.createRelationshipTo(valueNode, GeoNeoRelationshipTypes.PROPERTIES);
+                    valueRelation.setProperty("property", property);
                 } else {
+                    valueRelation = valueNode.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.INCOMING);
                     for (Object key : valueNode.getPropertyKeys()) {
                         Integer oldCount = (Integer)valueNode.getProperty(key.toString(), null);
                         if (oldCount == null) {
@@ -884,8 +1121,13 @@ public abstract class AbstractLoader {
                         values.put(key, oldCount + newCount);
                     }
                 }
+                int total = 0;
                 for (Object key : values.keySet()) {
                     valueNode.setProperty(key.toString(), values.get(key));
+                    total += values.get(key);
+                }
+                if(valueRelation!=null) {
+                    valueRelation.setProperty("count", total);
                 }
             }
         }
@@ -917,6 +1159,15 @@ public abstract class AbstractLoader {
             NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(LoaderUtils.getAweProjectName(), mainNode);
             addDataToCatalog();
         }
+    }
+
+    /**
+     * Is this a test case running outside AWE application
+     *
+     * @return true if we have no NeoProvider and so are not running inside AWE
+     */
+    protected final boolean isTest() {
+        return neoProvider == null;
     }
 
     /**
@@ -983,7 +1234,7 @@ public abstract class AbstractLoader {
             IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, url, null);
             final IMap map = ApplicationGIS.getActiveMap();
             if (curService != null && gis != null && NetworkLoader.findLayerByNode(map, gis) == null
-                    && NetworkLoader.confirmLoadNetworkOnMap(map, NeoUtils.getNodeName(gis))) {
+                    && confirmAddToMap(map, NeoUtils.getNodeName(gis))) {
                 java.util.List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
                 java.util.List<ILayer> layerList = new ArrayList<ILayer>();
                 for (IGeoResource iGeoResource : curService.resources(null)) {
@@ -995,7 +1246,10 @@ public abstract class AbstractLoader {
                         }
                     }
                 };
-                NetworkLoader.zoomToLayer(layerList);
+                IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
+                if (preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER)) {
+                    zoomToLayer(layerList);
+                }
             }
         } catch (MalformedURLException e) {
             // TODO Handle MalformedURLException
@@ -1007,6 +1261,61 @@ public abstract class AbstractLoader {
             e.printStackTrace();
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Zoom To 1st layers in list
+     * 
+     * @param layers list of layers
+     */
+    private static void zoomToLayer(final List<? extends ILayer> layers) {
+        ActionUtil.getInstance().runTask(new Runnable() {
+            @Override
+            public void run() {
+                ZoomToLayer zoomCommand = new ZoomToLayer();
+                zoomCommand.selectionChanged(null, new StructuredSelection(layers));
+                zoomCommand.runWithEvent(null, null);
+            }
+        }, true);
+    }
+
+    /**
+     * Confirm load network on map
+     * 
+     * @param map map
+     * @param fileName name of loaded file
+     * @return true or false
+     */
+    private static boolean confirmAddToMap(final IMap map, final String fileName) {
+
+        final IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
+        return (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+            int result;
+
+            @Override
+            public void run() {
+                boolean boolean1 = preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER);
+                String message = String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, fileName, map.getName());
+                if (map == ApplicationGIS.NO_MAP) {
+                    message = String.format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, fileName);
+                }
+//                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
+//                msg.setText(NeoLoaderPluginMessages.ADD_LAYER_TITLE);
+//                msg.setMessage(message);
+                MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(PlatformUI.getWorkbench()
+                        .getActiveWorkbenchWindow().getShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE, message,
+                        NeoLoaderPluginMessages.TOGLE_MESSAGE, boolean1, preferenceStore, DataLoadPreferences.ZOOM_TO_LAYER);
+                result = dialog.getReturnCode();
+                if (result == IDialogConstants.YES_ID) {
+                    preferenceStore.putValue(DataLoadPreferences.ZOOM_TO_LAYER, String.valueOf(dialog.getToggleState()));
+                }
+            }
+
+            @Override
+            public Object getValue() {
+                return result;
+            }
+        }) == IDialogConstants.YES_ID;
     }
 
     /**

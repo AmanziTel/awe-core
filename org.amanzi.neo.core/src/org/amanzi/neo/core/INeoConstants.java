@@ -147,11 +147,6 @@ public class INeoConstants {
     public static final String HEADER_MS = "ms";
     
     /*
-     * Prefix of GIS catalog
-     */
-    public static final String GIS_PREFIX = "";
-    
-    /*
      * Type GIS
      */
     public static final String GIS_TYPE_NAME = "gis";
@@ -294,10 +289,8 @@ public class INeoConstants {
     /**
      * name of "beamwidth" property
      */
-    public static final String PROPERTY_BEAMWIDTH_NAME = "beamwidth list";
     /** INeoConstants PROPERTY_ALL_CHANNEL_NAME field */
     public static final String PROPERTY_ALL_CHANNELS_NAME = "All Channels";
-    public static final String PROPERTY_AZIMUTH_NAME = "azimuth_list";
     /** INeoConstants PROPERTY_OLD_NAME field */
     public static final String PROPERTY_OLD_NAME = "old_name";
     /** INeoConstants NEIGHBOUR_TYPE_NAME field */
@@ -305,6 +298,8 @@ public class INeoConstants {
     public static final String NEIGHBOUR_NAME = "neighbours_list";
     /** INeoConstants LIST_NUMERIC_PROPERTIES field */
     public static final String LIST_NUMERIC_PROPERTIES = "list_numeric_field";
+    /** INeoConstants LIST_DATA_PROPERTIES field */
+    public static final String LIST_DATA_PROPERTIES = "list_data_field";
     /** INeoConstants LIST_ALL_PROPERTIES field */
     public static final String LIST_ALL_PROPERTIES = "list_all_field";
     public static final String NEIGHBOUR_NUMBER = "# neighbours listname";

@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 
@@ -41,6 +42,7 @@ public class NetworkImportWizard extends Wizard implements IImportWizard {
     /** String PAGE_DESCR field */
     private static final String PAGE_DESCR = "Import a file from the local file system into the workspace";
     private NetworkImportWizardPage mainPage;
+    private Display display;
     @Override
     public boolean performFinish() {
 
@@ -49,9 +51,11 @@ public class NetworkImportWizard extends Wizard implements IImportWizard {
             protected IStatus run(IProgressMonitor monitor) {
                 NetworkLoader networkLoader;
                 try {
-                    networkLoader = new NetworkLoader(mainPage.getFileName());
+                    networkLoader = new NetworkLoader(mainPage.getFileName(), display);
+                    networkLoader.setup();
                     networkLoader.run(monitor);
                     networkLoader.printStats(false);
+                    networkLoader.addLayerToMap();
                 } catch (IOException e) {
                     NeoCorePlugin.error("Error loading Network file", e);
                     return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
@@ -66,6 +70,7 @@ public class NetworkImportWizard extends Wizard implements IImportWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         mainPage = new NetworkImportWizardPage(PAGE_TITLE, PAGE_DESCR);
+        display = workbench.getDisplay();
     }
 
     @Override

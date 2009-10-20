@@ -86,7 +86,7 @@ public abstract class DriveLoader extends AbstractLoader {
             Transaction tx = neo.beginTx();
             try {
                 Node reference = neo.getReferenceNode();
-                datasetNode = findOrCreateDatasetNode(neo.getReferenceNode(), dataset);
+                datasetNode = findOrCreateDatasetNode(reference, dataset);
                 file = findOrCreateFileNode(reference, datasetNode);
 
                 Node mainFileNode = datasetNode == null ? file : datasetNode;
@@ -179,7 +179,7 @@ public abstract class DriveLoader extends AbstractLoader {
     public void printStats(boolean verbose) {
         addTimes(timeTaken());
         super.printStats(verbose);
-        notify("Read " + (line_number - 1) + " data lines and then filtered down to:");
+        notify("Read " + (lineNumber - 1) + " data lines and then filtered down to:");
         notify("\t" + countValidMessage + " with valid messages");
         notify("\t" + countValidLocation + " with known locations");
         notify("\t" + countValidChanged + " with changed data");

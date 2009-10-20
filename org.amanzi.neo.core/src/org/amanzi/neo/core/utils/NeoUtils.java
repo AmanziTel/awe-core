@@ -296,6 +296,9 @@ public class NeoUtils {
     public static String[] getNumericFields(Node node) {
         Transaction tx = beginTransaction();
         try {
+            if(node.hasProperty(INeoConstants.LIST_NUMERIC_PROPERTIES)) {
+                return (String[])node.getProperty(INeoConstants.LIST_NUMERIC_PROPERTIES);
+            }
             // TODO remove this after refactoring tems loader
             if (node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME,"").equals(GisTypes.DRIVE.getHeader())) {
                 List<String> result = new ArrayList<String>();
@@ -322,7 +325,7 @@ public class NeoUtils {
                 }
                 return result.toArray(new String[0]);
             }
-            return (String[])node.getProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, null);
+            return null;
         } finally {
             tx.finish();
         }

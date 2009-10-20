@@ -148,7 +148,7 @@ public class TEMSLoader extends DriveLoader {
             ec_io = (Integer)(lineData.get("all_active_set_ec_io_1"));
             measurement_count = (Integer)(lineData.get("all_pilot_set_count"));
         } catch (Exception e) {
-            error("Failed to parse a field on line " + line_number + ": " + e.getMessage());
+            error("Failed to parse a field on line " + lineNumber + ": " + e.getMessage());
             return;
         }
         if (measurement_count > 12) {
@@ -175,8 +175,8 @@ public class TEMSLoader extends DriveLoader {
             if (this.isOverLimit())
                 return;
             if (first_line == 0)
-                first_line = line_number;
-            last_line = line_number;
+                first_line = lineNumber;
+            last_line = lineNumber;
             this.incValidChanged();
             debug(time + ": server channel[" + channel + "] pn[" + pn_code + "] Ec/Io[" + ec_io + "]\t" + event + "\t"
                     + this.latlong);
@@ -223,7 +223,7 @@ public class TEMSLoader extends DriveLoader {
                 mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
                 findOrCreateFileNode(mp);
                 updateBBox(lat, lon);
-                checkCRS(ll);
+                checkCRS((float)lat, (float)lon, null);
                 debug("Added measurement point: " + propertiesString(mp));
                 if (point != null) {
                     point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
@@ -273,7 +273,7 @@ public class TEMSLoader extends DriveLoader {
     public static void main(String[] args) {
         if (args.length < 1)
             args = new String[] {"amanzi/test.FMT", "amanzi/0904_90.FMT", "amanzi/0905_22.FMT", "amanzi/0908_44.FMT"};
-        EmbeddedNeo neo = new EmbeddedNeo("var/neo");
+        EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
         try {
             for (String filename : args) {
                 TEMSLoader driveLoader = new TEMSLoader(neo, filename);

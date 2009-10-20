@@ -73,8 +73,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
-    /** Color COLOR_SURROUND field */
-    private static final Color COLOR_SURROUND = new Color(255, 255, 255, 255);
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
     private static final Color COLOR_SITE_SELECTED = Color.CYAN;
@@ -86,7 +84,8 @@ public class NetworkRenderer extends RendererImpl {
     private Color fillColor = new Color(255, 255, 128,(int)(0.6*255.0));
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
-	private Color labelColor;
+    private Color labelColor = Color.DARK_GRAY;
+    private Color surroundColor = Color.WHITE;
     private Color lineColor;
     private Node aggNode;
     private String siteName;
@@ -163,6 +162,15 @@ public class NetworkRenderer extends RendererImpl {
                 fillColor=neostyle.getFill();
                 drawColor=neostyle.getLine();
                 labelColor=neostyle.getLabel();
+                float colSum = 0.0f;
+                for(float comp: labelColor.getRGBColorComponents(null)){
+                    colSum += comp;
+                }
+                if(colSum>2.0) {
+                    surroundColor=Color.DARK_GRAY;
+                } else {
+                    surroundColor=Color.WHITE;
+                }
                 drawSize = neostyle.getSymbolSize();
                 alpha = 255 - (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
                 maxSitesLabel = neostyle.getLabeling();
@@ -192,7 +200,6 @@ public class NetworkRenderer extends RendererImpl {
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
-            PropertyHeader handler =  PropertyHeader.getNetworkVault(geoNeo.getMainGisNode());
             System.out.println("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
             //IBlackboard blackboard = getContext().getMap().getBlackboard();
             String starProperty = getSelectProperty(geoNeo);
@@ -294,11 +301,10 @@ public class NetworkRenderer extends RendererImpl {
                             Node child = relationship.getEndNode();
                             if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
                                 // double azimuth = Double.NaN;
-                                double beamwidth = handler.getBeamwidth(child, 360.0);
+                                double beamwidth = getDouble(child, "beamwidth", 360.0);
                                 Color colorToFill = getSectorColor(child, fillColor);
-                                Double azimuth = handler.getAzimuth(child);
-                                if (azimuth == null) {
-                                    azimuth = Double.NaN;
+                                double azimuth = getDouble(child, "azimuth", Double.NaN);
+                                if (azimuth == Double.NaN) {
                                     continue;
                                 }
                                 borderColor = drawColor;
@@ -393,7 +399,7 @@ public class NetworkRenderer extends RendererImpl {
                         AffineTransform at = AffineTransform.getTranslateInstance(p.x, p.y);
                         Shape outline = text.getOutline(at);
                         drawSoftSurround(g, outline);
-                        g.setPaint(COLOR_SURROUND);
+                        g.setPaint(surroundColor);
                         g.fill(outline);g.draw(outline);
                         g.setPaint(labelColor);
                         text.draw(g, p.x, p.y);
@@ -426,7 +432,7 @@ public class NetworkRenderer extends RendererImpl {
                         AffineTransform at = AffineTransform.getTranslateInstance(p.x, p.y);
                         Shape outline = text.getOutline(at);
                         drawSoftSurround(g, outline);
-                        g.setPaint(COLOR_SURROUND);
+                        g.setPaint(surroundColor);
                         g.fill(outline);
                         g.draw(outline);
                         g.setPaint(labelColor);
@@ -492,6 +498,19 @@ public class NetworkRenderer extends RendererImpl {
         }
     }
 
+    private double getDouble(Node node, String property, double def) {
+        Object result = node.getProperty(property, def);
+        if (result instanceof Integer) {
+            return ((Integer)result).doubleValue();
+        } else if (result instanceof Float) {
+            return ((Float)result).doubleValue();
+        } else if (result instanceof String) {
+            return Double.parseDouble((String)result);
+        } else {
+            return (Double)result;
+        }
+    }
+    
     /**
      * @param sector
      * @return
@@ -511,7 +530,7 @@ public class NetworkRenderer extends RendererImpl {
     }
 
     private void drawSoftSurround(Graphics2D g, Shape outline) {
-        g.setPaint(new Color(COLOR_SURROUND.getRed(),COLOR_SURROUND.getGreen(),COLOR_SURROUND.getBlue(),128));
+        g.setPaint(new Color(surroundColor.getRed(),surroundColor.getGreen(),surroundColor.getBlue(),128));
         g.translate( 1, 0); g.fill(outline);g.draw(outline);
         g.translate(-1, 1); g.fill(outline);g.draw(outline);
         g.translate(-1,-1); g.fill(outline);g.draw(outline);
