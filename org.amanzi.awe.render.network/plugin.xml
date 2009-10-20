@@ -9,5 +9,11 @@
             name="Amanzi Network Renderer">
       </renderer>
    </extension>
+   <extension
+         point="net.refractions.udig.project.persister">
+      <persister
+            class="org.amanzi.awe.render.network.HashMapPersister">
+      </persister>
+   </extension>
 
 </plugin>
