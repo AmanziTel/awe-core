@@ -21,26 +21,13 @@ package org.amanzi.neo.core.enums;
 
 public enum NetworkElementTypes {
 
-    NETWORK(new String[]{"Network"}),
-    CITY(new String[]{"City","Town","Ort"}),
-    MSC(new String[]{"MSC","MSC_NAME","MSC Name"}),
-    BSC(new String[]{"BSC","BSC_NAME","RNC","BSC Name"}),
-    SITE(new String[]{"Site","Name","IDX","Site Name"}),
-    SECTOR(new String[]{"Sector","Cell","BTS_Name","CELL_NAME","GSM Sector ID"});
+    NETWORK,
+    CITY,
+    MSC,
+    BSC,
+    SITE,
+    SECTOR;
 
-    private String[] headers = null;
-    
-    private NetworkElementTypes(String[] headers){
-        this.headers = headers;
-    }
-    
-    public boolean matches(String header){
-        for(String valid_header:headers) {
-            if(header.equalsIgnoreCase(valid_header)) return true;
-        }
-        return false;
-    }
-    
     public String toString(){
         return super.toString().toLowerCase();
     }    
