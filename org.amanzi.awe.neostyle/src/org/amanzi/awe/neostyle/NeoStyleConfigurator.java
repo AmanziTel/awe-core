@@ -511,7 +511,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      */
     private Integer getSectorFontSize() {
         try {
-            return Integer.parseInt(sFontSize.getText());
+            return Integer.parseInt(sSectorFontSize.getText());
         } catch (NumberFormatException e) {
             return NeoStyleContent.DEF_FONT_SIZE_SECTOR;
         }
