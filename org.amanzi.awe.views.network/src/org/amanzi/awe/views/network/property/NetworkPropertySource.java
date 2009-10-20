@@ -46,7 +46,7 @@ import org.neo4j.neoclipse.property.PropertyTransform.PropertyHandler;
  * Class that creates a properties of given Node
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public class NetworkPropertySource extends NodePropertySource implements IPropertySource {

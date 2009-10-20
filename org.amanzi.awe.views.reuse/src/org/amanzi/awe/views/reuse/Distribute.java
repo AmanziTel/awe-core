@@ -18,7 +18,7 @@ package org.amanzi.awe.views.reuse;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public enum Distribute {
     /** auto column groups*/

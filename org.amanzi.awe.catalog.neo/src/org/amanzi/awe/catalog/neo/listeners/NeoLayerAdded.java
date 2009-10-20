@@ -23,7 +23,7 @@ import org.amanzi.neo.core.utils.ActionUtil;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class NeoLayerAdded implements LayerInterceptor {
 
@@ -39,7 +39,7 @@ public class NeoLayerAdded implements LayerInterceptor {
      * </p>
      * 
      * @author Cinkel_A
-     * @since 1.1.0
+     * @since 1.0.0
      */
     private static class NeoRunner implements Runnable {
         private final Layer layer;

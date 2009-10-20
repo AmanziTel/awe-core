@@ -690,6 +690,7 @@ public abstract class AbstractLoader {
 
     private HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
     private Transaction mainTx;
+    private int commitSize = 1000;
 
     protected List<String> getProperties(Class< ? extends Object> klass) {
         if (typedProperties == null) {
@@ -857,8 +858,7 @@ public abstract class AbstractLoader {
                         prevPerc = perc;
                     }
                 }
-                // Commit external transaction on large blocks of code
-                if (lineNumber > prevLineNumber + 1000) {
+                if (lineNumber > prevLineNumber + commitSize) {
                     commit(true);
                     prevLineNumber = lineNumber;
                 }
@@ -1354,6 +1354,10 @@ public abstract class AbstractLoader {
         printHeaderStats();
         long taken = timeTaken();
         notify("Finished loading " + basename + " data in " + (taken / 1000.0) + " seconds");
+    }
+
+    public void setCommitSize(int commitSize) {
+        this.commitSize = commitSize;
     }
 
 }

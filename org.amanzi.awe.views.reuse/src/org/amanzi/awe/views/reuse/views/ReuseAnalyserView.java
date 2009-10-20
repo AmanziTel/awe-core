@@ -107,7 +107,7 @@ import org.neo4j.api.core.Traverser.Order;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class ReuseAnalyserView extends ViewPart {
     /** String TOOL_TIP_LOG field */
@@ -1731,7 +1731,7 @@ public class ReuseAnalyserView extends ViewPart {
      * </p>
      * 
      * @author Cinkel_A
-     * @since 1.1.0
+     * @since 1.0.0
      */
     private static class Column implements Comparable<Column> {
 
@@ -2129,7 +2129,7 @@ public class ReuseAnalyserView extends ViewPart {
      * </p>
      * 
      * @author Cinkel_A
-     * @since 1.1.0
+     * @since 1.0.0
      */
     private static final class PropertyReturnableEvalvator implements ReturnableEvaluator {
 
@@ -2148,7 +2148,7 @@ public class ReuseAnalyserView extends ViewPart {
      * </p>
      * 
      * @author Cinkel_A
-     * @since 1.1.0
+     * @since 1.0.0
      */
     private static class PropertyCategoryDataset extends AbstractDataset implements CategoryDataset {
 
@@ -2280,7 +2280,7 @@ public class ReuseAnalyserView extends ViewPart {
      * </p>
      * 
      * @author Cinkel_A
-     * @since 1.1.0
+     * @since 1.0.0
      */
     private static class ChartNode implements Comparable<ChartNode> {
         private Node node;

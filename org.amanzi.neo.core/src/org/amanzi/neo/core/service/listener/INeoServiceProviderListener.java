@@ -16,7 +16,7 @@ package org.amanzi.neo.core.service.listener;
  * Interface that listens for events of NeoServiceProvider
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public interface INeoServiceProviderListener {

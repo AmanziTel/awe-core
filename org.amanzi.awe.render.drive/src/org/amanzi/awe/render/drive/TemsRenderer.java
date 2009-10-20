@@ -68,7 +68,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class TemsRenderer extends RendererImpl implements Renderer {
     private MathTransform transform_d2w;
@@ -512,7 +512,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      * </p>
      * 
      * @author Cinkel_A
-     * @since 1.1.0
+     * @since 1.0.0
      */
     private enum Select {
         MAX("max"), MIN("min"), AVERAGE("average"), EXISTS("exists"), FIRST("first");

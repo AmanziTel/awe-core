@@ -28,7 +28,7 @@ import org.osgi.framework.BundleContext;
  * Plugin class for org.amanzi.neo.core
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public class NeoCorePlugin extends Plugin {

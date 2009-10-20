@@ -38,7 +38,7 @@ import org.neo4j.api.core.Transaction;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class LayerInterceptor implements net.refractions.udig.project.interceptor.LayerInterceptor {
 

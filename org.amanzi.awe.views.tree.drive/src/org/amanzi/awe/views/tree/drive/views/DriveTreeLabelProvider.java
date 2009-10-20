@@ -25,7 +25,7 @@ import org.eclipse.swt.graphics.Image;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class DriveTreeLabelProvider extends LabelProvider {
 

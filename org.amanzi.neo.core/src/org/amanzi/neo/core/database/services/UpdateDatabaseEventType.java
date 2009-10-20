@@ -18,7 +18,7 @@ package org.amanzi.neo.core.database.services;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public enum UpdateDatabaseEventType {
     Spreadsheet, GIS;

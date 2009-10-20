@@ -28,7 +28,7 @@ import org.neo4j.api.core.Transaction;
  * Proxy class that provides access for Node, it's children and properties
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public class NeoNode {

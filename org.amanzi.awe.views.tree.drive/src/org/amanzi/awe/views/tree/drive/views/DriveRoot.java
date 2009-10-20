@@ -35,7 +35,7 @@ import org.neo4j.api.core.Traverser.Order;
 /**
  * Proxy class that provides access for Neo-database
  * 
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class DriveRoot extends Root {
 

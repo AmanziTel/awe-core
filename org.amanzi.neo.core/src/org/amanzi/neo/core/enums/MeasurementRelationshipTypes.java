@@ -18,7 +18,7 @@ import org.neo4j.api.core.RelationshipType;
  * RelationshipTypes for Measurement
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public enum MeasurementRelationshipTypes implements RelationshipType {

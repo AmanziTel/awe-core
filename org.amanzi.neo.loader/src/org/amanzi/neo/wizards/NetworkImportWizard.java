@@ -33,7 +33,7 @@ import org.eclipse.ui.IWorkbench;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class NetworkImportWizard extends Wizard implements IImportWizard {
 

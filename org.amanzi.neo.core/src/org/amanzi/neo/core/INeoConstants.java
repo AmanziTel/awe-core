@@ -16,7 +16,7 @@ package org.amanzi.neo.core;
  * Constans for AWE specific Neo-Database properties
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public class INeoConstants {

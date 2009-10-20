@@ -25,7 +25,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class DataLoadPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
     private static final String LABEL_REMOVE_SITE_NAME = "Remove site name from sector name";

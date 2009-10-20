@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Composite;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class NetworkImportWizardPage extends WizardPage {
     private FileFieldEditor editor;

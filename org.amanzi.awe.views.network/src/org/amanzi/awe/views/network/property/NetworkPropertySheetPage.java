@@ -21,7 +21,7 @@ import org.eclipse.ui.views.properties.PropertySheetPage;
  * Property Sheet Page that shows Properties of Node that was selected on NetworkTree
  *
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public class NetworkPropertySheetPage extends PropertySheetPage implements ISelectionListener {

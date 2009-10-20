@@ -18,7 +18,7 @@ package org.amanzi.neo.preferences;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class DataLoadPreferences {
     /** DataLoadPreferences REMOVE_SITE_NAME field */

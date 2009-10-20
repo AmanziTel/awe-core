@@ -992,7 +992,7 @@ public class NetworkTreeView extends ViewPart {
      * </p>
      * 
      * @author Cinkel_A
-     * @since 1.1.0
+     * @since 1.0.0
      */
     private class RevertNameAction extends Action {
 

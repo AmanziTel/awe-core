@@ -20,7 +20,7 @@ import java.awt.Color;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class NeoStyle {
     private Color line;

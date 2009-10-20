@@ -85,7 +85,7 @@ public class SpreadsheetService {
 	 * </p>
 	 * 
 	 * @author Cinkel_A
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 */
 	private final class ReferencedCell implements ReturnableEvaluator {
 		@Override

@@ -23,7 +23,7 @@ import org.amanzi.awe.views.network.proxy.NeoNode;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class AggregatesNode extends DriveNeoNode {
 

@@ -32,7 +32,7 @@ import org.neo4j.neoclipse.preference.NeoPreferences;
  * Provider that give access to NeoService
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public class NeoServiceProvider implements IPropertyChangeListener{
@@ -220,7 +220,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * to listeners of NeoServiceProvides
      * 
      * @author Lagutko_N
-     * @since 1.1.0
+     * @since 1.0.0
      */
     
     private class DefaultServiceListener implements NeoServiceEventListener {

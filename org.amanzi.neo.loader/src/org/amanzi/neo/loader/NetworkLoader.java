@@ -619,6 +619,7 @@ public class NetworkLoader extends AbstractLoader {
                 NetworkLoader networkLoader = new NetworkLoader(neo, filename);
                 networkLoader.setup();
                 networkLoader.setLimit(1000);
+                networkLoader.setCommitSize(1000);
                 networkLoader.run(null);
                 networkLoader.printStats(true);
                 networkLoader.info("Ran test in " + (System.currentTimeMillis() - startTime) / 1000.0 + "s");

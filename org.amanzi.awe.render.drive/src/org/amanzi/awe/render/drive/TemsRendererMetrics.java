@@ -30,7 +30,7 @@ import net.refractions.udig.project.render.IRenderMetricsFactory;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class TemsRendererMetrics extends AbstractRenderMetrics implements IRenderMetrics {
 

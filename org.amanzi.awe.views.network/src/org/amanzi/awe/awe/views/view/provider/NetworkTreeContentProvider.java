@@ -31,7 +31,7 @@ import org.neo4j.api.core.Transaction;
  * Content provider for NetworkTree
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public class NetworkTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {

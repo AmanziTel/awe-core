@@ -49,7 +49,7 @@ import org.neo4j.api.core.Traverser.Order;
  * </p>
  * 
  * @author Cinkel_A
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class NeoUtils {
     private NeoUtils() {

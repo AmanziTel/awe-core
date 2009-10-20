@@ -16,7 +16,7 @@ package org.amanzi.neo.core.enums;
  * Element Types for Network
  * 
  * @author Lagutko_N
- * @since 1.1.0
+ * @since 1.0.0
  */
 
 public enum NetworkElementTypes {
