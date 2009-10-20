@@ -128,12 +128,6 @@ public class GeoNeo {
             return getName();
         }
         private static double[] getCoords(Node next) {
-            if(next.hasProperty(INeoConstants.PROPERTY_COORDS_NAME)){
-                return (double[])next.getProperty(INeoConstants.PROPERTY_COORDS_NAME);
-            }
-            if(next.hasProperty(INeoConstants.PROPERTY_X_NAME) && next.hasProperty(INeoConstants.PROPERTY_Y_NAME)){
-                return new double[]{(Float)next.getProperty(INeoConstants.PROPERTY_X_NAME),(Float)next.getProperty(INeoConstants.PROPERTY_Y_NAME)};
-            }
             if(next.hasProperty(INeoConstants.PROPERTY_LAT_NAME)){
                 if(next.hasProperty(INeoConstants.PROPERTY_LON_NAME)){
                     try {

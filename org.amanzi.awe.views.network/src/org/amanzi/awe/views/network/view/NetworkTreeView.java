@@ -788,13 +788,6 @@ public class NetworkTreeView extends ViewPart {
      */
     private static double[] getCoords(Node node) {
         for (int i = 0; i <= 1; i++) {
-            if (node.hasProperty(INeoConstants.PROPERTY_COORDS_NAME)) {
-                return (double[])node.getProperty(INeoConstants.PROPERTY_COORDS_NAME);
-            }
-            if (node.hasProperty(INeoConstants.PROPERTY_X_NAME) && node.hasProperty(INeoConstants.PROPERTY_Y_NAME)) {
-                return new double[] {(Float)node.getProperty(INeoConstants.PROPERTY_X_NAME),
-                        (Float)node.getProperty(INeoConstants.PROPERTY_Y_NAME)};
-            }
             if (node.hasProperty(INeoConstants.PROPERTY_LAT_NAME)) {
                 if (node.hasProperty(INeoConstants.PROPERTY_LON_NAME)) {
                     try {
