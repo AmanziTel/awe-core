@@ -17,7 +17,6 @@ import java.awt.Paint;
 import java.awt.Shape;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -859,19 +858,10 @@ public class DriveInquirerView extends ViewPart {
             }
             cEvent.setItems(eventList.toArray(new String[0]));
             cEvent.select(0);
-            String[] propNum = propertyHeader.getDefinedNumericFields();
-            // TODO why all drive numeric properties in 2 methods???
-            String[] list = propertyHeader.getNumericFields();
-            List<String> result = new ArrayList<String>();
-            List<String> asList = Arrays.asList(propNum);
-            result.addAll(asList);
-            if (list != null) {
-                result.addAll(Arrays.asList(list));
-            }
-            String[] array = result.toArray(new String[0]);
+            String[] array = propertyHeader.getNumericFields();
             cProperty1.setItems(array);
             cProperty2.setItems(array);
-            if (propNum.length > 0) {
+            if (array.length > 0) {
                 cProperty1.select(0);
                 cProperty2.select(0);
             }
