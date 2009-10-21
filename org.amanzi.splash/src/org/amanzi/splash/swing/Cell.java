@@ -19,8 +19,8 @@ import java.text.ParseException;
 
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.splash.database.services.Messages;
 import org.amanzi.splash.ui.SplashPlugin;
+import org.amanzi.splash.utilities.Messages;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 

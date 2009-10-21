@@ -22,7 +22,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.*;
 
 public class ImportBuilderView extends ViewPart {
-	private TableViewer viewer;
 	
 	public static final String IMPORT_BUILDER_VIEW_ID = "org.amanzi.splash.views.ImportBuilderView";
 
@@ -69,7 +68,7 @@ public class ImportBuilderView extends ViewPart {
 	 * Passing the focus request to the viewer's control.
 	 */
 	public void setFocus() {
-		viewer.getControl().setFocus();
+	//	viewer.getControl().setFocus();
 	}
 
 

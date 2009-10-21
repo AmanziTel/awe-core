@@ -17,6 +17,7 @@ import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
+import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.neo4j.api.core.Transaction;
 
@@ -94,6 +95,7 @@ public class InterpretTask implements SplashJobTask {
         }
         catch (Exception e) {
         	//if there was exception than changes will be rollbacked
+            SplashPlugin.error(null, e);
         	transaction.failure();
         }
         finally {            

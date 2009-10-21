@@ -18,9 +18,18 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.splash.ui.importWizards.ExportBuilderScriptWizard;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.splash.swing.SplashTableModel;
+import org.amanzi.splash.ui.SplashResourceEditor;
+import org.amanzi.splash.utilities.Messages;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
@@ -33,9 +42,19 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
+import org.rubypeople.rdt.core.IRubyProject;
+import org.rubypeople.rdt.core.ISourceFolder;
+import org.rubypeople.rdt.internal.core.CreateRubyScriptOperation;
+import org.rubypeople.rdt.internal.core.RubyModelManager;
+import org.rubypeople.rdt.internal.corext.util.RubyModelUtil;
 
 
 public class ImportBuilderTableViewer {
+    
+    /** String DEFAULT_SCRIPT_NAME field */
+    private static final String DEFAULT_SCRIPT_NAME = "FilterX.rb";
+
     /**
 	 * @param parent
 	 */
@@ -270,7 +289,7 @@ public class ImportBuilderTableViewer {
 		
 		// Create and configure the "Add" button
 		Button add = new Button(parent, SWT.PUSH | SWT.CENTER);
-		add.setText("Add");
+		add.setText(Messages.Import_Builder_Add_Button_Name);
 		
 		GridData gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
 		
@@ -286,7 +305,7 @@ public class ImportBuilderTableViewer {
 
 		//	Create and configure the "Delete" button
 		Button delete = new Button(parent, SWT.PUSH | SWT.CENTER);
-		delete.setText("Delete");
+		delete.setText(Messages.Import_Builder_Delete_Button_Name);
 		gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
 		gridData.widthHint = 80; 
 		delete.setLayoutData(gridData); 
@@ -306,7 +325,7 @@ public class ImportBuilderTableViewer {
 		
 		
 		Label label = new Label(parent, SWT.LEFT);
-		label.setText("Filter Filename:");
+		label.setText(Messages.Import_Builder_Filter_Filename_Field);
 		gridData = new GridData (GridData.HORIZONTAL_ALIGN_END);
 		gridData.widthHint = 80; 
 		label.setLayoutData(gridData);
@@ -314,12 +333,12 @@ public class ImportBuilderTableViewer {
 		final Text filenameTextBox = new Text(parent, SWT.BORDER | SWT.SINGLE);
 		gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
 		gridData.widthHint = 80;
-		filenameTextBox.setText("FilterX.rb");
+		filenameTextBox.setText(DEFAULT_SCRIPT_NAME);
 		filenameTextBox.setLayoutData(gridData);
 		
 		//	Create and configure the "Close" button
 		runButton = new Button(parent, SWT.PUSH | SWT.CENTER);
-		runButton.setText("Run");
+		runButton.setText(Messages.Import_Builder_Run_Button_Name);
 		gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
 		gridData.widthHint = 80;
 		
@@ -328,16 +347,58 @@ public class ImportBuilderTableViewer {
 	       	
 			//	Remove the selection and refresh the view
 			public void widgetSelected(SelectionEvent e) {
-			    ActionUtil.getInstance().runTask(new Runnable() {
+			    //Lagutko, 21.10.2009, creating a ImportBuilder script
+			    //get a current editor
+			    SplashResourceEditor editor = (SplashResourceEditor)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult(){
 			        
-			        @Override
-			        public void run() {
-			            String filter_code = filtersList.getFilterRubyCode();
-			            
-			            WizardDialog dialog = new WizardDialog(table.getShell(), new ExportBuilderScriptWizard(filter_code));			            
-			            dialog.open();
-			        }
-			    }, true);
+			        private Object result;
+                    
+                    @Override
+                    public void run() {
+                        result = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+                    }
+                    
+                    @Override
+                    public Object getValue() {
+                        return result;
+                    }
+                });
+			    
+			    if (editor == null) {
+			        return;
+			    }
+			    //get a name of RubyProject
+			    SplashTableModel model = (SplashTableModel)editor.getTable().getModel();
+			    String rubyProjectName = model.getRubyProjectNode().getName();
+			    
+			    //compute IRubyProject
+			    IProject rubyProjectResource = ResourcesPlugin.getWorkspace().getRoot().getProject(rubyProjectName);
+			    IRubyProject rubyProject = RubyModelManager.getRubyModelManager().getRubyModel().findRubyProject(rubyProjectResource);
+			    
+			    //get a source folder
+			    ISourceFolder folder = RubyModelUtil.getSourceFolder(rubyProject);
+			    
+			    //get a content of script
+			    String filter_code = filtersList.getFilterRubyCode();
+			    
+			    //create a operation
+			    final CreateRubyScriptOperation operation = new CreateRubyScriptOperation(folder, filenameTextBox.getText(), filter_code, true);
+			    
+			    //run operation in additional Job
+			    Job createScriptJob = new Job(Messages.Import_Builder_Create_Script_Job_Name){
+                    
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        try {
+                            operation.run(monitor);
+                        } catch (CoreException e) {                            
+                            throw (RuntimeException) new RuntimeException( ).initCause( e );
+                        }
+                        return Status.OK_STATUS;
+                    }
+                };
+                createScriptJob.schedule();
+                
 			}
 		});
 		

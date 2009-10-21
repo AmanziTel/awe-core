@@ -14,8 +14,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.splash.database.services.Messages;
 import org.amanzi.splash.database.services.SpreadsheetService;
+import org.amanzi.splash.utilities.Messages;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.runtime.IStatus;

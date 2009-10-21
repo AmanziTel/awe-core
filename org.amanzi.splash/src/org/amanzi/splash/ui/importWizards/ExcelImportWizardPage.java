@@ -15,7 +15,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import org.amanzi.splash.database.services.Messages;
+import org.amanzi.splash.utilities.Messages;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;

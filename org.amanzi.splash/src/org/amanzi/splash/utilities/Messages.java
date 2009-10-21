@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.splash.database.services;
+package org.amanzi.splash.utilities;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -37,6 +37,12 @@ public class Messages extends NLS {
     public static String CSV_Import_Title;
     public static String CSV_Imoprt_Page_Description;
     public static String Import_Wizard_New_File_Name;
+    
+    public static String Import_Builder_Add_Button_Name;
+    public static String Import_Builder_Delete_Button_Name;
+    public static String Import_Builder_Run_Button_Name;
+    public static String Import_Builder_Filter_Filename_Field;
+    public static String Import_Builder_Create_Script_Job_Name;
     
     private Messages() {
     }
