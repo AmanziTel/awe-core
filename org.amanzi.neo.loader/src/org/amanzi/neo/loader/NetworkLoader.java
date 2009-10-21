@@ -327,22 +327,6 @@ public class NetworkLoader extends AbstractLoader {
                 }
             }
             vault.setProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, channelProperties.toArray(new String[0]));
-            Set<String> numericProperties = new HashSet<String>();
-            Set<String> dataProperties = new HashSet<String>();
-            numericProperties.addAll(channelProperties);
-            dataProperties.addAll(channelProperties);
-            for(String property: getNumericProperties()) {
-                if(sectorData.contains(property) && !numericProperties.contains(property)) {
-                    numericProperties.add(property);
-                }
-            }
-            for(String property: getDataProperties()) {
-                if(sectorData.contains(property) && !dataProperties.contains(property)) {
-                    dataProperties.add(property);
-                }
-            }
-            vault.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, numericProperties.toArray(new String[0]));
-            vault.setProperty(INeoConstants.LIST_DATA_PROPERTIES, dataProperties.toArray(new String[0]));
         }
 
         private String getString(String key) {
