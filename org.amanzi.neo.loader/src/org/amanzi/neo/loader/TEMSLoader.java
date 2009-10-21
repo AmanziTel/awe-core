@@ -87,6 +87,7 @@ public class TEMSLoader extends DriveLoader {
                 }
                 return datetime.getTime();
             }});
+        dropHeaderStats(new String[]{"time","timestamp","latitude","longitude"});
     }
 
     /**

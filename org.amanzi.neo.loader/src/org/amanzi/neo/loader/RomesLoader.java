@@ -76,6 +76,7 @@ public class RomesLoader extends DriveLoader {
                 return originalValue.replaceAll("HO Command.*", "HO Command");
             }});
         addMappedHeader("time", "Timestamp", "timestamp", new DateTimeMapper("HH:mm:ss"));
+        dropHeaderStats(new String[]{"time","timestamp","latitude","longitude"});
     }
 
     protected void parseLine(String line) {

@@ -162,7 +162,7 @@ public class NetworkLoader extends AbstractLoader {
         addMainHeader("sector", new String[] {"Sector", "Cell", "BTS_Name", "CELL_NAME", "GSM Sector ID"});
         addMainHeader("latitude", new String[] {"lat.*", "y_wert.*", "northing"});
         addMainHeader("longitude", new String[] {"long.*", "x_wert.*", "easting"});
-
+        
         //force String types on some risky headers (sometimes these look like integers)
         useMapper("site", new StringMapper());
         useMapper("sector", new StringMapper());
@@ -182,6 +182,8 @@ public class NetworkLoader extends AbstractLoader {
     private void addMainHeader(String key, String[] regexes) {
         addKnownHeader(key, regexes);
         mainHeaders.add(key);
+        //Stop statistics collection for properties we will not save to the sector
+        dropHeaderStats(new String[]{key});
     }
     
     public boolean setup() {

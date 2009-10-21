@@ -94,6 +94,7 @@ public abstract class AbstractLoader {
     private LinkedHashMap<String, List<String>> knownHeaders = new LinkedHashMap<String, List<String>>();
     private LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
     private LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
+    private TreeSet<String> dropStatsHeaders = new TreeSet<String>();
     @SuppressWarnings("unchecked")
     public static final Class[] NUMERIC_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class};
     @SuppressWarnings("unchecked")
@@ -186,7 +187,7 @@ public abstract class AbstractLoader {
                 }
                 if (discard) {
                     // Detected too much variety in property values, stop counting
-                    values = null;
+                    dropStats();
                 } else {
                     values.put(value, count + 1);
                 }
@@ -224,6 +225,17 @@ public abstract class AbstractLoader {
                 }
             }
             return best;
+        }
+
+        /**
+         * Disable statistics collection for this header. This is useful if the property is
+         * undesirable in some later statistical analysis, either because it is too diverse, or it
+         * is a property we can 'grouped by' during the load. Examples of excessive diversity would
+         * be element names, ids, timestamps, locations. Examples of grouping by would be site
+         * properties, timestamps and locations.
+         */
+        public void dropStats() {
+            values = null;
         }
     }
 
@@ -555,7 +567,7 @@ public abstract class AbstractLoader {
      * then you would call this using:
      * 
      * <pre>
-     * addKnownHeader(&quot;y&quot;, Arrays.asList(new String[] {&quot;lat.*&quot;, &quot;y_wert.*&quot;}));
+     * addKnownHeader(&quot;y&quot;, new String[] {&quot;lat.*&quot;, &quot;y_wert.*&quot;}, true);
      * </pre>
      * 
      * @param key the name to use for the property
@@ -610,6 +622,10 @@ public abstract class AbstractLoader {
      */
     protected final void useMapper(String key, PropertyMapper mapper) {
         mappedHeaders.put(key, new MappedHeaderRule(null, key, mapper));
+    }
+
+    protected final void dropHeaderStats(String[] keys) {
+        dropStatsHeaders.addAll(Arrays.asList(keys));
     }
 
     /**
@@ -672,6 +688,12 @@ public abstract class AbstractLoader {
                 }
             } else {
                 notify("No original header found matching mapped header key: " + key);
+            }
+        }
+        for(String key: dropStatsHeaders) {
+            Header header = headers.get(key);
+            if(header != null) {
+                header.dropStats();
             }
         }
     }
@@ -1085,6 +1107,7 @@ public abstract class AbstractLoader {
     private void savePropertiesToNode(Node propTypeNode, Collection<String> properties) {
         propTypeNode.setProperty("properties", properties.toArray(new String[properties.size()]));
         HashMap<String, Node> valueNodes = new HashMap<String, Node>();
+        ArrayList<String> noStatsProperties = new ArrayList<String>();
         for (Relationship relation : propTypeNode.getRelationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)) {
             Node valueNode = relation.getEndNode();
             String property = relation.getProperty("property", "").toString();
@@ -1101,6 +1124,7 @@ public abstract class AbstractLoader {
                     }
                     valueNode.delete();
                 }
+                noStatsProperties.add(property);
             } else {
                 Relationship valueRelation = null;
                 if (valueNode == null) {
@@ -1131,6 +1155,12 @@ public abstract class AbstractLoader {
                 }
             }
         }
+        ArrayList<String> statsProperties = new ArrayList<String>(properties);
+        for(String noStat: noStatsProperties){
+            statsProperties.remove(noStat);
+        }
+        propTypeNode.setProperty("stats_properties", statsProperties.toArray(new String[0]));
+        propTypeNode.setProperty("no_stats_properties", noStatsProperties.toArray(new String[0]));
     }
 
     public static String makePropertyTypeName(Class< ? extends Object> klass) {
