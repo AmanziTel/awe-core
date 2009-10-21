@@ -348,10 +348,6 @@ public class NetworkRenderer extends RendererImpl {
                         multiOmnis.add(new Pair<String, Integer>(drawString, countOmnis));
                     }
                     if (drawLabels) {
-//                        double label_position_angle = Math.toRadians(-90 + (label_position_angles[0] + label_position_angles[1]) / 2.0);
-//                        int label_x = 5 + (int)(10 * Math.cos(label_position_angle));
-//                        int label_y = (int)(10 * Math.sin(label_position_angle));
-//                        labelsMap.put(new Point(p.x + label_x, p.y + label_y), drawString);
                         labelsMap.put(p, drawString);
                     }
                 }
@@ -375,71 +371,44 @@ public class NetworkRenderer extends RendererImpl {
                     int adv = metrics.stringWidth(drawString);
                     // calculate the size of a box to hold the text with some padding.
                     Rectangle rect = new Rectangle(p.x -1 , p.y - hgt + 1, adv + 2, hgt + 2);
-                    boolean drawsLabel = true;
-                    if (!labelSafe(rect, labelRec)) {
-                        drawsLabel = false;
-                        Rectangle tryRect = new Rectangle(rect);
-                        RECT: for (int tries : new int[] {1, -1}) {
-                            for (int shift = 0; shift != tries * hgt; shift += tries) {
-                                tryRect.setLocation(rect.x, rect.y + shift);
-                                if (labelSafe(tryRect,labelRec)) {
-                                    drawsLabel = true;
-                                    p.y = p.y + shift;
-                                    rect.setLocation(tryRect.getLocation());
-                                    break RECT;
-                                }
-                            }
+                    boolean drawsLabel = findNonOverlapPosition(labelRec, hgt, p, rect);
+                    if (drawsLabel) {
+                        labelRec.add(rect);
+                        drawLabel(g, p, drawString);
+                    }
+                }
+                // draw sector name
+                if (sectorLabeling) {
+                    Font fontOld = g.getFont();
+                    Font fontSector = fontOld.deriveFont((float)sectorFontSize);
+                    g.setFont(fontSector);
+                    FontMetrics metric = g.getFontMetrics(fontSector);
+                    hgt = metrics.getHeight();
+                    int h = hgt / 3;
+                    for (Node sector : nodesMap.keySet()) {
+                        String name = getSectorName(sector);
+                        if (name.isEmpty()) {
+                            continue;
+                        }
+                        int w = metric.stringWidth(name);
+                        Point pSector = nodesMap.get(sector);
+                        Point endLine = sectorMap.get(sector);
+                        // calculate p
+                        int x = (endLine.x < pSector.x) ? endLine.x - w : endLine.x;
+                        int y = (endLine.y < pSector.y) ? endLine.y - h : endLine.y;
+                        Point p = new Point(x, y);
+                        // get the advance of my text in this font and render context
+                        int adv = metrics.stringWidth(name);
+                        // calculate the size of a box to hold the text with some padding.
+                        Rectangle rect = new Rectangle(p.x -1 , p.y - hgt + 1, adv + 2, hgt + 2);
+                        boolean drawsLabel = findNonOverlapPosition(labelRec, hgt, p, rect);
+                        if (drawsLabel) {
+                            labelRec.add(rect);
+                            drawLabel(g, p, name);
                         }
                     }
-                    if (drawsLabel) {
-//                        g.setPaint(Color.BLUE);
-//                        g.draw(rect);
-                        labelRec.add(rect);
-                        TextLayout text = new TextLayout(drawString, g.getFont(), g.getFontRenderContext());
-                        AffineTransform at = AffineTransform.getTranslateInstance(p.x, p.y);
-                        Shape outline = text.getOutline(at);
-                        drawSoftSurround(g, outline);
-                        g.setPaint(surroundColor);
-                        g.fill(outline);g.draw(outline);
-                        g.setPaint(labelColor);
-                        text.draw(g, p.x, p.y);
-                    }
+                    g.setFont(fontOld);
                 }
-            }
-            // draw sector name
-            if (drawLabels && sectorLabeling) {
-                Map<Node, Point> map = nodesMap;
-                Font fontOld = g.getFont();
-                Font fontSector=fontOld.deriveFont((float)sectorFontSize);
-                g.setFont(fontSector);
-                FontMetrics metric = g.getFontMetrics(fontSector);
-                int h = metric.getHeight() / 3;
-                for (Node sector : nodesMap.keySet()) {
-                    String name = getSectorName(sector);
-                    if (name.isEmpty()) {
-                        continue;
-                    }
-                    TextLayout text = new TextLayout(name, fontSector, g.getFontRenderContext());
-                    int w=metric.stringWidth(name);
-                    Point pSector = nodesMap.get(sector);
-                    Point endLine = sectorMap.get(sector);
-                    // calculate p
-                    int x = (endLine.x < pSector.x) ? endLine.x - w : endLine.x;
-                    int y = (endLine.y < pSector.y) ? endLine.y - h : endLine.y;
-                    Point p = new Point(x, y);
-                    if (p != null) {
-
-                        AffineTransform at = AffineTransform.getTranslateInstance(p.x, p.y);
-                        Shape outline = text.getOutline(at);
-                        drawSoftSurround(g, outline);
-                        g.setPaint(surroundColor);
-                        g.fill(outline);
-                        g.draw(outline);
-                        g.setPaint(labelColor);
-                        text.draw(g, p.x, p.y);
-                    }
-                }
-                g.setFont(fontOld);
             }
             if(multiOmnis.size()>0){
                 //TODO: Move this to utility class
@@ -496,6 +465,38 @@ public class NetworkRenderer extends RendererImpl {
             monitor.done();
             tx.finish();
         }
+    }
+
+    private void drawLabel(Graphics2D g, Point p, String drawString) {
+        TextLayout text = new TextLayout(drawString, g.getFont(), g.getFontRenderContext());
+        AffineTransform at = AffineTransform.getTranslateInstance(p.x, p.y);
+        Shape outline = text.getOutline(at);
+        drawSoftSurround(g, outline);
+        g.setPaint(surroundColor);
+        g.fill(outline);
+        g.draw(outline);
+        g.setPaint(labelColor);
+        text.draw(g, p.x, p.y);
+    }
+
+    private boolean findNonOverlapPosition(Set<Rectangle> labelRec, int hgt, Point p, Rectangle rect) {
+        boolean drawLabel = true;
+        if (!labelSafe(rect, labelRec)) {
+            drawLabel = false;
+            Rectangle tryRect = new Rectangle(rect);
+            RECT: for (int tries : new int[] {1, -1}) {
+                for (int shift = 0; shift != tries * hgt; shift += tries) {
+                    tryRect.setLocation(rect.x, rect.y + shift);
+                    if (labelSafe(tryRect,labelRec)) {
+                        drawLabel = true;
+                        p.y = p.y + shift;
+                        rect.setLocation(tryRect.getLocation());
+                        break RECT;
+                    }
+                }
+            }
+        }
+        return drawLabel;
     }
 
     private double getDouble(Node node, String property, double def) {
