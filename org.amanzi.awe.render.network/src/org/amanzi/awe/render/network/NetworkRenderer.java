@@ -485,7 +485,7 @@ public class NetworkRenderer extends RendererImpl {
             drawLabel = false;
             Rectangle tryRect = new Rectangle(rect);
             RECT: for (int tries : new int[] {1, -1}) {
-                for (int shift = 0; shift != tries * hgt; shift += tries) {
+                for (int shift = 0; shift != tries * (2 * hgt); shift += tries) {
                     tryRect.setLocation(rect.x, rect.y + shift);
                     if (labelSafe(tryRect,labelRec)) {
                         drawLabel = true;
