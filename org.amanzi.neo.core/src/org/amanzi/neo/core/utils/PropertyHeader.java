@@ -271,4 +271,29 @@ public class PropertyHeader {
         }, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         return iterator.hasNext() ? iterator.next() : null;
     }
+
+    /**
+     * @return
+     */
+    public String[] getSectorNames() {
+        if (GisTypes.NETWORK != gisType) {
+            return null;
+        }
+        Set<String> result = new HashSet<String>();
+        Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+        if (propRel != null) {
+            Node propNode = propRel.getEndNode();
+            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                String propertyName = INeoConstants.PROPERTY_DATA;
+                String[] properties = (String[])node.getProperty(propertyName, null);
+                if (propType != null && properties != null) {
+                    result.addAll(Arrays.asList(properties));
+                }
+            }
+
+        }
+        return result.toArray(new String[0]);
+    }
 }

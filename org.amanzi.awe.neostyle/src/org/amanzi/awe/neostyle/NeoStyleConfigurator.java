@@ -437,7 +437,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         try {
             GeoNeo resource = getLayer().findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
             if (resource.getGisType() == GisTypes.NETWORK) {
-                String[] allFields = new PropertyHeader(resource.getMainGisNode()).getAllFields();
+                String[] allFields = new PropertyHeader(resource.getMainGisNode()).getSectorNames();
                 if (allFields != null) {
                     result.addAll(Arrays.asList(allFields));
                 }
