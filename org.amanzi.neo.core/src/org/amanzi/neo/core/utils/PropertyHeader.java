@@ -110,7 +110,7 @@ public class PropertyHeader {
     }
 
     public String[] getAllFields() {
-        return isGis ? getDefinedAllFields() : NeoUtils.getAllFields(node);
+        return isGis ? getDefinedAllFields() : getNumericFields();// NeoUtils.getAllFields(node);
     }
 
     /**
