@@ -95,6 +95,7 @@ public abstract class AbstractLoader {
     private LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
     private LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
     private TreeSet<String> dropStatsHeaders = new TreeSet<String>();
+    private TreeSet<String> nonDataHeaders = new TreeSet<String>();
     @SuppressWarnings("unchecked")
     public static final Class[] NUMERIC_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class};
     @SuppressWarnings("unchecked")
@@ -628,6 +629,11 @@ public abstract class AbstractLoader {
         dropStatsHeaders.addAll(Arrays.asList(keys));
     }
 
+    protected final void addNonDataHeaders(Collection<String> keys) {
+        dropStatsHeaders.addAll(keys);
+        nonDataHeaders.addAll(keys);
+    }
+
     /**
      * Parse possible header lines and build a set of header objects to be used to parse all data
      * lines later. This allows us to deal with several requirements:
@@ -1108,12 +1114,16 @@ public abstract class AbstractLoader {
         propTypeNode.setProperty("properties", properties.toArray(new String[properties.size()]));
         HashMap<String, Node> valueNodes = new HashMap<String, Node>();
         ArrayList<String> noStatsProperties = new ArrayList<String>();
+        ArrayList<String> dataProperties = new ArrayList<String>();
         for (Relationship relation : propTypeNode.getRelationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)) {
             Node valueNode = relation.getEndNode();
             String property = relation.getProperty("property", "").toString();
             valueNodes.put(property, valueNode);
         }
         for (String property : properties) {
+            if(!nonDataHeaders.contains(property)) {
+                dataProperties.add(property);
+            }
             Node valueNode = valueNodes.get(property);
             Header header = headers.get(property);
             HashMap<Object, Integer> values = header.values;
@@ -1159,6 +1169,7 @@ public abstract class AbstractLoader {
         for(String noStat: noStatsProperties){
             statsProperties.remove(noStat);
         }
+        propTypeNode.setProperty("data_properties", dataProperties.toArray(new String[0]));
         propTypeNode.setProperty("stats_properties", statsProperties.toArray(new String[0]));
         propTypeNode.setProperty("no_stats_properties", noStatsProperties.toArray(new String[0]));
     }
