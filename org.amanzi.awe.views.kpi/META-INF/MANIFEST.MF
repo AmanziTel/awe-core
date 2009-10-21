@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Kpi builder
+Bundle-SymbolicName: org.amanzi.awe.views.kpi; singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.views.kpi.KPIPlugin
+Bundle-Vendor: amanzi.org
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.rubypeople.rdt.ui;bundle-version="0.9.1",
+ org.eclipse.ui.editors;bundle-version="3.3.1",
+ org.amanzi.scripting.jruby;bundle-version="1.0.0",
+ org.eclipse.ui.console;bundle-version="3.2.1",
+ org.amanzi.splash;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Eclipse-LazyStart: true
