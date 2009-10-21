@@ -137,7 +137,7 @@ public class PropertyHeader {
     }
 
     
-    public String[] getDefinedNumericFields() {
+    private String[] getDefinedNumericFields() {
         List<String> ints = new ArrayList<String>();
         List<String> floats = new ArrayList<String>();
         List<String> result = new ArrayList<String>();
