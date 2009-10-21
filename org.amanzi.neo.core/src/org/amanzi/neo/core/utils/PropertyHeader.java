@@ -126,7 +126,8 @@ public class PropertyHeader {
             for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
                     ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
                 String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
-                String[] properties = (String[])node.getProperty(INeoConstants.NODE_TYPE_PROPERTIES, null);
+                String propertyName = propType.equals("string") ? INeoConstants.PROPERTY_STATS : INeoConstants.PROPERTY_DATA;
+                String[] properties = (String[])node.getProperty(propertyName, null);
                 if (propType != null && properties != null) {
                     result.addAll(Arrays.asList(properties));
                 }
@@ -147,7 +148,7 @@ public class PropertyHeader {
             for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
                     ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
                 String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
-                String[] properties = (String[])node.getProperty(INeoConstants.NODE_TYPE_PROPERTIES, null);
+                String[] properties = (String[])node.getProperty(INeoConstants.PROPERTY_DATA, null);
                 if (propType != null && properties != null) {
                     if (propType.equals("integer")) {
                         ints.addAll(Arrays.asList(properties));

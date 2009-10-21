@@ -52,6 +52,8 @@ public class INeoConstants {
     public static final String PROPERTY_CRS_TYPE_NAME = "crs_type";
     public static final String PROPERTY_PROJECT_NAME = "project";
     public static final String PROPERTY_DESCRIPTION_NAME = "description";
+    public static final String PROPERTY_DATA = "data_properties";
+    public static final String PROPERTY_STATS = "stats_properties";
     
     /*
      * Type Splash
