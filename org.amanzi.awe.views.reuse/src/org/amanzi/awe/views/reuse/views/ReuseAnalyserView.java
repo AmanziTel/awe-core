@@ -1087,7 +1087,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @param monitor
      * @return a tree-map of the results for the chart
      */
-    private boolean computeStatistics(Node gisNode, Node aggrNode, String propertyName, Distribute distribute,
+    private boolean computeStatistics(Node gisNode, Node aggrNode, final String propertyName, Distribute distribute,
             Select select, IProgressMonitor monitor) {
         if (NeoUtils.isNeighbourNode(gisNode)) {
             return computeNeighbourStatistics(gisNode, aggrNode, propertyName, distribute, select, monitor);

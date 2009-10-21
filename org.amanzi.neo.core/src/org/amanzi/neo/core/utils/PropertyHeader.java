@@ -30,7 +30,6 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
 
@@ -98,8 +97,7 @@ public class PropertyHeader {
      */
     public String[] getNumericFields() {
         
-        return isGis ? (gisType == GisTypes.DRIVE ? getDefinedNumericFields() : getDataVault().getNumericFields()) : NeoUtils
-                .getNumericFields(node);
+        return isGis ? getDefinedNumericFields() : NeoUtils.getNumericFields(node);
     }
 
     /**
@@ -112,8 +110,7 @@ public class PropertyHeader {
     }
 
     public String[] getAllFields() {
-        return isGis ? (gisType == GisTypes.DRIVE ? getDefinedAllFields() : getDataVault().getAllFields()) : NeoUtils
-                .getAllFields(node);
+        return isGis ? getDefinedAllFields() : NeoUtils.getAllFields(node);
     }
 
     /**
@@ -139,20 +136,8 @@ public class PropertyHeader {
         return result.toArray(new String[0]);
     }
 
-    /**
-     * @return
-     */
-    public String[] getNetworkNumericFields() {
-        // TODO refactored
-        List<String> result = new ArrayList<String>();
-        for (Relationship relation : node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
-            String name = String.format("# '%s' neighbours", NeoUtils.getSimpleNodeName(relation.getOtherNode(node), ""));
-            result.add(name);
-        }
-        return result.toArray(new String[0]);
-    }
     
-    public String[] getDefinedNumericFields() {
+    private String[] getDefinedNumericFields() {
         List<String> ints = new ArrayList<String>();
         List<String> floats = new ArrayList<String>();
         List<String> result = new ArrayList<String>();
@@ -268,7 +253,7 @@ public class PropertyHeader {
      * @return node
      */
     public Node getPropertyNode(final String propertyName) {
-        if (GisTypes.DRIVE != gisType || propertyName == null) {
+        if (propertyName == null) {
             return null;
         }
         Iterator<Node> iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
