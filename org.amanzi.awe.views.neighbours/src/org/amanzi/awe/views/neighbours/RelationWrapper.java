@@ -28,6 +28,7 @@ import org.neo4j.api.core.Relationship;
 public class RelationWrapper {
     private final Relationship relation;
     private String name;
+    private long id;
 
     /**
      * Constructor
@@ -37,6 +38,7 @@ public class RelationWrapper {
     public RelationWrapper(Relationship relation) {
         this.relation = relation;
         name = NeoUtils.getNeighbourName(relation, null);
+        id = relation.getId();
     }
 
     /**
@@ -67,6 +69,28 @@ public class RelationWrapper {
      */
     public Relationship getRelation() {
         return relation;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int)(id ^ (id >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RelationWrapper other = (RelationWrapper)obj;
+        if (id != other.id)
+            return false;
+        return true;
     }
 
 }

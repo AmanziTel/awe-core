@@ -14,6 +14,8 @@ package org.amanzi.awe.views.neighbours.views;
 
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,20 +26,27 @@ import java.util.List;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.internal.command.navigation.SetViewportCenterCommand;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.RelationWrapper;
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -50,6 +59,8 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -58,40 +69,40 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
+import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Coordinate;
 
 /**
- * This sample class demonstrates how to plug-in a new
- * workbench view. The view shows data obtained from the
- * model. The sample creates a dummy model on the fly,
- * but a real implementation would connect to the model
- * available either in this or another plug-in (e.g. the workspace).
- * The view is connected to the model using a content provider.
  * <p>
- * The view uses a label provider to define how model
- * objects should be presented in the view. Each
- * view can present the same model objects using
- * different labels and icons, if needed. Alternatively,
- * a single label provider can be shared between views
- * in order to ensure that objects of the same type are
- * presented in the same way everywhere.
- * <p>
+ * Neighbour view
+ * </p>
+ * 
+ * @author Cinkel_A
+ * @since 1.0.0
  */
-
 public class NeighboursView extends ViewPart {
 
 
+
+    /** String SHOW_NEIGHBOUR field */
+    private static final String SHOW_NEIGHBOUR = "show neighbour relation '%s' > '%s' on map";
+    private static final String SHOW_SERVE = "show all '%s' neighbours on map";
 
     /** String ROLLBACK field */
     private static final String ROLLBACK = "Rollback";
@@ -103,6 +114,7 @@ public class NeighboursView extends ViewPart {
 	 * The ID of the view as specified by the extension.
 	 */
 	public static final String ID = "org.amanzi.awe.views.neighbours.views.NeighboursView";
+
 
 	private TableViewer viewer;
     private Node network;
@@ -120,6 +132,13 @@ public class NeighboursView extends ViewPart {
     private Button rollback;
 
     private Button commit;
+
+    protected Point point = null;
+    private RelationWrapper selectedServe;
+    private RelationWrapper selectedNeighbour;
+    private Font fontNormal;
+    private Font fontSelected;
+    private boolean autoZoom = true;
 
 	/*
 	 * The content provider class is responsible for
@@ -183,9 +202,6 @@ public class NeighboursView extends ViewPart {
                 results.add(new RelationWrapper(relation));
             }
             return results.toArray(emptyArray);
-            // } finally {
-            // tx.finish();
-            // }
 		}
 
 
@@ -280,7 +296,8 @@ public class NeighboursView extends ViewPart {
 
         }
 	}
-	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
+
+    class ViewLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider {
         /** int DEF_SIZE field */
         protected static final int DEF_SIZE = 100;
         private ArrayList<String> columns = new ArrayList<String>();
@@ -293,16 +310,13 @@ public class NeighboursView extends ViewPart {
                 return NeoUtils.getSimpleNodeName(relation.getServeNode(), "");
             } else if (index == 1) {
                 return NeoUtils.getSimpleNodeName(relation.getNeighbourNode(), "");
-                } else {
+            } else {
                 return relation.getRelation().getProperty(columns.get(index), "").toString();
-                }
-            // } finally {
-            // tx.finish();
-            // }
-            // return getText(obj);
-		}
-		public Image getColumnImage(Object obj, int index) {
-			return getImage(obj);
+            }
+        }
+
+        public Image getColumnImage(Object obj, int index) {
+            return getImage(obj);
 		}
 
 
@@ -318,7 +332,6 @@ public class NeighboursView extends ViewPart {
                 col = column.getColumn();
                 col.setText("Serving cell");
                 columns.add(col.getText());
-
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
                 column = new TableViewerColumn(viewer, SWT.LEFT);
@@ -365,6 +378,17 @@ public class NeighboursView extends ViewPart {
             table.setLinesVisible(true);
             viewer.setLabelProvider(this);
             viewer.refresh();
+        }
+
+        @Override
+        public Font getFont(Object element, int columnIndex) {
+            if (columnIndex == 0) {
+                return selectedServe != null && selectedServe.equals(element) ? fontSelected : fontNormal;
+            } else if (columnIndex == 1) {
+                return selectedNeighbour != null && selectedNeighbour.equals(element) ? fontSelected : fontNormal;
+            } else {
+                return fontNormal;
+            }
         }
 	}
 	class NameSorter extends ViewerSorter {
@@ -514,6 +538,7 @@ public class NeighboursView extends ViewPart {
 
             @Override
             public void mouseDown(MouseEvent e) {
+                point = new Point(e.x, e.y);
             }
 
             @Override
@@ -523,23 +548,19 @@ public class NeighboursView extends ViewPart {
                 TableItem item = table.getItem(point);
                 if (item != null) {
                     if (item.getBounds(0).contains(point)) {
-
                         showServe((RelationWrapper)item.getData());
                     } else if (item.getBounds(1).contains(point)) {
                         showNeighbour((RelationWrapper)item.getData());
                     }
-                    item.getBounds();
                 }
             }
         });
-        // viewer.addDoubleClickListener(new IDoubleClickListener() {
-        // public void doubleClick(DoubleClickEvent event) {
-        // System.out.println(event);
-        // event.getSelection();
-        // System.out.println(event.getSelection());
-        // }
-        // });
-        // hookContextMenu();
+        fontNormal = viewer.getTable().getFont();
+        FontData[] fd = fontNormal.getFontData();
+        fd[0].setStyle(SWT.BOLD);
+        // TODO dispose font resources in plugin stop()?
+        fontSelected = new Font(fontNormal.getDevice(), fd);
+        hookContextMenu();
         // hookDoubleClickAction();
 	}
 
@@ -547,6 +568,7 @@ public class NeighboursView extends ViewPart {
      * @param relationWrapper
      */
     protected void showNeighbour(RelationWrapper relationWrapper) {
+        setNeighbourSelection(relationWrapper);
         IMap map = ApplicationGIS.getActiveMap();
             for (ILayer layer : map.getMapLayers()) {
                 IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
@@ -559,7 +581,8 @@ public class NeighboursView extends ViewPart {
                         properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
                         properties.put(GeoNeo.NEIGH_RELATION, relationWrapper.getRelation());
                             geo.setProperties(properties);
-                            layer.refresh(null);
+                        showSelectionOnMap(layer, geo, relationWrapper.getNeighbourNode());
+                        // layer.refresh(null);
                             return;
                         }
                     } catch (IOException e) {
@@ -572,7 +595,17 @@ public class NeighboursView extends ViewPart {
     /**
      * @param relationWrapper
      */
+    private void setNeighbourSelection(RelationWrapper relationWrapper) {
+        selectedNeighbour = relationWrapper;
+        selectedServe = null;
+        viewer.refresh();
+    }
+
+    /**
+     * @param relationWrapper
+     */
     protected void showServe(RelationWrapper relationWrapper) {
+        setServeSelection(relationWrapper);
         IMap map = ApplicationGIS.getActiveMap();
         for (ILayer layer : map.getMapLayers()) {
             IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
@@ -585,7 +618,7 @@ public class NeighboursView extends ViewPart {
                         properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
                         properties.put(GeoNeo.NEIGH_RELATION, null);
                         geo.setProperties(properties);
-                        layer.refresh(null);
+                        showSelectionOnMap(layer, geo, relationWrapper.getServeNode());
                         return;
                     }
                 } catch (IOException e) {
@@ -593,6 +626,15 @@ public class NeighboursView extends ViewPart {
                 }
             }
         }
+    }
+
+    /**
+     * @param relationWrapper
+     */
+    private void setServeSelection(RelationWrapper relationWrapper) {
+        selectedServe = relationWrapper;
+        selectedNeighbour = null;
+        viewer.refresh();
     }
 
     /**
@@ -713,7 +755,150 @@ public class NeighboursView extends ViewPart {
             }
 
         }
+    }
+
+    /**
+     * Creates a popup menu
+     */
+
+    private void hookContextMenu() {
+        MenuManager menuMgr = new MenuManager("#PopupMenu");
+        menuMgr.setRemoveAllWhenShown(true);
+        menuMgr.addMenuListener(new IMenuListener() {
+            public void menuAboutToShow(IMenuManager manager) {
+                fillContextMenu(manager);
+            }
+        });
+        Menu menu = menuMgr.createContextMenu(viewer.getControl());
+        viewer.getControl().setMenu(menu);
+        getSite().registerContextMenu(menuMgr, viewer);
+    }
+
+    /**
+     * fills context menu
+     * 
+     * @param manager - menu manager
+     */
+    protected void fillContextMenu(IMenuManager manager) {
+        Table table = viewer.getTable();
+        if (point != null) {
+        TableItem item = table.getItem(point);
+        if (item != null) {
+            if (item.getBounds(0).contains(point)) {
+                    fillServMenu(manager, (RelationWrapper)item.getData());
+            } else if (item.getBounds(1).contains(point)) {
+                    fillNeighMenu(manager, (RelationWrapper)item.getData());
+
+            }
+        }
+    }
+    }
+
+    /**
+     * fill Neighbour menu
+     * 
+     * @param manager - menu manager
+     * @param data - data
+     */
+    private void fillNeighMenu(IMenuManager manager, final RelationWrapper data) {
+        String serv = NeoUtils.getNodeName(data.getServeNode());
+        String neigh = NeoUtils.getNodeName(data.getNeighbourNode());
+        manager.add(new Action(String.format(SHOW_NEIGHBOUR, serv, neigh)) {
+            @Override
+            public void run() {
+                showNeighbour(data);
+            }
+        });
+    }
+
+    /**
+     *Fill Serve menu
+     * 
+     * @param manager - menu manager
+     * @param data - data
+     */
+    private void fillServMenu(IMenuManager manager, final RelationWrapper data) {
+        String serv = NeoUtils.getNodeName(data.getServeNode());
+        manager.add(new Action(String.format(SHOW_SERVE, serv)) {
+            @Override
+            public void run() {
+                showServe(data);
+            }
+        });
+    }
+
+    /**
+     * Shows selected node on map
+     * 
+     * @param node selected node
+     */
+    protected void showSelectionOnMap(ILayer layer, GeoNeo gisGeo, Node node) {
+        try {
+            gisGeo.setSelectedNodes(null);
+            gisGeo.addNodeToSelect(node);
+            IMap map = layer.getMap();
+            CoordinateReferenceSystem crs = null;
+            Node gis = gisGeo.getMainGisNode();
+            if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, "").toString().equalsIgnoreCase(("projected"))) {
+                autoZoom = false;
+            }
+            if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
+                crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
+            } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
+                URL crsURL = new URL(gis.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
+                crs = CRS.decode(crsURL.getContent().toString());
+            }
+            double[] c = getCoords(node);
+            if (c == null) {
+                return;
+            }
+            if (autoZoom) {
+                // TODO: Check that this works with all CRS
+                map.sendCommandASync(new net.refractions.udig.project.internal.command.navigation.SetViewportWidth(30000));
+                autoZoom = false; // only zoom first time, then rely on user to control zoom level
+            }
+            map.sendCommandASync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
+        } catch (NoSuchAuthorityCodeException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (MalformedURLException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
 
     }
-    
+
+    // TODO move to utility class (copy from NetworkTreeView)
+    /**
+     * get coordinates of selected node if node do not contains coordinates, try to find it in
+     * parent node
+     * 
+     * @param node node
+     * @return
+     */
+    private static double[] getCoords(Node node) {
+        for (int i = 0; i <= 1; i++) {
+            if (node.hasProperty(INeoConstants.PROPERTY_LAT_NAME)) {
+                if (node.hasProperty(INeoConstants.PROPERTY_LON_NAME)) {
+                    try {
+                        return new double[] {(Float)node.getProperty(INeoConstants.PROPERTY_LON_NAME),
+                                (Float)node.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
+                    } catch (ClassCastException e) {
+                        return new double[] {(Double)node.getProperty(INeoConstants.PROPERTY_LON_NAME),
+                                (Double)node.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
+                    }
+                }
+            }
+            // try to up by 1 lvl
+            Traverser traverse = node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+                    ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH);
+            if (traverse.iterator().hasNext()) {
+                node = traverse.iterator().next();
+            } else {
+                return null;
+            }
+        }
+        return null;
+
+    }
 }
