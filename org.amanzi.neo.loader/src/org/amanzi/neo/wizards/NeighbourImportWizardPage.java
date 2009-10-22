@@ -19,6 +19,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.LoadNetwork;
+import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -48,6 +49,8 @@ import org.neo4j.api.core.Transaction;
  */
 public class NeighbourImportWizardPage extends WizardPage {
 
+    /** String FILE_SELECT_NEIGHB_DIR field */
+    private static final String FILE_SELECT_NEIGHB_DIR = "fileSelectNeighbDir";
     private String fileName;
     private Composite main;
     private Combo network;
@@ -101,7 +104,9 @@ public class NeighbourImportWizardPage extends WizardPage {
                 widgetSelected(e);
             }
         });
-        editor = new FileFieldEditor("fileSelect", "File: ", main); // NON-NLS-1
+        editor = new FileFieldEditor("fileSelectNeighb", "File: ", main); // NON-NLS-1
+        editor.setPreferenceStore(NeoLoaderPlugin.getDefault().getPreferenceStore());
+        editor.load();
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
@@ -119,6 +124,7 @@ public class NeighbourImportWizardPage extends WizardPage {
     protected void setFileName(String fileName) {
         this.fileName = fileName;
         setPageComplete(isValidPage());
+        editor.store();
     }
 
     /**

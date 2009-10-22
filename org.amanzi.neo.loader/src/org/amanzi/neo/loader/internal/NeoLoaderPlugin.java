@@ -18,6 +18,7 @@ import java.io.PrintStream;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
@@ -98,6 +99,11 @@ public class NeoLoaderPlugin extends Plugin {
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
+        try {
+            ((IPersistentPreferenceStore)getPreferenceStore()).save();
+        } catch (IOException e) {
+            exception(e);
+        }
 		removeConsole();
 		
 		plugin = null;
