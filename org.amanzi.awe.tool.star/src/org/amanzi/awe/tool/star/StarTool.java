@@ -100,7 +100,7 @@ public class StarTool extends AbstractModalTool {
 
     @Override
     public void setActive(boolean active) {
-        if(super.isActive() != active) {
+        if (super.isActive() != active) {
             super.setActive(active);
             // add layer on map if necessary
             if (active) {
@@ -111,12 +111,12 @@ public class StarTool extends AbstractModalTool {
                 blackboard.put(BLACKBOARD_NODE_LIST, null);
                 blackboard = getContext().getSelectedLayer().getBlackboard();
                 blackboard.put(BLACKBOARD_START_ANALYSER, null);
-                    if (drawSelectedSectorCommand != null) {
-                        System.out.println("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
-                        drawSelectedSectorCommand.setValid(false);
-                        getContext().sendASyncCommand(drawSelectedSectorCommand);
-                        drawSelectedSectorCommand = null;
-                    }
+                if (drawSelectedSectorCommand != null) {
+                    System.out.println("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
+                    drawSelectedSectorCommand.setValid(false);
+                    getContext().sendASyncCommand(drawSelectedSectorCommand);
+                    drawSelectedSectorCommand = null;
+                }
                 getContext().getSelectedLayer().refresh(null);
 
             }
@@ -375,6 +375,7 @@ public class StarTool extends AbstractModalTool {
         return result == null ? null : new Pair<Point, Long>(nodesMap.get(result),result);
     }
     
+    @SuppressWarnings("unchecked")
     private Map<Long,java.awt.Point> getNodesMap() {
         if (selectedLayer != null) {
             nodesMap = (Map<Long, Point>)getContext().getMap().getBlackboard().get(BLACKBOARD_NODE_LIST);
