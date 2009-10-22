@@ -27,8 +27,7 @@ import org.eclipse.ui.internal.util.PrefUtil;
 import org.eclipse.ui.splash.BasicSplashHandler;
 
 /**
- * @since 3.3
- * 
+ * @since 1.0.0
  */
 public class InteractiveSplashHandler extends BasicSplashHandler {
     public void init(Shell splash) {
@@ -74,7 +73,7 @@ public class InteractiveSplashHandler extends BasicSplashHandler {
         } else {
             getContent(); // ensure creation of the progress
         }
-        Activator.getDefault().setSpalhMonitor(getBundleProgressMonitor());
+        Activator.getDefault().setSplashMonitor(getBundleProgressMonitor());
     }
 
 }

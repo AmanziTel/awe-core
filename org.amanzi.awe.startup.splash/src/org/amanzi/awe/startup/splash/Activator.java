@@ -77,14 +77,14 @@ public class Activator extends AbstractUIPlugin {
     /**
      * @param bundleProgressMonitor
      */
-    public void setSpalhMonitor(IProgressMonitor bundleProgressMonitor) {
+    public void setSplashMonitor(IProgressMonitor bundleProgressMonitor) {
         this.bundleProgressMonitor = bundleProgressMonitor;
     }
 
     /**
      * @return Returns the bundleProgressMonitor.
      */
-    public IProgressMonitor getSpalhMonitor() {
+    public IProgressMonitor getSplashMonitor() {
         return bundleProgressMonitor;
     }
 
