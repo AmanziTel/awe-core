@@ -121,6 +121,8 @@ public class NetworkRenderer extends RendererImpl {
         ILayer layer = getContext().getLayer();
         // Are there any resources in the layer that respond to the GeoNeo class (should be the case if we found a Neo4J database with GeoNeo data)
         IGeoResource resource = layer.findGeoResource(GeoNeo.class);
+        //Lagutko, 22.10.2009, initialize BlackboardEntry for star
+        layer.getMap().getBlackboard().get(BLACKBOARD_NODE_LIST);
         if(resource != null){
             renderGeoNeo(g,resource,monitor);
         }
