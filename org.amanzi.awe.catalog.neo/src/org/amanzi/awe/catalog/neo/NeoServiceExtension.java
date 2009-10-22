@@ -63,9 +63,9 @@ public class NeoServiceExtension implements ServiceExtension {
 
         // sets job name for splash monitor
         try {
-            IProgressMonitor monitor = Activator.getDefault().getSpalhMonitor();
+            IProgressMonitor monitor = Activator.getDefault().getSplashMonitor();
             if (monitor != null) {
-                monitor.subTask("Initialize Neo Service");
+                monitor.subTask("Initializing Amanzi Network Engine");
             }
         } catch (Exception e) {
             e.printStackTrace();
