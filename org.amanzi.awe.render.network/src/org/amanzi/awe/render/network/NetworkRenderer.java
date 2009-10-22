@@ -46,7 +46,6 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -203,7 +202,7 @@ public class NetworkRenderer extends RendererImpl {
             System.out.println("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
             //IBlackboard blackboard = getContext().getMap().getBlackboard();
             String starProperty = getSelectProperty(geoNeo);
-            Pair<Point,Long> starPoint = (Pair<Point,Long>)getContext().getLayer().getBlackboard().get(BLACKBOARD_START_ANALYSER);
+            Pair<Point, Long> starPoint = getStarPoint();
             Node starNode = null;
             if(starPoint != null) {
                 System.out.println("Have star selection: "+starPoint);
@@ -465,6 +464,12 @@ public class NetworkRenderer extends RendererImpl {
             monitor.done();
             tx.finish();
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Pair<Point, Long> getStarPoint() {
+        Pair<Point,Long> starPoint = (Pair<Point,Long>)getContext().getLayer().getBlackboard().get(BLACKBOARD_START_ANALYSER);
+        return starPoint;
     }
 
     private void drawLabel(Graphics2D g, Point p, String drawString) {
