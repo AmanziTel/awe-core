@@ -30,6 +30,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -54,7 +55,7 @@ import org.neo4j.util.index.LuceneIndexService;
  * @since 1.0.0
  */
 public class NeighbourLoader {
-
+    private static String directory = null;
     private static final int COMMIT_MAX = 1000;
     private Node network;
     private String fileName;
@@ -72,6 +73,36 @@ public class NeighbourLoader {
         network = networkNode;
         this.fileName = fileName;
         this.baseName = new File(fileName).getName();
+    }
+
+    /**
+     * gets directory
+     * 
+     * @return
+     */
+    public static String getDirectory() {
+        // if (directory == null) {
+            if (LoadNetwork.hasDirectory()) {
+                directory = LoadNetwork.getDirectory();
+            } else if (DriveDialog.hasDefaultDirectory()) {
+                directory = DriveDialog.getDefaultDirectory();
+            }
+        // }
+        return directory;
+    }
+
+    /**
+     * Sets Default Directory path for file dialogs in TEMSLoad and NetworkLoad
+     * 
+     * @param newDirectory new default directory
+     * @author Lagutko_N
+     */
+
+    public static void setDirectory(String newDirectory) {
+        if (!newDirectory.equals(directory)) {
+            directory = newDirectory;
+            LoadNetwork.setDirectory(newDirectory);
+        }
     }
 
     /**
