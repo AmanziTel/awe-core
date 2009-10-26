@@ -14,6 +14,7 @@
 package org.amanzi.awe.views.neighbours;
 
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.eclipse.swt.graphics.Color;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 
@@ -29,6 +30,7 @@ public class RelationWrapper {
     private final Relationship relation;
     private String name;
     private long id;
+    private Color color;
 
     /**
      * Constructor
@@ -91,6 +93,20 @@ public class RelationWrapper {
         if (id != other.id)
             return false;
         return true;
+    }
+
+    /**
+     * @param color
+     */
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    /**
+     * @return Returns the color.
+     */
+    public Color getColor() {
+        return color;
     }
 
 }

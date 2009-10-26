@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,6 +47,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -53,12 +55,12 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
@@ -68,6 +70,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
@@ -122,7 +125,7 @@ public class NeighboursView extends ViewPart {
     private ViewContentProvider provider;
     private boolean editMode = false;
     private Combo neighbour;
-
+    private Node centeredNode;
     private ViewLabelProvider labelProvider;
 
     private List<String> integerProperties = new ArrayList<String>();
@@ -139,6 +142,10 @@ public class NeighboursView extends ViewPart {
     private Font fontNormal;
     private Font fontSelected;
     private boolean autoZoom = true;
+    private Comparator<RelationWrapper> comparator;
+    private int sortOrder = 0;
+    private Color color1;
+    private Color color2;
 
 	/*
 	 * The content provider class is responsible for
@@ -153,6 +160,7 @@ public class NeighboursView extends ViewPart {
 	class ViewContentProvider implements IStructuredContentProvider {
         private static final int MAX_FIELD = 1000;
         private Collection<Node> input;
+        private RelationWrapper[] elements = new RelationWrapper[0];
 
 
         public void inputChanged(Viewer v, Object oldInput, Object newInput) {
@@ -160,6 +168,7 @@ public class NeighboursView extends ViewPart {
             if (newInput == null) {
                 return;
             }
+            clearSelection();
             if (!(newInput instanceof Collection)) {
                 input = new ArrayList<Node>(0);
                 network = null;
@@ -178,15 +187,22 @@ public class NeighboursView extends ViewPart {
                     }
                 }
             }
+            initializeLayer(gis);
             updateNeighbourList(network);
             if (neighbour.getItemCount() > 0) {
                 neighbour.select(0);
                 neighbourSelectionChange();
             }
+            elements = getElements2(input);
+            sort();
         }
 		public void dispose() {
 		}
 		public Object[] getElements(Object parent) {
+            return elements;
+        }
+
+        public RelationWrapper[] getElements2(Object parent) {
             final RelationWrapper[] emptyArray = new RelationWrapper[0];
             Node neighbour = getNeighbour();
             if (neighbour == null || input == null) {
@@ -295,9 +311,27 @@ public class NeighboursView extends ViewPart {
             }
 
         }
+
+        /**
+         *
+         */
+        public void sort() {
+            Arrays.sort(elements, comparator);
+            if (elements.length < 1) {
+                return;
+            }
+            Color color = color1;
+            elements[0].setColor(color);
+            for (int i = 1; i < elements.length; i++) {
+                if (comparator.compare(elements[i - 1], elements[i]) != 0) {
+                    color = color == color1 ? color2 : color1;
+                }
+                elements[i].setColor(color);
+            }
+        }
 	}
 
-    class ViewLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider {
+    class ViewLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider, ITableColorProvider {
         /** int DEF_SIZE field */
         protected static final int DEF_SIZE = 100;
         private ArrayList<String> columns = new ArrayList<String>();
@@ -331,12 +365,46 @@ public class NeighboursView extends ViewPart {
                 column = new TableViewerColumn(viewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText("Serving cell");
+                col.addSelectionListener(new SelectionListener() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        sortOrder = 0;
+                        if (provider != null) {
+                            provider.sort();
+                        }
+                        viewer.refresh();
+                        viewer.getTable().showSelection();
+                    }
+
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {
+                        widgetSelected(e);
+                    }
+                });
                 columns.add(col.getText());
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
                 column = new TableViewerColumn(viewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText("Neighbour cell");
+                col.addSelectionListener(new SelectionListener() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        sortOrder = 1;
+                        if (provider != null) {
+                            provider.sort();
+                        }
+                        viewer.refresh();
+                        viewer.getTable().showSelection();
+                    }
+
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {
+                        widgetSelected(e);
+                    }
+                });
                 columns.add(col.getText());
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
@@ -382,23 +450,42 @@ public class NeighboursView extends ViewPart {
 
         @Override
         public Font getFont(Object element, int columnIndex) {
+            RelationWrapper rel = (RelationWrapper)element;
             if (columnIndex == 0) {
-                return selectedServe != null && selectedServe.equals(element) ? fontSelected : fontNormal;
+                return selectedServe != null && selectedServe.getServeNode().equals(rel.getServeNode()) ? fontSelected : fontNormal;
             } else if (columnIndex == 1) {
-                return selectedNeighbour != null && selectedNeighbour.equals(element) ? fontSelected : fontNormal;
+                return selectedNeighbour != null && selectedNeighbour.getNeighbourNode().equals(rel.getNeighbourNode())
+                        ? fontSelected : fontNormal;
             } else {
                 return fontNormal;
             }
         }
+
+        @Override
+        public Color getBackground(Object element, int columnIndex) {
+            return ((RelationWrapper)element).getColor();
+        }
+
+        @Override
+        public Color getForeground(Object element, int columnIndex) {
+            return null;
+        }
 	}
-	class NameSorter extends ViewerSorter {
-	}
+
 
 	/**
 	 * The constructor.
 	 */
 	public NeighboursView() {
 	}
+
+    /**
+     *
+     * @param gis2
+     */
+    public void initializeLayer(Node gis) {
+        
+    }
 
     /**
      *launch if neighbour selection changed
@@ -453,6 +540,25 @@ public class NeighboursView extends ViewPart {
      * This is a callback that will allow us to create the viewer and initialize it.
      */
 	public void createPartControl(Composite parent) {
+        color1 = new Color(Display.getCurrent(), 240, 240, 240);
+        color2 = new Color(Display.getCurrent(), 255, 255, 255);
+        sortOrder = 0;
+        comparator = new Comparator<RelationWrapper>() {
+
+            @Override
+            public int compare(RelationWrapper o1, RelationWrapper o2) {
+                if (sortOrder == 0) {
+                    // TODO cache node name in RelationWrapper?
+                    String nameE1 = NeoUtils.getSimpleNodeName(o1.getServeNode(), "");
+                    String nameE2 = NeoUtils.getSimpleNodeName(o2.getServeNode(), "");
+                    return nameE1.compareTo(nameE2);
+                } else {
+                    String nameE1 = NeoUtils.getSimpleNodeName(o1.getNeighbourNode(), "");
+                    String nameE2 = NeoUtils.getSimpleNodeName(o2.getNeighbourNode(), "");
+                    return nameE1.compareTo(nameE2);
+                }
+            }
+        };
         Composite child = new Composite(parent, SWT.NONE);
         final GridLayout layout = new GridLayout(6, false);
         child.setLayout(layout);
@@ -528,7 +634,8 @@ public class NeighboursView extends ViewPart {
         provider = new ViewContentProvider();
         viewer.setContentProvider(provider);
 
-        viewer.setSorter(new NameSorter());
+
+        // viewer.setComparator(comparator);
         getSite().setSelectionProvider(viewer);
         viewer.getControl().addMouseListener(new MouseListener() {
 
@@ -581,7 +688,7 @@ public class NeighboursView extends ViewPart {
                         properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
                         properties.put(GeoNeo.NEIGH_RELATION, relationWrapper.getRelation());
                             geo.setProperties(properties);
-                        showSelectionOnMap(layer, geo, relationWrapper.getNeighbourNode());
+                        showSelectionOnMap(layer, geo, relationWrapper.getNeighbourNode(), relationWrapper.getServeNode());
                         // layer.refresh(null);
                             return;
                         }
@@ -618,7 +725,7 @@ public class NeighboursView extends ViewPart {
                         properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
                         properties.put(GeoNeo.NEIGH_RELATION, null);
                         geo.setProperties(properties);
-                        showSelectionOnMap(layer, geo, relationWrapper.getServeNode());
+                        showSelectionOnMap(layer, geo, relationWrapper.getServeNode(), relationWrapper.getServeNode());
                         return;
                     }
                 } catch (IOException e) {
@@ -830,34 +937,40 @@ public class NeighboursView extends ViewPart {
     /**
      * Shows selected node on map
      * 
-     * @param node selected node
+     * @param selection selected node
      */
-    protected void showSelectionOnMap(ILayer layer, GeoNeo gisGeo, Node node) {
+    protected void showSelectionOnMap(ILayer layer, GeoNeo gisGeo, Node selection, Node center) {
         try {
             gisGeo.setSelectedNodes(null);
-            gisGeo.addNodeToSelect(node);
+            gisGeo.addNodeToSelect(selection);
             IMap map = layer.getMap();
             CoordinateReferenceSystem crs = null;
             Node gis = gisGeo.getMainGisNode();
-            if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, "").toString().equalsIgnoreCase(("projected"))) {
-                autoZoom = false;
+            if (needCentered(center)) {
+                centeredNode = center;
+                if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, "").toString().equalsIgnoreCase(("projected"))) {
+                    autoZoom = false;
+                }
+                if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
+                    crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
+                } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
+                    URL crsURL = new URL(gis.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
+                    crs = CRS.decode(crsURL.getContent().toString());
+                }
+                double[] c = getCoords(center);
+                if (c == null) {
+                    return;
+                }
+                if (autoZoom) {
+                    // TODO: Check that this works with all CRS
+                    map.sendCommandASync(new net.refractions.udig.project.internal.command.navigation.SetViewportWidth(30000));
+                    autoZoom = false; // only zoom first time, then rely on user to control zoom
+                    // level
+                }
+                map.sendCommandASync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
+            } else {
+                layer.refresh(null);
             }
-            if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
-                crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
-            } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
-                URL crsURL = new URL(gis.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
-                crs = CRS.decode(crsURL.getContent().toString());
-            }
-            double[] c = getCoords(node);
-            if (c == null) {
-                return;
-            }
-            if (autoZoom) {
-                // TODO: Check that this works with all CRS
-                map.sendCommandASync(new net.refractions.udig.project.internal.command.navigation.SetViewportWidth(30000));
-                autoZoom = false; // only zoom first time, then rely on user to control zoom level
-            }
-            map.sendCommandASync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
         } catch (NoSuchAuthorityCodeException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (MalformedURLException e) {
@@ -866,6 +979,15 @@ public class NeighboursView extends ViewPart {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
+    }
+
+    /**
+     * @param center
+     * @return
+     */
+    private boolean needCentered(Node center) {
+
+        return centeredNode == null || !centeredNode.equals(center);
     }
 
     // TODO move to utility class (copy from NetworkTreeView)
@@ -900,5 +1022,37 @@ public class NeighboursView extends ViewPart {
         }
         return null;
 
+    }
+
+    @Override
+    public void dispose() {
+        clearSelection();
+        super.dispose();
+    }
+
+    /**
+     *
+     */
+    private void clearSelection() {
+        IMap map = ApplicationGIS.getActiveMap();
+        for (ILayer layer : map.getMapLayers()) {
+            IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
+            if (resourse != null) {
+                try {
+                    GeoNeo geo = resourse.resolve(GeoNeo.class, null);
+                    if (geo.getMainGisNode().equals(gis)) {
+                        HashMap<String, Object> properties = new HashMap<String, Object>();
+                        properties.put(GeoNeo.NEIGH_MAIN_NODE, null);
+                        properties.put(GeoNeo.NEIGH_NAME, null);
+                        properties.put(GeoNeo.NEIGH_RELATION, null);
+                        geo.setProperties(properties);
+                        layer.refresh(null);
+                        return;
+                    }
+                } catch (IOException e) {
+                    throw (RuntimeException)new RuntimeException().initCause(e);
+                }
+            }
+        }
     }
 }

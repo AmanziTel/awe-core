@@ -16,6 +16,7 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -60,6 +61,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -78,6 +80,7 @@ import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.data.Range;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -94,6 +97,8 @@ import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
+
+
 
 /**
  * <p>
@@ -153,6 +158,7 @@ public class DriveInquirerView extends ViewPart {
     private TableViewer table;
     private TableLabelProvider labelProvider;
     private TableContentProvider provider;
+    private Slider slider;
 
     public void createPartControl(Composite parent) {
         Composite frame = new Composite(parent, SWT.FILL);
@@ -169,25 +175,36 @@ public class DriveInquirerView extends ViewPart {
         label.setText("Drive:");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cDrive = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cDrive.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        layoutData.minimumWidth = 50;
+        cDrive.setLayoutData(layoutData);
 
         label = new Label(child, SWT.FLAT);
         label.setText("Event:");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cEvent = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cEvent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        layoutData.minimumWidth = 50;
+        cEvent.setLayoutData(layoutData);
 
         label = new Label(child, SWT.NONE);
         label.setText("Property1:");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cProperty1 = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cProperty1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        layoutData.minimumWidth = 50;
+        cProperty1.setLayoutData(layoutData);
 
         label = new Label(child, SWT.FLAT);
         label.setText("Property2:");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cProperty2 = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cProperty2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        layoutData.minimumWidth = 50;
+        cProperty2.setLayoutData(layoutData);
 
         label = new Label(child, SWT.FLAT);
         label.setText("Start Time:");
@@ -210,16 +227,26 @@ public class DriveInquirerView extends ViewPart {
         fData.top = new FormAttachment(child, 2);
         fData.left = new FormAttachment(0, 2);
         fData.right = new FormAttachment(100, -2);
-        fData.bottom = new FormAttachment(70, -2);
+        fData.bottom = new FormAttachment(100, -130);
 
         chartFrame.setLayoutData(fData);
-        table = new TableViewer(frame, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
+
+        slider = new Slider(frame, SWT.NONE);
+        slider.setValues(50, 0, 100, 1, 1, 1);
         fData = new FormData();
         fData.left = new FormAttachment(0, 0);
         fData.right = new FormAttachment(100, 0);
         fData.top = new FormAttachment(chartFrame, 2);
+        slider.setLayoutData(fData);
+        slider.pack();
+        table = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.right = new FormAttachment(100, 0);
+        fData.top = new FormAttachment(slider, 2);
         fData.bottom = new FormAttachment(100, -30);
         table.getControl().setLayoutData(fData);
+
 
         labelProvider = new TableLabelProvider();
         labelProvider.createTableColumn();
@@ -306,6 +333,7 @@ public class DriveInquirerView extends ViewPart {
         chartFrame.setVisible(visible);
         table.getControl().setVisible(visible);
         buttonLine.setVisible(visible);
+        slider.setVisible(visible);
     }
 
     /**
@@ -446,14 +474,19 @@ public class DriveInquirerView extends ViewPart {
                 widgetSelected(e);
             }
         });
-        // chart.addChangeListener(new ChartChangeListener() {
-        //
-        // @Override
-        // public void chartChanged(ChartChangeEvent chartchangeevent) {
-        // table.setInput(0);
-        // table.refresh();
-        // }
-        // });
+
+        slider.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeSlider();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         chart.addProgressListener(new ChartProgressListener() {
 
             @Override
@@ -465,6 +498,18 @@ public class DriveInquirerView extends ViewPart {
                 table.refresh();
             }
         });
+    }
+
+    /**
+     *change slider position
+     */
+    protected void changeSlider() {
+        int i = slider.getSelection();
+        XYPlot xyplot = (XYPlot)chart.getPlot();
+        ValueAxis valueaxis = xyplot.getDomainAxis();
+        Range range = valueaxis.getRange();
+        double d = valueaxis.getLowerBound() + ((double)i / 100D) * range.getLength();
+        xyplot.setDomainCrosshairValue(d);
     }
 
     /**
@@ -831,17 +876,23 @@ public class DriveInquirerView extends ViewPart {
      * @return index or null
      */
     private Integer getCrosshairIndex(TimeDataset dataset, Number crosshair) {
-        int[] item = dataset.collection.getSurroundingItems(0, crosshair.longValue());
-        xydataset1.collection.getSeries(0).getItemCount();
+        return getCrosshairIndex(dataset.collection, crosshair);
+    }
+
+    private Integer getCrosshairIndex(TimeSeriesCollection collection, Number crosshair) {
+        if (crosshair == null) {
+            return null;
+        }
+        int[] item = collection.getSurroundingItems(0, crosshair.longValue());
         Integer result = null;
         if (item[0] >= 0) {
             result = item[0];
-        } else if (item[1] >= 0) {
-            result = item[1];
         }
+        // else if (item[1] >= 0) {
+        // result = item[1];
+        // }
         return result;
     }
-
     /**
      *forms all property depends of gis
      */
@@ -1374,14 +1425,14 @@ public class DriveInquirerView extends ViewPart {
 
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
 
-        private ArrayList<String> columns = new ArrayList<String>();
+        private ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
         /** int DEF_SIZE field */
         protected static final int DEF_SIZE = 150;
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
-            NodeWrapper wr = (NodeWrapper)element;
-            if (columnIndex == 3 && wr.node != null) {
-                Color eventColor = getEventColor(wr.node);
+            NodeWrapper wr = provider.nodeWrapper;
+            if (columnIndex == 3 && wr.nEvents[(Integer)element] != null) {
+                Color eventColor = getEventColor(wr.nEvents[(Integer)element]);
                 return Glyph.palette(new Color[] {eventColor}).createImage();
             }
             return getImage(element);
@@ -1397,29 +1448,29 @@ public class DriveInquirerView extends ViewPart {
             if (columns.isEmpty()) {
                 column = new TableViewerColumn(table, SWT.LEFT);
                 col = column.getColumn();
-                col.setText("Property");
-                columns.add(col.getText());
+                col.setText("Time");
+                columns.add(col);
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
 
                 column = new TableViewerColumn(table, SWT.LEFT);
                 col = column.getColumn();
-                col.setText("Enum");
-                columns.add(col.getText());
+                col.setText("Property1");
+                columns.add(col);
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
 
                 column = new TableViewerColumn(table, SWT.LEFT);
                 col = column.getColumn();
-                col.setText("Property value");
-                columns.add(col.getText());
+                col.setText("Property2");
+                columns.add(col);
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
 
                 column = new TableViewerColumn(table, SWT.LEFT);
                 col = column.getColumn();
-                col.setText("Event");
-                columns.add(col.getText());
+                col.setText("events");
+                columns.add(col);
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
 
@@ -1432,20 +1483,24 @@ public class DriveInquirerView extends ViewPart {
 
         @Override
         public String getColumnText(Object element, int columnIndex) {
-            NodeWrapper wr = (NodeWrapper)element;
+            NodeWrapper wr = provider.nodeWrapper;
+            int index = (Integer)element;
+            SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
             String result = "";
             if (columnIndex == 0) {
-                result = wr.propertyName;
-            } else if (columnIndex == 1) {
-                result = wr.nodsEnum.name;
-            } else if (wr.node != null) {
-                if (columnIndex == 2) {
-                    result = wr.node.getProperty(wr.propertyName, "").toString();
-                } else if (columnIndex == 3) {
-                    result = wr.node.getProperty(EVENT, ALL_EVENTS).toString();
+                Long time = wr.time[index];
+                result = time == null ? "" : df.format(new Date(time));
+            } else if (columnIndex == 1 && wr.nProperty1[index] != null) {
+                result = wr.nProperty1[index].getProperty(wr.propertyName1, "").toString();;
+            } else if (columnIndex == 2) {
+                if (wr.nProperty2[index] != null) {
+                    result = wr.nProperty2[index].getProperty(wr.propertyName2, "").toString();
+                }
+            } else if (columnIndex == 3) {
+                if (wr.nEvents[index] != null) {
+                    result = wr.nEvents[index].getProperty(EVENT, "").toString();
                 }
             }
-
             return result;
         }
 
@@ -1460,34 +1515,14 @@ public class DriveInquirerView extends ViewPart {
 
     private class TableContentProvider implements IStructuredContentProvider {
 
-        private List<NodeWrapper> list;
+        private NodeWrapper nodeWrapper = new NodeWrapper();
 
         public TableContentProvider() {
-            list = new ArrayList<NodeWrapper>(3);
-            NodeWrapper node = new NodeWrapper();
-            node.setNodsEnum(NodesEnum.PREVIOUS);
-            list.add(node);
-            node = new NodeWrapper();
-            node.setNodsEnum(NodesEnum.SELECTED);
-            list.add(node);
-            node = new NodeWrapper();
-            node.setNodsEnum(NodesEnum.NEXT);
-            list.add(node);
-
-            node = new NodeWrapper();
-            node.setNodsEnum(NodesEnum.PREVIOUS);
-            list.add(node);
-            node = new NodeWrapper();
-            node.setNodsEnum(NodesEnum.SELECTED);
-            list.add(node);
-            node = new NodeWrapper();
-            node.setNodsEnum(NodesEnum.NEXT);
-            list.add(node);
         }
 
         @Override
         public Object[] getElements(Object inputElement) {
-            return list.toArray(new NodeWrapper[0]);
+            return new Integer[] {0, 1, 2};
         }
 
         @Override
@@ -1499,47 +1534,60 @@ public class DriveInquirerView extends ViewPart {
             if (newInput == null) {
                 return;
             }
-            double crosshair = ((XYPlot)chart.getPlot()).getDomainCrosshairValue();
-            for (int i = 0; i < list.size(); i++) {
-                NodeWrapper nodewr = list.get(i);
-                nodewr.setNode(null);
-                nodewr.setPropertyName(getPropertyName(i));
+            Double crosshair = ((XYPlot)chart.getPlot()).getDomainCrosshairValue();
+            nodeWrapper.propertyName1 = cProperty1.getText();
+            nodeWrapper.propertyName2 = cProperty2.getText();
+            nodeWrapper.eventName = cEvent.getText();
+            changeName(labelProvider.columns.get(1), nodeWrapper.propertyName1);
+            changeName(labelProvider.columns.get(2), nodeWrapper.propertyName2);
+            changeName(labelProvider.columns.get(3), nodeWrapper.eventName);
+            for (int i = 0; i < 2; i++) {
+                nodeWrapper.nEvents[i] = null;
+                nodeWrapper.nProperty1[i] = null;
+                nodeWrapper.nProperty2[i] = null;
+                nodeWrapper.time[i] = null;
             }
             if (crosshair < 0.1) {
                 return;
             }
-            Integer index1 = getCrosshairIndex(xydataset1, crosshair);
-            if (index1 != null) {
-                list.get(1).setNode(
-                        NeoUtils.getNodeById(xydataset1.collection.getSeries(0).getDataItem(index1).getValue().longValue()));
-                if (index1 > 0) {
-                    list.get(0)
-                            .setNode(
-                                    NeoUtils.getNodeById(xydataset1.collection.getSeries(0).getDataItem(index1 - 1).getValue()
-                                            .longValue()));
-                }
-                if (index1 + 1 < xydataset1.collection.getSeries(0).getItemCount()) {
-                    list.get(2)
-                            .setNode(
-                                    NeoUtils.getNodeById(xydataset1.collection.getSeries(0).getDataItem(index1 + 1).getValue()
-                                            .longValue()));
-                }
+            nodeWrapper.time[1] = crosshair.longValue();
+            nodeWrapper.time[0] = getPreviousTime(nodeWrapper.time[1]);
+            nodeWrapper.time[2] = getNextTime(nodeWrapper.time[1]);
+            fillProperty(crosshair, xydataset1.collection, nodeWrapper.nProperty1, nodeWrapper.time);
+            fillProperty(crosshair, xydataset2.collection, nodeWrapper.nProperty2, nodeWrapper.time);
+            fillProperty(crosshair, eventDataset.collection, nodeWrapper.nEvents, nodeWrapper.time);
+
+
+
+        }
+
+        /**
+         * @param tableColumn
+         * @param name
+         */
+        private void changeName(TableColumn tableColumn, String name) {
+            if (!tableColumn.getText().equals(name)){
+                tableColumn.setText(name);
             }
-            if (list.size() > 3) {
-                Integer index2 = getCrosshairIndex(xydataset2, crosshair);
-                if (index2 != null) {
-                    list.get(4).setNode(
-                            NeoUtils.getNodeById(xydataset2.collection.getSeries(0).getDataItem(index2).getValue().longValue()));
-                    if (index2 > 0) {
-                        list.get(3).setNode(
-                                NeoUtils.getNodeById(xydataset2.collection.getSeries(0).getDataItem(index2 - 1).getValue()
-                                        .longValue()));
-                    }
-                    if (index2 + 1 < xydataset2.collection.getSeries(0).getItemCount()) {
-                        list.get(5).setNode(
-                                NeoUtils.getNodeById(xydataset2.collection.getSeries(0).getDataItem(index2 + 1).getValue()
-                                        .longValue()));
-                    }
+        }
+
+        /**
+         * @param crosshair
+         * @param dataset
+         * @param nodes
+         */
+        private void fillProperty(double crosshair, TimeSeriesCollection dataset, Node[] nodes, Long[] time) {
+            Integer index1 = getCrosshairIndex(dataset, time[1]);
+            if (index1 != null) {
+                nodes[1] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1).getValue()
+                        .longValue());
+                if (index1 > 0) {
+                    nodes[0] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1 - 1)
+                            .getValue().longValue());
+                }
+                if (index1 + 1 < dataset.getSeries(0).getItemCount()) {
+                    nodes[2] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1 + 1)
+                            .getValue().longValue());
                 }
             }
         }
@@ -1555,78 +1603,13 @@ public class DriveInquirerView extends ViewPart {
     }
 
     private class NodeWrapper {
-        NodesEnum nodsEnum;
-        String propertyName;
-        Node node;
-
-        /**
-         * @return Returns the nodsEnum.
-         */
-        public NodesEnum getNodsEnum() {
-            return nodsEnum;
-        }
-
-        /**
-         * @param nodsEnum The nodsEnum to set.
-         */
-        public void setNodsEnum(NodesEnum nodsEnum) {
-            this.nodsEnum = nodsEnum;
-        }
-
-        /**
-         * @return Returns the propertyName.
-         */
-        public String getPropertyName() {
-            return propertyName;
-        }
-
-        /**
-         * @param propertyName The propertyName to set.
-         */
-        public void setPropertyName(String propertyName) {
-            this.propertyName = propertyName;
-        }
-
-        /**
-         * @return Returns the node.
-         */
-        public Node getNode() {
-            return node;
-        }
-
-        /**
-         * @param node The node to set.
-         */
-        public void setNode(Node node) {
-            this.node = node;
-        }
-
-    }
-
-    /**
-     * <p>
-     * </p>
-     * 
-     * @author Cinkel_A
-     * @since 1.0.0
-     */
-    private enum NodesEnum {
-        PREVIOUS("previous node"), SELECTED("selected node"), NEXT("next node");
-        private final String name;
-
-        /**
-         * 
-         */
-        private NodesEnum(String name) {
-            this.name = name;
-        }
-
-        /**
-         * @return Returns the name.
-         */
-        public String getName() {
-            return name;
-        }
+        String propertyName1;
+        String propertyName2;
+        String eventName;
+        Long[] time = new Long[3];
+        Node[] nProperty1 = new Node[3];
+        Node[] nProperty2 = new Node[3];
+        Node[] nEvents = new Node[3];
 
     }
 
@@ -1663,5 +1646,29 @@ public class DriveInquirerView extends ViewPart {
                 return nodeTime == null ? false : (nodeTime - beginTime <= length);
             }
         }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+    }
+
+    /**
+     * @param time
+     * @return
+     */
+    public Long getNextTime(Long time) {
+        XYPlot xyplot = (XYPlot)chart.getPlot();
+        ValueAxis valueaxis = xyplot.getDomainAxis();
+        Range range = valueaxis.getRange();
+
+        return time == null ? null : (long)Math.min(time + 1000, range.getUpperBound());
+    }
+
+    /**
+     * @param time
+     * @return
+     */
+    public Long getPreviousTime(Long time) {
+        XYPlot xyplot = (XYPlot)chart.getPlot();
+        ValueAxis valueaxis = xyplot.getDomainAxis();
+        Range range = valueaxis.getRange();
+
+        return time == null ? null : (long)Math.max(time - 1000, range.getLowerBound());
     }
 }
