@@ -94,6 +94,47 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         }
     }
     
+    /**
+     * ArrayList that provides two ways to get Row
+     * 1. If we know a number of rows than we can use it as a standard ArrayList.
+     * 2. If we didn't know a number of rows than a if a Row by index is not found 
+     *    than this row will be created and stored in ArrayList.
+     * 
+     * @author Lagutko_N
+     * @since 1.0.0
+     */
+    private class RowArrayList extends ArrayList<RowNode> {
+        
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 1L;
+        
+        public RowArrayList(int size) {
+            super(size);
+        }
+        
+        @Override
+        public RowNode get(int i) {
+            boolean notExists = false;
+            RowNode result = null;
+            
+            try {
+                result = super.get(i);                
+            }
+            catch (IndexOutOfBoundsException e) {
+                notExists = true;
+            }
+            
+            if ((result == null) && notExists) {
+                CellID id = new CellID(i, 0);
+                
+                result = createRowNode(id.getRowName());
+                super.add(i, result);
+            }
+            
+            return result;
+        }
+    }
+    
     /*
      * Path to Project that will contain new Spreadsheet
      */
@@ -125,9 +166,9 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
     private ColumnArrayList columns = new ColumnArrayList(0);
     
     /*
-     * Current row
+     * List of Rows
      */
-    private RowNode currentRow;
+    private RowArrayList rows = new RowArrayList(0);
     
     /*
      * CellFormat object
@@ -242,21 +283,12 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      * @param cell cell to save
      */
     protected void saveCell(Cell cell) {
-        int column = cell.getColumn();
-
-        if (column == 0) {
-            //if column is zero than it's a new row
-            currentRow = null;
-        }
-        
         //import Cell to database in given Row and Column
-        RowNode newRow = importCell(cell, currentRow, columns.get(cell.getColumn()));
-        if (column == 0) {
-            //if column was zero than a new Row was created
-            currentRow = newRow;
-        }
+        importCell(cell, rows.get(cell.getRow()), columns.get(cell.getColumn()));        
     }
     
+    
+    int count = 0;
     /**
      * Updates Transaction.
      * To prevent JavaHeapSpace exception we can call this method for example after processing 1000 rows
@@ -265,10 +297,17 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      * @return new transaction
      */
     protected Transaction updateTransaction(Transaction transaction) {
+        long before = System.currentTimeMillis();
         transaction.success();
         transaction.finish();
         
-        return neoService.beginTx();
+        System.out.println("Commiting " + ++count + " = " + (System.currentTimeMillis() - before));
+        
+        Transaction result = neoService.beginTx();
+        
+        System.out.println("Updating " + count + " = " + (System.currentTimeMillis() - before));
+        
+        return result;
     }
     
     /**
@@ -279,15 +318,9 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      * @param column column of Cell
      * @return row that contain imported cell or null
      */
-    private RowNode importCell(Cell cell, RowNode row, ColumnNode column) {
+    private void importCell(Cell cell, RowNode row, ColumnNode column) {
         if (spreadsheetNode == null) {
             createSpreadsheet();
-        }
-        
-        if (row == null) {
-            //if row is null than it should be a new row
-            row = new RowNode(neoService.createNode(), cell.getCellID().getRowName());
-            spreadsheetNode.addRow(row);
         }
         
         //create a new cell
@@ -304,8 +337,6 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         //add a cell to row and column
         row.addCell(cellNode);
         column.addCell(cellNode);
-        
-        return row;
     }
     
     /**
@@ -322,6 +353,24 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         ColumnNode node = new ColumnNode(neoService.createNode(), name);
         
         spreadsheetNode.addColumn(node);
+        
+        return node;
+    }
+    
+    /**
+     * Creates a Row Node 
+     *
+     * @param name name of Row
+     * @return created RowNode
+     */
+    private RowNode createRowNode(String name) {
+        if (spreadsheetNode == null) {
+            createSpreadsheet();
+        }
+        
+        RowNode node = new RowNode(neoService.createNode(), name);
+        
+        spreadsheetNode.addRow(node);
         
         return node;
     }
