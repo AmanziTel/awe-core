@@ -208,4 +208,13 @@
              name="Import Builder">
        </view>
     </extension>
+    <extension
+          point="net.refractions.udig.ui.newObjectAction">
+       <action
+             class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizardAction"
+             icon="icons/splash_16.png"
+             id="org.amanzi.splash.newSpreadsheetAction"
+             label="New Amanzi Splash Sheet">
+       </action>
+    </extension>
 </plugin>

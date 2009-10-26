@@ -18,6 +18,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.rubypeople.rdt.ui.actions.AbstractOpenWizardAction;
 /**
  * Action for launching SplashNewSpreadsheetWizard
@@ -25,7 +27,7 @@ import org.rubypeople.rdt.ui.actions.AbstractOpenWizardAction;
  * 
  */
 public class SplashNewSpreadsheetWizardAction extends AbstractOpenWizardAction
-		implements IViewActionDelegate {
+		implements IViewActionDelegate,IWorkbenchWindowActionDelegate {
 
 	public void dispose() {
 		
@@ -50,4 +52,9 @@ public class SplashNewSpreadsheetWizardAction extends AbstractOpenWizardAction
 		//setShell(view.getShell());
 		
 	}
+
+
+    @Override
+    public void init(IWorkbenchWindow window) {
+    }
 }
