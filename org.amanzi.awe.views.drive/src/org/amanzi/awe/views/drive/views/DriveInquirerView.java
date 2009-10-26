@@ -686,6 +686,7 @@ public class DriveInquirerView extends ViewPart {
         propertyName = cEvent.getText();
         if (!propertyName.equals(eventDataset.getPropertyName())) {
             eventDataset.propertyName = propertyName;
+            eventDataset.update();
             // eventDataset.updateDataset(propertyName, dataset.get(currentIndex), beginTime,
             // sLength.getSelection(), propertyName);
         }
@@ -1123,6 +1124,16 @@ public class DriveInquirerView extends ViewPart {
             collection = new TimeSeriesCollection();
             createSeries(name, propertyName);
             collection.addSeries(series);
+            this.fireDatasetChanged();
+        }
+
+        /**
+         * update dataset
+         */
+        public void update() {
+            if (collection.getSeriesCount() > 0) {
+                collection.getSeries(0).setKey(propertyName);
+            }
             this.fireDatasetChanged();
         }
 
