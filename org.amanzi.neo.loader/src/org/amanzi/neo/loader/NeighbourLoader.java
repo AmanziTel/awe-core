@@ -30,7 +30,6 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -55,7 +54,7 @@ import org.neo4j.util.index.LuceneIndexService;
  * @since 1.0.0
  */
 public class NeighbourLoader {
-    private static String directory = null;
+    // private static String directory = null;
     private static final int COMMIT_MAX = 1000;
     private Node network;
     private String fileName;
@@ -81,14 +80,7 @@ public class NeighbourLoader {
      * @return
      */
     public static String getDirectory() {
-        // if (directory == null) {
-            if (LoadNetwork.hasDirectory()) {
-                directory = LoadNetwork.getDirectory();
-            } else if (DriveDialog.hasDefaultDirectory()) {
-                directory = DriveDialog.getDefaultDirectory();
-            }
-        // }
-        return directory;
+        return NeoLoaderPlugin.getDefault().getPluginPreferences().getString(AbstractLoader.DEFAULT_DIRRECTORY_LOADER);
     }
 
     /**
@@ -99,10 +91,7 @@ public class NeighbourLoader {
      */
 
     public static void setDirectory(String newDirectory) {
-        if (!newDirectory.equals(directory)) {
-            directory = newDirectory;
-            LoadNetwork.setDirectory(newDirectory);
-        }
+        NeoLoaderPlugin.getDefault().getPluginPreferences().setValue(AbstractLoader.DEFAULT_DIRRECTORY_LOADER, newDirectory);
     }
 
     /**

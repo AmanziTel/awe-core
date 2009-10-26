@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DriveLoader;
-import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.RomesLoader;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -55,7 +55,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.neo4j.api.core.Node;
-//import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
 
 /**
@@ -762,13 +761,7 @@ public class DriveDialog {
 	 */
 	
 	public static String getDefaultDirectory() {
-		if (defaultDirectory == null) {	
-			if (LoadNetwork.hasDirectory()) {
-				defaultDirectory = LoadNetwork.getDirectory();
-			}
-		}
-		
-		return defaultDirectory;
+        return NeoLoaderPlugin.getDefault().getPluginPreferences().getString(AbstractLoader.DEFAULT_DIRRECTORY_LOADER);
 	}
 	
 	/**
@@ -778,10 +771,7 @@ public class DriveDialog {
 	 */
 	
 	public static void setDefaultDirectory(String newDirectory) {
-		if (!newDirectory.equals(defaultDirectory)) {
-			defaultDirectory = newDirectory;
-			LoadNetwork.setDirectory(newDirectory);
-		}
+        NeoLoaderPlugin.getDefault().getPluginPreferences().setValue(AbstractLoader.DEFAULT_DIRRECTORY_LOADER, newDirectory);
 	}
 	
 	/**

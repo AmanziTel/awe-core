@@ -75,6 +75,8 @@ import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 
 public abstract class AbstractLoader {
+    /** AbstractLoader DEFAULT_DIRRECTORY_LOADER field */
+    public static final String DEFAULT_DIRRECTORY_LOADER = "DEFAULT_DIRRECTORY_LOADER";
     private String typeName = "CSV";
     protected NeoService neo;
     private NeoServiceProvider neoProvider;

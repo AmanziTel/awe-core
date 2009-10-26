@@ -15,7 +15,6 @@ package org.amanzi.neo.wizards;
 import java.io.File;
 
 import org.amanzi.neo.loader.LoadNetwork;
-import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -33,7 +32,7 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public class NetworkImportWizardPage extends WizardPage {
-    private FileFieldEditor editor;
+    private FileFieldEditorExt editor;
     private String fileName = null;
 
     /**
@@ -62,12 +61,14 @@ public class NetworkImportWizardPage extends WizardPage {
         fileSelectionLayout.marginHeight = 0;
         fileSelectionArea.setLayout(fileSelectionLayout);
 
-        editor = new FileFieldEditor("fileSelect", "Select File: ", fileSelectionArea); // NON-NLS-1
+        editor = new FileFieldEditorExt("fileSelect", "Select File: ", fileSelectionArea); // NON-NLS-1
+        editor.setDefaulDirectory(LoadNetwork.getDirectory());
         editor.getTextControl(fileSelectionArea).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(NetworkImportWizardPage.this.editor.getStringValue());
             }
         });
+
         editor.setFileExtensions(LoadNetwork.NETWORK_FILE_EXTENSIONS);
 
         setControl(fileSelectionArea);
@@ -80,6 +81,7 @@ public class NetworkImportWizardPage extends WizardPage {
      */
     protected void setFileName(String fileName) {
         this.fileName = fileName;
+        LoadNetwork.setDirectory(editor.getDefaulDirectory());
         setPageComplete(validate());
     }
 

@@ -12,7 +12,6 @@
  */
 package org.amanzi.neo.wizards;
 
-import java.io.File;
 import java.util.HashMap;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -21,7 +20,6 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.NeighbourLoader;
-import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -32,7 +30,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.neo4j.api.core.Direction;
@@ -57,7 +54,7 @@ public class NeighbourImportWizardPage extends WizardPage {
     private String fileName;
     private Composite main;
     private Combo network;
-    private FileField editor;
+    private FileFieldEditorExt editor;
     private HashMap<String, Node> members;
     protected Node networkNode;
 
@@ -107,10 +104,9 @@ public class NeighbourImportWizardPage extends WizardPage {
                 widgetSelected(e);
             }
         });
-        editor = new FileField("fileSelectNeighb", "File: ", main); // NON-NLS-1
-        editor.setDefaulDirrectory(NeighbourLoader.getDirectory());
-        // editor.setPreferenceStore(NeoLoaderPlugin.getDefault().getPreferenceStore());
-        // editor.load();
+        editor = new FileFieldEditorExt("fileSelectNeighb", "File: ", main); // NON-NLS-1
+        editor.setDefaulDirectory(NeighbourLoader.getDirectory());
+
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
@@ -129,7 +125,7 @@ public class NeighbourImportWizardPage extends WizardPage {
         this.fileName = fileName;
         setPageComplete(isValidPage());
         // editor.store();
-        NeighbourLoader.setDirectory(editor.getDefaulDirrectory());
+        NeighbourLoader.setDirectory(editor.getDefaulDirectory());
     }
 
     /**
@@ -174,90 +170,5 @@ public class NeighbourImportWizardPage extends WizardPage {
      */
     public Node getNetworkNode() {
         return networkNode;
-    }
-
-    /**
-     * <p>
-     * Extension of FileFieldEditor with possibility setting default directory
-     * </p>
-     * 
-     * @author Cinkel_A
-     * @since 1.0.0
-     */
-    public static class FileField extends FileFieldEditor {
-        private String defaulDirrectory;
-        private String[] ext;
-
-        /**
-         * @param string
-         * @param string2
-         * @param main
-         */
-        public FileField(String string, String string2, Composite main) {
-            super(string, string2, main);
-        }
-
-        /**
-         * @return Returns the defaulDirrectory.
-         */
-        public String getDefaulDirrectory() {
-            return defaulDirrectory;
-        }
-
-        /**
-         * @param defaulDirrectory The defaulDirrectory to set.
-         */
-        public void setDefaulDirrectory(String defaulDirrectory) {
-            this.defaulDirrectory = defaulDirrectory;
-        }
-
-        @Override
-        protected String changePressed() {
-            File f = new File(getTextControl().getText());
-            if (!f.exists()) {
-                f = null;
-            }
-            File d = getFile(f);
-            if (d == null) {
-                return null;
-            }
-
-            return d.getAbsolutePath();
-        }
-
-        /**
-         * Helper to open the file chooser dialog.
-         * 
-         * @param startingDirectory the directory to open the dialog on.
-         * @return File The File the user selected or <code>null</code> if they do not.
-         */
-        private File getFile(File startingDirectory) {
-
-            FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
-            if (startingDirectory != null) {
-                dialog.setFileName(startingDirectory.getPath());
-            } else {
-                dialog.setFilterPath(getDefaulDirrectory());
-            }
-            if (ext != null) {
-                dialog.setFilterExtensions(ext);
-            }
-            String file = dialog.open();
-            if (file != null) {
-                setDefaulDirrectory(dialog.getFilterPath());
-                file = file.trim();
-                if (file.length() > 0) {
-                    return new File(file);
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        public void setFileExtensions(String[] extensions) {
-            this.ext = extensions;
-            super.setFileExtensions(extensions);
-        }
     }
 }

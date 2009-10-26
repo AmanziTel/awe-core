@@ -18,7 +18,7 @@ import java.io.IOException;
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.loader.dialogs.DriveDialog;
+import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -56,7 +56,7 @@ public class LoadNetwork extends AbstractActionTool {
      */
     public static final String[] NETWORK_FILE_EXTENSIONS = {"*.csv", "*.txt", "*.sxc", "*.xls", "*.*"};
 
-    private static String directory = null;
+    // private static String directory = null;
 
     private final Display display;
 
@@ -68,15 +68,9 @@ public class LoadNetwork extends AbstractActionTool {
         this.display = display;
     }
 
-	public static String getDirectory(){
-		//LN, 9.07.2009, if directory in LoadNetwork is null than get DefaultDirectory from TEMSDialog
-		if (directory == null) {
-			if (DriveDialog.hasDefaultDirectory()) {
-				directory = DriveDialog.getDefaultDirectory();
-			}
-		}
-		return directory;
-	}
+    public static String getDirectory() {
+        return NeoLoaderPlugin.getDefault().getPluginPreferences().getString(AbstractLoader.DEFAULT_DIRRECTORY_LOADER);
+    }
 	
 	/**
 	 * Sets Default Directory path for file dialogs in TEMSLoad and NetworkLoad
@@ -86,23 +80,9 @@ public class LoadNetwork extends AbstractActionTool {
 	 */
 	
 	public static void setDirectory(String newDirectory) {
-		if (!newDirectory.equals(directory)) {
-			directory = newDirectory;		
-			DriveDialog.setDefaultDirectory(newDirectory);
-		}
+        NeoLoaderPlugin.getDefault().getPluginPreferences().setValue(AbstractLoader.DEFAULT_DIRRECTORY_LOADER, newDirectory);
 	}
 	
-	/**
-	 * Is DefaultDirectored set
-	 * 
-	 * @return 
-	 * @author Lagutko_N
-	 */
-	
-	public static boolean hasDirectory() {
-		return directory != null;
-	}
-
     /**
      * Run from action handler
      */
