@@ -61,7 +61,7 @@ public class MultiPropertyIndex<E extends Object> {
          * @param level
          * @param values
          * @param lowerNode
-         * @throws IOException 
+         * @throws IOException
          */
         @SuppressWarnings("unchecked")
         private IndexLevel(int level, E[] values, Node lowerNode) throws IOException {
@@ -80,7 +80,7 @@ public class MultiPropertyIndex<E extends Object> {
          * 
          * @param level
          * @param indexNode
-         * @throws IOException 
+         * @throws IOException
          */
         @SuppressWarnings("unchecked")
         private IndexLevel(int level, Node indexNode) throws IOException {
@@ -96,7 +96,7 @@ public class MultiPropertyIndex<E extends Object> {
                 throw new IllegalArgumentException("Invalid index node passed for level: " + this.level + " != " + indexLevel);
             }
         }
-        
+
         private IndexLevel setValues(E[] values) {
             if (!Arrays.equals(values, currentValues)) {
                 this.currentValues = values;
@@ -156,7 +156,7 @@ public class MultiPropertyIndex<E extends Object> {
 
     }
 
-    public interface MultiValueConverter<E> extends PropertyIndex.ValueConverter<E>{
+    public interface MultiValueConverter<E> extends PropertyIndex.ValueConverter<E> {
         public Object serialize(Object[] data) throws IOException;
 
         public E[] deserialize(Object buffer) throws IOException;
@@ -168,7 +168,7 @@ public class MultiPropertyIndex<E extends Object> {
         }
 
         public Float[] deserialize(Object buffer) throws IOException {
-            float[] data = (float[]) buffer;
+            float[] data = (float[])buffer;
             Float[] result = new Float[data.length];
             for (int i = 0; i < data.length; i++) {
                 result[i] = data[i];
@@ -192,7 +192,7 @@ public class MultiPropertyIndex<E extends Object> {
         }
 
         public Double[] deserialize(Object buffer) throws IOException {
-            double[] data = (double[]) buffer;
+            double[] data = (double[])buffer;
             Double[] result = new Double[data.length];
             for (int i = 0; i < data.length; i++) {
                 result[i] = data[i];
@@ -210,8 +210,56 @@ public class MultiPropertyIndex<E extends Object> {
         }
     }
 
-    public MultiPropertyIndex(NeoService neo, Node reference, String name, String[] properties,
-            MultiValueConverter<E> converter, int step) throws IOException {
+    public static class MultiIntegerConverter extends PropertyIndex.IntegerConverter implements MultiValueConverter<Integer> {
+        public MultiIntegerConverter(int cluster) {
+            super(cluster);
+        }
+
+        public Integer[] deserialize(Object buffer) throws IOException {
+            int[] data = (int[])buffer;
+            Integer[] result = new Integer[data.length];
+            for (int i = 0; i < data.length; i++) {
+                result[i] = data[i];
+            }
+            return result;
+        }
+
+        @Override
+        public Object serialize(Object[] data) throws IOException {
+            int[] result = new int[data.length];
+            for (int i = 0; i < data.length; i++) {
+                result[i] = (Integer)data[i];
+            }
+            return result;
+        }
+    }
+
+    public static class MultiLongConverter extends PropertyIndex.LongConverter implements MultiValueConverter<Long> {
+        public MultiLongConverter(long cluster) {
+            super(cluster);
+        }
+
+        public Long[] deserialize(Object buffer) throws IOException {
+            long[] data = (long[])buffer;
+            Long[] result = new Long[data.length];
+            for (int i = 0; i < data.length; i++) {
+                result[i] = data[i];
+            }
+            return result;
+        }
+
+        @Override
+        public Object serialize(Object[] data) throws IOException {
+            long[] result = new long[data.length];
+            for (int i = 0; i < data.length; i++) {
+                result[i] = (Long)data[i];
+            }
+            return result;
+        }
+    }
+
+    public MultiPropertyIndex(NeoService neo, Node reference, String name, String[] properties, MultiValueConverter<E> converter,
+            int step) throws IOException {
         if (neo == null)
             throw new IllegalArgumentException("Index NeoService must exist");
         if (properties == null || properties.length < 1 || properties[0].length() < 1)
@@ -226,7 +274,7 @@ public class MultiPropertyIndex<E extends Object> {
             Node node = relation.getEndNode();
             if (node.getProperty("type", "").toString().equals("property_index")
                     && node.getProperty("name", "").toString().equals(name)
-                    && Arrays.equals((String[])node.getProperty("properties", null),properties)) {
+                    && Arrays.equals((String[])node.getProperty("properties", null), properties)) {
                 this.root = node;
             }
         }
@@ -300,7 +348,7 @@ public class MultiPropertyIndex<E extends Object> {
      * 
      * @param node to index
      * @return index node at level 0
-     * @throws IOException 
+     * @throws IOException
      */
     public Node add(Node node) throws IOException {
         E[] values = getProperties(node);
@@ -326,7 +374,7 @@ public class MultiPropertyIndex<E extends Object> {
      * 
      * @param value of the specific type being indexed
      * @return the level 0 index node for this value (created and linked into the index if required)
-     * @throws IOException 
+     * @throws IOException
      */
     private Node getIndexNode(E[] values) throws IOException {
         // search as high as necessary to find a node that covers this value
@@ -364,7 +412,7 @@ public class MultiPropertyIndex<E extends Object> {
      * 
      * @param value to index
      * @return lowest cached index value matching the data.
-     * @throws IOException 
+     * @throws IOException
      */
     private IndexLevel getLevelIncluding(E[] values) throws IOException {
         int level = 0;
@@ -380,7 +428,8 @@ public class MultiPropertyIndex<E extends Object> {
      * the values in the level below, so that we maintain a connected graph. When a new level is
      * created, its index Node is also created in the graph and connected to the index node of the
      * level below it.
-     * @throws IOException 
+     * 
+     * @throws IOException
      */
     private IndexLevel getLevel(int level) throws IOException {
         while (levels.size() <= level) {
@@ -451,8 +500,7 @@ public class MultiPropertyIndex<E extends Object> {
             PropertyIndex<Long> timeIndex = new PropertyIndex<Long>(neo, neo.getReferenceNode(), "TimePropertyIndexTest",
                     "timestamp", new PropertyIndex.TimeIndexConverter(), 10);
             MultiPropertyIndex<Double> locationIndex = new MultiPropertyIndex<Double>(neo, neo.getReferenceNode(),
-                    "LocationPropertyIndexTest", new String[] {"latitude", "longitude"}, new MultiDoubleConverter(0.001),
-                    10);
+                    "LocationPropertyIndexTest", new String[] {"latitude", "longitude"}, new MultiDoubleConverter(0.001), 10);
             for (int i = 0; i < 10000; i++) {
                 long timestamp = dataStartTime + i * (111 + random.nextInt(100));
                 Date date = new Date(timestamp);
@@ -461,9 +509,10 @@ public class MultiPropertyIndex<E extends Object> {
                 node.setProperty("timestamp", timestamp);
                 node.setProperty("value", (double)(random.nextInt(10)));
                 node.setProperty("dbm", (double)(10 - random.nextInt(60)));
-                speed += 0.000005 - 0.00001 * random.nextDouble(); // vary around the original speed
-                direction += 0.1 * Math.PI * random.nextDouble(); // make a slow semi-circular
-                // turn
+                // vary around the original speed
+                speed += 0.000005 - 0.00001 * random.nextDouble();
+                // make a slow semi-circular turn
+                direction += 0.1 * Math.PI * random.nextDouble();
                 latitude += speed * Math.sin(direction);
                 longitude += speed * Math.cos(direction);
                 expandToInclude(bbox, longitude, latitude);
