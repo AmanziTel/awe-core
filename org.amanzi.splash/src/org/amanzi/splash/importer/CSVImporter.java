@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -57,6 +58,8 @@ public class CSVImporter extends AbstractImporter {
         
         //create a Spreadsheet
         createSpreadsheet();
+        
+        Date begin = new Date();
         
         Transaction tx = NeoUtils.beginTransaction();
         try {            
@@ -110,7 +113,7 @@ public class CSVImporter extends AbstractImporter {
                 i++;
                 
                 //update transaction each 1000 rows
-                if ((i % 1000) == 0) {
+                if ((i % 20) == 0) {
                     tx = updateTransaction(tx);
                 }
             }
@@ -122,6 +125,10 @@ public class CSVImporter extends AbstractImporter {
         finally {           
             tx.finish();
         }
+        
+        Date end = new Date();
+        System.out.println(begin);
+        System.out.println(end);
     }
     
 }

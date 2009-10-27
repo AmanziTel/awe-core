@@ -26,13 +26,10 @@ import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.ColumnNode;
 import org.amanzi.neo.core.database.nodes.RowNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SplashFormatNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.swing.Cell;
-import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -41,8 +38,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Transaction;
-
-import com.eteks.openjeks.format.CellFormat;
 
 
 /**
@@ -171,16 +166,6 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
     private RowArrayList rows = new RowArrayList(0);
     
     /*
-     * CellFormat object
-     */
-    private CellFormat defaultFormat = new CellFormat();
-    
-    /*
-     * Spreadsheet Service
-     */
-    private SpreadsheetService spreadsheetService;
-    
-    /*
      * Node of created Spreadsheet
      */
     private SpreadsheetNode spreadsheetNode;
@@ -207,7 +192,6 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         //initializing services
         projectService = NeoCorePlugin.getDefault().getProjectService();
         neoService = NeoServiceProvider.getProvider().getService();
-        spreadsheetService = SplashPlugin.getDefault().getSpreadsheetService();
     }
     
     @Override
@@ -297,15 +281,10 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      * @return new transaction
      */
     protected Transaction updateTransaction(Transaction transaction) {
-        long before = System.currentTimeMillis();
         transaction.success();
         transaction.finish();
         
-        System.out.println("Commiting " + ++count + " = " + (System.currentTimeMillis() - before));
-        
         Transaction result = neoService.beginTx();
-        
-        System.out.println("Updating " + count + " = " + (System.currentTimeMillis() - before));
         
         return result;
     }
@@ -328,11 +307,6 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         //set a value to cell
         cellNode.setValue(cell.getValue());
         cellNode.setDefinition(cell.getDefinition());
-        
-        //create a format node for Cell
-        SplashFormatNode formatNode = new SplashFormatNode(neoService.createNode());
-        spreadsheetService.setSplashFormat(formatNode, defaultFormat);
-        formatNode.addCell(cellNode);
         
         //add a cell to row and column
         row.addCell(cellNode);

@@ -317,10 +317,6 @@ public class SpreadsheetService {
 			//SplashFormatNode sfNode = new SplashFormatNode(neoService.createNode());
 			rowNode.addCell(cell);
 			columnNode.addCell(cell);
-			//cell.addSplashFormat(sfNode);
-			defaultSFNode.addCell(cell);
-			
-
 
 			transaction.success();
 
@@ -369,7 +365,7 @@ public class SpreadsheetService {
 			if (format != null && sfNode != null){
 
 				if (isFormatChanged(sfNode, format)==true){
-					NeoSplashUtil.logn("Format has been changed...");
+				    NeoSplashUtil.logn("Format has been changed...");
 
 					NeoSplashUtil.logn("Deleting reference to old SplashFormatNode");
 					
@@ -381,16 +377,18 @@ public class SpreadsheetService {
 		                relationship.delete();
 			        }
 
-					NeoSplashUtil.logn("Adding reference to new SplashFormatNode");
+			        //Lagutko, 27.10.2009, create new SplashFormatNode only if not a default format
+			        if (!format.equals(new CellFormat())) {
+			            NeoSplashUtil.logn("Adding reference to new SplashFormatNode");
 
-					SplashFormatNode newSFNode = new SplashFormatNode(neoService.createNode());
+			            SplashFormatNode newSFNode = new SplashFormatNode(neoService.createNode());
 
-					setSplashFormat(newSFNode, format);
+			            setSplashFormat(newSFNode, format);
 
-					newSFNode.addCell(node);
+			            newSFNode.addCell(node);
+			        }
 				}
 			}
-
 
 
 			//if (format != null && !format.isDefaultFormat()) {
@@ -430,7 +428,7 @@ public class SpreadsheetService {
 	}
 	
 	public void setSplashFormat(SplashFormatNode sfNode, CellFormat format){
-		sfNode.setBackgroundColorB(format.getBackgroundColor().getBlue());
+	    sfNode.setBackgroundColorB(format.getBackgroundColor().getBlue());
 		sfNode.setBackgroundColorG(format.getBackgroundColor().getGreen());
 		sfNode.setBackgroundColorR(format.getBackgroundColor().getRed());
 		sfNode.setFontColorB(format.getFontColor().getBlue());
@@ -467,9 +465,7 @@ public class SpreadsheetService {
 	}
 
 	private boolean isFormatChanged(SplashFormatNode sfNode, CellFormat newCF){
-
-
-		Integer bgColorB = sfNode.getBackgroundColorB();
+	    Integer bgColorB = sfNode.getBackgroundColorB();
 		Integer bgColorG = sfNode.getBackgroundColorG();
 		Integer bgColorR = sfNode.getBackgroundColorR();
 
@@ -560,6 +556,9 @@ public class SpreadsheetService {
 		CellFormat cellFormat = new CellFormat();
 		
 		SplashFormatNode sfNode = node.getSplashFormat();
+		if (sfNode == null) {
+		    sfNode = defaultSFNode;
+		}
 		
 		//Lagutko, 5.10.2009, get a Data Format from Node
 		cellFormat.setFormat(sfNode.getFormat());

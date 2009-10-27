@@ -87,7 +87,14 @@ public class CellNode extends AbstractNode {
     }
     
     public SplashFormatNode getSplashFormat(){
-    	return SplashFormatNode.fromNode(node.getSingleRelationship(SplashRelationshipTypes.SPLASH_FORMAT, Direction.INCOMING).getStartNode());
+        //Lagutko, 27.10.2009, Cell can have no splash format
+        Iterator<Relationship> relationships = node.getRelationships(SplashRelationshipTypes.SPLASH_FORMAT, Direction.INCOMING).iterator();
+        if (relationships.hasNext()) {
+            return SplashFormatNode.fromNode(relationships.next().getStartNode());            
+        }
+        else {
+            return null;
+        }
     }
     
     /**
