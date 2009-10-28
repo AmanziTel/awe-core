@@ -376,7 +376,10 @@ public class SplashFormatNode extends AbstractNode {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	private Format deserializeFormat(byte[] format) throws IOException, ClassNotFoundException {
+	private Format deserializeFormat(byte[] format) throws IOException, ClassNotFoundException, NullPointerException {
+	    if (format == null) {
+	        return null;
+	    }
 	    ByteArrayInputStream s = new ByteArrayInputStream(format);
 	    ObjectInputStream o = new ObjectInputStream(s);
 	    
