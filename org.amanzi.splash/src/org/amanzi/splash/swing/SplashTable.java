@@ -700,9 +700,9 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 	/**
 	 * Handles hot keys
 	 */
-	@Override
-	protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-	    //Lagutko, 15.10.2009, actions with pressed ctrls
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        // Lagutko, 15.10.2009, actions with pressed ctrls
         int row = getSelectedRow();
         int column = getSelectedColumn();
         
@@ -754,8 +754,6 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
                     repaint();
                     result = true;
                     break;
-                default:
-                    return super.processKeyBinding(ks, e, condition, pressed);
                 }
             }
             else {
@@ -764,13 +762,11 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
                     deleteCell(row, column);
                     result = true;
                     break;
-                default:
-                    return super.processKeyBinding(ks, e, condition, pressed);
                 }
             }
         }
         
-        return result;
+        return result || super.processKeyBinding(ks, e, condition, pressed);
 	}
 
 	/**
