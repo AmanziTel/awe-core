@@ -727,12 +727,14 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
                     Cell cell = (Cell) getValueAt(row, column);
 
                     updateFont(cell, Font.BOLD);
+                    repaint();
                     result = true;
                     break;
                 case KeyEvent.VK_I:
                     cell = (Cell) getValueAt(row, column);
                 
                     updateFont(cell, Font.ITALIC);
+                    repaint();
                     result = true;
                     break;
                 case KeyEvent.VK_U:
