@@ -76,6 +76,11 @@ class Cell
     result
   end
   
+def coerce(n)
+  result= [n, get_typed_value]
+end  
+
+
   #
   # Converts Cell to String
   #
