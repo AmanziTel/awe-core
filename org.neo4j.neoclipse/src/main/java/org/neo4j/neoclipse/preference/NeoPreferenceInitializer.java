@@ -33,5 +33,12 @@ public class NeoPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault( NeoPreferences.DATABASE_LOCATION, "" );
         pref.setDefault( NeoPreferences.DATABASE_RESOURCE_URI, "" );
         pref.setDefault( NeoPreferences.HELP_ON_START, true );
+        pref.setDefault(NeoPreferences.NEOSTORE_NODES, 25);
+        pref.setDefault(NeoPreferences.NEOSTORE_RELATIONSHIPS, 50);
+        pref.setDefault(NeoPreferences.NEOSTORE_PROPERTIES, 90);
+        pref.setDefault(NeoPreferences.NEOSTORE_PROPERTIES_INDEX, 1);
+        pref.setDefault(NeoPreferences.NEOSTORE_PROPERTIES_KEYS, 1);
+        pref.setDefault(NeoPreferences.NEOSTORE_PROPERTIES_STRING, 130);
+        pref.setDefault(NeoPreferences.NEOSTORE_PROPERTIES_ARRAYS, 130);
     }
 }

@@ -43,4 +43,12 @@ public final class NeoPreferences
      * Maximum node returned
      */
     public static final String MAXIMUM_NODES_RETURNED = "maximumNodesReturned";
+
+    public static final String NEOSTORE_NODES = "neostore.nodestore.db.mapped_memory";
+    public static final String NEOSTORE_RELATIONSHIPS = "neostore.relationshipstore.db.mapped_memory";
+    public static final String NEOSTORE_PROPERTIES = "neostore.propertystore.db.mapped_memory";
+    public static final String NEOSTORE_PROPERTIES_INDEX = "neostore.propertystore.db.index.mapped_memory";
+    public static final String NEOSTORE_PROPERTIES_KEYS = "neostore.propertystore.db.index.keys.mapped_memory";
+    public static final String NEOSTORE_PROPERTIES_STRING = "neostore.propertystore.db.strings.mapped_memory";
+    public static final String NEOSTORE_PROPERTIES_ARRAYS = "neostore.propertystore.db.arrays.mapped_memory";
 }

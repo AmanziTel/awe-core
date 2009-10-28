@@ -13,6 +13,9 @@
  */
 package org.neo4j.neoclipse.neo;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.SafeRunner;
@@ -86,8 +89,16 @@ public class NeoServiceManager
                 {
                     return;
                 }
+                Map<String, String> parameters = new HashMap<String, String>();
+                addParameter(preferenceStore, parameters, NeoPreferences.NEOSTORE_NODES);
+                addParameter(preferenceStore, parameters, NeoPreferences.NEOSTORE_RELATIONSHIPS);
+                addParameter(preferenceStore, parameters, NeoPreferences.NEOSTORE_PROPERTIES);
+                addParameter(preferenceStore, parameters, NeoPreferences.NEOSTORE_PROPERTIES_INDEX);
+                addParameter(preferenceStore, parameters, NeoPreferences.NEOSTORE_PROPERTIES_KEYS);
+                addParameter(preferenceStore, parameters, NeoPreferences.NEOSTORE_PROPERTIES_STRING);
+                addParameter(preferenceStore, parameters, NeoPreferences.NEOSTORE_PROPERTIES_ARRAYS);
                 // seems to be a valid directory, try starting neo
-                neo = new EmbeddedNeo( location );
+                neo = new EmbeddedNeo(location, parameters);
                 System.out.println( "connected to embedded neo" );
             }
             tx = neo.beginTx();
@@ -97,8 +108,18 @@ public class NeoServiceManager
     }
 
     /**
-     * Returns the neo service or null, if it could not be started (due to
-     * configuration problems).
+     * put parameter in map
+     * 
+     * @param preferenceStore - IPreferenceStore
+     * @param parameters - map
+     * @param property - parameter
+     */
+    private void addParameter(final IPreferenceStore preferenceStore, Map<String, String> parameters, String property) {
+        parameters.put(property, String.valueOf(preferenceStore.getInt(property) + "M"));
+    }
+
+    /**
+     * Returns the neo service or null, if it could not be started (due to configuration problems).
      */
     public NeoService getNeoService() throws RuntimeException
     {

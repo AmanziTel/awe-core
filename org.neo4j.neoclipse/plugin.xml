@@ -45,6 +45,12 @@
             name="Graph Decorations"
             category="org.neo4j.neoclipse.preference.NeoPreferencePage">
       </page>
+            <page
+            class="org.neo4j.neoclipse.preference.NeoTuningPreferencePage"
+            id="org.neo4j.neoclipse.preference.NeoTuningPreferencePage"
+            name="tuning"
+            category="org.neo4j.neoclipse.preference.NeoPreferencePage">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
