@@ -68,7 +68,6 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
-import org.neo4j.util.index.LuceneIndexService;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -125,8 +124,6 @@ public class SpreadsheetService {
 	protected AweProjectService projectService;
 
 	private SplashFormatNode defaultSFNode;
-	
-	private LuceneIndexService indexService;
 
 	/**
 	 * Constructor of Service.
