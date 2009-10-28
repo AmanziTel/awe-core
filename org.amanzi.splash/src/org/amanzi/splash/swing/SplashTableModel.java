@@ -370,8 +370,12 @@ public class SplashTableModel extends DefaultTableModel {
         String input = "update('" + cellID.toLowerCase() + "', %Q[" + formula + "])";
 
 		NeoSplashUtil.logn("ERB Input: " + input);
-
-		s = runtime.evalScriptlet(input);
+        // TODO set/remove error property in cell node?
+		try {
+            s = runtime.evalScriptlet(input);
+        } catch (Exception e) {
+            s = e.getLocalizedMessage();
+        }
 
 		NeoSplashUtil.logn("ERB Output = " + s);
 

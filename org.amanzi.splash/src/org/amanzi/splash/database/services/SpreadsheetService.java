@@ -540,7 +540,7 @@ public class SpreadsheetService {
 	 *            CellNode
 	 * @return Cell
 	 */
-	private Cell convertNodeToCell(CellNode node, String rowIndex, String columnName, boolean parentCyclic) {
+    private Cell convertNodeToCell(CellNode node, String rowIndex, String columnName) {
 	    if (rowIndex == null) {
 			RowNode row = node.getRow();
 			rowIndex = row.getRowIndex();
@@ -623,7 +623,7 @@ public class SpreadsheetService {
 	        //Lagutko, 6.10.2009, convertNodeToCell use access to database and should be wrapped in transaction
 	    	Transaction transaction = neoService.beginTx();
 	    	try {
-	    		return convertNodeToCell(node, id.getRowName(), id.getColumnName(), false);
+                return convertNodeToCell(node, id.getRowName(), id.getColumnName());
 	    	}
 	    	finally {
 	    		transaction.success();
@@ -704,7 +704,7 @@ public class SpreadsheetService {
 		ArrayList<Cell> result = new ArrayList<Cell>(0);
 
 		while (rfdNodes.hasNext()) {
-			result.add(convertNodeToCell(rfdNodes.next(), null, null, currentNode.isCyclic()));
+            result.add(convertNodeToCell(rfdNodes.next(), null, null));
 		}
 
 		return result;
@@ -768,7 +768,7 @@ public class SpreadsheetService {
 			Iterator<CellNode> cellsIterator = row.getAllCells();
 
 			while (cellsIterator.hasNext()) {
-				Cell cell = convertNodeToCell(cellsIterator.next(), rowIndex, null, false);
+                Cell cell = convertNodeToCell(cellsIterator.next(), rowIndex, null);
 				cellsList.add(cell);
 			}
 		}

@@ -79,9 +79,13 @@ public class InterpretTask implements SplashJobTask {
                 NeoSplashUtil.logn("WARNING: se = null");
                 resultCell = new Cell(row, column, Cell.DEFAULT_VALUE, Cell.DEFAULT_DEFINITION, new CellFormat());
             }
+            Object s1;
+            try {
+                s1 = model.interpret_erb(cellID, formula);
+            } catch (Exception e) {
+                s1 = e.getLocalizedMessage();
+            }
 
-            Object s1 = model.interpret_erb(cellID, formula);
-        
             NeoSplashUtil.logn("Setting cell definition: " + formula);
             resultCell.setDefinition(formula);
 
