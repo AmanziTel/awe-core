@@ -68,6 +68,7 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.util.index.LuceneIndexService;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -124,6 +125,8 @@ public class SpreadsheetService {
 	protected AweProjectService projectService;
 
 	private SplashFormatNode defaultSFNode;
+	
+	private LuceneIndexService indexService;
 
 	/**
 	 * Constructor of Service.
@@ -138,6 +141,7 @@ public class SpreadsheetService {
 
 		defaultSFNode = new SplashFormatNode(neoService.createNode());
 		setSplashFormat(defaultSFNode, new CellFormat());
+		
 	}
 
 	/**
@@ -362,7 +366,7 @@ public class SpreadsheetService {
 
 			CellFormat format = cell.getCellFormat();
 			SplashFormatNode sfNode = node.getSplashFormat();
-			if (format != null && sfNode != null){
+			if (format != null){
 
 				if (isFormatChanged(sfNode, format)==true){
 				    NeoSplashUtil.logn("Format has been changed...");
@@ -465,6 +469,9 @@ public class SpreadsheetService {
 	}
 
 	private boolean isFormatChanged(SplashFormatNode sfNode, CellFormat newCF){
+	    if (sfNode == null) {
+	        return true;
+	    }
 	    Integer bgColorB = sfNode.getBackgroundColorB();
 		Integer bgColorG = sfNode.getBackgroundColorG();
 		Integer bgColorR = sfNode.getBackgroundColorR();
