@@ -39,6 +39,39 @@ import com.eteks.openjeks.format.CellFormat;
  * @since 1.0.0
  */
 public class CSVImporter extends AbstractImporter {
+    
+    /**
+     * An exception that will be thrown when initial part of spreadsheet already imported
+     * 
+     * @author Lagutko_N
+     * @since 1.0.0
+     */
+    public class CSVImportException extends Exception {
+
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 6314922325253836414L;
+        
+    }
+    
+    /*
+     * Number of rows for initial import
+     */
+    private static int INITIAL_ROW_NUMBER = 100;
+    
+    /*
+     * A reader for file content
+     */
+    private BufferedReader reader;
+    
+    /*
+     * Number of row to process
+     */
+    private int row = 0;    
+    
+    /*
+     * Number of read bytes
+     */
+    private long bytesRead = 0;
 
     /**
      * Constructor
@@ -49,24 +82,21 @@ public class CSVImporter extends AbstractImporter {
      */
     public CSVImporter(IPath containerPath, String fileName, InputStream stream, long fileSize) {
         super(containerPath, fileName, stream, fileSize);
+        reader = new BufferedReader(new InputStreamReader(fileContent));
     }
 
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         monitor.beginTask("Importing CSV data into Splash", 100);
         
-        //create a Spreadsheet
+        //create a Spreadsheet        
         createSpreadsheet();
         
         Transaction tx = NeoUtils.beginTransaction();
-        try {            
-            BufferedReader reader = new BufferedReader(new InputStreamReader(fileContent));
+        try {
             String line;
             
             line = reader.readLine();
-            
-            int i=0;
-            int j=0;
             
             // detecting type of separator;
             char sep=';';
@@ -80,24 +110,23 @@ public class CSVImporter extends AbstractImporter {
             
             CSVParser parser = new CSVParser(sep);
             int perc = 0;
-            long totalBytes = fileSize;
-            long bytesRead = 0;
+            long totalBytes = fileSize;            
             int prevPerc = 0;
             CellFormat defaultFormat = new CellFormat();
             while (line != null  && line.lastIndexOf(sep) > 0){
-                NeoSplashUtil.logn("loading line #" + i);
+                NeoSplashUtil.logn("loading line #" + row);
 
                 List<String> list = parser.parse(line);
                 Iterator<String> it = list.iterator();
-                j = 0;
+                int j = 0;
                 while (it.hasNext()) {
-                    Cell cell = new Cell(i, j, "", (String) it.next(), defaultFormat);
+                    Cell cell = new Cell(row, j, "", (String) it.next(), defaultFormat);
                     //save a cell
                     saveCell(cell);
                     j++;
                 }
 
-                monitor.setTaskName("Loading record #" + i);
+                monitor.setTaskName("Loading record #" + row);
                 bytesRead += line.length();
                 perc = (int)(100.0 * (float)bytesRead / (float)totalBytes);
                 if (perc > prevPerc) {                    
@@ -107,11 +136,14 @@ public class CSVImporter extends AbstractImporter {
 
                 line = reader.readLine();
                 
-                i++;
+                row++;
                 
                 //update transaction each 1000 rows
-                if ((i % 20) == 0) {
+                if ((row % 20) == 0) {
                     tx = updateTransaction(tx);
+                }
+                if (row == INITIAL_ROW_NUMBER) {
+                    throw new InvocationTargetException(new CSVImportException());
                 }
             }
             tx.success();

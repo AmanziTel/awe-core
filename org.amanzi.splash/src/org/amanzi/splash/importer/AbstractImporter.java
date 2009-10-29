@@ -210,6 +210,9 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      *  Creates a Spreadsheet 
      */
     protected void createSpreadsheet() {
+        if (spreadsheetNode != null) {
+            return;
+        }
         //computing names of Ruby and AWE projects
         IProject rubyProject = (IProject)ResourcesPlugin.getWorkspace().getRoot().findMember(containerPath);
         
@@ -298,9 +301,7 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      * @return row that contain imported cell or null
      */
     private void importCell(Cell cell, RowNode row, ColumnNode column) {
-        if (spreadsheetNode == null) {
-            createSpreadsheet();
-        }
+        createSpreadsheet();
         
         //create a new cell
         CellNode cellNode = new CellNode(neoService.createNode());
@@ -320,9 +321,7 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      * @return created ColumnNode
      */
     private ColumnNode createColumnNode(String name) {
-        if (spreadsheetNode == null) {
-            createSpreadsheet();
-        }
+        createSpreadsheet();
         
         ColumnNode node = new ColumnNode(neoService.createNode(), name);
         
@@ -338,9 +337,7 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      * @return created RowNode
      */
     private RowNode createRowNode(String name) {
-        if (spreadsheetNode == null) {
-            createSpreadsheet();
-        }
+        createSpreadsheet();
         
         RowNode node = new RowNode(neoService.createNode(), name);
         
