@@ -113,10 +113,10 @@ public class NetworkLoader extends AbstractLoader {
     private Node city = null;
     private Node network = null;
     private ArrayList<String> mainHeaders = new ArrayList<String>();
-    private ArrayList<String> shortLines = new ArrayList<String>();
-    private ArrayList<String> emptyFields = new ArrayList<String>();
-    private ArrayList<String> badFields = new ArrayList<String>();
-    private ArrayList<String> lineErrors = new ArrayList<String>();
+    public ArrayList<String> shortLines = new ArrayList<String>();
+    public ArrayList<String> emptyFields = new ArrayList<String>();
+    public ArrayList<String> badFields = new ArrayList<String>();
+    public ArrayList<String> lineErrors = new ArrayList<String>();
     private long siteNumber = 0;
     private long sectorNumber = 0;
     private boolean trimSectorName = true;
