@@ -17,7 +17,8 @@ Export-Package: org.amanzi.neo.core,
  org.amanzi.neo.core.preferences,
  org.amanzi.neo.core.service,
  org.amanzi.neo.core.service.listener,
- org.amanzi.neo.core.utils
+ org.amanzi.neo.core.utils,
+ org.amanzi.neo.index
 Eclipse-LazyStart: true
 Bundle-Activator: org.amanzi.neo.core.NeoCorePlugin
 Bundle-Vendor: amanzi.org
