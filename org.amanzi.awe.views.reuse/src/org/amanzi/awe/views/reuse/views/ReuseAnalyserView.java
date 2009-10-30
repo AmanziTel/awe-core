@@ -48,6 +48,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -498,13 +499,32 @@ public class ReuseAnalyserView extends ViewPart {
      *save blend colors in aggregation node
      */
     private void saveColors() {
-        RGB rgbLeft = colorLeft.getColorValue();
-        if (rgbLeft != null) {
-            saveColor(dataset.getAggrNode(), INeoConstants.COLOR_LEFT, rgbLeft);
-        }
-        RGB rgbRight = colorRight.getColorValue();
-        if (rgbRight != null) {
-            saveColor(dataset.getAggrNode(), INeoConstants.COLOR_RIGHT, rgbRight);
+        Job job = new Job("saveColors aggr node") {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                Transaction tx = NeoUtils.beginTransaction();
+                try {
+                    RGB rgbLeft = colorLeft.getColorValue();
+                    if (rgbLeft != null) {
+                        saveColor(dataset.getAggrNode(), INeoConstants.COLOR_LEFT, rgbLeft);
+                    }
+                    RGB rgbRight = colorRight.getColorValue();
+                    if (rgbRight != null) {
+                        saveColor(dataset.getAggrNode(), INeoConstants.COLOR_RIGHT, rgbRight);
+                    }
+                    return Status.OK_STATUS;
+                } finally {
+                    tx.finish();
+                }
+            }
+        };
+        job.schedule();
+        try {
+            job.join();
+        } catch (InterruptedException e) {
+            // TODO Handle InterruptedException
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 
@@ -549,6 +569,7 @@ public class ReuseAnalyserView extends ViewPart {
         } else {
             currentPalette = null;
         }
+
         dataset.setPalette(currentPalette);
         chartUpdate();
     }
@@ -736,8 +757,35 @@ public class ReuseAnalyserView extends ViewPart {
      * 
      * @param aggrNode - new node
      */
-    protected void chartUpdate(Node aggrNode) {
-        chart.setTitle(aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME,"").toString());
+    protected void chartUpdate(final Node aggrNode) {
+
+        Job dbJob = new Job("dbWork") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                Transaction tx = NeoUtils.beginTransaction();
+                try {
+
+                    return Status.OK_STATUS;
+                } finally {
+                    tx.finish();
+                }
+            }
+        };
+        chart.setTitle(ActionUtil.runJobWithResult(new RunnableWithResult<String>() {
+            String title;
+
+            @Override
+            public String getValue() {
+                return title;
+            }
+
+            @Override
+            public void run() {
+                title = aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
+            }
+
+        }));
+        dbJob.schedule();
         currentPalette = getPalette(aggrNode);
         colorLeft.setColorValue(getColorLeft(aggrNode));
         colorRight.setColorValue(getColorRight(aggrNode));
@@ -862,6 +910,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @param columnKey - column
      */
     private void setSelection(ChartNode columnKey) {
+
         Node gisNode = members.get(gisCombo.getText());
         Node aggrNode = dataset.getAggrNode();
         if (selectedColumn != null) {
@@ -971,12 +1020,23 @@ public class ReuseAnalyserView extends ViewPart {
         @Override
         public IStatus run(IProgressMonitor monitor) {
             try {
-                node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select, monitor);
+                Transaction tx = NeoUtils.beginTransaction();
+                try {
+                    node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select, monitor);
+                    tx.success();
+                } finally {
+                    tx.finish();
+                }
                 ActionUtil.getInstance().runTask(new Runnable() {
                     @Override
                     public void run() {
-                        mainView.setEnabled(true);
-                        chartUpdate(node);
+                        Transaction tx = NeoUtils.beginTransaction();
+                        try {
+                            mainView.setEnabled(true);
+                            chartUpdate(node);
+                        } finally {
+                            tx.finish();
+                        }
                     }
                 }, true);
                 return Status.OK_STATUS;
@@ -2171,14 +2231,32 @@ public class ReuseAnalyserView extends ViewPart {
          * 
          * @param currentPalette
          */
-        public void setPalette(BrewerPalette currentPalette) {
-
-            if (aggrNode != null) {
-                if (currentPalette != null) {
-                    aggrNode.setProperty(INeoConstants.PALETTE_NAME, currentPalette.getName());
-                } else {
-                    aggrNode.removeProperty(INeoConstants.PALETTE_NAME);
+        public void setPalette(final BrewerPalette currentPalette) {
+            Job job = new Job("setPalette") {
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    Transaction tx = NeoUtils.beginTransaction();
+                    try {
+                    if (aggrNode != null) {
+                        if (currentPalette != null) {
+                            aggrNode.setProperty(INeoConstants.PALETTE_NAME, currentPalette.getName());
+                        } else {
+                            aggrNode.removeProperty(INeoConstants.PALETTE_NAME);
+                        }
+                    }
+                    return Status.OK_STATUS;
+                    } finally {
+                        tx.finish();
+                    }
                 }
+
+            };
+            job.schedule();
+            try {
+                job.join();
+            } catch (InterruptedException e) {
+                // TODO Handle InterruptedException
+                throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }
 
@@ -2204,14 +2282,34 @@ public class ReuseAnalyserView extends ViewPart {
          * 
          * @param aggrNode new node
          */
-        public void setAggrNode(Node aggrNode) {
+        public void setAggrNode(final Node aggrNode) {
+            Job job = new Job("setAggrNode") {
+
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    Transaction tx = NeoUtils.beginTransaction();
+                    try {
+                        Iterator<Node> iteratorChild = aggrNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                                ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
+                                .iterator();
+                        nodeList.clear();
+                        while (iteratorChild.hasNext()) {
+                            Node node = (Node)iteratorChild.next();
+                            nodeList.add(new ChartNode(node));
+                        }
+                        return Status.OK_STATUS;
+                    } finally {
+                        tx.finish();
+                    }
+                }
+            };
             this.aggrNode = aggrNode;
-            Iterator<Node> iteratorChild = aggrNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                    ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-            nodeList.clear();
-            while (iteratorChild.hasNext()) {
-                Node node = (Node)iteratorChild.next();
-                nodeList.add(new ChartNode(node));
+            job.schedule();
+            try {
+                job.join();
+            } catch (InterruptedException e) {
+                // TODO Handle InterruptedException
+                throw (RuntimeException)new RuntimeException().initCause(e);
             }
             fireDatasetChanged();
         }

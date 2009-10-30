@@ -21,13 +21,11 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.neo4j.api.core.Transaction;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -49,8 +47,6 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateDatabaseList
 	// The shared instance
 	private static ReusePlugin plugin;
 
-    private Transaction currentTransaction;
-	
 	/**
 	 * The constructor
 	 */
@@ -64,7 +60,6 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateDatabaseList
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-        currentTransaction = NeoServiceProvider.getProvider().getService().beginTx();
         NeoCorePlugin.getDefault().getUpdateDatabaseManager().addListener(this);
 	}
 
@@ -75,7 +70,6 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateDatabaseList
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
-        currentTransaction.finish();
         NeoCorePlugin.getDefault().getUpdateDatabaseManager().removeListener(this);
 	}
 
