@@ -12,6 +12,11 @@
  */
 package org.amanzi.neo.core.utils;
 
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
@@ -100,14 +105,40 @@ public class ActionUtil {
 	 * 
 	 * @author Lagutko_N
 	 */
-	public interface RunnableWithResult extends Runnable {
+    public interface RunnableWithResult<T> extends Runnable {
 	    
 	    /**
 	     * Computed result
 	     *
 	     * @return result of this task
 	     */
-	    public Object getValue();
+        public T getValue();
 	    
 	}
+
+    /**
+     * runs job with getting result
+     * 
+     * @param task RunnableWithResult
+     * @return result;
+     */
+    public static <T> T runJobWithResult(final RunnableWithResult<T> task) {
+        Job job = new Job(task.toString()) {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                task.run();
+                return Status.OK_STATUS;
+            }
+
+        };
+        job.schedule();
+        try {
+            job.join();
+        } catch (InterruptedException e) {
+            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+            return null;
+        }
+        return task.getValue();
+    }
 }
