@@ -19,6 +19,9 @@ import java.util.Map;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
+import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.EmbeddedNeo;
@@ -33,7 +36,7 @@ public class RomesLoader extends DriveLoader {
     private String latlong = null;
     private String time = null;
     private long timestamp = 0L;
-    private ArrayList<Map<String,Object>> data = new ArrayList<Map<String,Object>>();
+    private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -45,6 +48,7 @@ public class RomesLoader extends DriveLoader {
     public RomesLoader(String filename, Display display, String dataset) {
         initialize("Romes", null, filename, display, dataset);
         initializeKnownHeaders();
+        addDriveIndexes();
     }
 
     /**
@@ -57,6 +61,7 @@ public class RomesLoader extends DriveLoader {
     public RomesLoader(NeoService neo, String filename) {
         initialize("Romes", neo, filename, null, null);
         initializeKnownHeaders();
+        addDriveIndexes();
     }
 
     /**
@@ -69,14 +74,26 @@ public class RomesLoader extends DriveLoader {
         addKnownHeader("time", "time.*");
         addKnownHeader("latitude", ".*latitude.*");
         addKnownHeader("longitude", ".*longitude.*");
-        addMappedHeader("events", "Event Type", "event_type", new PropertyMapper(){
+        addMappedHeader("events", "Event Type", "event_type", new PropertyMapper() {
 
             @Override
             public Object mapValue(String originalValue) {
                 return originalValue.replaceAll("HO Command.*", "HO Command");
-            }});
+            }
+        });
         addMappedHeader("time", "Timestamp", "timestamp", new DateTimeMapper("HH:mm:ss"));
-        dropHeaderStats(new String[]{"time","timestamp","latitude","longitude"});
+        dropHeaderStats(new String[] {"time", "timestamp", "latitude", "longitude"});
+    }
+
+    private void addDriveIndexes() {
+        try {
+            addIndex(new MultiPropertyIndex<Long>("Index-timestamp-" + dataset, new String[] {"timestamp"},
+                    new MultiTimeIndexConverter(), 10));
+            addIndex(new MultiPropertyIndex<Double>("Index-location-" + dataset, new String[] {"lat", "lon"},
+                    new MultiDoubleConverter(0.001), 10));
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     protected void parseLine(String line) {
@@ -91,12 +108,12 @@ public class RomesLoader extends DriveLoader {
         if (first_line == 0)
             first_line = lineNumber;
         last_line = lineNumber;
-        Map<String,Object> lineData = makeDataMap(fields);
+        Map<String, Object> lineData = makeDataMap(fields);
         this.time = (String)lineData.get("time");
         this.timestamp = (Long)lineData.get("timestamp");
         Object latitude = lineData.get("latitude");
         Object longitude = lineData.get("longitude");
-        if(time==null || latitude==null || longitude==null){
+        if (time == null || latitude == null || longitude == null) {
             return;
         }
         String thisLatLong = latitude.toString() + "\t" + longitude.toString();
@@ -104,8 +121,8 @@ public class RomesLoader extends DriveLoader {
             saveData(); // persist the current data to database
             this.latlong = thisLatLong;
         }
-        this.incValidLocation();    // we have not filtered the message out on lack of location
-        if(lineData.size()>0) {
+        this.incValidLocation(); // we have not filtered the message out on lack of location
+        if (lineData.size() > 0) {
             data.add(lineData);
         }
     }
@@ -142,19 +159,20 @@ public class RomesLoader extends DriveLoader {
                 findOrCreateFileNode(mp);
                 updateBBox(lat, lon);
                 checkCRS((float)lat, (float)lon, null);
-                //debug("Added measurement point: " + propertiesString(mp));
+                // debug("Added measurement point: " + propertiesString(mp));
                 if (point != null) {
                     point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
                 }
+                index(mp);
                 point = mp;
                 Node prev_ms = null;
                 for (Map<String, Object> dataLine : data) {
                     Node ms = neo.createNode();
                     ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
-                    for(Map.Entry<String, Object> entry: dataLine.entrySet()) {
+                    for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         ms.setProperty(entry.getKey(), entry.getValue());
                     }
-                    //debug("\tAdded measurement: " + propertiesString(ms));
+                    // debug("\tAdded measurement: " + propertiesString(ms));
                     point.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
                     if (prev_ms != null) {
                         prev_ms.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);

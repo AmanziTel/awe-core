@@ -23,6 +23,9 @@ import java.util.TreeMap;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
+import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
@@ -51,6 +54,7 @@ public class TEMSLoader extends DriveLoader {
     public TEMSLoader(String filename, Display display, String dataset) {
         initialize("TEMS", null, filename, display, dataset);
         initializeKnownHeaders();
+        addDriveIndexes();
     }
 
     /**
@@ -63,6 +67,7 @@ public class TEMSLoader extends DriveLoader {
     public TEMSLoader(NeoService neo, String filename) {
         initialize("TEMS", neo, filename, null, null);
         initializeKnownHeaders();
+        addDriveIndexes();
     }
 
     /**
@@ -70,10 +75,11 @@ public class TEMSLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
-        addHeaderFilters(new String[]{"time","ms","message_type","event",".*latitude",".*longitude",".*active_set.*1",".*pilot_set.*"});
+        addHeaderFilters(new String[] {"time", "ms", "message_type", "event", ".*latitude", ".*longitude", ".*active_set.*1",
+                ".*pilot_set.*"});
         addKnownHeader("latitude", ".*latitude");
         addKnownHeader("longitude", ".*longitude");
-        addMappedHeader("time", "Timestamp", "timestamp", new PropertyMapper(){
+        addMappedHeader("time", "Timestamp", "timestamp", new PropertyMapper() {
 
             @Override
             public Object mapValue(String time) {
@@ -86,8 +92,20 @@ public class TEMSLoader extends DriveLoader {
                     return 0L;
                 }
                 return datetime.getTime();
-            }});
-        dropHeaderStats(new String[]{"time","timestamp","latitude","longitude"});
+            }
+        });
+        dropHeaderStats(new String[] {"time", "timestamp", "latitude", "longitude"});
+    }
+
+    private void addDriveIndexes() {
+        try {
+            addIndex(new MultiPropertyIndex<Long>("Index-timestamp-" + dataset, new String[] {"timestamp"},
+                    new MultiTimeIndexConverter(), 10));
+            addIndex(new MultiPropertyIndex<Double>("Index-location-" + dataset, new String[] {"lat", "lon"},
+                    new MultiDoubleConverter(0.001), 10));
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     /**
@@ -107,14 +125,16 @@ public class TEMSLoader extends DriveLoader {
             return;
         if (this.isOverLimit())
             return;
-        Map<String,Object> lineData = makeDataMap(fields);
+        Map<String, Object> lineData = makeDataMap(fields);
         // debug(line);
 
         this.time = lineData.get("time").toString();
         this.timestamp = (Long)lineData.get("timestamp");
         String ms = (String)lineData.get("ms");
-        String event = (String)lineData.get("event"); // currently only getting this as a change marker
-        String message_type = (String)lineData.get("message_type"); // need this to filter for only relevant messages
+        String event = (String)lineData.get("event"); // currently only getting this as a change
+                                                        // marker
+        String message_type = (String)lineData.get("message_type"); // need this to filter for only
+                                                                    // relevant messages
         // message_id = lineData.get("message_id"); // parsing this is not faster
         if (!"EV-DO Pilot Sets Ver2".equals(message_type))
             return;
@@ -129,7 +149,7 @@ public class TEMSLoader extends DriveLoader {
 
         Object latitude = lineData.get("latitude");
         Object longitude = lineData.get("longitude");
-        if(time==null || latitude==null || longitude==null){
+        if (time == null || latitude == null || longitude == null) {
             return;
         }
         String thisLatLong = latitude.toString() + "\t" + longitude.toString();
@@ -229,6 +249,7 @@ public class TEMSLoader extends DriveLoader {
                 if (point != null) {
                     point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
                 }
+                index(mp);
                 point = mp;
                 Node prev_ms = null;
                 TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
