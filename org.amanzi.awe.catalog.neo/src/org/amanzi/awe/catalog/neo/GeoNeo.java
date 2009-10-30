@@ -23,6 +23,8 @@ import java.util.Set;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -40,11 +42,11 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- * This class is a utility class for reading GIS information from a specific
- * source within a Neo4J database. The GIS information is assumed to start with
- * a node known as the GIS node. This node contains the CRS information and a relationship
- * to the first of a graph of nodes representing GIS data. Each of these is expected to
- * have properties x/y or lat/long containing the location.
+ * This class is a utility class for reading GIS information from a specific source within a Neo4J
+ * database. The GIS information is assumed to start with a node known as the GIS node. This node
+ * contains the CRS information and a relationship to the first of a graph of nodes representing GIS
+ * data. Each of these is expected to have properties x/y or lat/long containing the location.
+ * 
  * @author craig
  */
 public class GeoNeo {
@@ -59,7 +61,7 @@ public class GeoNeo {
 
     /** GeoNeo DRIVE_INQUIRER field */
     public static final String DRIVE_INQUIRER = "DRIVE_INQUIRER";
-    private Node gisNode;   // the root of some specific GIS information in the Neo4j database
+    private Node gisNode; // the root of some specific GIS information in the Neo4j database
     private CoordinateReferenceSystem crs;
     private ReferencedEnvelope bounds;
     private String name;
@@ -81,9 +83,9 @@ public class GeoNeo {
     private Node aggrNode = null;
 
     /**
-     * A class representing a located Node in the database. By convention all GeoNodes
-     * are expected to contain properties for "type" and "name". In addition they should contain
-     * a location or set of coordinates in one of the following formats:
+     * A class representing a located Node in the database. By convention all GeoNodes are expected
+     * to contain properties for "type" and "name". In addition they should contain a location or
+     * set of coordinates in one of the following formats:
      * <ul>
      * <li>"coords" => double[] of coordinates</li>
      * <li>"x" & "y" => two coords of type double</li>
@@ -99,41 +101,52 @@ public class GeoNeo {
         private double[] coords;
         private Node node;
         private Coordinate coordinate;
-        public GeoNode(Node node){
+
+        public GeoNode(Node node) {
             this.coords = getCoords(node);
             this.node = node;
         }
 
         public Coordinate getCoordinate() {
-            if(coordinate==null) coordinate = new Coordinate(coords[0],coords[1]);
+            if (coordinate == null)
+                coordinate = new Coordinate(coords[0], coords[1]);
             return coordinate;
         }
-        public double[] getCoords(){
+
+        public double[] getCoords() {
             return coords;
         }
-        public Node getNode(){
+
+        public Node getNode() {
             return node;
         }
-        public String getType(){
+
+        public String getType() {
             return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString();
         }
-        public String getName(){
-            for(String key:new String[]{"name", "value", "time", "code"}) {
+
+        public String getName() {
+            for (String key : new String[] {"name", "value", "time", "code"}) {
                 Object nameObj = node.getProperty(key, null);
-                if(nameObj!=null) return nameObj.toString();
+                if (nameObj != null)
+                    return nameObj.toString();
             }
             return node.toString();
         }
-        public String toString(){
+
+        public String toString() {
             return getName();
         }
+
         private static double[] getCoords(Node next) {
-            if(next.hasProperty(INeoConstants.PROPERTY_LAT_NAME)){
-                if(next.hasProperty(INeoConstants.PROPERTY_LON_NAME)){
+            if (next.hasProperty(INeoConstants.PROPERTY_LAT_NAME)) {
+                if (next.hasProperty(INeoConstants.PROPERTY_LON_NAME)) {
                     try {
-                        return new double[]{(Float)next.getProperty(INeoConstants.PROPERTY_LON_NAME),(Float)next.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
+                        return new double[] {(Float)next.getProperty(INeoConstants.PROPERTY_LON_NAME),
+                                (Float)next.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
                     } catch (ClassCastException e) {
-                        return new double[]{(Double)next.getProperty(INeoConstants.PROPERTY_LON_NAME),(Double)next.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
+                        return new double[] {(Double)next.getProperty(INeoConstants.PROPERTY_LON_NAME),
+                                (Double)next.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
                     }
                 }
             }
@@ -146,7 +159,7 @@ public class GeoNeo {
      * 
      * @param gisNode
      */
-    public GeoNeo(org.neo4j.api.core.NeoService neo, Node gisNode){
+    public GeoNeo(org.neo4j.api.core.NeoService neo, Node gisNode) {
         this.neo = neo;
         this.gisNode = gisNode;
         this.name = this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
@@ -173,52 +186,64 @@ public class GeoNeo {
     }
 
     /**
-     * Find the Coordinate Reference System in the GIS node, or default
-     * to WGS84 if none found.
+     * Find the Coordinate Reference System in the GIS node, or default to WGS84 if none found.
+     * 
      * @return CoordinateReferenceSystem
      */
-    public CoordinateReferenceSystem getCRS(){
+    public CoordinateReferenceSystem getCRS() {
         return getCRS(DefaultGeographicCRS.WGS84);
     }
 
     /**
-     * Find the Coordinate Reference System in the GIS node, or default
-     * to the specified default if no CRS is found.
+     * Find the Coordinate Reference System in the GIS node, or default to the specified default if
+     * no CRS is found.
+     * 
      * @return CoordinateReferenceSystem
      */
-    public CoordinateReferenceSystem getCRS(CoordinateReferenceSystem defaultCRS){
-        if(crs==null){
+    public CoordinateReferenceSystem getCRS(CoordinateReferenceSystem defaultCRS) {
+        if (crs == null) {
             crs = defaultCRS; // default if crs cannot be found below
-            try{
-                if(gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)){
-                    // The simple approach is to name the CRS, eg. EPSG:4326 (GeoNeo spec prefers a new naming standard, but I'm not sure geotools knows it)
+            try {
+                if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
+                    // The simple approach is to name the CRS, eg. EPSG:4326 (GeoNeo spec prefers a
+                    // new naming standard, but I'm not sure geotools knows it)
                     crs = CRS.decode(gisNode.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
-                }else if(gisNode.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)){
-                    // TODO: This type is specified in GeoNeo spec, but what the HREF means is not, so we assume it is a live URL that will feed a CRS specification directly
-                    // TODO: Lagutko: gisNode.hasProperty() has 'crs_href' as parameter, but gisNode.getProperty() has only 'href'. What is right?
+                } else if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
+                    // TODO: This type is specified in GeoNeo spec, but what the HREF means is not,
+                    // so we assume it is a live URL that will feed a CRS specification directly
+                    // TODO: Lagutko: gisNode.hasProperty() has 'crs_href' as parameter, but
+                    // gisNode.getProperty() has only 'href'. What is right?
                     URL crsURL = new URL(gisNode.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
                     crs = CRS.decode(crsURL.getContent().toString());
                 }
-            }catch(Exception crs_e){
-                System.err.println("Failed to interpret CRS: "+crs_e.getMessage());
+            } catch (Exception crs_e) {
+                System.err.println("Failed to interpret CRS: " + crs_e.getMessage());
                 crs_e.printStackTrace(System.err);
             }
         }
         return crs;
     }
 
-    public Traverser makeGeoNeoTraverser(final Envelope searchBounds){
-        if(searchBounds==null) {
-            return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
-                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-        } else {
-            return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    double[] c = GeoNode.getCoords(currentPos.currentNode());
-                    return c != null && searchBounds.contains(c[0], c[1]);
-                }
-            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);            
+    public Traverser makeGeoNeoTraverser(final Envelope searchBounds) {
+        try {
+            MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(neo, "Index-location-" + name, new String[] {
+                    "lat", "lon"}, new MultiDoubleConverter(0.001));
+            return index.searchTraverser(new Double[] {searchBounds.getMinY(), searchBounds.getMinX()}, new Double[] {
+                    searchBounds.getMaxY(), searchBounds.getMaxX()});
+        } catch (Exception e) {
+            System.out.println("GeoNeo: Failed to search location index, doing exhaustive search: "+e);
+            if (searchBounds == null) {
+                return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                        ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            } else {
+                return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        double[] c = GeoNode.getCoords(currentPos.currentNode());
+                        return c != null && searchBounds.contains(c[0], c[1]);
+                    }
+                }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            }
         }
     }
 
@@ -230,12 +255,12 @@ public class GeoNeo {
      * 
      * @return ReferencedEnvelope for bounding box
      */
-    public ReferencedEnvelope getBounds(){
-        if(bounds==null){
+    public ReferencedEnvelope getBounds() {
+        if (bounds == null) {
             // Create Null envelope
             this.bounds = new ReferencedEnvelope(getCRS());
             // First try to find the BBOX definition in the gisNode directly
-            //Transaction tx = this.neo.beginTx();
+            // Transaction tx = this.neo.beginTx();
             try {
                 if (gisNode.hasProperty(INeoConstants.PROPERTY_BBOX_NAME)) {
                     double[] bbox = (double[])gisNode.getProperty(INeoConstants.PROPERTY_BBOX_NAME);
@@ -243,14 +268,15 @@ public class GeoNeo {
                 } else {
                     System.err.println("No BBox defined in the GeoNeo object: " + this.name);
                 }
-                //tx.success();
+                // tx.success();
             } catch (Exception bbox_e) {
                 System.err.println("Failed to interpret BBOX: " + bbox_e.getMessage());
                 bbox_e.printStackTrace(System.err);
             } finally {
-                //tx.finish();
+                // tx.finish();
             }
-            // Secondly, if bounds is still empty, try find all feature geometries and calculate bounds
+            // Secondly, if bounds is still empty, try find all feature geometries and calculate
+            // bounds
             if (this.bounds.isNull()) {
                 Transaction tx = this.neo.beginTx();
                 try {
@@ -278,42 +304,46 @@ public class GeoNeo {
     }
 
     /**
-     * Return the name of the dataset as specified in the Neo, or default
-     * to the URL.getFile().
+     * Return the name of the dataset as specified in the Neo, or default to the URL.getFile().
+     * 
      * @return dataset name
      */
-    public String getName(){
+    public String getName() {
         return name;
     }
 
     /**
-     * Return a descriptive string of this dataset. This is based on
-     * the name, crs and bounding box.
+     * Return a descriptive string of this dataset. This is based on the name, crs and bounding box.
+     * 
      * @return descriptive string
      */
-    public String toString(){
-        return "Neo["+getName()+"]: CRS:"+getCRS()+" Bounds:"+getBounds();
+    public String toString() {
+        return "Neo[" + getName() + "]: CRS:" + getCRS() + " Bounds:" + getBounds();
     }
 
-    private class GeoIterator implements Iterator<GeoNode>{
+    private class GeoIterator implements Iterator<GeoNode> {
         private Iterator<Node> iterator;
         private GeoNode next;
         private Transaction transaction;
-        private GeoIterator(Node gisNode, Envelope bounds){
+
+        private GeoIterator(Node gisNode, Envelope bounds) {
             this.transaction = neo.beginTx();
             this.iterator = makeGeoNeoTraverser(bounds).iterator();
         }
+
         public boolean hasNext() {
-            while(next==null){
-                if(!iterator.hasNext()) break;
+            while (next == null) {
+                if (!iterator.hasNext())
+                    break;
                 next = new GeoNode(iterator.next());
-                if(next.getCoords()==null) next = null;
+                if (next.getCoords() == null)
+                    next = null;
             }
-            if(next==null){
+            if (next == null) {
                 transaction.success();
                 transaction.finish();
             }
-            return next!=null;
+            return next != null;
         }
 
         public GeoNode next() {
@@ -321,16 +351,18 @@ public class GeoNeo {
             next = null;
             return toReturn;
         }
+
         public void remove() {
             throw new RuntimeException("Unimplemented");
         }
     }
 
     public Iterable<GeoNode> getGeoNodes(final Envelope searchBounds) {
-        return new Iterable<GeoNode>(){
+        return new Iterable<GeoNode>() {
             public Iterator<GeoNode> iterator() {
                 return new GeoIterator(gisNode, searchBounds);
-            }};
+            }
+        };
     }
 
     /**
@@ -495,7 +527,7 @@ public class GeoNeo {
     }
 
     /**
-     *Sets properties
+     * Sets properties
      * 
      * @param key - property key
      * @param value - property value
