@@ -1742,6 +1742,9 @@ public class NetworkTreeView extends ViewPart {
             }
 
             public String typeChanged() {
+                if (right == null) {
+                    return " (" + typeString(left) + " <=>  null )";
+                }
                 if (left.getClass() == right.getClass()) {
                     return "";
                 } else {
