@@ -94,7 +94,7 @@ public class RubyConsole extends ViewPart {
                 // Add the code from the internal plugin awescript.rb to the startup
                 //Lagutko, 29.07.2009, putting all extra scripts to array
                 for (String extraScript : EXTRA_SCRIPTS) {
-                    addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry(extraScript)));
+                    addExtraScript(FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("ruby/" + extraScript)));
                 }
                 
             }catch(Exception e){
