@@ -16,9 +16,9 @@ package org.amanzi.awe.render.network;
 import java.awt.Point;
 import java.util.HashMap;
 
-import org.eclipse.ui.IMemento;
-
 import net.refractions.udig.project.IPersister;
+
+import org.eclipse.ui.IMemento;
 
 /**
  * Persister for storing HashMap to IMemento
@@ -60,6 +60,9 @@ public class HashMapPersister extends IPersister<HashMap<Long, Point>> {
 
     @Override
     public void save(HashMap<Long, Point> object, IMemento memento) {
+        if (object == null || memento == null) {
+            return;
+        }
         for (Long key : object.keySet()) {
             Point point = object.get(key);
             IMemento pointChild = memento.createChild(POINT_PARAM);
