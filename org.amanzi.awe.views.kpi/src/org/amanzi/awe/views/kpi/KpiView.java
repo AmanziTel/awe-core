@@ -12,12 +12,14 @@
  */
 package org.amanzi.awe.views.kpi;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
-import org.amanzi.splash.utilities.NeoSplashUtil;
-import org.eclipse.core.runtime.FileLocator;
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -26,7 +28,10 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
@@ -40,6 +45,11 @@ import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.scope.ManyVarsDynamicScope;
+import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
+import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.Transaction;
 
 
 /**
@@ -83,6 +93,10 @@ public class KpiView extends ViewPart {
 
     private static final String JRUBY_SCRIPT = "formula.rb";
 
+    private static final String LB_NETWORK = "Network:";
+
+    private static final String LB_DRIVE = "Drive:";
+
     private Text editor;
 
     private Button bRun;
@@ -90,6 +104,16 @@ public class KpiView extends ViewPart {
     private Button bTest;
 
     private List formulaList;
+
+    private Combo networkNode;
+
+    private Combo driveNode;
+
+    private List propertyList;
+
+    private LinkedHashMap<String, Node> networks = new LinkedHashMap<String, Node>();
+
+    private LinkedHashMap<String, Node> drives = new LinkedHashMap<String, Node>();
 
 	/**
 	 * The constructor.
@@ -106,6 +130,7 @@ public class KpiView extends ViewPart {
         FormLayout mainLayout = new FormLayout();
         frame.setLayout(mainLayout);
         Composite top = new Composite(frame, SWT.NONE);
+
         Composite bottom = new Composite(frame, SWT.NONE);
         Composite right = new Composite(frame, SWT.NONE);
         editor = new Text(frame, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -116,15 +141,42 @@ public class KpiView extends ViewPart {
 
         bTest.setText(B_TEST);
         bTest.setImage(KPIPlugin.getImageDescriptor("icons/test.gif").createImage());
-
+        Label labelNetwork = new Label(top, SWT.LEFT);
+        labelNetwork.setText(LB_NETWORK);
+        networkNode = new Combo(top, SWT.DROP_DOWN | SWT.READ_ONLY);
+        Label labelDrive = new Label(top, SWT.LEFT);
+        labelDrive.setText(LB_DRIVE);
+        driveNode = new Combo(top, SWT.DROP_DOWN | SWT.READ_ONLY);
         // top
         FormData layoutData = new FormData();
         layoutData.top = new FormAttachment(0, 2);
         layoutData.left = new FormAttachment(0, 2);
         layoutData.right = new FormAttachment(right, -2);
-        layoutData.bottom = new FormAttachment(0, 5);
+        // layoutData.bottom = new FormAttachment(networkNode, );
         top.setLayoutData(layoutData);
+        top.setLayout(new FormLayout());
 
+        layoutData = new FormData();
+        layoutData.top = new FormAttachment(networkNode, 5, SWT.CENTER);
+        layoutData.left = new FormAttachment(0, 2);
+        labelNetwork.setLayoutData(layoutData);
+
+        layoutData = new FormData();
+        layoutData.top = new FormAttachment(0, 2);
+        layoutData.left = new FormAttachment(labelNetwork, 5);
+        layoutData.right = new FormAttachment(50, -5);
+        networkNode.setLayoutData(layoutData);
+
+        layoutData = new FormData();
+        layoutData.top = new FormAttachment(driveNode, 5, SWT.CENTER);
+        layoutData.left = new FormAttachment(networkNode, 10);
+        labelDrive.setLayoutData(layoutData);
+
+        layoutData = new FormData();
+        layoutData.top = new FormAttachment(0, 2);
+        layoutData.left = new FormAttachment(labelDrive, 5);
+        layoutData.right = new FormAttachment(100, -5);
+        driveNode.setLayoutData(layoutData);
 
         // bottom
         layoutData = new FormData();
@@ -138,7 +190,7 @@ public class KpiView extends ViewPart {
         layoutData = new FormData();
         layoutData.top = new FormAttachment(0, 2);
         layoutData.bottom = new FormAttachment(100, -2);
-        layoutData.left = new FormAttachment(70, 2);
+        layoutData.left = new FormAttachment(60, 2);
         layoutData.right = new FormAttachment(100, -2);
         layoutData.right = new FormAttachment(100, -2);
         right.setLayoutData(layoutData);
@@ -167,25 +219,88 @@ public class KpiView extends ViewPart {
         bTest.setLayoutData(layoutData);
 
 
-        right.setLayout(new FormLayout());
+        right.setLayout(new GridLayout(2, true));
         Label label = new Label(right, SWT.CENTER);
         label.setText("Formulas:");
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(0);
-        layoutData.top = new FormAttachment(0);
-        layoutData.right = new FormAttachment(100);
-        label.setLayoutData(layoutData);
+        label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+        label = new Label(right, SWT.CENTER);
+        label.setText("Properties:");
+        label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
 
         formulaList = new List(right, SWT.BORDER | SWT.V_SCROLL);
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(0);
-        layoutData.top = new FormAttachment(label, 2);
-        layoutData.right = new FormAttachment(100);
-        layoutData.bottom = new FormAttachment(100);
-        formulaList.setLayoutData(layoutData);
-        formulaList.setItems(getAllFormulas());
+
+        GridData layoutDataPr = new GridData(GridData.FILL_VERTICAL | GridData.GRAB_VERTICAL | GridData.FILL_HORIZONTAL);
+        layoutDataPr.horizontalSpan = 1;
+        formulaList.setLayoutData(layoutDataPr);
+        layoutDataPr = new GridData(GridData.FILL_VERTICAL | GridData.GRAB_VERTICAL | GridData.FILL_HORIZONTAL);
+        layoutDataPr.horizontalSpan = 1;
+        propertyList = new List(right, SWT.BORDER | SWT.V_SCROLL);
+        propertyList.setLayoutData(layoutDataPr);
+        fillList();
         addListeners();
 
+    }
+
+    /**
+     *
+     */
+    private void fillList() {
+        formulaList.setItems(getAllFormulas());
+        networkNode.setItems(getAllNetworks());
+        driveNode.setItems(getAllDrive());
+
+    }
+
+    /**
+     * @return
+     */
+    private String[] getAllDrive() {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            NeoService service = NeoServiceProvider.getProvider().getService();
+            Node refNode = service.getReferenceNode();
+            drives = new LinkedHashMap<String, Node>();
+            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "");
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(
+                                INeoConstants.GIS_TYPE_NAME) && GisTypes.DRIVE.getHeader().equals(type)) {
+                    String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                    drives.put(id, node);
+                }
+            }
+            return drives.keySet().toArray(new String[] {});
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * @return
+     */
+    private String[] getAllNetworks() {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            NeoService service = NeoServiceProvider.getProvider().getService();
+            Node refNode = service.getReferenceNode();
+            networks = new LinkedHashMap<String, Node>();
+            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "");
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(
+                                INeoConstants.GIS_TYPE_NAME) && GisTypes.NETWORK.getHeader().equals(type)) {
+                    String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                    networks.put(id, node);
+                }
+            }
+            return networks.keySet().toArray(new String[] {});
+        } finally {
+            tx.finish();
+        }
     }
 
     /**
@@ -215,13 +330,14 @@ public class KpiView extends ViewPart {
      * @return script content
      */
     private String getFormulaScript() {
-        URL scriptURL;
-        try {
-            scriptURL = FileLocator.toFileURL(KPIPlugin.getDefault().getBundle().getEntry(JRUBY_SCRIPT));
-        } catch (IOException e) {
-            return null;
-        }
-        return NeoSplashUtil.getScriptContent(scriptURL.getPath());
+        return "allFormula";
+//        URL scriptURL;
+//        try {
+//            scriptURL = FileLocator.toFileURL(KPIPlugin.getDefault().getBundle().getEntry(JRUBY_SCRIPT));
+//        } catch (IOException e) {
+//            return null;
+//        }
+//        return NeoSplashUtil.getScriptContent(scriptURL.getPath());
     }
 
     /**
@@ -267,6 +383,103 @@ public class KpiView extends ViewPart {
                 insertFormula();
             }
         });
+        propertyList.addMouseListener(new MouseListener() {
+            
+            @Override
+            public void mouseUp(MouseEvent e) {
+            }
+            
+            @Override
+            public void mouseDown(MouseEvent e) {
+            }
+            
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                insertProperty();
+            }
+        });
+        SelectionListener listener = new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                formPropertyList();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        };
+        networkNode.addSelectionListener(listener);
+        driveNode.addSelectionListener(listener);
+    }
+
+    /**
+     *
+     */
+    protected void insertProperty() {
+        String[] selection = propertyList.getSelection();
+        if (selection.length != 1) {
+            return;
+        }
+        String formula = selection[0];
+        StringBuilder builder = new StringBuilder(editor.getText());
+        int position = editor.getCaretPosition();
+        builder.insert(position, formula);
+        editor.setText(builder.toString());
+        editor.setSelection(position + formula.length() + 1);
+        editor.setFocus();
+    }
+
+    /**
+     *
+     */
+    protected void formPropertyList() {
+        Node netNode = networks.get(networkNode.getText());
+        Long networkId = netNode == null ? null : netNode.getId();
+        KPIPlugin.getDefault().setNetworkId(networkId);
+        Node drivNode = drives.get(driveNode.getText());
+        Long driveId = drivNode == null ? null : drivNode.getId();
+        KPIPlugin.getDefault().setDriveId(driveId);
+        runScript("init");
+        fillPropertyListList();
+    }
+
+    /**
+     *
+     */
+    private void fillPropertyListList() {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            ArrayList<String> result = new ArrayList<String>();
+            // TODO get possible properties from ruby?
+            Node netNode = networks.get(networkNode.getText());
+            if (netNode != null) {
+                result.add("sites");
+                result.add("sectors");
+                String[] fields = new PropertyHeader(netNode).getNumericFields();
+                for (String string : fields) {
+                    result.add("sectors." + string);
+                }
+            }
+            Node drivNode = drives.get(driveNode.getText());
+            if (drivNode != null) {
+                result.add("messages");
+                String[] fields = new PropertyHeader(drivNode).getNumericFields();
+                for (String string : fields) {
+                    result.add("messages." + string);
+                }
+                result.add("events");
+                fields = new PropertyHeader(drivNode).getNumericFields();
+                for (String string : fields) {
+                    result.add("events." + string);
+                }
+            }
+
+            propertyList.setItems(result.toArray(new String[0]));
+        } finally {
+            tx.finish();
+        }
     }
 
     /**
@@ -336,11 +549,27 @@ public class KpiView extends ViewPart {
             result = KPIPlugin.getDefault().getRubyRuntime().evalScriptlet(getScriptText());
             outputResult(result);
         } catch (Exception e) {
+            e.printStackTrace();
             outputError(e);
         }
 
     }
 
+    /**
+     *run script
+     */
+    protected IRubyObject runScript(String script) {
+
+        IRubyObject result;
+        try {
+            result = KPIPlugin.getDefault().getRubyRuntime().evalScriptlet(script);
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
     /**
      * shows message if runs script throw exception
      * 

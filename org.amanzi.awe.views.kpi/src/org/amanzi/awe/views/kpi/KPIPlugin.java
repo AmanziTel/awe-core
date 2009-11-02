@@ -14,12 +14,19 @@ package org.amanzi.awe.views.kpi;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.scripting.jruby.ScriptUtils;
+import org.amanzi.splash.utilities.NeoSplashUtil;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
@@ -40,6 +47,8 @@ public class KPIPlugin extends AbstractUIPlugin {
 	private static KPIPlugin plugin;
 
     private Ruby runtime;
+    private Long networkId;
+    private Long driveId;
 	
 	/**
 	 * The constructor
@@ -59,13 +68,40 @@ public class KPIPlugin extends AbstractUIPlugin {
 
     /**
      * @throws IOException
+     * @throws InterruptedException
      */
-    private void initializeRuby() throws IOException {
+    private void initializeRuby() throws IOException, InterruptedException {
         RubyInstanceConfig config = new RubyInstanceConfig();
+        config.setLoader(this.getClass().getClassLoader());
         config.setError(getErrorOutputStream());
         config.setOutput(getOutputStream());
         runtime = Ruby.newInstance(config);
         runtime.getLoadService().init(ScriptUtils.makeLoadPath(new String[] {}));
+        Job job = new Job("Initialize KPI builder") {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                URL scriptURL;
+                NeoServiceProvider.getProvider().getService();
+                try {
+                    scriptURL = FileLocator.toFileURL(KPIPlugin.getDefault().getBundle().getEntry("initKpi.rb"));
+                } catch (IOException e) {
+                    scriptURL = null;
+                }
+                String script = NeoSplashUtil.getScriptContent(scriptURL.getPath());
+                try {
+                    runtime.evalScriptlet(script);
+                    System.out.println("INIT OK!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw (RuntimeException)new RuntimeException().initCause(e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+        job.join();
+
     }
 
     /**
@@ -75,12 +111,13 @@ public class KPIPlugin extends AbstractUIPlugin {
         if (output != null) {
             return output;
         }
-        IConsole console = getConsole();
-        if (console != null) {
-            output = new PrintStream(((MessageConsole)console).newOutputStream());
-        } else {
-            output = System.out;
-        }
+        output = System.out;
+        // IConsole console = getConsole();
+        // if (console != null) {
+        // output = new PrintStream(((MessageConsole)console).newOutputStream());
+        // } else {
+        // output = System.out;
+        // }
         return output;
     }
 
@@ -103,12 +140,13 @@ public class KPIPlugin extends AbstractUIPlugin {
         if (error != null) {
             return error;
         }
-        IConsole console = getConsole();
-        if (console != null) {
-            error = new PrintStream(((MessageConsole)console).newOutputStream());
-        } else {
-            error = System.err;
-        }
+        error = System.err;
+        // IConsole console = getConsole();
+        // if (console != null) {
+        // error = new PrintStream(((MessageConsole)console).newOutputStream());
+        // } else {
+        // error = System.err;
+        // }
         return error;
     }
 
@@ -149,4 +187,33 @@ public class KPIPlugin extends AbstractUIPlugin {
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
+
+    /**
+     * @param networkId
+     */
+    public void setNetworkId(Long networkId) {
+        this.networkId = networkId;
+    }
+
+    /**
+     * @param driveId
+     */
+    public void setDriveId(Long driveId) {
+        this.driveId = driveId;
+    }
+
+    /**
+     * @return Returns the networkId.
+     */
+    public Long getNetworkId() {
+        return networkId;
+    }
+
+    /**
+     * @return Returns the driveId.
+     */
+    public Long getDriveId() {
+        return driveId;
+    }
+
 }
