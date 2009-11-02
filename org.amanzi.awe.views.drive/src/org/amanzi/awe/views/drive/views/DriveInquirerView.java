@@ -117,7 +117,7 @@ public class DriveInquirerView extends ViewPart {
     /**
      * The ID of the view as specified by the extension.
      */
-    public static final String ID = "org.amanzi.awe.views.drive_inquirer.views.DriveInquirerView";
+    public static final String ID = "org.amanzi.awe.views.drive.views.DriveInquirerView";
     private static final String CHART_TITLE = "Drive";
     private static final String TITLE_X_AXIS = "Time";
     private static final String LOG_LABEL = "Logarithmic counts";
@@ -1681,5 +1681,24 @@ public class DriveInquirerView extends ViewPart {
         Range range = valueaxis.getRange();
 
         return time == null ? null : (long)Math.max(time - 1000, range.getLowerBound());
+    }
+
+    /**
+     *update drive combobox
+     */
+    public void updateGisNode() {
+        int oldInd = cDrive.getSelectionIndex();
+        String item = oldInd >= 0 ? cDrive.getItem(oldInd) : null;
+        String[] driveItems = getDriveItems();
+        cDrive.setItems(driveItems);
+        if (oldInd >= 0) {
+            for (int i = 0; i < driveItems.length; i++) {
+                if (item.equals(driveItems[i])) {
+                    cDrive.select(i);
+                    break;
+                }
+            }
+        }
+
     }
 }
