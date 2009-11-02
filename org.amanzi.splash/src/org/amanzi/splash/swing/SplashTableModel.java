@@ -62,7 +62,7 @@ public class SplashTableModel extends DefaultTableModel {
 	/*
 	 * Script for initializing Spreadsheet
 	 */
-	private static final String JRUBY_SCRIPT = "jruby.rb";
+	private static final String JRUBY_SCRIPT = "ruby/jruby.rb";
 
 	/*
 	 * Arguments for IRB
