@@ -703,54 +703,67 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         // Lagutko, 15.10.2009, actions with pressed ctrls
-        int row = getSelectedRow();
-        int column = getSelectedColumn();
+        int[] rows = getSelectedRows();
+        int[] columns = getSelectedColumns();
         
         boolean result = false;
         
-        if (pressed) {
+        //Lagutko, 2.11.2009, support Delete and Font operations for multiselected Cells.
+        if (pressed && (rows.length > 0) && (columns.length > 0)) {
             if (e.isControlDown()) {
                 switch (e.getKeyCode()) {
                 case KeyEvent.VK_C:
-                    copyCell(row, column);
+                    copyCell(rows[0], columns[0]);
                     result = true;
                     break;
                 case KeyEvent.VK_V:
-                    pasteCell(row, column);
+                    pasteCell(rows[0], columns[0]);
                     result = true;
                     break;
                 case KeyEvent.VK_X:
-                    cutCell(row, column);
+                    cutCell(rows[0], columns[0]);
                     result = true;
                     break;
                 case KeyEvent.VK_B:
-                    Cell cell = (Cell) getValueAt(row, column);
+                    for (int row : rows) {
+                        for (int column : columns) {
+                            Cell cell = (Cell) getValueAt(row, column);
 
-                    updateFont(cell, Font.BOLD);
+                            updateFont(cell, Font.BOLD);
+                        }
+                    }
                     repaint();
                     result = true;
                     break;
                 case KeyEvent.VK_I:
-                    cell = (Cell) getValueAt(row, column);
+                    for (int row : rows) {
+                        for (int column : columns) {
+                            Cell cell = (Cell) getValueAt(row, column);
                 
-                    updateFont(cell, Font.ITALIC);
+                            updateFont(cell, Font.ITALIC);
+                        }
+                    }
                     repaint();
                     result = true;
                     break;
                 case KeyEvent.VK_U:
-                    cell = (Cell) getValueAt(row, column);
+                    for (int row : rows) {
+                        for (int column : columns) {
+                            Cell cell = (Cell) getValueAt(row, column);
 
-                    String old_value = (String) cell.getValue();
-                    String new_value = "";
-                    if (old_value.contains("<HTML><U>") && old_value.contains("</U></HTML>")) {
-                        new_value = old_value.replace("<HTML><U>", "");
-                        new_value = new_value.replace("</U></HTML>", "");
-                    } else {
-                        new_value = "<HTML><U>" + old_value + "</U></HTML>";
+                            String old_value = (String) cell.getValue();
+                            String new_value = "";
+                            if (old_value.contains("<HTML><U>") && old_value.contains("</U></HTML>")) {
+                                new_value = old_value.replace("<HTML><U>", "");
+                                new_value = new_value.replace("</U></HTML>", "");
+                            } else {
+                                new_value = "<HTML><U>" + old_value + "</U></HTML>";
+                            }
+
+                            cell.setValue(new_value);
+                            setValueAt(cell, row, column);
+                        }
                     }
-
-                    cell.setValue(new_value);
-                    setValueAt(cell, row, column);
                     repaint();
                     result = true;
                     break;
@@ -759,7 +772,11 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
             else {
                 switch (e.getKeyCode()) {
                 case KeyEvent.VK_DELETE:
-                    deleteCell(row, column);
+                    for (int row : rows) {
+                        for (int column : columns) {
+                            deleteCell(row, column);
+                        }   
+                    }                    
                     result = true;
                     break;
                 }
