@@ -44,6 +44,8 @@ public class Messages extends NLS {
     public static String Import_Builder_Filter_Filename_Field;
     public static String Import_Builder_Create_Script_Job_Name;
     
+    public static String Import_Job; 
+    
     private Messages() {
     }
 

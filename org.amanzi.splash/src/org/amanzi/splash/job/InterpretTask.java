@@ -84,6 +84,7 @@ public class InterpretTask implements SplashJobTask {
                 s1 = model.interpret_erb(cellID, formula);
             } catch (Exception e) {
                 s1 = e.getLocalizedMessage();
+                SplashPlugin.error(null, e);
             }
 
             NeoSplashUtil.logn("Setting cell definition: " + formula);

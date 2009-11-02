@@ -375,6 +375,7 @@ public class SplashTableModel extends DefaultTableModel {
             s = runtime.evalScriptlet(input);
         } catch (Exception e) {
             s = e.getLocalizedMessage();
+            SplashPlugin.error(null, e);
         }
 
 		NeoSplashUtil.logn("ERB Output = " + s);

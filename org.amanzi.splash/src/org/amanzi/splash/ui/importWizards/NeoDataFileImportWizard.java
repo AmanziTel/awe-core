@@ -78,7 +78,7 @@ public class NeoDataFileImportWizard extends NewRubyElementCreationWizard implem
 		    final SpreadsheetNode spreadsheetNode = importer.getSpreadsheet();
 		    
 		    if (toContinue) {
-		        Job importJob = new Job("Import"){
+		        Job importJob = new Job(Messages.Import_Job){
                 
 		            @Override
 		            protected IStatus run(IProgressMonitor monitor) {
