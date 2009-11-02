@@ -1151,22 +1151,19 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 			try {
 				file.setContents(stream, true, true, null);
 			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			    SplashPlugin.error(null, e);
 			}
 		} else {
 			try {
 				file.create(stream, true, null);
 			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			    SplashPlugin.error(null, e);
 			}
 		}
 		try {
 			stream.close();
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		    SplashPlugin.error(null, e1);
 		}
 
 		int firstRow, firstColumn, lastRow, lastColumn;
@@ -1174,18 +1171,20 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		firstColumn = table.getSelectedColumn();
 		lastRow = firstRow + table.getSelectedRowCount() - 1;
 		lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
+		
+		//Lagutko, 2.11.2009, correcting iteration
+		int length = lastColumn - firstColumn + 1;
 		ChartItemNode[] items = new ChartItemNode[lastColumn - firstColumn + 1];
-		for (int i = firstColumn; i <= lastColumn; i++) {
-			Cell c = (Cell) ((SplashTableModel) table.getModel()).getValueAt(firstRow, i);
+		for (int i = 0; i < length; i++) {
+			Cell c = (Cell) ((SplashTableModel) table.getModel()).getValueAt(firstRow, firstColumn + i);
 
 			try {
 				items[i] = service.createChartItem(chartNode, "item" + i);
 			} catch (SplashDatabaseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				SplashPlugin.error(null, e);
 			}
 			items[i].setChartItemCategory((String) c.getValue());
-			items[i].setChartItemValue((String) ((Cell) table.getValueAt(lastRow, i)).getValue());
+			items[i].setChartItemValue((String) ((Cell) table.getValueAt(lastRow, firstColumn + i)).getValue());
 
 		}
 		IEditorInput editorInput = new ChartEditorInput(file);
@@ -1195,8 +1194,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		try {
 			page.openEditor(editorInput, NeoSplashUtil.AMANZI_NEO4J_SPLASH_CHART_EDITOR);
 		} catch (PartInitException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    SplashPlugin.error(null, e);
 		}
 	}
 

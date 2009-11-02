@@ -17,7 +17,10 @@ import org.neo4j.api.core.Node;
 
 public class ChartItemNode extends AbstractNode {
 
-	public static final String CHART_ITEM_NAME = "chart_item_name";
+	/** String DEFAULT_CHART_ITEM_VALUE field */
+    private static final String DEFAULT_CHART_ITEM_VALUE = "0";
+    
+    public static final String CHART_ITEM_NAME = "chart_item_name";
 	private static final String CHART_ITEM_NODE_TYPE = "spreadsheet_chart_item";
 	private static final String CHART_ITEM_NODE_NAME = "Spreadsheet Chart Item";
 	
@@ -68,6 +71,12 @@ public class ChartItemNode extends AbstractNode {
     }
 
     public String getChartItemValue() {
+        //Lagutko, 2.11.2009, if chartItemValue is null or empty string than we should set it to default
+        //to have no exception on parsing of this value
+        String itemValue = (String)getParameter(CHART_ITEM_NODE_VALUE);
+        if ((itemValue == null) || (itemValue.length() == 0)) {
+            itemValue = DEFAULT_CHART_ITEM_VALUE;
+        }
         return (String)getParameter(CHART_ITEM_NODE_VALUE);
     }
 	
