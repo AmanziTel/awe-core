@@ -61,6 +61,7 @@ public class NeighbourLoader {
     private Header header;
     private Node neighbour;
     private String baseName;
+    private final NeoService neo;
 
     /**
      * Constructor
@@ -68,9 +69,10 @@ public class NeighbourLoader {
      * @param networkNode network Node
      * @param fileName Neighbour file Name
      */
-    public NeighbourLoader(Node networkNode, String fileName) {
+    public NeighbourLoader(Node networkNode, String fileName, NeoService neo) {
         network = networkNode;
         this.fileName = fileName;
+        this.neo = neo;
         this.baseName = new File(fileName).getName();
     }
 
@@ -103,7 +105,7 @@ public class NeighbourLoader {
     public void run(IProgressMonitor monitor) throws IOException{
         CountingFileInputStream stream = null;
         BufferedReader reader = null;
-        Transaction tx = NeoUtils.beginTransaction();
+        Transaction tx = neo.beginTx();
         try {
             if (monitor == null) {
                 monitor = new NullProgressMonitor();
@@ -118,7 +120,7 @@ public class NeighbourLoader {
                 monitor.setCanceled(true);
                 return;
             }
-            header = new Header(line);
+            header = new Header(line, neo);
             neighbour = getNeighbour(network, baseName);
             header.createSectorCache(network);
             int commit = 0;
@@ -134,7 +136,7 @@ public class NeighbourLoader {
                 if (++commit > COMMIT_MAX) {
                     tx.success();
                     tx.finish();
-                    tx = NeoUtils.beginTransaction();
+                    tx = neo.beginTx();
                     commit = 0;
                 }
             }
@@ -164,10 +166,9 @@ public class NeighbourLoader {
         if (result != null) {
             return result;
         }
-        NeoService service = NeoServiceProvider.getProvider().getService();
-        Transaction tx = service.beginTx();
+        Transaction tx = neo.beginTx();
         try {
-            result = service.createNode();
+            result = neo.createNode();
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.NEIGHBOUR_TYPE_NAME);
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, fileName);
             network.createRelationshipTo(result, NetworkRelationshipTypes.NEIGHBOUR_DATA);
@@ -208,13 +209,15 @@ public class NeighbourLoader {
         private String[] headers;
         private Map<String, Pair<Node, Integer>> cach = new HashMap<String, Pair<Node, Integer>>();
         private LuceneIndexService index;
+        private final NeoService neo;
 
         /**
          * Constructor
          * 
          * @param line - header line
          */
-        public Header(String line) {
+        public Header(String line, NeoService neo) {
+            this.neo = neo;
             headers = line.split("\\t");
             serverNodeName = new NodeName("CI", "LAC", "BTS_NAME");
             neighbourNodeName = new NodeName("ADJ_CI", "ADJ_LAC", "ADJ_BTS_NAME");
@@ -256,9 +259,9 @@ public class NeighbourLoader {
          */
         public void createSectorCache(Node network) {
 
-            Transaction tx = NeoUtils.beginTransaction();
+            Transaction tx = neo.beginTx();
             try {
-                index = new LuceneIndexService(NeoServiceProvider.getProvider().getService());
+                index = new LuceneIndexService(neo);
                 index.enableCache(KEY_ID, CACH_SIZE);
                 index.enableCache(KEY_ID2, CACH_SIZE);
                 // it useful if neighbour file much bigger then network
@@ -305,7 +308,7 @@ public class NeighbourLoader {
          * @param neighbour neighbour node
          */
         public void saveNumericList(Node neighbour) {
-            Transaction tx = NeoUtils.beginTransaction();
+            Transaction tx = neo.beginTx();
             try {
                 Set<String> propertyes = new HashSet<String>();
                 for (Pair<String, String> pair : indexMap.values()) {
@@ -328,7 +331,7 @@ public class NeighbourLoader {
          * @param neighbour neighbour node
          */
         public void saveAllFields(Node neighbour) {
-            Transaction tx = NeoUtils.beginTransaction();
+            Transaction tx = neo.beginTx();
 
             try {
                 Set<String> integer = new HashSet<String>();
@@ -363,8 +366,7 @@ public class NeighbourLoader {
          */
         public void parseLine(String line, Node network, String fileName) {
             String fields[] = line.split("\\t");
-            NeoService service = NeoServiceProvider.getProvider().getService();
-            Transaction tx = service.beginTx();
+            Transaction tx = neo.beginTx();
             try {
                 String servCounName = NeoUtils.getNeighbourPropertyName(fileName);
                 serverNodeName.setFieldValues(fields);

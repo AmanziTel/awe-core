@@ -33,6 +33,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.PropertyContainer;
 import org.neo4j.api.core.Relationship;
@@ -268,10 +269,21 @@ public class NeoUtils {
      * @return Neighbour node or null;
      */
     public static Node findNeighbour(Node network, final String name) {
+        return findNeighbour(network, name, NeoServiceProvider.getProvider().getService());
+    }
+
+    /**
+     *Finds Neighbour of network
+     * 
+     * @param network - network GIS node
+     * @param name - Neighbour name
+     * @return Neighbour node or null;
+     */
+    public static Node findNeighbour(Node network, final String name, NeoService neo) {
         if (network == null || name == null) {
             return null;
         }
-        Transaction tx = beginTransaction();
+        Transaction tx = neo.beginTx();
         try {
             Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
@@ -286,7 +298,6 @@ public class NeoUtils {
             tx.finish();
         }
     }
-
     /**
      * Gets array of Numeric Fields
      * 
