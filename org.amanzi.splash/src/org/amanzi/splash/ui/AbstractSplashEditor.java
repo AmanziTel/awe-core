@@ -60,10 +60,10 @@ import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.ColumnHeaderRenderer;
 import org.amanzi.splash.swing.SplashTable;
 import org.amanzi.splash.swing.SplashTableModel;
+import org.amanzi.splash.ui.wizards.ExportScriptWizard;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.amanzi.splash.views.importbuilder.ImportBuilderTableViewer;
 import org.amanzi.splash.views.importbuilder.ImportBuilderView;
-import org.amanzi.splash.ui.wizards.ExportScriptWizard;
 import org.eclipse.albireo.core.SwingControl;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -353,8 +353,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		int mcol = table.getColumn(table.getColumnName(col)).getModelIndex();
 
 		if (row >= 0 && row < table.getRowCount()) {
-			cancelCellEditing();
-
+            cancelCellEditing();
 			// create popup menu...
 			JPopupMenu contextMenu = createContextMenu(row, mcol);
 
@@ -506,8 +505,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 						int column = table.columnAtPoint(e.getPoint());
 						int row = table.rowAtPoint(e.getPoint());
 						if (e.getButton() == 3) {
-							table.setColumnSelectionInterval(column, column);
-							table.setRowSelectionInterval(row, row);
+                            // table.setColumnSelectionInterval(column, column);
+                            // table.setRowSelectionInterval(row, row);
 
 							maybeShowPopup(e);
 							// launchCellFormatPanel(table);
