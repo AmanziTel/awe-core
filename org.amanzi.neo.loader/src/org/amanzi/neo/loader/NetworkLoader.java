@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -155,14 +156,13 @@ public class NetworkLoader extends AbstractLoader {
 //                ".*state_machine.*", ".*layer_3_message.*", ".*handover_analyzer.*"});
 
         //Known headers that are not sector data properties
-        addMainHeader("city", new String[] {"City", "Town", "Ort"});
-        addMainHeader("msc", new String[] {"MSC", "MSC_NAME", "MSC Name"});
-        addMainHeader("bsc", new String[] {"BSC", "BSC_NAME", "RNC", "BSC Name"});
-        addMainHeader("site", new String[] {"Site", "Name", "Site Name"});
-        addMainHeader("sector", new String[] {"Sector", "Cell", "BTS_Name", "CELL_NAME", "GSM Sector ID"});
-        addMainHeader("latitude", new String[] {"lat.*", "y_wert.*", "northing"});
-        addMainHeader("longitude", new String[] {"long.*", "x_wert.*", "easting"});
-        
+        addMainHeader("city", getPossibleHeaders(DataLoadPreferences.NH_CITY));
+        addMainHeader("msc", getPossibleHeaders(DataLoadPreferences.NH_MSC));
+        addMainHeader("bsc", getPossibleHeaders(DataLoadPreferences.NH_BSC));
+        addMainHeader("site", getPossibleHeaders(DataLoadPreferences.NH_SITE));
+        addMainHeader("sector", getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
+        addMainHeader("latitude", getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
+        addMainHeader("longitude", getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
         //Stop statistics collection for properties we will not save to the sector
         addNonDataHeaders(mainHeaders);
 
@@ -173,6 +173,23 @@ public class NetworkLoader extends AbstractLoader {
         //Known headers that are sector data properties
         addKnownHeader("beamwidth", new String[] {".*beamwidth.*", "beam", "hbw"});
         addKnownHeader("azimuth", new String[] {".*azimuth.*"});
+    }
+
+    /**
+     * @param key -key of value from preference store
+     * @return array of possible headers
+     */
+    private String[] getPossibleHeaders(String key) {
+        String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(key);
+        String[] array = text.split(",");
+        List<String> result = new ArrayList<String>();
+        for (String string : array) {
+            String value = string.trim();
+            if (!value.isEmpty()) {
+                result.add(value);
+            }
+        }
+        return result.toArray(new String[0]);
     }
     
     /**
