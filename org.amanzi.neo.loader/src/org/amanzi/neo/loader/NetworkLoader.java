@@ -39,6 +39,8 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.swt.SWT;
@@ -133,6 +135,7 @@ public class NetworkLoader extends AbstractLoader {
     public NetworkLoader(String filename, Display display) {
         initialize("Network", null, filename, display);
         initializeKnownHeaders();
+        addNetworkIndexes();
     }
 
     /**
@@ -145,6 +148,20 @@ public class NetworkLoader extends AbstractLoader {
     public NetworkLoader(NeoService neo, String filename) {
         initialize("Network", neo, filename, null);
         initializeKnownHeaders();
+        addNetworkIndexes();
+    }
+
+    /**
+     *
+     */
+    private void addNetworkIndexes() {
+        try {
+            addIndex(new MultiPropertyIndex<Double>("Index-location-" + basename, new String[] {"lat", "lon"},
+                    new MultiDoubleConverter(0.001), 10));
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
     }
 
     /**
@@ -450,8 +467,9 @@ public class NetworkLoader extends AbstractLoader {
                 Float longitude = networkHeader.getLon();
                 updateBBox(latitude, longitude);
                 checkCRS(latitude, longitude, networkHeader.getCrsHint());
-                site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude);
-                site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude);
+                site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
+                site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
+                index(site);
             }
             debug("New Sector: " + sectorField);
             Node sector = addChild(site, NetworkElementTypes.SECTOR.toString(), sectorField);
