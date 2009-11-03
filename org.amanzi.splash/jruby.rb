@@ -47,6 +47,13 @@ def sum(*args)
   end
 end
 
+def sum2(*args)
+  args[0].respond_to?('sum') && args[0].sum ||
+  args[0].respond_to?('inject') &&
+    args[0].inject(base_value(args[0].first)){|a,x| a+=x;a} ||
+  sum(args)  # recurse in and use the 'inject' option
+end
+
 def count(*args)
   args[0].respond_to?('length') && args[0].length ||
   args[0].respond_to?('count') && args[0].count ||
