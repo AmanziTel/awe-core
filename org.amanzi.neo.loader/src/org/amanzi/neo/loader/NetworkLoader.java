@@ -158,7 +158,7 @@ public class NetworkLoader extends AbstractLoader {
         addMainHeader("city", new String[] {"City", "Town", "Ort"});
         addMainHeader("msc", new String[] {"MSC", "MSC_NAME", "MSC Name"});
         addMainHeader("bsc", new String[] {"BSC", "BSC_NAME", "RNC", "BSC Name"});
-        addMainHeader("site", new String[] {"Site", "Name", "IDX", "Site Name"});
+        addMainHeader("site", new String[] {"Site", "Name", "Site Name"});
         addMainHeader("sector", new String[] {"Sector", "Cell", "BTS_Name", "CELL_NAME", "GSM Sector ID"});
         addMainHeader("latitude", new String[] {"lat.*", "y_wert.*", "northing"});
         addMainHeader("longitude", new String[] {"long.*", "x_wert.*", "easting"});
@@ -391,13 +391,14 @@ public class NetworkLoader extends AbstractLoader {
             String cityField = networkHeader.getString("city");
             String siteField = networkHeader.getString("site");
             String sectorField = networkHeader.getString("sector");
-            if(siteField==null) {
-                lineErrors.add("Missing site name on line " + lineNumber);
-                return;
-            }
             if(sectorField==null) {
                 lineErrors.add("Missing sector name on line " + lineNumber);
                 return;
+            }
+            if(siteField==null) {
+                //lineErrors.add("Missing site name on line " + lineNumber);
+                //return;
+                siteField = sectorField.substring(0, sectorField.length() - 1);
             }
             if (trimSectorName) {
                 sectorField = sectorField.replaceAll(siteField + "[\\:\\-]?", "");
