@@ -39,6 +39,14 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.REMOVE_SITE_NAME, true);
         pref.setDefault(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, true);
         pref.setDefault(DataLoadPreferences.ZOOM_TO_LAYER, true);
+
+        pref.setDefault(DataLoadPreferences.NH_CITY, "City, Town, Ort");
+        pref.setDefault(DataLoadPreferences.NH_MSC, "MSC, MSC_NAME, MSC Name");
+        pref.setDefault(DataLoadPreferences.NH_BSC, "BSC, BSC_NAME, RNC, BSC Name");
+        pref.setDefault(DataLoadPreferences.NH_SITE, "Site, Name, Site Name");
+        pref.setDefault(DataLoadPreferences.NH_SECTOR, "Sector, Cell, BTS_Name, CELL_NAME, GSM Sector ID");
+        pref.setDefault(DataLoadPreferences.NH_LATITUDE, "lat.*, y_wert.*, northing");
+        pref.setDefault(DataLoadPreferences.NH_LONGITUDE, "long.*, x_wert.*, easting");
     }
 
 }

@@ -26,6 +26,15 @@ public class DataLoadPreferences {
     public static final String NETWORK_COMBINED_CALCULATION = "USE_COMBINED_CALCULATION";
     public static final String ZOOM_TO_LAYER = "ZOOM_TO_LAYER";
 
+    // network loader headers
+    public static final String NH_CITY = "NH_CITY";
+    public static final String NH_MSC = "NH_MSC";
+    public static final String NH_BSC = "NH_BSC";
+    public static final String NH_SITE = "NH_SITE";
+    public static final String NH_SECTOR = "NH_SECTOR";
+    public static final String NH_LATITUDE = "NH_LATITUDE";
+    public static final String NH_LONGITUDE = "NH_LONGITUDE";
+
     private DataLoadPreferences() {
 
     }
