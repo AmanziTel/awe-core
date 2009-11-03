@@ -1,4 +1,5 @@
 require 'java'
+require 'ruby/demo'
 
 include_class org.amanzi.splash.swing.Cell
 include_class com.eteks.openjeks.format.CellFormat
@@ -7,6 +8,7 @@ include_class com.eteks.openjeks.format.CellFormat
 # Java class Cell with additional methods to support operations between Cells
 #
 class Cell
+  extend Splash::Formulas::Demo
   
   #
   # Handles operation or method for Cell

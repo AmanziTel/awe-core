@@ -7,8 +7,8 @@ awe_console_path = Java::org.eclipse.core.runtime.FileLocator.resolve(awe_consol
 require awe_console_path + 'neoSetup.rb'
 
 def method_missing(method_id, *args)  
-  if $cell.respond_to?(method_id)
-    $cell.send(method_id, *args)    
+  if Cell.respond_to?(method_id)
+    Cell.send(method_id, *args)    
   elsif method_id.to_s =~ /([a-z]{1,3})([0-9]+)/      
     #if method_missing was called with ID of Cell than put this ID to array
     $idArray << method_id
