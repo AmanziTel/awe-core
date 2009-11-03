@@ -29,21 +29,6 @@
       </editor>
    </extension>
    
-   <extension
-         point="org.eclipse.ui.newWizards">
-      <category
-            name="Amanzi Splash"
-            id="org.amanzi.splash">
-      </category>
-      <wizard
-            category="org.amanzi.splash"
-            class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizard"
-            icon="icons/splash_16.png"
-            id="org.amanzi.splash.wizards.SplashNewSpreadsheetWizard"
-            name="Amanzi Splash Spreadsheet">
-      </wizard>
-   </extension>
-   
    	<extension point= "org.eclipse.ui.perspectiveExtensions">
 		<perspectiveExtension targetID= "org.eclipse.ui.resourcePerspective">
 		<actionSet id="org.eclipse.jdt.ui.JavaActionSet"/>
