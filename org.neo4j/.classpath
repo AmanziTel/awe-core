@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="lib/apoc-examples-0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/index-util-0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/apoc-examples-0.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/index-util-0.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jta-1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-core-2.4.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/neo-1.0-b9.jar" sourcepath="lib/neo-1.0-b9-source.zip"/>
-	<classpathentry exported="true" kind="lib" path="lib/remote-neo-0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/shell-1.0-b9.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/neo-1.0-b10.jar" sourcepath="lib/neo-1.0-b10-source.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/remote-neo-0.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/shell-1.0-b10.jar"/>
 	<classpathentry exported="true" kind="lib" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
