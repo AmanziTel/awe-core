@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -124,7 +125,7 @@ public class SpreadsheetService {
 	protected AweProjectService projectService;
 
 	private SplashFormatNode defaultSFNode;
-
+	
 	/**
 	 * Constructor of Service.
 	 * 
@@ -560,37 +561,35 @@ public class SpreadsheetService {
 		CellFormat cellFormat = new CellFormat();
 		
 		SplashFormatNode sfNode = node.getSplashFormat();
-		if (sfNode == null) {
-		    sfNode = defaultSFNode;
+		if (sfNode != null) {
+		    //Lagutko, 5.10.2009, get a Data Format from Node
+		    cellFormat.setFormat(sfNode.getFormat());
+		
+		    Integer bgColorB = sfNode.getBackgroundColorB();
+		    Integer bgColorG = sfNode.getBackgroundColorG();
+		    Integer bgColorR = sfNode.getBackgroundColorR();
+
+		    if ((bgColorB != null) && (bgColorG != null) && (bgColorR != null)) {
+		        Color color = new Color(bgColorR, bgColorR, bgColorB);
+		        cellFormat.setBackgroundColor(color);
+		    }
+
+		    Integer fontColorB = sfNode.getFontColorB();
+		    Integer fontColorG = sfNode.getFontColorG();
+		    Integer fontColorR = sfNode.getFontColorR();
+
+		    if ((fontColorB != null) && (fontColorG != null) && (fontColorR != null)) {
+		        Color color = new Color(fontColorR, fontColorG, fontColorB);
+		        cellFormat.setFontColor(color);
+		    }
+
+		    cellFormat.setFontName(sfNode.getFontName());
+		    cellFormat.setFontSize(sfNode.getFontSize());
+		    cellFormat.setFontStyle(sfNode.getFontStyle());
+		    cellFormat.setHorizontalAlignment(sfNode.getHorizontalAlignment());
+		    cellFormat.setVerticalAlignment(sfNode.getVerticalAlignment());
 		}
 		
-		//Lagutko, 5.10.2009, get a Data Format from Node
-		cellFormat.setFormat(sfNode.getFormat());
-		
-		Integer bgColorB = sfNode.getBackgroundColorB();
-		Integer bgColorG = sfNode.getBackgroundColorG();
-		Integer bgColorR = sfNode.getBackgroundColorR();
-
-		if ((bgColorB != null) && (bgColorG != null) && (bgColorR != null)) {
-			Color color = new Color(bgColorR, bgColorR, bgColorB);
-			cellFormat.setBackgroundColor(color);
-		}
-
-		Integer fontColorB = sfNode.getFontColorB();
-		Integer fontColorG = sfNode.getFontColorG();
-		Integer fontColorR = sfNode.getFontColorR();
-
-		if ((fontColorB != null) && (fontColorG != null) && (fontColorR != null)) {
-			Color color = new Color(fontColorR, fontColorG, fontColorB);
-			cellFormat.setFontColor(color);
-		}
-
-		cellFormat.setFontName(sfNode.getFontName());
-		cellFormat.setFontSize(sfNode.getFontSize());
-		cellFormat.setFontStyle(sfNode.getFontStyle());
-		cellFormat.setHorizontalAlignment(sfNode.getHorizontalAlignment());
-		cellFormat.setVerticalAlignment(sfNode.getVerticalAlignment());
-
 		Object value = node.getValue();
 		if (value == null) {
 			value = DEFAULT_VALUE;
