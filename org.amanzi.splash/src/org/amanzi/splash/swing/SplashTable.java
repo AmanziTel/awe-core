@@ -646,7 +646,8 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 			NeoSplashUtil.logn("srcColumn: " + srcColumn);
 			NeoSplashUtil.logn("srcRow: " + srcRow);
 			String srcDefinition = (String) ((Cell) getModel().getValueAt(srcRow, srcColumn)).getDefinition();
-			String srcValue = (String) ((Cell) getModel().getValueAt(srcRow, srcColumn)).getValue();
+			Object value = ((Cell) getModel().getValueAt(srcRow, srcColumn)).getValue();
+            String srcValue = value == null ? null : value.toString();
 			Cell dstCell = new Cell(row, column, srcDefinition, srcValue, new CellFormat());
 			((SplashTableModel) getModel()).interpret(srcDefinition, row, column);
 
