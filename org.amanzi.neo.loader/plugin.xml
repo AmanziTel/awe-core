@@ -117,6 +117,12 @@
             id="org.amanzi.neo.preferences.DataLoadPreferencePage"
             name="Amanzi Data">
       </page>
+                  <page
+            class="org.amanzi.neo.preferences.NetworkLoaderPreferencePage"
+            id="org.amanzi.neo.preferences.NetworkLoaderPreferencePage"
+            name="Network data"
+            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
+      </page>
    </extension>
    <extension
          point="net.refractions.udig.ui.newObjectAction">
