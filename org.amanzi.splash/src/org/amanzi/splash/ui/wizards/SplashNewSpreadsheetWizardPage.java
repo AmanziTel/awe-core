@@ -179,13 +179,13 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 			}else if (obj instanceof RubyProjectImpl){
 				RubyProjectImpl rpi = (RubyProjectImpl) obj;
 				if (!"".equals( rpi.getName()))
-					containerText.setText("/" + rpi.getName());
+                    containerText.setText(rpi.getName());
 			}
 			//Lagutko, 23.06.2009, selection also can contains object of RubyProject type
             else if (obj instanceof RubyProject) {
                 RubyProject rdtProject = (RubyProject)obj;
                 if (!"".equals(rdtProject.getElementName())) {
-                    containerText.setText("/" + rdtProject.getElementName());
+                    containerText.setText(rdtProject.getElementName());
                 }
             }
 		}
@@ -207,7 +207,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		if (dialog.open() == ContainerSelectionDialog.OK) {
 			Object[] result = dialog.getResult();
 			if (result.length == 1) {
-				containerText.setText(((Path) result[0]).toString());
+                containerText.setText((((Path)result[0]).toString()).substring(1));
 			}
 		}
 	}
@@ -239,10 +239,12 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 			updateStatus("Project must be writable");
 			return;
 		}
-		
+        if (!container.getName().equals(getContainerName())) {
+            containerText.setText(container.getName());
+        }
 		//TODO: Lagutko: must be added computing for Root Node of Spreadsheet
         //Lagutko: it's a fake because for now Root Node is a Reference Node
-        final RubyProjectNode root = NeoCorePlugin.getDefault().getProjectService().findRubyProject(getContainerName().substring(1));//SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
+        final RubyProjectNode root = NeoCorePlugin.getDefault().getProjectService().findRubyProject(getContainerName());// SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
         boolean isExist = (Boolean)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
 
             private boolean result;
