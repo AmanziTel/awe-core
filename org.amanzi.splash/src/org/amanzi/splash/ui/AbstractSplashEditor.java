@@ -860,7 +860,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		cellCopyMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
 		cellCopyMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				table.copyCell(rowIndex, columnIndex);
+                table.copyCell();
 			}
 		});
 		contextMenu.add(cellCopyMenu);
@@ -870,7 +870,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		cellCopyMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
 		cellCutMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				table.cutCell(rowIndex, columnIndex);
+                table.cutCell();
 			}
 		});
 		contextMenu.add(cellCutMenu);

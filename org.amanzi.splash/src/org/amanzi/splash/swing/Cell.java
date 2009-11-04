@@ -12,6 +12,11 @@
  */
 package org.amanzi.splash.swing;
 
+import java.awt.Color;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.text.Format;
 import java.text.MessageFormat;
@@ -26,8 +31,11 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 
 import com.eteks.openjeks.format.CellFormat;
 
-public class Cell
+public class Cell implements Serializable
 {
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = -1270174718451028243L;
+
     /*
      * Default value of Cell
      */
@@ -40,10 +48,10 @@ public class Cell
     
     public static final String CELL_CYLIC_ERROR = "ERROR:cyclic";
     
-	private transient Object value;
+    private/* transient */Object value;
 	private String definition;
 	private Cell cellGraphInfo;
-	private CellFormat cellFormat;
+    private transient CellFormat cellFormat;
 	
 	private CellID cellID;
 	private int row;
@@ -335,4 +343,29 @@ public class Cell
 	public boolean hasReference() {
 		return hasReference;
 	}
+
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+        stream.defaultWriteObject();
+        stream.writeObject(cellFormat.getBackgroundColor());
+        stream.writeObject(cellFormat.getFontColor());
+        stream.writeObject(cellFormat.getFontName());
+        stream.writeObject(cellFormat.getFontSize());
+        stream.writeObject(cellFormat.getFontStyle());
+        stream.writeObject(cellFormat.getFormat());
+        stream.writeObject(cellFormat.getHorizontalAlignment());
+        stream.writeObject(cellFormat.getVerticalAlignment());
+    }
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        cellFormat = new CellFormat();
+        cellFormat.setBackgroundColor((Color)stream.readObject());
+        cellFormat.setFontColor((Color)stream.readObject());
+        cellFormat.setFontName((String)stream.readObject());
+        cellFormat.setFontSize((Integer)stream.readObject());
+        cellFormat.setFontStyle((Integer)stream.readObject());
+        cellFormat.setFormat((Format)stream.readObject());
+        cellFormat.setHorizontalAlignment((Integer)stream.readObject());
+        cellFormat.setVerticalAlignment((Integer)stream.readObject());
+    }
 }

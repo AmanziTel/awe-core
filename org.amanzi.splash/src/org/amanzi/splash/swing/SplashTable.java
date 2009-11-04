@@ -15,8 +15,11 @@ package org.amanzi.splash.swing;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -32,7 +35,9 @@ import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.ui.SplashPlugin;
+import org.amanzi.splash.utilities.CellSelection;
 import org.amanzi.splash.utilities.NeoSplashUtil;
+import org.amanzi.splash.utilities.SelectedCellsSet;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.ui.PlatformUI;
@@ -603,11 +608,35 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 	 * @param column
 	 *            column index of Cell to Copy
 	 */
-	public void copyCell(int row, int column) {
+    public SelectedCellsSet copyCell() {
+        
+        int rowIndexStart = getSelectedRow();
+        int rowIndexEnd = getSelectionModel().getMaxSelectionIndex();
+        int colIndexStart = getSelectedColumn();
+        int colIndexEnd = getColumnModel().getSelectionModel().getMaxSelectionIndex();
+        SelectedCellsSet result=new SelectedCellsSet();
+        result.setColumn(colIndexStart);
+        result.setRow(rowIndexStart);
+        ArrayList<Cell>cel=new ArrayList<Cell>();
+        // Check each cell in the range 
+        for (int r=rowIndexStart; r<=rowIndexEnd; r++) {
+            for (int c=colIndexStart; c<=colIndexEnd; c++) {
+                if (isCellSelected(r, c)) {
+                    Cell cell = (Cell) getModel().getValueAt(r, c);
+                    if (cell != null) {
+                        cel.add(cell);
+                    }
+                }
+            }
+        }
+        result.setCells(cel);
+        Clipboard cl = Toolkit.getDefaultToolkit().getSystemClipboard();
 		NeoSplashUtil.logn("Copy pressed !!!");
-		copiedCellID = new CellID(row, column).getFullID();
+        CellSelection cs = new CellSelection(result);
+        cl.setContents(cs, cs);
 		NeoSplashUtil.logn("Copied cell at: " + copiedCellID);
 		isCopy = true;
+        return result;
 	}
 
 	/**
@@ -618,12 +647,12 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 	 * @param column
 	 *            column index of Cell to Cut
 	 */
-	public void cutCell(int row, int column) {
+    public void cutCell() {
+        SelectedCellsSet selectedCell = copyCell();
 		NeoSplashUtil.logn("Cut pressed !!!");
-		cutCellID = new CellID(row, column).getFullID();
-		cutDefinition = (String) ((Cell) getModel().getValueAt(row, column)).getDefinition();
-		cutValue = (String) ((Cell) getModel().getValueAt(row, column)).getValue();
-		deleteCell(row, column);
+        for (Cell cell : selectedCell.getCells()) {
+            deleteCell(cell.getRow(), cell.getColumn());
+        }
 		NeoSplashUtil.logn("Cut cell at: " + copiedCellID);
 		isCopy = false;
 	}
@@ -637,35 +666,23 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 	 *            column index of Cell to Paste
 	 */
 	public void pasteCell(int row, int column) {
-		NeoSplashUtil.logn("Paste pressed !!!");
-		if (isCopy) {
-			NeoSplashUtil.logn("Pasting cell " + copiedCellID + " at " + new CellID(row, column).getFullID());
-			CellID id = new CellID(copiedCellID);
-			int srcColumn = id.getColumnIndex();
-			int srcRow = id.getRowIndex();
-			NeoSplashUtil.logn("srcColumn: " + srcColumn);
-			NeoSplashUtil.logn("srcRow: " + srcRow);
-			String srcDefinition = (String) ((Cell) getModel().getValueAt(srcRow, srcColumn)).getDefinition();
-			Object value = ((Cell) getModel().getValueAt(srcRow, srcColumn)).getValue();
-            String srcValue = value == null ? null : value.toString();
-			Cell dstCell = new Cell(row, column, srcDefinition, srcValue, new CellFormat());
-			((SplashTableModel) getModel()).interpret(srcDefinition, row, column);
-
-			getModel().setValueAt(dstCell, row, column);
-
-		} else {
-			NeoSplashUtil.logn("Pasting cell " + cutCellID + " at " + new CellID(row, column).getFullID());
-			CellID id = new CellID(cutCellID);
-			int srcColumn = id.getColumnIndex();
-			int srcRow = id.getRowIndex();
-			NeoSplashUtil.logn("srcColumn: " + srcColumn);
-			NeoSplashUtil.logn("srcRow: " + srcRow);
-			Cell dstCell = new Cell(row, column, cutDefinition, cutValue, new CellFormat());
-			((SplashTableModel) getModel()).interpret(cutDefinition, row, column);
-
-			getModel().setValueAt(dstCell, row, column);
-		}
-	}
+        Clipboard cl = Toolkit.getDefaultToolkit().getSystemClipboard();
+        if (cl.isDataFlavorAvailable(CellSelection.CELL_DATA_FLAVOR)) {
+            SelectedCellsSet data;
+            try {
+                data = (SelectedCellsSet)cl.getData(CellSelection.CELL_DATA_FLAVOR);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+            for (Cell cell : data.getCells()) {
+                cell.setRow(row + cell.getRow() - data.getRow());
+                cell.setColumn(column + cell.getColumn() - data.getColumn());
+                getModel().setValueAt(cell, row, column);
+            }
+            repaint();
+        }
+    }
 	
 	private void updateFont(Cell cell, Integer fontStyle) {
 	    CellFormat format = cell.getCellFormat();
@@ -714,7 +731,7 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
             if (e.isControlDown()) {
                 switch (e.getKeyCode()) {
                 case KeyEvent.VK_C:
-                    copyCell(rows[0], columns[0]);
+                    copyCell();
                     result = true;
                     break;
                 case KeyEvent.VK_V:
@@ -722,7 +739,7 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
                     result = true;
                     break;
                 case KeyEvent.VK_X:
-                    cutCell(rows[0], columns[0]);
+                    cutCell();
                     result = true;
                     break;
                 case KeyEvent.VK_B:
