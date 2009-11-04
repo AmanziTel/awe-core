@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.core.database.nodes;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +22,7 @@ import java.util.regex.Pattern;
  * @author Lagutko_N
  */
 
-public class CellID {
+public class CellID implements Serializable {
 
 	/*
 	 * Name of Column
