@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.core.database.nodes;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -37,7 +38,7 @@ public class ChartNode extends AbstractNode {
 		super(node);
 		// TODO Auto-generated constructor stub
 
-		setParameter(INeoConstants.PROPERTY_TYPE_NAME, CHART_NODE_TYPE);
+//		setParameter(INeoConstants.PROPERTY_TYPE_NAME, CHART_NODE_TYPE);
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, CHART_NODE_NAME);
 	}
 
@@ -49,7 +50,24 @@ public class ChartNode extends AbstractNode {
 	public void setChartName(String chartName) {
 		setParameter(CHART_NAME, chartName);
 	}
-
+	
+	/**
+     * Sets the type of a Chart
+     *
+     * @param chartType type of a Chart
+     */    
+    public void setChartType(String chartType) {
+        setParameter(CHART_NODE_TYPE, chartType);
+        setParameter(INeoConstants.PROPERTY_TYPE_NAME, CHART_NODE_TYPE+"_"+chartType.toLowerCase());
+    }
+    /**
+     * Getter for chart type
+     * 
+     * @return chart type
+     */
+    public String getChartType() {
+        return (String)getParameter(CHART_NODE_TYPE);
+    }
 	/**
 	 * Adds a Cell to Column
 	 *
@@ -139,8 +157,29 @@ public class ChartNode extends AbstractNode {
 		return null;
 	}
 
-	public Iterator<ChartItemNode> getAllChartItems() {
-		// TODO Auto-generated method stub
-		return new AllChartItemNodeIterator();
-	}
+    /**
+     * Method to get all chart items
+     * 
+     * @return all chart items as list
+     */
+    public ArrayList<ChartItemNode> getAllChartItems() {
+        ArrayList<ChartItemNode> chartItemsList = new ArrayList<ChartItemNode>(0);
+
+        Iterator<ChartItemNode> chartItems = new AllChartItemNodeIterator();
+
+        while (chartItems.hasNext()) {
+            chartItemsList.add(chartItems.next());
+        }
+
+        return chartItemsList;
+    }
+	/**
+     * Use factory method to ensure clear API different to normal constructor.
+     *
+     * @param node representing an existing Spreadsheet
+     * @return SpreadsheetNode from existing Node
+     */
+    public static ChartNode fromNode(Node node) {
+        return new ChartNode(node);
+    }
 }

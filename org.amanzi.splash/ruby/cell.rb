@@ -9,7 +9,8 @@ include_class com.eteks.openjeks.format.CellFormat
 #
 class Cell
   extend Splash::Formulas::Demo
-  
+  attr_writer :beginRange
+  attr_writer :endRange
   #
   # Handles operation or method for Cell
   #
@@ -87,40 +88,37 @@ class Cell
     value.to_s
   end
   
-  #
-  # Returns a succesor of Cell (only single row and sinle column rahges are supported now)
+#
+  # Returns a succesor of a Cell
   #
   def succ
-    #    puts "Cell.succ is called for R#{row}C#{column}"
-    #    puts "Last compared: R#{@lastCompared.row}C#{@lastCompared.column}"
-    rows=@lastCompared.row-self.row
-    columns=@lastCompared.column-self.column
-    if rows!=0
-      if columns==0
-        #single column
-        $tableModel.getValueAt(row+1,column)
-      else
-        #TODO
-      end
+    if self.row<@endRange.row
+      cell=$tableModel.getValueAt(row+1,column)
+      cell.beginRange=@beginRange
+      cell.endRange=@endRange
+      cell
     else
-      if columns!=0
-        #single row
-        $tableModel.getValueAt(row,column+1)
-      end
+        cell=$tableModel.getValueAt(@beginRange.row,column+1)
+        cell.beginRange=@beginRange
+        cell.endRange=@endRange
+        cell
     end
   end
+  
 
-  #
-  # Compares two cells (only single row and sinle column rahges are supported now)
+#
+  # Compares two cells
   #
   def <=>(value)
-    #    puts "Compare: R#{self.row}C#{self.column}(self)<=>R#{value.row}C#{value.column}(other value)"
-    @lastCompared=value
+    if @beginRange.nil?
+      @beginRange=self 
+    end
+    if @endRange.nil?
+      @endRange=value
+    end 
     if self.row!=value.row
-      #      puts "self.row<=>value.row"
       self.row<=>value.row
     else
-      #        puts "self.column<=>value.column"
       self.column<=>value.column
     end
   end

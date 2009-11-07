@@ -12,14 +12,37 @@
  */
 package org.amanzi.splash.ui;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.ui.part.FileEditorInput;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.ChartNode;
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.database.services.AweProjectService;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.splash.chart.Charts;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IPersistableElement;
 
-public class ChartEditorInput extends FileEditorInput {
+public class ChartEditorInput implements IEditorInput, IPersistableElement {
 	
-	private String chartName;
+	private static final String RUBY_PROJECT = "RUBY_PROJECT";
+    private static final String CHART_NAME = "CHART_NAME";
+    private String chartName;
+	private String projectName;
 
-	public String getChartName() {
+	/**
+     * @param chartName
+     * @param projectName
+     */
+    public ChartEditorInput(String projectName, String chartName) {
+        super();
+        this.chartName = chartName;
+        this.projectName = projectName;
+    }
+
+    public String getChartName() {
 		return chartName;
 	}
 
@@ -27,11 +50,82 @@ public class ChartEditorInput extends FileEditorInput {
 		this.chartName = chartName;
 	}
 
-	public ChartEditorInput(IFile file) {
-		super(file);
-		// TODO Auto-generated constructor stub
-	}
-	
+    /**
+     * @return Returns the projectName.
+     */
+    public String getProjectName() {
+        return projectName;
+    }
+
+    /**
+     * @param projectName The projectName to set.
+     */
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    @Override
+    public boolean exists() {
+        boolean isExist = (Boolean) ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+
+            private boolean result;
+
+            public Object getValue() {
+                return result;
+            }
+
+            public void run() {
+                AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+                RubyProjectNode rubyProject = projectService.findRubyProject(projectName);
+                ChartNode node = projectService.getChartByName(rubyProject, chartName);
+                result = node != null;
+            }
+        });
+        return isExist;
+    }
+
+    @Override
+    public ImageDescriptor getImageDescriptor() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return chartName;
+    }
+
+    @Override
+    public IPersistableElement getPersistable() {
+        return this;
+    }
+
+    @Override
+    public String getToolTipText() {
+        return chartName;
+    }
+
+    @Override
+    public Object getAdapter(Class adapter) {
+        return null;
+    }
+
+    @Override
+    public String getFactoryId() {
+        return Charts.getFactoryId();
+    }
+
+    @Override
+    public void saveState(IMemento memento) {
+        memento.putString(RUBY_PROJECT, projectName);
+        memento.putString(CHART_NAME, chartName);
+    }
+
+
+	public static ChartEditorInput createEditorInput(IMemento memento ){
+	String rubyProjectName = memento.getString(RUBY_PROJECT);
+    String chartName = memento.getString(CHART_NAME);
+    return new ChartEditorInput(rubyProjectName,chartName);
+}
 	
 	
 

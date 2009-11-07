@@ -14,6 +14,8 @@ package org.amanzi.neo.core.database.services;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -22,6 +24,8 @@ import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
 import org.amanzi.neo.core.database.nodes.AbstractNode;
 import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.CellNode;
+import org.amanzi.neo.core.database.nodes.ChartItemNode;
+import org.amanzi.neo.core.database.nodes.ChartNode;
 import org.amanzi.neo.core.database.nodes.RootNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.RubyScriptNode;
@@ -677,5 +681,155 @@ public class AweProjectService {
                         && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.DATASET_TYPE_NAME);
             }
         }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+    }
+    /**
+     * Searches for a chart with given name
+     *
+     * @param root ruby project
+     * @param name chart name
+     * @return
+     */
+    public ChartNode getChartByName(RubyProjectNode root, String name) {
+        ChartNode result = null;
+
+        Transaction transaction = neoService.beginTx();
+
+        try {
+            Iterator<ChartNode> chartIterator = root
+                    .getCharts();
+
+            while (chartIterator.hasNext()) {
+                ChartNode chart = chartIterator.next();
+
+                if (chart.getChartIndex().equals(name)) {
+                    result = chart;
+                    break;
+                }
+            }
+            transaction.success();
+        } finally {
+            transaction.finish();
+        }
+
+        return result;
+    }
+    /**
+     * Creates a Chart in Ruby project with given ID
+     *
+     * @param root ruby project node
+     * @param id chart id
+     * @param type TODO
+     * @return chart node created
+     */
+    public ChartNode createChart(RubyProjectNode root, String id, String type) {
+        Transaction transaction = neoService.beginTx();
+        ChartNode chartNode=null;
+
+        try {
+             chartNode = getChartByName(root,id);
+
+            if (chartNode == null) {
+                chartNode = new ChartNode(neoService.createNode());
+                chartNode.setChartIndex(id);
+                chartNode.setChartType(type);
+                root.addChart(chartNode);
+            }
+
+            transaction.success();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            transaction.failure();
+        } finally {
+            transaction.finish();
+        }
+        return chartNode;
+
+    }
+    /**
+     * Creates a chart item for given chart node
+     * 
+     * @param chartNode
+     * @param id
+     * @return
+     * @throws SplashDatabaseException
+     */
+    public ChartItemNode createChartItem(ChartNode chartNode, String id) throws SplashDatabaseException {
+        Transaction transaction = neoService.beginTx();
+
+        try {
+            ChartItemNode ChartItemNode = chartNode.getChartItem(id);
+
+            if (ChartItemNode == null) {
+                ChartItemNode = new ChartItemNode(neoService.createNode());
+                ChartItemNode.setChartItemIndex(id);
+                chartNode.addChartItem(ChartItemNode);
+            }
+
+            transaction.success();
+
+            return ChartItemNode;
+        } finally {
+            transaction.finish();
+        }
+    }
+    /**
+     * Creates a chart item for given chart node
+     * 
+     * @param chartNode
+     * @param id
+     * @return
+     * @throws SplashDatabaseException
+     */
+    public ChartItemNode createChartItem(ChartNode chartNode, CellNode catNode, CellNode valNode,String id) throws SplashDatabaseException {
+        Transaction transaction = neoService.beginTx();
+
+        try {
+            ChartItemNode chartItemNode = chartNode.getChartItem(id);
+
+            if (chartItemNode == null) {
+                chartItemNode = new ChartItemNode(neoService.createNode());
+                chartItemNode.setChartItemIndex(id);
+                chartItemNode.addCategoryNode(catNode);
+                chartItemNode.addValueNode(valNode);
+                chartNode.addChartItem(chartItemNode);
+            }
+
+            transaction.success();
+
+            return chartItemNode;
+        } finally {
+            transaction.finish();
+        }
+    }
+    
+    public int getNextChartNumber(RubyProjectNode root){
+        int result = -1;
+
+        Transaction transaction = neoService.beginTx();
+
+        try {
+            Iterator<ChartNode> chartIterator = root
+                    .getCharts();
+
+            while (chartIterator.hasNext()) {
+                ChartNode chart = chartIterator.next();
+                String regex = "\\d+";
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(chart.getChartIndex());
+                while (matcher.find()) {
+                    int i=Integer.parseInt(matcher.group());
+                    if (result<i){
+                        result=i;
+                    }
+                }
+            }
+            transaction.success();
+        } finally {
+            transaction.finish();
+        }
+
+        return result+1;
+        
     }
 }

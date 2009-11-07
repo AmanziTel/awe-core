@@ -13,6 +13,8 @@
 package org.amanzi.neo.core.database.nodes;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.SplashRelationshipTypes;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 
 public class ChartItemNode extends AbstractNode {
@@ -25,6 +27,7 @@ public class ChartItemNode extends AbstractNode {
 	private static final String CHART_ITEM_NODE_NAME = "Spreadsheet Chart Item";
 	
 	private static final String CHART_ITEM_NODE_CATEGORY = "Spreadsheet Chart Category";
+	private static final String CHART_ITEM_NODE_SERIES = "Spreadsheet Chart Series";
 	private static final String CHART_ITEM_NODE_VALUE = "0.0";
 	public static final String CHART_ITEM_INDEX = "chart_item_index";
 
@@ -85,8 +88,44 @@ public class ChartItemNode extends AbstractNode {
 		setParameter(CHART_ITEM_NODE_VALUE, chartItemValue);
 	}
 
-	
+    public void setChartItemSeries(String series) {
+        setParameter(CHART_ITEM_NODE_SERIES, series);
+    }
+
+    public String getChartItemSeries() {
+        return (String)getParameter(CHART_ITEM_NODE_SERIES);
+    }
     
-    
-    
+    /**
+     * Adds given cell node to this chart item node as category
+     *
+     * @param cell Cell
+     */    
+    public void addCategoryNode(CellNode category) {
+        addRelationship(SplashRelationshipTypes.CHART_CATEGORY, category.getUnderlyingNode());
+    }
+    /**
+     * Adds given cell node to this chart item node as value
+     *
+     * @param cell Cell
+     */    
+    public void addValueNode(CellNode value) {
+        addRelationship(SplashRelationshipTypes.CHART_VALUE, value.getUnderlyingNode());
+    }
+    /**
+     * Getter for category node for current chart item node
+     *
+     * @return cell node representing category node
+     */
+    public CellNode getCategoryNode(){
+        return CellNode.fromNode(node.getSingleRelationship(SplashRelationshipTypes.CHART_CATEGORY, Direction.OUTGOING).getEndNode());
+    }
+    /**
+     * Getter for value node for current chart item node
+     *
+     * @return cell node representing value node
+     */
+    public CellNode getValueNode(){
+        return CellNode.fromNode(node.getSingleRelationship(SplashRelationshipTypes.CHART_VALUE, Direction.OUTGOING).getEndNode());
+    }
 }

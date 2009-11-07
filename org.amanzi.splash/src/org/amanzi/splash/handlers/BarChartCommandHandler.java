@@ -12,7 +12,12 @@
  */
 package org.amanzi.splash.handlers;
 
+import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.splash.chart.ChartType;
+import org.amanzi.splash.chart.Charts;
+import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.ui.AbstractSplashEditor;
+import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -39,8 +44,9 @@ public class BarChartCommandHandler extends AbstractHandler {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 //		
 				AbstractSplashEditor editor = (AbstractSplashEditor) window.getActivePage().getActiveEditor();
-				editor.plotCellsBarChart();
-		
+				Pair<Cell[], Cell[]> chartData = editor.getChartData();
+                Charts.openChartEditor(editor.plotChart(chartData.l(), chartData.r(), ChartType.BAR),
+                        NeoSplashUtil.AMANZI_NEO4J_SPLASH_CHART_EDITOR);
 		//editor.addNewFilter();
 		
 		

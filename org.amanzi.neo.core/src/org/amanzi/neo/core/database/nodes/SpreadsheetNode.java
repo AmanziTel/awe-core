@@ -102,9 +102,10 @@ public class SpreadsheetNode extends AbstractNode {
 	}
 
 	/**
-	 * Add chart to Spreadsheet
+	 * Adds chart to Spreadsheet
 	 * 
 	 * @param chart
+	 * @deprecated
 	 */
 	public void addChart(ChartNode chart) {
 		addRelationship(SplashRelationshipTypes.CHART, chart

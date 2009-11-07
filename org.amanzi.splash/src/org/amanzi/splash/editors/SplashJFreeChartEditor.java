@@ -24,12 +24,22 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 
 
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.exception.SplashDatabaseException;
+import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
 import org.amanzi.neo.core.database.nodes.ChartItemNode;
 import org.amanzi.neo.core.database.nodes.ChartNode;
+import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.database.services.AweProjectService;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
+import org.amanzi.splash.chart.Charts;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTable;
@@ -88,7 +98,13 @@ import com.eteks.openjeks.format.CellFormatPanel;
 
 
 public class SplashJFreeChartEditor extends EditorPart implements
-        IResourceChangeListener, IShowInSource, IShowInTargetList {
+        IResourceChangeListener, IShowInSource, IShowInTargetList, IUpdateDatabaseListener {
+    private static final Collection<UpdateDatabaseEventType> handedTypes;
+    static {
+        Collection<UpdateDatabaseEventType> spr = new HashSet<UpdateDatabaseEventType>();
+        spr.add(UpdateDatabaseEventType.Spreadsheet);
+        handedTypes = Collections.unmodifiableCollection(spr);
+    }
 	private boolean isDirty = false;
 	CellFormatPanel cellFormatPanel = null;
 	CellFormat cellFormat = null;
@@ -104,168 +120,20 @@ public class SplashJFreeChartEditor extends EditorPart implements
 	 * @see org.eclipse.ui.IWorkbenchPart#createPartControl(Composite)
 	 */
 	public void createPartControl(final Composite parent) {
-		//createTable(parent);
-		
-		
-		
-		final ChartComposite frame = new ChartComposite(parent,
-				SWT.NONE, createChart(createDataset()), true, true, true, true,
-				true);
-		
-		
-		
-		parent.layout();
-		
-	}
-	
-	/**
-	 * Read a line and extract elements separated by semi colon character
-	 * @param line
-	 * @return
-	 */
-//	private ArrayList<String> readLine(String line)
-//	{
-//		ArrayList<String> list = new ArrayList<String>();
-//		String s = "";
-//		for (int i=0;i<line.length();i++)
-//		{
-//			if (line.charAt(i) == ';')
-//			{
-//				list.add(s);
-//				s = "";
-//			}
-//			else
-//			{
-//				s += line.charAt(i);
-//			}
-//		}
-//		return list;
-//	}
-	
-	
-	private DefaultCategoryDataset createDataset() {
-		DefaultCategoryDataset dataset = null;
-		try{
-		SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService();
-		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		SplashTable table = ((AbstractSplashEditor)editor).getTable();
-		SplashTableModel model = (SplashTableModel)table.getModel(); 
-		
-		SpreadsheetNode spreadsheet = model.getSpreadsheet();
-		
-		ChartNode chartNode = null;
-		try {
-			//int chartsCount = spreadsheet.getChartsCount();
-			
-			//NeoSplashUtil.logn("spreadsheet.getChartsCount()2: " + chartsCount);
-			
-			chartNode = spreadsheet.getChart(((ChartEditorInput) getEditorInput()).getChartName());
-		} catch (SplashDatabaseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		dataset = new DefaultCategoryDataset();
-		
-		for (ChartItemNode node : service.getAllChartItems(chartNode)){
-			NeoSplashUtil.logn("node.getChartItemValue(): " + node.getChartItemValue());
-			
-			
-			dataset.addValue(Double.parseDouble(node.getChartItemValue()), "Series", node.getChartItemCategory());
-		}
-		
-		
-		
-//		final IFile file = ((FileEditorInput) getEditorInput()).getFile();
-//		InputStream is = null;
-//		try {
-//			is = file.getContents();
-//		} catch (CoreException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
-//		String line = null;
-//		try {
-//			line = lnr.readLine();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//        // create the dataset...
-//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-//        for (int i=0;i<list.size()/2;i++){
-//        	dataset.addValue(Values[i], "Series", Categories[i]);
-//        }
-		
-		}catch(Exception ex){
-			
-			ex.printStackTrace();
-			dataset = new DefaultCategoryDataset();
-		}
+        ChartNode chartNode = getChartNode();
+        JFreeChart chart = Charts.createBarChart(Charts.createBarChartDataset(chartNode));
+        final ChartComposite frame = new ChartComposite(parent, SWT.NONE, chart, true, true, true, true, true);
+        parent.layout();
 
-		return dataset;
-	}
-	
-	
+    }
 
-	/**
-	 * This method creates a chart.
-	 * @param dataset. dataset provides the data to be displayed in the chart. 
-	 * The parameter is provided by the 'createDataset()' method.
-	 * @return A chart.
-	 */
-	private JFreeChart createChart(DefaultCategoryDataset dataset) {
-
-		 // create the chart...
-        JFreeChart chart = ChartFactory.createBarChart(
-            "",       					// chart title
-            "",               			// domain axis label
-            "Value",                  	// range axis label
-            dataset,                 	// data
-            PlotOrientation.VERTICAL, 	// orientation
-            true,                     	// include legend
-            true,                     	// tooltips?
-            false                     	// URLs?
-        );
-
-        // NOW DO SOME OPTIONAL CUSTOMISATION OF THE CHART...
-
-        // set the background color for the chart...
-        chart.setBackgroundPaint(Color.white);
-
-        // get a reference to the plot for further customisation...
-        CategoryPlot plot = (CategoryPlot) chart.getPlot();
-
-        // ******************************************************************
-        //  More than 150 demo applications are included with the JFreeChart
-        //  Developer Guide...for more information, see:
-        //
-        //  >   http://www.object-refinery.com/jfreechart/guide.html
-        //
-        // ******************************************************************
-
-        // set the range axis to display integers only...
-        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-
-        // disable bar outlines...
-        BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setDrawBarOutline(false);
-
-        // set up gradient paints for series...
-        GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue,
-                0.0f, 0.0f, new Color(0, 0, 64));
-        renderer.setSeriesPaint(0, gp0);
-
-        CategoryAxis domainAxis = plot.getDomainAxis();
-        domainAxis.setCategoryLabelPositions(
-                CategoryLabelPositions.createUpRotationLabelPositions(
-                        Math.PI / 6.0));
-        // OPTIONAL CUSTOMISATION COMPLETED.
-
-        return chart;
-	}
+    private ChartNode getChartNode() {
+        AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+        ChartEditorInput chartEI = (ChartEditorInput)getEditorInput();
+        RubyProjectNode rubyProject = projectService.findRubyProject(chartEI.getProjectName());
+        ChartNode chartNode = projectService.getChartByName(rubyProject, chartEI.getChartName());
+        return chartNode;
+    }
 
 
 	/**
@@ -370,11 +238,11 @@ public class SplashJFreeChartEditor extends EditorPart implements
 
     
     public void setContents(IEditorInput editorInput) throws CoreException {
-
-        IStorageEditorInput sei = (IStorageEditorInput) getEditorInput();
-        InputStream is;
-
-        is = sei.getStorage().getContents();
+//
+//        IStorageEditorInput sei = (IStorageEditorInput) getEditorInput();
+//        InputStream is;
+//
+//        is = sei.getStorage().getContents();
         
         
         setIsDirty(false);
@@ -416,6 +284,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
     public void dispose() {
         super.dispose();
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        NeoCorePlugin.getDefault().getUpdateDatabaseManager().removeListener(this);
     }
 
 	/*
@@ -436,7 +305,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
 					+ "does not exist.");
 
 		IEditorInput ei = validateEditorInput(editorInput);
-
+		NeoCorePlugin.getDefault().getUpdateDatabaseManager().addListener(this);
 		// This message includes class names to help
 		// the programmer / reader; production code would instead
 		// log an error and provide a helpful, friendly message.
@@ -548,6 +417,8 @@ public class SplashJFreeChartEditor extends EditorPart implements
      * @see org.amanzi.splash.ui.AbstractSplashEditor#validateEditorInput(IEditorInput)
      */
     public IEditorInput validateEditorInput(IEditorInput editorInput) {
+        if (editorInput instanceof ChartEditorInput)
+            return editorInput;
         if (editorInput instanceof IStorageEditorInput)
             return editorInput;
         if (editorInput instanceof IFileEditorInput)
@@ -561,5 +432,21 @@ public class SplashJFreeChartEditor extends EditorPart implements
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+    @Override
+    public void databaseUpdated(UpdateDatabaseEvent event) {
+        NeoSplashUtil.logn("firePropertyChange(PROP_INPUT)");
+        PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+            public void run() {
+                firePropertyChange(PROP_INPUT);
+            }
+        });
+        
+    }
+
+    @Override
+    public Collection<UpdateDatabaseEventType> getType() {
+        return handedTypes;
+    }
 
 }

@@ -146,6 +146,10 @@
       <factory
             class="org.amanzi.splash.ui.SplashEditorInputFactory"
             id="org.amanzi.splash.ui.SplashEditorInputFactory">
+      </factory>
+      <factory
+            class="org.amanzi.splash.chart.Charts"
+            id="org.amanzi.splash.chart.Charts">
       </factory>          
     </extension>
     <extension

@@ -178,7 +178,7 @@ public class SpreadsheetService {
 
 	/**
 	 * Creates a Chart in Spreadsheet by given ID
-	 * 
+	 * @deprecated
 	 * 
 	 */
 	public ChartNode createChart(SpreadsheetNode spreadsheet, String id) {
@@ -240,7 +240,7 @@ public class SpreadsheetService {
 
 	/**
 	 * Creates a Chart in Spreadsheet by given ID
-	 * 
+	 * @deprecated
 	 * 
 	 */
 	public ChartItemNode createChartItem(ChartNode chartNode, String id) throws SplashDatabaseException {
@@ -784,19 +784,20 @@ public class SpreadsheetService {
 	 * 
 	 * @param sheet Spreadsheet
 	 * @return all Cells of given Spreadsheet
+	 * @deprecated
 	 */
 
 	public List<ChartItemNode> getAllChartItems(ChartNode chartNode) {
 		ArrayList<ChartItemNode> chartItemsList = new ArrayList<ChartItemNode>(0);
 
-		Iterator<ChartItemNode> chartItems = chartNode.getAllChartItems();
-
-		while (chartItems.hasNext()) {
-			ChartItemNode chartItem = chartItems.next();
-			String chartItemIndex = chartItem.getChartItemIndex();
-
-			chartItemsList.add(chartItem);
-		}
+//		Iterator<ChartItemNode> chartItems = chartNode.getAllChartItems();
+//
+//		while (chartItems.hasNext()) {
+//			ChartItemNode chartItem = chartItems.next();
+//			String chartItemIndex = chartItem.getChartItemIndex();
+//
+//			chartItemsList.add(chartItem);
+//		}
 
 		return chartItemsList;
 	}

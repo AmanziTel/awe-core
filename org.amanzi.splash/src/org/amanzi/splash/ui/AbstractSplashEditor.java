@@ -46,15 +46,20 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.exception.SplashDatabaseException;
+import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.ChartItemNode;
 import org.amanzi.neo.core.database.nodes.ChartNode;
 import org.amanzi.neo.core.database.nodes.PieChartItemNode;
 import org.amanzi.neo.core.database.nodes.PieChartNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.splash.chart.ChartType;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.ColumnHeaderRenderer;
@@ -83,6 +88,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -1186,7 +1192,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 			items[i].setChartItemValue((String) ((Cell) table.getValueAt(lastRow, firstColumn + i)).getValue());
 
 		}
-		IEditorInput editorInput = new ChartEditorInput(file);
+		IEditorInput editorInput = new ChartEditorInput("","");
 		((ChartEditorInput) editorInput).setChartName(chartName);
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		IWorkbenchPage page = window.getActivePage();
@@ -1264,5 +1270,159 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		}
 
 	}
+	public Pair<Cell[], Cell[]> getChartData() {
+        int firstRow, firstColumn, lastRow, lastColumn;
+        firstRow = table.getSelectedRow();
+        firstColumn = table.getSelectedColumn();
+        lastRow = firstRow + table.getSelectedRowCount() - 1;
+        lastColumn = firstColumn + table.getSelectedColumnCount() - 1;
+        SplashTableModel model = (SplashTableModel)table.getModel();
+        if (lastRow - firstRow == 1) {
+            // two rows range
+            Cell[] values = new Cell[lastColumn - firstColumn + 1];
+            Cell[] categories = new Cell[lastColumn - firstColumn + 1];
+            for (int i = firstColumn; i <= lastColumn; i++) {
+                categories[i - firstColumn] =
 
+                (Cell)(model).getValueAt(firstRow, i);
+                values[i - firstColumn] =
+
+                (Cell)(model).getValueAt(lastRow, i);
+            }
+            return new Pair<Cell[], Cell[]>(categories, values);
+
+        } else {
+            // two columns range
+            int rowsCount = lastRow - firstRow + 1;
+            if (lastColumn - firstColumn == 1) {
+                Cell[] values = new Cell[rowsCount];
+                Cell[] categories = new Cell[rowsCount];
+                for (int i = firstRow; i <= lastRow; i++) {
+                    categories[i - firstRow] =
+
+                    (Cell)(model).getValueAt(i, firstColumn);
+                    values[i - firstRow] =
+
+                    (Cell)(model).getValueAt(i, lastColumn);
+                }
+                return new Pair<Cell[], Cell[]>(categories, values);
+            } else {
+                //rectangular range
+                //consider that categories are located in a first column
+                Cell[] categories = new Cell[rowsCount];
+                for (int i = 0; i < rowsCount; i++) {
+                  categories[i] = (Cell)(model).getValueAt(i+firstRow, firstColumn);
+               }
+                int colCount = lastColumn - firstColumn;
+                Cell[] values = new Cell[rowsCount*colCount];
+                for(int j=0;j<colCount;j++){
+                for (int i = 0; i < rowsCount; i++) {
+                    NeoSplashUtil.logn("j="+j +"; i="+ i+"; i+rowsCount*j="+(i+rowsCount*j));
+                    values[i+rowsCount*j] =(Cell)(model).getValueAt(i+firstRow, j+firstColumn+1);
+                   }
+                }
+                return new Pair<Cell[], Cell[]>(categories, values);
+            }
+        }
+
+    }
+
+    protected InputStream getChartInitialContents(Cell[] categories, Cell[] values) {
+        StringBuffer sb = new StringBuffer();
+        for (int j = 0; j < categories.length; j++) {
+            sb.append(categories[j].getValue() + ";" + values[j].getValue() + ";");
+
+        }
+        return new ByteArrayInputStream(sb.toString().getBytes());
+    }
+
+    public IEditorInput plotChart(Cell[] categories, Cell[] values, ChartType type) {
+        SplashTableModel model = (SplashTableModel)table.getModel();
+        SpreadsheetNode spreadsheet = model.getSpreadsheet();
+        
+        SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService(); 
+        AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+        RubyProjectNode rootProject = spreadsheet.getSpreadsheetRootProject();
+        int chartNumber = projectService.getNextChartNumber(rootProject);
+        
+        String chartName = "Chart" + chartNumber;
+        NeoSplashUtil.logn("chartName = " + chartName);
+        
+        ChartNode chartNode = projectService.createChart(rootProject, chartName, type.name());
+        int n = categories.length;
+        int m = values.length;
+        int k = m/n;
+//        assert n == values.length : "Categories length should be equal to values length!";
+
+        ChartItemNode[] items = new ChartItemNode[m];
+        for (int i=0;i<n;i++){
+                CellNode catNode = service.getCellNode(spreadsheet, categories[i].getCellID());
+                NeoSplashUtil.logn("categories["+i+"]="+ categories[i].getCellID());
+            for (int j=0;j<k;j++){
+                CellNode valNode = service.getCellNode(spreadsheet, values[i+n*j].getCellID());
+                NeoSplashUtil.logn("j="+j +"; values[(i+n*j)="+(i+n*j) +"]="+values[i+n*j].getCellID());
+                try {
+                    items[i+n*j] = projectService.createChartItem(chartNode, catNode,valNode,"item" + (i+n*j));
+                    String series = "Series "+j;
+                    NeoSplashUtil.logn("Series for j="+j +": "+ series);
+                    items[i+n*j].setChartItemSeries(series);
+                } catch (SplashDatabaseException e) {
+                    NeoSplashUtil.logn(e.getMessage());
+                }
+            }
+        }
+//        for (int i = 0; i < m; i++) {
+//            try {
+//                items[i] = projectService.createChartItem(chartNode, "item" + i);
+//                CellNode catNode = service.getCellNode(spreadsheet, categories[i%n].getCellID());
+//                service.getCellNode(spreadsheet, values[i].getCellID());
+//            } catch (SplashDatabaseException e) {
+//                NeoSplashUtil.logn(e.getMessage());
+//            }
+//            
+//            items[i].setChartItemCategory((String)categories[i%n].getValue());
+//            items[i].setChartItemValue((String)values[i].getValue());
+//            String series = "Series "+String.valueOf(i/n);
+//            NeoSplashUtil.logn("Series for i="+i +": "+ series);
+//            items[i].setChartItemSeries(series);
+//        }
+
+        return new ChartEditorInput(rootProject.getName(),chartName);
+//        openChartEditor(editorInput, NeoSplashUtil.AMANZI_NEO4J_SPLASH_CHART_EDITOR);
+    }
+
+//      private void openChartEditor(final IEditorInput editorInput, final String editorId) {
+//        IWorkbench workbench = PlatformUI.getWorkbench();
+//        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+//        final IWorkbenchPage page;
+//        if (window != null) {
+//            page = window.getActivePage();
+//            try {
+//                page.openEditor(editorInput, editorId);
+//            } catch (PartInitException e) {
+//                NeoSplashUtil.logn(e.getMessage());
+//            }
+//        } else {
+//            // Non-UI thread
+//            page = workbench.getWorkbenchWindows()[0].getActivePage();
+//            Display display = Display.getCurrent();
+//            if (display == null) {
+//                display = Display.getDefault();
+//            }
+//            display.asyncExec(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    try {
+//                        NeoSplashUtil.logn("Try to open editor "+editorId);
+//                        page.openEditor(editorInput, editorId);
+//                    } catch (PartInitException e) {
+//                        NeoSplashUtil.logn(e.getMessage());
+//                    }
+//                }
+//            });
+//
+//        }
+//        
+//    }
 }

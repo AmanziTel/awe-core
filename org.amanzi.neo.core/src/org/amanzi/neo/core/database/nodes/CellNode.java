@@ -409,4 +409,13 @@ public class CellNode extends AbstractNode {
         }
         
     }
+    /**
+     * Use factory method to ensure clear API different to normal constructor.
+     *
+     * @param node representing an existing cell
+     * @return CellNode from existing Node
+     */
+    public static CellNode fromNode(Node node) {
+        return new CellNode(node);
+    }
 }
