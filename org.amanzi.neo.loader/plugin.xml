@@ -14,7 +14,7 @@
        </command>
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadTEMS"
+             id="org.amanzi.neo.loader.commands.LoadDrive"
              name="Load Drive Data">
        </command>
        <command
@@ -31,7 +31,7 @@
        </handler>
        <handler
              class="org.amanzi.neo.loader.handlers.LoadDriveHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadTEMS">
+             commandId="org.amanzi.neo.loader.commands.LoadDrive">
        </handler>
         <handler
              class="org.amanzi.neo.loader.handlers.LoadNeighbourHandler"
@@ -52,9 +52,9 @@
                    tooltip="Load Network Data">
              </command>
              <command
-                   commandId="org.amanzi.neo.loader.commands.LoadTEMS"
-            icon="icons/16/file.png"
-            id="org.amanzi.neo.loader.LoadTEMS"
+                   commandId="org.amanzi.neo.loader.commands.LoadDrive"
+            icon="icons/16/drive.png"
+            id="org.amanzi.neo.loader.LoadDrive"
                    tooltip="Load Drive Data">
              </command>
              <command 
@@ -81,7 +81,7 @@
         <wizard
              category="org.amanzi.load"
              class="org.amanzi.neo.wizards.TemsImportWizard"
-             icon="icons/16/file.png"
+             icon="icons/16/drive.png"
              id="org.amanzi.neo.wizards.TemsImportWizard"
              name="Import Drive data">
           <description>
@@ -91,7 +91,7 @@
        <wizard  
              category="org.amanzi.load"
              class="org.amanzi.neo.wizards.NeighbourImportWizard"
-             icon="icons/16/file.png"
+             icon="icons/16/neighbour.png"
              id="org.amanzi.neo.wizards.NeighbourImportWizard"
              name="Import Neighbour data">
           <description>
@@ -134,7 +134,7 @@
       </action>
       <action
             class="org.amanzi.neo.loader.actions.NewDriveAction"
-            icon="icons/16/file.png"
+            icon="icons/16/drive.png"
             id="org.amanzi.neo.loader.newDriveAction"
             label="New drive">
       </action>

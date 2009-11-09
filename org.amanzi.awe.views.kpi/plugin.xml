@@ -6,7 +6,7 @@
          point="org.eclipse.ui.views">
       <view
             name="KPI Builder"
-            icon="icons/sample.gif"
+            icon="icons/kpi.png"
             category="org.amanzi.awe.script"
             class="org.amanzi.awe.views.kpi.KpiView"
             id="org.amanzi.awe.views.kpi.KpiView">

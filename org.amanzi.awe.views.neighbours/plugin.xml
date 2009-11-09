@@ -6,7 +6,7 @@
          point="org.eclipse.ui.views">
       <view
             name="Neighbours"
-            icon="icons/sample.gif"
+            icon="icons/neighbour.png"
             category="org.amanzi.awe.script"
             class="org.amanzi.awe.views.neighbours.views.NeighboursView"
             id="org.amanzi.awe.views.neighbours.views.NeighboursView">
