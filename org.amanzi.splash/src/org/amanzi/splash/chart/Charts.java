@@ -33,8 +33,11 @@ import org.amanzi.splash.ui.ChartEditorInput;
 import org.amanzi.splash.ui.PieChartEditorInput;
 import org.amanzi.splash.ui.SplashEditorInput;
 import org.amanzi.splash.ui.SplashPlugin;
+import org.amanzi.splash.utilities.Messages;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -81,8 +84,24 @@ public class Charts implements IElementFactory{
     }
     public static DefaultCategoryDataset createBarChartDataset(ChartNode chartNode) {
         DefaultCategoryDataset dataset= new DefaultCategoryDataset();
-        for (ChartItemNode node : chartNode.getAllChartItems()) {
-            dataset.addValue(Double.parseDouble((String)node.getValueNode().getValue()), node.getChartItemSeries(), (String)node.getCategoryNode().getValue());
+        try {
+            for (ChartItemNode node : chartNode.getAllChartItems()) {
+                dataset.addValue(Double.parseDouble((String)node.getValueNode().getValue()), node.getChartItemSeries(), (String)node.getCategoryNode().getValue());
+            }
+        } catch (final NumberFormatException e) {
+            final Display display = PlatformUI.getWorkbench().getDisplay();
+            display.asyncExec(new Runnable(){
+
+                @Override
+                public void run() {
+                    ErrorDialog.openError(display.getActiveShell(), 
+                            "Invalid input",
+                            "Chart can't be created due to invalid input!",
+                            new Status(Status.ERROR, SplashPlugin.getId(), NumberFormatException.class.getName(), e));
+                }
+                
+            });
+            
         }
         return dataset;
     }
@@ -151,8 +170,23 @@ public class Charts implements IElementFactory{
     
     public static  DefaultPieDataset createPieChartDataset(ChartNode chartNode) {
         DefaultPieDataset dataset  = new DefaultPieDataset();
-        for (ChartItemNode node : chartNode.getAllChartItems()){
-            dataset.setValue((String)node.getCategoryNode().getValue(), Double.parseDouble((String)node.getValueNode().getValue()));
+        try {
+            for (ChartItemNode node : chartNode.getAllChartItems()){
+                dataset.setValue((String)node.getCategoryNode().getValue(), Double.parseDouble((String)node.getValueNode().getValue()));
+            }
+        } catch (final NumberFormatException e) {
+            final Display display = PlatformUI.getWorkbench().getDisplay();
+            display.asyncExec(new Runnable(){
+
+                @Override
+                public void run() {
+                    ErrorDialog.openError(display.getActiveShell(), 
+                            "Invalid input",
+                            "Chart can't be created due to invalid input!",
+                            new Status(Status.ERROR, SplashPlugin.getId(), NumberFormatException.class.getName(), e));
+                }
+                
+            });
         }
         return dataset;
     }
