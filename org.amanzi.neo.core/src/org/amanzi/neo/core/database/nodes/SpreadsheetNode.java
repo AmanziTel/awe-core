@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.core.database.nodes;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -25,6 +26,8 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
+
+import com.sun.istack.internal.FinalArrayList;
 
 /**
  * Wrapper class for Spreadsheet
@@ -310,7 +313,80 @@ public class SpreadsheetNode extends AbstractNode {
 			return RowNode.fromNode(node);
 		}
 	}
+	/**
+     * Iterator that returns all rows from given range
+     * 
+     * @author Pechko E.
+     */
+    private class RowRangeIterator extends AbstractIterator<RowNode> {
 
+        public RowRangeIterator(String firstRowIndex, String lastRowIndex) {
+            final int first = Integer.parseInt(firstRowIndex);
+            final int last = Integer.parseInt(lastRowIndex);
+            this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
+                    new StopEvaluator(){
+
+                        @Override
+                        public boolean isStopNode(TraversalPosition currentPos) {
+                            String propertyName = (String)currentPos.currentNode()
+                            .getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                            int ind = Integer.parseInt(propertyName);
+                            return ind>last;
+                        }}, new ReturnableEvaluator() {
+
+                        public boolean isReturnableNode(
+                                TraversalPosition position) {
+                            if (position.isStartNode()) {
+                                return false;
+                            }
+                            String propertyName = (String)position.lastRelationshipTraversed()
+                            .getEndNode()
+                            .getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                            int ind = Integer.parseInt(propertyName);
+                            return ind<=last&&ind>=first;
+                        }
+
+                    }, SplashRelationshipTypes.ROW, Direction.OUTGOING)
+                    .iterator();
+        }
+
+        @Override
+        protected RowNode wrapNode(Node node) {
+            return RowNode.fromNode(node);
+        }
+    }
+    /**
+     * Iterator that returns all columns from given range
+     * 
+     * @author Pechko E.
+     */
+    private class ColumnRangeIterator extends AbstractIterator<ColumnNode> {
+
+        public ColumnRangeIterator(final Integer firstColIndex, final  Integer lastColIndex) {
+            this.iterator = node.traverse(Traverser.Order.DEPTH_FIRST,
+                    StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                        public boolean isReturnableNode(
+                                TraversalPosition position) {
+                            if (position.isStartNode()) {
+                                return false;
+                            }
+                            String propertyName = (String)position.lastRelationshipTraversed()
+                            .getEndNode()
+                            .getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                            int ind = CellID.getColumnIndexFromCellID(propertyName);
+                            return ind<=lastColIndex&&ind>=firstColIndex;
+                        }
+
+                    }, SplashRelationshipTypes.COLUMN, Direction.OUTGOING)
+                    .iterator();
+        }
+
+        @Override
+        protected ColumnNode wrapNode(Node node) {
+            return ColumnNode.fromNode(node);
+        }
+    }
 	/**
 	 * Iterator that computes Charts by given Index
 	 * 
@@ -480,6 +556,17 @@ public class SpreadsheetNode extends AbstractNode {
 	public RubyProjectNode getSpreadsheetRootProject() {
 	    Relationship relationship = getUnderlyingNode().getSingleRelationship(SplashRelationshipTypes.SPREADSHEET, Direction.INCOMING);
 	    return RubyProjectNode.fromNode(relationship.getStartNode());
+	}
+	/**
+	 * Returns columns from the given range
+	 *
+	 * @param firstColumnIndex index of the range first column
+	 * @param lastColumnIndex index of the range last column
+	 * @return iterator
+	 */
+	public Iterator<ColumnNode> getColumns(Integer firstColumnIndex,Integer lastColumnIndex){
+	    return new ColumnRangeIterator(firstColumnIndex,lastColumnIndex);
+	    
 	}
 
 }

@@ -102,9 +102,18 @@ public class RubyProjectNode extends AbstractNode {
 		return new ScriptIterator();
 	}
 	/**
-     * Returns all Scripts for this Node
+     * Returns all Charts for this Node
      * 
-     * @return RubyScriptNode
+     * @return ChartNode
+     */
+
+    public Iterator<ReportNode> getReports() {
+        return new ReportIterator();
+    }
+    /**
+     * Returns all Charts for this Node
+     * 
+     * @return ChartNode
      */
 
     public Iterator<ChartNode> getCharts() {
@@ -204,7 +213,27 @@ public class RubyProjectNode extends AbstractNode {
         }
 	    
 	}
+	/**
+     * 
+     * Iterator for reports of this project
+     * 
+     * @author Pechko E.
+     * @since 1.0.0
+     */
+    private class ReportIterator extends AbstractIterator<ReportNode> {
+        /**
+         * Creates Iterator for all charts
+         */
+        public ReportIterator() {
+            super(node, SplashRelationshipTypes.REPORT);
+        }
 
+        @Override
+        protected ReportNode wrapNode(Node node) {
+            return ReportNode.fromNode(node);
+        }
+        
+    }
 	@Override
 	public boolean equals(Object object) {
 	    if (object instanceof RubyProjectNode) {
@@ -214,12 +243,21 @@ public class RubyProjectNode extends AbstractNode {
 	}
 
 	/**
-     * Adds chart to ruby project
+     * Adds a chart to a ruby project
      * 
-     * @param chart
+     * @param chart a chart to be added
      */
     public void addChart(ChartNode chart) {
         addRelationship(SplashRelationshipTypes.CHART, chart
+                .getUnderlyingNode());
+    }
+    /**
+     * Adds a report to a ruby project
+     * 
+     * @param report a report to be added
+     */
+    public void addReport(ReportNode report) {
+        addRelationship(SplashRelationshipTypes.REPORT, report
                 .getUnderlyingNode());
     }
 

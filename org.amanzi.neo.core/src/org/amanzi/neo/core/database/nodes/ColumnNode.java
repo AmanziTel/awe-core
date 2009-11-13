@@ -19,6 +19,10 @@ import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * Wrapper of Spreadsheet Column
@@ -135,4 +139,49 @@ public class ColumnNode extends AbstractNode {
 		}
 
 	}
+	/**
+     * Iterator for searching Cells from the given range
+     * 
+     * @author Pechko_E 
+     */
+    
+    private class CellRangeIterator extends AbstractIterator<CellNode> {
+        
+        public CellRangeIterator(String firstRowIndex, String lastRowIndex) {
+            final int first = Integer.parseInt(firstRowIndex);
+            final int last = Integer.parseInt(lastRowIndex);
+            this.iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,
+                                          new ReturnableEvaluator() {
+
+                                              public boolean isReturnableNode(TraversalPosition position) {
+                                                  if (position.isStartNode()) {
+                                                      return false;
+                                                  }
+                                                  String propertyName = (String)position.currentNode().getSingleRelationship(SplashRelationshipTypes.ROW_CELL, Direction.INCOMING).getStartNode()
+                                                  .getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                                                  int ind = Integer.parseInt(propertyName);
+                                                  return ind <= last && ind >= first;
+                                              }                                                
+                                            },
+                                            SplashRelationshipTypes.COLUMN_CELL,
+                                            Direction.OUTGOING,
+                                            SplashRelationshipTypes.ROW_CELL,
+                                            Direction.INCOMING).iterator();
+        }
+
+        @Override
+        protected CellNode wrapNode(Node node) {            
+            return new CellNode(node);
+        }
+    }
+    /**
+     * Returns cells from the given range
+     *
+     * @param firstRowName name of the range first row
+     * @param lastRowName name of the range last row
+     * @return iterator
+     */
+    public Iterator<CellNode> getCells(String firstRowName,String lastRowName){
+        return new CellRangeIterator(firstRowName,lastRowName);
+    }
 }

@@ -14,6 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.splash.database.services.ReportService;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.utilities.Messages;
 import org.amanzi.splash.utilities.NeoSplashUtil;
@@ -62,6 +63,8 @@ public class SplashPlugin extends AbstractUIPlugin {
 	private SpreadsheetOpenListener openListener;
 
     private Transaction transaction;
+
+    private ReportService reportService;
 	
 	/**
 	 * Constructor for SplashPlugin.
@@ -79,6 +82,7 @@ public class SplashPlugin extends AbstractUIPlugin {
 		org.eclipse.core.resources.ResourcesPlugin.getWorkspace().addResourceChangeListener(new EditorListener(),IResourceChangeEvent.POST_CHANGE);
 		//Lagutko, 29.07.2009, initialize SpreadsheetService
 		spreadsheetService = new SpreadsheetService();
+		reportService = new ReportService();
         transaction = NeoServiceProvider.getProvider().getService().beginTx();
 
         try {
@@ -144,6 +148,14 @@ public class SplashPlugin extends AbstractUIPlugin {
 	}
 	
 	/**
+     * Getter for the report service
+     * @return Returns the reportService.
+     */
+    public ReportService getReportService() {
+        return reportService;
+    }
+
+    /**
      * Print a message and information about exception to Log
      *
      * @param message message

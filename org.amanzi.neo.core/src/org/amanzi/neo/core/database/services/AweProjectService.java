@@ -26,6 +26,7 @@ import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.ChartItemNode;
 import org.amanzi.neo.core.database.nodes.ChartNode;
+import org.amanzi.neo.core.database.nodes.ReportNode;
 import org.amanzi.neo.core.database.nodes.RootNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.RubyScriptNode;
@@ -742,6 +743,7 @@ public class AweProjectService {
             transaction.failure();
         } finally {
             transaction.finish();
+            provider.commit();
         }
         return chartNode;
 
@@ -802,7 +804,12 @@ public class AweProjectService {
             transaction.finish();
         }
     }
-    
+    /**
+     * Gets next chart number for a given ruby project node
+     *
+     * @param root ruby project node
+     * @return next number
+     */
     public int getNextChartNumber(RubyProjectNode root){
         int result = -1;
 
@@ -831,5 +838,146 @@ public class AweProjectService {
 
         return result+1;
         
+    }
+    /**
+     * Gets next report number for a given ruby project node
+     *
+     * @param root ruby project node
+     * @return next number
+     */
+    public int getNextReportNumber(RubyProjectNode root){
+        int result = -1;
+
+        Transaction transaction = neoService.beginTx();
+
+        try {
+            Iterator<ReportNode> iterator = root
+                    .getReports();
+
+            while (iterator.hasNext()) {
+                ReportNode chart = iterator.next();
+                String regex = "\\d+";
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(chart.getReportName());
+                while (matcher.find()) {
+                    int i=Integer.parseInt(matcher.group());
+                    if (result<i){
+                        result=i;
+                    }
+                }
+            }
+            transaction.success();
+        } finally {
+            transaction.finish();
+        }
+
+        return result+1;
+        
+    }
+    /**
+     * Creates a report in a Ruby project with given name
+     *
+     * @param root ruby project node
+     * @param name report name
+     * @return report node created
+     */
+    public ReportNode createReport(RubyProjectNode root, String name) {
+        Transaction transaction = neoService.beginTx();
+        ReportNode reportNode=null;
+
+        try {
+            reportNode = findReport(root,name);
+
+            if (reportNode == null) {
+                reportNode = new ReportNode(neoService.createNode());
+                reportNode.setReportName(name);
+                root.addReport(reportNode);
+            }
+            transaction.success();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            transaction.failure();
+        } finally {
+            transaction.finish();
+            provider.commit();
+        }
+        return reportNode;
+
+    }
+
+    /**
+     * Finds a report with a name specified
+     * @param root ruby project node
+     * @param name report name
+     * @return report found
+     */
+    public ReportNode findReport(RubyProjectNode root, String name) {
+        ReportNode result = null;
+
+        Transaction transaction = neoService.beginTx();
+
+        try {
+            Iterator<ReportNode> iterator = root.getReports();
+
+            while (iterator.hasNext()) {
+                ReportNode report = iterator.next();
+
+                if (report.getReportName().equals(name)) {
+                    result = report;
+                    break;
+                }
+            }
+            transaction.success();
+        } finally {
+            transaction.finish();
+        }
+
+        return result;
+    }
+    /**
+     * Finds or creates a report
+     * 
+     * @param root
+     *            ruby project node
+     * @param name
+     *            report name
+     * @return ReportNode
+     */
+    public ReportNode findOrCreateReport(RubyProjectNode root,
+            String name) {
+        ReportNode result = null;
+        Transaction transaction = neoService.beginTx();
+        try {
+            result = findReport(root, name);
+            if (result == null) {
+                System.out.println("Report '"+name+"' was not found");
+                result = new ReportNode(neoService.createNode());
+                result.setReportName(name);
+                root.addReport(result);
+            }
+            transaction.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            transaction.failure();
+        } finally {         
+            transaction.finish();           
+        }
+        return result;
+    }
+
+    public ReportNode updateReportName(String reportName, String newName, RubyProjectNode root) {
+        Transaction transaction = neoService.beginTx();
+        ReportNode report;
+        try {
+            report = findReport(root, reportName);
+            if (report != null) {
+                report.setReportName(newName);
+            }
+            transaction.success();
+        } finally {
+            transaction.finish();
+        }
+        return report;
     }
 }

@@ -1,0 +1,83 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
+package org.amanzi.splash.report.model;
+
+import org.amanzi.splash.report.IReportPart;
+
+/**
+ * TODO Purpose of 
+ * <p>
+ *
+ * </p>
+ * @author user
+ * @since 1.0.0
+ */
+public class ReportImage implements IReportPart {
+    private String imageFileName;
+
+    /**
+     * @param imageFileName
+     */
+    public ReportImage(String imageFileName) {
+        super();
+        this.imageFileName = imageFileName;
+    }
+
+    /**
+     * @return Returns the imageFileName.
+     */
+    public String getImageFileName() {
+        return imageFileName;
+    }
+
+    /**
+     * @param imageFileName The imageFileName to set.
+     */
+    public void setImageFileName(String imageFileName) {
+        this.imageFileName = imageFileName;
+    }
+
+    
+
+    @Override
+    public String getScript() {
+        return new StringBuffer("image '").append(imageFileName).append("'").toString();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((imageFileName == null) ? 0 : imageFileName.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final ReportImage other = (ReportImage)obj;
+        if (imageFileName == null) {
+            if (other.imageFileName != null)
+                return false;
+        } else if (!imageFileName.equals(other.imageFileName))
+            return false;
+        return true;
+    }
+
+}

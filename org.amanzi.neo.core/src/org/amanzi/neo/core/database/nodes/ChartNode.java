@@ -36,8 +36,6 @@ public class ChartNode extends AbstractNode {
 
 	public ChartNode(Node node) {
 		super(node);
-		// TODO Auto-generated constructor stub
-
 //		setParameter(INeoConstants.PROPERTY_TYPE_NAME, CHART_NODE_TYPE);
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, CHART_NODE_NAME);
 	}

@@ -27,6 +27,13 @@
             id="org.amanzi.splash.editors.SplashJFreePieChartEditor"
             name="Amanzi Splash Pie Chart Editor">
       </editor>
+      <editor
+            class="org.amanzi.splash.editors.ReportEditor"
+            contributorClass="org.amanzi.splash.editors.ReportEditorContributor"
+            icon="icons/report.PNG"
+            id="org.amanzi.splash.editors.ReportEditor"
+            name="Amanzi Splash Reportt Editor">
+      </editor>
    </extension>
    
    	<extension point= "org.eclipse.ui.perspectiveExtensions">
@@ -84,6 +91,11 @@
              id="org.amanzi.splash.commands.addtoimportfiltercommand"
              name="Add to Import Filter">
        </command>
+       <command
+             categoryId="org.amanzi.splash.commands.category"
+             id="org.amanzi.splash.commands.createReport"
+             name="Create report">
+       </command>
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
@@ -98,6 +110,10 @@
        <handler
              class="org.amanzi.splash.handlers.AddToImportFilterrHandler"
              commandId="org.amanzi.splash.commands.addtoimportfiltercommand">
+       </handler>
+       <handler
+             class="org.amanzi.splash.handlers.ReportCommandHandler"
+             commandId="org.amanzi.splash.commands.createReport">
        </handler>
     </extension>
     <extension
@@ -137,6 +153,12 @@
                    commandId="org.amanzi.splash.commands.addtoimportfiltercommand"
                    icon="icons/filter_16.png"
                    id="Add to Import Filter">
+             </command>
+             <command
+                   commandId="org.amanzi.splash.commands.createReport"
+                   icon="icons/report.PNG"
+                   id="org.amanzi.splash.commands.createReport"
+                   tooltip="Create report">
              </command>
           </toolbar>
        </menuContribution>
