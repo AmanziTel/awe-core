@@ -70,7 +70,7 @@ public class ReportCommandHandler extends AbstractHandler {
         // create editor input
         IFile file;
         int i = 0;
-        while ((file = resource.getFile(new Path("report" + i))).exists()) {
+        while ((file = resource.getFile(new Path(("report" + i)+".r"))).exists()) {
             i++;
         }
         if (!file.exists()) {

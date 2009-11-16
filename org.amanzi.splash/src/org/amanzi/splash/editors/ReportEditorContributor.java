@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * Class that contributes to toolbar
@@ -79,7 +80,7 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
          */
         public AddTextAction() {
             // TODO image
-            super("AddText", PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
+            super("AddText", AbstractUIPlugin.imageDescriptorFromPlugin("org.amanzi.neo.loader", "/icons/16/add_text.png"));
         }
 
         public void setEditor(ReportGUIEditor editor) {
@@ -110,7 +111,7 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
          * @param image
          */
         public AddImageAction() {
-            super("Add image", PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
+            super("Add image", AbstractUIPlugin.imageDescriptorFromPlugin("org.amanzi.neo.loader", "/icons/16/add_image.png"));
         }
 
         /**
