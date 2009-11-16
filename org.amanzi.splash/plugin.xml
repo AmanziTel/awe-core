@@ -92,11 +92,6 @@
              id="org.amanzi.splash.commands.addtoimportfiltercommand"
              name="Add to Import Filter">
        </command>
-       <command
-             categoryId="org.amanzi.splash.commands.category"
-             id="org.amanzi.splash.commands.createReport"
-             name="Create report">
-       </command>
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
@@ -111,10 +106,6 @@
        <handler
              class="org.amanzi.splash.handlers.AddToImportFilterrHandler"
              commandId="org.amanzi.splash.commands.addtoimportfiltercommand">
-       </handler>
-       <handler
-             class="org.amanzi.splash.handlers.ReportCommandHandler"
-             commandId="org.amanzi.splash.commands.createReport">
        </handler>
     </extension>
     <extension
@@ -227,6 +218,12 @@
              icon="icons/splash_16.png"
              id="org.amanzi.splash.newSpreadsheetAction"
              label="New Amanzi Splash Sheet">
+       </action>
+       <action
+             class="org.amanzi.splash.ui.wizards.NewReportAction"
+             icon="icons/report.PNG"
+             id="org.amanzi.splash.ui.wizards.newReportAction"
+             label="New Amanzi Report">
        </action>
     </extension>
 </plugin>
