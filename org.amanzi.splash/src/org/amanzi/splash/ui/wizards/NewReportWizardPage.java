@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.rubypeople.rdt.internal.core.RubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.OpenNewRubyProjectWizardAction;
 
@@ -82,11 +83,11 @@ public class NewReportWizardPage extends WizardPage {
 
         Button button = new Button(container, SWT.PUSH);
         button.setText("Browse...");
-        // button.addSelectionListener(new SelectionAdapter() {
-        // public void widgetSelected(SelectionEvent e) {
-        // handleBrowse();
-        // }
-        // });
+        button.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                handleBrowse();
+            }
+        });
 
         label = new Label(container, SWT.NONE);
         label.setText("&Report name:");
@@ -134,8 +135,8 @@ public class NewReportWizardPage extends WizardPage {
             containerText.setText(container.getName());
         }
         String fileName = getReportText().getText();
-        if (!fileName.matches(".*\\.r")){
-            fileName=new StringBuffer(fileName).append(".r").toString();
+        if (!fileName.matches(".*\\.r")) {
+            fileName = new StringBuffer(fileName).append(".r").toString();
         }
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
         final IProject resource = root.getProject(containerName);
@@ -145,6 +146,22 @@ public class NewReportWizardPage extends WizardPage {
         }
 
         updateStatus(null);
+    }
+
+    /**
+     * Uses the standard container selection dialog to choose the new value for the container field.
+     */
+
+    private void handleBrowse() {
+        ContainerSelectionDialog dialog = new ContainerSelectionDialog(getShell(), ResourcesPlugin.getWorkspace().getRoot(), true,
+                "Select new file container");
+
+        if (dialog.open() == ContainerSelectionDialog.OK) {
+            Object[] result = dialog.getResult();
+            if (result.length == 1) {
+                containerText.setText((((Path)result[0]).toString()).substring(1));
+            }
+        }
     }
 
     private void initialize() {
