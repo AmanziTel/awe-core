@@ -134,7 +134,7 @@ public class NewReportWizardPage extends WizardPage {
             containerText.setText(container.getName());
         }
         String fileName = getReportText().getText();
-        if (!fileName.matches("\\.r$")){
+        if (!fileName.matches(".*\\.r")){
             fileName=new StringBuffer(fileName).append(".r").toString();
         }
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();

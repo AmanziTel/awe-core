@@ -130,7 +130,8 @@ public class NewReportWizard extends NewRubyElementCreationWizard implements INe
             throwCoreException("Container \"" + containerName + "\" does not exist.");
         }
         final AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
-        final AweProjectNode aweProject = projectService.findOrCreateAweProject(containerName);
+        final String aweProjectName = AWEProjectManager.getAWEprojectNameFromResource(resource.getProject());
+        final AweProjectNode aweProject = projectService.findOrCreateAweProject(aweProjectName);
         final RubyProjectNode rubyProject = projectService.findOrCreateRubyProject(aweProject, resource.getProject().getName());
         projectService.findOrCreateReport(rubyProject, fileName.replaceAll("\\.r", ""));
         
@@ -153,12 +154,12 @@ public class NewReportWizard extends NewRubyElementCreationWizard implements INe
     private void openEditor(IProject resource, String fileName) {
         final IFile file;;
         try {
-            StringBuffer sb = new StringBuffer("report '").append(fileName).append("' do\nauthor '").append(
+            StringBuffer sb = new StringBuffer("report '").append(fileName.replaceAll("\\.r", "")).append("' do\nauthor '").append(
                     System.getProperty("user.name")).append("'\ndate '").append(
                     new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\nend");
             InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
            
-            if (!fileName.matches("\\.r$")){
+            if (!fileName.matches(".*\\.r")){
                 fileName=new StringBuffer(fileName).append(".r").toString();
             }
             file = resource.getFile(new Path(fileName));
