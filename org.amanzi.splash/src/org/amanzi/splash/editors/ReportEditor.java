@@ -20,6 +20,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.rubypeople.rdt.internal.ui.rubyeditor.RubyEditor;
 
 /**
  * Report editor class
@@ -29,7 +30,7 @@ import org.eclipse.ui.part.MultiPageEditorPart;
  */
 public class ReportEditor extends MultiPageEditorPart {
 
-    private TextEditor textEditor;
+    private RubyEditor textEditor;
     private ReportGUIEditor guiEditor;
     private ReportModel reportModel;
     private static final int GUI_PAGE_INDEX = 0;
@@ -67,7 +68,7 @@ public class ReportEditor extends MultiPageEditorPart {
      */
     private void createSourcePage() {
         try {
-            textEditor = new TextEditor();
+            textEditor = new RubyEditor();
             int index = addPage(textEditor, getEditorInput());
             setPageText(index, "Source");
         } catch (PartInitException e) {
