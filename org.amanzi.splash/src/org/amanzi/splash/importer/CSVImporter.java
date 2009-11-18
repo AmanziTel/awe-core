@@ -141,6 +141,7 @@ public class CSVImporter extends AbstractImporter {
                 //update transaction each 1000 rows
                 if ((row % 20) == 0) {
                     tx = updateTransaction(tx);
+                    index.finishUp();
                 }
                 if (row == INITIAL_ROW_NUMBER) {
                     throw new InvocationTargetException(new CSVImportException());
@@ -151,7 +152,7 @@ public class CSVImporter extends AbstractImporter {
             tx.failure();
             throw new InvocationTargetException(e);
         }
-        finally {           
+        finally {
             tx.finish();
         }
     }

@@ -29,6 +29,7 @@ import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.index.hilbert.HilbertIndex;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IProject;
@@ -168,12 +169,14 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
     /*
      * Node of created Spreadsheet
      */
-    private SpreadsheetNode spreadsheetNode;
+    protected SpreadsheetNode spreadsheetNode;
     
     /*
      * Size of File
      */
     protected long fileSize;
+    
+    protected HilbertIndex index;
     
     /**
      * Constructor 
@@ -246,6 +249,9 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         catch (MalformedURLException e) {
             //can't happen
         }
+        
+        index = new HilbertIndex(SpreadsheetNode.CELL_INDEX, 3, CellNode.CELL_COLUMN, CellNode.CELL_ROW);
+        index.initialize(spreadsheetNode.getUnderlyingNode());
     }
     
     /**
@@ -309,6 +315,12 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         cellNode.setValue(cell.getValue());
         cellNode.setDefinition(cell.getDefinition());
         
+        CellID id = new CellID(row.getName(), column.getColumnName());
+        cellNode.setCellColumn(id.getColumnIndex());
+        cellNode.setRow(id.getRowIndex());
+        
+        index.addNode(cellNode.getUnderlyingNode());
+        
         //add a cell to row and column
         row.addCell(cellNode);
         column.addCell(cellNode);
@@ -325,7 +337,7 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         
         ColumnNode node = new ColumnNode(neoService.createNode(), name);
         
-        spreadsheetNode.addColumn(node);
+//        spreadsheetNode.addColumn(node);
         
         return node;
     }
@@ -341,7 +353,7 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         
         RowNode node = new RowNode(neoService.createNode(), name);
         
-        spreadsheetNode.addRow(node);
+//        spreadsheetNode.addRow(node);
         
         return node;
     }

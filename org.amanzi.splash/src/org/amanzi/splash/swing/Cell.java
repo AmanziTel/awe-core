@@ -99,6 +99,8 @@ public class Cell implements Serializable
 	{
 		this.row    = row;
 		this.column = column;
+		this.value = DEFAULT_VALUE;
+		this.definition = DEFAULT_DEFINITION;
 		cellFormat = new CellFormat();
 		hasReference = false;
 	}
