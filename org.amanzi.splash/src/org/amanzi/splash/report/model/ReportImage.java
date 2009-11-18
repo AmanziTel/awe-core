@@ -20,7 +20,7 @@ import org.amanzi.splash.report.IReportPart;
  * <p>
  *
  * </p>
- * @author user
+ * @author Pechko_E
  * @since 1.0.0
  */
 public class ReportImage implements IReportPart {

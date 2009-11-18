@@ -30,7 +30,7 @@
       <editor
             class="org.amanzi.splash.editors.ReportEditor"
             contributorClass="org.amanzi.splash.editors.ReportEditorContributor"
-            extensions="r"
+            extensions="rb,r"
             icon="icons/report.PNG"
             id="org.amanzi.splash.editors.ReportEditor"
             name="Amanzi Splash Reportt Editor">

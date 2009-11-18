@@ -30,6 +30,7 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
@@ -62,6 +63,7 @@ public class ReportGUIEditor extends EditorPart {
     private boolean isDirty;
     private Composite frame;
     private Composite parent;
+    private  Text reportTitle; 
     private List<Composite> parts = new ArrayList<Composite>(0);
     private ReportModel reportModel;
     private boolean isReportDataModified;
@@ -123,6 +125,10 @@ public class ReportGUIEditor extends EditorPart {
         parts.clear();
         // create all composites
         parts = new ArrayList<Composite>(reportParts.size());
+        reportTitle=new Text(frame,SWT.SINGLE);
+        reportTitle.setFont(new Font(frame.getDisplay(),"Arial",16,SWT.BOLD));
+        reportTitle.setText(report.getName());
+        
         for (int i = 0; i < reportParts.size(); i++) {
             IReportPart part = reportParts.get(i);
             if (part instanceof ReportText) {

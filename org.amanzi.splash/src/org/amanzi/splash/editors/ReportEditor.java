@@ -15,6 +15,7 @@ package org.amanzi.splash.editors;
 
 import org.amanzi.splash.report.model.ReportModel;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.TextEditor;
@@ -70,6 +71,7 @@ public class ReportEditor extends MultiPageEditorPart {
         try {
             textEditor = new RubyEditor();
             int index = addPage(textEditor, getEditorInput());
+//            textEditor.getAction("Format").run();//TODO
             setPageText(index, "Source");
         } catch (PartInitException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -110,6 +112,7 @@ public class ReportEditor extends MultiPageEditorPart {
         } else {
             if (guiEditor.isReportDataModified()) {
                 textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput()).set(reportModel.getReport().getScript());
+                textEditor.getAction("Format").run();
                 guiEditor.setReportDataModified(false);
             }
         }

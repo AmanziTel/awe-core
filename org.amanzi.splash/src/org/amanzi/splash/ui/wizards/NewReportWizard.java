@@ -133,8 +133,8 @@ public class NewReportWizard extends NewRubyElementCreationWizard implements INe
         final String aweProjectName = AWEProjectManager.getAWEprojectNameFromResource(resource.getProject());
         final AweProjectNode aweProject = projectService.findOrCreateAweProject(aweProjectName);
         final RubyProjectNode rubyProject = projectService.findOrCreateRubyProject(aweProject, resource.getProject().getName());
-        projectService.findOrCreateReport(rubyProject, fileName.replaceAll("\\.r", ""));
-        
+        projectService.findOrCreateReport(rubyProject, fileName.replaceAll("\\." + NewReportWizardPage.REPORT_FILE_EXTENSION, ""));
+
         monitor.worked(1);
         monitor.setTaskName("Opening report for editing...");
 
@@ -154,13 +154,14 @@ public class NewReportWizard extends NewRubyElementCreationWizard implements INe
     private void openEditor(IProject resource, String fileName) {
         final IFile file;;
         try {
-            StringBuffer sb = new StringBuffer("report '").append(fileName.replaceAll("\\.r", "")).append("' do\nauthor '").append(
-                    System.getProperty("user.name")).append("'\ndate '").append(
+            StringBuffer sb = new StringBuffer("report '").append(
+                    fileName.replaceAll("\\." + NewReportWizardPage.REPORT_FILE_EXTENSION, "")).append("' do\n  author '").append(
+                    System.getProperty("user.name")).append("'\n  date '").append(
                     new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\nend");
             InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
-           
-            if (!fileName.matches(".*\\.r")){
-                fileName=new StringBuffer(fileName).append(".r").toString();
+
+            if (!fileName.matches(".*\\." + NewReportWizardPage.REPORT_FILE_EXTENSION)) {
+                fileName = new StringBuffer(fileName).append(".").append(NewReportWizardPage.REPORT_FILE_EXTENSION).toString();
             }
             file = resource.getFile(new Path(fileName));
             file.create(is, true, null);

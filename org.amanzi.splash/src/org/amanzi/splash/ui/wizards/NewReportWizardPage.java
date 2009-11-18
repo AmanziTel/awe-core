@@ -54,6 +54,7 @@ public class NewReportWizardPage extends WizardPage {
     private Text containerText;
     private Text reportText;
     private IStructuredSelection selection;
+    public static final String REPORT_FILE_EXTENSION="r";
 
     protected NewReportWizardPage(IStructuredSelection selection) {
         super("New report");
@@ -135,8 +136,8 @@ public class NewReportWizardPage extends WizardPage {
             containerText.setText(container.getName());
         }
         String fileName = getReportText().getText();
-        if (!fileName.matches(".*\\.r")) {
-            fileName = new StringBuffer(fileName).append(".r").toString();
+        if (!fileName.matches(".*\\."+REPORT_FILE_EXTENSION)) {
+            fileName = new StringBuffer(fileName).append(".").append(REPORT_FILE_EXTENSION).toString();
         }
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
         final IProject resource = root.getProject(containerName);
@@ -200,10 +201,10 @@ public class NewReportWizardPage extends WizardPage {
                     final IProject resource = root.getProject(containerName);
                     IFile file;
                     int i = 0;
-                    while ((file = resource.getFile(new Path(("report" + i) + ".r"))).exists()) {
+                    while ((file = resource.getFile(new Path(("report" + i) + "."+REPORT_FILE_EXTENSION))).exists()) {
                         i++;
                     }
-                    reportText.setText(file.getName().replaceFirst("\\.r", ""));
+                    reportText.setText(file.getName().replaceFirst("\\."+REPORT_FILE_EXTENSION, ""));
                 }
             }
         }
