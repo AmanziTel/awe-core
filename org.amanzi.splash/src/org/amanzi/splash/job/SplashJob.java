@@ -66,6 +66,7 @@ public class SplashJob extends Job {
         catch (InterruptedException e) {
         	//in case of exception unlock thread
         	//otherwise it will be unlocked in run method
+            SplashPlugin.error(null, e);
             LockSupport.unpark(currentThread);
         }     
     }
@@ -81,6 +82,7 @@ public class SplashJob extends Job {
             catch (InterruptedException e) {
             	//in case of exception unlock thread
             	//otherwise it will be unlocked in run method
+                SplashPlugin.error(null, e);
                 LockSupport.unpark(currentThread);
             }            
         } while (!result.equals(SplashJobTaskResult.EXIT));
