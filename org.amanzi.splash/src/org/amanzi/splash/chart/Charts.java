@@ -61,6 +61,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.neo4j.api.core.Node;
 
 /**
  * TODO Purpose of
@@ -243,4 +244,47 @@ public class Charts implements IElementFactory {
         return dataset;
     }
 
+    /**
+     * @param categories
+     * @param values
+     * @return
+     */
+    public static DefaultCategoryDataset getBarChartDataset(ArrayList<Node> nodes, String categoriesProperty,
+            String[] valuesProperties) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        int n = valuesProperties.length;
+        try {
+            for (Node node : nodes) {
+                if (node.hasProperty(categoriesProperty)) {
+                    Object catName = node.getProperty(categoriesProperty);
+                    String stringVal;
+                    if (catName instanceof String){
+                        stringVal=(String)catName;
+                    }else{
+                        stringVal=catName.toString();
+                    }
+                    for (int i = 0; i < n; i++) {
+                        String property = valuesProperties[i];
+                        if (node.hasProperty(property)) {
+                            Object value = node.getProperty(property);
+                            double doubleVal=Double.NaN;
+                            if (value instanceof Double){
+                                doubleVal=(Double)value;
+                            }else if(value instanceof Integer){
+                                doubleVal=((Integer)value).doubleValue();
+                                
+                            }else if(value instanceof String){
+                                doubleVal=Double.parseDouble((String)value);
+                            }
+                            dataset.addValue(doubleVal, property, stringVal);
+                        }
+                    }
+                }
+            }
+        } catch (final NumberFormatException e) {
+            showErrorDlg(e);
+        }
+
+        return dataset;
+    }
 }

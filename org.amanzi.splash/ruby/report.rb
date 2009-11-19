@@ -86,16 +86,33 @@ end
 
 class Chart
   attr_accessor :sheet, :name
-  attr_writer :categories,:values
+  attr_writer :categories,:values, :nodes
   def initialize(name)
     self.name = name
   end
 
   def setup(&block)
     self.instance_eval &block if block_given?
-    setCategories(@categories.begin,@categories.end)
-    setValues(@values.begin,@values.end)
-    setSheet(@sheet)
+    if !@categories.nil?
+      if @categories.is_a? Range
+        setCategories(@categories.begin,@categories.end)
+      elsif @categories.is_a? String
+        setCategoriesProperty(@categories)
+      end
+    end
+    if !@values.nil?
+      if @values.is_a? Range
+        setValues(@values.begin,@values.end)
+      elsif @values.is_a? Array
+        setValuesProperties(@values.to_java(java.lang.String))
+      end
+    end
+    if !@nodes.nil?
+      if @nodes.is_a? Array
+        setNodeIds(@nodes.to_java(java.lang.Long))
+      end 
+    end
+    setSheet(@sheet) if !@sheet.nil?
     self
   end
 

@@ -44,6 +44,7 @@ import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
+import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
 
 /**
@@ -205,10 +206,9 @@ public class ReportModel {
             // process
         } else if (isReportModified(newReport)) {
             service.updateReport(rootNode, this.report.getName(), newReport);
-            // fireReportChangedEvent
         }
         this.report = newReport;
-        System.out.println("updateReport executed");
+//        System.out.println("updateReport executed");
     }
 
     private boolean isReportModified(Report reportToCheck) {
@@ -246,8 +246,15 @@ public class ReportModel {
     }
 
     public DefaultCategoryDataset getChartDataset(Chart chart) {
-        ArrayList<CellNode> categories = service.getCellRange(rootNode, chart.getSheet(), chart.getCategories());
-        ArrayList<CellNode> values = service.getCellRange(rootNode, chart.getSheet(), chart.getValues());
-        return Charts.getBarChartDataset(categories, values);
+        if (chart.isSheetBased()){
+            ArrayList<CellNode> categories = service.getCellRange(rootNode, chart.getSheet(), chart.getCategories());
+            ArrayList<CellNode> values = service.getCellRange(rootNode, chart.getSheet(), chart.getValues());
+            return Charts.getBarChartDataset(categories, values);
+            
+        }else if (chart.isNodeRangeBased()){
+            ArrayList<Node> nodes = service.getNodes(rootNode, chart.getNodeIds());
+            return Charts.getBarChartDataset(nodes, chart.getCategoriesProperty(),chart.getValuesProperties());
+        }
+        return null;
     }
 }

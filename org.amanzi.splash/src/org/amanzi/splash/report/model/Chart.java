@@ -13,6 +13,9 @@
 
 package org.amanzi.splash.report.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.splash.report.IReportPart;
@@ -22,7 +25,7 @@ import org.amanzi.splash.report.IReportPart;
  * <p>
  * </p>
  * 
- * @author user
+ * @author Pechko_E
  * @since 1.0.0
  */
 public class Chart implements IReportPart {
@@ -30,7 +33,10 @@ public class Chart implements IReportPart {
     private Pair<CellID, CellID> categories;
     private Pair<CellID, CellID> values;
     private String sheet;
-    private int order;
+    private String categoriesProperty;
+    private String[] valuesProperties;
+    private Long[] nodeIds;
+    private List<String> errors = new ArrayList<String>();
 
     /**
      * @param name
@@ -111,12 +117,64 @@ public class Chart implements IReportPart {
     }
 
     /**
+     * @return Returns the categoriesProperty.
+     */
+    public String getCategoriesProperty() {
+        return categoriesProperty;
+    }
+
+    /**
+     * @param categoriesProperty The categoriesProperty to set.
+     */
+    public void setCategoriesProperty(String categoriesProperty) {
+        System.out.println("java setCategoriesProperty(" + categoriesProperty + ")");
+        this.categoriesProperty = categoriesProperty;
+    }
+
+    /**
+     * @return Returns the valuesProperties.
+     */
+    public String[] getValuesProperties() {
+        return valuesProperties;
+    }
+
+    /**
+     * @param valuesProperties The valuesProperties to set.
+     */
+    public void setValuesProperties(String[] valuesProperties) {
+        System.out.println("java setValuesProperties(" + valuesProperties + ")");
+        this.valuesProperties = valuesProperties;
+    }
+
+   
+
+    /**
+     * @return Returns the nodeIds.
+     */
+    public Long[] getNodeIds() {
+        return nodeIds;
+    }
+
+    /**
+     * @param nodeIds The nodeIds to set.
+     */
+    public void setNodeIds(Long[] nodeIds) {
+        this.nodeIds = nodeIds;
+    }
+
+    /**
      * @return Returns the sheet.
      */
     public String getSheet() {
         return sheet;
     }
 
+    public boolean isSheetBased() {
+        return sheet != null && categories != null && values != null;
+    }
+    public boolean isNodeRangeBased() {
+        return nodeIds != null && categoriesProperty != null && valuesProperties != null;
+    }
     /**
      * @param sheet The sheet to set.
      */
@@ -124,14 +182,17 @@ public class Chart implements IReportPart {
         this.sheet = sheet;
     }
 
-    /**
-     * @param order The order to set.
-     */
-    public void setOrder(int order) {
-        this.order = order;
+    public void addError(String err) {
+        errors.add(err);
     }
 
-   
+    public boolean hasErrors() {
+        return errors.size() != 0;
+    }
+
+    public void clearErrors() {
+        errors.clear();
+    }
 
     @Override
     public String getScript() {
@@ -146,7 +207,6 @@ public class Chart implements IReportPart {
         int result = 1;
         result = prime * result + ((categories == null) ? 0 : categories.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + order;
         result = prime * result + ((sheet == null) ? 0 : sheet.hashCode());
         result = prime * result + ((values == null) ? 0 : values.hashCode());
         return result;
@@ -171,8 +231,6 @@ public class Chart implements IReportPart {
                 return false;
         } else if (!name.equals(other.name))
             return false;
-        if (order != other.order)
-            return false;
         if (sheet == null) {
             if (other.sheet != null)
                 return false;
@@ -185,7 +243,5 @@ public class Chart implements IReportPart {
             return false;
         return true;
     }
-
-
 
 }

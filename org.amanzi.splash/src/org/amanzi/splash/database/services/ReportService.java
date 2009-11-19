@@ -31,6 +31,7 @@ import org.amanzi.splash.report.model.Chart;
 import org.amanzi.splash.report.model.Report;
 import org.amanzi.splash.report.model.ReportText;
 import org.neo4j.api.core.NeoService;
+import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
 
 /**
@@ -120,5 +121,14 @@ public class ReportService {
             tx.finish();
         }
         return result;
+    }
+
+    public ArrayList<Node> getNodes(RubyProjectNode rootNode, Long[] ids) {
+        final ArrayList<Node> nodes = new ArrayList<Node>();
+        //TODO handle NotFoundException 
+        for (Long id:ids){
+            nodes.add(neoService.getNodeById(id));
+        }
+        return nodes;
     }
 }
