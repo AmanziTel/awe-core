@@ -15,10 +15,8 @@ package org.amanzi.splash.editors;
 
 import org.amanzi.splash.report.model.ReportModel;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.rubypeople.rdt.internal.ui.rubyeditor.RubyEditor;
