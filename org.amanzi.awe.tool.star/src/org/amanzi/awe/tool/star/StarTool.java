@@ -37,13 +37,17 @@ import net.refractions.udig.project.ui.render.displayAdapter.MapMouseEvent;
 import net.refractions.udig.project.ui.render.displayAdapter.ViewportPane;
 import net.refractions.udig.project.ui.tool.AbstractModalTool;
 
+import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
@@ -52,6 +56,7 @@ import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
 /**
  * Custom uDIG Map Tool for performing a 'star analysis'. This means it interacts with objects on
@@ -346,10 +351,35 @@ public class StarTool extends AbstractModalTool {
         if (activateStar && selectedLayer != null) {
             selectedLayer.getBlackboard().put(BLACKBOARD_START_ANALYSER, selected);
             if (selected != null) {
+                sendSelection(selected);
                 selectedLayer.refresh(null);
             }
         }
         checkAnalysisData();
+    }
+
+    /**
+     * Selects node in database and network views
+     * 
+     * @param selectedPair - pair of necessary node
+     */
+    private void sendSelection(Pair<Point, Long> selectedPair) {
+        if (selectedPair == null || selectedPair.getRight() == null) {
+            return;
+        }
+        Node nodeToSelect = NeoUtils.getNodeById(selectedPair.getRight());
+        IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NeoGraphViewPart.ID);
+        if (view != null) {
+        NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
+            viewGraph.showNode(nodeToSelect);
+            final StructuredSelection selection = new StructuredSelection(new Object[] {nodeToSelect});
+            viewGraph.getViewer().setSelection(selection, true);
+        }
+        view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NetworkTreeView.NETWORK_TREE_VIEW_ID);
+        if (view != null) {
+            NetworkTreeView networkView = (NetworkTreeView)view;
+            networkView.selectNode(nodeToSelect);
+        }
     }
 
     /**

@@ -240,14 +240,23 @@ public class NetworkTreeView extends ViewPart {
                 return;
             }
             Node lastNode = searchIterator.next();
-            viewer.reveal(new NeoNode(lastNode));
-            viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(lastNode)}));
+            selectNode(lastNode);
             // } catch (Exception e) {
             // e.printStackTrace();
             // throw (RuntimeException)new RuntimeException().initCause(e);
         } finally {
             tSearch.setEditable(true);
         }
+    }
+
+    /**
+     * Select node
+     * 
+     * @param node - node to select
+     */
+    public void selectNode(Node node) {
+        viewer.reveal(new NeoNode(node));
+        viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(node)}));
     }
 
     /**
