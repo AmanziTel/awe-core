@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -147,6 +150,8 @@ public class NeighbourLoader {
             if (reader != null) {
                 reader.close();
             }
+            NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
+                    new UpdateDatabaseEvent(UpdateDatabaseEventType.NEIGHBOUR));
             tx.finish();
             header.finish();
             NeoServiceProvider.getProvider().commit();
