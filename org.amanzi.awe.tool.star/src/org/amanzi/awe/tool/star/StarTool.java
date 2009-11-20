@@ -82,6 +82,7 @@ public class StarTool extends AbstractModalTool {
     private Map<Long, java.awt.Point> nodesMap;
     private DrawShapeCommand drawSelectedSectorCommand;
     private Pair<Point, Long> selected;
+    private Long previosSelectedNodeId=null;
     private Node gisNode;
     private ILayer selectedLayer;
 
@@ -365,6 +366,7 @@ public class StarTool extends AbstractModalTool {
      */
     private void sendSelection(Pair<Point, Long> selectedPair) {
         if (selectedPair == null || selectedPair.getRight() == null) {
+            previosSelectedNodeId=null;
             return;
         }
         Node nodeToSelect = NeoUtils.getNodeById(selectedPair.getRight());
@@ -375,10 +377,17 @@ public class StarTool extends AbstractModalTool {
             final StructuredSelection selection = new StructuredSelection(new Object[] {nodeToSelect});
             viewGraph.getViewer().setSelection(selection, true);
         }
-        view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NetworkTreeView.NETWORK_TREE_VIEW_ID);
-        if (view != null) {
-            NetworkTreeView networkView = (NetworkTreeView)view;
+        IViewPart viewNetwork = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
+                NetworkTreeView.NETWORK_TREE_VIEW_ID);
+        if (viewNetwork != null) {
+            NetworkTreeView networkView = (NetworkTreeView)viewNetwork;
             networkView.selectNode(nodeToSelect);
+        }
+        // sets focus
+        if (viewNetwork != null) {
+            viewNetwork.setFocus();
+        } else if (view != null) {
+            view.setFocus();
         }
     }
 

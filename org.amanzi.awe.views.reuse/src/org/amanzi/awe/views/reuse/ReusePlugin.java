@@ -36,6 +36,7 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateDatabaseList
     static {
         Collection<UpdateDatabaseEventType> spr = new HashSet<UpdateDatabaseEventType>();
         spr.add(UpdateDatabaseEventType.GIS);
+        spr.add(UpdateDatabaseEventType.NEIGHBOUR);
         handedTypes = Collections.unmodifiableCollection(spr);
     }
     /** String VIEW_ID field */

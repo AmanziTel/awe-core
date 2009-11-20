@@ -146,6 +146,7 @@ public class NeighboursView extends ViewPart {
     private int sortOrder = 0;
     private Color color1;
     private Color color2;
+    private Collection<Node> input;
 
 	/*
 	 * The content provider class is responsible for
@@ -781,6 +782,7 @@ public class NeighboursView extends ViewPart {
      * @param inputNodes input nodes
      */
     public void setInput(Collection<Node> inputNodes) {
+        input = inputNodes;
         viewer.setInput(inputNodes);
     }
 
@@ -1053,6 +1055,15 @@ public class NeighboursView extends ViewPart {
                     throw (RuntimeException)new RuntimeException().initCause(e);
                 }
             }
+        }
+    }
+
+    /**
+     * update view
+     */
+    public void updateView() {
+        if (input != null) {
+            setInput(input);
         }
     }
 }
