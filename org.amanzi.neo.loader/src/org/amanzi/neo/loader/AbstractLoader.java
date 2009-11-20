@@ -872,7 +872,7 @@ public abstract class AbstractLoader {
         if (monitor != null)
             monitor.subTask(basename);
         CountingFileInputStream is = new CountingFileInputStream(new File(filename));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
         mainTx = neo.beginTx();
         try {
             initializeIndexes();
