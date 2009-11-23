@@ -18,6 +18,7 @@ import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -34,12 +35,14 @@ import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.splash.ui.FormulaEditor;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.CellSelection;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.amanzi.splash.utilities.SelectedCellsSet;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Transaction;
 
@@ -84,6 +87,8 @@ public class SplashTable extends JTable {
 	 * Root Node for current Spreadsheet
 	 */
 	private RubyProjectNode root;
+	
+	private FormulaEditor formulaEditor;
 
 	/**
 	 * Initialize table with 500x200
@@ -93,8 +98,8 @@ public class SplashTable extends JTable {
 	 * @param root
 	 *            Root node of Spreadsheet
 	 */
-	public SplashTable(String splash_name, RubyProjectNode root) throws IOException {
-		this(Short.MAX_VALUE, Short.MAX_VALUE, splash_name, root);
+	public SplashTable(String splash_name, RubyProjectNode root, FormulaEditor formulaEditor) throws IOException {
+		this(Short.MAX_VALUE, Short.MAX_VALUE, splash_name, root, formulaEditor);
 
 	}
 
@@ -110,15 +115,17 @@ public class SplashTable extends JTable {
 	 * @param root
 	 *            root node of Spreadsheet
 	 */
-	public SplashTable(int rowCount, int columnCount, String splash_name, RubyProjectNode root) throws IOException {
+	public SplashTable(int rowCount, int columnCount, String splash_name, RubyProjectNode root, FormulaEditor formulaEditor) throws IOException {
 		super();
 
 		splashName = splash_name;
+		this.formulaEditor = formulaEditor;
+		formulaEditor.setTable(this);
 		this.root = root;
 
 		setModel(new SplashTableModel(rowCount, columnCount, splashName, root));
 
-		editor = new SplashCellEditor();
+		editor = new SplashCellEditor(this.formulaEditor);
 
 		setDefaultRenderer(Cell.class, new SplashCellRenderer());		
 
@@ -139,7 +146,6 @@ public class SplashTable extends JTable {
 		rowHeader.setDefaultRenderer(Object.class, _RowHeaderRenderer);
 		rowHeader.setRowHeight(getDefaultRowHeight());
         rowHeader.setModel(new RowModel(getModel()));
-
 	}
 
 	/**
@@ -159,7 +165,7 @@ public class SplashTable extends JTable {
 		setModel(model);
 
 		if (editable) {
-			editor = new SplashCellEditor();
+			editor = new SplashCellEditor(this.formulaEditor);
 		}
 
 		setDefaultRenderer(Cell.class, new SplashCellRenderer());
@@ -714,6 +720,16 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
          
         repaint();
     }
+	
+	@Override
+	protected void processMouseEvent(MouseEvent e) {
+	    super.processMouseEvent(e);
+	    if (e.getButton() == MouseEvent.BUTTON1) {
+	        int row = getSelectedRow();
+	        int column = getSelectedColumn();
+	        formulaEditor.setText(row, column);
+	    }
+	}
 
 	/**
 	 * Handles hot keys
@@ -796,8 +812,26 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
                         }   
                     }                    
                     result = true;
-                    break;
+                    break;                
                 }
+            }
+        }
+        else if (!pressed) {
+            switch (e.getKeyCode()) {
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_PAGE_DOWN:
+            case KeyEvent.VK_PAGE_UP:
+            case KeyEvent.VK_HOME:
+            case KeyEvent.VK_END:
+                formulaEditor.setText(rows[0], columns[0]);
+                break;
+            case KeyEvent.VK_ESCAPE:                
+                formulaEditor.cancelCellEditing();
+                break;
+            
             }
         }
         

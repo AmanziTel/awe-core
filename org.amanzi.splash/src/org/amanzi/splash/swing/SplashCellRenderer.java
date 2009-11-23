@@ -20,13 +20,16 @@ import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.splash.utilities.NeoSplashUtil;
+import org.eclipse.swt.widgets.Text;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -36,6 +39,7 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 	 * 
 	 */
 	private static final long serialVersionUID = -4271039280304551527L;
+	
 	/**
 	 * Constructor 
 	 */
@@ -55,7 +59,7 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 	{	
 	    Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		
-		Cell c = (Cell)value;
+		final Cell c = (Cell)value;
 		Object cellValue = getExpressionValue(c);
 		setValue(cellValue);
 		setBackground(c.getCellFormat().getBackgroundColor());
@@ -97,6 +101,11 @@ public class SplashCellRenderer extends DefaultTableCellRenderer
 			Border b = new MatteBorder(1,1,1,1,Color.decode("#000000"));
 			setBorder(b);
 
+		}
+		
+		//Lagutko, 22.11.2009, set a ToolTip for Cell as a value of this Cell
+		if (cell instanceof JComponent) {
+		    ((JComponent)cell).setToolTipText(cellValue.toString());
 		}
 		
 		return cell;

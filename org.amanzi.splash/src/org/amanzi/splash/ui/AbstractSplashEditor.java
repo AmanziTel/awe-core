@@ -84,8 +84,22 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.FontMetrics;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbench;
@@ -93,6 +107,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.part.EditorPart;
 import org.rubypeople.rdt.core.RubyModelException;
@@ -124,6 +139,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	private int ROWS_EDGE_MARGIN = 5;
 	private int COLUMNS_EDGE_MARGIN = 5;
 	private String splashID;
+	private FormulaEditor formulaEditor;
 
 	/**
 	 * Class constructor
@@ -393,7 +409,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	 * @param parent
 	 */
 	private void createTable(final Composite parent) {
-		swingControl = new SwingControl(parent, SWT.NONE) {
+		swingControl = new SwingControl(parent, SWT.BORDER) {
 			{
 				setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 				setForeground(getDisplay().getSystemColor(SWT.COLOR_BLACK));
@@ -536,6 +552,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 			}
 
 		};
+		swingControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 	}
 
 	int prev_selected_column = -1;
@@ -549,6 +566,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		SplashEditorInput sei = (SplashEditorInput) getEditorInput();
 
 		splashID = sei.getName().replace(".splash", "");
+		
 		RubyProjectNode root = sei.getRoot();
 		
 		//Lagutko, 15.10.2009, fix to be able to process Ctrl+... events
@@ -557,8 +575,13 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		
 		NeoSplashUtil.logn("splashID = " + splashID);
 
-		try {
-            table = new SplashTable(splashID, root);
+		parent.setLayout(new GridLayout(1, false));
+        parent.setLayoutData(new GridData(GridData.FILL_BOTH));
+        
+        formulaEditor = new FormulaEditor(parent, new GridData(GridData.FILL_HORIZONTAL));
+        
+        try {
+            table = new SplashTable(splashID, root, formulaEditor);
         } catch (IOException e) {
             // TODO Handle IOException
             throw (RuntimeException) new RuntimeException( ).initCause( e );
@@ -567,7 +590,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
 		createTable(parent);				
 	}
-
+	
 	/**
 	 * @see org.eclipse.ui.IEditorPart#doSave(IProgressMonitor)
 	 */
