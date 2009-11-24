@@ -24,7 +24,10 @@ import java.util.regex.Pattern;
 
 public class CellID implements Serializable {
 
-	/*
+	/** long serialVersionUID field */
+    private static final long serialVersionUID = 3357100272421107843L;
+
+    /*
 	 * Name of Column
 	 */
 	private String columnName;

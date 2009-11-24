@@ -20,9 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.exception.SplashDatabaseException;
 import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.ChartItemNode;
 import org.amanzi.neo.core.database.nodes.ReportNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
@@ -39,13 +37,11 @@ import org.eclipse.core.runtime.FileLocator;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.RubyInstanceConfig.LoadServiceCreator;
 import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
 
 /**
  * TODO Purpose of

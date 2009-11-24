@@ -72,6 +72,16 @@ public class CellNode extends AbstractNode {
      */
     private static final String CELL_CYCLIC = "Cell cyclic dependencies";
     
+    /*
+     * Index of Cell's Column
+     */
+    public static final String CELL_COLUMN = "column_index";
+    
+    /*
+     * Index of Cell's Row
+     */
+    public static final String CELL_ROW = "row_index";
+    
     /**
      * Constructor. Wraps a Node from database and sets type and name of Node
      * 
@@ -417,5 +427,23 @@ public class CellNode extends AbstractNode {
      */
     public static CellNode fromNode(Node node) {
         return new CellNode(node);
+    }
+
+    /**
+     * Sets index of Cell's column
+     * 
+     * @param columnIndex index of column
+     */
+    public void setCellColumn(Integer columnIndex) {
+        setParameter(CELL_COLUMN, columnIndex);
+    }
+    
+    /**
+     * Sets index of Cell's row
+     * 
+     * @param rowIndex index of row
+     */
+    public void setCellRow(Integer rowIndex) {
+        setParameter(CELL_ROW, rowIndex);
     }
 }

@@ -27,6 +27,9 @@ import org.amanzi.splash.swing.Cell;
  * @since 1.0.0
  */
 public class SelectedCellsSet implements Serializable {
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = 813916918044680906L;
+    
     int row;
     int column;
     ArrayList<Cell> cells;

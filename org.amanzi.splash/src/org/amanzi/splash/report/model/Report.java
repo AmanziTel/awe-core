@@ -14,7 +14,6 @@
 package org.amanzi.splash.report.model;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.amanzi.splash.report.IReportPart;

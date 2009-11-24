@@ -12,13 +12,13 @@
  */
 package org.amanzi.neo.core.database.nodes;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.exception.SplashDatabaseException;
 import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
+import org.amanzi.neo.index.hilbert.HilbertIndex;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
@@ -26,8 +26,6 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
-
-import com.sun.istack.internal.FinalArrayList;
 
 /**
  * Wrapper class for Spreadsheet
@@ -41,6 +39,16 @@ public class SpreadsheetNode extends AbstractNode {
 	 * Type of this Node
 	 */
 	private static final String SPREADSHEET_NODE_TYPE = "spreadsheet";
+	
+	/*
+	 * Name of Index for cells
+	 */
+	public static final String CELL_INDEX = "cell_index";
+	
+	/*
+	 * Index of Cells 
+	 */
+	private HilbertIndex index;
 
 	/**
 	 * Constructor. Wraps a Node from database and sets type and name of Node
@@ -52,6 +60,9 @@ public class SpreadsheetNode extends AbstractNode {
 		super(node);
 		setParameter(INeoConstants.PROPERTY_TYPE_NAME, SPREADSHEET_NODE_TYPE);
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, name);
+		
+		index = new HilbertIndex(CELL_INDEX, 3, CellNode.CELL_COLUMN, CellNode.CELL_ROW);
+		index.initialize(node);
 	}
 
 	/**
@@ -59,9 +70,12 @@ public class SpreadsheetNode extends AbstractNode {
      * this constructor is private, and users should use the factory method instead.
      * @param node
      */
-    private SpreadsheetNode(Node node) {
+    protected SpreadsheetNode(Node node) {
         super(node);
         if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(SPREADSHEET_NODE_TYPE)) throw new RuntimeException("Expected existing Spreadsheet Node, but got "+node.toString());
+        
+        index = new HilbertIndex(CELL_INDEX, 3, CellNode.CELL_COLUMN, CellNode.CELL_ROW);
+        index.initialize(node);
     }
 
     /**
@@ -271,12 +285,16 @@ public class SpreadsheetNode extends AbstractNode {
 	 */
 	public CellNode getCell(String rowIndex, String columnName)
 			throws SplashDatabaseException {
-		RowNode row = getRow(rowIndex);
-		if (row != null) {
-			return row.getCellByColumn(columnName);
-		} else {
-			return null;
-		}
+	    
+	    CellID id = new CellID(rowIndex, columnName);
+	    Node node = index.find(id.getColumnIndex(), id.getRowIndex());
+	    
+	    if (node != null) {
+	        return CellNode.fromNode(node);
+	    }
+	    else {
+	        return null;
+	    }
 	}
 
 	public Iterator<RowNode> getAllRows() {
@@ -566,7 +584,17 @@ public class SpreadsheetNode extends AbstractNode {
 	 */
 	public Iterator<ColumnNode> getColumns(Integer firstColumnIndex,Integer lastColumnIndex){
 	    return new ColumnRangeIterator(firstColumnIndex,lastColumnIndex);
-	    
 	}
 
+	/**
+	 * Adds Cell to Spreadsheet
+	 *
+	 * @param cell cell
+	 */
+	public void addCell(CellNode cell, boolean finishUp) {
+	    index.addNode(cell.getUnderlyingNode());
+	    if (finishUp) {
+	        index.finishUp();
+	    }
+	}
 }

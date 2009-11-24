@@ -42,7 +42,6 @@ import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.amanzi.splash.utilities.SelectedCellsSet;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Transaction;
 
@@ -586,26 +585,6 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 	 */
 	private String copiedCellID = "";
 
-	/*
-	 * Id of cut Cell
-	 */
-	private String cutCellID = "";
-
-	/*
-	 * Definition of cut Cell
-	 */
-	private String cutDefinition = "";
-
-	/*
-	 * Value of cut Cell
-	 */
-	private String cutValue = "";
-
-	/*
-	 * Is Copy
-	 */
-	private boolean isCopy;
-
 	/**
 	 * Copies cell to buffer
 	 * 
@@ -641,7 +620,6 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
         CellSelection cs = new CellSelection(result);
         cl.setContents(cs, cs);
 		NeoSplashUtil.logn("Copied cell at: " + copiedCellID);
-		isCopy = true;
         return result;
 	}
 
@@ -660,7 +638,6 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
             deleteCell(cell.getRow(), cell.getColumn());
         }
 		NeoSplashUtil.logn("Cut cell at: " + copiedCellID);
-		isCopy = false;
 	}
 
 	/**

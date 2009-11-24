@@ -52,6 +52,11 @@ public class HilbertIndexNode {
     public static final String HILBERT_INDEX_ORDER = "hilbert_index_order";
     
     /*
+     * Name of 'Is last index?' property
+     */
+    public static final String IS_LAST_INDEX = "is_last_index";
+    
+    /*
      * NeoService
      */
     public static NeoService neoService = NeoServiceProvider.getProvider().getService();
@@ -79,7 +84,7 @@ public class HilbertIndexNode {
     /*
      * Cached index nodes
      */
-    private ArrayList<HashMap<String, Node>> nodeList = new ArrayList<HashMap<String, Node>>();
+    private ArrayList<HashMap<String, HilbertIndexNode>> nodeList = new ArrayList<HashMap<String, HilbertIndexNode>>();
     
     /*
      * List of available RelationshipTypes
@@ -95,17 +100,20 @@ public class HilbertIndexNode {
      */
     protected HilbertIndexNode(Node referencedNode, String indexName, int order) {
         this(referencedNode, indexName, order, 1);
+        
+        initialize();
     }
     
     /**
      * Creates a node of Index
      */
-    private void createIndexNode() {
+    private void createIndexNode(boolean isLastIndex) {
     	indexNode = neoService.createNode();
         indexNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, HILBERT_INDEX_TYPE);
         indexNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, indexName);
         indexNode.setProperty(HILBERT_INDEX_LEVEL, level);
         indexNode.setProperty(HILBERT_INDEX_ORDER, order);
+        indexNode.setProperty(IS_LAST_INDEX, isLastIndex);
         
         initialize();
     }
@@ -122,11 +130,11 @@ public class HilbertIndexNode {
         this.level = level;
         this.order = order;
         this.indexName = indexName;
-        createIndexNode();
+        createIndexNode(true);
         
-        nodeList = new ArrayList<HashMap<String, Node>>(level - 1);
+        nodeList = new ArrayList<HashMap<String, HilbertIndexNode>>(level - 1);
         for (int i = 0; i < level; i++) {
-            nodeList.add(new HashMap<String, Node>());
+            nodeList.add(new HashMap<String, HilbertIndexNode>());
         }
         
         referencedNode.createRelationshipTo(indexNode, PropertyIndex.NeoIndexRelationshipTypes.INDEX);
@@ -143,11 +151,11 @@ public class HilbertIndexNode {
         this.order = highLevelNode.getOrder();
         this.indexName = highLevelNode.indexName;
         
-        createIndexNode();
+        createIndexNode(false);
         
-        nodeList = new ArrayList<HashMap<String, Node>>(level - 1);
+        nodeList = new ArrayList<HashMap<String, HilbertIndexNode>>(level - 1);
         for (int i = 0; i < level; i++) {
-            nodeList.add(new HashMap<String, Node>());
+            nodeList.add(new HashMap<String, HilbertIndexNode>());
         }
         
         highLevelNode.indexNode.createRelationshipTo(indexNode, relationshipType);
@@ -164,10 +172,12 @@ public class HilbertIndexNode {
         order = (Integer)node.getProperty(HILBERT_INDEX_ORDER);
         indexName = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME);
         
-        nodeList = new ArrayList<HashMap<String, Node>>(level - 1);
+        nodeList = new ArrayList<HashMap<String, HilbertIndexNode>>(level - 1);
         for (int i = 0; i < level; i++) {
-            nodeList.add(new HashMap<String, Node>());
+            nodeList.add(new HashMap<String, HilbertIndexNode>());
         }
+        
+        initialize();
     }
     
     /**
@@ -176,7 +186,7 @@ public class HilbertIndexNode {
     private void initialize() {
     	if (hilbertRelationshipTypes == null) {
     		hilbertRelationshipTypes = new ArrayList<RelationshipType>();
-    		for (int i = 0; i < Math.pow(2, order); i++) {
+    		for (int i = 0; i < Math.pow(2, 2 * order); i++) {
     			final String name = Integer.toString(i);
     			RelationshipType type = new RelationshipType(){
                 
@@ -268,10 +278,71 @@ public class HilbertIndexNode {
                                                           currentLevelIndex.indexName, 
                                                           currentLevelIndex.order,
                                                           currentLevelIndex.level + 1);
+        currentLevelIndex.indexNode.setProperty(IS_LAST_INDEX, false);
         highLevel.indexNode.createRelationshipTo(currentLevelIndex.indexNode, currentLevelIndex.getRelationshipType(coordinate.getLeft(), coordinate.getRight(), highLevel.level));
         relationship.delete();
         
         return getHilbertIndex(highLevel, coordinate);
+    }
+    
+    /**
+     * Searches for indexed Node
+     *
+     * @param x coordinate X
+     * @param y coordinate Y
+     * @return indexed Node or null if not exists
+     */
+    private Node getIndexedNode(int x, int y) {
+        RelationshipType relationshipType = getRelationshipType(x, y, level);
+        
+        Iterator<Relationship> relationships = indexNode.getRelationships(relationshipType, Direction.OUTGOING).iterator();
+        
+        if (relationships.hasNext()) {
+            return relationships.next().getEndNode();
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Searches for the Index node on the underlying level
+     *
+     * @param x coordinate X
+     * @param y coordinate Y
+     * @param createIfNotExist is need to be created?
+     * @return founded Index node or null
+     */
+    private HilbertIndexNode getUnderlyingIndex(int x, int y, boolean createIfNotExist) {
+        RelationshipType relationshipType = getRelationshipType(x, y, level);
+        
+        HashMap<String, HilbertIndexNode> nodeMap = nodeList.get(level - 1);
+        if (nodeMap == null) {
+            nodeMap = new HashMap<String, HilbertIndexNode>();
+        }
+        HilbertIndexNode underlyingNode = nodeMap.get(relationshipType.name());
+        if (underlyingNode == null) {
+            Iterator<Relationship> relationships = indexNode.getRelationships(relationshipType, Direction.OUTGOING).iterator();
+            
+            if (relationships.hasNext()) {
+                underlyingNode = new HilbertIndexNode(relationships.next().getEndNode());
+            }
+            else {
+                if (createIfNotExist) {
+                    underlyingNode = new HilbertIndexNode(this, relationshipType);
+                }
+            }
+            
+            if (underlyingNode != null) {
+                for (int i = 0; i < level; i++) {
+                    if (nodeList.get(i) != null) {
+                        nodeList.get(i).clear();
+                    }
+                }
+                nodeList.get(level - 1).put(relationshipType.name(), underlyingNode);
+            }
+        }
+        
+        return underlyingNode;
     }
     
     /**
@@ -281,53 +352,26 @@ public class HilbertIndexNode {
      * @return node
      */
     public Node getIndexedNode(Pair<Integer, Integer> coordinate) {
-        int currentLevel = level;
         int x = coordinate.getLeft();
         int y = coordinate.getRight();
         
-        Node currentIndexNode = indexNode;
+        int max = (int)Math.pow((double)(1 << order), (double)level);
         
-        while (currentLevel != 1) {
-            RelationshipType relationshipType = getRelationshipType(x, y, currentLevel);
-            
-            HashMap<String, Node> nodeMap = nodeList.get(currentLevel - 1);
-            if (nodeMap == null) {
-                nodeMap = new HashMap<String, Node>();
-            }
-            
-            if (!nodeMap.containsKey(relationshipType.name())) {
-                Iterator<Relationship> relationships = currentIndexNode.getRelationships(relationshipType, Direction.OUTGOING).iterator();
-                
-                if (relationships.hasNext()) {
-                    currentIndexNode = relationships.next().getEndNode();
-                }
-                else {
-                    return null;
-                }
-                
-                for (int i = 0; i < currentLevel; i++) {
-                    if (nodeList.get(i) != null) {
-                        nodeList.get(i).clear();
-                    }
-                }
-                nodeList.get(currentLevel - 1).put(relationshipType.name(), currentIndexNode);
-            }
-            else {
-                currentIndexNode = nodeMap.get(relationshipType.name());
-            }
-            
-            currentLevel--;
+        if ((x >= max) || (y >= max)) {
+            return null;
         }
         
-        RelationshipType relationshipType = getRelationshipType(x, y, currentLevel);
+        HilbertIndexNode currentIndexNode = this;
         
-        Iterator<Relationship> relationships = currentIndexNode.getRelationships(relationshipType, Direction.OUTGOING).iterator();
-        
-        if (relationships.hasNext()) {
-            return relationships.next().getEndNode();
+        while (currentIndexNode.getLevel() > 1) {
+            currentIndexNode = currentIndexNode.getUnderlyingIndex(x, y, false);
+            
+            if (currentIndexNode == null) {
+                return null;
+            }
         }
         
-        return null;
+        return currentIndexNode.getIndexedNode(x, y);
     }
 
     /**
@@ -337,26 +381,21 @@ public class HilbertIndexNode {
      * @param coordinate coordinates of node
      */
     public void index(Node node, Pair<Integer, Integer> coordinate) {
-        int currentLevel = level;
         int x = coordinate.getLeft();
         int y = coordinate.getRight();
         
         HilbertIndexNode currentIndexNode = this;
         
-        while (currentLevel != 1) {
-            RelationshipType relationshipType = getRelationshipType(x, y, currentLevel);
-            
-            if (!currentIndexNode.indexNode.hasRelationship(relationshipType, Direction.OUTGOING)) {
-                currentIndexNode = new HilbertIndexNode(currentIndexNode, relationshipType);
-            }
-            else {
-                currentIndexNode = new HilbertIndexNode(currentIndexNode.indexNode.getSingleRelationship(relationshipType, Direction.OUTGOING).getEndNode());
-            }
-            
-            currentLevel--;
-        }
+        while (currentIndexNode.getLevel() > 1) {
+            currentIndexNode = currentIndexNode.getUnderlyingIndex(x, y, true);
+        };
         
-        RelationshipType relationshipType = getRelationshipType(x, y, currentLevel);
+        Node indexedNode = currentIndexNode.getIndexedNode(x, y);
+        RelationshipType relationshipType = getRelationshipType(x, y, currentIndexNode.getLevel());
+        if (indexedNode != null) {
+            //if there already exists a node than delete it
+            indexedNode.getSingleRelationship(relationshipType, Direction.INCOMING).delete();
+        }
         
         currentIndexNode.indexNode.createRelationshipTo(node, relationshipType);        
     }
@@ -373,5 +412,14 @@ public class HilbertIndexNode {
         final Integer position = HilbertSqaud.getHilbertPosition(x, y, currentLevel * order, (currentLevel - 1) * order);
         
         return hilbertRelationshipTypes.get(position);
+    }
+
+    /**
+     * Is it high level index
+     *
+     * @return is it high level index
+     */
+    public boolean isLastIndex() {
+        return (Boolean)indexNode.getProperty(IS_LAST_INDEX);
     }
 }

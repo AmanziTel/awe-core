@@ -113,6 +113,7 @@ public class CSVImporter extends AbstractImporter {
             long totalBytes = fileSize;            
             int prevPerc = 0;
             CellFormat defaultFormat = new CellFormat();
+            boolean finishUp = false;
             while (line != null  && line.lastIndexOf(sep) > 0){
                 NeoSplashUtil.logn("loading line #" + row);
 
@@ -120,9 +121,10 @@ public class CSVImporter extends AbstractImporter {
                 Iterator<String> it = list.iterator();
                 int j = 0;
                 while (it.hasNext()) {
-                    Cell cell = new Cell(row, j, "", (String) it.next(), defaultFormat);
+                    String value = (String)it.next();
+                    Cell cell = new Cell(row, j, value, value, defaultFormat);
                     //save a cell
-                    saveCell(cell);
+                    saveCell(cell, finishUp);
                     j++;
                 }
 
@@ -141,6 +143,10 @@ public class CSVImporter extends AbstractImporter {
                 //update transaction each 1000 rows
                 if ((row % 20) == 0) {
                     tx = updateTransaction(tx);
+                    finishUp = true;
+                }
+                else {
+                    finishUp = false;
                 }
                 if (row == INITIAL_ROW_NUMBER) {
                     throw new InvocationTargetException(new CSVImportException());
@@ -151,7 +157,7 @@ public class CSVImporter extends AbstractImporter {
             tx.failure();
             throw new InvocationTargetException(e);
         }
-        finally {           
+        finally {
             tx.finish();
         }
     }

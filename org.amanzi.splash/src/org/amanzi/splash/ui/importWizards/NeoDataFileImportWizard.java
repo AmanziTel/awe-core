@@ -101,9 +101,7 @@ public class NeoDataFileImportWizard extends NewRubyElementCreationWizard implem
 		            
 		        @Override
 		        public void run() {
-		        	//TODO: Lagutko, opening spreadsheet while it imports cause a bug
-		        	//for not it commented
-		            //NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetNode);
+		            NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetNode);
 		        }
 		    });
 		}

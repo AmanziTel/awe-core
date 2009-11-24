@@ -20,12 +20,16 @@ import javax.swing.JTextField;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.splash.swing.Cell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
@@ -80,7 +84,7 @@ public class FormulaEditor {
      * @author Lagutko_N
      * @since 1.0.0
      */
-    private class TextResizer implements ModifyListener, FocusListener {
+    private class TextResizer implements ModifyListener, FocusListener, ControlListener {
         
         private int lineNumber = 1;
         
@@ -96,7 +100,6 @@ public class FormulaEditor {
 
         @Override
         public void focusGained(FocusEvent e) {
-            System.out.println("focusGained " + lineNumber);
             showFormulaEditor(lineNumber);
         }
 
@@ -105,6 +108,17 @@ public class FormulaEditor {
             lineNumber = 1;
             collapseFormulaEditor();
         }
+
+        @Override
+        public void controlMoved(ControlEvent e) {
+        }
+
+        @Override
+        public void controlResized(ControlEvent e) {
+            lineNumber = 1;
+            collapseFormulaEditor();
+        }
+        
     }
     
     /*
@@ -149,7 +163,15 @@ public class FormulaEditor {
         formulaTextEditor.setLayoutData(layoutData);
         formulaTextEditor.addKeyListener(new InputFinishListener());
         formulaTextEditor.addModifyListener(resizer);
-        formulaTextEditor.addFocusListener(resizer);
+        formulaTextEditor.addFocusListener(resizer);    
+        parent.addControlListener(resizer);
+        parent.addPaintListener(new PaintListener(){
+            
+            @Override
+            public void paintControl(PaintEvent e) {
+               // collapseFormulaEditor();
+            }
+        });
     }
     
     /**
@@ -249,8 +271,7 @@ public class FormulaEditor {
      * @param lineNumber number of line in Formula Editor's text
      */
     private void showFormulaEditor(int lineNumber) {
-        //TODO: Lagutko, method computeSize() didn't computes width correctly, so compute it manually
-        System.out.println("showFormula " + lineNumber);
+        //method computeSize() didn't computes width correctly, so compute it manually
         int width = formulaTextEditor.getClientArea().width + formulaTextEditor.getBorderWidth() * 2;
         GC gc = new GC(formulaTextEditor);
         FontMetrics fm = gc.getFontMetrics();

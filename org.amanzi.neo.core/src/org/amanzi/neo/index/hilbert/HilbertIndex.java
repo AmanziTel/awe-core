@@ -60,6 +60,11 @@ public class HilbertIndex {
      */
     private ArrayList<Node> nodesToIndex = new ArrayList<Node>();
     
+    /*
+     * Referenced Node for this Hilbert Index
+     */
+    private Node referencedNode;
+    
     /**
      * Constructor
      * 
@@ -88,7 +93,8 @@ public class HilbertIndex {
             reference = service.getReferenceNode();
         }
         
-        root = HilbertIndexNode.getFromReferencedNode(reference, indexName, hilbertSquadOrder);        
+        root = HilbertIndexNode.getFromReferencedNode(reference, indexName, hilbertSquadOrder);
+        referencedNode = reference;
     }
     
     /**
@@ -127,10 +133,17 @@ public class HilbertIndex {
         
         if (valid) {
             HilbertIndexNode index = HilbertIndexNode.getHilbertIndex(root, coordinate);
-            if (!index.equals(root)) {
-                root = index;
+            if (!index.isLastIndex()) {
+                initialize(referencedNode);
+                index = HilbertIndexNode.getHilbertIndex(root, coordinate);
             }
-            index.index(node, coordinate);            
+            
+            if (index.isLastIndex()) {
+                if (!index.equals(root)) {
+                    root = index;
+                }
+                index.index(node, coordinate);
+            }
         }
         
     }
@@ -164,6 +177,10 @@ public class HilbertIndex {
      */
     public Node find(int x, int y) {
         Pair<Integer, Integer> coordinate = new Pair<Integer, Integer>(x, y);
+        
+        if (!root.isLastIndex()) {
+            initialize(referencedNode);
+        }
         
         return root.getIndexedNode(coordinate);
     }

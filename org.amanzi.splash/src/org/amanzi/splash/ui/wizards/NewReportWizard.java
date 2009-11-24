@@ -14,12 +14,9 @@
 package org.amanzi.splash.ui.wizards;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -54,7 +51,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.rubypeople.rdt.core.IRubyElement;
-import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 /**

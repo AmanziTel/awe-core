@@ -27,9 +27,7 @@ import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.splash.utilities.NeoSplashUtil;
-import org.eclipse.swt.widgets.Text;
 
 import com.eteks.openjeks.format.CellFormat;
 

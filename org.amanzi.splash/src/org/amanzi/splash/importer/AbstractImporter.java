@@ -168,7 +168,7 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
     /*
      * Node of created Spreadsheet
      */
-    private SpreadsheetNode spreadsheetNode;
+    protected SpreadsheetNode spreadsheetNode;
     
     /*
      * Size of File
@@ -269,9 +269,9 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      *
      * @param cell cell to save
      */
-    protected void saveCell(Cell cell) {
+    protected void saveCell(Cell cell, boolean finishUp) {
         //import Cell to database in given Row and Column
-        importCell(cell, rows.get(cell.getRow()), columns.get(cell.getColumn()));        
+        importCell(cell, rows.get(cell.getRow()), columns.get(cell.getColumn()), finishUp);        
     }
     
     
@@ -287,6 +287,7 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         transaction.success();
         transaction.finish();
         
+        NeoServiceProvider.getProvider().commit();
         Transaction result = neoService.beginTx();
         
         return result;
@@ -300,7 +301,7 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      * @param column column of Cell
      * @return row that contain imported cell or null
      */
-    private void importCell(Cell cell, RowNode row, ColumnNode column) {
+    private void importCell(Cell cell, RowNode row, ColumnNode column, boolean finishUp) {
         createSpreadsheet();
         
         //create a new cell
@@ -308,6 +309,12 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         //set a value to cell
         cellNode.setValue(cell.getValue());
         cellNode.setDefinition(cell.getDefinition());
+        
+        CellID id = new CellID(row.getName(), column.getColumnName());
+        cellNode.setCellColumn(id.getColumnIndex());
+        cellNode.setCellRow(id.getRowIndex());
+        
+        spreadsheetNode.addCell(cellNode, finishUp);
         
         //add a cell to row and column
         row.addCell(cellNode);
