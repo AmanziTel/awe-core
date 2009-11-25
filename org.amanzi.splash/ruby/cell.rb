@@ -56,8 +56,9 @@ class Cell
   #
   def get_typed_value
     #If type was DEFAULT than it can be String, Integer or Float
-    if (cell_format.format.nil?)
-      begin 
+    #Lagutko, convert only if value is String
+    if (cell_format.format.nil? && value.kind_of?(String))
+      begin
         result = Integer(value)
       rescue
         begin 
