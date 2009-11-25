@@ -83,7 +83,6 @@ public class Charts implements IElementFactory {
                     nodeValue = Double.parseDouble((String)node.getValueNode().getValue());
                 }
             } catch (NumberFormatException e) {
-                // TODO: Report parsing statistics somewhere
                 countBad++;
             }
             dataset.addValue(nodeValue, node.getChartItemSeries(), (String)node.getCategoryNode().getValue());
