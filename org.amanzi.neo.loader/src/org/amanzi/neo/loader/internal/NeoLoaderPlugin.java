@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
@@ -34,7 +35,8 @@ import org.osgi.framework.BundleContext;
  */
 
 public class NeoLoaderPlugin extends Plugin {
-    
+    /** String DEFAULT_CHARSET field */
+    public static final String DEFAULT_CHARSET = "UTF-8";
     /*
 	 * Name of console
 	 */
@@ -257,5 +259,18 @@ public class NeoLoaderPlugin extends Plugin {
 
         }
         return preferenceStore;
+    }
+
+    /**
+     * Gets character set from preferences
+     * 
+     * @return
+     */
+    public String getCharacterSet() {
+        String characterSet = getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
+        if (characterSet == null) {
+            characterSet = DEFAULT_CHARSET;
+        }
+        return characterSet;
     }
 }

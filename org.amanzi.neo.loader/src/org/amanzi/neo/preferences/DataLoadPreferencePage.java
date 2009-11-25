@@ -12,6 +12,8 @@
  */
 package org.amanzi.neo.preferences;
 
+import net.refractions.udig.ui.preferences.CharSetFieldEditor;
+
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
@@ -31,6 +33,7 @@ public class DataLoadPreferencePage extends FieldEditorPreferencePage implements
     private static final String LABEL_REMOVE_SITE_NAME = "Remove site name from sector name";
     private static final String USE_COMBINED_CALCULATION = "Use combined network density calculation";
     private static final String ZOOM_TO_DATA = "Zoom to data";
+    private static final String PREFERENCE_CHARSET = "Default Character Set";
 
 
     @Override
@@ -47,6 +50,8 @@ public class DataLoadPreferencePage extends FieldEditorPreferencePage implements
         addField(editor);
         editor = new BooleanFieldEditor(DataLoadPreferences.ZOOM_TO_LAYER, ZOOM_TO_DATA, getFieldEditorParent());
         addField(editor);
+
+        addField(new CharSetFieldEditor(DataLoadPreferences.DEFAULT_CHARSET, PREFERENCE_CHARSET, getFieldEditorParent()));
 
     }
 

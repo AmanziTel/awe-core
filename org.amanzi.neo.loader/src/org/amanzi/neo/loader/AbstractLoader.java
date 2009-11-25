@@ -872,7 +872,8 @@ public abstract class AbstractLoader {
         if (monitor != null)
             monitor.subTask(basename);
         CountingFileInputStream is = new CountingFileInputStream(new File(filename));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        String characterSet = NeoLoaderPlugin.getDefault().getCharacterSet();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, characterSet));
         mainTx = neo.beginTx();
         try {
             initializeIndexes();
@@ -913,6 +914,7 @@ public abstract class AbstractLoader {
             commit(false);
         }
     }
+
 
     protected void addIndex(MultiPropertyIndex< ? > index) {
         indexes.add(index);
