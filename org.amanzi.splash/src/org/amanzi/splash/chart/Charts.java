@@ -74,26 +74,38 @@ public class Charts implements IElementFactory {
 
     public static DefaultCategoryDataset createBarChartDataset(ChartNode chartNode) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        try {
-            for (ChartItemNode node : chartNode.getAllChartItems()) {
-                dataset.addValue(Double.parseDouble((String)node.getValueNode().getValue()), node.getChartItemSeries(),
-                        (String)node.getCategoryNode().getValue());
-            }
-        } catch (final NumberFormatException e) {
-            final Display display = PlatformUI.getWorkbench().getDisplay();
-            display.asyncExec(new Runnable() {
-
-                @Override
-                public void run() {
-                    ErrorDialog.openError(display.getActiveShell(), "Invalid input",
-                            "Chart can't be created due to invalid input!", new Status(Status.ERROR, SplashPlugin.getId(),
-                                    NumberFormatException.class.getName(), e));
+        int countBad = 0;
+        for (ChartItemNode node : chartNode.getAllChartItems()) {
+            double nodeValue = 0.0;
+            try {
+                String value = (String)node.getValueNode().getValue();
+                if (value.length() > 0) {
+                    nodeValue = Double.parseDouble((String)node.getValueNode().getValue());
                 }
-
-            });
-
+            } catch (NumberFormatException e) {
+                // TODO: Report parsing statistics somewhere
+                countBad++;
+            }
+            dataset.addValue(nodeValue, node.getChartItemSeries(), (String)node.getCategoryNode().getValue());
+        }
+        if (countBad > 0) {
+            displayDataParsingError(countBad);
         }
         return dataset;
+    }
+
+    private static void displayDataParsingError(final int countBad) {
+        final Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                ErrorDialog.openError(display.getActiveShell(), "Invalid input",
+                        "There were "+countBad+" data parsing errors in creating the chart!", new Status(Status.ERROR, SplashPlugin.getId(),
+                                NumberFormatException.class.getName()));
+            }
+
+        });
     }
 
     /**
