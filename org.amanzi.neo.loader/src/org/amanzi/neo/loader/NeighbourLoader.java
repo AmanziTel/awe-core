@@ -115,7 +115,8 @@ public class NeighbourLoader {
             }
             monitor.beginTask("Importing " + baseName, 100);
             stream = new CountingFileInputStream(new File(fileName));
-            reader = new BufferedReader(new InputStreamReader(stream));
+            String charSet = NeoLoaderPlugin.getDefault().getCharacterSet();
+            reader = new BufferedReader(new InputStreamReader(stream, charSet));
             int perc = stream.percentage();
             int prevPerc = 0;
             String line = reader.readLine();
