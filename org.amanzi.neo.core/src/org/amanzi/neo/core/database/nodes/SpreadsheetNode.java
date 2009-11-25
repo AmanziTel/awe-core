@@ -18,8 +18,10 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.exception.SplashDatabaseException;
 import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.index.hilbert.HilbertIndex;
 import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
@@ -49,7 +51,9 @@ public class SpreadsheetNode extends AbstractNode {
 	 * Index of Cells 
 	 */
 	private HilbertIndex index;
-
+	
+	private NeoService neoService = NeoServiceProvider.getProvider().getService();
+	
 	/**
 	 * Constructor. Wraps a Node from database and sets type and name of Node
 	 * 
@@ -106,16 +110,6 @@ public class SpreadsheetNode extends AbstractNode {
 	 */
 	public String getSpreadsheetName() {
 		return (String) getParameter(INeoConstants.PROPERTY_NAME_NAME);
-	}
-
-	/**
-	 * Adds a Row to Spreadsheet
-	 * 
-	 * @param row
-	 *            row wrapper
-	 */
-	public void addRow(RowNode row) {
-		addRelationship(SplashRelationshipTypes.ROW, row.getUnderlyingNode());
 	}
 
 	/**
@@ -195,61 +189,6 @@ public class SpreadsheetNode extends AbstractNode {
 		return null;
 	}
 
-	/**
-	 * Returns a Row by given index
-	 * 
-	 * @param rowIndex
-	 *            index of row
-	 * @return row by index
-	 * @throws SplashDatabaseException
-	 *             if was founded more than one row by given index
-	 */
-	public RowNode getRow(final String rowIndex) throws SplashDatabaseException {
-		Iterator<RowNode> iterator = new RowIterator(rowIndex);
-
-		if (iterator.hasNext()) {
-			RowNode result = iterator.next();
-			if (iterator.hasNext()) {
-				String message = SplashDatabaseExceptionMessages
-						.getFormattedString(
-								SplashDatabaseExceptionMessages.Not_Single_Row_by_ID,
-								rowIndex);
-				throw new SplashDatabaseException(message);
-			}
-			return result;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns a Column by given name
-	 * 
-	 * @param columnName
-	 *            name of Column
-	 * @return column by name
-	 * @throws SplashDatabaseException
-	 *             if was founded more than one column by given name
-	 */
-	public ColumnNode getColumn(String columnName)
-			throws SplashDatabaseException {
-		Iterator<ColumnNode> iterator = new ColumnInterator(columnName);
-
-		if (iterator.hasNext()) {
-			ColumnNode result = iterator.next();
-			if (iterator.hasNext()) {
-				String message = SplashDatabaseExceptionMessages
-						.getFormattedString(
-								SplashDatabaseExceptionMessages.Not_Single_Column_by_ID,
-								columnName);
-				throw new SplashDatabaseException(message);
-			}
-			return result;
-		}
-
-		return null;
-	}
-
 	public int getChartsCount() {
 		Iterator<Relationship> iterator = node.getRelationships(
 				SplashRelationshipTypes.CHART, Direction.OUTGOING).iterator();
@@ -276,18 +215,16 @@ public class SpreadsheetNode extends AbstractNode {
 	 * 
 	 * @param rowIndex
 	 *            index of Row
-	 * @param columnName
+	 * @param columnIndex
 	 *            name of Column
 	 * @return cell by Column and Row
 	 * @throws SplashDatabaseException
 	 *             if was founded more than one row, or more than one column, or
 	 *             more than one cell
 	 */
-	public CellNode getCell(String rowIndex, String columnName)
-			throws SplashDatabaseException {
+	public CellNode getCell(int rowIndex, int columnIndex) {
 	    
-	    CellID id = new CellID(rowIndex, columnName);
-	    Node node = index.find(id.getColumnIndex(), id.getRowIndex());
+	    Node node = index.find(columnIndex + 1, rowIndex + 1);
 	    
 	    if (node != null) {
 	        return CellNode.fromNode(node);
@@ -296,115 +233,29 @@ public class SpreadsheetNode extends AbstractNode {
 	        return null;
 	    }
 	}
-
-	public Iterator<RowNode> getAllRows() {
-		return new AllRowIterator();
+	
+	public ColumnHeaderNode getColumnHeader(int columnIndex) {
+	    Node node = index.find(columnIndex, 0);
+	    
+	    if (node != null) {
+	        return new ColumnHeaderNode(node);
+	    }
+	    else {
+	        return null;
+	    }
 	}
-
-	/**
-	 * Iterator that computes Rows by given Index
-	 * 
-	 * @author Lagutko_N
-	 */
-	private class RowIterator extends AbstractIterator<RowNode> {
-
-		public RowIterator(final String rowIndex) {
-			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
-					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-						public boolean isReturnableNode(
-								TraversalPosition position) {
-							if (position.isStartNode()) {
-								return false;
-							}
-							return position.lastRelationshipTraversed()
-									.getEndNode()
-									.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(rowIndex);
-						}
-
-					}, SplashRelationshipTypes.ROW, Direction.OUTGOING)
-					.iterator();
-		}
-
-		@Override
-		protected RowNode wrapNode(Node node) {
-			return RowNode.fromNode(node);
-		}
-	}
-	/**
-     * Iterator that returns all rows from given range
-     * 
-     * @author Pechko E.
-     */
-    private class RowRangeIterator extends AbstractIterator<RowNode> {
-
-        public RowRangeIterator(String firstRowIndex, String lastRowIndex) {
-            final int first = Integer.parseInt(firstRowIndex);
-            final int last = Integer.parseInt(lastRowIndex);
-            this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
-                    new StopEvaluator(){
-
-                        @Override
-                        public boolean isStopNode(TraversalPosition currentPos) {
-                            String propertyName = (String)currentPos.currentNode()
-                            .getProperty(INeoConstants.PROPERTY_NAME_NAME);
-                            int ind = Integer.parseInt(propertyName);
-                            return ind>last;
-                        }}, new ReturnableEvaluator() {
-
-                        public boolean isReturnableNode(
-                                TraversalPosition position) {
-                            if (position.isStartNode()) {
-                                return false;
-                            }
-                            String propertyName = (String)position.lastRelationshipTraversed()
-                            .getEndNode()
-                            .getProperty(INeoConstants.PROPERTY_NAME_NAME);
-                            int ind = Integer.parseInt(propertyName);
-                            return ind<=last&&ind>=first;
-                        }
-
-                    }, SplashRelationshipTypes.ROW, Direction.OUTGOING)
-                    .iterator();
+	
+	public RowHeaderNode getRowHeader(int rowIndex) {
+        Node node = index.find(0, rowIndex);
+        
+        if (node != null) {
+            return new RowHeaderNode(node);
         }
-
-        @Override
-        protected RowNode wrapNode(Node node) {
-            return RowNode.fromNode(node);
+        else {
+            return null;
         }
     }
-    /**
-     * Iterator that returns all columns from given range
-     * 
-     * @author Pechko E.
-     */
-    private class ColumnRangeIterator extends AbstractIterator<ColumnNode> {
 
-        public ColumnRangeIterator(final Integer firstColIndex, final  Integer lastColIndex) {
-            this.iterator = node.traverse(Traverser.Order.DEPTH_FIRST,
-                    StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-                        public boolean isReturnableNode(
-                                TraversalPosition position) {
-                            if (position.isStartNode()) {
-                                return false;
-                            }
-                            String propertyName = (String)position.lastRelationshipTraversed()
-                            .getEndNode()
-                            .getProperty(INeoConstants.PROPERTY_NAME_NAME);
-                            int ind = CellID.getColumnIndexFromCellID(propertyName);
-                            return ind<=lastColIndex&&ind>=firstColIndex;
-                        }
-
-                    }, SplashRelationshipTypes.COLUMN, Direction.OUTGOING)
-                    .iterator();
-        }
-
-        @Override
-        protected ColumnNode wrapNode(Node node) {
-            return ColumnNode.fromNode(node);
-        }
-    }
 	/**
 	 * Iterator that computes Charts by given Index
 	 * 
@@ -469,70 +320,6 @@ public class SpreadsheetNode extends AbstractNode {
 		}
 	}
 
-	/**
-	 * Iterator that computes all Rows in Spreadsheet
-	 * 
-	 * @author Lagutko_N
-	 */
-	private class AllRowIterator extends AbstractIterator<RowNode> {
-
-		public AllRowIterator() {
-			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
-					StopEvaluator.DEPTH_ONE,
-					ReturnableEvaluator.ALL_BUT_START_NODE,
-					SplashRelationshipTypes.ROW, Direction.OUTGOING).iterator();
-		}
-
-		@Override
-		protected RowNode wrapNode(Node node) {
-			return RowNode.fromNode(node);
-		}
-	}
-
-	/**
-	 * Iterator that computes Columns by given Name
-	 * 
-	 * @author Lagutko_N
-	 */
-
-	private class ColumnInterator extends AbstractIterator<ColumnNode> {
-
-		private static final int COLUMN_NODE_DEPTH = 3;
-
-		public ColumnInterator(final String columnName) {
-
-			this.iterator = node.traverse(
-					Traverser.Order.DEPTH_FIRST,
-					new StopEvaluator() {
-
-						public boolean isStopNode(TraversalPosition position) {
-							return position.depth() > COLUMN_NODE_DEPTH;
-						}
-
-					},
-					new ReturnableEvaluator() {
-
-						public boolean isReturnableNode(
-								TraversalPosition position) {
-							if (position.depth() == COLUMN_NODE_DEPTH) {
-								return position.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(columnName);
-							}
-							return false;
-						}
-
-					}, SplashRelationshipTypes.ROW, Direction.OUTGOING,
-					SplashRelationshipTypes.ROW_CELL, Direction.OUTGOING,
-					SplashRelationshipTypes.COLUMN_CELL, Direction.INCOMING)
-					.iterator();
-
-		}
-
-		@Override
-		protected ColumnNode wrapNode(Node node) {
-			return ColumnNode.fromNode(node);
-		}
-	}
-
 	public ChartNode getChartNode(String id) {
 		ChartNode chart = null;
 		try {
@@ -556,17 +343,6 @@ public class SpreadsheetNode extends AbstractNode {
 	}
 
 	/**
-	 * Adds a Column to Spreadsheet
-	 * 
-	 * @param Column
-	 *            wrapper
-	 */
-	public void addColumn(ColumnNode column) {
-		addRelationship(SplashRelationshipTypes.COLUMN, column
-				.getUnderlyingNode());
-	}
-	
-	/**
 	 * Returns a RubyProjectNode of this Spreadsheet
 	 *
 	 * @return RubyProjectNode of Spreadsheet
@@ -575,26 +351,42 @@ public class SpreadsheetNode extends AbstractNode {
 	    Relationship relationship = getUnderlyingNode().getSingleRelationship(SplashRelationshipTypes.SPREADSHEET, Direction.INCOMING);
 	    return RubyProjectNode.fromNode(relationship.getStartNode());
 	}
-	/**
-	 * Returns columns from the given range
-	 *
-	 * @param firstColumnIndex index of the range first column
-	 * @param lastColumnIndex index of the range last column
-	 * @return iterator
-	 */
-	public Iterator<ColumnNode> getColumns(Integer firstColumnIndex,Integer lastColumnIndex){
-	    return new ColumnRangeIterator(firstColumnIndex,lastColumnIndex);
-	}
-
+	
 	/**
 	 * Adds Cell to Spreadsheet
 	 *
 	 * @param cell cell
 	 */
-	public void addCell(CellNode cell, boolean finishUp) {
+	public void addCell(CellNode cell) {
 	    index.addNode(cell.getUnderlyingNode());
-	    if (finishUp) {
-	        index.finishUp();
-	    }
+	    
+	    addToColumn(cell);
+	    addToRow(cell);   
+	    
+	    index.finishUp();
 	}
+	
+	private void addToColumn(CellNode cell) {
+        int column = cell.getCellColumn();
+        
+        ColumnHeaderNode columnHeader = getColumnHeader(column);
+        if (columnHeader == null) {
+            columnHeader = new ColumnHeaderNode(neoService.createNode(), column);
+            index.addNode(columnHeader.getUnderlyingNode());
+        }
+        
+        columnHeader.addNextCell(cell);
+    }
+	
+	private void addToRow(CellNode cell) {
+        int row = cell.getCellRow();
+        
+        RowHeaderNode rowHeader = getRowHeader(row);
+        if (rowHeader == null) {
+            rowHeader = new RowHeaderNode(neoService.createNode(), row);
+            index.addNode(rowHeader.getUnderlyingNode());
+        }
+        
+        rowHeader.addNextCell(cell);
+    }
 }

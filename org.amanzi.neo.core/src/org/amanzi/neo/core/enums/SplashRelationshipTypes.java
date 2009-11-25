@@ -15,15 +15,26 @@ package org.amanzi.neo.core.enums;
 import org.neo4j.api.core.RelationshipType;
 
 /**
- * 
- * TODO Purpose of
- * <p>
- * 
- * </p>
+ * Enum for RelationshipTypes used in Splash
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
 public enum SplashRelationshipTypes implements RelationshipType {
-	SPREADSHEET, ROW, ROW_CELL, COLUMN_CELL, CHART_ITEM, CHART, RUBY_PROJECT, AWE_PROJECT, PIE_CHART_ITEM, PIE_CHART, COLUMN, SCRIPT_CELL, SCRIPT, SPLASH_FORMAT, CHART_CATEGORY,CHART_VALUE, REPORT, REPORT_TEXT
+	SPREADSHEET, 
+	CHART_ITEM, 
+	CHART, 
+	RUBY_PROJECT, 
+	AWE_PROJECT, 
+	PIE_CHART_ITEM, 
+	PIE_CHART,
+	SCRIPT_CELL, 
+	SCRIPT, 
+	SPLASH_FORMAT, 
+	CHART_CATEGORY,
+	CHART_VALUE, 
+	REPORT, 
+	REPORT_TEXT,
+	NEXT_CELL_IN_ROW,
+	NEXT_CELL_IN_COLUMN;
 }

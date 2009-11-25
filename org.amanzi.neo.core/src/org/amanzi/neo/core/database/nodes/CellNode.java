@@ -27,10 +27,12 @@ import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * Wrapper of Spreadsheet Cell Node
@@ -105,25 +107,6 @@ public class CellNode extends AbstractNode {
         else {
             return null;
         }
-    }
-    
-    /**
-     * Computes the Row of Cell
-     *
-     * @return Row of Cell
-     */    
-    public RowNode getRow() {
-        return RowNode.fromNode(node.getSingleRelationship(SplashRelationshipTypes.ROW_CELL, Direction.INCOMING).getStartNode());
-    }
-    
-    /**
-     * Computes the Column of Cell
-     *
-     * @return Column of Cell
-     */
-    
-    public ColumnNode getColumn() {
-        return ColumnNode.fromNode(node.getSingleRelationship(SplashRelationshipTypes.COLUMN_CELL, Direction.INCOMING).getStartNode());
     }
     
     /**
@@ -279,7 +262,7 @@ public class CellNode extends AbstractNode {
         }
         catch (IllegalArgumentException e) {
             //Lagutko: the IllegalArgumentException will be thrown if we try to create Relationship to same Node
-            throw new LoopInCellReferencesException(new CellID(rfdNode.getRow().getRowIndex(), rfdNode.getColumn().getColumnName()));
+            throw new LoopInCellReferencesException(new CellID(rfdNode.getCellRow(), rfdNode.getCellColumn()));
         }
         catch (LoopInCellReferencesException e) {
             //Lagutko: LoopInCellReferencesException will be thrown 
@@ -298,7 +281,7 @@ public class CellNode extends AbstractNode {
         Iterator<CellNode> lastNode = new LoopDependencyIterator(newDependedNode);
         
         if (lastNode.hasNext()) {
-            throw new LoopInCellReferencesException(new CellID(newDependedNode.getRow().getRowIndex(), newDependedNode.getColumn().getColumnName()));
+            throw new LoopInCellReferencesException(new CellID(newDependedNode.getCellRow(), newDependedNode.getCellColumn()));
         }
     }
     
@@ -445,5 +428,105 @@ public class CellNode extends AbstractNode {
      */
     public void setCellRow(Integer rowIndex) {
         setParameter(CELL_ROW, rowIndex);
+    }
+    
+    /**
+     * Returns index of Cell's Column
+     *
+     * @return index of Cell's Column
+     */
+    public Integer getCellColumn() {
+        return (Integer)getParameter(CELL_COLUMN);
+    }
+    
+    /**
+     * Returns index of Cell's Row
+     *
+     * @return index of Cell's Row
+     */
+    public Integer getCellRow() {
+        return (Integer)getParameter(CELL_ROW);
+    }
+    
+    /**
+     * Returns all Cells from this to Cell in Row
+     *
+     * @param maxRowIndex index of last Cell
+     * @return list of Cell from this to last
+     */
+    public ArrayList<CellNode> getNextCellsInColumn(int maxRowIndex) {
+        return getNextCells(maxRowIndex, CELL_ROW, SplashRelationshipTypes.NEXT_CELL_IN_COLUMN);
+    }
+    
+    /**
+     * Returns all Cells from this to Cell in Column
+     *
+     * @param maxRowIndex index of last Cell
+     * @return list of Cell from this to last
+     */
+    public ArrayList<CellNode> getNextCellsInRow(int maxRowIndex) {
+        return getNextCells(maxRowIndex, CELL_COLUMN, SplashRelationshipTypes.NEXT_CELL_IN_ROW);
+    }
+    
+    /**
+     * Returns a list of next Cells
+     *
+     * @param maxCellIndex index of last Cell
+     * @param propertyName name of property to check index
+     * @param relationshipType type of relationship to traverse
+     * @return list of Cells
+     */
+    protected ArrayList<CellNode> getNextCells(int maxCellIndex, String propertyName, RelationshipType relationshipType) {
+        ArrayList<CellNode> result = new ArrayList<CellNode>();
+        
+        NextCellsIterator nextCellsIterator = new NextCellsIterator(maxCellIndex, propertyName, relationshipType);
+        
+        while (nextCellsIterator.hasNext()) {
+            result.add(nextCellsIterator.next());
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Iterator to get next Cell from current
+     * 
+     * @author Lagutko_N
+     * @since 1.0.0
+     */
+    private class NextCellsIterator extends AbstractIterator<CellNode> {
+        
+        /**
+         * Creates an iterator
+         *
+         * @param maxIndex index of last Cell
+         * @param propertyName name of property to check index
+         * @param relationshipType type of relationship to traverse
+         */
+        public NextCellsIterator(final int maxIndex, final String propertyName, RelationshipType relationshipType) {
+            this.iterator = node.traverse(Order.DEPTH_FIRST, 
+                                          new StopEvaluator(){
+                                            
+                                            @Override
+                                            public boolean isStopNode(TraversalPosition currentPos) {
+                                                return ((Integer)currentPos.currentNode().getProperty(propertyName)) > maxIndex;
+                                            }
+                                          }, 
+                                          new ReturnableEvaluator(){
+                                            
+                                            @Override
+                                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                                return true;
+                                            }
+                                          },
+                                          relationshipType,
+                                          Direction.OUTGOING).iterator();
+        }
+
+        @Override
+        protected CellNode wrapNode(Node node) {
+            return CellNode.fromNode(node);
+        }
+        
     }
 }

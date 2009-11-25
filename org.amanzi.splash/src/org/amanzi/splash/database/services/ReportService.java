@@ -14,12 +14,10 @@
 package org.amanzi.splash.database.services;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.ColumnNode;
 import org.amanzi.neo.core.database.nodes.ReportNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
@@ -105,12 +103,11 @@ public class ReportService {
 //        System.out.println("Range: " + range.l() + ".." + range.r());
         try {
             SpreadsheetNode spreadsheetNode = projectService.findSpreadsheet(root, sheet);
-            Iterator<ColumnNode> columns = spreadsheetNode.getColumns(range.l().getColumnIndex(), range.r().getColumnIndex());
-            while (columns.hasNext()) {
-                ColumnNode column = columns.next();
-                Iterator<CellNode> cells = column.getCells(range.l().getRowName(), range.r().getRowName());
-                while (cells.hasNext()) {
-                    result.add(cells.next());
+            
+            CellNode cell = spreadsheetNode.getCell(range.l().getRowIndex(), range.l().getColumnIndex());
+            for (CellNode cellInColumn : cell.getNextCellsInColumn(range.r().getColumnIndex())) {
+                for (CellNode cellInRow : cellInColumn.getNextCellsInRow(range.r().getRowIndex())) {
+                    result.add(cellInRow);
                 }
             }
             tx.success();

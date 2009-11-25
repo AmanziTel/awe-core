@@ -64,11 +64,9 @@ public class ExportScriptWizard extends NewFileCreationWizard {
 			public void run() {
 				SpreadsheetService spreadsheetService = SplashPlugin
 						.getDefault().getSpreadsheetService();
-				CellNode cellNode = spreadsheetService.getCellNode(
-						spreadsheetNode, cell.getCellID());
+				CellNode cellNode = spreadsheetService.getCellNode(spreadsheetNode, cell.getRow(), cell.getColumn());
 				if (cellNode == null) {
-					cellNode = spreadsheetService.createCell(spreadsheetNode,
-							cell.getCellID());
+					cellNode = spreadsheetService.createCell(spreadsheetNode, cell.getRow(), cell.getColumn());
 				}
 				NeoCorePlugin.getDefault().getProjectService().createScript(
 						cellNode, modifiedResource.getName());

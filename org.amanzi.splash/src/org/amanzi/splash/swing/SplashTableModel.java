@@ -25,8 +25,10 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
+import org.amanzi.splash.database.services.ReportService;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.job.InitializeSplashTask;
 import org.amanzi.splash.job.InterpretTask;
@@ -427,7 +429,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 */
 	public Object getValueAt(final int row, final int column) {
 		//Lagutko, 6.10.2009, no longer use ActionUtil here		
-		return service.getCell(spreadsheet, new CellID(row, column));
+		return service.getCell(spreadsheet, row, column);
 	}
 
 	/**
@@ -506,8 +508,7 @@ public class SplashTableModel extends DefaultTableModel {
 	private void updateCellWithDependencies(Cell rootCell) {
 		service.updateCell(spreadsheet, rootCell);
 
-		for (Cell c : service.getDependentCells(spreadsheet, rootCell
-				.getCellID())) {
+		for (Cell c : service.getDependentCells(spreadsheet, rootCell.getRow(), rootCell.getColumn())) {
 			refreshCell(c);
 			updateCellWithDependencies(c);
 		}
@@ -520,22 +521,22 @@ public class SplashTableModel extends DefaultTableModel {
 	 *            id of Cell to refresh
 	 */
 	public void refreshCell(String cellID) {
-		NeoSplashUtil.logn("refreshCell: cellID = " + cellID);
-		Cell cell = service.getCell(spreadsheet, new CellID(cellID));
-
-		String definition = (String) cell.getDefinition();
-		String formula1 = (String) cell.getDefinition();
-		Cell se = cell;
-
-		if (se == null) {
-			NeoSplashUtil.logn("WARNING: se = null");
-		}
-
-		Object s1 = interpret_erb(cellID, formula1);
-		se.setDefinition(definition);
-		se.setValue((String) s1);
-
-		this.setValueAt(se, cell.getRow(), cell.getColumn());
+//		NeoSplashUtil.logn("refreshCell: cellID = " + cellID);		
+//		Cell cell = service.getCell(spreadsheet, new CellID(cellID));
+//
+//		String definition = (String) cell.getDefinition();
+//		String formula1 = (String) cell.getDefinition();
+//		Cell se = cell;
+//
+//		if (se == null) {
+//			NeoSplashUtil.logn("WARNING: se = null");
+//		}
+//
+//		Object s1 = interpret_erb(cellID, formula1);
+//		se.setDefinition(definition);
+//		se.setValue((String) s1);
+//
+//		this.setValueAt(se, cell.getRow(), cell.getColumn());
 	}
 
 	/**

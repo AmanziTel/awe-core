@@ -124,7 +124,7 @@ public class CSVImporter extends AbstractImporter {
                     String value = (String)it.next();
                     Cell cell = new Cell(row, j, value, value, defaultFormat);
                     //save a cell
-                    saveCell(cell, finishUp);
+                    saveCell(cell);
                     j++;
                 }
 
@@ -142,11 +142,7 @@ public class CSVImporter extends AbstractImporter {
                 
                 //update transaction each 1000 rows
                 if ((row % 20) == 0) {
-                    tx = updateTransaction(tx);
-                    finishUp = true;
-                }
-                else {
-                    finishUp = false;
+                    tx = updateTransaction(tx);                 
                 }
                 if (row == INITIAL_ROW_NUMBER) {
                     throw new InvocationTargetException(new CSVImportException());

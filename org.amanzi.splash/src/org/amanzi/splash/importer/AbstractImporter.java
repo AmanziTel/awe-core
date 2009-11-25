@@ -16,15 +16,11 @@ package org.amanzi.splash.importer;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.AweProjectNode;
-import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.ColumnNode;
-import org.amanzi.neo.core.database.nodes.RowNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
@@ -47,88 +43,6 @@ import org.neo4j.api.core.Transaction;
  * @since 1.0.0
  */
 public abstract class AbstractImporter implements IRunnableWithProgress {
-    
-    /**
-     * ArrayList that provides two ways to get Column
-     * 1. If we know a number of columns than we can use it as a standard ArrayList.
-     * 2. If we didn't know a number of columns than a if a Column by index is not found 
-     *    than this column will be created and stored in ArrayList.
-     * 
-     * @author Lagutko_N
-     * @since 1.0.0
-     */
-    private class ColumnArrayList extends ArrayList<ColumnNode> {
-        
-        /** long serialVersionUID field */
-        private static final long serialVersionUID = 1L;
-        
-        public ColumnArrayList(int size) {
-            super(size);
-        }
-        
-        @Override
-        public ColumnNode get(int i) {
-            boolean notExists = false;
-            ColumnNode result = null;
-            
-            try {
-                result = super.get(i);                
-            }
-            catch (IndexOutOfBoundsException e) {
-                notExists = true;
-            }
-            
-            if ((result == null) && notExists) {
-                CellID id = new CellID(0, i);
-                
-                result = createColumnNode(id.getColumnName());
-                super.add(i, result);
-            }
-            
-            return result;
-        }
-    }
-    
-    /**
-     * ArrayList that provides two ways to get Row
-     * 1. If we know a number of rows than we can use it as a standard ArrayList.
-     * 2. If we didn't know a number of rows than a if a Row by index is not found 
-     *    than this row will be created and stored in ArrayList.
-     * 
-     * @author Lagutko_N
-     * @since 1.0.0
-     */
-    private class RowArrayList extends ArrayList<RowNode> {
-        
-        /** long serialVersionUID field */
-        private static final long serialVersionUID = 1L;
-        
-        public RowArrayList(int size) {
-            super(size);
-        }
-        
-        @Override
-        public RowNode get(int i) {
-            boolean notExists = false;
-            RowNode result = null;
-            
-            try {
-                result = super.get(i);                
-            }
-            catch (IndexOutOfBoundsException e) {
-                notExists = true;
-            }
-            
-            if ((result == null) && notExists) {
-                CellID id = new CellID(i, 0);
-                
-                result = createRowNode(id.getRowName());
-                super.add(i, result);
-            }
-            
-            return result;
-        }
-    }
     
     /*
      * Path to Project that will contain new Spreadsheet
@@ -154,16 +68,6 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      * Neo Service
      */
     private NeoService neoService;
-    
-    /*
-     * List of Columns
-     */
-    private ColumnArrayList columns = new ColumnArrayList(0);
-    
-    /*
-     * List of Rows
-     */
-    private RowArrayList rows = new RowArrayList(0);
     
     /*
      * Node of created Spreadsheet
@@ -269,9 +173,9 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      *
      * @param cell cell to save
      */
-    protected void saveCell(Cell cell, boolean finishUp) {
+    protected void saveCell(Cell cell) {
         //import Cell to database in given Row and Column
-        importCell(cell, rows.get(cell.getRow()), columns.get(cell.getColumn()), finishUp);        
+        importCell(cell, cell.getRow() + 1, cell.getColumn() + 1);        
     }
     
     
@@ -301,7 +205,7 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
      * @param column column of Cell
      * @return row that contain imported cell or null
      */
-    private void importCell(Cell cell, RowNode row, ColumnNode column, boolean finishUp) {
+    private void importCell(Cell cell, int row, int column) {
         createSpreadsheet();
         
         //create a new cell
@@ -310,48 +214,9 @@ public abstract class AbstractImporter implements IRunnableWithProgress {
         cellNode.setValue(cell.getValue());
         cellNode.setDefinition(cell.getDefinition());
         
-        CellID id = new CellID(row.getName(), column.getColumnName());
-        cellNode.setCellColumn(id.getColumnIndex());
-        cellNode.setCellRow(id.getRowIndex());
+        cellNode.setCellColumn(column);
+        cellNode.setCellRow(row);
         
-        spreadsheetNode.addCell(cellNode, finishUp);
-        
-        //add a cell to row and column
-        row.addCell(cellNode);
-        column.addCell(cellNode);
+        spreadsheetNode.addCell(cellNode);
     }
-    
-    /**
-     * Creates a Column Node 
-     *
-     * @param name name of Column
-     * @return created ColumnNode
-     */
-    private ColumnNode createColumnNode(String name) {
-        createSpreadsheet();
-        
-        ColumnNode node = new ColumnNode(neoService.createNode(), name);
-        
-        spreadsheetNode.addColumn(node);
-        
-        return node;
-    }
-    
-    /**
-     * Creates a Row Node 
-     *
-     * @param name name of Row
-     * @return created RowNode
-     */
-    private RowNode createRowNode(String name) {
-        createSpreadsheet();
-        
-        RowNode node = new RowNode(neoService.createNode(), name);
-        
-        spreadsheetNode.addRow(node);
-        
-        return node;
-    }
-    
-    
 }

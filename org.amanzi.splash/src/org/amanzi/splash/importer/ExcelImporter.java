@@ -109,7 +109,7 @@ public class ExcelImporter extends AbstractImporter {
                         //TODO: interpet!!!!!!
                         //Cell c = model.interpret(def, R, C);
                         
-                        saveCell(c, true);
+                        saveCell(c);
                         break;
                     }
 
@@ -121,7 +121,7 @@ public class ExcelImporter extends AbstractImporter {
                         System.out.println ("String value: " + richTextString.getString ());
                         System.out.println ("====================================================");
                         Cell c = new Cell(R,C,richTextString.getString (), richTextString.getString (), new CellFormat());
-                        saveCell(c, true);
+                        saveCell(c);
                         break;
                     }
                     
@@ -133,7 +133,7 @@ public class ExcelImporter extends AbstractImporter {
                         //TODO: interpet!!!!!!
                         //Cell c = model.interpret(def, R, C);
                         
-                        saveCell(c, true);
+                        saveCell(c);
                         
                         System.out.println ("====================================================");
                         System.out.println ("Formula value: " + cellFormula);

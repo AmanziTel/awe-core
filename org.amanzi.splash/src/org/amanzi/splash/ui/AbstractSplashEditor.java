@@ -1365,10 +1365,10 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
         ChartItemNode[] items = new ChartItemNode[m];
         for (int i=0;i<n;i++){
-                CellNode catNode = service.getCellNode(spreadsheet, categories[i].getCellID());
+                CellNode catNode = service.getCellNode(spreadsheet, categories[i].getRow(), categories[i].getColumn());
                 NeoSplashUtil.logn("categories["+i+"]="+ categories[i].getCellID());
             for (int j=0;j<k;j++){
-                CellNode valNode = service.getCellNode(spreadsheet, values[i+n*j].getCellID());
+                CellNode valNode = service.getCellNode(spreadsheet, values[i+n*j].getRow(), values[i+n*j].getColumn());
                 NeoSplashUtil.logn("j="+j +"; values[(i+n*j)="+(i+n*j) +"]="+values[i+n*j].getCellID());
                 try {
                     items[i+n*j] = projectService.createChartItem(chartNode, catNode,valNode,"item" + (i+n*j));
