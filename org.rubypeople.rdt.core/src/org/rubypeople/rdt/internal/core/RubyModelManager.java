@@ -953,7 +953,8 @@ public class RubyModelManager implements IContentTypeChangeListener, ISavePartic
             };
             job.setSystem(true);
             job.setPriority(Job.SHORT); // process asap
-            job.schedule();
+            //Lagutko, 27.11.2009, schedule this job not now but after 50 milliseconds
+            job.schedule(50);
 
  			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
  			workspace.addResourceChangeListener(
@@ -1025,7 +1026,7 @@ public class RubyModelManager implements IContentTypeChangeListener, ISavePartic
     public void loadVariablesAndContainers() throws CoreException {
 		// backward compatibility, load variables and containers from preferences into cache
     	// TODO Erase these two line sthat were here for RDT backwards compatibility?
-		loadVariablesAndContainers(getDefaultPreferences());
+        loadVariablesAndContainers(getDefaultPreferences());
 		loadVariablesAndContainers(getInstancePreferences());
 
 		// load variables and containers from saved file into cache
