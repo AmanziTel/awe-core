@@ -508,16 +508,12 @@ public class AweProjectService {
 	 * @return SpreadSheet node
 	 */
 	private Node getSpreadSheet(CellNode cellNode) {
-	    //TODO: Lagutko: think how to find Spreadsheet by it's Cell
+	    Long spreadsheetId = cellNode.getSpreadsheetId();
 	    
+	    if (spreadsheetId != null) {
+	        return neoService.getNodeById(spreadsheetId);
+	    }
 	    return null;
-//		Node rowNode = cellNode.getRow().getUnderlyingNode();
-//		Node spreadSheetNode = rowNode.traverse(Order.BREADTH_FIRST,
-//				StopEvaluator.DEPTH_ONE,
-//				ReturnableEvaluator.ALL_BUT_START_NODE,
-//				SplashRelationshipTypes.ROW, Direction.INCOMING).iterator()
-//				.next();
-//		return spreadSheetNode;
 	}
 
 	/**
