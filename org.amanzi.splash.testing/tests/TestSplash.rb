@@ -44,6 +44,7 @@ class TestSplash < Test::Unit::TestCase
   end
 
   def teardown
+    @splashTableModel.teardown
     puts "teardown"
 #    aweProjectNode = @projectService.findAweProject(@aweProjectName)
 #    @projectService.deleteNode(aweProjectNode);
@@ -52,10 +53,10 @@ class TestSplash < Test::Unit::TestCase
 
   def test00a_sum
     puts header
-    @splashTableModel.interpret('<% 1.upto(4){|x| eval "b#{x+1} = #{x}"} %>','',0,1)
-    @splashTableModel.interpret('= sum([b2,b3,b4,b5])','',5,1)
-    @splashTableModel.interpret('= sum(b2,b3,b4,b5)','',6,1)
-    @splashTableModel.interpret('= sum(b2..b5)','',7,1)
+    @splashTableModel.interpret('<% 1.upto(4){|x| eval "b#{x+1} = #{x}"} %>',0,1)
+    @splashTableModel.interpret('= sum([b2,b3,b4,b5])',5,1)
+    @splashTableModel.interpret('= sum(b2,b3,b4,b5)',6,1)
+    @splashTableModel.interpret('= sum(b2..b5)',7,1)
     puts "Checking b1-b8 - should have '', 1, 2, 3, 4, 10, 10, 10"
     1.upto(8) do |row|
       puts "b#{row} = #{@splashTableModel.getValueAt(row,1).getValue()}"
@@ -72,10 +73,10 @@ class TestSplash < Test::Unit::TestCase
 
   def test00b_complex_formulas
     puts header
-    @splashTableModel.interpret('<% 1.upto(4){|x| eval "b#{x+1} = #{x}"} %>','',0,1)
-    @splashTableModel.interpret('= sum(b2..b5)','',5,1)
-    @splashTableModel.interpret('= average(b2..b5)','',6,1)
-    @splashTableModel.interpret('= max(b2..b5)','',7,1)
+    @splashTableModel.interpret('<% 1.upto(4){|x| eval "b#{x+1} = #{x}"} %>',0,1)
+    @splashTableModel.interpret('= sum(b2..b5)',5,1)
+    @splashTableModel.interpret('= average(b2..b5)',6,1)
+    @splashTableModel.interpret('= max(b2..b5)',7,1)
     puts "Checking b1-b8 - should have '', 1, 2, 3, 4, 10, 2, 4"
     1.upto(8) do |row|
       puts "b#{row} = #{@splashTableModel.getValueAt(row,1).getValue()}"
@@ -92,7 +93,7 @@ class TestSplash < Test::Unit::TestCase
 
   def test01_display_plain_text_as_plain_text
     puts header
-    @splashTableModel.interpret("PLAINTEXT","",0,0)
+    @splashTableModel.interpret("PLAINTEXT",0,0)
     puts "test01_plained"
     assert_equal "PLAINTEXT",@splashTableModel.getValueAt(0,0).getValue()
     puts "test01_asserts"
@@ -100,70 +101,70 @@ class TestSplash < Test::Unit::TestCase
 
   def test02_simple_style_formula
     puts header
-    @splashTableModel.interpret("='Ahmed'","",1,0)
+    @splashTableModel.interpret("='Ahmed'",1,0)
     assert_equal "Ahmed",@splashTableModel.getValueAt(1,0).getValue()
   end
 
   def test03_erb_style_formula
     puts header
-    @splashTableModel.interpret("<%= 'Craig' %>","",2,0)
+    @splashTableModel.interpret("<%= 'Craig' %>",2,0)
     assert_equal "Craig",@splashTableModel.getValueAt(2,0).getValue()
   end
 
   def test04_cell_with_reference_to_other_cells
     puts header
-    @splashTableModel.interpret("='Ahmed'","",1,0)
-    @splashTableModel.interpret("<%= 'Craig' %>","",2,0)
-    @splashTableModel.interpret("=a2+a3","",3,0)
+    @splashTableModel.interpret("='Ahmed'",1,0)
+    @splashTableModel.interpret("<%= 'Craig' %>",2,0)
+    @splashTableModel.interpret("=a2+a3",3,0)
     assert_equal "AhmedCraig",@splashTableModel.getValueAt(3,0).getValue()
   end
 
   def test04b_cell_with_numerical_reference_to_other_cells
     puts header
-    @splashTableModel.interpret("5","",1,0)
-    @splashTableModel.interpret("<%= 6 %>","",2,0)
-    @splashTableModel.interpret("=a2+a3","",3,0)
+    @splashTableModel.interpret("5",1,0)
+    @splashTableModel.interpret("<%= 6 %>",2,0)
+    @splashTableModel.interpret("=a2+a3",3,0)
     assert_equal "11",@splashTableModel.getValueAt(3,0).getValue()
   end
 
   def test05_move_row_down
     puts header
-    @splashTableModel.interpret("<%= 'Craig' %>","",5,0)
+    @splashTableModel.interpret("<%= 'Craig' %>",5,0)
     @splashTable.moveRowDown(5);
     assert_equal "Craig",@splashTableModel.getValueAt(6,0).getValue()
   end
 
   def test06_move_row_up
     puts header
-    @splashTableModel.interpret("<%= 'Craig' %>","",8,0)
+    @splashTableModel.interpret("<%= 'Craig' %>",8,0)
     @splashTable.moveRowUp(8);
     assert_equal "Craig",@splashTableModel.getValueAt(7,0).getValue()
   end
 
   def test07_move_column_left
     puts header
-    @splashTableModel.interpret("<%= 'Craig' %>","",1,2)
+    @splashTableModel.interpret("<%= 'Craig' %>",1,2)
     @splashTable.moveColumnLeft(2);
     assert_equal "Craig",@splashTableModel.getValueAt(1,1).getValue()
   end
 
   def test08_move_column_right
     puts header
-    @splashTableModel.interpret("<%= 'Craig' %>","",1,2)
+    @splashTableModel.interpret("<%= 'Craig' %>",1,2)
     @splashTable.moveColumnRight(2);
     assert_equal "Craig",@splashTableModel.getValueAt(1,3).getValue()
   end
 
   def test09_insert_row
     puts header
-    @splashTableModel.interpret("<%= 'Craig' %>","",2,2)
+    @splashTableModel.interpret("<%= 'Craig' %>",2,2)
     @splashTable.insertRow(2);
-    assert_equal "Craig",@splashTableModel.getValueAt(3,2).getValue()
+    assert_equal "Craig",@splashTableModel.getValueAt(3,2).getValue()    
   end
 
   def test10_insert_column
     puts header
-    @splashTableModel.interpret("<%= 'Craig' %>","",2,2)
+    @splashTableModel.interpret("<%= 'Craig' %>",2,2)
     @splashTable.insertColumn(2);
     assert_equal "Craig",@splashTableModel.getValueAt(2,3).getValue()
   end
@@ -406,9 +407,9 @@ class TestSplash < Test::Unit::TestCase
 
   def test25_cell_with_reference_to_other_cells_with_changes
     puts header
-    @splashTableModel.interpret("='Ahmed'","",1,1)
+    @splashTableModel.interpret("='Ahmed'",1,1)
     puts "test25_ Ahmed"
-    @splashTableModel.interpret("<%= 'Craig' %>","",2,1)
+    @splashTableModel.interpret("<%= 'Craig' %>",2,1)
     puts "test25_interpret Craig"
     @splashTableModel.interpret("=b2+b3","",3,1)
     puts "test25_interpret(a2+a3"
