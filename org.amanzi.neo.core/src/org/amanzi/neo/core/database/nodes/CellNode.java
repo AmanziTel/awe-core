@@ -589,10 +589,20 @@ public class CellNode extends AbstractNode {
         }
     }
     
+    /**
+     * Sets a ID of Spreadsheet that contain this cell
+     *
+     * @param spreadsheetId id of Spreadsheet Node
+     */
     public void setSpreadsheetId(long spreadsheetId) {
         setParameter(SPREADSHEET_ID, spreadsheetId);
     }
     
+    /**
+     * Returns ID of Spreadsheet that contain this cell
+     *
+     * @return id of Spreadsheet
+     */
     public Long getSpreadsheetId() {
         return (Long)getParameter(SPREADSHEET_ID);
     }
