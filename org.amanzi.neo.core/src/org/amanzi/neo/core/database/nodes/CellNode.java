@@ -84,6 +84,11 @@ public class CellNode extends AbstractNode {
      */
     public static final String CELL_ROW = "row_index";
     
+    /*
+     * Name of 'Spreadsheet ID' property 
+     */
+    public static final String SPREADSHEET_ID = "spreadsheet_id";
+    
     /**
      * Constructor. Wraps a Node from database and sets type and name of Node
      * 
@@ -436,7 +441,7 @@ public class CellNode extends AbstractNode {
      * @return index of Cell's Column
      */
     public Integer getCellColumn() {
-        return (Integer)getParameter(CELL_COLUMN);
+        return (Integer)getParameter(CELL_COLUMN) - 1;
     }
     
     /**
@@ -445,7 +450,7 @@ public class CellNode extends AbstractNode {
      * @return index of Cell's Row
      */
     public Integer getCellRow() {
-        return (Integer)getParameter(CELL_ROW);
+        return (Integer)getParameter(CELL_ROW) - 1;
     }
     
     /**
@@ -468,6 +473,17 @@ public class CellNode extends AbstractNode {
         return getNextCells(maxRowIndex, CELL_COLUMN, SplashRelationshipTypes.NEXT_CELL_IN_ROW);
     }
     
+    public CellNode getNextCellInColumn() {
+        Iterator<Relationship> relationships = node.getRelationships(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, Direction.OUTGOING).iterator();
+        
+        if (relationships.hasNext()) {
+            return CellNode.fromNode(relationships.next().getEndNode());
+        }
+        else {
+            return null;
+        }
+    }
+    
     /**
      * Returns a list of next Cells
      *
@@ -487,6 +503,19 @@ public class CellNode extends AbstractNode {
         
         return result;
     }
+    
+    public ArrayList<CellNode> getAllCellsFromThis(RelationshipType relationshipType, boolean returnFirst) {
+        ArrayList<CellNode> result = new ArrayList<CellNode>();
+        
+        AllCellsIterator allCellsIterator = new AllCellsIterator(relationshipType, returnFirst);
+        
+        while (allCellsIterator.hasNext()) {
+            result.add(allCellsIterator.next());
+        }
+        
+        return result;
+    }
+    
     
     /**
      * Iterator to get next Cell from current
@@ -527,6 +556,44 @@ public class CellNode extends AbstractNode {
         protected CellNode wrapNode(Node node) {
             return CellNode.fromNode(node);
         }
-        
+    }
+    
+    protected class AllCellsIterator extends AbstractIterator<CellNode> {
+        /**
+         * Creates an iterator
+         *
+         * @param maxIndex index of last Cell
+         * @param propertyName name of property to check index
+         * @param relationshipType type of relationship to traverse
+         */
+        public AllCellsIterator(RelationshipType relationshipType, final boolean returnFirst) {
+            this.iterator = node.traverse(Order.DEPTH_FIRST, 
+                                          StopEvaluator.END_OF_GRAPH, 
+                                          new ReturnableEvaluator(){
+                                            
+                                            @Override
+                                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                                if (!returnFirst && (currentPos.depth() == 0)) {
+                                                    return false;
+                                                }
+                                                return true;
+                                            }
+                                          },
+                                          relationshipType,
+                                          Direction.OUTGOING).iterator();
+        }
+
+        @Override
+        protected CellNode wrapNode(Node node) {
+            return CellNode.fromNode(node);
+        }
+    }
+    
+    public void setSpreadsheetId(long spreadsheetId) {
+        setParameter(SPREADSHEET_ID, spreadsheetId);
+    }
+    
+    public Long getSpreadsheetId() {
+        return (Long)getParameter(SPREADSHEET_ID);
     }
 }
