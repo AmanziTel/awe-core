@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.core.database.nodes;
 
+import java.util.ArrayList;
+
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
@@ -166,6 +168,10 @@ public abstract class AbstractHeaderNode extends CellNode {
         else {
             return null;
         }
+    }
+    
+    public ArrayList<CellNode> getAllCellsFromThis(boolean returnFirst) {
+        return super.getAllCellsFromThis(getRelationshipType(), returnFirst);
     }
     
     /**
