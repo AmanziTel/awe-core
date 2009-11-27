@@ -37,6 +37,7 @@ import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.ChartItemNode;
 import org.amanzi.neo.core.database.nodes.ChartNode;
+import org.amanzi.neo.core.database.nodes.ColumnHeaderNode;
 import org.amanzi.neo.core.database.nodes.PieChartItemNode;
 import org.amanzi.neo.core.database.nodes.PieChartNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
@@ -303,6 +304,7 @@ public class SpreadsheetService {
 			
 			cell.setCellColumn(column + 1);
 			cell.setCellRow(row + 1);
+			cell.setSpreadsheetId(spreadsheet.getUnderlyingNode().getId());
 			
 			spreadsheet.addCell(cell);
 
@@ -523,7 +525,7 @@ public class SpreadsheetService {
 	 *            CellNode
 	 * @return Cell
 	 */
-    private Cell convertNodeToCell(CellNode node, Integer rowIndex, Integer columnIndex) {
+    public Cell convertNodeToCell(CellNode node, Integer rowIndex, Integer columnIndex) {
 	    if (rowIndex == null) {
 			rowIndex = node.getCellRow();
 		}
@@ -544,7 +546,7 @@ public class SpreadsheetService {
 		    Integer bgColorR = sfNode.getBackgroundColorR();
 
 		    if ((bgColorB != null) && (bgColorG != null) && (bgColorR != null)) {
-		        Color color = new Color(bgColorR, bgColorR, bgColorB);
+		        Color color = new Color(bgColorR, bgColorG, bgColorB);
 		        cellFormat.setBackgroundColor(color);
 		    }
 
@@ -1067,6 +1069,15 @@ public class SpreadsheetService {
 	 * @param index row index (begin index: 0)
 	 */
 	public void insertColumn(SpreadsheetNode spreadsheet, final int index) {
+	    ColumnHeaderNode column = spreadsheet.getColumnHeader(index);
+	    
+	    for (CellNode cellInColumn : column.getAllCellsFromThis(true)) {
+	        for (CellNode cellInRow : cellInColumn.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_ROW, true)) {
+	            cellInRow.setCellColumn(cellInRow.getCellColumn() + 1);
+	            //TODO: Lagutko: reindex	            
+	        }
+	    }
+	    
 //		Transaction transaction = neoService.beginTx();
 //		try {
 //			Iterator<Node> columnIterator = spreadsheet.getUnderlyingNode().traverse(Traverser.Order.BREADTH_FIRST,
