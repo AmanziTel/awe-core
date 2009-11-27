@@ -25,10 +25,8 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
-import org.amanzi.splash.database.services.ReportService;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.job.InitializeSplashTask;
 import org.amanzi.splash.job.InterpretTask;
@@ -125,7 +123,7 @@ public class SplashTableModel extends DefaultTableModel {
 		this.rowCount = Short.MAX_VALUE;
 		this.columnCount = Short.MAX_VALUE;
 
-		initializeJRubyInterpreter();
+		initialize(spreadsheet.getName(), root);
 	}
 
 	/**
@@ -660,5 +658,9 @@ public class SplashTableModel extends DefaultTableModel {
 	 */
 	public Ruby getRubyRuntime() {
 		return runtime;
+	}
+	
+	public void teardown() {
+	    runtime.tearDown();
 	}
 }
