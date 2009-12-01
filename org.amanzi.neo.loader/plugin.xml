@@ -21,7 +21,12 @@
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadNeighbour"
              name="Load Neighbour Data">
-       </command>       
+       </command>
+      <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadTransmission"
+             name="Load Transmission Data">
+       </command>        
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
@@ -36,6 +41,10 @@
         <handler
              class="org.amanzi.neo.loader.handlers.LoadNeighbourHandler"
              commandId="org.amanzi.neo.loader.commands.LoadNeighbour">
+       </handler>
+       <handler
+             class="org.amanzi.neo.loader.handlers.LoadTransmissionHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadTransmission">
        </handler>
     </extension>
    
@@ -63,6 +72,12 @@
             		id="org.amanzi.neo.loader.LoadNeighbour"
                    	tooltip="Load Neighbour Data">
              </command>
+             <command 
+             		commandId="org.amanzi.neo.loader.commands.LoadTransmission"
+            		icon="icons/16/transmission.png"
+            		id="org.amanzi.neo.loader.LoadTransmission"
+                   	tooltip="Load Transmission Data">
+             </command>
           </toolbar>
        </menuContribution>
     </extension>
@@ -78,6 +93,16 @@
              Import a network file from the local file system into the project
           </description>
        </wizard>
+       <wizard  
+             category="org.amanzi.load"
+             class="org.amanzi.neo.wizards.NetworkSiteImportWizard"
+             icon="icons/16/network.png"
+             id="org.amanzi.neo.wizards.NetworkSiteImportWizard"
+             name="Import Network Site data">
+          <description>
+ 				Import a data file from the local file system into the project
+          </description>
+       </wizard>  
         <wizard
              category="org.amanzi.load"
              class="org.amanzi.neo.wizards.TemsImportWizard"
@@ -94,6 +119,16 @@
              icon="icons/16/neighbour.png"
              id="org.amanzi.neo.wizards.NeighbourImportWizard"
              name="Import Neighbour data">
+          <description>
+ 				Import a data file from the local file system into the project
+          </description>
+       </wizard>               
+       <wizard  
+             category="org.amanzi.load"
+             class="org.amanzi.neo.wizards.TransmissionImportWizard"
+             icon="icons/16/transmission.png"
+             id="org.amanzi.neo.wizards.TransmissionImportWizard"
+             name="Import Transmission data">
           <description>
  				Import a data file from the local file system into the project
           </description>
@@ -143,6 +178,12 @@
             icon="icons/16/neighbour.png"
             id="org.amanzi.neo.loader.newNeighbour"
             label="New neighbours">
+      </action>
+      <action
+            class="org.amanzi.neo.loader.actions.NewTransmissionAction"
+            icon="icons/16/transmission.png"
+            id="org.amanzi.neo.loader.newTransmission"
+            label="New transmission">
       </action>
    </extension>
 
