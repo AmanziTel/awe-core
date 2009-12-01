@@ -72,7 +72,7 @@ public class CSVImporter extends AbstractImporter {
      * Number of read bytes
      */
     private long bytesRead = 0;
-
+    
     /**
      * Constructor
      * 
@@ -90,7 +90,7 @@ public class CSVImporter extends AbstractImporter {
         monitor.beginTask("Importing CSV data into Splash", 100);
         
         //create a Spreadsheet        
-        createSpreadsheet();
+        createSpreadsheet(null);
         
         Transaction tx = NeoUtils.beginTransaction();
         try {
@@ -113,7 +113,6 @@ public class CSVImporter extends AbstractImporter {
             long totalBytes = fileSize;            
             int prevPerc = 0;
             CellFormat defaultFormat = new CellFormat();
-            boolean finishUp = false;
             while (line != null  && line.lastIndexOf(sep) > 0){
                 NeoSplashUtil.logn("loading line #" + row);
 
