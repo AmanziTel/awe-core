@@ -23,12 +23,13 @@ import org.amanzi.splash.report.model.Chart;
 import org.amanzi.splash.report.model.Report;
 import org.amanzi.splash.report.model.ReportImage;
 import org.amanzi.splash.report.model.ReportModel;
+import org.amanzi.splash.report.model.ReportTable;
 import org.amanzi.splash.report.model.ReportText;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -43,6 +44,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -50,6 +54,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.AbstractDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 /**
@@ -63,7 +68,7 @@ public class ReportGUIEditor extends EditorPart {
     private boolean isDirty;
     private Composite frame;
     private Composite parent;
-    private  Text reportTitle; 
+    private Text reportTitle;
     private List<Composite> parts = new ArrayList<Composite>(0);
     private ReportModel reportModel;
     private boolean isReportDataModified;
@@ -117,38 +122,68 @@ public class ReportGUIEditor extends EditorPart {
     public void repaint() {
         // clear previous content
         Report report = reportModel.getReport();
-        if (report!=null){
-        List<IReportPart> reportParts = report.getParts();
-        for (Control control : frame.getChildren()) {
-            control.dispose();
-        }
-        parts.clear();
-        // create all composites
-        parts = new ArrayList<Composite>(reportParts.size());
-        reportTitle=new Text(frame,SWT.SINGLE);
-        reportTitle.setFont(new Font(frame.getDisplay(),"Arial",16,SWT.BOLD));
-        reportTitle.setText(report.getName());
-        
-        for (int i = 0; i < reportParts.size(); i++) {
-            IReportPart part = reportParts.get(i);
-            if (part instanceof ReportText) {
-                addTextPart((ReportText)part, false);
-            } else if (part instanceof Chart) {
-                addChartPart((Chart)part);
-            } else if (part instanceof ReportImage) {
-                addImagePart((ReportImage)part);
-            } else {
-                Composite currComposite = new Composite(frame, SWT.NONE);
-                FillLayout mainLayout = new FillLayout(SWT.VERTICAL);
-                currComposite.setLayout(mainLayout);
-                Label label = new Label(currComposite, SWT.LEFT);
-                label.setText("Composite for " + part.getClass().getName() + " is not implemented yet");
-                currComposite.layout();
-                parts.add(currComposite);
+        if (report != null) {
+            List<IReportPart> reportParts = report.getParts();
+            for (Control control : frame.getChildren()) {
+                control.dispose();
             }
+            parts.clear();
+            // create all composites
+            parts = new ArrayList<Composite>(reportParts.size());
+            reportTitle = new Text(frame, SWT.SINGLE);
+            reportTitle.setFont(new Font(frame.getDisplay(), "Arial", 16, SWT.BOLD));
+            reportTitle.setText(report.getName());
+
+            for (int i = 0; i < reportParts.size(); i++) {
+                IReportPart part = reportParts.get(i);
+                if (part instanceof ReportText) {
+                    addTextPart((ReportText)part);
+                } else if (part instanceof Chart) {
+                    addChartPart((Chart)part);
+                } else if (part instanceof ReportImage) {
+                    addImagePart((ReportImage)part);
+                } else if (part instanceof ReportTable) {
+                    addTablePart((ReportTable)part);
+                } else {
+                    Composite currComposite = new Composite(frame, SWT.NONE);
+                    FillLayout mainLayout = new FillLayout(SWT.VERTICAL);
+                    currComposite.setLayout(mainLayout);
+                    Label label = new Label(currComposite, SWT.LEFT);
+                    label.setText("Composite for " + part.getClass().getName() + " is not implemented yet");
+                    currComposite.layout();
+                    parts.add(currComposite);
+                }
+            }
+            forceRepaint();
         }
-        forceRepaint();
+    }
+
+    private void addTablePart(ReportTable reportTable) {
+        final Composite currComposite = createComposite(reportTable);
+        // title
+        Text title = new Text(currComposite, SWT.SINGLE);
+        title.setText(reportTable.getTitle());
+
+        Table table = new Table(currComposite, SWT.BORDER | SWT.MULTI);
+        final String[] headers = reportTable.getHeaders();
+        TableColumn[] columns = new TableColumn[headers.length];
+        for (int i = 0; i < headers.length; i++) {
+            TableColumn tc = new TableColumn(table, SWT.LEFT);
+            tc.setText(headers[i]);
+            columns[i] = tc;
         }
+        for (String[] row : reportTable.getTableItems()) {
+            final TableItem item = new TableItem(table, SWT.NONE);
+            item.setText(row);
+        }
+        //
+        for (TableColumn column : columns) {
+            column.pack();
+        }
+        table.setHeaderVisible(true);
+        table.setLinesVisible(true);
+        table.setRedraw(true);
+
     }
 
     /**
@@ -160,7 +195,15 @@ public class ReportGUIEditor extends EditorPart {
         final Composite currComposite = createContainer(chart);
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
         currComposite.setLayoutData(data);
-        DefaultCategoryDataset chartDataset = reportModel.getChartDataset(chart);
+        DefaultCategoryDataset chartDataset = null;
+        final AbstractDataset dataset = chart.getDataset();
+        if (dataset != null) {
+            if (dataset instanceof DefaultCategoryDataset) {
+                chartDataset = (DefaultCategoryDataset)dataset;
+            }
+        } else {
+            chartDataset = reportModel.getChartDataset(chart);
+        }
         JFreeChart jFreeChart = Charts.createBarChart(chartDataset);
         ChartComposite chartComposite = new ChartComposite(currComposite, SWT.NONE, jFreeChart, true);
 
@@ -174,7 +217,6 @@ public class ReportGUIEditor extends EditorPart {
         btnEdit.setEnabled(false);
         currComposite.layout();
         parts.add(currComposite);
-        // parent.layout(true);
     }
 
     /**
@@ -183,7 +225,7 @@ public class ReportGUIEditor extends EditorPart {
     public void addNewText() {
         ReportText reportText = new ReportText("Type new text here");
         reportModel.getReport().addPart(reportText);
-        addTextPart(reportText, true);
+        addTextPart(reportText);
         isReportDataModified = true;
         forceRepaint();
 
@@ -193,43 +235,45 @@ public class ReportGUIEditor extends EditorPart {
      * Adds text
      * 
      * @param part text to be added
-     * @param isEditable true if text is editable, false otherwise
      */
-    private void addTextPart(ReportText part, boolean isEditable) {
-        final Composite currComposite = createContainer(part);
-        final Text text = new Text(currComposite, SWT.MULTI);
-        text.setEditable(isEditable);
+    private void addTextPart(ReportText part) {
+        final Composite currComposite = createComposite(part);
+        final Text text = new Text(currComposite, SWT.MULTI | SWT.WRAP);
         text.setText(part.getText());
         text.setBackground(new Color(text.getDisplay(), new RGB(255, 255, 255)));
+        text.addModifyListener(new ModifyListener() {
 
+            @Override
+            public void modifyText(ModifyEvent e) {
+                isReportDataModified = true;
+                Object data = currComposite.getData();
+                if (data instanceof ReportText) {
+                    ReportText reportText = ((ReportText)data);
+                    reportText.setText(text.getText());
+                }
+                forceRepaint();
+            }
+
+        });
+        // TODO text is scrolled but should be resized after "Enter" is pressed
+        // text.addKeyListener(new KeyListener(){
+        //
+        // @Override
+        // public void keyPressed(KeyEvent e) {
+        // }
+        //
+        // @Override
+        // public void keyReleased(KeyEvent e) {
+        // if (e.character==13){
+        // forceRepaint();
+        // }
+        // }
+        //            
+        // });
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
         data.widthHint = 600;
         text.setLayoutData(data);
 
-        final Button btnEdit = new Button(currComposite, SWT.PUSH);
-        btnEdit.setText(isEditable ? SAVE : EDIT);
-        btnEdit.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Object data = currComposite.getData();
-                boolean isEditable = text.getEditable();
-                if (isEditable) {
-                    btnEdit.setText(EDIT);
-                    if (data instanceof ReportText) {
-                        ReportText reportText = ((ReportText)data);
-                        if (!reportText.getText().equals(text.getText())) {
-                            isReportDataModified = true;
-                            reportText.setText(text.getText());
-                            forceRepaint();
-                        }
-                    }
-                } else
-                    btnEdit.setText(SAVE);
-                text.setEditable(!isEditable);
-            }
-
-        });
         parts.add(currComposite);
     }
 
@@ -294,6 +338,21 @@ public class ReportGUIEditor extends EditorPart {
     private Composite createContainer(IReportPart part) {
         Composite currComposite = new Composite(frame, SWT.NONE);
         GridLayout mainLayout = new GridLayout(2, false);
+        currComposite.setLayout(mainLayout);
+        currComposite.setBackground(new Color(frame.getDisplay(), new RGB(255, 255, 255)));
+        currComposite.setData(part);
+        return currComposite;
+    }
+
+    /**
+     * Creates a composite contains this report part
+     * 
+     * @param part report part
+     * @return composite created
+     */
+    private Composite createComposite(IReportPart part) {
+        Composite currComposite = new Composite(frame, SWT.NONE);
+        GridLayout mainLayout = new GridLayout();
         currComposite.setLayout(mainLayout);
         currComposite.setBackground(new Color(frame.getDisplay(), new RGB(255, 255, 255)));
         currComposite.setData(part);

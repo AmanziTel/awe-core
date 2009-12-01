@@ -19,6 +19,7 @@ import java.util.List;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.splash.report.IReportPart;
+import org.jfree.data.general.AbstractDataset;
 
 /**
  * TODO Purpose of
@@ -37,6 +38,7 @@ public class Chart implements IReportPart {
     private String[] valuesProperties;
     private Long[] nodeIds;
     private List<String> errors = new ArrayList<String>();
+    private AbstractDataset dataset;
 
     /**
      * @param name
@@ -146,8 +148,6 @@ public class Chart implements IReportPart {
         this.valuesProperties = valuesProperties;
     }
 
-   
-
     /**
      * @return Returns the nodeIds.
      */
@@ -172,9 +172,11 @@ public class Chart implements IReportPart {
     public boolean isSheetBased() {
         return sheet != null && categories != null && values != null;
     }
+
     public boolean isNodeRangeBased() {
         return nodeIds != null && categoriesProperty != null && valuesProperties != null;
     }
+
     /**
      * @param sheet The sheet to set.
      */
@@ -192,6 +194,20 @@ public class Chart implements IReportPart {
 
     public void clearErrors() {
         errors.clear();
+    }
+
+    /**
+     * @return Returns the dataset.
+     */
+    public AbstractDataset getDataset() {
+        return dataset;
+    }
+
+    /**
+     * @param dataset The dataset to set.
+     */
+    public void setDataset(AbstractDataset dataset) {
+        this.dataset = dataset;
     }
 
     @Override

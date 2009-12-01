@@ -23,24 +23,26 @@ package org.amanzi.awe.views.reuse;
 public enum Select {
 
     /** Select node with max value */
-    MAX("max"),
+    MAX("max","maximum value"),
     /** Select node with min value */
-    MIN("min"),
+    MIN("min","minimum value"),
     /** Select AVERAGE value of nodes */
-    AVERAGE("average"),
+    AVERAGE("average","average value"),
     /** Select EXISTS algorithm */
-    EXISTS("exists"),
+    EXISTS("exists","existance"),
     /** Select FIRST value of nodes */
-    FIRST("first");
+    FIRST("first","first value");
     private final String value;
+    private final String description;
 
     /**
      * Constructor
      * 
      * @param value - string value
      */
-    private Select(String value) {
+    private Select(String value,String description) {
         this.value = value;
+        this.description = description;
     }
 
     /**
@@ -73,6 +75,14 @@ public enum Select {
             result[i] = enums[i].value;
         }
         return result;
+    }
+
+    /**
+     * Gets the description
+     * @return Returns the description.
+     */
+    public String getDescription() {
+        return description;
     }
 
     @Override

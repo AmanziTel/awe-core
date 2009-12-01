@@ -57,6 +57,7 @@ public class ReportModel {
      */
     private static final String REPORT_SCRIPT = "ruby/report.rb";
     private static final String REPORT_MODEL_RUBY_NAME = "report_model";
+    private static final String RUBY_PROJECT_NODE_ID_NAME = "RUBY_PROJECT_NODE_ID";
     /*
      * Ruby Runtime
      */
@@ -116,6 +117,7 @@ public class ReportModel {
 
         HashMap<String, Object> globals = new HashMap<String, Object>();
         globals.put(REPORT_MODEL_RUBY_NAME, this);
+        globals.put(RUBY_PROJECT_NODE_ID_NAME, rootNode.getUnderlyingNode().getId());
         // globals.put(JRUBY_PATH_RUBY_NAME, ScriptUtils.getJRubyHome());
         makeRubyGlobals(runtime, globals);
 

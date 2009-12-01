@@ -22,24 +22,26 @@ package org.amanzi.awe.views.reuse;
  */
 public enum Distribute {
     /** auto column groups*/
-    AUTO("auto"), 
+    AUTO("auto","automatically"), 
     /** column groups by integer value*/
-    INTEGERS("integers"), 
+    INTEGERS("integers","as integers"), 
     /** group by 10 columns */
-    I10("10"),
+    I10("10","in 10 categories"),
     /** group by 20 columns */
-    I20("20"),
+    I20("20","in 20 categories"),
     /** group by 50 columns */
-    I50("50");
+    I50("50","in 50 categories");
     private final String value;
+    private final String description;
 
     /**
      * Constructor
      * 
      * @param value - string value
      */
-    private Distribute(String value) {
-        this.value = value;
+    private Distribute(String value,String description) {
+        this.value = value; 
+        this.description = description; 
     }
 
     /**
@@ -72,6 +74,14 @@ public enum Distribute {
             result[i] = enums[i].value;
         }
         return result;
+    }
+
+    /**
+     * Gets the description
+     * @return Returns the description.
+     */
+    public String getDescription() {
+        return description;
     }
 
     @Override

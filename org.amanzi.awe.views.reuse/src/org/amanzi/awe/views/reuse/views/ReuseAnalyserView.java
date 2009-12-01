@@ -14,12 +14,16 @@ package org.amanzi.awe.views.reuse.views;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -32,6 +36,7 @@ import java.util.TreeSet;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 import net.refractions.udig.ui.PlatformGIS;
@@ -49,9 +54,19 @@ import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.splash.editors.ReportEditor;
+import org.eclipse.core.internal.resources.File;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -60,6 +75,7 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.RGB;
@@ -73,6 +89,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.geotools.brewer.color.BrewerPalette;
 import org.jfree.chart.ChartFactory;
@@ -138,6 +159,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String VALUES_DOMAIN = "Value";
     private static final String ROW_KEY = "values";
     private static final String COLOR_LABEL = "color properties";
+    private static final String REPORT_LABEL="Report";
 
     /** Maximum bars in chart */
     private static final int MAXIMUM_BARS = 1500;
@@ -180,6 +202,7 @@ public class ReuseAnalyserView extends ViewPart {
     private Label lBlend;
     private List<String> allFields;
     private List<String> numericFields;
+    private Button bReport;
     private static final Color DEFAULT_COLOR = new Color(0.75f, 0.7f, 0.4f);
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
@@ -255,6 +278,15 @@ public class ReuseAnalyserView extends ViewPart {
         cPalette.select(0);
         lPalette.setVisible(false);
         cPalette.setVisible(false);
+        bReport=new Button(parent,SWT.PUSH);
+        bReport.setText(REPORT_LABEL);
+        bReport.setVisible(false);
+        bReport.addSelectionListener(new SelectionAdapter(){
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                generateReport();
+            }});
         SelectionListener listener = new SelectionListener() {
 
             @Override
@@ -718,6 +750,7 @@ public class ReuseAnalyserView extends ViewPart {
         chartFrame.setVisible(isVisible);
         lLogarithmic.setVisible(isVisible);
         bLogarithmic.setVisible(isVisible);
+        bReport.setVisible(isVisible);
         if (!isColorThema()) {
             setVisibleForNotColoredTheme(isVisible);
         } else {
@@ -2177,6 +2210,11 @@ public class ReuseAnalyserView extends ViewPart {
         dChart.bottom = new FormAttachment(tSelectedInformation, -2);
         dChart.right = new FormAttachment(100, -5);
         chartFrame.setLayoutData(dChart);
+        
+        FormData dReport = new FormData();
+        dReport.left = new FormAttachment(spinAdj, 5);
+        dReport.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
+        bReport.setLayoutData(dReport);
     }
 
     @Override
@@ -2553,5 +2591,53 @@ public class ReuseAnalyserView extends ViewPart {
         float complement = 1.0F - factor;
         return new RGB((int)(complement * (float)bg.red + factor * (float)fg.red), (int)(complement * (float)bg.green + factor
                 * (float)fg.green), (int)(complement * (float)bg.blue + factor * (float)fg.blue));
+    }
+    /**
+     * Generates report based on selected values
+     */
+    private void generateReport() {
+        IFile file;
+        int i = 0;
+        Node node = selectedGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+        Node projectNode = node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+//        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject((String)projectNode.getProperty("name"));
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];
+//        final String name = ProjectPlugin.getPlugin().getProjectRegistry().getCurrentProject().getName();
+//        final IWorkspace workspace = ResourcesPlugin.getWorkspace().;
+//        IResource resource = workspace.getRoot().findMember(new Path(name));
+//        final IProject project = resource.getProject();
+
+        while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
+            i++;
+        }
+        final String select = Select.findSelectByValue(cSelect.getText()).getDescription();
+        final String distribute = Distribute.findEnumByValue(cDistribute.getText()).getDescription();
+        StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(" ")
+                .append(propertyCombo.getText()).append("' do\n  author '").append(System.getProperty("user.name")).append(
+                        "'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append(
+                        "'\n  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(
+                        propertyCombo.getText()).append(", with values distributed ").append(distribute).append(
+                        " and calculated using ").append(select)
+                .append("'\n  chart 'Distribution analysis' do\n self.statistics='").append(gisCombo.getText()).append(
+                        "'\n  self.property='").append(propertyCombo.getText()).append("'\n  self.distribute='").append(
+                        cDistribute.getText()).append("'\n  self.select='").append(cSelect.getText()).append("'\n  end\nend");
+        System.out.println("Repost script:\n" + sb.toString());
+        InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
+        try {
+            file.create(is, true, null);
+            is.close();
+        } catch (CoreException e) {
+            // TODO Handle CoreException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        try {
+            getViewSite().getPage().openEditor(new FileEditorInput(file), ReportEditor.class.getName());
+        } catch (PartInitException e) {
+            // TODO Handle PartInitException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 }
