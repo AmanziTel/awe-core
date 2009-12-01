@@ -36,5 +36,7 @@ public enum SplashRelationshipTypes implements RelationshipType {
 	REPORT, 
 	REPORT_TEXT,
 	NEXT_CELL_IN_ROW,
-	NEXT_CELL_IN_COLUMN;
+	NEXT_CELL_IN_COLUMN,
+	CHILD_SPREADSHEET,
+	COMPARE_RESULTS;
 }
