@@ -99,6 +99,7 @@ public class INeoConstants {
     public static final String PROPERTY_OLD_NAME = "old_name";
     /** INeoConstants NEIGHBOUR_TYPE_NAME field */
     public static final String NEIGHBOUR_TYPE_NAME = "neighbours";
+    public static final String TRANSMISSION_TYPE_NAME = "transmission";
     public static final String NEIGHBOUR_NAME = "neighbours_list";
     /** INeoConstants LIST_NUMERIC_PROPERTIES field */
     public static final String LIST_NUMERIC_PROPERTIES = "list_numeric_field";
