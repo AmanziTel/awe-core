@@ -199,7 +199,7 @@ public class Cell implements Serializable
 	    if (formatChanged) {
 	        Object value = getValue();
 	        //Lagutko, 6.10.2009, if Value is Date than convert is to String using Format
-	        if ((prevDataFormat != null) && !isEmpty(value)) {
+	        if ((prevDataFormat != null) && !isEmpty(value) && (!(value instanceof String))) {
 	            setValue(previousFormat.getFormat().format(value));
 	        }
 	        else {
