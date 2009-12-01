@@ -114,7 +114,11 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		button1.setText("New Ruby Project...");
 		button1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				new OpenNewRubyProjectWizardAction().run();
+				OpenNewRubyProjectWizardAction rubyAction = new OpenNewRubyProjectWizardAction();
+                rubyAction.run();
+                if (rubyAction.getCreatedElement()!=null){
+                    containerText.setText(rubyAction.getCreatedElement().getElementName());
+                }
 			}
 		});
 		
