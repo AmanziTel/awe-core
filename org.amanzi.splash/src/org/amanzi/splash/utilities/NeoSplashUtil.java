@@ -305,9 +305,20 @@ public class NeoSplashUtil {
         IEditorPart result = null;
         try {
             IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
-            if (page != null) {             
-                IEditorInput fi = new SplashEditorInput(node);              
-                result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
+            if (!node.hasChildSpreadsheets()) {
+                if (page != null) {             
+                    IEditorInput fi = new SplashEditorInput(node);              
+                    result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
+                }
+            }
+            else {
+                //Lagutko, 1.12.2009, if try to open parent spreadsheet, than open all child spreadsheets
+                for (SpreadsheetNode childSheet : node.getAllChildSpreadsheets()) {
+                    if (page != null) {             
+                        IEditorInput fi = new SplashEditorInput(childSheet);              
+                        result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
+                    }
+                }
             }
 
         } catch (PartInitException e) {

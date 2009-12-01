@@ -72,6 +72,11 @@ public class SpreadsheetCreator {
      */
     protected SpreadsheetNode spreadsheetNode;
     
+    /*
+     * Parent node for child Spreadsheets
+     */
+    protected SpreadsheetNode parentNode;
+    
     /**
      * Constructor 
      * 
@@ -112,7 +117,7 @@ public class SpreadsheetCreator {
     /**
      *  Creates a Spreadsheet 
      */
-    protected void createSpreadsheet() {
+    protected void createSpreadsheet(SpreadsheetNode parent) {
         if (spreadsheetNode != null) {
             return;
         }
@@ -124,21 +129,40 @@ public class SpreadsheetCreator {
         //validate name of Spreadsheet. If for example spreadsheet with name 'sheet' already exists
         //than it will try name 'sheet1', 'sheet2' etc.
         int i = 1;        
-        String newSpreadsheetName = spreadsheetName;
+        String oldSpreadsheetName = new String(spreadsheetName);
+        String newSpreadsheetName = new String(spreadsheetName); 
         do {
-            newSpreadsheetName = spreadsheetName.concat(Integer.toString(i++));
-            spreadsheetNode = projectService.findSpreadsheet(rubyProjectNode, newSpreadsheetName);            
+            spreadsheetName = newSpreadsheetName;
+            spreadsheetNode = projectService.findSpreadsheet(rubyProjectNode, spreadsheetName);
+            newSpreadsheetName = oldSpreadsheetName.concat(Integer.toString(i++));
         } while (spreadsheetNode != null);
         
         //create a new Spreadsheet
-        spreadsheetNode = projectService.findOrCreateSpreadSheet(rubyProjectNode, newSpreadsheetName);
+        spreadsheetNode = projectService.findOrCreateSpreadSheet(rubyProjectNode, spreadsheetName);
         
-        //also create a Spreadsheet in AWE Project Structure
-        try {
-            AWEProjectManager.createNeoSpreadsheet(rubyProjectResource, spreadsheetName, NeoSplashUtil.getSpeadsheetURL(spreadsheetName));
+        if (parent != null) {
+            //if parent node is not null than we should add new spreadsheet to this parent spreadsheet
+            parent.addChildSpreadsheet(spreadsheetNode);
+            parent.setHasChildSpreadsheets(true);
+            
+            //also create a Spreadsheet in AWE Project Structure
+            try {
+                //create child spreadsheet
+                AWEProjectManager.createChildNeoSpreadsheet(rubyProjectResource, parent.getName(), spreadsheetName, NeoSplashUtil.getSpeadsheetURL(spreadsheetName));
+            }
+            catch (MalformedURLException e) {
+                //can't happen
+            }
         }
-        catch (MalformedURLException e) {
-            //can't happen
+        else {
+            //also create a Spreadsheet in AWE Project Structure
+            try {
+                //if parent node is null than it's a simple spreadsheet
+                AWEProjectManager.createNeoSpreadsheet(rubyProjectResource, spreadsheetName, NeoSplashUtil.getSpeadsheetURL(spreadsheetName));
+            }
+            catch (MalformedURLException e) {
+                //can't happen
+            }
         }
     }
     
@@ -196,7 +220,7 @@ public class SpreadsheetCreator {
      * @return row that contain imported cell or null
      */
     private CellNode importCell(Cell cell, int row, int column) {
-        createSpreadsheet();
+        createSpreadsheet(parentNode);
         
         //create a new cell
         CellNode cellNode = new CellNode(neoService.createNode());
