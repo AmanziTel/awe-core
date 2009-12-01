@@ -151,6 +151,10 @@
         defaultValueLiteral=""/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="spreadsheetType" eType="#//SpreadsheetType"
         defaultValueLiteral=""/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="childSpreadsheets" upperBound="-1"
+        eType="#//Spreadsheet" containment="true" resolveProxies="false" eOpposite="#//Spreadsheet/parentSpreadsheet"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parentSpreadsheet" eType="#//Spreadsheet"
+        eOpposite="#//Spreadsheet/childSpreadsheets"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ProjectRegistry">
     <eOperations name="getProject" eType="#//Project">

@@ -2846,14 +2846,32 @@ public interface ProjectPackage extends EPackage {
     int SPREADSHEET__SPREADSHEET_TYPE = ISPREADSHEET_FEATURE_COUNT + 4;
 
 
-	/**
-	 * The number of structural features of the '<em>Ruby Class</em>' class.
+    /**
+	 * The feature id for the '<em><b>Child Spreadsheets</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int SPREADSHEET_FEATURE_COUNT = ISPREADSHEET_FEATURE_COUNT + 5;
+	int SPREADSHEET__CHILD_SPREADSHEETS = ISPREADSHEET_FEATURE_COUNT + 5;
+
+	/**
+	 * The feature id for the '<em><b>Parent Spreadsheet</b></em>' container reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SPREADSHEET__PARENT_SPREADSHEET = ISPREADSHEET_FEATURE_COUNT + 6;
+
+	/**
+	 * The number of structural features of the '<em>Spreadsheet</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SPREADSHEET_FEATURE_COUNT = ISPREADSHEET_FEATURE_COUNT + 7;
 
 
 	/**
@@ -2981,6 +2999,28 @@ public interface ProjectPackage extends EPackage {
      * @generated
      */
     EAttribute getSpreadsheet_SpreadsheetType();
+    
+    /**
+	 * Returns the meta object for the containment reference list '{@link net.refractions.udig.project.internal.Spreadsheet#getChildSpreadsheets <em>Child Spreadsheets</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Child Spreadsheets</em>'.
+	 * @see net.refractions.udig.project.internal.Spreadsheet#getChildSpreadsheets()
+	 * @see #getSpreadsheet()
+	 * @generated
+	 */
+	EReference getSpreadsheet_ChildSpreadsheets();
+
+	/**
+	 * Returns the meta object for the container reference '{@link net.refractions.udig.project.internal.Spreadsheet#getParentSpreadsheet <em>Parent Spreadsheet</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the container reference '<em>Parent Spreadsheet</em>'.
+	 * @see net.refractions.udig.project.internal.Spreadsheet#getParentSpreadsheet()
+	 * @see #getSpreadsheet()
+	 * @generated
+	 */
+	EReference getSpreadsheet_ParentSpreadsheet();
     
     /**
      * Returns the meta object for data type '{@link net.refractions.udig.project.internal.SpreadsheetType <em>Spreadsheet Type</em>}'.

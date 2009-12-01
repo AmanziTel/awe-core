@@ -1536,6 +1536,24 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
     public EAttribute getSpreadsheet_SpreadsheetType() {
         return (EAttribute) spreadsheetEClass.getEStructuralFeatures().get(1);
     }
+    
+    /**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getSpreadsheet_ChildSpreadsheets() {
+		return (EReference) spreadsheetEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getSpreadsheet_ParentSpreadsheet() {
+		return (EReference) spreadsheetEClass.getEStructuralFeatures().get(3);
+	}
 	
 	/**
      * <!-- begin-user-doc -->
@@ -1726,6 +1744,8 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 		spreadsheetEClass = createEClass(SPREADSHEET);
 		createEAttribute(spreadsheetEClass, SPREADSHEET__SPREADSHEET_PATH);
 		createEAttribute(spreadsheetEClass, SPREADSHEET__SPREADSHEET_TYPE);
+		createEReference(spreadsheetEClass, SPREADSHEET__CHILD_SPREADSHEETS);
+		createEReference(spreadsheetEClass, SPREADSHEET__PARENT_SPREADSHEET);
 
         projectEClass = createEClass(PROJECT);
         createEAttribute(projectEClass, PROJECT__NAME);
@@ -2141,7 +2161,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 				getRubyProjectElement_RubyProjectInternal(),
 				this.getRubyProject(),
 				this.getRubyProject_RubyElementsInternal(),
-				"rubyProjectInternal", null, 0, 1, RubyProjectElement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$
+				"rubyProjectInternal", null, 0, 1, RubyProjectElement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$
 
 		initEClass(rubyFileEClass, RubyFile.class,
 				"RubyFile", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
@@ -2156,6 +2176,16 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 		        getSpreadsheet_SpreadsheetType(),
 		        this.getSpreadsheetType(),
 		        "spreadsheetType", "", 0, 1, Spreadsheet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$ //$NON-NLS-2$
+		initEReference(
+				getSpreadsheet_ChildSpreadsheets(),
+				this.getSpreadsheet(),
+				this.getSpreadsheet_ParentSpreadsheet(),
+				"childSpreadsheets", null, 0, -1, Spreadsheet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$
+		initEReference(
+				getSpreadsheet_ParentSpreadsheet(),
+				this.getSpreadsheet(),
+				this.getSpreadsheet_ChildSpreadsheets(),
+				"parentSpreadsheet", null, 0, 1, Spreadsheet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$
 		
 		initEClass(projectEClass, Project.class,
                 "Project", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$
