@@ -2161,7 +2161,7 @@ public class ProjectPackageImpl extends EPackageImpl implements ProjectPackage {
 				getRubyProjectElement_RubyProjectInternal(),
 				this.getRubyProject(),
 				this.getRubyProject_RubyElementsInternal(),
-				"rubyProjectInternal", null, 0, 1, RubyProjectElement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$
+				"rubyProjectInternal", null, 0, 1, RubyProjectElement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED); //$NON-NLS-1$
 
 		initEClass(rubyFileEClass, RubyFile.class,
 				"RubyFile", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS); //$NON-NLS-1$

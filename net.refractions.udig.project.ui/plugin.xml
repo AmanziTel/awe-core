@@ -147,6 +147,17 @@
                label="%rename.label"
                menubarPath="additions"/>
       </objectContribution>
+      <objectContribution 
+      		adaptable="true"
+      		id="net.refractions.udig.project.ui.projectElementContribution"
+      		objectClass="net.refractions.udig.project.ISpreadsheet">
+      	 <action
+      	 	   class="net.refractions.udig.project.ui.internal.actions.CompareSpreadsheets"
+      	 	   enablesFor="2"
+      	 	   id="net.refractions.udig.project.ui.compare"
+      	 	   label="%compare.label"
+      	 	   menubarPath="additions"/>
+      </objectContribution>
    </extension>
    <extension
          point="org.eclipse.ui.views">

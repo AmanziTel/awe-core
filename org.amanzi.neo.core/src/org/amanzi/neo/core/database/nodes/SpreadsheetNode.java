@@ -457,6 +457,12 @@ public class SpreadsheetNode extends AbstractNode {
 	    return result;
 	}
 	
+	/**
+	 * Returns Child Spreadsheet by it's name
+	 *
+	 * @param spreadsheetName
+	 * @return
+	 */
 	public SpreadsheetNode getChildSpreadsheet(String spreadsheetName) {
 	    ChildSpreadsheetsIterator spreadsheetsIterator = new ChildSpreadsheetsIterator(spreadsheetName);
 	    
@@ -468,14 +474,32 @@ public class SpreadsheetNode extends AbstractNode {
 	    }
 	}
 	
+	/**
+	 * Iterator for child Spreadsheets
+	 * 
+	 * @author Lagutko_N
+	 * @since 1.0.0
+	 */
 	private class ChildSpreadsheetsIterator extends AbstractIterator<SpreadsheetNode> {
 	    
+	    /*
+	     * Default StopEvaluator
+	     */
 	    private StopEvaluator allSpreadsheets = StopEvaluator.END_OF_GRAPH;
 	    
+	    /*
+	     * Is current node returnable?
+	     */
 	    private boolean isReturnableNode = false;
 	    
+	    /*
+	     * Name of Spreadsheet to search
+	     */
 	    private String spreadsheetName; 
 	    
+	    /*
+	     * StopEvaluator for searching spreadsheet by name
+	     */
 	    private StopEvaluator spreadsheetByName = new StopEvaluator() {
             
             @Override
@@ -485,6 +509,11 @@ public class SpreadsheetNode extends AbstractNode {
             }
         };
 	    
+        /**
+         * Constructor
+         * 
+         * @param spreadsheetName name of Spreadsheet to search, if null than iterate through all spreadsheets
+         */
 	    public ChildSpreadsheetsIterator(String spreadsheetName) {
 	        StopEvaluator currentEvaluator = null;
 	        if (spreadsheetName == null) {
@@ -501,7 +530,7 @@ public class SpreadsheetNode extends AbstractNode {
                                             
                                             @Override
                                             public boolean isReturnableNode(TraversalPosition currentPos) {
-                                                if (!isReturnableNode || (currentPos.depth() == 0)) {
+                                                if (!isReturnableNode && (currentPos.depth() == 0)) {
                                                     return false;
                                                 }
                                                 return true;

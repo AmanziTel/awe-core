@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.core.database.services;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
@@ -170,6 +171,36 @@ public class AweProjectService {
                     break;
                 }
             }
+            transaction.success();
+        } finally {
+            transaction.finish();
+        }
+
+        return result;
+    }
+    
+    /**
+     * Searches for Spreadsheets by given name
+     * 
+     * @param root parent Spreadsheet
+     * @param name name of Spreadsheet
+     * @return founded Spreadsheet or null if Spreadsheet was not found
+     */
+    public SpreadsheetNode findSpreadsheet(SpreadsheetNode parent, String name) {
+        SpreadsheetNode result = null;
+
+        Transaction transaction = neoService.beginTx();
+
+        try {
+            ArrayList<SpreadsheetNode> childSpreadsheets = parent.getAllChildSpreadsheets();
+
+            for (SpreadsheetNode childSpreadsheet : childSpreadsheets) {
+                if (childSpreadsheet.getName().equals(name)) {
+                    result = childSpreadsheet;
+                    break;
+                }
+            }
+            
             transaction.success();
         } finally {
             transaction.finish();

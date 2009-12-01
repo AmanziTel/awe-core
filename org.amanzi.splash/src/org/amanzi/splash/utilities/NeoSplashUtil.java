@@ -35,13 +35,17 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.splash.compare.SpreadsheetComparator;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.SplashEditorInput;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.views.importbuilder.ImportBuilderView;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorInput;
@@ -51,6 +55,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.neo4j.api.core.Transaction;
 
 public class NeoSplashUtil {
 
@@ -464,5 +469,28 @@ public class NeoSplashUtil {
 	    }
 	    
 	    return result;
+	}
+	
+	/**
+	 * Runs comparing of Spreadsheet
+	 *
+	 * @param rubyProject Ruby Project resource that will contain new Spreadsheet
+	 * @param firstSpreadsheet first Spreadsheet to compare
+	 * @param secondSpreadsheet second Spreadsheet to compare
+	 */
+	public static void compareSpreadsheets(IProject rubyProject, SpreadsheetNode firstSpreadsheet, SpreadsheetNode secondSpreadsheet) {
+	    String newSpreadsheetName = "Delta Report (" + firstSpreadsheet.getName() + " - " + secondSpreadsheet.getName() + ")";
+	    
+	    SpreadsheetComparator comparator = new SpreadsheetComparator(rubyProject.getFullPath(), newSpreadsheetName, firstSpreadsheet, secondSpreadsheet);
+	    
+	    Transaction transaction = NeoUtils.beginTransaction();
+	    try {
+	        comparator.startComparing();
+	    }
+	    finally {
+	        transaction.success();
+	        transaction.finish();
+	        NeoServiceProvider.getProvider().commit();
+	    }
 	}
 }

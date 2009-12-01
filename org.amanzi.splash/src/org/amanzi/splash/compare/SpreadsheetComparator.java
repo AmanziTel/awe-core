@@ -20,15 +20,12 @@ import java.util.HashMap;
 
 import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.RowHeaderNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.utilities.SpreadsheetCreator;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -41,14 +38,14 @@ import com.eteks.openjeks.format.CellFormat;
 public class SpreadsheetComparator extends SpreadsheetCreator {
     
     /*
-     * Name of First Spreadsheet
+     * Node of First Spreadsheet
      */
-    private String firstSpreadsheetName;
+    private SpreadsheetNode firstSpreadsheet;
     
     /*
-     * Name of Second Spreadsheet 
+     * Node of Second Spreadsheet 
      */
-    private String secondSpreadsheetName;
+    private SpreadsheetNode secondSpreadsheet;
     
     /*
      * CellFormat with Green background
@@ -65,33 +62,27 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
      * 
      * @param containerPath path to container that will contain new Spreadsheet
      * @param newSpreadsheetName name of new Spreadsheet
-     * @param firstSpreadsheetName name of first Spreadsheet to compare
-     * @param secondSpreadsheetName name of second Spreadsheet to compare
+     * @param firstSpreadsheet node of first Spreadsheet to compare
+     * @param secondSpreadsheet node of second Spreadsheet to compare
      */
-    public SpreadsheetComparator(IPath containerPath, String newSpreadsheetName, String firstSpreadsheetName, String secondSpreadsheetName) {
+    public SpreadsheetComparator(IPath containerPath, String newSpreadsheetName, SpreadsheetNode firstSpreadsheet, SpreadsheetNode secondSpreadsheet) {
         super(containerPath, newSpreadsheetName);
         
-        this.firstSpreadsheetName = firstSpreadsheetName;
-        this.secondSpreadsheetName = secondSpreadsheetName;
+        this.firstSpreadsheet = firstSpreadsheet;
+        this.secondSpreadsheet = secondSpreadsheet;
         
         greenCell = new CellFormat();
         greenCell.setBackgroundColor(new Color(0.0f, 1.0f, 0.0f));
         
         blueCell = new CellFormat();
-        blueCell.setBackgroundColor(new Color(0.0f, 0.75f, 1.0f));
-        
+        blueCell.setBackgroundColor(new Color(0.0f, 0.75f, 1.0f));        
     }
     
     /**
      * Start comparing
      */
     public void startComparing() {
-        RubyProjectNode rootNode = getSpreadsheetRoot();
-        
-        SpreadsheetNode firstSpreadsheet = projectService.findSpreadsheet(rootNode, firstSpreadsheetName);
-        SpreadsheetNode secondSpreadsheetNode = projectService.findSpreadsheet(rootNode, secondSpreadsheetName);
-        
-        ArrayList<Pair<CellNode, CellNode>> headers = getHeadersList(firstSpreadsheet, secondSpreadsheetNode);
+        ArrayList<Pair<CellNode, CellNode>> headers = getHeadersList(firstSpreadsheet, secondSpreadsheet);
         
         int columnNumber = 0;
         for (Pair<CellNode, CellNode> header : headers) {
@@ -146,8 +137,8 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
      * @param columnNumber number of column
      */
     private void addComparedCells(CellNode firstColumn, CellNode secondColumn, int columnNumber) {
-        CellNode currentCell = secondColumn.getNextCellInColumn();
-        CellNode cellToCompare = firstColumn.getNextCellInColumn();
+        CellNode currentCell = firstColumn.getNextCellInColumn();
+        CellNode cellToCompare = secondColumn.getNextCellInColumn();
         
         while (currentCell != null) {
             if (cellToCompare == null) {
@@ -239,7 +230,7 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
      * @return node of saved cell
      */
     private CellNode saveCell(Cell cellToSave, CellFormat newFormat, int columnNumber) {
-        cellToSave.setColumn(columnNumber);        
+        cellToSave.setColumn(columnNumber);
         
         if (newFormat != null) {
             if (cellToSave.getCellFormat() == null) {

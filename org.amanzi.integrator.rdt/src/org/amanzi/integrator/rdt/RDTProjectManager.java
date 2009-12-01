@@ -326,4 +326,54 @@ public class RDTProjectManager {
 	        action.run();
 	    }
 	}
+	
+	/**
+	 * Runs Delta Report for Spreadsheet 
+	 * 
+	 * @param aweProjectName Awe Project that contains Spreadsheets
+	 * @param rubyProjectName Ruby Project that contains Spreadsheets
+	 * @param firstSpreadsheetName name of first Spreadsheet
+	 * @param secondSpreadsheetName name of second Spreadsheet
+	 * @param firstSpreadsheetParent name of parent of first Spreadsheet (can be null)
+	 * @param secondSpreadsheetParent name of parent of second Spreadsheet (can be null)
+	 */
+	public static void compareSpreadsheets(String aweProjectName, String rubyProjectName, String firstSpreadsheetName, String secondSpreadsheetName, String firstSpreadsheetParent, String secondSpreadsheetParent) {
+	    IRubyProject project = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(rubyProjectName);
+	    
+	    AweProjectService aweService = NeoCorePlugin.getDefault().getProjectService();
+	    
+	    AweProjectNode aweProject = aweService.findAweProject(aweProjectName);
+	    RubyProjectNode rubyProject = aweService.findRubyProject(aweProject, rubyProjectName);
+	    
+	    SpreadsheetNode firstSpreadsheet = findSpreadsheet(rubyProject, firstSpreadsheetName, firstSpreadsheetParent);
+	    SpreadsheetNode secondSpreadsheet = findSpreadsheet(rubyProject, secondSpreadsheetName, secondSpreadsheetParent);
+	    
+	    if ((firstSpreadsheet != null) && (secondSpreadsheet != null)) {
+	        NeoSplashUtil.compareSpreadsheets(project.getProject(), firstSpreadsheet, secondSpreadsheet);
+	    }
+	}
+	
+	/**
+	 * Returns a SpreadsheetNode
+	 *
+	 * @param rubyProject name of Ruby Project that contains spreadsheet
+	 * @param spreadsheetName name of Spreadsheet
+	 * @param parentSpreadsheetName name of Parent Spreadsheet
+	 * @return spreadsheet by given name
+	 */
+	private static SpreadsheetNode findSpreadsheet(RubyProjectNode rubyProject, String spreadsheetName, String parentSpreadsheetName) {
+	    AweProjectService aweService = NeoCorePlugin.getDefault().getProjectService();
+	    
+	    SpreadsheetNode spreadsheet = null;
+	    if (parentSpreadsheetName != null) {
+	        spreadsheet = aweService.findSpreadsheet(rubyProject, parentSpreadsheetName);
+	    }
+	    
+	    if (spreadsheet == null) {
+	        return aweService.findSpreadsheet(rubyProject, spreadsheetName);
+	    }
+	    else {
+	        return aweService.findSpreadsheet(spreadsheet, spreadsheetName);
+	    }
+	}
 }

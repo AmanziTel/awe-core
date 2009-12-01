@@ -527,11 +527,11 @@ public class SpreadsheetService {
 	 */
     public Cell convertNodeToCell(CellNode node, Integer rowIndex, Integer columnIndex) {
 	    if (rowIndex == null) {
-			rowIndex = node.getCellRow();
+			rowIndex = node.getCellRow() - 1;
 		}
 
 		if (columnIndex == null) {			
-			columnIndex = node.getCellColumn();
+			columnIndex = node.getCellColumn() - 1;
 		}
 
 		CellFormat cellFormat = new CellFormat();

@@ -441,7 +441,7 @@ public class CellNode extends AbstractNode {
      * @return index of Cell's Column
      */
     public Integer getCellColumn() {
-        return (Integer)getParameter(CELL_COLUMN) - 1;
+        return (Integer)getParameter(CELL_COLUMN);
     }
     
     /**
@@ -450,7 +450,7 @@ public class CellNode extends AbstractNode {
      * @return index of Cell's Row
      */
     public Integer getCellRow() {
-        return (Integer)getParameter(CELL_ROW) - 1;
+        return (Integer)getParameter(CELL_ROW);
     }
     
     /**
