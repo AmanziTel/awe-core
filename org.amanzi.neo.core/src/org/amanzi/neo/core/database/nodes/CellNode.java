@@ -504,6 +504,13 @@ public class CellNode extends AbstractNode {
         return result;
     }
     
+    /**
+     * Returns all Cells starting from this Cell
+     *
+     * @param relationshipType type of Relationship to traverse
+     * @param returnFirst is this node should be returned?
+     * @return list of Cells
+     */
     public ArrayList<CellNode> getAllCellsFromThis(RelationshipType relationshipType, boolean returnFirst) {
         ArrayList<CellNode> result = new ArrayList<CellNode>();
         
@@ -558,6 +565,12 @@ public class CellNode extends AbstractNode {
         }
     }
     
+    /**
+     * Iterator to traverse through all Cells
+     * 
+     * @author Lagutko_N
+     * @since 1.0.0
+     */
     protected class AllCellsIterator extends AbstractIterator<CellNode> {
         /**
          * Creates an iterator
