@@ -50,6 +50,7 @@ import net.refractions.udig.project.internal.Project;
 import net.refractions.udig.project.internal.ProjectElement;
 import net.refractions.udig.project.internal.ProjectFactory;
 import net.refractions.udig.project.internal.ProjectPlugin;
+import net.refractions.udig.project.internal.RubyProject;
 import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.SpreadsheetType;
 import net.refractions.udig.project.internal.commands.AddLayersCommand;
@@ -556,7 +557,16 @@ public class ApplicationGIS {
     
     private static void openSpreadsheet(Spreadsheet element) {
         if (element.getSpreadsheetType().equals(SpreadsheetType.NEO4J_SPREADSHEET)) {
-            RDTProjectManager.openSpreadsheet(element.getSpreadsheetPath(), element.getRubyProjectInternal().getName());
+            //Lagutko, 28.11.2009, open Spreadsheet only it didn't have any childs
+            if (element.getChildSpreadsheets().isEmpty()) {         
+            	RubyProject rubyProject = element.getRubyProjectInternal();
+            	if (rubyProject == null) {
+            		//Lagutko, 29.11.2009, if there are no Ruby Project for Spreadsheeet
+            		//than we should search for it in parent Spreadsheet
+            		rubyProject = element.getParentSpreadsheet().getRubyProjectInternal();
+            	}
+                RDTProjectManager.openSpreadsheet(element.getSpreadsheetPath(), rubyProject.getName());
+            }
         }
     }
 
