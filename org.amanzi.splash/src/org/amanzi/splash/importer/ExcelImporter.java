@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 
+import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.splash.swing.Cell;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -39,6 +40,11 @@ import com.eteks.openjeks.format.CellFormat;
  * @since 1.0.0
  */
 public class ExcelImporter extends AbstractImporter {
+    
+    /**
+     * Parent Spreadsheet
+     */
+    private SpreadsheetNode rootSpreadsheet;
 
     /**
      * Constructor 
@@ -58,14 +64,56 @@ public class ExcelImporter extends AbstractImporter {
         POIFSFileSystem fileSystem = null;
         
         monitor.beginTask("Importing data from Excel", 100);
-
+        
         Transaction tx = NeoUtils.beginTransaction();
         try
         {
             fileSystem = new POIFSFileSystem (fileContent);
 
             HSSFWorkbook      workBook = new HSSFWorkbook (fileSystem);
-            HSSFSheet         sheet    = workBook.getSheetAt (0);
+            
+            createRootSpreadsheet();
+            
+            for (int i = 0; i < workBook.getNumberOfSheets(); i++) {
+                createSheet(workBook.getSheetAt(i), workBook.getSheetName(i), monitor);
+            }
+            
+        }
+        catch (IOException e)
+        {
+            throw new InvocationTargetException(e);
+        }
+        finally {
+            tx.success();
+            tx.finish();
+        }
+    }
+    
+    /**
+     * Creates a parent spreadsheet
+     */
+    private void createRootSpreadsheet() {
+        createSpreadsheet(null);
+        this.rootSpreadsheet = super.spreadsheetNode;        
+    }
+    
+    /**
+     * Creates a child spreadsheet inside parent spreadsheet
+     *
+     * @param sheet sheet to import
+     * @param sheetName name of sheet
+     * @param monitor monitor
+     */
+    private void createSheet(HSSFSheet sheet, String sheetName, IProgressMonitor monitor) {
+        spreadsheetNode = null;
+        spreadsheetName = sheetName;
+        
+        Transaction tx = NeoUtils.beginTransaction();
+        
+        createSpreadsheet(rootSpreadsheet);
+        
+        try
+        {
             Iterator<HSSFRow> rows     = sheet.rowIterator ();
             
             int rowCount = sheet.getLastRowNum();
@@ -156,14 +204,15 @@ public class ExcelImporter extends AbstractImporter {
                 monitor.worked(percentage);
             }
         }
-        catch (IOException e)
-        {
-            throw new InvocationTargetException(e);
-        }
         finally {
             tx.success();
             tx.finish();
         }
     }
+    
+    @Override
+    public SpreadsheetNode getSpreadsheet() {
+        return rootSpreadsheet;
+    }    
 
 }
