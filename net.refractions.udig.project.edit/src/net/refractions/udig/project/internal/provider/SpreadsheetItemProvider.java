@@ -6,6 +6,7 @@
 package net.refractions.udig.project.internal.provider;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 import net.refractions.udig.project.internal.ProjectPackage;
@@ -16,6 +17,8 @@ import org.eclipse.emf.common.notify.Notification;
 
 import org.eclipse.emf.common.util.ResourceLocator;
 
+import org.eclipse.emf.ecore.InternalEObject;
+import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.edit.provider.ComposeableAdapterFactory;
 import org.eclipse.emf.edit.provider.IEditingDomainItemProvider;
@@ -33,7 +36,7 @@ import org.eclipse.emf.edit.provider.ViewerNotification;
  * <!-- end-user-doc -->
  * @generated
  */
-public class SpreadsheetItemProvider extends ItemProviderAdapter implements
+public class SpreadsheetItemProvider extends AbstractLazyLoadingItemProvider implements
 											IEditingDomainItemProvider, IStructuredItemContentProvider,
 											ITreeItemContentProvider, IItemLabelProvider, IItemPropertySource {
 	/**
@@ -105,6 +108,8 @@ public class SpreadsheetItemProvider extends ItemProviderAdapter implements
 						ProjectPackage.eINSTANCE.getRubyProjectElement_RubyProjectInternal(),
 						true, false, true, null, null, null));
 	}
+	
+	
 
 	/**
 	 * This returns Spreadsheet.gif.
@@ -154,6 +159,9 @@ public class SpreadsheetItemProvider extends ItemProviderAdapter implements
 			fireNotifyChanged(new ViewerNotification(notification, notification
 					.getNotifier(), false, true));
 			return;
+		case ProjectPackage.SPREADSHEET__CHILD_SPREADSHEETS:
+		    fireNotifyChanged(new ViewerNotification(notification, notification.getNotifier(), true, false));
+		    return;
 		}
 		super.notifyChanged(notification);
 	}
@@ -168,4 +176,41 @@ public class SpreadsheetItemProvider extends ItemProviderAdapter implements
 		return ProjectEditPlugin.INSTANCE;
 	}
 
+	/**
+     * @see org.eclipse.emf.edit.provider.ITreeItemContentProvider#hasChildren(java.lang.Object)
+     */
+    public boolean hasChildren( Object object ) {
+        if (object instanceof Spreadsheet) {
+            Spreadsheet spreadsheet = (Spreadsheet)object;
+            return !spreadsheet.getChildSpreadsheets().isEmpty();
+        }
+        return false;
+    }
+    
+    /**
+     * This specifies how to implement {@link #getChildren} and is used to deduce an appropriate
+     * feature for an {@link org.eclipse.emf.edit.command.AddCommand},
+     * {@link org.eclipse.emf.edit.command.RemoveCommand} or
+     * {@link org.eclipse.emf.edit.command.MoveCommand} in {@link #createCommand}. <!--
+     * begin-user-doc --> Changed so only layers and viewport model appears. <!-- end-user-doc -->
+     * 
+     * @generated NOT
+     */
+    public Collection getChildrenFeatures( Object object ) {
+        if (childrenFeatures == null) {
+            super.getChildrenFeatures(object);
+            childrenFeatures.add(ProjectPackage.eINSTANCE.getSpreadsheet_ChildSpreadsheets());
+        }
+        return childrenFeatures;
+    }
+    
+    protected ChildFetcher createChildFetcher() {
+        return new ChildFetcher(this){
+            protected void notifyChanged() {
+                SpreadsheetItemProvider.this.notifyChanged(new ENotificationImpl(
+                        (InternalEObject) parent, Notification.SET,
+                        ProjectPackage.SPREADSHEET__CHILD_SPREADSHEETS, null, null));
+            }            
+        };    
+    }
 }
