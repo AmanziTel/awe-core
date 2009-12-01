@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.core.database.nodes;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -28,6 +29,7 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * Wrapper class for Spreadsheet
@@ -48,10 +50,18 @@ public class SpreadsheetNode extends AbstractNode {
 	public static final String CELL_INDEX = "cell_index";
 	
 	/*
+	 * Name of property 'Has child spreadsheets'
+	 */
+	private static final String HAS_CHILD_SPREADSHEETS = "has_child_spreadsheets"; 
+	
+	/*
 	 * Index of Cells 
 	 */
 	private HilbertIndex index;
 	
+	/*
+	 * Neo Service
+	 */
 	private NeoService neoService = NeoServiceProvider.getProvider().getService();
 	
 	/**
@@ -366,6 +376,11 @@ public class SpreadsheetNode extends AbstractNode {
 	    index.finishUp();
 	}
 	
+	/**
+	 * Adds a Cell to Column
+	 *
+	 * @param cell cell to add
+	 */
 	private void addToColumn(CellNode cell) {
         int column = cell.getCellColumn();
         
@@ -378,6 +393,11 @@ public class SpreadsheetNode extends AbstractNode {
         columnHeader.addNextCell(cell);
     }
 	
+	/**
+	 * Adds a Cell to Row
+	 *
+	 * @param cell cell to add
+	 */
 	private void addToRow(CellNode cell) {
         int row = cell.getCellRow();
         
@@ -389,4 +409,112 @@ public class SpreadsheetNode extends AbstractNode {
         
         rowHeader.addNextCell(cell);
     }
+	
+	/**
+	 * Sets is this Spreadsheet have child Spreadsheets
+	 * 
+	 * @param hasChildSpreadsheets is this Spreadsheet have child sheets
+	 */
+	public void setHasChildSpreadsheets(boolean hasChildSpreadsheets) {
+	    setParameter(HAS_CHILD_SPREADSHEETS, hasChildSpreadsheets);
+	}
+	
+	/**
+	 * Returns is this Spreadsheet have child sheets
+	 * 
+	 * @return is this spreadsheet have child sheets
+	 */
+	public boolean hasChildSpreadsheets() {
+	    Boolean result = (Boolean)getParameter(HAS_CHILD_SPREADSHEETS);
+	    if (result == null) {
+	        result = false;
+	    }
+	    return result;
+	}
+	
+	/**
+	 * Adds a reference to child Spreadsheet
+	 * 
+	 * @param childSpreadsheet child Spreadsheet
+	 */
+	public void addChildSpreadsheet(SpreadsheetNode childSpreadsheet) {
+	    addRelationship(SplashRelationshipTypes.CHILD_SPREADSHEET, childSpreadsheet.getUnderlyingNode());
+	}
+	
+	/**
+	 * Returns all child Spreadsheet
+	 * 
+	 * @return child Spreadsheet
+	 */
+	public ArrayList<SpreadsheetNode> getAllChildSpreadsheets() {
+	    ChildSpreadsheetsIterator spreadsheetIterator = new ChildSpreadsheetsIterator(null);
+	    
+	    ArrayList<SpreadsheetNode> result = new ArrayList<SpreadsheetNode>();
+	    while (spreadsheetIterator.hasNext()) {
+	        result.add(spreadsheetIterator.next());
+	    }
+	    
+	    return result;
+	}
+	
+	public SpreadsheetNode getChildSpreadsheet(String spreadsheetName) {
+	    ChildSpreadsheetsIterator spreadsheetsIterator = new ChildSpreadsheetsIterator(spreadsheetName);
+	    
+	    if (spreadsheetsIterator.hasNext()) {
+	        return spreadsheetsIterator.next();
+	    }
+	    else {
+	        return null;
+	    }
+	}
+	
+	private class ChildSpreadsheetsIterator extends AbstractIterator<SpreadsheetNode> {
+	    
+	    private StopEvaluator allSpreadsheets = StopEvaluator.END_OF_GRAPH;
+	    
+	    private boolean isReturnableNode = false;
+	    
+	    private String spreadsheetName; 
+	    
+	    private StopEvaluator spreadsheetByName = new StopEvaluator() {
+            
+            @Override
+            public boolean isStopNode(TraversalPosition currentPos) {
+                isReturnableNode = currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(spreadsheetName);
+                return isReturnableNode;
+            }
+        };
+	    
+	    public ChildSpreadsheetsIterator(String spreadsheetName) {
+	        StopEvaluator currentEvaluator = null;
+	        if (spreadsheetName == null) {
+	            currentEvaluator = allSpreadsheets; 
+	        }
+	        else {
+	            this.spreadsheetName = spreadsheetName;
+	            currentEvaluator = spreadsheetByName;
+	        }
+	        
+	        this.iterator = node.traverse(Order.BREADTH_FIRST, 
+	                                      currentEvaluator,
+	                                      new ReturnableEvaluator(){
+                                            
+                                            @Override
+                                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                                if (!isReturnableNode || (currentPos.depth() == 0)) {
+                                                    return false;
+                                                }
+                                                return true;
+                                            }
+                                           },
+                                           SplashRelationshipTypes.CHILD_SPREADSHEET,
+                                           Direction.OUTGOING).iterator();
+	    }
+
+        @Override
+        protected SpreadsheetNode wrapNode(Node node) {
+            return SpreadsheetNode.fromNode(node);
+        }
+	    
+	}
 }
