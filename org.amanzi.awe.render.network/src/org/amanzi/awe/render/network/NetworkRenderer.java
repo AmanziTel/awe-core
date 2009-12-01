@@ -293,6 +293,7 @@ public class NetworkRenderer extends RendererImpl {
                     }
                 }
                 renderSite(g, p, borderColor, siteColor, drawSize, drawFull, drawLite, selected);
+                nodesMap.put(node.getNode(), p);
                 if (drawFull) {
                     int countOmnis = 0;
                     double[] label_position_angles = new double[] {0, 90};
@@ -569,6 +570,12 @@ public class NetworkRenderer extends RendererImpl {
         Point point1 = nodesMap.get(node);
         if (point1 != null) {
             for (Relationship relation : NeoUtils.getNeighbourRelations(node, neiName)) {
+                Point point2 = nodesMap.get(relation.getOtherNode(node));
+                if (point2 != null) {
+                    g.drawLine(point1.x, point1.y, point2.x, point2.y);
+                }
+            }
+            for (Relationship relation : NeoUtils.getTransmissionRelations(node, neiName)) {
                 Point point2 = nodesMap.get(relation.getOtherNode(node));
                 if (point2 != null) {
                     g.drawLine(point1.x, point1.y, point2.x, point2.y);

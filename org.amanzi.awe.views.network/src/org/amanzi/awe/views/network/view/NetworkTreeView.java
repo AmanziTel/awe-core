@@ -36,6 +36,7 @@ import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeLabelProvider;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.neighbours.views.NeighboursView;
+import org.amanzi.awe.views.neighbours.views.TransmissionView;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
@@ -446,6 +447,8 @@ public class NetworkTreeView extends ViewPart {
         });
         NeighbourAction neighb = new NeighbourAction((IStructuredSelection)viewer.getSelection());
         manager.add(neighb);
+        TransmissionAction transmission = new TransmissionAction((IStructuredSelection)viewer.getSelection());
+        manager.add(transmission);
         manager.add(new DeleteAction((IStructuredSelection)viewer.getSelection()));
 
     }
@@ -909,6 +912,33 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
+    private class TransmissionAction extends NeighbourAction {
+
+        /**
+         * @param selection
+         */
+        public TransmissionAction(IStructuredSelection selection) {
+            super(selection);
+            text = "Analyse transmission";
+        }
+
+        @Override
+        public void run() {
+            IViewPart transmissionView;
+            try {
+                transmissionView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
+                        TransmissionView.ID);
+            } catch (PartInitException e) {
+                NeoCorePlugin.error(e.getLocalizedMessage(), e);
+                transmissionView = null;
+            }
+            if (transmissionView != null) {
+                ((TransmissionView)transmissionView).setInput(getInputNodes(selection));
+            }
+        }
+
+    }
+
     /**
      * <p>
      * Action for start neighbour analyser
@@ -919,9 +949,9 @@ public class NetworkTreeView extends ViewPart {
      */
     private class NeighbourAction extends Action {
 
-        private boolean enabled;
-        private String text;
-        private IStructuredSelection selection;
+        protected boolean enabled;
+        protected String text;
+        protected IStructuredSelection selection;
 
         /**
          * Constructor
