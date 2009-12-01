@@ -25,6 +25,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
@@ -83,6 +84,21 @@ public class PropertyHeader {
      */
     public String[] getNeighbourAllFields(String neighbourName) {
         Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        if (neighbour == null) {
+            return null;
+        }
+        String[] result = NeoUtils.getAllFields(neighbour);
+        return result;
+    }
+
+    /**
+     * get All Fields of Neighbour
+     * 
+     * @param neighbourName name of neighbour
+     * @return array or null
+     */
+    public String[] getTransmissionAllFields(String neighbourName) {
+        Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
         }
@@ -201,6 +217,18 @@ public class PropertyHeader {
         String[] result = (String[])neighbour.getProperty(INeoConstants.LIST_INTEGER_PROPERTIES, null);
         return result;
     }
+    /**
+     * @param neighbourName
+     * @return
+     */
+    public String[] getTransmissionIntegerFields(String neighbourName) {
+        Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        if (neighbour == null) {
+            return null;
+        }
+        String[] result = (String[])neighbour.getProperty(INeoConstants.LIST_INTEGER_PROPERTIES, null);
+        return result;
+    }
 
     /**
      * @param neighbourName
@@ -208,6 +236,19 @@ public class PropertyHeader {
      */
     public String[] getNeighbourDoubleFields(String neighbourName) {
         Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        if (neighbour == null) {
+            return null;
+        }
+        String[] result = (String[])neighbour.getProperty(INeoConstants.LIST_DOUBLE_PROPERTIES, null);
+        return result;
+    }
+
+    /**
+     * @param neighbourName
+     * @return
+     */
+    public String[] getTransmissionDoubleFields(String neighbourName) {
+        Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
         }

@@ -177,6 +177,16 @@ public class NeoUtils {
     }
 
     /**
+     * check node by type
+     * 
+     * @param node node
+     * @return true if node is gis node
+     */
+    public static boolean isTransmission(Node node) {
+        return node != null && INeoConstants.TRANSMISSION_TYPE_NAME.equals(getNodeType(node, ""));
+    }
+
+    /**
      *Delete gis node if it do not have outcoming relations
      */
     public static void deleteEmptyGisNodes() {
@@ -375,8 +385,34 @@ public class NeoUtils {
         return result;
     }
 
+    /**
+     * Return neighbour relations of selected neighbour list
+     * 
+     * @param node node
+     * @param neighbourName neighbour list name (if null then will returns all neighbour relations
+     *        of this node)
+     * @return neighbour relations of selected neighbour list
+     */
+    public static Iterable<Relationship> getTransmissionRelations(Node node, String neighbourName) {
+        Iterable<Relationship> relationships = node.getRelationships(NetworkRelationshipTypes.TRANSMISSION, Direction.OUTGOING);
+        if (neighbourName == null) {
+            return relationships;
+        }
+        ArrayList<Relationship> result = new ArrayList<Relationship>();
+        for (Relationship relation : relationships) {
+            if (neighbourName.equals(getNeighbourName(relation, null))) {
+                result.add(relation);
+            }
+        }
+        return result;
+    }
+
     public static String getNeighbourPropertyName(String aNeighbourName) {
         return String.format("# '%s' neighbours", aNeighbourName);
+    }
+
+    public static String getTransmissionPropertyName(String aNeighbourName) {
+        return String.format("# '%s' transmissions", aNeighbourName);
     }
 
     /**
@@ -513,6 +549,34 @@ public class NeoUtils {
      */
     public static Node getNodeById(Long nodeId) {
         return nodeId == null ? null : NeoServiceProvider.getProvider().getService().getNodeById(nodeId);
+    }
+
+    /**
+     *Finds Transmission of network
+     * 
+     * @param network - network GIS node
+     * @param name - Transmission name
+     * @param neo - NeoService
+     * @return Transmission node or null;
+     */
+    public static Node findTransmission(Node network, final String name, NeoService neo) {
+        if (network == null || name == null) {
+            return null;
+        }
+        Transaction tx = neo.beginTx();
+        try {
+            Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return isTransmission(node) && name.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+                }
+            }, NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING).iterator();
+            return iterator.hasNext() ? iterator.next() : null;
+        } finally {
+            tx.finish();
+        }
     }
 
 }
