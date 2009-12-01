@@ -367,6 +367,23 @@ public class AWEProjectManager {
 	}
 	
 	/**
+	 * Search for child spreadsheet inside parent spreadsheet
+	 *
+	 * @param parentSpreadsheet parent Spreadsheet
+	 * @param sheetName name of child Spreadsheet
+	 * @return child Spreadsheet or null if not found
+	 */
+	private static Spreadsheet findChildSpreadsheet(Spreadsheet parentSpreadsheet, String sheetName) {
+	    for (Spreadsheet child : parentSpreadsheet.getChildSpreadsheets()) {
+	        if (child.getName().equals(sheetName)) {
+	            return child;
+	        }
+	    }
+	    
+	    return null;
+	}
+	
+	/**
 	 * Delete RubyScript from AWE Project
 	 * 
 	 * @param scriptName name of Script
@@ -422,8 +439,49 @@ public class AWEProjectManager {
             if (createSpreadsheetIfNotExist(ruby, sheetName, resourcePath, SpreadsheetType.NEO4J_SPREADSHEET)){
             	NeoCorePlugin.getDefault().getProjectService().findOrCreateSpreadsheet(aweProjectName, rubyProject.getName(), sheetName);
             }
-        }
+        }        
+	}
+	
+	/**
+	 * Creates Child Spreadsheet
+	 *
+	 * @param rubyProject RubyProject that contains Spreadsheet
+	 * @param parentSpreadsheetName name of parent Spreadsheet
+	 * @param sheetName name of child Spreadsheet
+	 * @param resourcePath resource URL for Spreadsheet
+	 */
+	public static void createChildNeoSpreadsheet(IProject rubyProject, String parentSpreadsheetName, String sheetName, URL resourcePath) {
+	    String aweProjectName = getAWEprojectNameFromResource(rubyProject);
+        Project project = findProject(aweProjectName);
         
+        RubyProject ruby = findRubyProject(project, rubyProject.getName());
+        Spreadsheet parentSpreadsheet = findSpreadsheet(ruby, parentSpreadsheetName);
+        if (ruby != null) {
+            createChildSpreadsheetIfNotExist(parentSpreadsheet, sheetName, resourcePath, SpreadsheetType.NEO4J_SPREADSHEET);
+        }
+	}
+	
+	/**
+	 * Creates child Spreadsheet if it not exist
+	 *
+	 * @param parentSpreadsheet parent Spreadsheet
+	 * @param sheetName name of child Spreadsheet
+	 * @param resourceURL URL for Spreadsheet
+	 * @param type type of Spreadsheet
+	 * @return was spreadsheet created, or it exists
+	 */
+	private static boolean createChildSpreadsheetIfNotExist(Spreadsheet parentSpreadsheet, String sheetName, URL resourceURL, SpreadsheetType type) {
+	    Spreadsheet childSpreadsheet = findChildSpreadsheet(parentSpreadsheet, sheetName);
+	    if (childSpreadsheet == null) {
+	        Spreadsheet spreadsheet = ProjectFactoryImpl.eINSTANCE.createSpreadsheet();
+	        spreadsheet.setName(sheetName);
+            spreadsheet.setSpreadsheetPath(resourceURL);    
+            spreadsheet.setSpreadsheetType(type);
+            parentSpreadsheet.getChildSpreadsheets().add(spreadsheet);
+            spreadsheet.setParentSpreadsheet(parentSpreadsheet);
+	    }
+	    
+	    return childSpreadsheet == null;
 	}
 	
 	/**
@@ -443,6 +501,7 @@ public class AWEProjectManager {
 			spreadsheet.setSpreadsheetPath(resourceURL);
 			spreadsheet.setRubyProjectInternal(rubyProject);	
 			spreadsheet.setSpreadsheetType(type);
+			rubyProject.getRubyElementsInternal().add(spreadsheet);
 			if (type==SpreadsheetType.NEO4J_SPREADSHEET){
 				 NeoCorePlugin.getDefault().getProjectService();
 			}
