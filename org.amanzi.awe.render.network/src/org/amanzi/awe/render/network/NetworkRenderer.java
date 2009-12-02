@@ -42,6 +42,7 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -245,6 +246,69 @@ public class NetworkRenderer extends RendererImpl {
             int count = 0;
             monitor.subTask("drawing");
             Coordinate world_location = new Coordinate(); // single object for re-use in transform below (minimize object creation)
+
+            // draw selection
+            java.awt.Point prev_p = null;
+            java.awt.Point prev_l_p = null;
+            ArrayList<Node> selectedPoints = new ArrayList<Node>();
+            final Set<Node> selectedNodes = new HashSet<Node>(geoNeo.getSelectedNodes());
+
+            for (Node node : selectedNodes) {
+                final String nodeType = NeoUtils.getNodeType(node, "");
+                if ("network".equals(nodeType) || "bsc".equals(nodeType)) {
+                    // Select all 'site' nodes in that file
+                    for (Node rnode : node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                            new ReturnableEvaluator() {
+
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            return "site".equals(currentPos.currentNode().getProperty("type", ""));
+                        }
+                            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        selectedPoints.add(rnode);
+                    }
+                } else {
+                    // Traverse backwards on CHILD relations to closest 'mp' Point
+                    for (@SuppressWarnings("unused")
+                    Node rnode : node.traverse(Traverser.Order.DEPTH_FIRST, new StopEvaluator() {
+                        @Override
+                        public boolean isStopNode(TraversalPosition currentPos) {
+                            return "site".equals(currentPos.currentNode().getProperty("type", ""));
+                        }
+                    }, new ReturnableEvaluator() {
+
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            return "site".equals(currentPos.currentNode().getProperty("type", ""));
+                        }
+                    }, NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
+                        selectedPoints.add(rnode);
+                        break;
+                    }
+                }
+            }
+            // Now draw the selected points highlights
+            for (Node rnode : selectedPoints) {
+                GeoNode node = new GeoNode(rnode);
+                Coordinate location = node.getCoordinate();
+                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
+                    continue; // Don't draw points outside viewport
+                }
+                try {
+                    JTS.transform(location, world_location, transform_d2w);
+                } catch (Exception e) {
+                    continue;
+                }
+                java.awt.Point p = getContext().worldToPixel(world_location);
+                if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
+                    prev_p = p;
+                    continue;
+                } else {
+                    prev_p = p;
+                }
+                renderSelectionGlow(g, p, drawSize * 4);
+            }
+
             long startTime = System.currentTimeMillis();
             for(GeoNode node:geoNeo.getGeoNodes(bounds_transformed)) {
                 Coordinate location = node.getCoordinate();
@@ -263,15 +327,21 @@ public class NetworkRenderer extends RendererImpl {
                 boolean selected = false;
                 if (geoNeo.getSelectedNodes().contains(node.getNode())) {
                     borderColor = COLOR_SITE_SELECTED;
-                    selected = true;
+                    // if selection exist - do not necessary to select node again
+                    selected = false;
                 } else {
-                    for (Node rnode:node.getNode().traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH)){
-                        if (geoNeo.getSelectedNodes().contains(rnode)) {
-                            selected = true;
-                            break;
-                        }
-                    }
-                    if(!selected) {
+                    // if selection exist - do not necessary to select node again
+                    selected = !selectedPoints.contains(node.getNode());
+                    // this selection was already checked
+                    // for (Node rnode:node.getNode().traverse(Traverser.Order.BREADTH_FIRST,
+                    // StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+                    // NetworkRelationshipTypes.CHILD, Direction.BOTH)){
+                    // if (geoNeo.getSelectedNodes().contains(rnode)) {
+                    // selected = true;
+                    // break;
+                    // }
+                    // }
+                    if (selected) {
                         DELTA_LOOP: for (Node rnode:node.getNode().traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.MISSING, Direction.INCOMING, NetworkRelationshipTypes.DIFFERENT, Direction.INCOMING)){
                             if (geoNeo.getSelectedNodes().contains(rnode)) {
                                 selected = true;
@@ -718,7 +788,8 @@ public class NetworkRenderer extends RendererImpl {
     private void renderSite(Graphics2D g, java.awt.Point p, Color borderColor, Color fillColor, int drawSize, boolean drawFull, boolean drawLite, boolean selected) {
         Color oldColor = g.getColor();
         if (drawFull) {
-            if(selected) renderSelectionGlow(g, p, drawSize * 4);
+            if (selected)
+                renderSelectionGlow(g, p, drawSize * 4);
             drawSize /= 4;
             if (drawSize < 2) drawSize = 2;
             g.setColor(fillColor);
@@ -726,11 +797,13 @@ public class NetworkRenderer extends RendererImpl {
             g.setColor(borderColor);
             g.drawOval(p.x - drawSize, p.y - drawSize, 2 * drawSize, 2 * drawSize);
         } else if (drawLite) {
-            if(selected) renderSelectionGlow(g, p, 20);
+            if (selected)
+                renderSelectionGlow(g, p, 20);
             g.setColor(borderColor);
             g.drawOval(p.x - 5, p.y - 5, 10, 10);
         } else {
-            if(selected) renderSelectionGlow(g, p, 20);
+            if (selected)
+                renderSelectionGlow(g, p, 20);
             g.setColor(borderColor);
             g.drawRect(p.x - 1, p.y - 1, 3, 3);
         }
