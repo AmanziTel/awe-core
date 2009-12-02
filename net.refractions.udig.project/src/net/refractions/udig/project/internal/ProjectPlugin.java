@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.refractions.udig.project.IRubyProjectElement;
 import net.refractions.udig.project.internal.impl.ProjectRegistryImpl;
 import net.refractions.udig.ui.PostShutdownTask;
 import net.refractions.udig.ui.ShutdownTaskList;
@@ -150,6 +151,10 @@ public final class ProjectPlugin extends EMFPlugin {
                         if (resource.getContents().isEmpty())
                             continue;
                         Object next = resource.getAllContents().next();
+                        //Lagutko, 2.12.2009, we should remove all RubyFile from RubyProject before storing
+                        if (next instanceof RubyProject) {                            
+                            clearRubyProject((RubyProject)next);
+                        }
                         if (resource.isModified() && next != null && !((EObject) next).eIsProxy()) {
                             try {
                                 resource.save(saveOptions);
@@ -163,6 +168,17 @@ public final class ProjectPlugin extends EMFPlugin {
 
             });
             undoableCommandWarning = "true".equals(getString("net.refractions.udig.project.undoableCommandWarning")); //$NON-NLS-1$//$NON-NLS-2$
+        }
+        
+        /**
+         * Removes all RubyFiles from RubyProject
+         *
+         * @param rubyProject
+         */
+        private void clearRubyProject(RubyProject rubyProject) {
+            for (IRubyProjectElement file : rubyProject.getElements(RubyFile.class)) {
+                rubyProject.getRubyElementsInternal().remove(file);
+            }
         }
 
         protected static final String ENCODING = "UTF-8"; //$NON-NLS-1$

@@ -14,6 +14,7 @@ package org.amanzi.scripting.jruby;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -216,7 +217,14 @@ public class ScriptUtils {
 	    URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");       
         String rubyLocation = URLUtils.urlToString(FileLocator.resolve(rubyLocationURL), false);
         if (rubyLocation.startsWith("jar:file:")) {
-            rubyLocation = "file:/" + rubyLocation.substring(9);
+            //Lagutko, 2.12.2009, conflict between paths in Windows and Linux
+            //in Windows path didn't starts with '/' so we should add it
+            //but in Linux we have first char '/' and if we add another than path '//home' will be incorrect
+            rubyLocation = rubyLocation.substring(9);
+            if (!rubyLocation.startsWith(File.separator)) {                
+                rubyLocation = File.separator + rubyLocation;
+            }
+            rubyLocation = "file:" + rubyLocation;
         }
         else if (rubyLocation.startsWith("file:")) {
             rubyLocation = rubyLocation.substring(5);
