@@ -12,11 +12,15 @@
  */
 package org.amanzi.awe.views.network.view;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,8 +53,13 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
@@ -89,6 +98,7 @@ import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.geotools.referencing.CRS;
@@ -422,6 +432,7 @@ public class NetworkTreeView extends ViewPart {
             }
         });
         manager.add(new DeltaReportAction());
+        manager.add(new GenerateReportFileAction());
         manager.add(new Action("Show in database graph") {
             public void run() {
                 IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
@@ -1683,6 +1694,81 @@ public class NetworkTreeView extends ViewPart {
 
     }
 
+    /**
+     * Action creates a report file on the base of a delta report selected
+     * 
+     * @author Pechko_E
+     * @since 1.0.0
+     */
+    private class GenerateReportFileAction extends Action {
+        private NeoNode reportNode;
+
+        @Override
+        public void run() {
+            StringBuffer sb = new StringBuffer("report '").append(reportNode.getNode().getProperty("name"));
+            sb.append("' do\n  author '").append(System.getProperty("user.name")).append("'\n  date '").append(
+                    new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'");
+            for (NeoNode node : reportNode.getChildren()) {
+                sb.append("\n  table '").append(node.getNode().getProperty("name")).append("' do\n    self.nodes=[");
+                NeoNode[] children = node.getChildren();
+                for (int i = 0; i < children.length; i++) {
+                    NeoNode child = children[i];
+                    sb.append(child.getNode().getId());
+                    if (i < children.length - 1)
+                        sb.append(",");
+                }
+                sb.append("]\n  end");
+            }
+            sb.append("\nend");
+            IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];//TODO correct
+            IFile file;
+            int i = 0;
+            while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
+                i++;
+            }
+            System.out.println("Repost script:\n" + sb.toString());
+            InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
+            try {
+                file.create(is, true, null);
+                is.close();
+            } catch (CoreException e) {
+                // TODO Handle CoreException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            } catch (IOException e) {
+                // TODO Handle IOException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+            try {
+                getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.splash.editors.ReportEditor");
+            } catch (PartInitException e) {
+                // TODO Handle PartInitException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        }
+
+        @Override
+        public String getText() {
+            return "Generate delta report file";
+        }
+
+        @Override
+        public boolean isEnabled() {
+            IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+            final Iterator iterator = selection.iterator();
+            while (iterator.hasNext()) {
+                Object node = iterator.next();
+                if (node instanceof NeoNode) {
+                    NeoNode neoNode = (NeoNode)node;
+                    if (neoNode.getType().equals("delta_report")) {
+                        reportNode = neoNode;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+    }
     private static class DeltaSite {
         private String name;
         private HashMap<String, Node> nodes = new HashMap<String, Node>();
