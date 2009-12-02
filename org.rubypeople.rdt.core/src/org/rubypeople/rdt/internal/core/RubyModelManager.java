@@ -967,15 +967,13 @@ public class RubyModelManager implements IContentTypeChangeListener, ISavePartic
  					| IResourceChangeEvent.PRE_CLOSE);
 
  			
- 			//Lagutko, 1.07.2009, load Messages class outside internal Thread
- 			final String jobName = Messages.savedState_jobName;
  			job = new Job("Start Ruby Indexing") {
 
 				protected IStatus run(IProgressMonitor monitor) {
 					startIndexing();
 					// process deltas since last activated in indexer thread so that indexes are up-to-date.
 		 			// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=38658
-		 			Job processSavedState = new Job(jobName) { 
+		 			Job processSavedState = new Job(Messages.savedState_jobName) { 
 		 				protected IStatus run(IProgressMonitor monitor) {
 		 					try {
 		 						// add save participant and process delta atomically
@@ -1008,7 +1006,8 @@ public class RubyModelManager implements IContentTypeChangeListener, ISavePartic
             };
             job.setSystem(true);
             job.setPriority(Job.SHORT); // process asap
-            job.schedule(); 			
+            //Lagutko, 27.11.2009, schedule this job not now but after 50 milliseconds
+            job.schedule(50); 			
         } catch (RuntimeException e) {
             shutdown();
             throw e;
@@ -1028,7 +1027,7 @@ public class RubyModelManager implements IContentTypeChangeListener, ISavePartic
     	// TODO Erase these two line sthat were here for RDT backwards compatibility?
         loadVariablesAndContainers(getDefaultPreferences());
 		loadVariablesAndContainers(getInstancePreferences());
-
+		
 		// load variables and containers from saved file into cache
 		File file = getVariableAndContainersFile();
 		DataInputStream in = null;
