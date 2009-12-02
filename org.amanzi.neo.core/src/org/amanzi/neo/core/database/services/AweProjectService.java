@@ -832,6 +832,8 @@ public class AweProjectService {
             return chartItemNode;
         } finally {
             transaction.finish();
+            //Lagutko, 2.12.2009, creating of ChartItem calls from Main thread so we should commit using Provider  
+            NeoServiceProvider.getProvider().commit();
         }
     }
     /**
