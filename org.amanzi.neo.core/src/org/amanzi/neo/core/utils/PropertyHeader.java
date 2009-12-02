@@ -316,10 +316,10 @@ public class PropertyHeader {
     /**
      * @return
      */
-    public String[] getSectorNames() {
-        if (GisTypes.NETWORK != gisType) {
-            return null;
-        }
+    public String[] getSectorOrMeasurmentNames() {
+//        if (GisTypes.NETWORK != gisType) {
+//            return null;
+//        }
         Set<String> result = new HashSet<String>();
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
         if (propRel != null) {

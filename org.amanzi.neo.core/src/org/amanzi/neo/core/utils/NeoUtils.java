@@ -579,4 +579,32 @@ public class NeoUtils {
         }
     }
 
+    /**
+     * Gets name of ms childs
+     * 
+     * @param node - mp node
+     * @param msName - property , that forms the name
+     * @return cummulative name
+     */
+    public static String getMsNames(Node node, final String msName) {
+        String delim = ", ";
+        StringBuilder result = new StringBuilder("");
+        Traverser traverse = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node curNode = currentPos.currentNode();
+                return getNodeType(curNode, "").equals(INeoConstants.HEADER_MS) && curNode.hasProperty(msName);
+            }
+        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+        for (Node nodeMs : traverse) {
+
+            result.append(nodeMs.getProperty(msName).toString()).append(delim);
+        }
+        if (result.length() > delim.length()) {
+            result.setLength(result.length() - delim.length());
+        }
+        return result.toString();
+    }
+
 }

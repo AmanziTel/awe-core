@@ -78,6 +78,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private Color fillColor = new Color(200, 128, 255, (int)(0.6*255.0));
     private Color labelColor = Color.DARK_GRAY;
     private Node aggNode;
+    private String mpName;
+    private String msName;
+    private boolean normalSiteName;
+    private boolean notMsLabel;
     private static final Color COLOR_HIGHLIGHTED = Color.CYAN;;
     private static final Color COLOR_HIGHLIGHTED_SELECTED = Color.RED;
 
@@ -138,7 +142,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         Font font = g.getFont();
         int fontSize = font.getSize();
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
-        NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);     
+        NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);
+        mpName = NeoStyleContent.DEF_SITE_NAME;
+        msName = NeoStyleContent.DEF_SECTOR_NAME;
         if (neostyle!=null){
         	fillColor=neostyle.getFill();
         	drawColor=neostyle.getLine();
@@ -160,10 +166,14 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 maxSitesLabel = 50;
                 maxSitesLite = 500;
                 maxSitesFull = 50;
+                mpName = neostyle.getSiteName();
+                msName = neostyle.getSectorName();
             } catch (Exception e) {
                 //TODO: we can get here if an old style exists, and we have added new fields
             }
         }
+        normalSiteName = NeoStyleContent.DEF_SITE_NAME.equals(mpName);
+        notMsLabel = NeoStyleContent.DEF_SECTOR_NAME.equals(msName);
         g.setFont(font.deriveFont((float)fontSize));
 
         int drawWidth = 1 + 2*drawSize;
@@ -420,7 +430,24 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         g.rotate(-theta);
         g.setColor(labelColor);
         //g.drawString(""+Integer.toString(count)+": "+node.toString(), 10, 5);
-        g.drawString(node.toString(), 10, 5);
+        g.drawString(getPointLabel(node), 10, 5);
+    }
+
+    /**
+     *Gets label of mp node
+     * 
+     * @param node GeoNode
+     * @return String
+     */
+    private String getPointLabel(GeoNode node) {
+        String pointName = normalSiteName ? node.toString() : node.getNode().getProperty(mpName, node.toString()).toString();
+        if (!notMsLabel) {
+            String msNames = NeoUtils.getMsNames(node.getNode(), msName);
+            if (!msNames.isEmpty()) {
+                pointName += ", " + msNames;
+            }
+        }
+        return pointName;
     }
 
     /**

@@ -127,4 +127,6 @@ public class INeoConstants {
     public static final String COLOR_LEFT = "color left";
     /** INeoConstants COLOR_RIGHT field */
     public static final String COLOR_RIGHT = "color right";
+    public static final String COLOR_MIDDLE = "color middle";
+    public static final String MIDDLE_RANGE = "MIDDLE_RANGE";
 }
