@@ -491,6 +491,9 @@ public class NeoSplashUtil {
 	        transaction.success();
 	        transaction.finish();
 	        NeoServiceProvider.getProvider().commit();
+	        
+	        //Lagutko, 3.12.2009, open a Spreadsheet
+	        openSpreadsheet(PlatformUI.getWorkbench(), comparator.getSpreadsheet());
 	    }
 	}
 }
