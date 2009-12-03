@@ -30,12 +30,11 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
 
-
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Network Site loader
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
