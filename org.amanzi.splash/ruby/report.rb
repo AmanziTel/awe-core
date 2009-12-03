@@ -1,7 +1,7 @@
 require 'java'
+require 'neo4j'
 
-#require 'neo4j'
-require 'neo4j/auto_tx'
+#require 'neo4j/auto_tx'
 require 'ruby/cell'
 
 include_class org.amanzi.neo.core.database.nodes.CellID
@@ -21,7 +21,9 @@ Neo4j::start(neo_service)
 module NodeUtils
   def children_of(parent_id)
     begin
-      Neo4j.load(parent_id).relationships.outgoing(:CHILD).nodes
+      Neo4j::Transaction.run {
+        Neo4j.load(parent_id).relationships.outgoing(:CHILD).nodes
+      }
     rescue Exception =>exc
       puts "children_of: an exception occured #{exc}"
       nil
@@ -161,94 +163,114 @@ class ReportTable
   end
 
   def  get_data
-    if !@nodes.nil?
-      #      puts @nodes.class
-      begin
-        @nodes.each do |n|
-          #          puts "n.class->   #{n.class}"
-          n=Neo4j.load(n) if n.is_a? Fixnum
-          @properties=n.props.keys if @properties.nil?
-          row=Array.new
-          @properties.each {|p| if p!="id" then row<<n.get_property(p).to_s else row<<n.neo_node_id.to_s end}
-          addRow(row.to_java(java.lang.String))
+    Neo4j::Transaction.run {
+      if !@nodes.nil?
+        #      puts @nodes.class
+        begin
+          @nodes.each do |n|
+            n=Neo4j.load(n) if n.is_a? Fixnum
+            @properties=n.props.keys if @properties.nil?
+            row=Array.new
+            @properties.each {|p| if p!="id" then row<<n.get_property(p).to_s else row<<n.neo_node_id.to_s end}
+            addRow(row.to_java(java.lang.String))
+          end
+          setHeaders(@properties.to_java(java.lang.String)) if @properties.is_a? Array
+        rescue =>e
+          puts "An exception occured #{e}"
         end
-        setHeaders(@properties.to_java(java.lang.String)) if @properties.is_a? Array
-      rescue =>e
-        puts "An exception occured #{e}"
-      end
-    elsif !@sheet.nil?
-      sheetName=@sheet
-      sheetNodes=Neo4j.load($RUBY_PROJECT_NODE_ID).traverse.outgoing(:SPREADSHEET).depth(:all).filter      do
-        get_property(:name)== sheetName
-      end
-      range=@range
-      columnNodes=sheetNodes.first.traverse.outgoing(:COLUMN).depth(1).filter do
-        #          puts "sheetNode.traverse.outgoing(:COLUMN) #{get_property(:name)}"
-        puts get_property(:name)
-        index=CellID.getColumnIndexFromCellID(get_property(:name))
-        puts "index #{index}"
-        index>=range.begin.getColumnIndex() and index<=range.end.getColumnIndex()
-      end
-      columnNodes.each do |col|
-        puts "---> col #{col}"
-        cells=col.traverse.outgoing(:COLUMN_CELL).depth(1).filter do
-          name=relationship(:ROW_CELL,:incoming).start_node[:name]
-          puts "cells row name #{name}"
-          rowIndex=name.to_i
-          rowIndex>=range.begin.getRowName().to_i and rowIndex<=range.end.getRowName().to_i
-          true
+      elsif !@sheet.nil?
+        sheetName=@sheet
+        sheetNodes=Neo4j.load($RUBY_PROJECT_NODE_ID).traverse.outgoing(:SPREADSHEET).depth(:all).filter      do
+          get_property(:name)== sheetName
         end
-        cells.each {|cell| puts "cell #{cell}"}
+        range=@range
+        columnNodes=sheetNodes.first.traverse.outgoing(:COLUMN).depth(1).filter do
+          #          puts "sheetNode.traverse.outgoing(:COLUMN) #{get_property(:name)}"
+          puts get_property(:name)
+          index=CellID.getColumnIndexFromCellID(get_property(:name))
+          puts "index #{index}"
+          index>=range.begin.getColumnIndex() and index<=range.end.getColumnIndex()
+        end
+        columnNodes.each do |col|
+          puts "---> col #{col}"
+          cells=col.traverse.outgoing(:COLUMN_CELL).depth(1).filter do
+            name=relationship(:ROW_CELL,:incoming).start_node[:name]
+            puts "cells row name #{name}"
+            rowIndex=name.to_i
+            rowIndex>=range.begin.getRowName().to_i and rowIndex<=range.end.getRowName().to_i
+            true
+          end
+          cells.each {|cell| puts "cell #{cell}"}
+        end
+        #      TODO traverse rows and columns
+
       end
-      #      TODO traverse rows and columns
-    end
+    }
   end
-  transactional :get_data
+#  transactional :get_data
 end
 
 class Chart
   include NodeUtils
   extend Neo4j::TransactionalMixin
 
-  attr_accessor :sheet, :name
-  attr_writer :categories,:values, :nodes, :statistics, :property, :distribute, :select
+  attr_accessor :sheet, :name, :type
+  attr_writer :categories,:values, :nodes, :statistics
+  attr_writer:property, :distribute, :select
+  attr_writer :drive, :event, :property1, :property2, :start_time, :length
   def initialize(name)
     self.name = name
   end
 
   def setup(&block)
     self.instance_eval &block if block_given?
-    if !@sheet.nil?
-      if !@categories.nil?
-        if @categories.is_a? Range
-          setCategories(@categories.begin,@categories.end)
-        elsif @categories.is_a? String
-          setCategoriesProperty(@categories)
-        end
-      end
-      if !@values.nil?
-        if @values.is_a? Range
-          setValues(@values.begin,@values.end)
-        elsif @values.is_a? Array
-          setValuesProperties(@values.to_java(java.lang.String))
-        end
-        setSheet(@sheet) if !@sheet.nil?
-      end
-    elsif !@nodes.nil?
-      if @nodes.is_a? Array
-        setNodeIds(@nodes.to_java(java.lang.Long))
-      end
-    elsif !@statistics.nil?
-      dataset_node=find_dataset(@statistics)
-      puts "dataset_node #{dataset_node}"
-      if !@property.nil? and !@distribute.nil? and !@select.nil?
-        puts "@property #{@property} @distribute #{@distribute} @select #{@select} "
-        aggr_node=find_aggr_node(dataset_node,@property,@distribute,@select)
-        puts "aggr_node #{aggr_node}"
-        setDataset(create_chart_dataset(aggr_node))
+    Neo4j::Transaction.run {
+      begin
+        @type=:bar if @type.nil?
+        setChartType(Java::org.amanzi.splash.chart.ChartType.value_of(@type.to_s.upcase))
+        if !@sheet.nil?
+          if !@categories.nil?
+            if @categories.is_a? Range
+              setCategories(@categories.begin,@categories.end)
+            elsif @categories.is_a? String
+              setCategoriesProperty(@categories)
+            end
+          end
+          if !@values.nil?
+            if @values.is_a? Range
+              setValues(@values.begin,@values.end)
+            elsif @values.is_a? Array
+              setValuesProperties(@values.to_java(java.lang.String))
+            end
+            setSheet(@sheet)
+          end
+        elsif !@nodes.nil?
+          if @nodes.is_a? Array
+            setNodeIds(@nodes.to_java(java.lang.Long))
+          end
+        elsif !@statistics.nil?
+          dataset_node=find_dataset(@statistics)
+          #      puts "dataset_node #{dataset_node}"
+          if !@property.nil? and !@distribute.nil? and !@select.nil?
+            #        puts "@property #{@property} @distribute #{@distribute} @select #{@select} "
+            aggr_node=find_aggr_node(dataset_node,@property,@distribute,@select)
+            #        puts "aggr_node #{aggr_node}"
+            setDataset(create_chart_dataset(aggr_node))
 
+          end
+        elsif !@drive.nil?
+          dataset_node=find_dataset(@drive)
+          puts "dataset_node #{dataset_node}"
+          puts "@event #{@event}"
+          puts "@property1 #{@property1}"
+          puts "@property2 #{@property2}"
+          puts "@start_time #{@start_time}"
+          puts "@length #{@length}"
+        end
+      rescue =>e
+        puts "An exception occured during chart setup: #{e}"
       end
-    end
+    }
     self
   end
   transactional :find_dataset, :find_aggr_node, :create_chart_dataset
