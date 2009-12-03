@@ -36,7 +36,6 @@ import java.util.TreeSet;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 import net.refractions.udig.ui.PlatformGIS;
@@ -55,15 +54,11 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.editors.ReportEditor;
-import org.eclipse.core.internal.resources.File;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -89,10 +84,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.geotools.brewer.color.BrewerPalette;
@@ -144,6 +136,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String SELECT_LABEL = "Select";
     private static final String DISTRIBUTE_LABEL = "Distribute";
     private static final String LABEL_INFO = "Selected values";
+	private static final String LABEL_INFO_BLEND = "Selected values";
     private static final String ERROR_TITLE = "Chart calculation";
     private static final String ERROR_MSG = "There are too many categories for this selection";
     private static final String LOG_LABEL = "Logarithmic counts";
@@ -203,6 +196,12 @@ public class ReuseAnalyserView extends ViewPart {
     private List<String> allFields;
     private List<String> numericFields;
     private Button bReport;
+	private ColorEditor colorMiddle;
+	private Button threeBlend;
+	private Label lThreeBlend;
+    private Label ltblendInformation;
+    private Text ttblendInformation;
+    private ChartNode middleColumn;
     private static final Color DEFAULT_COLOR = new Color(0.75f, 0.7f, 0.4f);
     private static final Color COLOR_SELECTED = Color.RED;
     private static final Color COLOR_LESS = Color.BLUE;
@@ -213,8 +212,11 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String BLEND = "blend";
     private static final String TT_LEFT_BAR = "left bar color ";
     private static final String TT_RIGHT_BAR = "right bar color";
+	private static final String TT_MIDLE_BAR = "third bar color";
     private static final RGB DEFAULT_LEFT = new RGB(255, 0, 0);
     private static final RGB DEFAULT_RIGHT = new RGB(0, 255, 0);
+    private static final RGB DEFAULT_MIDDLE = new RGB(127, 127, 0);
+	private static final String THIRD_BLEND = "third color";
 
 
     public void createPartControl(Composite parent) {
@@ -267,10 +269,27 @@ public class ReuseAnalyserView extends ViewPart {
         colorLeft.getButton().setToolTipText(TT_LEFT_BAR);
         colorRight = new ColorEditor(parent);
         colorRight.getButton().setToolTipText(TT_RIGHT_BAR);
+
+		threeBlend = new Button(parent, SWT.CHECK);
+		threeBlend.setSelection(false);
+		lThreeBlend = new Label(parent, SWT.NONE);
+		lThreeBlend.setText(THIRD_BLEND);
+
+		colorMiddle = new ColorEditor(parent);
+		colorMiddle.getButton().setToolTipText(TT_MIDLE_BAR);
+
         lBlend.setVisible(false);
         blend.setVisible(false);
+		lThreeBlend.setVisible(false);
+		threeBlend.setVisible(false);
         colorLeft.getButton().setVisible(false);
-        colorRight.getButton().setVisible(false);
+		colorRight.getButton().setVisible(false);
+		colorMiddle.getButton().setVisible(false);
+        ltblendInformation = new Label(parent, SWT.NONE);
+        ltblendInformation.setText(LABEL_INFO_BLEND);
+        ttblendInformation = new Text(parent, SWT.BORDER);
+        ttblendInformation.setVisible(false);
+        ltblendInformation.setVisible(false);
         lPalette = new Label(parent, SWT.NONE);
         lPalette.setText(PALETTE_LABEL);
         cPalette = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -301,7 +320,8 @@ public class ReuseAnalyserView extends ViewPart {
         };
         colorLeft.addSelectionListener(listener);
         colorRight.addSelectionListener(listener);
-        blend.addSelectionListener(new SelectionListener() {
+		colorMiddle.addSelectionListener(listener);
+		SelectionListener blendListener = new SelectionListener() {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -312,7 +332,9 @@ public class ReuseAnalyserView extends ViewPart {
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
-        });
+		};
+		blend.addSelectionListener(blendListener);
+		threeBlend.addSelectionListener(blendListener);
         cPalette.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -404,6 +426,14 @@ public class ReuseAnalyserView extends ViewPart {
                             setSelection(null);
                         }
                     }
+                } else {
+                    if (threeBlend.getSelection()) {
+                        CategoryItemEntity entity = (CategoryItemEntity)chartmouseevent.getEntity();
+                        Comparable columnKey = entity.getColumnKey();
+                        middleColumn = (ChartNode)columnKey;
+                        setMiddleSelectionName(middleColumn);
+                        chartUpdate();
+                    }
                 }
             }
         });
@@ -482,16 +512,40 @@ public class ReuseAnalyserView extends ViewPart {
         cDistribute.addSelectionListener(selectComboSelectionListener);
         tSelectedInformation.addFocusListener(new FocusListener() {
 
+			@Override
+			public void focusLost(FocusEvent e) {
+				findSelectionInformation();
+			}
+
+			@Override
+			public void focusGained(FocusEvent e) {
+			}
+		});
+		tSelectedInformation.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.keyCode == SWT.KEYPAD_CR || e.keyCode == 13) {
+					findSelectionInformation();
+				}
+			}
+		});
+        ttblendInformation.addFocusListener(new FocusListener() {
+
             @Override
             public void focusLost(FocusEvent e) {
-                findSelectionInformation();
+                changeMiddleRange();
             }
 
             @Override
             public void focusGained(FocusEvent e) {
             }
         });
-        tSelectedInformation.addKeyListener(new KeyListener() {
+        ttblendInformation.addKeyListener(new KeyListener() {
 
             @Override
             public void keyReleased(KeyEvent e) {
@@ -500,7 +554,7 @@ public class ReuseAnalyserView extends ViewPart {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.keyCode == SWT.KEYPAD_CR || e.keyCode == 13) {
-                    findSelectionInformation();
+                    changeMiddleRange();
                 }
             }
         });
@@ -511,10 +565,30 @@ public class ReuseAnalyserView extends ViewPart {
         setColorThema(false);
     }
 
-    /**
-     * @param propertyName name of property
-     * @return true if propertyName is String property
-     */
+	/**
+	 *Change the middle color position
+	 */
+    protected void changeMiddleRange() {
+        double valueToFind;
+        try {
+            valueToFind = Double.parseDouble(ttblendInformation.getText());
+            middleColumn = findColumnByValue(valueToFind);
+
+        } catch (NumberFormatException e) {
+            ChartNode column = findColumnByName(ttblendInformation.getText());
+            if (column != null) {
+                middleColumn = column;
+            }
+        }
+        setMiddleSelectionName(middleColumn);
+        chartUpdate();
+    }
+
+	/**
+	 * @param propertyName
+	 *            name of property
+	 * @return true if propertyName is String property
+	 */
     protected boolean isStringProperty(String propertyName) {
         return !numericFields.contains(propertyName) && !isAggregatedProperty(propertyName);
     }
@@ -544,6 +618,17 @@ public class ReuseAnalyserView extends ViewPart {
                     RGB rgbRight = colorRight.getColorValue();
                     if (rgbRight != null) {
                         saveColor(dataset.getAggrNode(), INeoConstants.COLOR_RIGHT, rgbRight);
+					}
+					RGB rgbMiddle = colorMiddle.getColorValue();
+					if (rgbMiddle != null) {
+                        saveColor(dataset.getAggrNode(), INeoConstants.COLOR_MIDDLE, rgbMiddle);
+                    }
+                    if (dataset.getAggrNode() != null) {
+                        String middleRange = getMiddleRange();
+                        if (middleRange == null) {
+                            middleRange = "";
+                        }
+                        dataset.getAggrNode().setProperty(INeoConstants.MIDDLE_RANGE, middleRange);
                     }
                     return Status.OK_STATUS;
                 } finally {
@@ -558,6 +643,32 @@ public class ReuseAnalyserView extends ViewPart {
             // TODO Handle InterruptedException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
+    }
+
+    /**
+     * @return
+     */
+    protected String getMiddleRange() {
+        String stringValue = middleColumn == null ? null : middleColumn.toString();
+        return stringValue;
+        // try {
+        //
+        // return stringValue.trim().isEmpty() ? getDefaultRange() :
+        // Double.parseDouble(stringValue);
+        // } catch (NumberFormatException e) {
+        // return getDefaultRange();
+        // }
+
+    }
+
+    /**
+     * Gets the middle of range
+     * 
+     * @return
+     */
+    private ChartNode getDefaultRange() {
+        int size = dataset.nodeList.size();
+        return size > 0 ? dataset.nodeList.get(size / 2) : null;
     }
 
     /**
@@ -582,7 +693,6 @@ public class ReuseAnalyserView extends ViewPart {
      * change theme to blend
      */
     protected void changeBlendTheme() {
-        boolean blendTheme = blend.getSelection();
         setVisibleForColoredTheme(true);
         chartUpdate();
     }
@@ -740,6 +850,22 @@ public class ReuseAnalyserView extends ViewPart {
     }
 
     /**
+     * Finds column,which contains necessary name
+     * 
+     * @param valueToFind value to find
+     * @return column or null
+     */
+    private ChartNode findColumnByName(String columnName) {
+        for (int i = 0; i < dataset.getColumnCount(); i++) {
+            ChartNode column = (ChartNode)dataset.getColumnKey(i);
+            if (column.toString().equals(columnName)) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    /**
      * sets visibility of chart and depends element
      * 
      * @param isVisible - visibility
@@ -771,6 +897,12 @@ public class ReuseAnalyserView extends ViewPart {
         cPalette.setVisible(isVisible && !blendTheme);
         colorLeft.getButton().setVisible(isVisible && blendTheme);
         colorRight.getButton().setVisible(isVisible && blendTheme);
+        lThreeBlend.setVisible(isVisible && blendTheme);
+        threeBlend.setVisible(isVisible && blendTheme);
+        boolean middleBlend=threeBlend.getSelection();
+		colorMiddle.getButton().setVisible(	isVisible && blendTheme && middleBlend);
+        ltblendInformation.setVisible(isVisible && blendTheme && middleBlend);
+        ttblendInformation.setVisible(isVisible && blendTheme && middleBlend);
     }
 
     /**
@@ -822,6 +954,8 @@ public class ReuseAnalyserView extends ViewPart {
         currentPalette = getPalette(aggrNode);
         colorLeft.setColorValue(getColorLeft(aggrNode));
         colorRight.setColorValue(getColorRight(aggrNode));
+        colorMiddle.setColorValue(getColorMiddle(aggrNode));
+
         Combo acPalette;
         String[] array = cPalette.getItems();
         int index = -1;
@@ -835,6 +969,7 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         dataset.setAggrNode(aggrNode);
+        ttblendInformation.setText(getMidleRange(aggrNode).toString());
         if (index < 0) {
             changePalette();
         } else {
@@ -859,6 +994,38 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         return DEFAULT_RIGHT;
+    }
+
+    /**
+     * Gets color of middle bar
+     * 
+     * @param aggrNode aggregation node
+     * @return RGB
+     */
+    private RGB getColorMiddle(Node aggrNode) {
+        if (aggrNode != null) {
+            int[] colors = (int[])aggrNode.getProperty(INeoConstants.COLOR_MIDDLE, null);
+            if (colors != null) {
+                return new RGB(colors[0], colors[1], colors[2]);
+            }
+        }
+        return DEFAULT_MIDDLE;
+    }
+
+    /**
+     * Gets color of middle bar
+     * 
+     * @param aggrNode aggregation node
+     * @return RGB
+     */
+    private ChartNode getMidleRange(Node aggrNode) {
+        if (aggrNode != null) {
+            String range = (String)aggrNode.getProperty(INeoConstants.MIDDLE_RANGE, null);
+            if (range != null) {
+                return findColumnByName(range);
+            }
+        }
+        return getDefaultRange();
     }
 
     /**
@@ -893,19 +1060,44 @@ public class ReuseAnalyserView extends ViewPart {
     protected void changeBarColor() {
         ChartNode selColumn = getSelectedColumn();
         int columnIndex = selColumn == null ? -1 : dataset.getColumnIndex(selColumn);
+        ChartNode midColumn = middleColumn;
+        int midColumnIndex = midColumn == null ? -1 : dataset.getColumnIndex(midColumn);
         RGB leftRgb = colorLeft.getColorValue();
         RGB rightRgb = colorRight.getColorValue();
+        RGB middleRgb = colorMiddle.getColorValue();
         int size = dataset.nodeList.size() - 1;
         float ratio = 0;
+        float ratio2 = 0;
         float perc = size <= 0 ? 1 : (float)1 / size;
+        float percMid1 = midColumnIndex + 1 <= 0 ? 1 : (float)1 / (midColumnIndex + 1);
+        float percMid2 = size - midColumnIndex - 1 <= 0 ? 1 : (float)1 / (size - midColumnIndex - 1);
         for (int i = 0; i < dataset.nodeList.size(); i++) {
             ChartNode chart = dataset.nodeList.get(i);
             if (isColorThema()) {
                 if (blend.getSelection()) {
-                    if (leftRgb != null && rightRgb != null) {
-                        RGB colrRgb = blend(leftRgb, rightRgb, ratio);
-                        ratio += perc;
-                        chart.saveColor(new Color(colrRgb.red, colrRgb.green, colrRgb.blue));
+                    if (threeBlend.getSelection() && midColumnIndex >= 0) {
+                        if (leftRgb != null && rightRgb != null) {
+                            RGB colrRgb;
+                            if (i <= midColumnIndex) {
+                                colrRgb = blend(leftRgb, middleRgb, ratio);
+                                ratio += percMid1;
+                            } else {
+                                ratio2 += percMid2;
+                                if (ratio2 > 1) {
+                                    ratio2 = 1;
+                                }
+                                colrRgb = blend(middleRgb, rightRgb, ratio2);
+                            }
+
+                            chart.saveColor(new Color(colrRgb.red, colrRgb.green, colrRgb.blue));
+                        }
+
+                    } else {
+                        if (leftRgb != null && rightRgb != null) {
+                            RGB colrRgb = blend(leftRgb, rightRgb, ratio);
+                            ratio += perc;
+                            chart.saveColor(new Color(colrRgb.red, colrRgb.green, colrRgb.blue));
+                        }
                     }
                 } else {
                     if (currentPalette == null) {
@@ -977,6 +1169,17 @@ public class ReuseAnalyserView extends ViewPart {
             tSelectedInformation.setText("");
         } else {
             tSelectedInformation.setText(columnKey.toString());
+        }
+    }
+
+    /**
+     * @param columnKey
+     */
+    private void setMiddleSelectionName(ChartNode columnKey) {
+        if (columnKey == null) {
+            ttblendInformation.setText("");
+        } else {
+            ttblendInformation.setText(columnKey.toString());
         }
     }
 
@@ -2387,6 +2590,32 @@ public class ReuseAnalyserView extends ViewPart {
         dLabel.left = new FormAttachment(colorLeft.getButton(), 15);
         dLabel.bottom = new FormAttachment(100, -2);
         colorRight.getButton().setLayoutData(dLabel);
+
+		dLabel = new FormData();
+		dLabel.left = new FormAttachment(threeBlend, 5);
+		dLabel.top = new FormAttachment(threeBlend, 5, SWT.CENTER);
+		lThreeBlend.setLayoutData(dLabel);
+
+		dText = new FormData();
+		dText.left = new FormAttachment(colorRight.getButton(), 15);
+		dText.bottom = new FormAttachment(100, -2);
+		threeBlend.setLayoutData(dText);
+		// --->
+		dLabel = new FormData();
+		dLabel.left = new FormAttachment(lThreeBlend, 15);
+		dLabel.bottom = new FormAttachment(100, -2);
+		colorMiddle.getButton().setLayoutData(dLabel);
+
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(colorMiddle.getButton(), 15);
+        dLabel.top = new FormAttachment(threeBlend, 5, SWT.CENTER);
+        ltblendInformation.setLayoutData(dLabel);
+
+		dText = new FormData();
+		dText.left = new FormAttachment(ltblendInformation, 5);
+		dText.bottom = new FormAttachment(100, -2);
+		ttblendInformation.setLayoutData(dText);
+		// --->
         // ---
         dLabel = new FormData();
         dLabel.left = new FormAttachment(lBlend, 15);
@@ -2429,7 +2658,7 @@ public class ReuseAnalyserView extends ViewPart {
         chartFrame.setLayoutData(dChart);
         
         FormData dReport = new FormData();
-        dReport.left = new FormAttachment(spinAdj, 5);
+        dReport.left = new FormAttachment(ttblendInformation, 15);
         dReport.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
         bReport.setLayoutData(dReport);
     }
