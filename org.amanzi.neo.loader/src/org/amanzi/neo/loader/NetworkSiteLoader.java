@@ -88,7 +88,11 @@ public class NetworkSiteLoader extends AbstractLoader {
             // header.parseLine(sector, fields);
             Map<String, Object> sectorData = networkHeader.getSiteData();
             for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
-                siteNode.setProperty(entry.getKey(), entry.getValue());
+                String key = entry.getKey();
+                if ("type".equals(key)) {
+                    key = "site_type";
+                }
+                siteNode.setProperty(key, entry.getValue());
             }
             incSaved();
             transaction.success();
@@ -144,7 +148,7 @@ public class NetworkSiteLoader extends AbstractLoader {
     private void initializeKnownHeaders() {
         // Known headers that are not sector data properties
         addMainHeader(SITE_ID_KEY, new String[] {"SITE_ID"});
-        addMainHeader("type", new String[] {"TYPE"});
+        // addMainHeader("type", new String[] {"TYPE"});
         // Stop statistics collection for properties we will not save to the sector
         addNonDataHeaders(mainHeaders);
 
