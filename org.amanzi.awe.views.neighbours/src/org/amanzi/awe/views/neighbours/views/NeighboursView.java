@@ -509,6 +509,8 @@ public class NeighboursView extends ViewPart {
             }
 
         }
+        // update element in content provider, because neighbour list was changed
+        provider.elements = provider.getElements2(input);
         if (labelProvider != null) {
             labelProvider.createTableColumn();
         }
