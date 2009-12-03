@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.splash.utilities;
+package org.amanzi.neo.core.utils;
 
 import java.util.ArrayList;
 import java.util.List;

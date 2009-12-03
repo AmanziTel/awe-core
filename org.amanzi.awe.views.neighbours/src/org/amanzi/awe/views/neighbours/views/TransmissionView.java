@@ -500,6 +500,8 @@ public class TransmissionView extends ViewPart {
             }
 
         }
+        // update rows in table TODO check update in NeighbourView
+        provider.elements = provider.getElements2(input);
         if (labelProvider != null) {
             labelProvider.createTableColumn();
         }

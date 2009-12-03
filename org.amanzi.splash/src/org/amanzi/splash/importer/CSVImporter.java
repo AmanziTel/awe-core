@@ -21,9 +21,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.List;
 
+import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.splash.swing.Cell;
-import org.amanzi.splash.utilities.CSVParser;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
