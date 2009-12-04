@@ -68,6 +68,17 @@
                 label="Amanzi Splash Spreadsheet">
           </action>
        </objectContribution>
+       <objectContribution
+             id="org.amanzi.splash.objectContribution1"
+             objectClass="org.rubypeople.rdt.core.IRubyProject">
+          <action
+                class="org.amanzi.splash.ui.wizards.SplashNewSpreadsheetWizardAction"
+                enablesFor="1"
+                icon="icons/splash_16.png"
+                id="org.amanzi.splash.action2"
+                label="Amanzi Splash Spreadsheet">
+          </action>
+       </objectContribution>
     </extension>
 
    
