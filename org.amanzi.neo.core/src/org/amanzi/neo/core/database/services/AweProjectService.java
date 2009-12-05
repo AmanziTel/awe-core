@@ -786,7 +786,7 @@ public class AweProjectService {
      * @return
      * @throws SplashDatabaseException
      */
-    public ChartItemNode createChartItem(ChartNode chartNode, String id) throws SplashDatabaseException {
+    public ChartItemNode createChartItem(ChartNode chartNode, Integer id) throws SplashDatabaseException {
         Transaction transaction = neoService.beginTx();
 
         try {
@@ -813,7 +813,7 @@ public class AweProjectService {
      * @return
      * @throws SplashDatabaseException
      */
-    public ChartItemNode createChartItem(ChartNode chartNode, CellNode catNode, CellNode valNode,String id) throws SplashDatabaseException {
+    public ChartItemNode createChartItem(ChartNode chartNode, CellNode catNode, CellNode valNode,Integer id) throws SplashDatabaseException {
         Transaction transaction = neoService.beginTx();
 
         try {

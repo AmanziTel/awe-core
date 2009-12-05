@@ -16,6 +16,8 @@ package org.amanzi.splash.chart;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.ChartItemNode;
@@ -75,7 +77,9 @@ public class Charts implements IElementFactory {
     public static DefaultCategoryDataset createBarChartDataset(ChartNode chartNode) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         int countBad = 0;
-        for (ChartItemNode node : chartNode.getAllChartItems()) {
+        List<ChartItemNode> allChartItems = chartNode.getAllChartItems();
+        Collections.sort(allChartItems);
+        for (ChartItemNode node : allChartItems) {
             double nodeValue = 0.0;
             try {
                 String value = (String)node.getValueNode().getValue();
@@ -167,7 +171,9 @@ public class Charts implements IElementFactory {
     public static DefaultPieDataset createPieChartDataset(ChartNode chartNode) {
         DefaultPieDataset dataset = new DefaultPieDataset();
         try {
-            for (ChartItemNode node : chartNode.getAllChartItems()) {
+            List<ChartItemNode> allChartItems = chartNode.getAllChartItems();
+            Collections.sort(allChartItems);
+            for (ChartItemNode node : allChartItems) {
                 dataset.setValue((String)node.getCategoryNode().getValue(), Double.parseDouble((String)node.getValueNode()
                         .getValue()));
             }

@@ -241,7 +241,7 @@ public class SpreadsheetService {
 	 * @deprecated
 	 * 
 	 */
-	public ChartItemNode createChartItem(ChartNode chartNode, String id) throws SplashDatabaseException {
+	public ChartItemNode createChartItem(ChartNode chartNode, Integer id) throws SplashDatabaseException {
 		Transaction transaction = neoService.beginTx();
 
 		try {

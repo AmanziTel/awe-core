@@ -117,7 +117,7 @@ public class ChartNode extends AbstractNode {
 	 */    
 	private class ChartItemIterator extends AbstractIterator<ChartItemNode> {
 
-		public ChartItemIterator(final String ChartItemIndex) {            
+		public ChartItemIterator(final Integer ChartItemIndex) {            
 			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST, 
 					StopEvaluator.DEPTH_ONE, 
 					new ReturnableEvaluator() {
@@ -140,7 +140,7 @@ public class ChartNode extends AbstractNode {
 		}
 	}
 
-	public ChartItemNode getChartItem(String chartItemName) throws SplashDatabaseException {
+	public ChartItemNode getChartItem(Integer chartItemName) throws SplashDatabaseException {
 		Iterator<ChartItemNode> iterator = new ChartItemIterator(chartItemName);
         
         if (iterator.hasNext()) {

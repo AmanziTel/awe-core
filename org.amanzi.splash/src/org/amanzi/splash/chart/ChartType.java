@@ -22,5 +22,5 @@ package org.amanzi.splash.chart;
  * @since 1.0.0
  */
 public enum ChartType {
-    BAR,PIE;
+    BAR,PIE,LINE;
 }

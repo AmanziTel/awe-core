@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.splash.chart.ChartType;
 import org.amanzi.splash.report.IReportPart;
 import org.jfree.data.general.AbstractDataset;
 
@@ -31,6 +32,7 @@ import org.jfree.data.general.AbstractDataset;
  */
 public class Chart implements IReportPart {
     private String name;
+    private ChartType chartType;
     private Pair<CellID, CellID> categories;
     private Pair<CellID, CellID> values;
     private String sheet;
@@ -84,6 +86,20 @@ public class Chart implements IReportPart {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * @return Returns the chartType.
+     */
+    public ChartType getChartType() {
+        return chartType;
+    }
+
+    /**
+     * @param chartType The chartType to set.
+     */
+    public void setChartType(ChartType chartType) {
+        this.chartType = chartType;
     }
 
     /**

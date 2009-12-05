@@ -1193,7 +1193,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 			Cell c = (Cell) ((SplashTableModel) table.getModel()).getValueAt(firstRow, firstColumn + i);
 
 			try {
-				items[i] = service.createChartItem(chartNode, "item" + i);
+				items[i] = service.createChartItem(chartNode, i);
 			} catch (SplashDatabaseException e) {
 				SplashPlugin.error(null, e);
 			}
@@ -1361,20 +1361,39 @@ public abstract class AbstractSplashEditor extends EditorPart implements
         int n = categories.length;
         int m = values.length;
         int k = m/n;
-//        assert n == values.length : "Categories length should be equal to values length!";
-
-        ChartItemNode[] items = new ChartItemNode[m];
-        for (int i=0;i<n;i++){
-                CellNode catNode = service.getCellNode(spreadsheet, categories[i].getRow(), categories[i].getColumn());
-                NeoSplashUtil.logn("categories["+i+"]="+ categories[i].getCellID());
-            for (int j=0;j<k;j++){
-                CellNode valNode = service.getCellNode(spreadsheet, values[i+n*j].getRow(), values[i+n*j].getColumn());
-                NeoSplashUtil.logn("j="+j +"; values[(i+n*j)="+(i+n*j) +"]="+values[i+n*j].getCellID());
+        boolean useFirstRowAsSeries = false;
+        int j = 0;
+        if (k != 1) {//if values range is rectangle instead of a single row/column
+            while (j < k) {
+                Object value = values[n * j].getValue();
+                if (!(value instanceof Number)) {
+                    if (value instanceof String)
+                        try {
+                            Double.parseDouble((String)value);
+                        } catch (NumberFormatException e) {
+                            useFirstRowAsSeries = true;
+                            break;
+                        }
+                }
+                j++;
+            }
+        }
+        NeoSplashUtil.logn("useFirstRowAsSeries? " + useFirstRowAsSeries);
+        ChartItemNode[] items = new ChartItemNode[useFirstRowAsSeries?m-k:m];
+        for (int i = 0; i < n; i++) {
+            if (i==0 && useFirstRowAsSeries) continue;
+            CellNode catNode = service.getCellNode(spreadsheet, categories[i].getRow(), categories[i].getColumn());
+            NeoSplashUtil.logn("categories[" + i + "]=" + categories[i].getCellID());
+            for (j = 0; j < k; j++) {
+                int val_index = i + n * j;
+                int item_index = useFirstRowAsSeries?(i -1)+ (n-1) * j:i + n * j;
+                CellNode valNode = service.getCellNode(spreadsheet, values[val_index].getRow(), values[val_index].getColumn());
+                NeoSplashUtil.logn("j=" + j + "; values[(i+n*j)=" + (val_index) + "]=" + values[val_index].getCellID());
                 try {
-                    items[i+n*j] = projectService.createChartItem(chartNode, catNode,valNode,"item" + (i+n*j));
-                    String series = "Series "+j;
-                    NeoSplashUtil.logn("Series for j="+j +": "+ series);
-                    items[i+n*j].setChartItemSeries(series);
+                    items[item_index] = projectService.createChartItem(chartNode, catNode, valNode, val_index);
+                    String series = useFirstRowAsSeries ? values[n * j].getValue().toString() : "Series " + j;
+                    NeoSplashUtil.logn("Series for j=" + j + ": " + series);
+                    items[item_index].setChartItemSeries(series);
                 } catch (SplashDatabaseException e) {
                     NeoSplashUtil.logn(e.getMessage());
                 }

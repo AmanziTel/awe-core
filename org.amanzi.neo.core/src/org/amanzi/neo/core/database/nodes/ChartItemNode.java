@@ -17,7 +17,7 @@ import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 
-public class ChartItemNode extends AbstractNode {
+public class ChartItemNode extends AbstractNode implements Comparable<ChartItemNode>{
 
 	/** String DEFAULT_CHART_ITEM_VALUE field */
     private static final String DEFAULT_CHART_ITEM_VALUE = "0";
@@ -53,15 +53,13 @@ public class ChartItemNode extends AbstractNode {
         setParameter(CHART_ITEM_NAME, chartName);
     }
     
-	public void setChartItemIndex(String newChartItemIndex) {
-		// TODO Auto-generated method stub
-
+	public void setChartItemIndex(Integer newChartItemIndex) {
 		setParameter(CHART_ITEM_INDEX, newChartItemIndex);
 
 	}
 
-	public String getChartItemIndex() {
-		return (String)getParameter(CHART_ITEM_INDEX);
+	public Integer getChartItemIndex() {
+		return (Integer)getParameter(CHART_ITEM_INDEX);
 	}
 
 
@@ -128,4 +126,11 @@ public class ChartItemNode extends AbstractNode {
     public CellNode getValueNode(){
         return CellNode.fromNode(node.getSingleRelationship(SplashRelationshipTypes.CHART_VALUE, Direction.OUTGOING).getEndNode());
     }
+
+    @Override
+    public int compareTo(ChartItemNode o) {
+        return getChartItemIndex().compareTo(o.getChartItemIndex());
+    }
+
+   
 }
