@@ -59,7 +59,6 @@ public class ExcelImporter extends AbstractImporter {
     }
 
     @Override
-    @SuppressWarnings(value = {"deprecation", "unchecked"})
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         POIFSFileSystem fileSystem = null;
         
@@ -75,8 +74,10 @@ public class ExcelImporter extends AbstractImporter {
             createRootSpreadsheet();
             
             for (int i = 0; i < workBook.getNumberOfSheets(); i++) {
-                createSheet(workBook.getSheetAt(i), workBook.getSheetName(i), monitor);
+                createSheet(workBook.getSheetAt(i), workBook.getSheetName(i), tx);
+                monitor.worked(100 * (i + 1) / workBook.getNumberOfNames());
             }
+            monitor.done();
             
         }
         catch (IOException e)
@@ -104,20 +105,17 @@ public class ExcelImporter extends AbstractImporter {
      * @param sheetName name of sheet
      * @param monitor monitor
      */
-    private void createSheet(HSSFSheet sheet, String sheetName, IProgressMonitor monitor) {
+    @SuppressWarnings(value = {"deprecation", "unchecked"})
+    private void createSheet(HSSFSheet sheet, String sheetName, Transaction transaction) {
         spreadsheetNode = null;
         spreadsheetName = sheetName;
         
-        Transaction tx = NeoUtils.beginTransaction();
         
         createSpreadsheet(rootSpreadsheet);
-        
         try
         {
             Iterator<HSSFRow> rows     = sheet.rowIterator ();
             
-            int rowCount = sheet.getLastRowNum();
-
             while (rows.hasNext ())
             {
                 HSSFRow row = rows.next ();
@@ -128,7 +126,11 @@ public class ExcelImporter extends AbstractImporter {
                 //once get a row its time to iterate through cells.
                 Iterator<HSSFCell> cells = row.cellIterator ();
                 
-                int R = row.getRowNum ();
+                int R = row.getRowNum();
+                
+                if ((R % 20) == 0) {
+                    updateTransaction(transaction);
+                }
 
                 while (cells.hasNext ())
                 {
@@ -198,15 +200,11 @@ public class ExcelImporter extends AbstractImporter {
                         break;
                     }
                     }
-                }
-                
-                int percentage = (int)(100 * ((float)R/(float)rowCount));
-                monitor.worked(percentage);
+                }                                
             }
         }
         finally {
-            tx.success();
-            tx.finish();
+            updateTransaction(transaction);            
         }
     }
     
