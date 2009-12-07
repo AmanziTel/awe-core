@@ -342,6 +342,7 @@ public class NetworkRenderer extends RendererImpl {
                     // }
                     // }
                     if (selected) {
+                        selected = false;
                         DELTA_LOOP: for (Node rnode:node.getNode().traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.MISSING, Direction.INCOMING, NetworkRelationshipTypes.DIFFERENT, Direction.INCOMING)){
                             if (geoNeo.getSelectedNodes().contains(rnode)) {
                                 selected = true;
