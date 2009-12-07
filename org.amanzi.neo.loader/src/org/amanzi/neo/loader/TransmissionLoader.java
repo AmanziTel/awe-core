@@ -202,7 +202,7 @@ public class TransmissionLoader {
      * @author Cinkel_A
      * @since 1.0.0
      */
-    public static class Header {
+    public class Header {
 
         private static final String STRING = "STRING";
         /** String DOUBLE field */
@@ -212,22 +212,18 @@ public class TransmissionLoader {
         private static final int CACH_SIZE = 10000;
         private static final String KEY_ID = "name";
         private static final String KEY_ID2 = "name2";
-        private Integer btsName = null;
-        private Integer ci = null;
-        private Integer lac = null;
-        private Integer abjBtsName = null;
-        private Integer adjCi = null;
-        private Integer adjLac = null;
         private Map<Integer, Pair<String, String>> indexMap = new LinkedHashMap<Integer, Pair<String, String>>();
         private NodeName serverNodeName;
         private NodeName neighbourNodeName;
         private String[] headers;
-        private Map<String, Pair<Node, Integer>> cach = new HashMap<String, Pair<Node, Integer>>();
+        // private Map<String, Pair<Node, Integer>> cach = new HashMap<String, Pair<Node,
+        // Integer>>();
         private LuceneIndexService index;
         private final NeoService neo;
         private char fieldSepRegex;
         private char[] possibleFieldSepRegexes = new char[] {'\t', ',', ';'};
         private CSVParser parser;
+        private Node lastNode = null;
 
         /**
          * Constructor
@@ -239,15 +235,10 @@ public class TransmissionLoader {
 
             determineFieldSepRegex(line);
             headers = splitLine(line);
-            // headers = line.split("\\t");
-            // TODO refactoring
-            // for (int i = 0; i < headers.length; i++) {
-            // if (headers[i].startsWith("\"")) {
-            // headers[i] = headers[i].substring(1, headers[i].length() - 1);
-            // }
-            // }
-            serverNodeName = new NodeName(ID1, ID2, ID3);
-            neighbourNodeName = new NodeName(ID1, ID2, ID3);
+            serverNodeName = new NodeName(new String[] {ID1, "Near end Name"}, new String[] {ID2, "Near End Site No"},
+                    new String[] {ID3});
+            neighbourNodeName = new NodeName(new String[] {ID1, "Far end Name"}, new String[] {ID2, "Far End Site No"},
+                    new String[] {ID3});
             for (int i = 0; i < headers.length; i++) {
                 String fieldHeader = headers[i];
                 if (serverNodeName.setFieldIndex(fieldHeader, i)) {
@@ -262,7 +253,6 @@ public class TransmissionLoader {
 
         protected String[] splitLine(String line) {
             return parser.parse(line).toArray(new String[0]);
-            // return line.split(fieldSepRegex);
         }
 
         private void determineFieldSepRegex(String line) {
@@ -432,8 +422,16 @@ public class TransmissionLoader {
                         neighbourNode = index.getSingleNode(KEY_ID2, neighbourId);
                     }
                 }
+                if (serverNode == null) {
+                    serverNode = createTransmissionSite(serverNodeName, fields);
+                    NeoLoaderPlugin.error("Not found site: " + servId);
+                }
+                if (neighbourNode == null) {
+                    NeoLoaderPlugin.error("Not found site: " + neighbourId);
+                }
                 if (serverNode == null || neighbourNode == null) {
-                    NeoLoaderPlugin.error("Not found sectors for line:\n" + line);
+
+                    NeoLoaderPlugin.error("Not found sites for line:\n" + line);
                     return;
                 }
 
@@ -453,6 +451,61 @@ public class TransmissionLoader {
                 tx.finish();
             }
 
+        }
+
+        /**
+         * Creates Transmission Sites if
+         * 
+         * @param nodeName - Id of node
+         * @param fields - line fields
+         * @return Node
+         */
+        private Node createTransmissionSite(NodeName nodeName, String[] fields) {
+            if (nodeName==null||(nodeName.getId1()==null&&nodeName.getId2()==null)){
+                return null;
+            }
+            //TODO create NetworkIndexes  if necessary.
+            Transaction tx = neo.beginTx();
+            try {
+                if (lastNode == null) {
+                    lastNode = findNetworkLastSite();
+                }
+                Node result = neo.createNode();
+                result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "site");
+
+                String id1 = nodeName.getId1();
+                if (id1 != null) {
+                    result.setProperty(INeoConstants.PROPERTY_NAME_NAME, id1);
+                    index.index(result, KEY_ID, id1);
+                }
+                String id2 = nodeName.getId2();
+                if (id2 != null) {
+                    result.setProperty("site_no", id2);
+                    index.index(result, KEY_ID2, id2);
+                }
+                lastNode.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
+                tx.success();
+                lastNode = result;
+                return result;
+            } finally {
+                tx.finish();
+            }
+        }
+
+        /**
+         * Finds last site in network
+         * 
+         * @return last node;
+         */
+        private Node findNetworkLastSite() {
+            return network.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return !node.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                }
+            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator().next();
         }
 
         /**
@@ -518,24 +571,25 @@ public class TransmissionLoader {
             return true;
         }
 
-        /**
-         * finds necessary sector in network
-         * 
-         * @param nodeName sector name
-         * @param network network node
-         * @param fields array of values
-         * @return necessary sector or null
-         */
-        private Node findSectors(final NodeName nodeName, Node network) {
-            Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return nodeName.isNecessaryNode(currentPos.currentNode());
-                }
-            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-            return iterator.hasNext() ? iterator.next() : null;
-        }
+        // /**
+        // * finds necessary sector in network
+        // *
+        // * @param nodeName sector name
+        // * @param network network node
+        // * @param fields array of values
+        // * @return necessary sector or null
+        // */
+        // private Node findSectors(final NodeName nodeName, Node network) {
+        // Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
+        // new ReturnableEvaluator() {
+        //
+        // @Override
+        // public boolean isReturnableNode(TraversalPosition currentPos) {
+        // return nodeName.isNecessaryNode(currentPos.currentNode());
+        // }
+        // }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+        // return iterator.hasNext() ? iterator.next() : null;
+        // }
 
     }
 
@@ -557,6 +611,9 @@ public class TransmissionLoader {
         Map<String, String> nameMap = new HashMap<String, String>();
         Map<String, Integer> indexMap = new HashMap<String, Integer>();
         Map<String, String> valuesMap = new HashMap<String, String>();
+        private String[] id1;
+        private String[] id2;
+        private String[] id3;
 
         /**
          * Constructor
@@ -565,12 +622,19 @@ public class TransmissionLoader {
          * @param lac name of "SITE_ID" properties
          * @param btsName name of "ITEM_NAME" properties
          */
-        public NodeName(String siteId, String siteN, String ItemName) {
-
-            nameMap.put(siteId, SITE_ID);
-            nameMap.put(siteN, SITE_NO);
-            nameMap.put(ItemName, ITEM_NAME);
-
+        public NodeName(String[] siteId, String[] siteN, String[] ItemName) {
+            id1 = siteId;
+            id2 = siteN;
+            id3 = ItemName;
+            for (String id : siteId) {
+                nameMap.put(id, SITE_ID);
+            }
+            for (String id : siteN) {
+                nameMap.put(id, SITE_NO);
+            }
+            for (String id : ItemName) {
+                nameMap.put(id, ITEM_NAME);
+            }
         }
 
         /**
