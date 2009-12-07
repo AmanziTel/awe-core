@@ -30,6 +30,8 @@ import net.refractions.udig.project.IMap;
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
@@ -281,8 +283,8 @@ public class NetworkLoader extends AbstractLoader {
 
     private void showNetworkTree() {
         //TODO: See if we need this event
-        // NeoCorePlugin.getDefault().getUpdateDatabaseManager()
-        // .fireUpdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
+        NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
+                new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
 
         // Lagutko, 21.07.2009, show NeworkTree
         ActionUtil.getInstance().runTask(new Runnable() {
