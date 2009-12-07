@@ -35,11 +35,6 @@ import org.neo4j.api.core.Traverser.Order;
 public abstract class AbstractHeaderNode extends CellNode {
     
     /**
-     * Name of 'Last Cell ID' property
-     */
-    private static final String LAST_CELL_ID = "Last Cell ID";
-    
-    /**
      * Neo Service
      */
     private NeoService neoService = NeoServiceProvider.getProvider().getService();
@@ -76,18 +71,14 @@ public abstract class AbstractHeaderNode extends CellNode {
      *
      * @param lastCellId id of Last Cell in this line
      */
-    public void setLastCellId(long lastCellId) {
-        setParameter(LAST_CELL_ID, lastCellId);
-    }
+    public abstract void setLastCellId(long lastCellId);
     
     /**
      * Returns last Cell id
      *
      * @return id of Last Cell in this line
      */
-    public Long getLastCellId() {
-        return (Long)getParameter(LAST_CELL_ID);
-    }
+    public abstract Long getLastCellId();
     
     /**
      * Returns type of Relationships between Cells for this Header
@@ -148,8 +139,10 @@ public abstract class AbstractHeaderNode extends CellNode {
                 previousCellNode = neoService.getNodeById(lastCellId);
             }
             
-            previousCellNode.createRelationshipTo(newCellNode.getUnderlyingNode(), getRelationshipType());
-            setLastCellId(newCellNode.getUnderlyingNode().getId());
+            if (!previousCellNode.equals(newCellNode.getUnderlyingNode())) {
+                previousCellNode.createRelationshipTo(newCellNode.getUnderlyingNode(), getRelationshipType());
+                setLastCellId(newCellNode.getUnderlyingNode().getId());
+            }
         }
     }
     

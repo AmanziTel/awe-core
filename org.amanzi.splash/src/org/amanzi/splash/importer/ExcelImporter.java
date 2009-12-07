@@ -74,8 +74,9 @@ public class ExcelImporter extends AbstractImporter {
             createRootSpreadsheet();
             
             for (int i = 0; i < workBook.getNumberOfSheets(); i++) {
+                monitor.subTask("Sheet " + workBook.getSheetName(i));
                 createSheet(workBook.getSheetAt(i), workBook.getSheetName(i), tx);
-                monitor.worked(100 * (i + 1) / workBook.getNumberOfNames());
+                monitor.worked(100 / workBook.getNumberOfSheets());
             }
             monitor.done();
             

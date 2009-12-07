@@ -14,12 +14,11 @@
 package org.amanzi.splash.compare;
 
 import java.awt.Color;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.RowHeaderNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.Pair;
@@ -28,6 +27,7 @@ import org.amanzi.splash.utilities.SpreadsheetCreator;
 import org.eclipse.core.runtime.IPath;
 
 import com.eteks.openjeks.format.CellFormat;
+import com.lowagie.text.Font;
 
 /**
  * Class that creates a Delta Report for Spreadsheets
@@ -36,6 +36,99 @@ import com.eteks.openjeks.format.CellFormat;
  * @since 1.0.0
  */
 public class SpreadsheetComparator extends SpreadsheetCreator {
+    
+    /**
+     * Class that maps name of Header and Node in Line
+     * 
+     * @author Lagutko_N
+     * @since 1.0.0
+     */
+    private class SpreadsheetLine extends HashMap<Object, CellNode> {
+        
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 1754276359754781870L;
+        
+        /*
+         * Number of Line 
+         */
+        private int lineNumber;
+        
+        /**
+         * Creates a SpreadsheetLine
+         * 
+         * @param rowHeader Row Header for this Line
+         * @param columnNames name of Columns
+         */
+        public SpreadsheetLine(CellNode rowHeader, HashMap<Integer, Object> columnNames) {
+            lineNumber = rowHeader.getCellRow();
+            
+            for (CellNode cell : rowHeader.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_ROW, false)) {
+                put(columnNames.get(cell.getCellColumn()), cell);
+            }
+        }
+        
+        /**
+         * Returns number of Line
+         *
+         * @return
+         */
+        public Integer getLineNumber() {
+            return lineNumber;
+        }
+    }
+    
+    /**
+     * Iterator for Lines in Spreadsheet
+     * 
+     * @author Lagutko_N
+     * @since 1.0.0
+     */
+    private class SpreadsheetLineIterator implements Iterator<SpreadsheetLine> {
+        
+        /*
+         * Current Node in Column
+         */
+        private CellNode currentHeader;
+        
+        /*
+         * Names of Column Headers 
+         */
+        private HashMap<Integer, Object> headerNames = new HashMap<Integer, Object>();
+        
+        /**
+         * Creates a Iterator
+         * 
+         * @param spreadsheet Spreadsheet
+         */
+        public SpreadsheetLineIterator(SpreadsheetNode spreadsheet) {
+            currentHeader = spreadsheet.getRowHeader(1);
+            
+            for (CellNode headerCells : currentHeader.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_ROW, false)) {
+                headerNames.put(headerCells.getCellColumn(), headerCells.getValue());
+            }            
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (currentHeader == null) {
+                return false;
+            }
+            return currentHeader.getNextCellInColumn() != null;
+        }
+
+        @Override
+        public SpreadsheetLine next() {
+            currentHeader = currentHeader.getNextCellInColumn();
+            if (currentHeader == null) {
+                return null;
+            }
+            return new SpreadsheetLine(currentHeader, headerNames);
+        }
+
+        @Override
+        public void remove() {
+        }        
+    }
     
     /*
      * Node of First Spreadsheet
@@ -52,10 +145,35 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
      */
     private CellFormat greenCell;
     
+    /* 
+     * Cell format with Yellow backgound
+     */
+    private CellFormat yellowCell;
+    
     /*
      * Cell Format for Blue background
      */
     private CellFormat blueCell;
+    
+    /*
+     * Cell Format with Bold font
+     */
+    private CellFormat boldFormat;
+    
+    /*
+     * Cell Format with grey background
+     */
+    private CellFormat greyCell;
+    
+    /*
+     * Indexes for new Columns
+     */
+    private HashMap<String, Integer> newColumnIndexes = new HashMap<String, Integer>();
+    
+    /*
+     * Number of changes per each column
+     */
+    private HashMap<Integer, Integer> changesPerColumn = new HashMap<Integer, Integer>();
 
     /**
      * Creates Comparator
@@ -75,150 +193,220 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
         greenCell.setBackgroundColor(new Color(0.0f, 1.0f, 0.0f));
         
         blueCell = new CellFormat();
-        blueCell.setBackgroundColor(new Color(0.0f, 0.75f, 1.0f));        
-    }
-    
-    /**
-     * Start comparing
-     */
-    public void startComparing() {
-        ArrayList<Pair<CellNode, CellNode>> headers = getHeadersList(firstSpreadsheet, secondSpreadsheet);
+        blueCell.setBackgroundColor(new Color(0.0f, 0.75f, 1.0f));   
         
-        int columnNumber = 0;
-        for (Pair<CellNode, CellNode> header : headers) {
-            compareCells(header.getLeft(), header.getRight(), columnNumber++);
+        yellowCell = new CellFormat();
+        yellowCell.setBackgroundColor(new Color(1.0f, 1.0f, 0.0f));
+        
+        boldFormat = new CellFormat();
+        boldFormat.setFontStyle(Font.BOLD);
+        
+        greyCell = new CellFormat();
+        greyCell.setBackgroundColor(new Color(0.8f, 0.8f, 0.8f));
+    }
+    
+    /**
+     * Starts comparing for spreadsheets
+     */
+    public void compare() {
+        SpreadsheetLineIterator firstIterator = new SpreadsheetLineIterator(firstSpreadsheet);
+        SpreadsheetLineIterator secondIterator = new SpreadsheetLineIterator(secondSpreadsheet);
+        
+        boolean first = true;
+        int rowNumber = 3;
+        while (firstIterator.hasNext()) {
+            SpreadsheetLine firstSheetLine = firstIterator.next();
+            SpreadsheetLine secondSheetLine = secondIterator.next();
+            if (first) {
+                //if it's a first iteration than we should add Column Headers
+                addHeaders(firstSheetLine, secondSheetLine, rowNumber);
+                first = false;
+                rowNumber++;
+                rowNumber++;
+            }
+            
+            if ((secondSheetLine == null) || (firstSheetLine.getLineNumber() > secondSheetLine.getLineNumber())) {
+                //if line didn't exists in second spreadsheet, than mark it with blue
+                addSpreadsheetLine(firstSheetLine, rowNumber, blueCell);             
+            }
+            else if (firstSheetLine.getLineNumber() < secondSheetLine.getLineNumber()) {
+                //if line didn't exists in first spreadsheet, than mark it with green
+                addSpreadsheetLine(secondSheetLine, rowNumber, greenCell);
+            }
+            else {
+                //if line exists in both sheets than compare it's cells
+                compareSpreadsheetLines(firstSheetLine, secondSheetLine, rowNumber);
+            }
+            rowNumber++;
+        }
+        
+        //add all lines that exists in second but not first spreadsheet
+        while (secondIterator.hasNext()) {
+            addSpreadsheetLine(secondIterator.next(), rowNumber, blueCell);
+        }
+        
+        //add information about comparision
+        addDeltaInformation();
+    }
+    
+    /**
+     * Adds Headers of Columns
+     *
+     * @param firstLine Line in First Spreadsheet
+     * @param secondLine Line in Second Spreadsheet
+     * @param rowNumber number of Row
+     */
+    private void addHeaders(SpreadsheetLine firstLine, SpreadsheetLine secondLine, int rowNumber) {
+        int column = 0;
+        SpreadsheetLine line = (SpreadsheetLine)secondLine.clone();
+        //add all Columns that exists in first Spreadsheet
+        for (Object header : firstLine.keySet()) {
+            Cell cell = new Cell(rowNumber, column++);
+            if (!line.containsKey(header)) {
+                cell.setCellFormat(blueCell);
+            }
+            else {
+                line.remove(header);
+            }
+            
+            cell.setValue(header.toString());
+            cell.setDefinition(header.toString());
+            
+            saveCell(cell, null, rowNumber);
+        }
+        
+        //add Column that exists only in second sheet
+        for (Object header : line.keySet()) {
+            Cell cell = new Cell(rowNumber, column);
+            
+            newColumnIndexes.put(header.toString(), column++);
+            
+            cell.setValue(header.toString());
+            cell.setDefinition(header.toString());
+            
+            saveCell(cell, greenCell, rowNumber);
+        }        
+    }
+    
+    /**
+     * Adds a simple Spreadsheet line without comparing
+     *
+     * @param line line to add
+     * @param rowNumber number of Row
+     * @param format format of cells in line
+     */
+    private void addSpreadsheetLine(SpreadsheetLine line, int rowNumber, CellFormat format) {
+        for (CellNode cell : line.values()) {
+            Cell cellToSave = spreadsheetService.convertNodeToCell(cell, null, null);
+            
+            saveCell(cellToSave, format, rowNumber);
+            
+            addChange(cellToSave.getColumn());
         }
     }
     
     /**
-     * Compares Column headers
+     * Compares two Spreadsheet Lines
      *
-     * @param firstCell column header of first Spreadsheet
-     * @param secondCell column header of second Spreadsheet
-     * @param columnNumber number of Column
+     * @param firstLine first Line to compare
+     * @param secondLine second Line to compare
+     * @param rowNumber number of row
      */
-    private void compareCells(CellNode firstCell, CellNode secondCell, int columnNumber) {
-        //compare headers
-        Cell cellToSave = null;
-        CellFormat currentFormat = null;
-        boolean compare = true;
-        CellNode singleColumn = null;
-        if (firstCell == null) {
-            cellToSave = spreadsheetService.convertNodeToCell(secondCell, null, null);
-            currentFormat = blueCell;
-            compare = false;
-            singleColumn = secondCell;
+    public void compareSpreadsheetLines(SpreadsheetLine firstLine, SpreadsheetLine secondLine, int rowNumber) {
+        ArrayList<Cell> cellsToSave = new ArrayList<Cell>();
+        boolean needToSave = false;
+        //iterate through all cells in first line
+        for (Object columnName : firstLine.keySet()) {
+            if (secondLine.containsKey(columnName)) {
+                //if both lines contains this column name than compare cells
+                Pair<Cell, Boolean> compareResult = compareCells(firstLine.get(columnName), secondLine.get(columnName));
+                needToSave = needToSave || compareResult.getRight();
+                cellsToSave.add(compareResult.getLeft());
+                
+                secondLine.remove(columnName);
+            }
+            else {
+                //otherwise save a single Cell as removed
+                Cell cellToSave = spreadsheetService.convertNodeToCell(firstLine.get(columnName), null, null);
+                saveCell(cellToSave, blueCell, rowNumber);
+                addChange(cellToSave.getColumn());
+                
+                needToSave = true;
+            }
         }
-        else if (secondCell == null) {
-            cellToSave = spreadsheetService.convertNodeToCell(firstCell, null, null);
-            currentFormat = greenCell;
-            compare = false;
-            singleColumn = firstCell;
+        
+        //add all cells that exists only in second line
+        int lastIndex = firstLine.keySet().size();
+        for (CellNode node : secondLine.values()) {
+            Integer columnIndex = 0;
+            Cell cellToSave = spreadsheetService.convertNodeToCell(node, null, null);
+            
+            columnIndex = newColumnIndexes.get(cellToSave.getValue());
+            if (columnIndex == null) {
+                columnIndex = lastIndex++;
+                newColumnIndexes.put(cellToSave.getValue().toString(), columnIndex);
+            }
+            cellToSave.setColumn(columnIndex);
+            saveCell(cellToSave, greenCell, rowNumber);
+            
+            addChange(columnIndex);
+            
+            needToSave = true;
+        }
+        
+        //if there was changes and line need to be saved than save it
+        if (needToSave) {
+            for (Cell cell : cellsToSave) {
+                saveCell(cell, null, rowNumber);
+            }
+        }
+    }
+    
+    /**
+     * Adds a single Change
+     *
+     * @param columnNumber number of column that contains changes Cell
+     */
+    private void addChange(int columnNumber) {
+        Integer changes = changesPerColumn.get(columnNumber);
+        if (changes == null) {
+            changes = 1;
         }
         else {
-            cellToSave = spreadsheetService.convertNodeToCell(secondCell, null, null);
+            changes++;
         }
-        
-        saveCell(cellToSave, currentFormat, columnNumber);
-        
-        if (!compare) {
-            addSingleColumn(singleColumn, columnNumber, currentFormat, false);
-        }
-        else {
-            addComparedCells(firstCell, secondCell, columnNumber);
-        }
+        changesPerColumn.put(columnNumber, changes);
     }
     
     /**
-     * Adds column of Compared Cells
+     * Compares two Cells
      *
-     * @param firstColumn Column header of first Spreadsheet
-     * @param secondColumn Column header of second Spreadsheet
-     * @param columnNumber number of column
+     * @param firstCell first Cell
+     * @param secondCell second Cell
+     * @return Pair that contains result cell and is there were changes
      */
-    private void addComparedCells(CellNode firstColumn, CellNode secondColumn, int columnNumber) {
-        CellNode currentCell = firstColumn.getNextCellInColumn();
-        CellNode cellToCompare = secondColumn.getNextCellInColumn();
+    private Pair<Cell, Boolean> compareCells(CellNode firstCell, CellNode secondCell) {
+        Cell cell1 = spreadsheetService.convertNodeToCell(firstCell, null, null);
+        Cell cell2 = spreadsheetService.convertNodeToCell(secondCell, null, null);
         
-        while (currentCell != null) {
-            if (cellToCompare == null) {
-                addSingleColumn(currentCell, columnNumber, blueCell, true);
-                break;
-            }
+        Object value1 = cell1.getValue();
+        Object value2 = cell2.getValue();
+        
+        boolean isChanged = false;
+        
+        if (!value1.equals(value2)) {
+            cell1.setValue(value1 + " -> " + value2);
+            cell1.setDefinition(cell1.getValue().toString());
+            cell1.setCellFormat(yellowCell);
+            isChanged = true;
             
-            //check that cells from one row
-            while (cellToCompare.getCellRow() > currentCell.getCellRow()) {
-                Cell cellToSave = spreadsheetService.convertNodeToCell(currentCell, null, null);
-                saveCell(cellToSave, greenCell, columnNumber);
-                currentCell = currentCell.getNextCellInColumn();   
-                if (currentCell == null) {
-                    break;
-                }
-            }
-            while (cellToCompare.getCellRow() < currentCell.getCellRow()) {
-                Cell cellToSave = spreadsheetService.convertNodeToCell(cellToCompare, null, null);
-                saveCell(cellToSave, blueCell, columnNumber);
-                cellToCompare = cellToCompare.getNextCellInColumn();
-                if (cellToCompare == null) {
-                    continue;
-                }
-            }
-            
-            //compare cells
-            Cell oldCell = spreadsheetService.convertNodeToCell(cellToCompare, null, null);
-            Cell newCell = spreadsheetService.convertNodeToCell(currentCell, null, null);
-            
-            //check types
-            boolean saved = false;
-            if ((oldCell.getValue() instanceof String) &&
-                (newCell.getValue() instanceof String)) {
-                try {
-                    int oldValue = Integer.parseInt(oldCell.getValue().toString());
-                    int newValue = Integer.parseInt(newCell.getValue().toString());
-                    
-                    oldCell.setValue(Integer.toString(newValue - oldValue));
-                    saveCell(oldCell, null, columnNumber);
-                    saved = true;
-                }
-                catch (NumberFormatException e) {
-                    //it's not a Integer, try Float
-                    try {
-                        float oldValue = Float.parseFloat(oldCell.getValue().toString());
-                        float newValue = Float.parseFloat(newCell.getValue().toString());
-                        oldCell.setValue(Float.toString(newValue - oldValue));
-                        saveCell(oldCell, null, columnNumber);
-                        saved = true;
-                    }
-                    catch (NumberFormatException ex) {
-                        //it's not a Float
-                    }
-                }
-            }
-            if ((oldCell.getValue() instanceof Number) &&
-                (newCell.getValue() instanceof Number)) {
-                BigDecimal oldValue = new BigDecimal(oldCell.getValue().toString());
-                BigDecimal newValue = new BigDecimal(newCell.getValue().toString());
-                
-                oldCell.setValue(newValue.add(oldValue.negate()).toString());
-                saveCell(oldCell, null, columnNumber);
-                saved = true;
-            }
-            
-            if (!saved) {
-                String oldValue = oldCell.getValue().toString();
-                String newValue = newCell.getValue().toString();
-                
-                oldCell.setValue(oldValue + " -> " + newValue);
-                saveCell(oldCell, null, columnNumber);                
-            }
-            
-            currentCell = currentCell.getNextCellInColumn();
-            cellToCompare = cellToCompare.getNextCellInColumn();
+            addChange(cell1.getColumn());
+        }
+        else {
+            changesPerColumn.put(cell1.getColumn(), 0);
         }
         
-        if (cellToCompare != null) {
-            addSingleColumn(cellToCompare, columnNumber, greenCell, true);
-        }
+        return new Pair<Cell, Boolean>(cell1, isChanged);
     }
     
     /**
@@ -229,8 +417,8 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
      * @param columnNumber number of Column
      * @return node of saved cell
      */
-    private CellNode saveCell(Cell cellToSave, CellFormat newFormat, int columnNumber) {
-        cellToSave.setColumn(columnNumber);
+    private CellNode saveCell(Cell cellToSave, CellFormat newFormat, int rowNumber) {
+        cellToSave.setRow(rowNumber);
         
         if (newFormat != null) {
             if (cellToSave.getCellFormat() == null) {
@@ -245,66 +433,37 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
     }
     
     /**
-     * Add unchanged column from existing Spreadsheet
-     *
-     * @param cell first cell in column
-     * @param columnNumber number of column
-     * @param color color of new cells
-     * @param returnThis should first cell be added
+     * Adds a general information about changes
      */
-    private void addSingleColumn(CellNode cell, int columnNumber, CellFormat color, boolean returnThis) {
-        ArrayList<CellNode> cells = cell.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, returnThis);
+    private void addDeltaInformation() {
+        //title for 'Total number of Changes'
+        Cell totalChangesTitle = new Cell(0, 0, "Total Number of Changes", "Total Number of Changes", boldFormat);
+        saveCell(totalChangesTitle);
         
-        for (CellNode singleCell : cells) {
-            Cell cellToSave = spreadsheetService.convertNodeToCell(singleCell, null, null);
-            
-            saveCell(cellToSave, color, columnNumber);
+        //computes total number of changes
+        Cell totalChangesValue = new Cell(0, 1, getChangesCount().toString(), getChangesCount().toString(), null);
+        saveCell(totalChangesValue);
+        
+        //title for 'Summary of Changes'
+        Cell summaryTitle = new Cell(2, 0, "Summary of Changes", "Summary of Changes", boldFormat);
+        saveCell(summaryTitle);
+        
+        for (Integer columnIndex : changesPerColumn.keySet()) {
+            //adds information about the number of changes Cells to each Column 
+            Cell changeNumber = new Cell(4, columnIndex, changesPerColumn.get(columnIndex).toString(), changesPerColumn.get(columnIndex).toString(), greyCell);
+            saveCell(changeNumber);
         }
-    }
-
-    /**
-     * Returns list of columns for new Spreadsheet
-     *
-     * @param first first Spreadsheet
-     * @param second second Spreadsheet
-     * @return
-     */
-    private ArrayList<Pair<CellNode, CellNode>> getHeadersList(SpreadsheetNode first, SpreadsheetNode second) {
-        HashMap<String, CellNode> firstSpreadsheetHeader = getHeaderCells(first);
-        
-        HashMap<String, CellNode> secondSpreadsheetHeader = getHeaderCells(second);
-        
-        ArrayList<Pair<CellNode, CellNode>> result = new ArrayList<Pair<CellNode,CellNode>>();
-        
-        for (Object header : secondSpreadsheetHeader.keySet()) {
-            CellNode cell = null;
-            if (firstSpreadsheetHeader.containsKey(header)) {
-                cell = firstSpreadsheetHeader.remove(header);
-            }
-            
-            result.add(new Pair<CellNode, CellNode>(secondSpreadsheetHeader.get(header), cell));            
-        }
-        
-        for (CellNode node : firstSpreadsheetHeader.values()) {
-            result.add(new Pair<CellNode, CellNode>(null, node));
-        }
-        
-        return result;
     }
     
     /**
-     * Returns Column Headers of Spreadsheet
+     * Computes total number of changes
      *
-     * @param spreadsheet spreadsheet
-     * @return map that contains name of Column and node of this Column
+     * @return total number of changes
      */
-    private HashMap<String, CellNode> getHeaderCells(SpreadsheetNode spreadsheet) {
-        RowHeaderNode row = spreadsheet.getRowHeader(1);
-        
-        HashMap<String, CellNode> result = new HashMap<String, CellNode>();
-        
-        for (CellNode headerNode : row.getAllCellsFromThis(false)) {
-            result.put(headerNode.getValue().toString(), headerNode);
+    private Integer getChangesCount() {
+        int result = 0;
+        for (int changesInColumn : changesPerColumn.values()) {
+            result += changesInColumn;
         }
         
         return result;

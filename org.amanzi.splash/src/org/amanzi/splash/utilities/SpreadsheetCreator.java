@@ -134,7 +134,7 @@ public class SpreadsheetCreator {
         do {
             spreadsheetName = newSpreadsheetName;
             spreadsheetNode = projectService.findSpreadsheet(rubyProjectNode, spreadsheetName);
-            newSpreadsheetName = oldSpreadsheetName.concat(Integer.toString(i++));
+            newSpreadsheetName = oldSpreadsheetName.concat(" " + Integer.toString(i++));
         } while (spreadsheetNode != null);
         
         //create a new Spreadsheet

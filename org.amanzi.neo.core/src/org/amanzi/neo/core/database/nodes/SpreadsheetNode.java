@@ -388,6 +388,8 @@ public class SpreadsheetNode extends AbstractNode {
         if (columnHeader == null) {
             columnHeader = new ColumnHeaderNode(neoService.createNode(), column);
             index.addNode(columnHeader.getUnderlyingNode());
+            index.finishUp();
+            addToRow(columnHeader);
         }
         
         columnHeader.addNextCell(cell);
@@ -405,6 +407,8 @@ public class SpreadsheetNode extends AbstractNode {
         if (rowHeader == null) {
             rowHeader = new RowHeaderNode(neoService.createNode(), row);
             index.addNode(rowHeader.getUnderlyingNode());
+            index.finishUp();
+            addToColumn(rowHeader);
         }
         
         rowHeader.addNextCell(cell);

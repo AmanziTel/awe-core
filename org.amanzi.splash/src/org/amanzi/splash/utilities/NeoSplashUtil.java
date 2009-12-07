@@ -484,7 +484,7 @@ public class NeoSplashUtil {
 	    
 	    Transaction transaction = NeoUtils.beginTransaction();
 	    try {
-	        comparator.startComparing();
+	        comparator.compare();
 	    }
 	    finally {
 	        transaction.success();

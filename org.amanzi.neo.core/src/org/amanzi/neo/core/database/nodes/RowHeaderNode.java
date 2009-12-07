@@ -27,6 +27,11 @@ import org.neo4j.api.core.RelationshipType;
 public class RowHeaderNode extends AbstractHeaderNode {
     
     /**
+     * Name of 'Last Cell ID' property
+     */
+    private static final String LAST_CELL_ID = "Row Last Cell ID";
+    
+    /**
      * Name of this Node's Type
      */
     private static final String ROW_HEADER_TYPE = "Row Header";
@@ -73,4 +78,13 @@ public class RowHeaderNode extends AbstractHeaderNode {
         return CellNode.CELL_COLUMN;
     }
 
+    @Override
+    public void setLastCellId(long lastCellId) {
+        setParameter(LAST_CELL_ID, lastCellId);
+    }
+    
+    @Override
+    public Long getLastCellId() {
+        return (Long)getParameter(LAST_CELL_ID);
+    }
 }
