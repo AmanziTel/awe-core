@@ -13,8 +13,14 @@
 package org.amanzi.neo.core;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
+import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
 import org.amanzi.neo.core.database.services.AweProjectService;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.database.services.UpdateDatabaseManager;
 import org.amanzi.neo.core.preferences.NeoPreferencesInitializer;
 import org.eclipse.core.runtime.FileLocator;
@@ -31,7 +37,7 @@ import org.osgi.framework.BundleContext;
  * @since 1.0.0
  */
 
-public class NeoCorePlugin extends Plugin {
+public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
 
 	/*
 	 * Plugin's ID
@@ -53,6 +59,7 @@ public class NeoCorePlugin extends Plugin {
 
 	private AweProjectService aweProjectService;
 	private UpdateDatabaseManager updateBDManager;
+    final List<UpdateDatabaseEventType> eventList = Arrays.asList(UpdateDatabaseEventType.values());
 
 	/**
 	 * Constructor for SplashPlugin.
@@ -66,6 +73,7 @@ public class NeoCorePlugin extends Plugin {
 		super.start(context);
 		plugin = this;
 		updateBDManager = new UpdateDatabaseManager();
+        updateBDManager.addListener(this);
 	}
 
 	/*
@@ -151,5 +159,16 @@ public class NeoCorePlugin extends Plugin {
 	        return null;
 	    }
 	}
+
+    @Override
+    public void databaseUpdated(UpdateDatabaseEvent event) {
+        // update NeoGraphViewPart
+        org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView();
+    }
+
+    @Override
+    public Collection<UpdateDatabaseEventType> getType() {
+        return eventList;
+    }
 
 }

@@ -15,12 +15,16 @@ package org.neo4j.neoclipse;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.neoclipse.neo.NeoServiceManager;
 import org.neo4j.neoclipse.preference.NeoPreferenceHelper;
+import org.neo4j.neoclipse.view.NeoGraphViewPart;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -209,5 +213,24 @@ public class Activator extends AbstractUIPlugin
 	public void setHelper(NeoPreferenceHelper helper) {
 		Activator.helper = helper;
 	}
+
+    /**
+     *Updates NeoGraphView
+     */
+    public void updateNeoGraphView() {
+        Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NeoGraphViewPart.ID);
+                if (view == null) {
+                    return;
+                }
+                NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
+                viewGraph.refresh();
+            }
+        });
+
+    }
 
 }
