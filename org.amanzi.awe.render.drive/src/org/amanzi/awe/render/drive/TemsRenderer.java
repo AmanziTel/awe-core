@@ -37,7 +37,6 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -135,6 +134,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor = new NullProgressMonitor();
         monitor.beginTask("render drive test data", IProgressMonitor.UNKNOWN);
         GeoNeo geoNeo = null;
+        //enable/disable rendering of rectangles for the spatial index
+        boolean enableIndexRendering = false;
 
         // Setup default drawing parameters and thresholds (to be modified by style if found)
         int maxSitesLabel = 30;
@@ -186,9 +187,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
-            String selectedProp = geoNeo.getPropertyName();
+            //String selectedProp = geoNeo.getPropertyName();
             aggNode = geoNeo.getAggrNode();
-            Map<String, Object> selectionMap = (Map<String, Object>)geoNeo.getProperties(GeoNeo.DRIVE_INQUIRER);
+            Map<String, Object> selectionMap = getSelectionMap(geoNeo);
             Long crossHairId1 = null;
             Long crossHairId2 = null;
             if (selectionMap != null) {
@@ -305,24 +306,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             HashMap<String,Integer> colorErrors = new HashMap<String,Integer>();
             // Now draw the actual points
             for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
-                if(false && indexNode==null) {
-                    try {
-                        System.out.println("Searching for index nodes on node: "+node.getName());
-                        Node endNode = node.getNode();
-                        System.out.println("Searching for index nodes on node: id:"+endNode.getId()+", name:"+endNode.getProperty("name", null)+", type:"+endNode.getProperty("type", null)+", index:"+endNode.getProperty("index", null)+", level:"+endNode.getProperty("level", null)+", max:"+endNode.getProperty("max", null)+", min:"+endNode.getProperty("min", null));
-                        for(Relationship relationship: node.getNode().getRelationships(NeoIndexRelationshipTypes.CHILD, Direction.INCOMING)){
-                            endNode = relationship.getStartNode();
-                            System.out.println("Trying possible index node: id:"+endNode.getId()+", name:"+endNode.getProperty("name", null)+", type:"+endNode.getProperty("type", null)+", index:"+endNode.getProperty("index", null)+", level:"+endNode.getProperty("level", null)+", max:"+endNode.getProperty("max", null)+", min:"+endNode.getProperty("min", null));
-                            int[] index = (int[])endNode.getProperty("index", new int[0]);
-                            if(index.length == 2) {
-                                indexNode = endNode;
-                                break;
-                            }
-                        }
-                    }catch(Exception e){
-                        System.err.println("Failed to find index node: "+e);
-                        //e.printStackTrace(System.err);
-                    }
+                if(enableIndexRendering && indexNode==null) {
+                    indexNode = getIndexNode(node);
                 }
                 Coordinate location = node.getCoordinate();
 
@@ -422,46 +407,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 System.err.println("Error determining color of "+errCount+" nodes: "+errName);
             }
             if(indexNode!=null) {
-                try {
-                    INDEX_LOOP: for(Node index: indexNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, NeoIndexRelationshipTypes.CHILD, Direction.BOTH)){
-                        int[] ind = (int[])index.getProperty("index", new int[0]);
-                        if(ind.length == 2) {
-                            double[] max = (double[])index.getProperty("max", new double[0]);
-                            double[] min = (double[])index.getProperty("min", new double[0]);
-                            int level = (Integer)index.getProperty("level", 0);
-                            if(max.length == 2 && min.length==2){
-                                drawColor = new Color(0.5f,0.5f,0.5f,1.0f-Math.max(0.1f, 0.8f*(5.0f-level)/5.0f));
-                                g.setColor(drawColor);
-                                Coordinate[] c = new Coordinate[2];
-                                java.awt.Point[] p = new java.awt.Point[2];
-                                c[0] = new Coordinate(min[1], max[0]);
-                                c[1] = new Coordinate(max[1], min[0]);
-                                for(int i=0;i<2;i++){
-                                    if (bounds_transformed != null && !bounds_transformed.contains(c[i])) {
-                                        continue INDEX_LOOP;
-                                    }
-                                    try {
-                                        JTS.transform(c[i], world_location, transform_d2w);
-                                    } catch (Exception e) {
-                                        // JTS.transform(location, world_location, transform_w2d.inverse());
-                                    }
-        
-                                    p[i] = getContext().worldToPixel(world_location);
-                                }
-                                if(p[1].x > p[0].x && p[1].y > p[0].y) {
-                                    g.drawRect(p[0].x, p[0].y, p[1].x - p[0].x,  p[1].y - p[0].y);
-                                    g.drawString(""+ind[0]+":"+ind[1]+"["+level+"]", p[0].x, p[0].y);
-                                } else {
-                                    System.err.println("Invalid index bbox: "+p[0]+":"+p[1]);
-                                    g.drawRect(Math.min(p[0].x,p[1].x), Math.min(p[0].y,p[1].y), Math.abs(p[1].x - p[0].x),  Math.abs(p[1].y - p[0].y));
-                                }
-                            }
-                        }
-                    }
-                }catch(Exception e){
-                    System.err.println("Failed to draw index: "+e);
-                    e.printStackTrace(System.err);
-                }
+                renderIndex(g, bounds_transformed, indexNode);
             }
             System.out.println("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " points");
             tx.success();
@@ -479,6 +425,76 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.done();
             tx.finish();
         }
+    }
+
+    private Node getIndexNode(GeoNode node) {
+        try {
+            System.out.println("Searching for index nodes on node: "+node.getName());
+            Node endNode = node.getNode();
+            System.out.println("Searching for index nodes on node: id:"+endNode.getId()+", name:"+endNode.getProperty("name", null)+", type:"+endNode.getProperty("type", null)+", index:"+endNode.getProperty("index", null)+", level:"+endNode.getProperty("level", null)+", max:"+endNode.getProperty("max", null)+", min:"+endNode.getProperty("min", null));
+            for(Relationship relationship: node.getNode().getRelationships(NeoIndexRelationshipTypes.CHILD, Direction.INCOMING)){
+                endNode = relationship.getStartNode();
+                System.out.println("Trying possible index node: id:"+endNode.getId()+", name:"+endNode.getProperty("name", null)+", type:"+endNode.getProperty("type", null)+", index:"+endNode.getProperty("index", null)+", level:"+endNode.getProperty("level", null)+", max:"+endNode.getProperty("max", null)+", min:"+endNode.getProperty("min", null));
+                int[] index = (int[])endNode.getProperty("index", new int[0]);
+                if(index.length == 2) {
+                    return endNode;
+                }
+            }
+        }catch(Exception e){
+            System.err.println("Failed to find index node: "+e);
+            //e.printStackTrace(System.err);
+        }
+        return null;
+    }
+
+    private void renderIndex(Graphics2D g, Envelope bounds_transformed, Node indexNode) {
+        Coordinate world_location = new Coordinate();
+        try {
+            INDEX_LOOP: for(Node index: indexNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, NeoIndexRelationshipTypes.CHILD, Direction.BOTH)){
+                int[] ind = (int[])index.getProperty("index", new int[0]);
+                if(ind.length == 2) {
+                    double[] max = (double[])index.getProperty("max", new double[0]);
+                    double[] min = (double[])index.getProperty("min", new double[0]);
+                    int level = (Integer)index.getProperty("level", 0);
+                    if(max.length == 2 && min.length==2){
+                        drawColor = new Color(0.5f,0.5f,0.5f,1.0f-Math.max(0.1f, 0.8f*(5.0f-level)/5.0f));
+                        g.setColor(drawColor);
+                        Coordinate[] c = new Coordinate[2];
+                        java.awt.Point[] p = new java.awt.Point[2];
+                        c[0] = new Coordinate(min[1], max[0]);
+                        c[1] = new Coordinate(max[1], min[0]);
+                        for(int i=0;i<2;i++){
+                            if (bounds_transformed != null && !bounds_transformed.contains(c[i])) {
+                                continue INDEX_LOOP;
+                            }
+                            try {
+                                JTS.transform(c[i], world_location, transform_d2w);
+                            } catch (Exception e) {
+                                // JTS.transform(location, world_location, transform_w2d.inverse());
+                            }
+      
+                            p[i] = getContext().worldToPixel(world_location);
+                        }
+                        if(p[1].x > p[0].x && p[1].y > p[0].y) {
+                            g.drawRect(p[0].x, p[0].y, p[1].x - p[0].x,  p[1].y - p[0].y);
+                            g.drawString(""+ind[0]+":"+ind[1]+"["+level+"]", p[0].x, p[0].y);
+                        } else {
+                            System.err.println("Invalid index bbox: "+p[0]+":"+p[1]);
+                            g.drawRect(Math.min(p[0].x,p[1].x), Math.min(p[0].y,p[1].y), Math.abs(p[1].x - p[0].x),  Math.abs(p[1].y - p[0].y));
+                        }
+                    }
+                }
+            }
+        }catch(Exception e){
+            System.err.println("Failed to draw index: "+e);
+            e.printStackTrace(System.err);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> getSelectionMap(GeoNeo geoNeo) {
+        Map<String, Object> selectionMap = (Map<String, Object>)geoNeo.getProperties(GeoNeo.DRIVE_INQUIRER);
+        return selectionMap;
     }
 
     /**
@@ -598,52 +614,4 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         }
     }
 
-    /**
-     * <p>
-     * TODO union with org.amanzi.awe.views.reuse.Select now simple copy enum from
-     * org.amanzi.awe.views.reuse.Select
-     * </p>
-     * 
-     * @author Cinkel_A
-     * @since 1.0.0
-     */
-    private enum Select {
-        MAX("max"), MIN("min"), AVERAGE("average"), EXISTS("exists"), FIRST("first");
-        private final String value;
-
-        /**
-         * Constructor
-         * 
-         * @param value - string value
-         */
-        private Select(String value) {
-            this.value = value;
-        }
-
-        public static Select findSelectByValue(String value) {
-            if (value == null) {
-                return null;
-            }
-            for (Select selection : Select.values()) {
-                if (selection.value.equals(value)) {
-                    return selection;
-                }
-            }
-            return null;
-        }
-
-        public static String[] getEnumAsStringArray() {
-            Select[] enums = Select.values();
-            String[] result = new String[enums.length];
-            for (int i = 0; i < enums.length; i++) {
-                result[i] = enums[i].value;
-            }
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return value;
-        }
-    }
 }
