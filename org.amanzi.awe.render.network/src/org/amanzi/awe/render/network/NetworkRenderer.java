@@ -308,7 +308,7 @@ public class NetworkRenderer extends RendererImpl {
                 }
                 renderSelectionGlow(g, p, drawSize * 4);
             }
-
+            g.setColor(drawColor);
             long startTime = System.currentTimeMillis();
             for(GeoNode node:geoNeo.getGeoNodes(bounds_transformed)) {
                 Coordinate location = node.getCoordinate();
