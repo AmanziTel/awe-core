@@ -37,9 +37,11 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -49,11 +51,13 @@ import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
+import org.neo4j.api.core.Traverser.Order;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -297,9 +301,29 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 }
                 renderSelectedPoint(g, p, drawSize, drawFull, drawLite);
             }
+            Node indexNode = null;
             HashMap<String,Integer> colorErrors = new HashMap<String,Integer>();
             // Now draw the actual points
             for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
+                if(false && indexNode==null) {
+                    try {
+                        System.out.println("Searching for index nodes on node: "+node.getName());
+                        Node endNode = node.getNode();
+                        System.out.println("Searching for index nodes on node: id:"+endNode.getId()+", name:"+endNode.getProperty("name", null)+", type:"+endNode.getProperty("type", null)+", index:"+endNode.getProperty("index", null)+", level:"+endNode.getProperty("level", null)+", max:"+endNode.getProperty("max", null)+", min:"+endNode.getProperty("min", null));
+                        for(Relationship relationship: node.getNode().getRelationships(NeoIndexRelationshipTypes.CHILD, Direction.INCOMING)){
+                            endNode = relationship.getStartNode();
+                            System.out.println("Trying possible index node: id:"+endNode.getId()+", name:"+endNode.getProperty("name", null)+", type:"+endNode.getProperty("type", null)+", index:"+endNode.getProperty("index", null)+", level:"+endNode.getProperty("level", null)+", max:"+endNode.getProperty("max", null)+", min:"+endNode.getProperty("min", null));
+                            int[] index = (int[])endNode.getProperty("index", new int[0]);
+                            if(index.length == 2) {
+                                indexNode = endNode;
+                                break;
+                            }
+                        }
+                    }catch(Exception e){
+                        System.err.println("Failed to find index node: "+e);
+                        //e.printStackTrace(System.err);
+                    }
+                }
                 Coordinate location = node.getCoordinate();
 
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
@@ -396,6 +420,48 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             for(String errName:colorErrors.keySet()){
                 int errCount = colorErrors.get(errName);
                 System.err.println("Error determining color of "+errCount+" nodes: "+errName);
+            }
+            if(indexNode!=null) {
+                try {
+                    INDEX_LOOP: for(Node index: indexNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, NeoIndexRelationshipTypes.CHILD, Direction.BOTH)){
+                        int[] ind = (int[])index.getProperty("index", new int[0]);
+                        if(ind.length == 2) {
+                            double[] max = (double[])index.getProperty("max", new double[0]);
+                            double[] min = (double[])index.getProperty("min", new double[0]);
+                            int level = (Integer)index.getProperty("level", 0);
+                            if(max.length == 2 && min.length==2){
+                                drawColor = new Color(0.5f,0.5f,0.5f,1.0f-Math.max(0.1f, 0.8f*(5.0f-level)/5.0f));
+                                g.setColor(drawColor);
+                                Coordinate[] c = new Coordinate[2];
+                                java.awt.Point[] p = new java.awt.Point[2];
+                                c[0] = new Coordinate(min[1], max[0]);
+                                c[1] = new Coordinate(max[1], min[0]);
+                                for(int i=0;i<2;i++){
+                                    if (bounds_transformed != null && !bounds_transformed.contains(c[i])) {
+                                        continue INDEX_LOOP;
+                                    }
+                                    try {
+                                        JTS.transform(c[i], world_location, transform_d2w);
+                                    } catch (Exception e) {
+                                        // JTS.transform(location, world_location, transform_w2d.inverse());
+                                    }
+        
+                                    p[i] = getContext().worldToPixel(world_location);
+                                }
+                                if(p[1].x > p[0].x && p[1].y > p[0].y) {
+                                    g.drawRect(p[0].x, p[0].y, p[1].x - p[0].x,  p[1].y - p[0].y);
+                                    g.drawString(""+ind[0]+":"+ind[1]+"["+level+"]", p[0].x, p[0].y);
+                                } else {
+                                    System.err.println("Invalid index bbox: "+p[0]+":"+p[1]);
+                                    g.drawRect(Math.min(p[0].x,p[1].x), Math.min(p[0].y,p[1].y), Math.abs(p[1].x - p[0].x),  Math.abs(p[1].y - p[0].y));
+                                }
+                            }
+                        }
+                    }
+                }catch(Exception e){
+                    System.err.println("Failed to draw index: "+e);
+                    e.printStackTrace(System.err);
+                }
             }
             System.out.println("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " points");
             tx.success();
