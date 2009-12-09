@@ -58,6 +58,7 @@ import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -868,7 +869,8 @@ public abstract class AbstractLoader {
      * @param monitor
      * @throws IOException
      */
-    public void run(IProgressMonitor monitor) throws IOException {
+    public void run(IProgressMonitor monitor2) throws IOException {
+        SubMonitor monitor = SubMonitor.convert(monitor2, 100);
         if (monitor != null)
             monitor.subTask(basename);
         CountingFileInputStream is = new CountingFileInputStream(new File(filename));
