@@ -99,18 +99,18 @@ public class LoadNetwork extends AbstractActionTool {
             Job job = new Job("Load Network '" + (new File(filename)).getName() + "'") {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                        NetworkLoader networkLoader;
-                        try {
-                            networkLoader = new NetworkLoader(filename, dlg.getParent().getDisplay());
-                            networkLoader.setup();
+                    NetworkLoader networkLoader;
+                    try {
+                        networkLoader = new NetworkLoader(filename, dlg.getParent().getDisplay());
+                        networkLoader.setup();
                         SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
                         networkLoader.run(monitor2);
-                            networkLoader.printStats(false);
-                            networkLoader.addLayerToMap();
-                        } catch (IOException e) {
-                            NeoCorePlugin.error("Error loading Network file", e);
-                        }
-                        return Status.OK_STATUS;
+                        networkLoader.printStats(false);
+                        networkLoader.addLayerToMap();
+                    } catch (IOException e) {
+                        NeoCorePlugin.error("Error loading Network file", e);
+                    }
+                    return Status.OK_STATUS;
                 }
             };
             job.schedule(50);
