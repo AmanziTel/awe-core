@@ -260,7 +260,8 @@ public class PropertyIndex<E extends Comparable<E>> {
 
         @Override
         public int indexOf(Double value, Double origin, Double stepSize) {
-            return (int)((value - origin) / stepSize);
+            final double result = (double)(value - origin) / stepSize;
+            return result >= 0 ? (int)result : (int)(Math.floor(result));
         }
 
         @Override
