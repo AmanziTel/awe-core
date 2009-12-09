@@ -23,6 +23,7 @@ import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -102,7 +103,8 @@ public class LoadNetwork extends AbstractActionTool {
                         try {
                             networkLoader = new NetworkLoader(filename, dlg.getParent().getDisplay());
                             networkLoader.setup();
-                            networkLoader.run(monitor);
+                        SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
+                        networkLoader.run(monitor2);
                             networkLoader.printStats(false);
                             networkLoader.addLayerToMap();
                         } catch (IOException e) {
