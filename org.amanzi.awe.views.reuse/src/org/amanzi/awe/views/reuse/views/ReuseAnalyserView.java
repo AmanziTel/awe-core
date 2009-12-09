@@ -124,6 +124,8 @@ import org.neo4j.api.core.Traverser.Order;
  * @since 1.0.0
  */
 public class ReuseAnalyserView extends ViewPart {
+    /** String UNKNOWN_ERROR field */
+    private static final String UNKNOWN_ERROR = "unknown error";
     /** String TOOL_TIP_LOG field */
     private static final String TOOL_TIP_LOG = "Change the scale of the y-axis to be log10";
     private static final String TOOL_TIP_DATA = "Select the set of data to analyse";
@@ -217,7 +219,9 @@ public class ReuseAnalyserView extends ViewPart {
     private static final RGB DEFAULT_RIGHT = new RGB(0, 255, 0);
     private static final RGB DEFAULT_MIDDLE = new RGB(127, 127, 0);
 	private static final String THIRD_BLEND = "third color";
-
+    private static final String ERROR_MSG_NULL = "It is not found numerical values of the selected property";
+    // error messages for statistic calculation
+    private String errorMsg = UNKNOWN_ERROR;
 
     public void createPartControl(Composite parent) {
         aggregatedProperties.clear();
@@ -969,6 +973,7 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         dataset.setAggrNode(aggrNode);
+        // if (aggrNode.getProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME,false))
         ttblendInformation.setText(getMidleRange(aggrNode).toString());
         if (index < 0) {
             changePalette();
@@ -1245,6 +1250,7 @@ public class ReuseAnalyserView extends ViewPart {
         private final String distribute;
         private final String select;
 
+
         public ComputeStatisticsJob(Node gisNode, String propertyName, String distribute, String select) {
             super("calculating statistics");
             this.gisNode = gisNode;
@@ -1352,14 +1358,29 @@ public class ReuseAnalyserView extends ViewPart {
             result.setProperty(INeoConstants.PROPERTY_SELECT_NAME, select);
             gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
 
-
+            errorMsg = UNKNOWN_ERROR;
             boolean noError = computeStatistics(gisNode, result, propertyName, distributeColumn, Select
                     .findSelectByValue(select), monitor);
-            if (!noError && distributeColumn != Distribute.AUTO) {
+            if (!noError && !errorMsg.equals(ERROR_MSG)) {
                 ActionUtil.getInstance().runTask(new Runnable() {
+
                     @Override
                     public void run() {
-                        MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, ERROR_MSG);
+                        MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, errorMsg);
+                    }
+                }, false);
+
+                result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
+                ActionUtil.getInstance().runTask(setAutoDistribute, true);
+                tx.success();
+                return result;
+            }
+            if (!noError && distributeColumn != Distribute.AUTO) {
+                ActionUtil.getInstance().runTask(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, errorMsg);
                     }
                 }, false);
 
@@ -1484,6 +1505,11 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         double range = 0;
+        if (min == null || max == null) {
+            // error calculation
+            errorMsg = ERROR_MSG_NULL;
+            return false;
+        }
         switch (distribute) {
         case I10:
             range = (max - min) / 9;
@@ -1517,6 +1543,7 @@ public class ReuseAnalyserView extends ViewPart {
             break;
         }
         if (distribute != Distribute.AUTO && range > 0 && (double)(max - min) / (double)range > MAXIMUM_BARS) {
+            errorMsg = ERROR_MSG;
             return false;
         }
         if (propertyValue instanceof Integer && range < 1) {
