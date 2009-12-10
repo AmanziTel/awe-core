@@ -390,7 +390,7 @@ public class MultiPropertyIndex<E extends Object> {
                 levels.add(new IndexLevel(level, existingLevelNodes.get(level)));
             }
             if (levels.size() > 0) {
-                this.origin = levels.get(0).min;
+                this.origin = Arrays.copyOf(levels.get(0).min, levels.get(0).min.length);
             }
         }
     }
@@ -513,7 +513,7 @@ public class MultiPropertyIndex<E extends Object> {
             }
             if (valid) {
                 if (origin == null) {
-                    origin = values;
+                    origin = Arrays.copyOf(values, values.length);
                 }
                 Node indexNode = getIndexNode(values);
                 indexNode.createRelationshipTo(node, PropertyIndex.NeoIndexRelationshipTypes.CHILD);
@@ -745,7 +745,7 @@ public class MultiPropertyIndex<E extends Object> {
             int iLev = levels.size();
             if (iLev == 0) {
                 // When creating the very first level, use the origin point, and no child index node
-                levels.add(new IndexLevel(iLev, origin, null));
+                levels.add(new IndexLevel(iLev, Arrays.copyOf(origin, origin.length), null));
             } else {
                 // All higher levels are build on top of the lower levels (using the same current
                 // value as the level below, and linking the index nodes together into the index
