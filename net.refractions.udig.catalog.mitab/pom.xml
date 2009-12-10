@@ -6,8 +6,8 @@
     <artifactId>AWE</artifactId>
     <version>1</version>
   </parent>
-  <groupId>org.neo4j.neoclipse</groupId>
-  <artifactId>org.neo4j.neoclipse</artifactId>
-  <version>0.4.0.awe</version>
+  <groupId>net.refractions.udig.catalog.mitab</groupId>
+  <artifactId>net.refractions.udig.catalog.mitab</artifactId>
+  <version>1.1.1.awe</version>
   <packaging>eclipse-plugin</packaging>
 </project>

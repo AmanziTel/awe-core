@@ -6,8 +6,8 @@
     <artifactId>AWE</artifactId>
     <version>1</version>
   </parent>
-  <groupId>org.neo4j.neoclipse</groupId>
-  <artifactId>org.neo4j.neoclipse</artifactId>
-  <version>0.4.0.awe</version>
+  <groupId>org.kxml2</groupId>
+  <artifactId>org.kxml2</artifactId>
+  <version>2.1.5</version>
   <packaging>eclipse-plugin</packaging>
 </project>

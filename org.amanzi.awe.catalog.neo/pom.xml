@@ -6,8 +6,8 @@
     <artifactId>AWE</artifactId>
     <version>1</version>
   </parent>
-  <groupId>org.neo4j.neoclipse</groupId>
-  <artifactId>org.neo4j.neoclipse</artifactId>
-  <version>0.4.0.awe</version>
+  <groupId>org.amanzi.awe.catalog.neo</groupId>
+  <artifactId>org.amanzi.awe.catalog.neo</artifactId>
+  <version>1.0.0.qualifier</version>
   <packaging>eclipse-plugin</packaging>
 </project>
