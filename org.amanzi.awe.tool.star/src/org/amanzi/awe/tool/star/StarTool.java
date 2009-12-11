@@ -476,7 +476,7 @@ public class StarTool extends AbstractModalTool {
                     getContext().getViewportPane().repaint();
                     // getContext().getViewportPane().repaint(pair.left().x - 3, pair.left().y - 3,
                     // 10, 10);
-                    System.out.println("refresh");
+                    // System.out.println("refresh");
 
                     // selectedLayer.refresh(null);
                 } else {
