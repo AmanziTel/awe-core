@@ -88,6 +88,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private String msName;
     private boolean normalSiteName;
     private boolean notMsLabel;
+    private int eventIconSize;
     private static final Color COLOR_HIGHLIGHTED = Color.CYAN;;
     private static final Color COLOR_HIGHLIGHTED_SELECTED = Color.RED;
 
@@ -206,6 +207,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             boolean drawFull = true;
             boolean drawLite = true;
             boolean drawLabels = true;
+            eventIconSize = 6;
             if (bounds_transformed == null) {
                 drawFull = false;
                 drawLite = false;
@@ -216,6 +218,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 double countScaled = dataScaled * geoNeo.getCount();
                 drawLabels = countScaled < maxSitesLabel;
                 drawFull = countScaled < maxSitesFull;
+                if (drawFull) {
+                    eventIconSize = countScaled * 16 <= maxSitesFull ? 16 : countScaled * 4 <= maxSitesFull ? 12
+                            : countScaled * 2 <= maxSitesFull ? 8 : 6;
+                }
                 drawLite = countScaled < maxSitesLite;
             }
             int trans = alpha;
@@ -605,28 +611,26 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      * @param node
      */
     private void renderEvents(Graphics2D g, GeoNode node, java.awt.Point p, double theta) {
-        // TODO implement drawing for several events
+        // null - use current transaction
+        DriveEvents event = DriveEvents.getWorstEvent(node.getNode(), null);
+        if (event == null) {
+            return;
+        }
         if (base_transform == null)
             base_transform = g.getTransform();
         g.setTransform(base_transform);
         g.translate(p.x, p.y);
         g.rotate(-theta);
-        // null - use current transaction
-        Set<DriveEvents> events = DriveEvents.getAllEvents(node.getNode(), null);
 
-        for (DriveEvents driveEvents : events) {
-            Image eventImage = driveEvents.getEventIcon().getImage(16);
-            if (eventImage != null) {
-                ImageObserver imOb = null;
-                final int width = eventImage.getWidth(imOb);
-                final int height = eventImage.getHeight(imOb);
-                g.drawImage(eventImage, -10 - width, -5 - height, width, height, null);
-                return;
-            }
+        Image eventImage = event.getEventIcon().getImage(eventIconSize);
+        if (eventImage != null) {
+            ImageObserver imOb = null;
+            final int width = eventImage.getWidth(imOb);
+            final int height = eventImage.getHeight(imOb);
+            g.drawImage(eventImage, -10 - width, -height / 2, width, height, imOb);
+            return;
         }
-
     }
-
     /**
      * This one is very simple, just draw a rectangle at the point location.
      * 

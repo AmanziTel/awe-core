@@ -39,18 +39,12 @@ import org.neo4j.api.core.Traverser.Order;
  * @since 1.0.0
  */
 public enum DriveEvents {
-    CONNECTION {
-        @Override
-        public EventIcons getEventIcon() {
-            return EventIcons.CONNECT;
-        }
-
-        @Override
-        public boolean haveEvents(String aProperty) {
-            return aProperty != null && aProperty.toLowerCase().contains("connect");
-        }
-
-    },
+    /*
+     * CONNECTION {
+     * @Override public EventIcons getEventIcon() { return EventIcons.CONNECT; }
+     * @Override public boolean haveEvents(String aProperty) { return aProperty != null &&
+     * aProperty.toLowerCase().contains("connect"); } },
+     */
     CALL_BLOCKED {
         @Override
         public EventIcons getEventIcon() {
@@ -59,8 +53,7 @@ public enum DriveEvents {
 
         @Override
         public boolean haveEvents(String aProperty) {
-            // TODO implement
-            return false;
+            return aProperty != null && aProperty.toLowerCase().contains("blocked");
         }
     },
     CALL_DROPPED {
@@ -71,8 +64,7 @@ public enum DriveEvents {
 
         @Override
         public boolean haveEvents(String aProperty) {
-            // TODO implement
-            return false;
+            return aProperty != null && aProperty.toLowerCase().contains("dropped");
         }
     },
     CALL_FAILURE {
@@ -83,8 +75,7 @@ public enum DriveEvents {
 
         @Override
         public boolean haveEvents(String aProperty) {
-            // TODO implement
-            return false;
+            return aProperty != null && aProperty.toLowerCase().contains("no service");
         }
     },
     CALL_SUCCESS {
@@ -95,8 +86,7 @@ public enum DriveEvents {
 
         @Override
         public boolean haveEvents(String aProperty) {
-            // TODO implement
-            return false;
+            return aProperty != null && aProperty.toLowerCase().contains("good");
         }
     },
     HANDOVER_FAILURE {
@@ -107,8 +97,7 @@ public enum DriveEvents {
 
         @Override
         public boolean haveEvents(String aProperty) {
-            // TODO implement
-            return false;
+            return aProperty != null && aProperty.toLowerCase().contains("handover failure");
         }
     },
     HANDOVER_SUCCESS {
@@ -119,8 +108,8 @@ public enum DriveEvents {
 
         @Override
         public boolean haveEvents(String aProperty) {
-            // TODO implement
-            return false;
+            final String property = aProperty == null ? null : aProperty.toLowerCase();
+            return property != null && (property.contains("handover complete)") || property.contains("ho command"));
         }
     };
     /**
@@ -226,5 +215,32 @@ public enum DriveEvents {
             finishTx(tx);
         }
         return result;
+    }
+
+    /**
+     * gets the worst events of mpNode
+     * 
+     * @param mpNode point drive node
+     * @param neo - NeoService - if null, then transaction do not create
+     * @return DriveEvents or null
+     */
+    public static DriveEvents getWorstEvent(Node mpNode, NeoService neo) {
+        Set<DriveEvents> events = getAllEvents(mpNode, neo);
+        if (events.isEmpty()) {
+            return null;
+        }
+        if (events.contains(HANDOVER_FAILURE)) {
+            return HANDOVER_FAILURE;
+        }
+        if (events.contains(CALL_FAILURE)) {
+            return CALL_FAILURE;
+        }
+        if (events.contains(CALL_DROPPED)) {
+            return CALL_DROPPED;
+        }
+        if (events.contains(CALL_BLOCKED)) {
+            return CALL_BLOCKED;
+        }
+        return events.iterator().next();
     }
 }
