@@ -25,6 +25,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
@@ -98,9 +99,8 @@ public class TEMSLoader extends DriveLoader {
 
     private void addDriveIndexes() {
         try {
-            // addIndex(new MultiPropertyIndex<Long>("Index-timestamp-" + dataset, new String[]
-            // {"timestamp"},
-            // new MultiTimeIndexConverter(), 10));
+            addIndex(new MultiPropertyIndex<Long>("Index-timestamp-" + dataset, new String[] {"timestamp"},
+                    new MultiTimeIndexConverter(), 10));
             addIndex(new MultiPropertyIndex<Double>("Index-location-" + dataset, new String[] {"lat", "lon"},
                     new MultiDoubleConverter(0.001), 10));
         } catch (IOException e) {
