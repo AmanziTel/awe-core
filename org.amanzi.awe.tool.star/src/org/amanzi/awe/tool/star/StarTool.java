@@ -45,6 +45,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IViewPart;
@@ -57,6 +58,7 @@ import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
 /**
  * Custom uDIG Map Tool for performing a 'star analysis'. This means it interacts with objects on
@@ -382,7 +384,22 @@ public class StarTool extends AbstractModalTool {
         if (viewNetwork != null) {
             NetworkTreeView networkView = (NetworkTreeView)viewNetwork;
             networkView.selectNode(nodeToSelect);
-            viewNetwork.setFocus();
+            // viewNetwork.setFocus();
+        }
+        IViewPart viewNeoGraph;
+        try {
+            viewNeoGraph = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NeoGraphViewPart.ID);
+        } catch (PartInitException e) {
+            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+            viewNeoGraph = null;
+        }
+        if (viewNeoGraph != null) {
+            NeoGraphViewPart view = (NeoGraphViewPart)viewNeoGraph;
+            view.showNode(nodeToSelect);
+            final StructuredSelection selection = new StructuredSelection(new Object[] {nodeToSelect});
+            view.setFocus();
+            view.getViewer().setSelection(selection, true);
+
         }
         // sets focus
         // if (viewNetwork != null) {
