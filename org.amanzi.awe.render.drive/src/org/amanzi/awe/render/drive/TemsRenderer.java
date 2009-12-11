@@ -15,7 +15,9 @@ package org.amanzi.awe.render.drive;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.geom.AffineTransform;
+import java.awt.image.ImageObserver;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +41,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -219,6 +222,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             if (haveSelectedNodes()) {
                 trans = 25;
             }
+            // draw event icon flag
+            boolean drawEvents = true || drawFull;
+
             fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), trans);
             g.setColor(drawColor);
             int count = 0;
@@ -304,6 +310,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             }
             Node indexNode = null;
             HashMap<String,Integer> colorErrors = new HashMap<String,Integer>();
+            prev_p = null;// else we do not show selected node
             // Now draw the actual points
             for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
                 if(enableIndexRendering && indexNode==null) {
@@ -353,8 +360,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     borderColor = COLOR_HIGHLIGHTED_SELECTED;
                 }
                 renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite);
-
-                if (drawLabels) {
+                if (drawLabels || drawEvents) {
                     double theta = 0.0;
                     double dx = 0.0;
                     double dy = 0.0;
@@ -382,9 +388,19 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         }
                     }
                     if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-                        renderLabel(g, count, node, p, theta);
+                        if (drawLabels) {
+                            renderLabel(g, count, node, p, theta);
+                        }
+                        if (drawEvents) {
+                            renderEvents(g, node, p, theta);
+                        }
                         if(cached_node != null) {
-                            renderLabel(g, 0, cached_node, cached_l_p, theta);   
+                            if (drawLabels) {
+                                renderLabel(g, 0, cached_node, cached_l_p, theta);
+                            }
+                            if (drawEvents) {
+                                renderEvents(g, cached_node, cached_l_p, theta);
+                            }
                             cached_node = null;
                             cached_l_p = null;
                         }
@@ -555,21 +571,22 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         }
     }
 
-
-
     /**
      * This one is very simple, just draw a rectangle at the point location.
      * 
      * @param g
      * @param p
+     * @param node
      */
-    private void renderPoint(Graphics2D g, java.awt.Point p, Color borderColor, Color fillColor, int drawSize, int drawWidth, boolean drawFull, boolean drawLite) {
+    private void renderPoint(Graphics2D g, java.awt.Point p, Color borderColor, Color fillColor, int drawSize, int drawWidth,
+            boolean drawFull, boolean drawLite) {
         Color oldColor = g.getColor();
         if(drawFull) {
             g.setColor(fillColor);
             g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
             g.setColor(borderColor);
             g.drawRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
+
         } else if (drawLite) {
             g.setColor(fillColor);
             g.fillOval(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
@@ -578,6 +595,36 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             g.fillOval(p.x - 1, p.y - 1, 3, 3);
         }
         g.setColor(oldColor);
+    }
+
+    /**
+     * This one is very simple, just draw a rectangle at the point location.
+     * 
+     * @param g
+     * @param p
+     * @param node
+     */
+    private void renderEvents(Graphics2D g, GeoNode node, java.awt.Point p, double theta) {
+        // TODO implement drawing for several events
+        if (base_transform == null)
+            base_transform = g.getTransform();
+        g.setTransform(base_transform);
+        g.translate(p.x, p.y);
+        g.rotate(-theta);
+        // null - use current transaction
+        Set<DriveEvents> events = DriveEvents.getAllEvents(node.getNode(), null);
+
+        for (DriveEvents driveEvents : events) {
+            Image eventImage = driveEvents.getEventIcon().getImage(16);
+            if (eventImage != null) {
+                ImageObserver imOb = null;
+                final int width = eventImage.getWidth(imOb);
+                final int height = eventImage.getHeight(imOb);
+                g.drawImage(eventImage, -10 - width, -5 - height, width, height, null);
+                return;
+            }
+        }
+
     }
 
     /**
