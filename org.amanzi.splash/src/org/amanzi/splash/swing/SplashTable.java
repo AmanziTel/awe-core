@@ -235,10 +235,10 @@ public class SplashTable extends JTable {
 	 * @param index
 	 *            index of Row to move
 	 */
-	public void moveRowDown(final int index) {
+	public boolean moveRowDown(final int index) {
 		int rowCount = getRowCount();
 		if (index >= rowCount - 1)
-			return;
+			return false;
 		SplashTableModel model = (SplashTableModel) getModel();
 		final SpreadsheetNode spreadsheet = model.getSpreadsheet();
 		ActionUtil.getInstance().runTask(new Runnable() {
@@ -248,10 +248,9 @@ public class SplashTable extends JTable {
 			}
 		}, false);
 
-		model = new SplashTableModel(spreadsheet, model.getRubyRuntime(), model.getRubyProjectNode());
-		setModel(model);
-		RowModel r = new RowModel(getModel());
-		rowHeader.setModel(r);
+		repaint();
+		
+		return true;
 	}
 
 	/**
@@ -260,9 +259,9 @@ public class SplashTable extends JTable {
 	 * @param index
 	 *            index of row to move
 	 */
-	public void moveRowUp(final int index) {
+	public boolean moveRowUp(final int index) {
 		if (index < 1)
-			return;
+			return false;
 		SplashTableModel model = (SplashTableModel) getModel();
 		final SpreadsheetNode spreadsheet = model.getSpreadsheet();
 		ActionUtil.getInstance().runTask(new Runnable() {
@@ -272,10 +271,9 @@ public class SplashTable extends JTable {
 			}
 		}, false);
 
-		model = new SplashTableModel(spreadsheet, model.getRubyRuntime(), model.getRubyProjectNode());
-		setModel(model);
-		RowModel r = new RowModel(getModel());
-		rowHeader.setModel(r);
+		repaint();
+		
+		return true;
 	}
 
 	/**
@@ -284,10 +282,10 @@ public class SplashTable extends JTable {
 	 * @param index
 	 *            index of column to move
 	 */
-	public void moveColumnRight(final int index) {
+	public boolean moveColumnRight(final int index) {
 		int columnCount = getColumnCount();
 		if (index > columnCount - 1)
-			return;
+			return false;
 		SplashTableModel model = (SplashTableModel) getModel();
 		final SpreadsheetNode spreadsheet = model.getSpreadsheet();
 		ActionUtil.getInstance().runTask(new Runnable() {
@@ -297,10 +295,9 @@ public class SplashTable extends JTable {
 			}
 		}, false);
 
-		model = new SplashTableModel(spreadsheet, model.getRubyRuntime(), model.getRubyProjectNode());
-		setModel(model);
-		RowModel r = new RowModel(getModel());
-		rowHeader.setModel(r);
+		repaint();
+		
+		return true;
 	}
 
 	/**
@@ -309,9 +306,9 @@ public class SplashTable extends JTable {
 	 * @param index
 	 *            index of column to move
 	 */
-	public void moveColumnLeft(final int index) {
+	public boolean moveColumnLeft(final int index) {
 		if (index < 1)
-			return;
+			return false;
 
 		SplashTableModel model = (SplashTableModel) getModel();
 		final SpreadsheetNode spreadsheet = model.getSpreadsheet();
@@ -322,10 +319,9 @@ public class SplashTable extends JTable {
 			}
 		}, false);
 
-		model = new SplashTableModel(spreadsheet, model.getRubyRuntime(), model.getRubyProjectNode());
-		setModel(model);
-		RowModel r = new RowModel(getModel());
-		rowHeader.setModel(r);
+		repaint();
+		
+		return true;
 	}
 
 	/**
@@ -358,7 +354,7 @@ public class SplashTable extends JTable {
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-SplashTableModel oldModel = (SplashTableModel)getModel();
+		SplashTableModel oldModel = (SplashTableModel)getModel();
         
         SplashTableModel newModel = new SplashTableModel(rowCount + 1, columnCount, splashName, oldModel.getEngine(), root);
 
@@ -464,14 +460,7 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 				SplashPlugin.getDefault().getSpreadsheetService().insertRow(spreadsheet, index);
 			}
 		}, false);
-
-		model = new SplashTableModel(spreadsheet, model.getRubyRuntime(), model.getRubyProjectNode());
-		setModel(model);
-		RowModel r = new RowModel(getModel());
-		rowHeader.setModel(r);
-
-		rowHeader.repaint();
-
+		
 		repaint();
 	}
 
@@ -532,12 +521,8 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 				SplashPlugin.getDefault().getSpreadsheetService().insertColumn(spreadsheet, index);
 			}
 		}, false);
-
-		model = new SplashTableModel(spreadsheet, model.getRubyRuntime(), model.getRubyProjectNode());
-		setModel(model);
-		RowModel r = new RowModel(getModel());
-		rowHeader.setModel(r);
-
+		
+		repaint();
 	}
 
 	/**
@@ -552,7 +537,7 @@ SplashTableModel oldModel = (SplashTableModel)getModel();
 		int rowCount = getRowCount();
 		int columnCount = getColumnCount();
 
-SplashTableModel oldModel = (SplashTableModel)getModel();
+		SplashTableModel oldModel = (SplashTableModel)getModel();
         
         SplashTableModel newModel = new SplashTableModel(rowCount + 1, columnCount, splashName, oldModel.getEngine(), root);
 

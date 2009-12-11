@@ -759,11 +759,12 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		moveColumnLeftMenu.setText("Move Column Left");
 		moveColumnLeftMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getTable().moveColumnLeft(columnIndex);
-				if (columnIndex > 0) {
-					table.setColumnSelectionInterval(columnIndex - 1, columnIndex - 1);
+				if (getTable().moveColumnLeft(columnIndex)) {
+					if (columnIndex > 0) {
+						table.setColumnSelectionInterval(columnIndex - 1, columnIndex - 1);
+					}
+					setIsDirty(true);
 				}
-				setIsDirty(true);
 			}
 
 		});
@@ -773,9 +774,10 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		moveColumnRightMenu.setText("Move Column Right");
 		moveColumnRightMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getTable().moveColumnRight(columnIndex);
-				table.setColumnSelectionInterval(columnIndex + 1, columnIndex + 1);
-				setIsDirty(true);
+				if (getTable().moveColumnRight(columnIndex)) {
+					table.setColumnSelectionInterval(columnIndex + 1, columnIndex + 1);
+					setIsDirty(true);
+				}
 			}
 		});
 		contextMenu.add(moveColumnRightMenu);
@@ -831,9 +833,10 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		moveRowUpMenu.setText("Move Row Up");
 		moveRowUpMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getTable().moveRowUp(rowIndex);
-				table.setRowSelectionInterval(rowIndex - 1, rowIndex - 1);
-				setIsDirty(true);
+				if (getTable().moveRowUp(rowIndex)) {
+					table.setRowSelectionInterval(rowIndex - 1, rowIndex - 1);
+					setIsDirty(true);
+				}
 			}
 		});
 		contextMenu.add(moveRowUpMenu);
@@ -842,9 +845,10 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 		moveRowDownMenu.setText("Move Row Down");
 		moveRowDownMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getTable().moveRowDown(rowIndex);
-				table.setRowSelectionInterval(rowIndex + 1, rowIndex + 1);
-				setIsDirty(true);
+				if (getTable().moveRowDown(rowIndex)) {
+					table.setRowSelectionInterval(rowIndex + 1, rowIndex + 1);
+					setIsDirty(true);
+				}
 			}
 		});
 		contextMenu.add(moveRowDownMenu);

@@ -184,5 +184,15 @@ public class HilbertIndex {
         
         return root.getIndexedNode(coordinate);
     }
+    
+    public void remove(int x, int y) {
+    	Pair<Integer, Integer> coordinate = new Pair<Integer, Integer>(x, y);
+        
+        if (!root.isLastIndex()) {
+            initialize(referencedNode);
+        }
+        
+        root.removeIndexNode(coordinate);
+    }
 	
 }

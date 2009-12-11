@@ -377,6 +377,26 @@ public class SpreadsheetNode extends AbstractNode {
 	}
 	
 	/**
+	 * Removes index by coordinates 
+	 * 
+	 * @param row row of Cell
+	 * @param column column of Cell
+	 */
+	public void clearCellIndex(int row, int column) {
+		index.remove(column, row);
+	}
+	
+	/**
+	 * Updates Index for Cell
+	 *  
+	 * @param cell cell to update
+	 */
+	public void updateCellIndex(CellNode cell) {
+		index.addNode(cell.getUnderlyingNode());
+		index.finishUp();
+	}
+	
+	/**
 	 * Adds a Cell to Column
 	 *
 	 * @param cell cell to add

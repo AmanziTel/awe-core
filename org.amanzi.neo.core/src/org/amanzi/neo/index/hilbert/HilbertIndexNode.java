@@ -305,6 +305,22 @@ public class HilbertIndexNode {
     }
     
     /**
+     * Deletes Index Node by coordinates 
+     * 
+     * @param x coordinate X
+     * @param y coordinate Y
+     */
+    private void removeIndexedNode(int x, int y) {
+    	RelationshipType relationshipType = getRelationshipType(x, y, level);
+        
+        Iterator<Relationship> relationships = indexNode.getRelationships(relationshipType, Direction.OUTGOING).iterator();
+        
+        if (relationships.hasNext()) {
+            relationships.next().delete();
+        }
+    }
+    
+    /**
      * Searches for the Index node on the underlying level
      *
      * @param x coordinate X
@@ -372,6 +388,34 @@ public class HilbertIndexNode {
         }
         
         return currentIndexNode.getIndexedNode(x, y);
+    }
+    
+    /**
+     * Removes Indexed Node by coordinates 
+     * 
+     * @param coordinate coordinates of Index to remove
+     */
+    public void removeIndexNode(Pair<Integer, Integer> coordinate) {
+    	int x = coordinate.getLeft();
+        int y = coordinate.getRight();
+        
+        int max = (int)Math.pow((double)(1 << order), (double)level);
+        
+        if ((x >= max) || (y >= max)) {
+            return;
+        }
+        
+        HilbertIndexNode currentIndexNode = this;
+        
+        while (currentIndexNode.getLevel() > 1) {
+            currentIndexNode = currentIndexNode.getUnderlyingIndex(x, y, false);
+            
+            if (currentIndexNode == null) {
+                return;
+            }
+        }
+        
+        currentIndexNode.removeIndexedNode(x, y);
     }
 
     /**
