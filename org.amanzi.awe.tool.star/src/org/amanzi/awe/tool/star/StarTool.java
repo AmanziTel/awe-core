@@ -14,6 +14,7 @@ package org.amanzi.awe.tool.star;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,7 +77,7 @@ public class StarTool extends AbstractModalTool {
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     /** StarTool BLACKBOARD_CENTER_POINT field */
     public static final String BLACKBOARD_CENTER_POINT = "org.amanzi.awe.tool.star.StarTool.point";
-    private static final int MAXIMUM_SELECT_LEN = 10000; // find sectors in 100x100 pixels
+    private static final int MAXIMUM_SELECT_LEN = 2500; // find sectors in 50x50 pixels
     private boolean dragging = false;
     private Point start = null;
 
@@ -454,20 +455,30 @@ public class StarTool extends AbstractModalTool {
         if (!dragging && selectedLayer != null) {
             map.getBlackboard().put(BLACKBOARD_CENTER_POINT, e.getPoint());
             Pair<Point, Long> pair = getSector(e.getPoint(), getNodesMap());
-            if (selected == null || pair == null || !selected.left().equals(pair.left())) {
+            if (selected == null || pair == null || !selected.right().equals(pair.right())) {
                 selected = pair;
                 if (drawSelectedSectorCommand != null) {
                     System.out.println("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
                     drawSelectedSectorCommand.setValid(false);
-                    getContext().sendASyncCommand(drawSelectedSectorCommand);
+                    // getContext().sendSyncCommand(drawSelectedSectorCommand);
                     drawSelectedSectorCommand = null;
                 }
                 if (pair != null) {
                     System.out.println("Drawing sector marker at " + pair.left() + " near point " + e.getPoint());
-                    java.awt.geom.Ellipse2D r = new java.awt.geom.Ellipse2D.Float(pair.left().x - 3, pair.left().y - 3, 7, 7);
-                    drawSelectedSectorCommand = getContext().getDrawFactory().createDrawShapeCommand(r, Color.RED, 1, 2);
-                    getContext().sendSyncCommand(drawSelectedSectorCommand);
-                    selectedLayer.refresh(null);
+                    final int x = pair.left().x - 3;
+                    final int y = pair.left().y - 3;
+                    // java.awt.geom.Ellipse2D r = new java.awt.geom.Ellipse2D.Float(x, y, 7, 7);
+                    // drawSelectedSectorCommand =
+                    // getContext().getDrawFactory().createDrawShapeCommand(r, Color.RED, 1, 1);
+                    drawSelectedSectorCommand = getContext().getDrawFactory().createDrawShapeCommand(
+                            new Rectangle(x, y, 7, 7), Color.RED, 1, 2);
+                    getContext().getViewportPane().addDrawCommand(drawSelectedSectorCommand);
+                    getContext().getViewportPane().repaint();
+                    // getContext().getViewportPane().repaint(pair.left().x - 3, pair.left().y - 3,
+                    // 10, 10);
+                    System.out.println("refresh");
+
+                    // selectedLayer.refresh(null);
                 } else {
                     // System.out.println("No sector found near point "+e.getPoint());
                 }
