@@ -229,7 +229,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 trans = 25;
             }
             // draw event icon flag
-            boolean drawEvents = true || drawFull;
+            boolean drawEvents = /* true || */drawFull;
 
             fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), trans);
             g.setColor(drawColor);
