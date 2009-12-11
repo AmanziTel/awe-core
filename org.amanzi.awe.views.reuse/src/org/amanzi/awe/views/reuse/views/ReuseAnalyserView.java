@@ -974,7 +974,8 @@ public class ReuseAnalyserView extends ViewPart {
         }
         dataset.setAggrNode(aggrNode);
         // if (aggrNode.getProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME,false))
-        ttblendInformation.setText(getMidleRange(aggrNode).toString());
+        middleColumn = getMidleRange(aggrNode);
+        ttblendInformation.setText(middleColumn.toString());
         if (index < 0) {
             changePalette();
         } else {
