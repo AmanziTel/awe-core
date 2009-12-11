@@ -32,7 +32,6 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Direction;
@@ -659,40 +658,41 @@ public class NeoUtils {
         return null;
     }
 
-    /**
-     * Forms Event image of mpNode
-     * 
-     * @param mpNode - node
-     * @param neo - neoservice
-     * @return image or null if no event available
-     */
-    public static IconManager.EventIcons formEventImage(Node mpNode, NeoService neo) {
-        Transaction tx = neo.beginTx();
-        try{
-            Iterator<Node> iterator = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    if (currentPos.isStartNode()) {
-                        return false;
-                    }
-                    Node node = currentPos.currentNode();
-                    boolean result = node.hasProperty(INeoConstants.PROPERTY_TYPE_EVENT);
-                    return result;
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-            if (!iterator.hasNext()) {
-                return null;
-            }
-            String event = iterator.next().getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString();
-            if (true || event.toLowerCase().contains("connect")) {
-                return IconManager.EventIcons.CONNECT;
-            }
-            return null;
-        }finally{
-            tx.finish();
-        }
-        
-    }
+    // /**
+    // * Forms Event image of mpNode
+    // *
+    // * @param mpNode - node
+    // * @param neo - neoservice
+    // * @return image or null if no event available
+    // */
+    // public static IconManager.EventIcons formEventImage(Node mpNode, NeoService neo) {
+    // Transaction tx = neo.beginTx();
+    // try{
+    // Iterator<Node> iterator = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new
+    // ReturnableEvaluator() {
+    //
+    // @Override
+    // public boolean isReturnableNode(TraversalPosition currentPos) {
+    // if (currentPos.isStartNode()) {
+    // return false;
+    // }
+    // Node node = currentPos.currentNode();
+    // boolean result = node.hasProperty(INeoConstants.PROPERTY_TYPE_EVENT);
+    // return result;
+    // }
+    // }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+    // if (!iterator.hasNext()) {
+    // return null;
+    // }
+    // String event = iterator.next().getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString();
+    // if (true || event.toLowerCase().contains("connect")) {
+    // return IconManager.EventIcons.CONNECT;
+    // }
+    // return null;
+    // }finally{
+    // tx.finish();
+    // }
+    //        
+    // }
 
 }
