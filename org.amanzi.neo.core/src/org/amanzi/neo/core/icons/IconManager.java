@@ -12,8 +12,13 @@
  */
 package org.amanzi.neo.core.icons;
 
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
+
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -32,6 +37,39 @@ import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
  */
 
 public class IconManager implements IPropertyChangeListener {
+    public static enum EventIcons {
+        CONNECT(new String[] {"sector_6.png", "sector_8.png", "sector_12.png", "sector_16.png", "sector_48.png"}),
+        CALL_BLOCKED(new String[] {"event_call_blocked_6.png", "event_call_blocked_8.png", "event_call_blocked_12.png", "event_call_blocked_16.png", "event_call_blocked_48.png"}),
+        CALL_DROPPED(new String[] {"event_call_dropped_6.png", "event_call_dropped_8.png", "event_call_dropped_12.png", "event_call_dropped_16.png", "event_call_dropped_48.png"}),
+        CALL_FAILURE(new String[] {"event_call_failure_6.png", "event_call_failure_8.png", "event_call_failure_12.png", "event_call_failure_16.png", "event_call_failure_48.png"}),
+        CALL_SUCCESS(new String[] {"event_call_success_6.png", "event_call_success_8.png", "event_call_success_12.png", "event_call_success_16.png", "event_call_success_48.png"}),
+        HANDOVER_FAILURE(new String[] {"event_handover_failure_6.png", "event_handover_failure_8.png", "event_handover_failure_12.png", "event_handover_failure_16.png", "event_handover_failure_48.png"}),
+        HANDOVER_SUCCESS(new String[] {"event_handover_success_6.png", "event_handover_success_8.png", "event_handover_success_12.png", "event_handover_success_16.png", "event_handover_success_48.png"});
+         private BufferedImage[] image = new BufferedImage[5];
+
+        EventIcons(String[] fileNames) {
+            for (int i = 0; i < fileNames.length; i++) {
+                InputStream stream = NeoCorePlugin.getDefault().getClass().getClassLoader().getResourceAsStream(
+                        "images/events/" + fileNames[i]);
+                try {
+                    image[i] = ImageIO.read(stream);
+                } catch (Exception e) {
+                    // TODO Handle IOException
+                    throw (RuntimeException)new RuntimeException().initCause(e);
+                }
+            }
+
+        }
+
+        /**
+         * @return Returns the image.
+         */
+        public java.awt.Image getImage(int size) {
+            int index = size == 6 ? 0 : size == 8 ? 1 : size == 12 ? 2 : size == 16 ? 3 : size == 48 ? 4 : 0;
+            return image[index];
+        }
+
+    }
 	/**
 	 * file name of network icons
 	 */

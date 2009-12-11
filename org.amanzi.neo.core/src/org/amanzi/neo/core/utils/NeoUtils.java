@@ -18,8 +18,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
@@ -30,6 +32,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Direction;
@@ -605,6 +608,91 @@ public class NeoUtils {
             result.setLength(result.length() - delim.length());
         }
         return result.toString();
+    }
+
+    /**
+     * finds or create if necessary
+     * 
+     * @param root - root node of drive network
+     * @param neo - NeoService
+     * @return SectorDriveRoot node
+     */
+    public static Node findOrCreateSectorDriveRoot(Node root, NeoService neo) {
+        Transaction tx = neo.beginTx();
+        try {
+            Relationship relation = root.getSingleRelationship(NetworkRelationshipTypes.SECTOR_DRIVE, Direction.OUTGOING);
+            if (relation != null) {
+                return relation.getOtherNode(root);
+            }
+            Node result = neo.createNode();
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.ROOT_SECTOR_DRIVE);
+            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.ROOT_SECTOR_DRIVE);
+            root.createRelationshipTo(result, NetworkRelationshipTypes.SECTOR_DRIVE);
+            tx.success();
+            return result;
+        } finally {
+            tx.finish();
+        }
+
+    }
+
+    /**
+     * @param mpNode
+     * @param neo
+     * @return
+     */
+    public static Map<String, Object> getSectorIdentificationMap(Node mpNode, NeoService neo) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        // TODO implement
+        return result;
+    }
+
+
+    /**
+     * @param sectorDriveRoot
+     * @param identifyMap
+     * @param neo
+     * @return
+     */
+    public static Node findOrCreateSectorDrive(Node sectorDriveRoot, java.util.Map<String, Object> identifyMap, NeoService neo) {
+        // TODO implement
+        return null;
+    }
+
+    /**
+     * Forms Event image of mpNode
+     * 
+     * @param mpNode - node
+     * @param neo - neoservice
+     * @return image or null if no event available
+     */
+    public static IconManager.EventIcons formEventImage(Node mpNode, NeoService neo) {
+        Transaction tx = neo.beginTx();
+        try{
+            Iterator<Node> iterator = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    if (currentPos.isStartNode()) {
+                        return false;
+                    }
+                    Node node = currentPos.currentNode();
+                    boolean result = node.hasProperty(INeoConstants.PROPERTY_TYPE_EVENT);
+                    return result;
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+            if (!iterator.hasNext()) {
+                return null;
+            }
+            String event = iterator.next().getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString();
+            if (true || event.toLowerCase().contains("connect")) {
+                return IconManager.EventIcons.CONNECT;
+            }
+            return null;
+        }finally{
+            tx.finish();
+        }
+        
     }
 
 }

@@ -129,4 +129,6 @@ public class INeoConstants {
     public static final String COLOR_RIGHT = "color right";
     public static final String COLOR_MIDDLE = "color middle";
     public static final String MIDDLE_RANGE = "MIDDLE_RANGE";
+    public static final String ROOT_SECTOR_DRIVE = "root_sector_site";
+    public static final String PROPERTY_TYPE_EVENT = "event_type";
 }
