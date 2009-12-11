@@ -17,6 +17,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -140,7 +142,7 @@ public class DriveDialog {
 	 * Maps for storing name of file and path to file
 	 */
 	private HashMap<String, String> folderFiles = new HashMap<String, String>();
-	private HashMap<String, String> loadedFiles = new HashMap<String, String>();
+    private Map<String, String> loadedFiles = new LinkedHashMap<String, String>();
 
     private Button addAllFilesToLoaded;
 
@@ -604,7 +606,8 @@ public class DriveDialog {
         DriveLoader driveLoader = null;
         long memBefore = calculateMemoryUsage();
         ArrayList<Long> memoryConsumption = new ArrayList<Long>();
-		for (String filePath : loadedFiles.values()) {
+        for (String fileName : loadedFiles.keySet()) {
+            String filePath = loadedFiles.get(fileName);
 			try {
 			    if(extension.toLowerCase().equals("fmt")) {
 			        driveLoader = new TEMSLoader(filePath, display, datasetName);
