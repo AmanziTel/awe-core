@@ -6,15 +6,15 @@
      <extension
          point="org.eclipse.ui.editors">
       <editor
-            name="Amanzi Splash Spreadsheet Editor"
-            icon="icons/splash_16.png"
-            extensions="splash"
             class="org.amanzi.splash.ui.SplashResourceEditor"
-            id="org.amanzi.splash.editor">
+            contributorClass="org.amanzi.splash.ui.SplashEditorContributor"
+            extensions="splash"
+            icon="icons/splash_16.png"
+            id="org.amanzi.splash.editor"
+            name="Amanzi Splash Spreadsheet Editor">
       </editor>
       <editor
             class="org.amanzi.splash.editors.SplashJFreeChartEditor"
-            contributorClass="org.amanzi.splash.editors.SplashJFreeChartEditorContributor"
             extensions="mpe"
             icon="icons/barchart.png"
             id="org.amanzi.splash.editors.SplashJFreeChartEditor"
@@ -22,7 +22,6 @@
       </editor>
       <editor
             class="org.amanzi.splash.editors.SplashJFreePieChartEditor"
-            contributorClass="org.amanzi.splash.editors.SplashJFreePieChartEditorContributor"
             icon="icons/piechart.png"
             id="org.amanzi.splash.editors.SplashJFreePieChartEditor"
             name="Amanzi Splash Pie Chart Editor">
@@ -91,16 +90,6 @@
        </category>
        <command
              categoryId="org.amanzi.splash.commands.category"
-             id="org.amanzi.splash.commands.barchartcommand"
-             name="Create Bar Chart">
-       </command>
-       <command
-             categoryId="org.amanzi.splash.commands.category"
-             id="org.amanzi.splash.commands.piechartcommand"
-             name="Create Pie Chart">
-       </command>
-       <command
-             categoryId="org.amanzi.splash.commands.category"
              id="org.amanzi.splash.commands.addtoimportfiltercommand"
              name="Add to Import Filter">
        </command>
@@ -108,32 +97,12 @@
     <extension
           point="org.eclipse.ui.handlers">
        <handler
-             class="org.amanzi.splash.handlers.BarChartCommandHandler"
-             commandId="org.amanzi.splash.commands.barchartcommand">
-       </handler>
-       <handler
-             class="org.amanzi.splash.handlers.PieChartCommandHandler"
-             commandId="org.amanzi.splash.commands.piechartcommand">
-       </handler>
-       <handler
              class="org.amanzi.splash.handlers.AddToImportFilterrHandler"
              commandId="org.amanzi.splash.commands.addtoimportfiltercommand">
        </handler>
     </extension>
     <extension
           point="org.eclipse.ui.bindings">
-       <key
-             commandId="org.amanzi.splash.commands.piechartcommand"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-             sequence="M1+7">
-       </key>
-       <key
-             commandId="org.amanzi.splash.commands.barchartcommand"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-             sequence="M1+6">
-       </key>
     </extension>
     <extension
           point="org.eclipse.ui.menus">
