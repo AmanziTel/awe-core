@@ -4,9 +4,10 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>AWE</artifactId>
-    <version>1</version>
+    <groupId>AWE_build</groupId>
+    <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>net.refractions.udig.project</groupId>
+  <groupId>AWE_build</groupId>
   <artifactId>net.refractions.udig.project</artifactId>
   <version>1.1.1</version>
   <packaging>eclipse-plugin</packaging>

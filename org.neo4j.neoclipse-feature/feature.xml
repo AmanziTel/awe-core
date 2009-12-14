@@ -36,34 +36,34 @@ license).
          id="org.neo4j"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.b9"
          unpack="false"/>
 
    <plugin
          id="org.neo4j.neoclipse"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="0.4.0.awe"
          unpack="false"/>
 
    <plugin
          id="org.junit4"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="4.3.1"/>
 
    <plugin
          id="com.ibm.icu"
          download-size="0"
          install-size="0"
-         version="3.8.1.v20080530"
+         version="4.0.1.v20090415"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.gef"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0"
          unpack="false"/>
 
 </feature>

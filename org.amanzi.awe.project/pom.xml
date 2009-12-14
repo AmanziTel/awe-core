@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>AWE</artifactId>
-    <groupId>awe</groupId>
+    <groupId>AWE_build</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>awe</groupId>
-  <artifactId>org.amanzi.project.awe</artifactId>
+  <groupId>AWE_build</groupId>
+  <artifactId>org.amanzi.awe.project</artifactId>
   <version>1.0.0.qualifier</version>
   <packaging>eclipse-application</packaging>
   <build>
@@ -37,4 +37,7 @@
       </plugin>
     </plugins>
   </build>
+  <properties>
+    <generatedBuildProperties>root.properties</generatedBuildProperties>
+  </properties>
 </project>
