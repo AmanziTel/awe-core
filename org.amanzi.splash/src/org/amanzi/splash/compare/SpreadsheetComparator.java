@@ -118,7 +118,10 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
 
         @Override
         public SpreadsheetLine next() {
-            currentHeader = currentHeader.getNextCellInColumn();
+        	if (currentHeader == null) {
+        		return null;
+        	}
+        	currentHeader = currentHeader.getNextCellInColumn();
             if (currentHeader == null) {
                 return null;
             }
@@ -261,13 +264,14 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
         SpreadsheetLine line = (SpreadsheetLine)secondLine.clone();
         //add all Columns that exists in first Spreadsheet
         for (Object header : firstLine.keySet()) {
-            Cell cell = new Cell(rowNumber, column++);
+        	Cell cell = new Cell(rowNumber, firstLine.get(header).getCellColumn() - 1);
+        	column++;
             if (!line.containsKey(header)) {
                 cell.setCellFormat(blueCell);
             }
             else {
                 line.remove(header);
-            }
+            }            
             
             cell.setValue(header.toString());
             cell.setDefinition(header.toString());
@@ -312,7 +316,7 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
      * @param secondLine second Line to compare
      * @param rowNumber number of row
      */
-    public void compareSpreadsheetLines(SpreadsheetLine firstLine, SpreadsheetLine secondLine, int rowNumber) {
+    private void compareSpreadsheetLines(SpreadsheetLine firstLine, SpreadsheetLine secondLine, int rowNumber) {
         ArrayList<Cell> cellsToSave = new ArrayList<Cell>();
         boolean needToSave = false;
         //iterate through all cells in first line
