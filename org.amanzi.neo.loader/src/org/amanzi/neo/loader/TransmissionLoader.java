@@ -427,6 +427,7 @@ public class TransmissionLoader {
                     NeoLoaderPlugin.error("Not found site: " + servId);
                 }
                 if (neighbourNode == null) {
+                    neighbourNode = createTransmissionSite(neighbourNodeName, fields);
                     NeoLoaderPlugin.error("Not found site: " + neighbourId);
                 }
                 if (serverNode == null || neighbourNode == null) {
