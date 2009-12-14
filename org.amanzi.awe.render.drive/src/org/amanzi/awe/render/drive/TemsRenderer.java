@@ -60,6 +60,8 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.util.index.Isolation;
+import org.neo4j.util.index.LuceneIndexService;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -187,7 +189,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
         int drawWidth = 1 + 2*drawSize;
         NeoService neo = NeoServiceProvider.getProvider().getService();
+
         Transaction tx = neo.beginTx();
+        LuceneIndexService index = new LuceneIndexService(neo);
+        index.setIsolation(Isolation.SYNC_OTHER_TX);
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -366,7 +371,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     borderColor = COLOR_HIGHLIGHTED_SELECTED;
                 }
                 renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite);
-                if (drawLabels || drawEvents) {
+                if (drawLabels) {
                     double theta = 0.0;
                     double dx = 0.0;
                     double dy = 0.0;
@@ -394,19 +399,19 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         }
                     }
                     if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-                        if (drawLabels) {
+                        // if (drawLabels) {
                             renderLabel(g, count, node, p, theta);
-                        }
-                        if (drawEvents) {
-                            renderEvents(g, node, p, theta);
-                        }
+                        // }
+                        // if (drawEvents) {
+                        // renderEvents(g, node, p, theta);
+                        // }
                         if(cached_node != null) {
-                            if (drawLabels) {
+                            // if (drawLabels) {
                                 renderLabel(g, 0, cached_node, cached_l_p, theta);
-                            }
-                            if (drawEvents) {
-                                renderEvents(g, cached_node, cached_l_p, theta);
-                            }
+                            // }
+                            // if (drawEvents) {
+                            // renderEvents(g, cached_node, cached_l_p, theta);
+                            // }
                             cached_node = null;
                             cached_l_p = null;
                         }
@@ -423,6 +428,75 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 count++;
                 if (monitor.isCanceled())
                     break;
+            }
+            if (cached_node != null && drawLabels) {
+                renderLabel(g, 0, cached_node, cached_l_p, 0);
+            }
+            prev_p = null;
+            prev_l_p = null;
+            cached_node = null;
+
+            for (Node node1 : index.getNodes("events", "events")) {
+                if (monitor.isCanceled())
+                    break;
+                GeoNode node = new GeoNode(node1);
+                Coordinate location = node.getCoordinate();
+
+                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
+                    continue; // Don't draw points outside viewport
+                }
+                try {
+                    JTS.transform(location, world_location, transform_d2w);
+                } catch (Exception e) {
+                    // JTS.transform(location, world_location, transform_w2d.inverse());
+                }
+
+                java.awt.Point p = getContext().worldToPixel(world_location);
+                if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
+                    prev_p = p;
+                    continue;
+                } else {
+                    prev_p = p;
+                }
+                double theta = 0.0;
+                double dx = 0.0;
+                double dy = 0.0;
+                if (prev_l_p == null) {
+                    prev_l_p = p;
+                    cached_l_p = p; // so we can draw first point using second point settings
+                    cached_node = node;
+                } else {
+                    try {
+                        dx = p.x - prev_l_p.x;
+                        dy = p.y - prev_l_p.y;
+                        if (Math.abs(dx) < Math.abs(dy) / 2) {
+                            // drive goes north-south
+                            theta = 0;
+                        } else if (Math.abs(dy) < Math.abs(dx) / 2) {
+                            // drive goes east-west
+                            theta = Math.PI / 2;
+                        } else if (dx * dy < 0) {
+                            // drive has negative slope
+                            theta = -Math.PI / 4;
+                        } else {
+                            theta = Math.PI / 4;
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+                if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+                    renderEvents(g, node, p, theta);
+                    if (cached_node != null) {
+                        renderEvents(g, cached_node, cached_l_p, theta);
+                        cached_node = null;
+                        cached_l_p = null;
+                    }
+                    prev_l_p = p;
+                }
+
+            }
+            if (cached_node != null) {
+                renderEvents(g, cached_node, cached_l_p, 0);
             }
             for(String errName:colorErrors.keySet()){
                 int errCount = colorErrors.get(errName);
@@ -446,6 +520,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             // geoNeo.close();
             monitor.done();
             tx.finish();
+            index.shutdown();
+
         }
     }
 

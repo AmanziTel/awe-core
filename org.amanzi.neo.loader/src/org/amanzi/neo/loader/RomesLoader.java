@@ -28,6 +28,8 @@ import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.util.index.Isolation;
+import org.neo4j.util.index.LuceneIndexService;
 
 public class RomesLoader extends DriveLoader {
     private Node point = null;
@@ -37,6 +39,7 @@ public class RomesLoader extends DriveLoader {
     private String time = null;
     private long timestamp = 0L;
     private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    private LuceneIndexService index;
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -47,6 +50,8 @@ public class RomesLoader extends DriveLoader {
      */
     public RomesLoader(String filename, Display display, String dataset) {
         initialize("Romes", null, filename, display, dataset);
+        index = new LuceneIndexService(neo);
+        index.setIsolation(Isolation.SAME_TX);
         initializeKnownHeaders();
         addDriveIndexes();
     }
@@ -60,6 +65,8 @@ public class RomesLoader extends DriveLoader {
      */
     public RomesLoader(NeoService neo, String filename) {
         initialize("Romes", neo, filename, null, null);
+        index = new LuceneIndexService(neo);
+        index.setIsolation(Isolation.SAME_TX);
         initializeKnownHeaders();
         addDriveIndexes();
     }
@@ -134,6 +141,7 @@ public class RomesLoader extends DriveLoader {
      */
     protected void finishUp() {
         saveData();
+        index.shutdown();
         super.finishUp();
     }
 
@@ -166,11 +174,13 @@ public class RomesLoader extends DriveLoader {
                 index(mp);
                 point = mp;
                 Node prev_ms = null;
+                boolean haveEvents = false;
                 for (Map<String, Object> dataLine : data) {
                     Node ms = neo.createNode();
                     ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         ms.setProperty(entry.getKey(), entry.getValue());
+                        haveEvents = haveEvents || INeoConstants.PROPERTY_TYPE_EVENT.equals(entry.getKey());
                     }
                     // debug("\tAdded measurement: " + propertiesString(ms));
                     point.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
@@ -178,6 +188,9 @@ public class RomesLoader extends DriveLoader {
                         prev_ms.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
                     }
                     prev_ms = ms;
+                }
+                if (haveEvents) {
+                    index.index(mp, "events", "events");
                 }
                 incSaved();
                 transaction.success();

@@ -31,6 +31,8 @@ import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.util.index.Isolation;
+import org.neo4j.util.index.LuceneIndexService;
 
 public class TEMSLoader extends DriveLoader {
     private Node point = null;
@@ -43,6 +45,8 @@ public class TEMSLoader extends DriveLoader {
     private String time = null;
     private long timestamp = 0L;
     private HashMap<String, float[]> signals = new HashMap<String, float[]>();
+    private String event;
+    private LuceneIndexService index;
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -53,6 +57,8 @@ public class TEMSLoader extends DriveLoader {
      */
     public TEMSLoader(String filename, Display display, String dataset) {
         initialize("TEMS", null, filename, display, dataset);
+        index = new LuceneIndexService(neo);
+        index.setIsolation(Isolation.SAME_TX);
         initializeKnownHeaders();
         addDriveIndexes();
     }
@@ -66,6 +72,8 @@ public class TEMSLoader extends DriveLoader {
      */
     public TEMSLoader(NeoService neo, String filename) {
         initialize("TEMS", neo, filename, null, null);
+        index = new LuceneIndexService(neo);
+        index.setIsolation(Isolation.SAME_TX);
         initializeKnownHeaders();
         addDriveIndexes();
     }
@@ -79,6 +87,13 @@ public class TEMSLoader extends DriveLoader {
                 ".*pilot_set.*"});
         addKnownHeader("latitude", ".*latitude");
         addKnownHeader("longitude", ".*longitude");
+        addMappedHeader("event", "Event Type", "event_type", new PropertyMapper() {
+
+            @Override
+            public Object mapValue(String originalValue) {
+                return originalValue.replaceAll("HO Command.*", "HO Command");
+            }
+        });
         addMappedHeader("time", "Timestamp", "timestamp", new PropertyMapper() {
 
             @Override
@@ -115,6 +130,7 @@ public class TEMSLoader extends DriveLoader {
      */
     protected void finishUp() {
         saveData();
+        index.shutdown();
         super.finishUp();
     }
 
@@ -131,8 +147,9 @@ public class TEMSLoader extends DriveLoader {
         this.time = lineData.get("time").toString();
         this.timestamp = (Long)lineData.get("timestamp");
         String ms = (String)lineData.get("ms");
-        String event = (String)lineData.get("event"); // currently only getting this as a change
-                                                        // marker
+        event = (String)lineData.get("event"); // currently only getting this as a change
+
+        // marker
         String message_type = (String)lineData.get("message_type"); // need this to filter for only
                                                                     // relevant messages
         // message_id = lineData.get("message_id"); // parsing this is not faster
@@ -250,6 +267,9 @@ public class TEMSLoader extends DriveLoader {
                     point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
                 }
                 index(mp);
+                if (event!=null){
+                    index.index(mp, "events", "events");
+                }
                 point = mp;
                 Node prev_ms = null;
                 TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
@@ -266,6 +286,10 @@ public class TEMSLoader extends DriveLoader {
                     ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
                     ms.setProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME, Integer.parseInt(cc[0]));
                     ms.setProperty(INeoConstants.PROPERTY_CODE_NAME, Integer.parseInt(cc[1]));
+                    if (event != null) {
+                        ms.setProperty(INeoConstants.PROPERTY_TYPE_EVENT, event);
+                        event = null;
+                    }
                     float dbm = LoaderUtils.mw2dbm(mw);
                     ms.setProperty(INeoConstants.PROPERTY_DBM_NAME, dbm);
                     ms.setProperty(INeoConstants.PROPERTY_MW_NAME, mw);

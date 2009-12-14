@@ -39,12 +39,19 @@ import org.neo4j.api.core.Traverser.Order;
  * @since 1.0.0
  */
 public enum DriveEvents {
-    /*
-     * CONNECTION {
-     * @Override public EventIcons getEventIcon() { return EventIcons.CONNECT; }
-     * @Override public boolean haveEvents(String aProperty) { return aProperty != null &&
-     * aProperty.toLowerCase().contains("connect"); } },
-     */
+
+    UNKNOWN {
+        @Override
+        public EventIcons getEventIcon() {
+            return EventIcons.CONNECT;
+        }
+
+        @Override
+        public boolean haveEvents(String aProperty) {
+            return false;
+        }
+    },
+
     CALL_BLOCKED {
         @Override
         public EventIcons getEventIcon() {
@@ -200,7 +207,9 @@ public enum DriveEvents {
                     return node.hasProperty(INeoConstants.PROPERTY_TYPE_EVENT);
                 }
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+            boolean haveEvents = false;
             MSNODE: for (Node node : traverser) {
+                haveEvents=true;
                 for (DriveEvents event : DriveEvents.values()) {
                     if (result.contains(event)) {
                         continue;
@@ -210,6 +219,9 @@ public enum DriveEvents {
                         continue MSNODE;
                     }
                 }
+            }
+            if (result.isEmpty()&&haveEvents){
+                result.add(UNKNOWN);
             }
         } finally {
             finishTx(tx);
