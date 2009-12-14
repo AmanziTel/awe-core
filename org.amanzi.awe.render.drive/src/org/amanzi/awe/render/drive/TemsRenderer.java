@@ -60,7 +60,6 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
-import org.neo4j.util.index.Isolation;
 import org.neo4j.util.index.LuceneIndexService;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -192,7 +191,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
         Transaction tx = neo.beginTx();
         LuceneIndexService index = new LuceneIndexService(neo);
-        index.setIsolation(Isolation.SYNC_OTHER_TX);
+        // index.setIsolation(Isolation.ASYNC_OTHER_TX);
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
