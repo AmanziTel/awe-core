@@ -484,6 +484,17 @@ public class CellNode extends AbstractNode {
         }
     }
     
+    public CellNode getNextCellInRow() {
+        Iterator<Relationship> relationships = node.getRelationships(SplashRelationshipTypes.NEXT_CELL_IN_ROW, Direction.OUTGOING).iterator();
+        
+        if (relationships.hasNext()) {
+            return CellNode.fromNode(relationships.next().getEndNode());
+        }
+        else {
+            return null;
+        }
+    }
+    
     /**
      * Returns a list of next Cells
      *
@@ -586,7 +597,7 @@ public class CellNode extends AbstractNode {
                                             
                                             @Override
                                             public boolean isReturnableNode(TraversalPosition currentPos) {
-                                                if (!returnFirst && (currentPos.depth() == 0)) {
+                                            	if (!returnFirst && (currentPos.depth() == 0)) {
                                                     return false;
                                                 }
                                                 return true;

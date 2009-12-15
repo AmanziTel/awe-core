@@ -25,6 +25,7 @@ import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
@@ -496,6 +497,90 @@ public class SpreadsheetNode extends AbstractNode {
 	    else {
 	        return null;
 	    }
+	}
+	
+	/**
+	 * Corrects links between Cells after swapping of Row
+	 * 
+	 * @param row Row that was swapped with next Row
+	 */
+	public void swapRows(RowHeaderNode row) {
+		for (CellNode cell : row.getAllCellsFromThis(true)) {
+			Node rowNode1 = cell.getUnderlyingNode();
+			Node rowNode2 = cell.getNextCellInColumn().getUnderlyingNode();
+		
+			swapHeaders(rowNode1, rowNode2, SplashRelationshipTypes.NEXT_CELL_IN_COLUMN);
+		}
+	}
+	
+	/**
+	 * Corrects links between Cells after swapping of Column
+	 * 
+	 * @param column Column that was swapped with next Column
+	 */
+	public void swapColumns(ColumnHeaderNode column) {
+		for (CellNode cell : column.getAllCellsFromThis(true)) {
+			Node rowNode1 = cell.getUnderlyingNode();
+			Node rowNode2 = cell.getNextCellInRow().getUnderlyingNode();
+		
+			swapHeaders(rowNode1, rowNode2, SplashRelationshipTypes.NEXT_CELL_IN_ROW);
+		}
+	}
+	
+	/**
+	 * Corrects links between Cells after deleting Row
+	 * 
+	 * @param row RowHeader of deleted row
+	 */
+	public void deleteRow(RowHeaderNode row) {
+		for (CellNode cell : row.getAllCellsFromThis(true)) {
+			deleteCell(cell.getUnderlyingNode(), SplashRelationshipTypes.NEXT_CELL_IN_COLUMN);
+		}
+	}
+	
+	/**
+	 * Corrects links between Cells after deleting Column
+	 * 
+	 * @param column ColumnHeader of deleted column
+	 */
+	public void deleteColumn(ColumnHeaderNode column) {
+		for (CellNode cell : column.getAllCellsFromThis(true)) {
+			deleteCell(cell.getUnderlyingNode(), SplashRelationshipTypes.NEXT_CELL_IN_ROW);
+		}
+	}
+	
+	/**
+	 * Deletes a Cell and updates 
+	 * 
+	 * @param node
+	 * @param relationshipType
+	 */
+	private void deleteCell(Node node, RelationshipType relationshipType) {
+		Relationship previousRelationship = node.getSingleRelationship(relationshipType, Direction.INCOMING);
+		Node previousNode = previousRelationship.getStartNode();
+		previousRelationship.delete();
+		
+		Relationship nextRelationship = node.getSingleRelationship(relationshipType, Direction.OUTGOING);
+		Node nextNode = nextRelationship.getEndNode();
+		nextRelationship.delete();
+		
+		previousNode.createRelationshipTo(nextNode, relationshipType);
+	}
+	
+	private void swapHeaders(Node node1, Node node2, RelationshipType relationshipType) {
+		node1.getSingleRelationship(relationshipType, Direction.OUTGOING).delete();
+		
+		Relationship previousRelationship = node1.getSingleRelationship(relationshipType, Direction.INCOMING);
+		Node previousNode = previousRelationship.getStartNode();
+		previousRelationship.delete();
+		
+		Relationship nextRelationship = node2.getSingleRelationship(relationshipType, Direction.OUTGOING);
+		Node nextNode = nextRelationship.getEndNode();
+		nextRelationship.delete();
+		
+		previousNode.createRelationshipTo(node2, relationshipType);
+		node2.createRelationshipTo(node1, relationshipType);
+		node1.createRelationshipTo(nextNode, relationshipType);
 	}
 	
 	/**

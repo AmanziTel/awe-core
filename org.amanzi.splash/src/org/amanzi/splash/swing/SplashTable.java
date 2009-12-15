@@ -375,18 +375,13 @@ public class SplashTable extends JTable {
 	 */
 	// TODO: Lagutko: deleted only from TableModel but not from Database
 	public void deleteRow(final int index) {
-		// int rowCount = getRowCount();
-		// int columnCount = getColumnCount();
-		//
-		// SplashTableModel newModel = new SplashTableModel(rowCount - 1,
-		// columnCount, splashName, root);
 		SplashTableModel model = (SplashTableModel) getModel();
 		final SpreadsheetNode spreadsheet = model.getSpreadsheet();
-		final Boolean result = (Boolean) ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+		final Boolean result = (Boolean) ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Boolean>() {
 
 			private Boolean result;
 
-			public Object getValue() {
+			public Boolean getValue() {
 				return result;
 			}
 
@@ -402,10 +397,8 @@ public class SplashTable extends JTable {
 		if (!result) {
 			return;
 		}
-		model = new SplashTableModel(spreadsheet, model.getRubyRuntime(), model.getRubyProjectNode());
-		setModel(model);
-		RowModel r = new RowModel(getModel());
-		rowHeader.setModel(r);
+		
+		repaint();
 	}
 
 	/**
@@ -418,11 +411,11 @@ public class SplashTable extends JTable {
 	public void deleteColumn(final int index) {
 		SplashTableModel model = (SplashTableModel) getModel();
 		final SpreadsheetNode spreadsheet = model.getSpreadsheet();
-		final Boolean result = (Boolean) ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+		final Boolean result = (Boolean) ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Boolean>() {
 
 			private Boolean result;
 
-			public Object getValue() {
+			public Boolean getValue() {
 				return result;
 			}
 
@@ -438,10 +431,7 @@ public class SplashTable extends JTable {
 		if (!result) {
 			return;
 		}
-		model = new SplashTableModel(spreadsheet, model.getRubyRuntime(), model.getRubyProjectNode());
-		setModel(model);
-		RowModel r = new RowModel(getModel());
-		rowHeader.setModel(r);
+		repaint();
 	}
 
 	/**

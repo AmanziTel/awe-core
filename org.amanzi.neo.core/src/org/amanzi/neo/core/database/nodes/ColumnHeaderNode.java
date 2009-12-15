@@ -56,7 +56,7 @@ public class ColumnHeaderNode extends AbstractHeaderNode {
     }
     
     @Override
-    protected RelationshipType getRelationshipType() {
+    public RelationshipType getRelationshipType() {
         return SplashRelationshipTypes.NEXT_CELL_IN_COLUMN;
     }
 
