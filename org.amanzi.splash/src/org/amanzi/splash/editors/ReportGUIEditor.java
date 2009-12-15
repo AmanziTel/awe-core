@@ -18,18 +18,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.splash.chart.Charts;
+import org.amanzi.splash.report.IReportModelListener;
 import org.amanzi.splash.report.IReportPart;
+import org.amanzi.splash.report.ReportModelEvent;
 import org.amanzi.splash.report.model.Chart;
 import org.amanzi.splash.report.model.Report;
 import org.amanzi.splash.report.model.ReportImage;
 import org.amanzi.splash.report.model.ReportModel;
 import org.amanzi.splash.report.model.ReportTable;
 import org.amanzi.splash.report.model.ReportText;
+import org.apache.poi.hssf.record.formula.functions.Forecast;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.MenuEvent;
+import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -43,6 +50,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -51,8 +60,21 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.event.ChartChangeEvent;
+import org.jfree.chart.event.ChartChangeListener;
+import org.jfree.chart.event.PlotChangeEvent;
+import org.jfree.chart.event.PlotChangeListener;
+import org.jfree.chart.event.TitleChangeEvent;
+import org.jfree.chart.event.TitleChangeListener;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.plot.Zoomable;
+import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.AbstractDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
@@ -63,7 +85,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
  * @author Pechko E.
  * @since 1.0.0
  */
-public class ReportGUIEditor extends EditorPart {
+public class ReportGUIEditor extends EditorPart  {
 
     private boolean isDirty;
     private Composite frame;
@@ -136,25 +158,33 @@ public class ReportGUIEditor extends EditorPart {
 
             for (int i = 0; i < reportParts.size(); i++) {
                 IReportPart part = reportParts.get(i);
-                if (part instanceof ReportText) {
-                    addTextPart((ReportText)part);
-                } else if (part instanceof Chart) {
-                    addChartPart((Chart)part);
-                } else if (part instanceof ReportImage) {
-                    addImagePart((ReportImage)part);
-                } else if (part instanceof ReportTable) {
-                    addTablePart((ReportTable)part);
-                } else {
-                    Composite currComposite = new Composite(frame, SWT.NONE);
-                    FillLayout mainLayout = new FillLayout(SWT.VERTICAL);
-                    currComposite.setLayout(mainLayout);
-                    Label label = new Label(currComposite, SWT.LEFT);
-                    label.setText("Composite for " + part.getClass().getName() + " is not implemented yet");
-                    currComposite.layout();
-                    parts.add(currComposite);
-                }
+                createCompositeForPart(part);
             }
             forceRepaint();
+        }
+    }
+
+    /**
+     *
+     * @param part
+     */
+    public void createCompositeForPart(IReportPart part) {
+        if (part instanceof ReportText) {
+            addTextPart((ReportText)part);
+        } else if (part instanceof Chart) {
+            addChartPart((Chart)part);
+        } else if (part instanceof ReportImage) {
+            addImagePart((ReportImage)part);
+        } else if (part instanceof ReportTable) {
+            addTablePart((ReportTable)part);
+        } else {
+            Composite currComposite = new Composite(frame, SWT.NONE);
+            FillLayout mainLayout = new FillLayout(SWT.VERTICAL);
+            currComposite.setLayout(mainLayout);
+            Label label = new Label(currComposite, SWT.LEFT);
+            label.setText("Composite for " + part.getClass().getName() + " is not implemented yet");
+            currComposite.layout();
+            parts.add(currComposite);
         }
     }
 
@@ -183,6 +213,8 @@ public class ReportGUIEditor extends EditorPart {
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
         table.setRedraw(true);
+        parts.add(currComposite);
+        createContextMenu(table, reportTable);
 
     }
 
@@ -191,7 +223,7 @@ public class ReportGUIEditor extends EditorPart {
      * 
      * @param chart chart to be added
      */
-    private void addChartPart(Chart chart) {
+    private void addChartPart(final Chart chart) {
         final Composite currComposite = createContainer(chart);
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
         currComposite.setLayoutData(data);
@@ -204,9 +236,54 @@ public class ReportGUIEditor extends EditorPart {
         } else {
             chartDataset = reportModel.getChartDataset(chart);
         }
-        JFreeChart jFreeChart = Charts.createBarChart(chartDataset);
-        ChartComposite chartComposite = new ChartComposite(currComposite, SWT.NONE, jFreeChart, true);
+        final JFreeChart jFreeChart = Charts.createBarChart(chart);
 
+        jFreeChart.addChangeListener(new ChartChangeListener() {
+
+            @Override
+            public void chartChanged(ChartChangeEvent arg0) {
+                Object source = arg0.getSource();
+                if (source instanceof TextTitle) {
+                    String newTitleText = ((TextTitle)source).getText();
+                    if (newTitleText != chart.getTitle()) {
+                        chart.setTitle(newTitleText);
+                        reportModel.getReport().firePartPropertyChanged(chart, Report.FIRST_ARGUMENT, chart.getTitle());
+                        // fireEvent
+                        System.out.println("title\t" + chart.getTitle());
+                    }
+                }
+                Plot plotOld = jFreeChart.getPlot();
+
+                if (source instanceof CategoryPlot) {
+                    PlotOrientation newOrientation=((CategoryPlot)plotOld).getOrientation();
+                    if (!newOrientation.equals(chart.getOrientation())){
+                        chart.setOrientation(newOrientation);
+                        final String newValue = ":"+(newOrientation.equals(PlotOrientation.HORIZONTAL)?"horizontal":"vertical");
+                        reportModel.getReport().firePartPropertyChanged(chart, "orientation", newValue);
+                        System.out.println("orientation\t" + (newOrientation.equals(PlotOrientation.HORIZONTAL)?"horizontal":"vertical"));
+                    }
+                    String newDomainAxisLabel = ((CategoryPlot)plotOld).getDomainAxis().getLabel();
+                    if (!newDomainAxisLabel.equals(chart.getDomainAxisLabel())){
+                        chart.setDomainAxisLabel(newDomainAxisLabel);
+                        reportModel.getReport().firePartPropertyChanged(chart, "domain_axis", "'"+chart.getDomainAxisLabel()+"'");
+                        System.out.println("domain_axis\t" + chart.getDomainAxisLabel());
+                    }
+                    String newRangeAxisLabel = ((CategoryPlot)plotOld).getRangeAxis().getLabel();
+                    if (!newRangeAxisLabel.equals(chart.getRangeAxisLabel())){
+                        chart.setRangeAxisLabel(newRangeAxisLabel);
+                        reportModel.getReport().firePartPropertyChanged(chart, "range_axis", "'"+chart.getRangeAxisLabel()+"'");
+                        System.out.println("range_axis\t" + chart.getRangeAxisLabel());
+                    }
+                }
+                if (source instanceof XYPlot) {
+                    //TODO
+                }
+
+            }
+        });
+        ChartComposite chartComposite = new ChartComposite(currComposite, SWT.NONE, jFreeChart, true);
+//        System.out.println("Chart menu: " + chartComposite.getMenu());
+        createContextMenu(chartComposite, (IReportPart)chart);
         GridData data1 = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
         data1.widthHint = 600;
         data1.heightHint = 300;
@@ -223,12 +300,7 @@ public class ReportGUIEditor extends EditorPart {
      * Adds new text
      */
     public void addNewText() {
-        ReportText reportText = new ReportText("Type new text here");
-        reportModel.getReport().addPart(reportText);
-        addTextPart(reportText);
-        isReportDataModified = true;
-        forceRepaint();
-
+        reportModel.updateModel( new StringBuffer("text '").append("Type new text here").append("'\n").toString());
     }
 
     /**
@@ -249,27 +321,17 @@ public class ReportGUIEditor extends EditorPart {
                 Object data = currComposite.getData();
                 if (data instanceof ReportText) {
                     ReportText reportText = ((ReportText)data);
-                    reportText.setText(text.getText());
+                    String newText = text.getText();
+                    reportText.setText(newText);
+                    reportModel.getReport().firePartPropertyChanged(reportText, Report.FIRST_ARGUMENT, newText);
+                    
                 }
-                forceRepaint();
+                frame.pack();
             }
 
         });
-        // TODO text is scrolled but should be resized after "Enter" is pressed
-        // text.addKeyListener(new KeyListener(){
-        //
-        // @Override
-        // public void keyPressed(KeyEvent e) {
-        // }
-        //
-        // @Override
-        // public void keyReleased(KeyEvent e) {
-        // if (e.character==13){
-        // forceRepaint();
-        // }
-        // }
-        //            
-        // });
+        createContextMenu(text, part);
+        
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
         data.widthHint = 600;
         text.setLayoutData(data);
@@ -293,6 +355,19 @@ public class ReportGUIEditor extends EditorPart {
         }
         return null;
     }
+    /**
+     * Adds a new chart
+     */
+    public void addNewChart(String script) {
+            reportModel.updateModel(script);
+      }
+    /**
+     * Invokes the ruby model builder to create a new part from the script
+     */
+    public void addPart(String script) {
+            reportModel.updateModel(script);
+      }
+
 
     /**
      * Adds new image
@@ -300,11 +375,7 @@ public class ReportGUIEditor extends EditorPart {
     public void addNewImage() {
         String imageFileName = openFileDialog();
         if (imageFileName != null) {
-            ReportImage imagePart = new ReportImage(imageFileName);
-            reportModel.getReport().addPart(imagePart);
-            addImagePart(imagePart);
-            isReportDataModified = true;
-            forceRepaint();
+            reportModel.updateModel(new StringBuffer("image '").append(imageFileName).append("'\n").toString());
         }
 
     }
@@ -324,9 +395,11 @@ public class ReportGUIEditor extends EditorPart {
         lbl.setImage(image);
         lbl.setBackground(new Color(frame.getDisplay(), RGB_WHITE));
         lbl.setLayoutData(data);
+        createContextMenu(lbl, (IReportPart)imagePart);
         Button btnEdit = new Button(currComposite, SWT.PUSH);
         btnEdit.setText("Edit");
         btnEdit.setEnabled(false);
+        parts.add(currComposite);
     }
 
     /**
@@ -362,9 +435,77 @@ public class ReportGUIEditor extends EditorPart {
     /**
      * Actions needed for repainting
      */
-    private void forceRepaint() {
+    void forceRepaint() {
         sc.setContent(frame);
         frame.pack();
+    }
+
+    private void createContextMenu(Control control, final IReportPart part) {
+        Menu menu = control.getMenu();
+        if (menu == null)
+            menu = new Menu(frame);
+        MenuItem movePartUp = new MenuItem(menu, SWT.NONE);
+        movePartUp.setText("Move up");
+        movePartUp.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                int index = part.getIndex();
+                if (index>0){
+//                    Composite c1 = parts.get(index);
+//                    Composite c2 = parts.get(index-1);
+//                    parts.set(index-1, c2);
+//                    parts.set(index , c1);
+                    reportModel.getReport().movePartUp(part);
+                    repaint();
+                }
+            }
+
+        });
+        MenuItem movePartDown = new MenuItem(menu, SWT.NONE);
+        movePartDown.setText("Move down");
+        movePartDown.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                int index = part.getIndex();
+                if (index < parts.size() - 1) {
+//                    Composite c1 = parts.get(index);
+//                    Composite c2 = parts.get(index+1);
+//                    parts.set(index, c2);
+//                    parts.set(index + 1, c1);
+                    reportModel.getReport().movePartDown(part);
+                    repaint();
+                }
+            }
+
+        });
+        MenuItem removePart = new MenuItem(menu, SWT.NONE);
+        removePart.setText("Remove");
+        removePart.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                parts.get(part.getIndex()).dispose();
+                parts.remove(part.getIndex());
+                forceRepaint();
+                reportModel.getReport().removePart(part);
+            }
+
+        });
+        // menu.addMenuListener(new MenuListener() {
+        //
+        // @Override
+        // public void menuHidden(MenuEvent e) {
+        // }
+        //
+        // @Override
+        // public void menuShown(MenuEvent e) {
+        // }
+        //        
+        // });
+        control.setMenu(menu);
+
     }
 
     /**
@@ -398,5 +539,7 @@ public class ReportGUIEditor extends EditorPart {
     public void setReportDataModified(boolean isReportDataModified) {
         this.isReportDataModified = isReportDataModified;
     }
+
+    
 
 }

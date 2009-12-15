@@ -23,5 +23,11 @@ package org.amanzi.splash.report;
  */
 public interface IReportModelListener {
     
+    /**
+     * Method for handling report events
+     *
+     * @param event - the report event occurred
+     */
+    public void reportChanged(ReportModelEvent event);
 
 }

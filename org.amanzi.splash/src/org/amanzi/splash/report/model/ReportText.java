@@ -14,6 +14,7 @@
 package org.amanzi.splash.report.model;
 
 import org.amanzi.splash.report.IReportPart;
+import org.amanzi.splash.report.ReportPartType;
 
 /**
  * TODO Purpose of 
@@ -25,6 +26,7 @@ import org.amanzi.splash.report.IReportPart;
  */
 public class ReportText implements IReportPart {
     private String text;
+    private int index;
 
     /**
      * @param text
@@ -58,6 +60,28 @@ public class ReportText implements IReportPart {
     @Override
     public String getScript() {
         return new StringBuffer("text '").append(text).append("'").toString();
+    }
+
+    /**
+     * @return Returns the type.
+     */
+    public ReportPartType getType() {
+        return ReportPartType.TEXT;
+    }
+
+
+    /**
+     * @return Returns the index.
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * @param index The index to set.
+     */
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     @Override

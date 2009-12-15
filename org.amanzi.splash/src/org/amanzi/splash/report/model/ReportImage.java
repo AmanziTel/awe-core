@@ -14,6 +14,7 @@
 package org.amanzi.splash.report.model;
 
 import org.amanzi.splash.report.IReportPart;
+import org.amanzi.splash.report.ReportPartType;
 
 /**
  * TODO Purpose of 
@@ -25,6 +26,7 @@ import org.amanzi.splash.report.IReportPart;
  */
 public class ReportImage implements IReportPart {
     private String imageFileName;
+    private int index;
 
     /**
      * @param imageFileName
@@ -53,6 +55,29 @@ public class ReportImage implements IReportPart {
     @Override
     public String getScript() {
         return new StringBuffer("image '").append(imageFileName).append("'").toString();
+    }
+
+    /**
+     * @return Returns the type.
+     */
+    public ReportPartType getType() {
+        return ReportPartType.IMAGE;
+    }
+
+    
+
+    /**
+     * @return Returns the index.
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * @param index The index to set.
+     */
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     @Override

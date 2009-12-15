@@ -20,6 +20,8 @@ import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.splash.chart.ChartType;
 import org.amanzi.splash.report.IReportPart;
+import org.amanzi.splash.report.ReportPartType;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.general.AbstractDataset;
 
 /**
@@ -41,7 +43,13 @@ public class Chart implements IReportPart {
     private Long[] nodeIds;
     private List<String> errors = new ArrayList<String>();
     private AbstractDataset dataset;
-
+    //JFReeChart settings
+    private String title="";
+    private PlotOrientation orientation=PlotOrientation.VERTICAL;
+    private String domainAxisLabel="";
+    private String rangeAxisLabel="Value";
+//
+    private int index;
     /**
      * @param name
      * @param categories
@@ -69,9 +77,9 @@ public class Chart implements IReportPart {
     /**
      * @param name
      */
-    public Chart(String name) {
+    public Chart(String title) {
         super();
-        this.name = name;
+        this.title = title;
     }
 
     /**
@@ -226,11 +234,89 @@ public class Chart implements IReportPart {
         this.dataset = dataset;
     }
 
+    /**
+     * @return Returns the title.
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * @param title The title to set.
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * @return Returns the orientation.
+     */
+    public PlotOrientation getOrientation() {
+        return orientation;
+    }
+
+    /**
+     * @param orientation The orientation to set.
+     */
+    public void setOrientation(PlotOrientation orientation) {
+        this.orientation = orientation;
+    }
+
+    /**
+     * @return Returns the domainAxisLabel.
+     */
+    public String getDomainAxisLabel() {
+        return domainAxisLabel;
+    }
+
+    /**
+     * @param domainAxisLabel The domainAxisLabel to set.
+     */
+    public void setDomainAxisLabel(String domainAxisLabel) {
+        this.domainAxisLabel = domainAxisLabel;
+    }
+
+    /**
+     * @return Returns the rangeAxisLabel.
+     */
+    public String getRangeAxisLabel() {
+        return rangeAxisLabel;
+    }
+
+    /**
+     * @param rangeAxisLabel The rangeAxisLabel to set.
+     */
+    public void setRangeAxisLabel(String rangeAxisLabel) {
+        this.rangeAxisLabel = rangeAxisLabel;
+    }
+
     @Override
     public String getScript() {
         return new StringBuffer("chart '").append(name).append("' do\n").append("self.sheet='").append(sheet).append(
                 "'\nself.categories=").append(categories.l()).append("..").append(categories.r()).append("\nself.values=").append(
                 values.l()).append("..").append(values.r()).append("\nend").toString();
+    }
+
+    /**
+     * @return Returns the type.
+     */
+    public ReportPartType getType() {
+        return ReportPartType.CHART;
+    }
+
+    
+    /**
+     * @return Returns the index.
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * @param index The index to set.
+     */
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     @Override
@@ -275,5 +361,6 @@ public class Chart implements IReportPart {
             return false;
         return true;
     }
+
 
 }

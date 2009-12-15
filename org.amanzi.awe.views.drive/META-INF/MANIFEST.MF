@@ -4,13 +4,15 @@ Bundle-Name: Drive_inquirer
 Bundle-SymbolicName: org.amanzi.awe.views.drive;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.views.drive.DriveInquirerPlugin
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime,
  org.jfree;bundle-version="1.0.13",
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.neo4j;bundle-version="1.0.0",
  net.refractions.udig.project.ui;bundle-version="1.1.1",
- org.amanzi.awe.catalog.neo;bundle-version="1.0.0"
+ org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
+ org.eclipse.ui.ide,
+ org.eclipse.ui.views,
+ org.eclipse.core.resources
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: amanzi.org

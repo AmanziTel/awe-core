@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.splash.report.IReportPart;
+import org.amanzi.splash.report.ReportPartType;
 
 /**
  * TODO Purpose of 
@@ -30,7 +31,7 @@ public class ReportTable implements IReportPart {
     private String title;
     private String[] headers;
     private List<String[]> tableItems=new ArrayList<String[]>();
-    
+    private int index;
     /**
      * @param title
      */
@@ -80,6 +81,29 @@ public class ReportTable implements IReportPart {
     @Override
     public String getScript() {
         return null;
+    }
+
+    /**
+     * @return Returns the type.
+     */
+    public ReportPartType getType() {
+        return ReportPartType.TABLE;
+    }
+
+    
+
+    /**
+     * @return Returns the index.
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * @param index The index to set.
+     */
+    public void setIndex(int index) {
+        this.index = index;
     }
 
 }

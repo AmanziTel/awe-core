@@ -30,6 +30,7 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
 
     private AddTextAction addTextAction;
     private AddImageAction addImageAction;
+    private AddChartAction addChartAction;
     private ReportGUIEditor part;
 
     @Override
@@ -38,6 +39,7 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
             part = (ReportGUIEditor)activeEditor;
             addTextAction.setEditor(part);
             addImageAction.setEditor(part);
+            addChartAction.setEditor(part);
         }
     }
 
@@ -52,8 +54,10 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
         toolBarManager.add(new Separator());
         addTextAction = new AddTextAction();
         addImageAction = new AddImageAction();
+        addChartAction = new AddChartAction();
         toolBarManager.add(addTextAction);
         toolBarManager.add(addImageAction);
+        toolBarManager.add(addChartAction);
 
     }
 
@@ -121,6 +125,43 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
         @Override
         public void run() {
             editor.addNewImage();
+        }
+
+    }
+    /**
+     * Class for an action that adds image to a report
+     * 
+     * @author Pechko_E
+     * @since 1.0.0
+     */
+    public class AddChartAction extends Action {
+        private ReportGUIEditor editor;
+
+        /**
+         * Constructor
+         * 
+         * @param text
+         * @param image
+         */
+        public AddChartAction() {
+            super("Add chart", AbstractUIPlugin.imageDescriptorFromPlugin("org.amanzi.neo.loader", "/icons/16/add_chart.png"));
+        }
+
+        /**
+         * Setter for editor field
+         * 
+         * @param editor
+         */
+        public void setEditor(ReportGUIEditor editor) {
+            this.editor = editor;
+
+        }
+
+        @Override
+        public void run() {
+            StringBuffer sb = new StringBuffer("  chart 'chart0' do\n").append("    self.sheet='sheet1'\n").append("    self.categories=a1..a3\n")
+            .append("  self.values=b1..b3\n  end\n");
+            editor.addNewChart(sb.toString());
         }
 
     }

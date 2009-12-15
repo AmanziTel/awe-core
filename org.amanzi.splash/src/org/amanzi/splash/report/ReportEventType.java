@@ -18,12 +18,9 @@ package org.amanzi.splash.report;
  * <p>
  *
  * </p>
- * @author user
+ * @author Pechko_E
  * @since 1.0.0
  */
-public interface IReportPart {
-    public String getScript();
-    public int getIndex();
-    public void setIndex(int index);
-    public ReportPartType getType();
+public enum ReportEventType {
+    PART_ADDED,PART_REMOVED,PART_MOVED_UP,PART_MOVED_DOWN,PROPERTY_CHANGED;
 }

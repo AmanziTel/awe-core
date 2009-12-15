@@ -30,10 +30,12 @@ import org.amanzi.splash.chart.Charts;
 import org.amanzi.splash.database.services.ReportService;
 import org.amanzi.splash.job.InitializeSplashTask;
 import org.amanzi.splash.job.SplashJob;
+import org.amanzi.splash.report.IReportModelListener;
 import org.amanzi.splash.report.IReportPart;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.ui.PlatformUI;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
@@ -69,6 +71,7 @@ public class ReportModel {
     private AweProjectService projectService;
     private ReportService service;
     private Report report;
+    private List<IReportModelListener> listeners = new ArrayList<IReportModelListener>(0);
 
     public ReportModel(String rubyProjectName) {
         this.projectService = NeoCorePlugin.getDefault().getProjectService();
@@ -141,9 +144,28 @@ public class ReportModel {
     }
 
     public void updateModel(String script) {
-        // Object rep=runtime.evalScriptlet(script);
+        this.scriptInput = script;
         splashJob.schedule();
         splashJob.addTask(new InitializeSplashTask(runtime, script));
+    }
+
+    /**
+     * Method intended to be called from Ruby
+     * 
+     * @param part part created by ruby model builder
+     */
+
+    public void createPart(final IReportPart part) {
+        PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                if (report != null) {
+                    report.addPart(part);
+                    report.firePartAdded(part, scriptInput);
+                }
+            }
+        });
     }
 
     /**
@@ -188,6 +210,21 @@ public class ReportModel {
         this.report = report;
     }
 
+    /**
+     * @param listener
+     */
+    public void addReportListener(IReportModelListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * @param listener
+     */
+
+    public void removeReportListener(IReportModelListener listener) {
+        listeners.remove(listener);
+    }
+
     public void changeReportName(String newName) {
         String reportName = reportNode.getReportName();
         if (!reportName.equals(newName)) {
@@ -195,24 +232,30 @@ public class ReportModel {
         }
     }
 
-
     public void updateReport(Report newReport) {
-        if (this.report == null) {
-            System.out.println("report == null");
-            this.report = newReport;
-            service.updateReport(rootNode, this.report.getName(), newReport);// TODO createReport
-            // process
-        } else if (isReportModified(newReport)) {
-            service.updateReport(rootNode, this.report.getName(), newReport);
+        if (report != null) {
+            report.removeAllReportListeners();
         }
         this.report = newReport;
-//        System.out.println("updateReport executed");
+        for (IReportModelListener l : listeners) {
+            this.report.addReportListener(l);
+        }
+        // if (this.report == null) {
+        // System.out.println("report == null");
+        // this.report = newReport;
+        // service.updateReport(rootNode, this.report.getName(), newReport);// TODO createReport
+        // // process
+        // } else if (isReportModified(newReport)) {
+        // service.updateReport(rootNode, this.report.getName(), newReport);
+        // }
+        // this.report = newReport;
+        // System.out.println("updateReport executed");
     }
 
     private boolean isReportModified(Report reportToCheck) {
         System.out.println("isReportModified");
         return isReportNameModified(reportToCheck) || isAuthorModified(reportToCheck) || isDateModified(reportToCheck)
-               /* || isAnyPartModified(reportToCheck)*/;
+        /* || isAnyPartModified(reportToCheck) */;
     }
 
     private boolean isAnyPartModified(Report reportToCheck) {
@@ -222,8 +265,8 @@ public class ReportModel {
         if (n != newParts.size()) {
             return true;
         } else {
-            for (int i=0;i<n;i++)
-                if (!parts.get(i).equals(newParts.get(i))){
+            for (int i = 0; i < n; i++)
+                if (!parts.get(i).equals(newParts.get(i))) {
                     return true;
                 }
         }
@@ -244,14 +287,14 @@ public class ReportModel {
     }
 
     public DefaultCategoryDataset getChartDataset(Chart chart) {
-        if (chart.isSheetBased()){
+        if (chart.isSheetBased()) {
             ArrayList<CellNode> categories = service.getCellRange(rootNode, chart.getSheet(), chart.getCategories());
             ArrayList<CellNode> values = service.getCellRange(rootNode, chart.getSheet(), chart.getValues());
             return Charts.getBarChartDataset(categories, values);
-            
-        }else if (chart.isNodeRangeBased()){
+
+        } else if (chart.isNodeRangeBased()) {
             ArrayList<Node> nodes = service.getNodes(rootNode, chart.getNodeIds());
-            return Charts.getBarChartDataset(nodes, chart.getCategoriesProperty(),chart.getValuesProperties());
+            return Charts.getBarChartDataset(nodes, chart.getCategoriesProperty(), chart.getValuesProperties());
         }
         return null;
     }

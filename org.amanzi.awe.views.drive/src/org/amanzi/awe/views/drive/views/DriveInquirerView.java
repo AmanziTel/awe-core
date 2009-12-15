@@ -15,11 +15,15 @@ package org.amanzi.awe.views.drive.views;
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Shape;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -41,6 +45,11 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -48,6 +57,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -65,6 +75,8 @@ import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.geotools.brewer.color.BrewerPalette;
 import org.jfree.chart.ChartUtilities;
@@ -134,6 +146,7 @@ public class DriveInquirerView extends ViewPart {
     private Button bLeftHalf;
     private Button bRight;
     private Button bRightHalf;
+    private Button bReport;
     private LinkedHashMap<String, Node> gisDriveNodes;
     private DateTime dateStart;
     private Spinner sLength;
@@ -272,6 +285,9 @@ public class DriveInquirerView extends ViewPart {
         bRightHalf = new Button(buttonLine, SWT.PUSH);
         bRightHalf.setText(">");
 
+        bReport = new Button(buttonLine, SWT.PUSH);
+        bReport.setText("Report");
+        
         FormData formData = new FormData();
         formData.left = new FormAttachment(0, 5);
         bLeft.setLayoutData(formData);
@@ -316,6 +332,10 @@ public class DriveInquirerView extends ViewPart {
         dCombo = new FormData();
         dCombo.left = new FormAttachment(lPalette, 2);
         cPalette.setLayoutData(dCombo);
+        
+        FormData dReport  = new FormData();
+        dReport.left = new FormAttachment(cPalette, 2);
+        bReport.setLayoutData(dReport);
 
         setsVisible(false);
         cDrive.setItems(getDriveItems());
@@ -498,6 +518,58 @@ public class DriveInquirerView extends ViewPart {
                 table.refresh();
             }
         });
+        bReport.addSelectionListener(new SelectionAdapter(){
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                generateReport();
+            }
+            
+        });
+    }
+
+    private void generateReport() {
+//        GregorianCalendar calendar = new GregorianCalendar();
+//        calendar.set(GregorianCalendar.HOUR_OF_DAY, dateStart.getHours());
+//        calendar.set(GregorianCalendar.MINUTE, dateStart.getMinutes());
+//        calendar.set(GregorianCalendar.SECOND, dateStart.getSeconds());
+//        System.out.println("time (calendar): "+calendar.getTimeInMillis());
+        
+        System.out.println("time: "+dateStart.getHours()+":"+dateStart.getMinutes()+":"+dateStart.getSeconds());
+        StringBuffer sb = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(
+                System.getProperty("user.name")).append("'\n  date '")
+                .append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n  chart '").append(cDrive.getText()).append("' do\n    self.drive='")
+                .append(cDrive.getText()).append("'\n    self.event='")
+                .append(cEvent.getText()).append("'\n    self.property1='")
+                .append(cProperty1.getText()).append("'\n    self.property2='")
+                .append(cProperty2.getText()).append("'\n    self.start_time='")
+                .append(dateStart.getHours()).append(":").append(dateStart.getMinutes()).append(":").append(dateStart.getSeconds())
+                .append("'\n    self.length='").append(sLength.getSelection()).append("'\n  end\nend");
+        
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];//TODO correct
+        IFile file;
+        int i = 0;
+        while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
+            i++;
+        }
+        System.out.println("Report script:\n" + sb.toString());
+        InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
+        try {
+            file.create(is, true, null);
+            is.close();
+        } catch (CoreException e) {
+            // TODO Handle CoreException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        try {
+            getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.splash.editors.ReportEditor");
+        } catch (PartInitException e) {
+            // TODO Handle PartInitException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     /**

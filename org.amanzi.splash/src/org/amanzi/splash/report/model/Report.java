@@ -14,9 +14,14 @@
 package org.amanzi.splash.report.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.splash.report.IReportModelListener;
 import org.amanzi.splash.report.IReportPart;
+import org.amanzi.splash.report.ReportEventType;
+import org.amanzi.splash.report.ReportModelEvent;
 
 /**
  * TODO Purpose of
@@ -27,10 +32,13 @@ import org.amanzi.splash.report.IReportPart;
  * @since 1.0.0
  */
 public class Report {
+    public static final String FIRST_ARGUMENT="first_argument";
     private String name;
     private String date;
     private String author;
     private List<IReportPart> parts = new ArrayList<IReportPart>(0);
+    private List<IReportModelListener> listeners = new ArrayList<IReportModelListener>(0);
+
 
     /**
      * @param name
@@ -134,10 +142,6 @@ public class Report {
         return parts;
     }
 
-    public void addPart(IReportPart part) {
-        System.out.println("java addPart: " + part);
-        parts.add(part);
-    }
 
     public String getScript() {
         StringBuffer sb=  new StringBuffer("report '").append(name).append("' do\n").append("author '").append(author).append("'\n").append("date '")
@@ -150,6 +154,160 @@ public class Report {
     }
 
     public void addImage(ReportImage imagePart) {
+    }
+    /**
+     * Adds part. Event will not be generated. This method is intended to be called from Ruby Model
+     * Builder.
+     * 
+     * @param part - the part has been added
+     */
+    public void addPart(IReportPart part) {
+        System.out.println("Part was added: "+parts.size());
+        part.setIndex(parts.size());
+        parts.add(part);
+    }
+
+    /**
+     * Removes the part
+     * 
+     * @param part - the part to be removed
+     */
+    public void removePart(IReportPart part) {
+        Iterator<IReportPart> iterator = parts.iterator();
+        while (iterator.hasNext()) {
+            IReportPart next = iterator.next();
+            if (next.equals(part)) {
+                iterator.remove();
+                while (iterator.hasNext()) {
+                    next = iterator.next();
+                    next.setIndex(next.getIndex() - 1);
+                }
+                firePartRemoved(part);
+            }
+        }
+    }
+
+    /**
+     * Moves the part up
+     * 
+     * @param part - the part to be moved up
+     */
+    public void movePartUp(IReportPart part) {
+        int index = part.getIndex();
+        if (index > 0) {
+            IReportPart previous = parts.get(index - 1);
+            previous.setIndex(index);
+            part.setIndex(index - 1);
+            parts.set(index, previous);
+            parts.set(index - 1, part);
+            firePartMovedUp(part);
+        }
+    }
+
+    /**
+     * Moves the part down
+     * 
+     * @param part - the part to be moved down
+     */
+    public void movePartDown(IReportPart part) {
+        int index = part.getIndex();
+        if (index < parts.size() - 1) {
+            IReportPart next = parts.get(index + 1);
+            next.setIndex(index);
+            part.setIndex(index + 1);
+            parts.set(index, next);
+            parts.set(index + 1, part);
+            firePartMovedDown(part);
+        }
+    }
+
+    /**
+     * Fires part added event
+     * 
+     * @param part - the part has been added
+     * @param script - the script text from which this part has been generated
+     */
+    public void firePartAdded(IReportPart part, String script) {
+        firePartEvent(ReportEventType.PART_ADDED, part, script);
+    }
+    /**
+     * Fires part added event
+     * 
+     * @param part - the part has been added
+     * @param script - the script text from which this part has been generated
+     */
+    public void firePartPropertyChanged(IReportPart part, String property, String newValue) {
+        firePartEvent(ReportEventType.PROPERTY_CHANGED, part, new Pair<String,String>(property,newValue));
+    }
+
+    /**
+     * Fires part removed event
+     * 
+     * @param part - the part has been removed
+     */
+    private void firePartRemoved(IReportPart part) {
+        firePartEvent(ReportEventType.PART_REMOVED, part, null);
+    }
+
+    /**
+     * Fires part moved up event
+     * 
+     * @param part - the part has been moved up
+     */
+    private void firePartMovedUp(IReportPart part) {
+        firePartEvent(ReportEventType.PART_MOVED_UP, part, null);// new index
+
+    }
+
+    /**
+     * Fires part moved down event
+     * 
+     * @param part - the part has been moved down
+     */
+    private void firePartMovedDown(IReportPart part) {
+        firePartEvent(ReportEventType.PART_MOVED_DOWN, part, null);// new index
+    }
+
+    /**
+     * Fires the part event according to its type
+     * 
+     * @param eventType - the event type to be fired
+     * @param part - the source part for the event
+     * @param script - the script text for the part, may be null
+     */
+
+    private void firePartEvent(ReportEventType eventType, IReportPart part, Object data) {
+        ReportModelEvent event = new ReportModelEvent(eventType, part, data);
+        for (IReportModelListener l : listeners) {
+            l.reportChanged(event);
+        }
+    }
+
+    /**
+     * @param listener
+     */
+    public void addReportListener(IReportModelListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * @param listener
+     */
+
+    public void removeReportListener(IReportModelListener listener) {
+        listeners.remove(listener);
+    }
+    
+    /**
+     * Removes all listeners
+     */
+     
+    public void removeAllReportListeners() {
+        Iterator<IReportModelListener> iterator = listeners.iterator();
+        while (iterator.hasNext()){
+            iterator.next();
+            iterator.remove();
+        }
     }
 
 }

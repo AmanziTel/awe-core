@@ -1,8 +1,10 @@
 require 'java'
+require 'date'
 require 'neo4j'
 
 #require 'neo4j/auto_tx'
 require 'ruby/cell'
+require 'ruby/amanzi_neo4j'
 
 include_class org.amanzi.neo.core.database.nodes.CellID
 include_class org.amanzi.splash.report.model.Report
@@ -12,6 +14,7 @@ include_class org.amanzi.splash.report.model.ReportImage
 include_class org.amanzi.splash.report.model.ReportTable
 include_class org.amanzi.neo.core.service.NeoServiceProvider
 include_class org.jfree.data.category.DefaultCategoryDataset;
+include_class org.jfree.chart.plot.PlotOrientation
 
 neo_service = NeoServiceProvider.getProvider.getService
 database_location = NeoServiceProvider.getProvider.getDefaultDatabaseLocation
@@ -54,6 +57,30 @@ module NodeUtils
       ds.addValue(java.lang.Double.parseDouble(node.get_property(:value).to_s), "name", node.get_property(:name).to_s);
     end
     ds
+  end
+
+  def create_chart_dataset(nodes,category,values,type=:bar)
+    ds=DefaultCategoryDataset.new()
+    nodes.each do |node|
+      values.each do |value|
+        ds.addValue(java.lang.Double.parseDouble(node[value].to_s), value, node[category].to_s);
+      end
+    end
+    ds
+  end
+
+  def  get_sub_nodes_with_props(parent, node_type, relation, time)
+    time_format = '%H:%M:%S'
+    parent.traverse.outgoing(relation).depth(:all).stop_on do
+      prop_time=get_property(Java::org.amanzi.neo.core.INeoConstants::PROPERTY_TIME_NAME)
+      #      puts "#{node_type}.props #{props}"
+      if prop_time.nil?
+        false
+      else
+        t=DateTime.strptime(prop_time,time_format)
+        Time.gm(t.year,t.mon,t.day,t.hour,t.min,t.sec)>=time
+      end
+    end
   end
 end
 
@@ -142,9 +169,13 @@ class Report
   #    end
 
   def chart(name,&block)
-    currChart=Chart.new(name)
-    currChart.setup(&block)
-    addPart(currChart)
+    begin
+      currChart=Chart.new(name)
+      currChart.setup(&block)
+      addPart(currChart)
+    rescue =>e
+      puts "[chart(name,&block)] an exception occured: #{e}"
+    end
   end
 end
 
@@ -207,28 +238,49 @@ class ReportTable
       end
     }
   end
-#  transactional :get_data
+  #  transactional :get_data
 end
 
 class Chart
   include NodeUtils
   extend Neo4j::TransactionalMixin
 
-  attr_accessor :sheet, :name, :type
+  attr_accessor :title, :type, :orientation, :domain_axis, :range_axis
   attr_writer :categories,:values, :nodes, :statistics
   attr_writer:property, :distribute, :select
   attr_writer :drive, :event, :property1, :property2, :start_time, :length
-  def initialize(name)
-    self.name = name
+  def initialize(title)
+    self.title = title
+  end
+
+  def sheet=(sheet_name)
+    puts "sheet=(#{sheet_name}) called"
+    @sheet=sheet_name
   end
 
   def setup(&block)
-    self.instance_eval &block if block_given?
+    self.instance_eval(&block) #if block_given?
     Neo4j::Transaction.run {
       begin
+        #JFreeChart specific settings
+        if !@orientation.nil?
+          if @orientation==:vertical
+            setOrientation(PlotOrientation::VERTICAL)
+          elsif @orientation==:horizontal
+            puts "#{PlotOrientation::HORIZONTAL}"
+            setOrientation(Java::org.jfree.chart.plot.PlotOrientation::HORIZONTAL)
+          end
+        end
+        setDomainAxisLabel(@domain_axis) if !@domain_axis.nil?
+        setRangeAxisLabel(@range_axis) if !@range_axis.nil?
+        puts "JFreeChart specific settings"
         @type=:bar if @type.nil?
-        setChartType(Java::org.amanzi.splash.chart.ChartType.value_of(@type.to_s.upcase))
+        #        chartType=Java::org.amanzi.splash.chart.ChartType.value_of(@type.to_s.upcase)
+        #        puts "type #{chartType}"
+        #        setChartType(Java::org.amanzi.splash.chart.ChartType.value_of(@type.to_s.upcase))
+        #        puts "setChartType"
         if !@sheet.nil?
+          puts "!@sheet.nil"
           if !@categories.nil?
             if @categories.is_a? Range
               setCategories(@categories.begin,@categories.end)
@@ -245,22 +297,32 @@ class Chart
             setSheet(@sheet)
           end
         elsif !@nodes.nil?
-          if @nodes.is_a? Array
-            setNodeIds(@nodes.to_java(java.lang.Long))
-          end
+          puts "nodes #{@nodes}"
+          setNodeIds(@nodes.to_java(java.lang.Long)) if @nodes.is_a? Array
+          setCategoriesProperty(@categories) if !@categories.nil? and  @categories.is_a? String
+          setValuesProperties(@values.to_java(java.lang.String)) if !@values.nil? and   @values.is_a? Array
+          setDataset(create_chart_dataset(@nodes,@categories,@values))
         elsif !@statistics.nil?
           dataset_node=find_dataset(@statistics)
-          #      puts "dataset_node #{dataset_node}"
           if !@property.nil? and !@distribute.nil? and !@select.nil?
-            #        puts "@property #{@property} @distribute #{@distribute} @select #{@select} "
             aggr_node=find_aggr_node(dataset_node,@property,@distribute,@select)
-            #        puts "aggr_node #{aggr_node}"
             setDataset(create_chart_dataset(aggr_node))
-
           end
         elsif !@drive.nil?
-          dataset_node=find_dataset(@drive)
-          puts "dataset_node #{dataset_node}"
+          drive_node=find_dataset(@drive)
+
+          time=Java::org.amanzi.neo.core.INeoConstants::PROPERTY_TIME_NAME
+          time_format = '%H:%M:%S'
+          start_time=DateTime.strptime(@start_time, time_format)
+          end_time=Time.gm(start_time.year,start_time.mon,start_time.day,start_time.hour,start_time.min,start_time.sec)+@length.to_i*60
+          puts "start_time #{start_time}"
+          puts "end_time #{end_time}"
+          nodes=get_sub_nodes_with_props(drive_node, Java::org.amanzi.neo.core.INeoConstants::MP_TYPE_NAME,:NEXT,end_time)
+          nodes.each do |node|
+            prop_time=node.get_property(time)
+            puts "node.id #{node.neo_node_id} #{prop_time}"
+          end
+          puts "drive_node #{drive_node}"
           puts "@event #{@event}"
           puts "@property1 #{@property1}"
           puts "@property2 #{@property2}"
@@ -268,7 +330,7 @@ class Chart
           puts "@length #{@length}"
         end
       rescue =>e
-        puts "An exception occured during chart setup: #{e}"
+        puts "An exception occured during the chart setup: #{e}"
       end
     }
     self
@@ -289,5 +351,25 @@ def report (name, &block)
   report=Report.new(name)
   report.setup(&block)
   $report_model.updateReport(report)
+  #  report
+end
+
+def chart(name,&block)
+  begin
+    puts "module method called"
+    currChart=Chart.new(name)
+    currChart.setup(&block)
+    $report_model.createPart(currChart)
+  rescue =>e
+    puts "[chart(name,&block)] an exception occured: #{e}"
+  end
+end
+
+def text (new_text)
+  $report_model.createPart(ReportText.new(new_text))
+end
+
+def image (image_file_name)
+  $report_model.createPart(ReportImage.new(image_file_name))
 end
 
