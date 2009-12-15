@@ -291,6 +291,9 @@ public class NetworkRenderer extends RendererImpl {
             for (Node rnode : selectedPoints) {
                 GeoNode node = new GeoNode(rnode);
                 Coordinate location = node.getCoordinate();
+                if (location == null) {
+                    continue;
+                }
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
                     continue; // Don't draw points outside viewport
                 }

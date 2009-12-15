@@ -160,13 +160,13 @@ public class TransmissionLoader {
             if (reader != null) {
                 reader.close();
             }
+            tx.finish();
+            header.finish();
+            NeoServiceProvider.getProvider().commit();
             NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
                     new UpdateDatabaseEvent(UpdateDatabaseEventType.TRANSMISSION));
             NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
                     new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
-            tx.finish();
-            header.finish();
-            NeoServiceProvider.getProvider().commit();
         }
 
     }
