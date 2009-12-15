@@ -364,7 +364,7 @@ public class TransmissionView extends ViewPart {
             if (columns.isEmpty()) {
                 column = new TableViewerColumn(viewer, SWT.LEFT);
                 col = column.getColumn();
-                col.setText("Serving cell");
+                col.setText("Near end");
                 col.addSelectionListener(new SelectionListener() {
 
                     @Override
@@ -387,7 +387,7 @@ public class TransmissionView extends ViewPart {
                 col.setResizable(true);
                 column = new TableViewerColumn(viewer, SWT.LEFT);
                 col = column.getColumn();
-                col.setText("Neighbour cell");
+                col.setText("Far end");
                 col.addSelectionListener(new SelectionListener() {
 
                     @Override
