@@ -507,9 +507,11 @@ public class SpreadsheetNode extends AbstractNode {
 	public void swapRows(RowHeaderNode row) {
 		for (CellNode cell : row.getAllCellsFromThis(true)) {
 			Node rowNode1 = cell.getUnderlyingNode();
-			Node rowNode2 = cell.getNextCellInColumn().getUnderlyingNode();
+			if (cell.getNextCellInColumn() != null) {
+				Node rowNode2 = cell.getNextCellInColumn().getUnderlyingNode();
 		
-			swapHeaders(rowNode1, rowNode2, SplashRelationshipTypes.NEXT_CELL_IN_COLUMN);
+				swapHeaders(rowNode1, rowNode2, SplashRelationshipTypes.NEXT_CELL_IN_COLUMN);
+			}
 		}
 	}
 	
@@ -521,9 +523,11 @@ public class SpreadsheetNode extends AbstractNode {
 	public void swapColumns(ColumnHeaderNode column) {
 		for (CellNode cell : column.getAllCellsFromThis(true)) {
 			Node rowNode1 = cell.getUnderlyingNode();
-			Node rowNode2 = cell.getNextCellInRow().getUnderlyingNode();
+			if (cell.getNextCellInRow() != null) {
+				Node rowNode2 = cell.getNextCellInRow().getUnderlyingNode();
 		
-			swapHeaders(rowNode1, rowNode2, SplashRelationshipTypes.NEXT_CELL_IN_ROW);
+				swapHeaders(rowNode1, rowNode2, SplashRelationshipTypes.NEXT_CELL_IN_ROW);
+			}
 		}
 	}
 	
@@ -571,16 +575,20 @@ public class SpreadsheetNode extends AbstractNode {
 		node1.getSingleRelationship(relationshipType, Direction.OUTGOING).delete();
 		
 		Relationship previousRelationship = node1.getSingleRelationship(relationshipType, Direction.INCOMING);
-		Node previousNode = previousRelationship.getStartNode();
-		previousRelationship.delete();
+		if (previousRelationship != null) {
+			Node previousNode = previousRelationship.getStartNode();
+			previousRelationship.delete();
+			previousNode.createRelationshipTo(node2, relationshipType);
+		}		
 		
 		Relationship nextRelationship = node2.getSingleRelationship(relationshipType, Direction.OUTGOING);
-		Node nextNode = nextRelationship.getEndNode();
-		nextRelationship.delete();
+		if (nextRelationship != null) {
+			Node nextNode = nextRelationship.getEndNode();
+			nextRelationship.delete();
+			node1.createRelationshipTo(nextNode, relationshipType);
+		}
 		
-		previousNode.createRelationshipTo(node2, relationshipType);
-		node2.createRelationshipTo(node1, relationshipType);
-		node1.createRelationshipTo(nextNode, relationshipType);
+		node2.createRelationshipTo(node1, relationshipType);		
 	}
 	
 	/**

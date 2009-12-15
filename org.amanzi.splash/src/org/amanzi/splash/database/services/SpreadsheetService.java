@@ -908,6 +908,8 @@ public class SpreadsheetService {
 			else {
 				spreadsheet.clearCellIndex(index1, 0);
 			}
+			
+			spreadsheet.swapRows(row1);
 		}
 		catch (Exception e) {
 			transaction.failure();
@@ -973,9 +975,12 @@ public class SpreadsheetService {
 			else {
 				spreadsheet.clearCellIndex(0, index1);
 			}
+			
+			spreadsheet.swapColumns(column1);			
 		}
 		catch (Exception e) {
 			transaction.failure();
+			e.printStackTrace();
 		} finally {
 			transaction.finish();
 			//commit changes to database
