@@ -162,6 +162,8 @@ public class TransmissionLoader {
             }
             NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
                     new UpdateDatabaseEvent(UpdateDatabaseEventType.TRANSMISSION));
+            NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
+                    new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
             tx.finish();
             header.finish();
             NeoServiceProvider.getProvider().commit();
