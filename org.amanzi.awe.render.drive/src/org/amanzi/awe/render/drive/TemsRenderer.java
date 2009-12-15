@@ -60,7 +60,7 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
-import org.neo4j.util.index.LuceneIndexService;
+import org.neo4j.util.index.LuceneReadOnlyIndexService;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -190,11 +190,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         NeoService neo = NeoServiceProvider.getProvider().getService();
 
         Transaction tx = neo.beginTx();
-        LuceneIndexService index = new LuceneIndexService(neo);
-        // index.setIsolation(Isolation.ASYNC_OTHER_TX);
+
+        LuceneReadOnlyIndexService index = new LuceneReadOnlyIndexService(neo);
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
+            String gisName = NeoUtils.getSimpleNodeName(geoNeo.getMainGisNode(), "");
             //String selectedProp = geoNeo.getPropertyName();
             aggNode = geoNeo.getAggrNode();
             Map<String, Object> selectionMap = getSelectionMap(geoNeo);
@@ -434,8 +435,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             prev_p = null;
             prev_l_p = null;
             cached_node = null;
-
-            for (Node node1 : index.getNodes("events", "events")) {
+            for (Node node1 : index.getNodes("events", gisName)) {
                 if (monitor.isCanceled())
                     break;
                 GeoNode node = new GeoNode(node1);
@@ -518,9 +518,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             // if (geoNeo != null)
             // geoNeo.close();
             monitor.done();
-            tx.finish();
-            index.shutdown();
 
+            tx.finish();
+            if (index != null) {
+                index.shutdown();
+            }
         }
     }
 
