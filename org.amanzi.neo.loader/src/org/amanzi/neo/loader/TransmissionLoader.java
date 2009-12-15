@@ -506,9 +506,11 @@ public class TransmissionLoader {
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node = currentPos.currentNode();
-                    return !node.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                    return NeoUtils.getNodeType(node, "").equals("site")
+                            && !node.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
                 }
-            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator().next();
+            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator()
+                    .next();
         }
 
         /**
