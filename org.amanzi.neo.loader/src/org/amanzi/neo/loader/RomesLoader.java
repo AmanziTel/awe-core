@@ -190,7 +190,7 @@ public class RomesLoader extends DriveLoader {
                     prev_ms = ms;
                 }
                 if (haveEvents) {
-                    index.index(mp, "events", "events");
+                    index.index(mp, "events", nameGis);
                 }
                 incSaved();
                 transaction.success();

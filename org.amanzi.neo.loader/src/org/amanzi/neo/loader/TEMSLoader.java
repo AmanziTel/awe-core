@@ -15,6 +15,7 @@ package org.amanzi.neo.loader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,7 +110,12 @@ public class TEMSLoader extends DriveLoader {
                 return datetime.getTime();
             }
         });
-        dropHeaderStats(new String[] {"time", "timestamp", "latitude", "longitude"});
+        addNonDataHeaders(Arrays.asList(new String[] {"time", "timestamp", "latitude", "longitude", "all_pilot_set_count"}));
+        for (int i = 0; i < 13; i++) {
+            String[] array = new String[] {"all_active_set_channel_" + i, "all_active_set_pn_" + i, "all_active_set_ec_io_" + i,
+                    "all_pilot_set_ec_io_" + i, "all_pilot_set_channel_" + i, "all_pilot_set_pn_" + i};
+            addNonDataHeaders(Arrays.asList(array));
+        }
     }
 
     private void addDriveIndexes() {
@@ -268,7 +274,7 @@ public class TEMSLoader extends DriveLoader {
                 }
                 index(mp);
                 if (event!=null){
-                    index.index(mp, "events", "events");
+                    index.index(mp, "events", nameGis);
                 }
                 point = mp;
                 Node prev_ms = null;

@@ -728,6 +728,7 @@ public abstract class AbstractLoader {
     private HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
     private Transaction mainTx;
     private int commitSize = 1000;
+    protected String nameGis;
 
     protected List<String> getProperties(Class< ? extends Object> klass) {
         if (typedProperties == null) {
@@ -1017,7 +1018,7 @@ public abstract class AbstractLoader {
         if (gis == null) {
             Transaction transaction = neo.beginTx();
             try {
-                String name = NeoUtils.getNodeName(mainNode);
+                nameGis = NeoUtils.getNodeName(mainNode);
                 Node reference = neo.getReferenceNode();
                 for (Relationship relationship : mainNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)) {
                     Node node = relationship.getStartNode();
@@ -1031,15 +1032,15 @@ public abstract class AbstractLoader {
                     }
                 }
                 if (gis == null) {
-                    gis = findMatchingGisNode(name, gisType);
+                    gis = findMatchingGisNode(nameGis, gisType);
                     if (gis == null) {
                         gis = neo.createNode();
                         gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
-                        gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+                        gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, nameGis);
                         gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
                         reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
                     } else {
-                        deleteOldGisNodes(name, gisType, gis);
+                        deleteOldGisNodes(nameGis, gisType, gis);
                     }
                     boolean hasRelationship = false;
                     for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
