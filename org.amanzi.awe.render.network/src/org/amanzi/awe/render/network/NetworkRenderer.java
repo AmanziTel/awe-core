@@ -255,7 +255,7 @@ public class NetworkRenderer extends RendererImpl {
 
             for (Node node : selectedNodes) {
                 final String nodeType = NeoUtils.getNodeType(node, "");
-                if ("network".equals(nodeType) || "bsc".equals(nodeType)) {
+                if ("network".equals(nodeType) || "bsc".equals(nodeType) || "city".equals(nodeType)) {
                     // Select all 'site' nodes in that file
                     for (Node rnode : node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
                             new ReturnableEvaluator() {
