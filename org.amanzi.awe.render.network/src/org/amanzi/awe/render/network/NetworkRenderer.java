@@ -255,16 +255,27 @@ public class NetworkRenderer extends RendererImpl {
 
             for (Node node : selectedNodes) {
                 final String nodeType = NeoUtils.getNodeType(node, "");
-                if ("network".equals(nodeType) || "bsc".equals(nodeType) || "city".equals(nodeType)) {
+                if ("network".equals(nodeType)) {
                     // Select all 'site' nodes in that file
-                    for (Node rnode : node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    for (Node rnode : node
+                            .traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                        @Override
+                                public boolean isReturnableNode(TraversalPosition currentPos) {
+                                    return "site".equals(currentPos.currentNode().getProperty("type", ""));
+                        }
+                            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        selectedPoints.add(rnode);
+                    }
+                } else if ("city".equals(nodeType) || "bsc".equals(nodeType)) {
+                    for (Node rnode : node.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
                             new ReturnableEvaluator() {
 
                         @Override
                         public boolean isReturnableNode(TraversalPosition currentPos) {
                             return "site".equals(currentPos.currentNode().getProperty("type", ""));
                         }
-                            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                         selectedPoints.add(rnode);
                     }
                 } else {
