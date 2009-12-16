@@ -67,6 +67,7 @@
       <plugin>
         <groupId>org.codehaus.tycho</groupId>
         <artifactId>maven-osgi-compiler-plugin</artifactId>
+        <version>0.4.0-DEV-3170</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
