@@ -20,7 +20,6 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.neo4j.api.core.EmbeddedReadOnlyNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.neo.NeoServiceEvent;
@@ -119,13 +118,13 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * @return
      */
 
-    public NeoService getReadOnlyService() {
-        if (neoServiceReadOnly == null) {
-            neoServiceReadOnly = new EmbeddedReadOnlyNeo(getDefaultDatabaseLocation());
-        }
-
-        return neoServiceReadOnly;
-    }
+    // public NeoService getReadOnlyService() {
+    // if (neoServiceReadOnly == null) {
+    // neoServiceReadOnly = new EmbeddedReadOnlyNeo(getDefaultDatabaseLocation());
+    // }
+    //
+    // return neoServiceReadOnly;
+    // }
     
     /**
      * Initializes NeoService and NeoServiceManager
