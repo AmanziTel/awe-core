@@ -27,6 +27,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DriveLoader;
+import org.amanzi.neo.loader.NemoLoader;
 import org.amanzi.neo.loader.RomesLoader;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -72,6 +73,7 @@ public class DriveDialog {
         "Drive Test Data (*.FMT; *.ASC)",
         "TEMS Drive Test Export (*.FMT)",
         "Romes drive test export (*.ASC)",
+ "Nemo drive test export (*.nmf)",
         "All Files (*.*)"};
 
     /*
@@ -81,6 +83,7 @@ public class DriveDialog {
         "*.FMT;*.fmt;*.ASC;*.asc",
         "*.FMT;*.fmt",
         "*.ASC;*.asc",
+ "*.NMF;*.nmf",
         "*.*"};
 
     /*
@@ -613,7 +616,9 @@ public class DriveDialog {
 			        driveLoader = new TEMSLoader(filePath, display, datasetName);
 			    } else if(extension.toLowerCase().equals("asc")) {
                     driveLoader = new RomesLoader(filePath, display, datasetName);
-			    } else {
+                } else if (extension.toLowerCase().equals("nmf")) {
+                    driveLoader = new NemoLoader(filePath, display, datasetName);
+                } else {
 			        NeoLoaderPlugin.error("Unsupported file extension: "+extension);
 			    }
 				driveLoader.run(monitor);

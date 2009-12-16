@@ -97,7 +97,7 @@ public abstract class AbstractLoader {
     private ArrayList<Pattern> headerFilters = new ArrayList<Pattern>();
     private LinkedHashMap<String, List<String>> knownHeaders = new LinkedHashMap<String, List<String>>();
     private LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
-    private LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
+    protected LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
     private TreeSet<String> dropStatsHeaders = new TreeSet<String>();
     private TreeSet<String> nonDataHeaders = new TreeSet<String>();
     @SuppressWarnings("unchecked")
@@ -336,7 +336,7 @@ public abstract class AbstractLoader {
 
     protected class MappedHeaderRule {
         private String name;
-        private String key;
+        protected String key;
         private PropertyMapper mapper;
 
         MappedHeaderRule(String name, String key, PropertyMapper mapper) {
@@ -726,7 +726,7 @@ public abstract class AbstractLoader {
     }
 
     private HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
-    private Transaction mainTx;
+    protected Transaction mainTx;
     private int commitSize = 1000;
     protected String nameGis;
 
@@ -1462,6 +1462,13 @@ public abstract class AbstractLoader {
 
     public void setCommitSize(int commitSize) {
         this.commitSize = commitSize;
+    }
+
+    /**
+     * @return Returns the commitSize.
+     */
+    public int getCommitSize() {
+        return commitSize;
     }
 
 }

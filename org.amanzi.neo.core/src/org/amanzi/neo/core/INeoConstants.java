@@ -44,6 +44,7 @@ public class INeoConstants {
     public static final String PROPERTY_FIRST_LINE_NAME = "first_line";
     public static final String PROPERTY_TIME_NAME = "time";
     public static final String PROPERTY_TIMESTAMP_NAME = "timestamp";
+    public static final String PROPERTY_PARAMS_NAME = "event_parameters";
     public static final String HEADER_MS = "ms";
     public static final String GIS_TYPE_NAME = "gis";
     public static final String PROPERTY_BBOX_NAME = "bbox";
