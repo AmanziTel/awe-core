@@ -38,17 +38,17 @@ import org.neo4j.api.core.Transaction;
  */
 public class NemoLoader extends DriveLoader {
     /** String TIME field */
-    private static final String TIME = "time";
+    protected static final String TIME = "time";
     /** String EVENT_ID field */
-    private static final String EVENT_ID = "event_id";
+    protected static final String EVENT_ID = "event_id";
     /** String TIME_FORMAT field */
-    private static final String TIME_FORMAT = "HH:mm:ss.S";
-    private CSVParser parser = null;
-    private char fieldSepRegex;
-    private char[] possibleFieldSepRegexes = new char[] {'\t', ',', ';'};
-    private Node pointNode;
-    private SimpleDateFormat timeFormat;
-    private Node msNode;
+    protected static final String TIME_FORMAT = "HH:mm:ss.S";
+    protected CSVParser parser = null;
+    protected char fieldSepRegex;
+    protected char[] possibleFieldSepRegexes = new char[] {'\t', ',', ';'};
+    protected Node pointNode;
+    protected SimpleDateFormat timeFormat;
+    protected Node msNode;
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
      * 
@@ -67,7 +67,7 @@ public class NemoLoader extends DriveLoader {
     /**
      *
      */
-    private void initializeKnownHeaders() {
+    protected void initializeKnownHeaders() {
         headers.put(EVENT_ID, new StringHeader(new Header(EVENT_ID, EVENT_ID, 0)));
         // headers.put(TIME, new Header(TIME, TIME, 1));
         // MappedHeaderRule mapRule = new MappedHeaderRule("timestamp", TIME, new
@@ -102,11 +102,11 @@ public class NemoLoader extends DriveLoader {
     /**
      * @param parsedLine
      */
-    private void createPointNode(List<String> parsedLine) {
+    protected void createPointNode(List<String> parsedLine) {
         Transaction transaction = neo.beginTx();
         try {
-            double lon = Double.parseDouble(parsedLine.get(3));
-            double lat = Double.parseDouble(parsedLine.get(4));
+            double lon = Double.parseDouble(getLongitude(parsedLine));
+            double lat = Double.parseDouble(getLatitude(parsedLine));
             String time = getEventTime(parsedLine);
             long timestamp = timeFormat.parse(time).getTime();
             Node mp = neo.createNode();
@@ -136,9 +136,27 @@ public class NemoLoader extends DriveLoader {
     }
 
     /**
+     *
+     * @param parsedLine
+     * @return
+     */
+    protected String getLatitude(List<String> parsedLine) {
+        return parsedLine.get(4);
+    }
+
+    /**
+     *
+     * @param parsedLine
+     * @return
+     */
+    protected String getLongitude(List<String> parsedLine) {
+        return parsedLine.get(3);
+    }
+
+    /**
      * @param parsedLine
      */
-    private void createMsNode(List<String> parsedLine) {
+    protected void createMsNode(List<String> parsedLine) {
         if (pointNode == null) {
             NeoLoaderPlugin.error("Not saved: " + parsedLine);
             return;
@@ -181,7 +199,7 @@ public class NemoLoader extends DriveLoader {
      * @param parsedLine - list of fields
      * @return String
      */
-    private String getEventTime(List<String> parsedLine) {
+    protected String getEventTime(List<String> parsedLine) {
         return parsedLine.get(1);
     }
 
@@ -191,7 +209,7 @@ public class NemoLoader extends DriveLoader {
      * @param parsedLine - list of fields
      * @return String
      */
-    private String getEventId(List<String> parsedLine) {
+    protected String getEventId(List<String> parsedLine) {
         return parsedLine.get(0);
     }
 
@@ -212,7 +230,7 @@ public class NemoLoader extends DriveLoader {
      * 
      * @param line - first event line
      */
-    private void determineFieldSepRegex(String line) {
+    protected void determineFieldSepRegex(String line) {
         int maxMatch = 0;
         for (char regex : possibleFieldSepRegexes) {
             String[] fields = line.split(String.valueOf(regex));

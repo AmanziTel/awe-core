@@ -116,7 +116,7 @@ public enum DriveEvents {
         @Override
         public boolean haveEvents(String aProperty) {
             final String property = aProperty == null ? null : aProperty.toLowerCase();
-            return property != null && (property.contains("handover complete)") || property.contains("ho command"));
+            return property != null && (property.contains("handover complete") || property.contains("ho command"));
         }
     };
     /**
