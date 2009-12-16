@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.amanzi.awe.views.neighbours.views.NeighboursView;
+import org.amanzi.awe.views.neighbours.views.TransmissionView;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
@@ -121,9 +122,27 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateDatabas
         }, true);
     }
 
+    /**
+     *updates ReuseAnalyserView
+     */
+    private void updateTransmissionView() {
+        ActionUtil.getInstance().runTask(new Runnable() {
+
+            @Override
+            public void run() {
+                IViewPart neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
+                        TransmissionView.ID);
+                if (neighbourView != null) {
+                    ((TransmissionView)neighbourView).updateView();
+                }
+            }
+        }, true);
+    }
     @Override
     public void databaseUpdated(UpdateDatabaseEvent event) {
+        updateTransmissionView();
         updateView();
+
     }
 
     @Override

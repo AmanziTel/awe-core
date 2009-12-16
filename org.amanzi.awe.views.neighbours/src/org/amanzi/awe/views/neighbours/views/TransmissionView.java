@@ -257,19 +257,35 @@ public class TransmissionView extends ViewPart {
              */
             private void createIterator2() {
                 createNodeIterator();
-                if (nodeIterator.hasNext()) {
+                List<Relationship> result = new ArrayList<Relationship>();
+                while (nodeIterator.hasNext()) {
                     Node mainNode = nodeIterator.next();
-                    List<Relationship> result = new ArrayList<Relationship>();
                     for (Relationship relation : mainNode.getRelationships(NetworkRelationshipTypes.TRANSMISSION,
                             Direction.OUTGOING)) {
                         if (NeoUtils.getNeighbourName(relation, "").equals(name)) {
                             result.add(relation);
                         }
                     }
-                    iterator2 = result.iterator();
-                } else {
-                    iterator2 = new ArrayList<Relationship>().iterator();
+                    if (!result.isEmpty()) {
+                        break;
+                    }
                 }
+                iterator2 = result.iterator();
+                // if (nodeIterator.hasNext()) {
+                // Node mainNode = nodeIterator.next();
+                // List<Relationship> result = new ArrayList<Relationship>();
+                // for (Relationship relation :
+                // mainNode.getRelationships(NetworkRelationshipTypes.TRANSMISSION,
+                // Direction.OUTGOING)) {
+                // if (NeoUtils.getNeighbourName(relation, "").equals(name)) {
+                // result.add(relation);
+                // }
+                // }
+                //                    
+                // iterator2 = result.iterator();
+                // } else {
+                // iterator2 = new ArrayList<Relationship>().iterator();
+                // }
             }
 
             /**

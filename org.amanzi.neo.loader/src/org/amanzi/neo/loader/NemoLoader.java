@@ -29,10 +29,10 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Nemo loader (new version nemo files)
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
