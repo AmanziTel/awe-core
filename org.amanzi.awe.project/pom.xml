@@ -15,6 +15,7 @@
       <plugin>
         <groupId>org.codehaus.tycho</groupId>
         <artifactId>maven-osgi-packaging-plugin</artifactId>
+        <version>${project.version}</version>
         <configuration>
           <environments>
             <environment>
@@ -37,7 +38,4 @@
       </plugin>
     </plugins>
   </build>
-  <properties>
-    <generatedBuildProperties>root.properties</generatedBuildProperties>
-  </properties>
 </project>
