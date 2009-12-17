@@ -35,6 +35,8 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.util.index.Isolation;
+import org.neo4j.util.index.LuceneIndexService;
 
 public abstract class DriveLoader extends AbstractLoader {
     protected String dataset = null;
@@ -47,6 +49,7 @@ public abstract class DriveLoader extends AbstractLoader {
     private int countValidChanged = 0;
     /** How many units of work for the progress monitor for each file */
     public static final int WORKED_PER_FILE = 100;
+    protected LuceneIndexService index;
 
     /**
      * Initialize Loader with a specified set of parameters 
@@ -69,6 +72,11 @@ public abstract class DriveLoader extends AbstractLoader {
     public void clearCaches() {
         super.clearCaches();
         this.stats.clear();
+    }
+    
+    protected void initializeLuceneIndex() {
+    	index = new LuceneIndexService(neo);
+        index.setIsolation(Isolation.SAME_TX);        
     }
     
     protected final void addStats(int pn_code, int ec_io) {
@@ -321,5 +329,13 @@ public abstract class DriveLoader extends AbstractLoader {
         Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(root, neo);
         Node setorDriveNode = NeoUtils.findOrCreateSectorDrive(sectorDriveRoot, identifyMap, neo);
         return setorDriveNode;
+    }
+    
+    @Override
+    protected void commit(boolean restart) {
+    	super.commit(restart);
+    	if (index != null) {
+    		index.shutdown();
+    	}
     }
 }

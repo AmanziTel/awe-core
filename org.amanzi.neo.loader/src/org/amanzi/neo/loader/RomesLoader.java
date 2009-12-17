@@ -39,7 +39,6 @@ public class RomesLoader extends DriveLoader {
     private String time = null;
     private long timestamp = 0L;
     private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-    private LuceneIndexService index;
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -50,8 +49,7 @@ public class RomesLoader extends DriveLoader {
      */
     public RomesLoader(String filename, Display display, String dataset) {
         initialize("Romes", null, filename, display, dataset);
-        index = new LuceneIndexService(neo);
-        index.setIsolation(Isolation.SAME_TX);
+        initializeLuceneIndex();
         initializeKnownHeaders();
         addDriveIndexes();
     }

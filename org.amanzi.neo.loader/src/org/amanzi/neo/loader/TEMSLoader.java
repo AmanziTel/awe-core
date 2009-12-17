@@ -46,8 +46,7 @@ public class TEMSLoader extends DriveLoader {
     private String time = null;
     private long timestamp = 0L;
     private HashMap<String, float[]> signals = new HashMap<String, float[]>();
-    private String event;
-    private LuceneIndexService index;
+    private String event;    
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -73,8 +72,7 @@ public class TEMSLoader extends DriveLoader {
      */
     public TEMSLoader(NeoService neo, String filename) {
         initialize("TEMS", neo, filename, null, null);
-        index = new LuceneIndexService(neo);
-        index.setIsolation(Isolation.SAME_TX);
+        initializeLuceneIndex();
         initializeKnownHeaders();
         addDriveIndexes();
     }
@@ -135,8 +133,7 @@ public class TEMSLoader extends DriveLoader {
      * properties map.
      */
     protected void finishUp() {
-        saveData();
-        index.shutdown();
+        saveData();      
         super.finishUp();
     }
 
@@ -311,6 +308,9 @@ public class TEMSLoader extends DriveLoader {
                 findOrCreateSectorDriveNode(point);
                 incSaved();
                 transaction.success();
+            }
+            catch (Exception e) {
+            	e.printStackTrace();
             } finally {
                 transaction.finish();
             }
