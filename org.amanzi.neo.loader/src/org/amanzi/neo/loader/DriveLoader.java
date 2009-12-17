@@ -100,7 +100,7 @@ public abstract class DriveLoader extends AbstractLoader {
 
                 Node mainFileNode = datasetNode == null ? file : datasetNode;
                 file.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
-                Node gis = findOrCreateGISNode(mainFileNode, GisTypes.DRIVE.getHeader());
+                findOrCreateGISNode(mainFileNode, GisTypes.DRIVE.getHeader());
 
                 debug("Added '" + mp.getProperty(INeoConstants.PROPERTY_TIME_NAME) + "' as first measurement of '"
                         + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
@@ -334,7 +334,7 @@ public abstract class DriveLoader extends AbstractLoader {
     @Override
     protected void commit(boolean restart) {
     	super.commit(restart);
-    	if (index != null) {
+    	if ((index != null) && (!restart)) {
     		index.shutdown();
     	}
     }

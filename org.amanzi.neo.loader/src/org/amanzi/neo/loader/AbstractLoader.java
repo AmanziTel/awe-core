@@ -93,7 +93,7 @@ public abstract class AbstractLoader {
     private double[] bbox;
     private long savedData = 0;
     private long started = System.currentTimeMillis();
-    private ArrayList<MultiPropertyIndex> indexes = new ArrayList<MultiPropertyIndex>();
+    private ArrayList<MultiPropertyIndex<?>> indexes = new ArrayList<MultiPropertyIndex<?>>();
     private ArrayList<Pattern> headerFilters = new ArrayList<Pattern>();
     private LinkedHashMap<String, List<String>> knownHeaders = new LinkedHashMap<String, List<String>>();
     private LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
@@ -1391,7 +1391,7 @@ public abstract class AbstractLoader {
     private static boolean confirmAddToMap(final IMap map, final String fileName) {
 
         final IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
-        return (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+        return (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
             int result;
 
             @Override
@@ -1416,7 +1416,7 @@ public abstract class AbstractLoader {
             }
 
             @Override
-            public Object getValue() {
+            public Integer getValue() {
                 return result;
             }
         }) == IDialogConstants.YES_ID;

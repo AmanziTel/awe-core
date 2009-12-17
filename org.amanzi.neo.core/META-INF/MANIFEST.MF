@@ -23,3 +23,4 @@ Export-Package: org.amanzi.neo.core,
 Eclipse-LazyStart: true
 Bundle-Activator: org.amanzi.neo.core.NeoCorePlugin
 Bundle-Vendor: amanzi.org
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

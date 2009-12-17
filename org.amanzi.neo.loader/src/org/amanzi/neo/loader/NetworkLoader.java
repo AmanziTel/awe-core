@@ -557,7 +557,7 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     private static boolean askIfOverwrite() {
-        int resultMsg = (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+        int resultMsg = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
             int result;
             @Override
             public void run() {
@@ -569,7 +569,7 @@ public class NetworkLoader extends AbstractLoader {
             }
 
             @Override
-            public Object getValue() {
+            public Integer getValue() {
                 return new Integer(result);
             }
         });

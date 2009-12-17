@@ -40,12 +40,12 @@ import org.neo4j.neoclipse.preference.NeoPreferences;
 public class NeoPreferencesInitializer extends AbstractPreferenceInitializer
 		implements IStartup {
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void initializeDefaultPreferences() {
 	    initializeDefaultPreferences("neo");
 	}
 
+	@SuppressWarnings("unchecked")
 	private void initializeDefaultPreferences(String databaseName) {
 		Activator neoclipsePlugin = Activator.getDefault();
 		NeoPreferenceHelper neoPreferenceHelper = new NeoPreferenceHelper();

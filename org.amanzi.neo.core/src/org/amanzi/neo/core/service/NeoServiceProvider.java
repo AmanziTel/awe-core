@@ -46,11 +46,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * NeoService
      */
     private NeoService neoService;
-    /*
-     * NeoService
-     */
-    private NeoService neoServiceReadOnly;
-
+    
     /*
      * NeoServiceManager
      */
@@ -245,6 +241,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     
     private class DefaultServiceListener implements NeoServiceEventListener {
 
+    	@SuppressWarnings("unchecked")
         public void serviceChanged(NeoServiceEvent event) {
             //Lagutko, 12.10.2009, copy list of listeners to local variable
             ArrayList<INeoServiceProviderListener> copiedListener = (ArrayList<INeoServiceProviderListener>)listeners.clone();

@@ -20,3 +20,4 @@ Export-Package: org.amanzi.neo.loader,
  org.amanzi.neo.loader.internal;uses:="org.amanzi.neo.loader.preferences,org.eclipse.core.runtime,org.osgi.framework",
  org.amanzi.neo.preferences
 Bundle-Activator: org.amanzi.neo.loader.internal.NeoLoaderPlugin
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

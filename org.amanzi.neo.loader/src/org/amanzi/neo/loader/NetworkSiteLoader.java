@@ -63,8 +63,7 @@ public class NetworkSiteLoader extends AbstractLoader {
         if (fields.length < 3)
             return;
         if (this.isOverLimit())
-            return;
-        Map<String, Object> lineData = makeDataMap(fields);
+            return;        
         Transaction transaction = neo.beginTx();
         try {
             if (networkHeader == null) {

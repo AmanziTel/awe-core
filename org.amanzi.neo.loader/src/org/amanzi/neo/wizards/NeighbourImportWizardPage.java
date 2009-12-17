@@ -49,8 +49,6 @@ import org.neo4j.api.core.Transaction;
 public class NeighbourImportWizardPage extends WizardPage {
 
 
-    /** String FILE_SELECT_NEIGHB_DIR field */
-    private static final String FILE_SELECT_NEIGHB_DIR = "fileSelectNeighbDir";
     private String fileName;
     private Composite main;
     private Combo network;

@@ -91,7 +91,7 @@ public class ActionUtil {
 	 * @param task task for running
 	 * @return result
 	 */
-	public Object runTaskWithResult(RunnableWithResult task) {
+	public <T> T runTaskWithResult(RunnableWithResult<T> task) {
 	    if (display != null) {
             display.syncExec(task);
         } else {

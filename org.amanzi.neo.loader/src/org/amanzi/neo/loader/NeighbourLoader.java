@@ -203,17 +203,10 @@ public class NeighbourLoader {
         private static final int CACH_SIZE = 10000;
         private static final String KEY_ID = "name";
         private static final String KEY_ID2 = "name2";
-        private Integer btsName = null;
-        private Integer ci = null;
-        private Integer lac = null;
-        private Integer abjBtsName = null;
-        private Integer adjCi = null;
-        private Integer adjLac = null;
         private Map<Integer, Pair<String, String>> indexMap = new LinkedHashMap<Integer, Pair<String, String>>();
         private NodeName serverNodeName;
         private NodeName neighbourNodeName;
         private String[] headers;
-        private Map<String, Pair<Node, Integer>> cach = new HashMap<String, Pair<Node, Integer>>();
         private LuceneIndexService index;
         private final NeoService neo;
 
@@ -504,29 +497,7 @@ public class NeighbourLoader {
 //            indexMap.put(index, pair.create(key, clas));
             container.setProperty(key, valueToSave);
             return true;
-        }
-
-        /**
-         * finds necessary sector in network
-         * 
-         * @param nodeName sector name
-         * @param network network node
-         * @param fields array of values
-         * @return necessary sector or null
-         */
-        private Node findSectors(final NodeName nodeName, Node network) {
-            Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return nodeName.isNecessaryNode(currentPos.currentNode());
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING,
-                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
-                    .iterator();
-            return iterator.hasNext() ? iterator.next() : null;
-        }
-        
+        }        
     }
 
     /**
@@ -615,23 +586,7 @@ public class NeighbourLoader {
         public static String getId2(Node node) {
             return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
         }
-        /**
-         * Checks node
-         * 
-         * @param checkNode - current node
-         * @return true if current node contains necessary name
-         */
-        public boolean isNecessaryNode(Node checkNode) {
-            String ci=valuesMap.get("CI");
-            String lac=valuesMap.get("LAC");
-            String btsName=valuesMap.get("BTS_NAME");
-            if (checkNode.hasProperty("CI") && checkNode.hasProperty("LAC") && ci != null && lac != null) {
-                return ci.equals(checkNode.getProperty("CI").toString()) && lac.equals(checkNode.getProperty("LAC").toString());
-            }
-            return checkNode.hasProperty(INeoConstants.PROPERTY_NAME_NAME) && btsName != null
-                    && btsName.equals(checkNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-        }
-
+        
         /**
          * Sets the properties of sector
          * 
@@ -658,17 +613,7 @@ public class NeighbourLoader {
             }
             indexMap.put(key, i);
             return true;
-        }
-
-        /**
-         * Check field
-         * 
-         * @param field - field name
-         * @return true if NodeName contains field
-         */
-        public boolean containsField(String field) {
-            return nameMap.keySet().contains(field);
-        }
+        }        
 
     }
 

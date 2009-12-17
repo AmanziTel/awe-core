@@ -194,12 +194,6 @@
             id="org.amanzi.neo.loader.newNeighbour"
             label="New neighbours">
       </action>
-      <action
-            class="org.amanzi.neo.loader.actions.NewTransmissionAction"
-            icon="icons/16/transmission.png"
-            id="org.amanzi.neo.loader.newTransmission"
-            label="New transmission">
-      </action>
    </extension>
 
 </plugin>

@@ -616,10 +616,7 @@ public class TransmissionLoader {
         Map<String, String> nameMap = new HashMap<String, String>();
         Map<String, Integer> indexMap = new HashMap<String, Integer>();
         Map<String, String> valuesMap = new HashMap<String, String>();
-        private String[] id1;
-        private String[] id2;
-        private String[] id3;
-
+        
         /**
          * Constructor
          * 
@@ -628,9 +625,6 @@ public class TransmissionLoader {
          * @param btsName name of "ITEM_NAME" properties
          */
         public NodeName(String[] siteId, String[] siteN, String[] ItemName) {
-            id1 = siteId;
-            id2 = siteN;
-            id3 = ItemName;
             for (String id : siteId) {
                 nameMap.put(id, SITE_ID);
             }
@@ -690,25 +684,6 @@ public class TransmissionLoader {
         }
 
         /**
-         * Checks node
-         * 
-         * @param checkNode - current node
-         * @return true if current node contains necessary name
-         */
-        public boolean isNecessaryNode(Node checkNode) {
-            if (!NeoUtils.getNodeType(checkNode, "").equals("site")) {
-                return false;
-            }
-            String siteId = valuesMap.get(SITE_ID);
-            String siteId2 = valuesMap.get(SITE_NO);
-            if (checkNode.hasProperty(SITE_NO) && siteId2 != null) {
-                return siteId2.equals(checkNode.getProperty(SITE_NO).toString());
-            }
-            return checkNode.hasProperty(INeoConstants.PROPERTY_NAME_NAME) && siteId != null
-                    && siteId.equals(checkNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-        }
-
-        /**
          * Sets the properties of sector
          * 
          * @param fields array of values
@@ -748,16 +723,6 @@ public class TransmissionLoader {
             }
             indexMap.put(key, i);
             return true;
-        }
-
-        /**
-         * Check field
-         * 
-         * @param field - field name
-         * @return true if NodeName contains field
-         */
-        public boolean containsField(String field) {
-            return nameMap.keySet().contains(field);
         }
     }
 }

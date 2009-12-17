@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Random;
 
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
@@ -44,7 +43,6 @@ public class MultiPropertyIndex<E extends Object> {
     private ArrayList<IndexLevel> levels = new ArrayList<IndexLevel>();
     private int[] originIndices = null;
     private ArrayList<Node> nodesToIndex = new ArrayList<Node>();
-    private LinkedHashMap<String, Linearizer> propertiesToAggregate = new LinkedHashMap<String, Linearizer>();
     private String name;
 
     public abstract class Linearizer<T extends Comparable<T>> {
@@ -130,7 +128,6 @@ public class MultiPropertyIndex<E extends Object> {
          * @param lowerNode
          * @throws IOException
          */
-        @SuppressWarnings("unchecked")
         private IndexLevel(int level, E[] values, Node lowerNode) throws IOException {
             this.level = level;
             this.stepSize = converter.stepSize(level, step);
@@ -149,7 +146,6 @@ public class MultiPropertyIndex<E extends Object> {
          * @param indexNode
          * @throws IOException
          */
-        @SuppressWarnings("unchecked")
         private IndexLevel(int level, Node indexNode) throws IOException {
             this.level = level;
             this.stepSize = converter.stepSize(level, step);
