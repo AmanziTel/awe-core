@@ -28,14 +28,13 @@ import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
-import org.neo4j.util.index.Isolation;
-import org.neo4j.util.index.LuceneIndexService;
 
 public class RomesLoader extends DriveLoader {
     private Node point = null;
     private int first_line = 0;
     private int last_line = 0;
-    private String latlong = null;
+    private Float currentLatitude = null;
+    private Float currentLongitude = null;
     private String time = null;
     private long timestamp = 0L;
     private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
@@ -63,8 +62,7 @@ public class RomesLoader extends DriveLoader {
      */
     public RomesLoader(NeoService neo, String filename) {
         initialize("Romes", neo, filename, null, null);
-        index = new LuceneIndexService(neo);
-        index.setIsolation(Isolation.SAME_TX);
+        initializeLuceneIndex();
         initializeKnownHeaders();
         addDriveIndexes();
     }
@@ -116,15 +114,19 @@ public class RomesLoader extends DriveLoader {
         Map<String, Object> lineData = makeDataMap(fields);
         this.time = (String)lineData.get("time");
         this.timestamp = (Long)lineData.get("timestamp");
-        Object latitude = lineData.get("latitude");
-        Object longitude = lineData.get("longitude");
+        Float latitude = (Float)lineData.get("latitude");        
+        Float longitude = (Float)lineData.get("longitude");
         if (time == null || latitude == null || longitude == null) {
             return;
         }
-        String thisLatLong = latitude.toString() + "\t" + longitude.toString();
-        if (!thisLatLong.equals(this.latlong)) {
+        if ((latitude != null) && 
+            	(longitude != null) &&        	
+            	(((currentLatitude == null) && (currentLongitude == null)) ||
+            	((Math.abs(currentLatitude - latitude) > 10E-10) ||
+            	 (Math.abs(currentLongitude - longitude) > 10E-10)))) {
+        	currentLatitude = latitude;
+        	currentLongitude = longitude;
             saveData(); // persist the current data to database
-            this.latlong = thisLatLong;
         }
         this.incValidLocation(); // we have not filtered the message out on lack of location
         if (lineData.size() > 0) {
@@ -138,8 +140,7 @@ public class RomesLoader extends DriveLoader {
      * properties map.
      */
     protected void finishUp() {
-        saveData();
-        index.shutdown();
+        saveData();        
         super.finishUp();
     }
 
@@ -156,15 +157,12 @@ public class RomesLoader extends DriveLoader {
                 mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
                 mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
-                mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
-                String[] ll = latlong.split("\\t");
-                double lat = Double.parseDouble(ll[0]);
-                mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
-                double lon = Double.parseDouble(ll[1]);
-                mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+                mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);                
+                mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
+                mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
                 findOrCreateFileNode(mp);
-                updateBBox(lat, lon);
-                checkCRS((float)lat, (float)lon, null);
+                updateBBox(currentLatitude, currentLongitude);
+                checkCRS(currentLatitude, currentLongitude, null);
                 // debug("Added measurement point: " + propertiesString(mp));
                 if (point != null) {
                     point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
@@ -188,7 +186,7 @@ public class RomesLoader extends DriveLoader {
                     prev_ms = ms;
                 }
                 if (haveEvents) {
-                    index.index(mp, "events", nameGis);
+                    index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, nameGis);
                 }
                 incSaved();
                 transaction.success();

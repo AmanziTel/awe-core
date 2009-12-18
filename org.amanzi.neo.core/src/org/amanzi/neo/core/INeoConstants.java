@@ -134,4 +134,6 @@ public class INeoConstants {
     public static final String MIDDLE_RANGE = "MIDDLE_RANGE";
     public static final String ROOT_SECTOR_DRIVE = "root_sector_site";
     public static final String PROPERTY_TYPE_EVENT = "event_type";
+    
+    public static final String EVENTS_LUCENE_INDEX_NAME = "events";
 }

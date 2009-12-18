@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -56,6 +57,7 @@ import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -81,13 +83,13 @@ public abstract class AbstractLoader {
     private String typeName = "CSV";
     protected NeoService neo;
     private NeoServiceProvider neoProvider;
-    private Node gis = null;
+    protected Node gis = null;
     private CRS crs = null;
     protected String filename = null;
     protected String basename = null;
     private Display display;
     private String fieldSepRegex;
-    private String[] possibleFieldSepRegexes = new String[] {"\\t", "\\,", "\\;"};
+    private String[] possibleFieldSepRegexes = new String[] {"\t", "\\,", "\\;"};
     protected int lineNumber = 0;
     private int limit = 0;
     private double[] bbox;
@@ -143,9 +145,9 @@ public abstract class AbstractLoader {
         Object parse(String field) {
             if (invalid(field))
                 return null;
-            parseCount++;
+            parseCount++;            
             try {
-                int value = Integer.parseInt(field);
+            	int value = Integer.parseInt(field);
                 incValue(value);
                 incType(Integer.class);
                 return value;
@@ -498,7 +500,14 @@ public abstract class AbstractLoader {
     }
 
     protected String[] splitLine(String line) {
-        return line.split(fieldSepRegex);
+    	ArrayList<String> result = new ArrayList<String>();
+    	StringTokenizer tokenizer = new StringTokenizer(line, fieldSepRegex);
+    	
+    	while (tokenizer.hasMoreTokens()) {
+    		result.add(tokenizer.nextToken());
+    	}
+    	
+    	return result.toArray(new String[0]);
     }
 
     /**
@@ -802,6 +811,8 @@ public abstract class AbstractLoader {
         }
         return map;
     }
+    
+    private Display currentDisplay = null;
 
     protected final void debug(final String line) {
         runInDisplay(new Runnable() {
@@ -837,7 +848,10 @@ public abstract class AbstractLoader {
 
     private final void runInDisplay(Runnable runnable) {
         if (display != null) {
-            PlatformUI.getWorkbench().getDisplay().asyncExec(runnable);
+        	if (currentDisplay == null) {
+        		currentDisplay = PlatformUI.getWorkbench().getDisplay();
+        	}
+        	currentDisplay.asyncExec(runnable);
         } else {
             runnable.run();
         }
@@ -884,10 +898,12 @@ public abstract class AbstractLoader {
             String line;
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-                if (!haveHeaders())
-                    parseHeader(line);
-                else
-                    parseLine(line);
+                if (!haveHeaders()) {
+                	parseHeader(line);                	
+                }
+                else {
+                	parseLine(line);                    
+                }
                 if (monitor != null) {
                     if (monitor.isCanceled())
                         break;
@@ -1279,6 +1295,7 @@ public abstract class AbstractLoader {
      * @throws MalformedURLException
      */
     protected void addDataToCatalog() throws MalformedURLException {
+    	//TODO: Lagutko, 17.12.2009, can be run as a Job
         if (neoProvider != null) {
             String databaseLocation = neoProvider.getDefaultDatabaseLocation();
             NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(

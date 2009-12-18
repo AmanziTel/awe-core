@@ -60,6 +60,7 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.util.index.LuceneIndexService;
 import org.neo4j.util.index.LuceneReadOnlyIndexService;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -92,6 +93,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private int eventIconSize;
     private static final Color COLOR_HIGHLIGHTED = Color.CYAN;;
     private static final Color COLOR_HIGHLIGHTED_SELECTED = Color.RED;
+    
+    private LuceneIndexService index;
+    
+    public TemsRenderer() {
+    	index = NeoServiceProvider.getProvider().getIndexService();
+    }
 
     @Override
     public void render(Graphics2D destination, IProgressMonitor monitor) throws RenderException {
@@ -191,7 +198,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
         Transaction tx = neo.beginTx();
 
-        LuceneReadOnlyIndexService index = new LuceneReadOnlyIndexService(neo);
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -435,7 +441,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             prev_p = null;
             prev_l_p = null;
             cached_node = null;
-            for (Node node1 : index.getNodes("events", gisName)) {
+            for (Node node1 : index.getNodes(INeoConstants.EVENTS_LUCENE_INDEX_NAME, gisName)) {
                 if (monitor.isCanceled())
                     break;
                 GeoNode node = new GeoNode(node1);
@@ -519,10 +525,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             // geoNeo.close();
             monitor.done();
 
-            tx.finish();
-            if (index != null) {
-                index.shutdown();
-            }
+            tx.finish();            
         }
     }
 

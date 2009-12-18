@@ -615,7 +615,7 @@ public class DriveDialog {
             String filePath = loadedFiles.get(fileName);
 			try {
 			    if(extension.toLowerCase().equals("fmt")) {
-			        driveLoader = new TEMSLoader(filePath, display, datasetName);
+			    	driveLoader = new TEMSLoader(filePath, display, datasetName);			         
 			    } else if(extension.toLowerCase().equals("asc")) {
                     driveLoader = new RomesLoader(filePath, display, datasetName);
                 } else if (extension.toLowerCase().equals("nmf")) {
@@ -624,7 +624,7 @@ public class DriveDialog {
                     driveLoader = new OldNemoVersionLoader(filePath, display, datasetName);
                 } else {
 			        NeoLoaderPlugin.error("Unsupported file extension: "+extension);
-			    }
+			    }			    
 				driveLoader.run(monitor);
 				driveLoader.printStats(false);	// stats for this load
 		        long memAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -637,6 +637,7 @@ public class DriveDialog {
 				NeoLoaderPlugin.exception(e);
 			}
 		}
+        
 		DriveLoader.printTimesStats();
         long memAfter = calculateMemoryUsage();
         NeoLoaderPlugin.info("Memory profile for drive load went from "+memBefore+" to "+memAfter);

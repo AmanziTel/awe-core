@@ -27,6 +27,7 @@ import org.neo4j.neoclipse.neo.NeoServiceEventListener;
 import org.neo4j.neoclipse.neo.NeoServiceManager;
 import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 import org.neo4j.neoclipse.preference.NeoPreferences;
+import org.neo4j.util.index.LuceneIndexService;
 
 /**
  * Provider that give access to NeoService
@@ -67,7 +68,12 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      */
     private String databaseLocation;
 
+    /*
+     * Current Display 
+     */
     private Display display;
+    
+    private LuceneIndexService indexService;
     
     /**
      * Creates an instance of NeoServiceProvider
@@ -134,6 +140,9 @@ public class NeoServiceProvider implements IPropertyChangeListener{
         if (neoManager == null) {
             neoManager = Activator.getDefault().getNeoServiceManager();
             neoManager.addServiceEventListener(defaultListener);
+        }
+        if (indexService == null) {
+        	indexService = new LuceneIndexService(neoService);
         }
 
     }
@@ -292,11 +301,19 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     	    neoManager.commit();
     		neoManager.stopNeoService();
     	}
-    	else if (neoService != null) {
+    	if (indexService != null) {
+    		indexService.shutdown();
+    	}
+    	if (neoService != null) {
     		neoService.shutdown();
     	}
+    	indexService = null;
     	neoManager = null;
     	neoService = null;
+    }
+    
+    public LuceneIndexService getIndexService() {
+    	return indexService;
     }
 
 }

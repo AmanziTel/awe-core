@@ -86,11 +86,11 @@ public class SplashEditorInput implements IEditorInput, IPersistableElement {
 
 
 	public boolean exists() {
-		boolean isExist = (Boolean) ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+		boolean isExist = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Boolean>() {
 
 			private boolean result;
 
-			public Object getValue() {
+			public Boolean getValue() {
 				return result;
 			}
 

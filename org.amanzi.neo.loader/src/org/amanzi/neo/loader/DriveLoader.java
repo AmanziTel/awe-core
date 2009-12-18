@@ -23,6 +23,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Direction;
@@ -35,7 +36,6 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
-import org.neo4j.util.index.Isolation;
 import org.neo4j.util.index.LuceneIndexService;
 
 public abstract class DriveLoader extends AbstractLoader {
@@ -49,7 +49,9 @@ public abstract class DriveLoader extends AbstractLoader {
     private int countValidChanged = 0;
     /** How many units of work for the progress monitor for each file */
     public static final int WORKED_PER_FILE = 100;
-    protected LuceneIndexService index;
+    
+    //TODO: Lagutko, 17.12.2009, maybe create this indexes on rendering but not on importing? 
+    protected static LuceneIndexService index;
 
     /**
      * Initialize Loader with a specified set of parameters 
@@ -75,8 +77,7 @@ public abstract class DriveLoader extends AbstractLoader {
     }
     
     protected void initializeLuceneIndex() {
-    	index = new LuceneIndexService(neo);
-        index.setIsolation(Isolation.SAME_TX);        
+    	index = NeoServiceProvider.getProvider().getIndexService();
     }
     
     protected final void addStats(int pn_code, int ec_io) {
@@ -329,13 +330,5 @@ public abstract class DriveLoader extends AbstractLoader {
         Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(root, neo);
         Node setorDriveNode = NeoUtils.findOrCreateSectorDrive(sectorDriveRoot, identifyMap, neo);
         return setorDriveNode;
-    }
-    
-    @Override
-    protected void commit(boolean restart) {
-    	super.commit(restart);
-    	if ((index != null) && (!restart)) {
-    		index.shutdown();
-    	}
     }
 }

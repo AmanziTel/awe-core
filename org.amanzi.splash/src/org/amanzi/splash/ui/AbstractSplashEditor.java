@@ -510,17 +510,8 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
 					public void mousePressed(MouseEvent e) {
 
-						int column = table.columnAtPoint(e.getPoint());
-						int row = table.rowAtPoint(e.getPoint());
 						if (e.getButton() == 3) {
-                            // table.setColumnSelectionInterval(column, column);
-                            // table.setRowSelectionInterval(row, row);
-
 							maybeShowPopup(e);
-							// launchCellFormatPanel(table);
-						} else {
-
-							// table.repaint();
 						}
 					}
 

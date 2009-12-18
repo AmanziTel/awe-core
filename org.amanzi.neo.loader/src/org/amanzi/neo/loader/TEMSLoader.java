@@ -32,21 +32,22 @@ import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
-import org.neo4j.util.index.Isolation;
-import org.neo4j.util.index.LuceneIndexService;
 
 public class TEMSLoader extends DriveLoader {
-    private Node point = null;
+    private static final String TIMESTAMP_DATE_FORMAT = "HH:mm:ss.S";
+	private Node point = null;
     private int first_line = 0;
     private int last_line = 0;
     private String previous_ms = null;
     private String previous_time = null;
     private int previous_pn_code = -1;
-    private String latlong = null;
+    private Float currentLatitude = null;
+    private Float currentLongitude = null;
     private String time = null;
     private long timestamp = 0L;
     private HashMap<String, float[]> signals = new HashMap<String, float[]>();
-    private String event;    
+    private String event;   
+    
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -57,10 +58,9 @@ public class TEMSLoader extends DriveLoader {
      */
     public TEMSLoader(String filename, Display display, String dataset) {
         initialize("TEMS", null, filename, display, dataset);
-        index = new LuceneIndexService(neo);
-        index.setIsolation(Isolation.SAME_TX);
-        initializeKnownHeaders();
-        addDriveIndexes();
+        initializeLuceneIndex();
+        initializeKnownHeaders();      
+        addDriveIndexes();          
     }
 
     /**
@@ -93,11 +93,12 @@ public class TEMSLoader extends DriveLoader {
                 return originalValue.replaceAll("HO Command.*", "HO Command");
             }
         });
+        
+        final SimpleDateFormat df = new SimpleDateFormat(TIMESTAMP_DATE_FORMAT);
         addMappedHeader("time", "Timestamp", "timestamp", new PropertyMapper() {
 
             @Override
             public Object mapValue(String time) {
-                SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss.S");
                 Date datetime;
                 try {
                     datetime = df.parse(time);
@@ -167,15 +168,19 @@ public class TEMSLoader extends DriveLoader {
         // TODO: If number of PN codes does not match number of EC-IO make sure to align correct
         // values to PNs
 
-        Object latitude = lineData.get("latitude");
-        Object longitude = lineData.get("longitude");
+        Float latitude = (Float)lineData.get("latitude");        
+        Float longitude = (Float)lineData.get("longitude");
         if (time == null || latitude == null || longitude == null) {
             return;
         }
-        String thisLatLong = latitude.toString() + "\t" + longitude.toString();
-        if (!thisLatLong.equals(this.latlong)) {
+        if ((latitude != null) && 
+        	(longitude != null) &&        	
+        	(((currentLatitude == null) && (currentLongitude == null)) ||
+        	((Math.abs(currentLatitude - latitude) > 10E-10) ||
+        	 (Math.abs(currentLongitude - longitude) > 10E-10)))) {
+        	currentLatitude = latitude;
+        	currentLongitude = longitude;
             saveData(); // persist the current data to database
-            this.latlong = thisLatLong;
         }
         this.incValidLocation();
 
@@ -220,7 +225,7 @@ public class TEMSLoader extends DriveLoader {
             last_line = lineNumber;
             this.incValidChanged();
             debug(time + ": server channel[" + channel + "] pn[" + pn_code + "] Ec/Io[" + ec_io + "]\t" + event + "\t"
-                    + this.latlong);
+                    + this.currentLatitude + "\t" + this.currentLongitude);
             for (int i = 1; i <= measurement_count; i++) {
                 // Delete invalid data, as you can have empty ec_io
                 // zero ec_io is correct, but empty ec_io is not
@@ -257,21 +262,18 @@ public class TEMSLoader extends DriveLoader {
                 mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
-                String[] ll = latlong.split("\\t");
-                double lat = Double.parseDouble(ll[0]);
-                mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
-                double lon = Double.parseDouble(ll[1]);
-                mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+                mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
+                mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
                 findOrCreateFileNode(mp);
-                updateBBox(lat, lon);
-                checkCRS((float)lat, (float)lon, null);
+                updateBBox(currentLatitude, currentLongitude);
+                checkCRS(currentLatitude, currentLongitude, null);
                 debug("Added measurement point: " + propertiesString(mp));
                 if (point != null) {
                     point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
                 }
                 index(mp);
                 if (event!=null){
-                    index.index(mp, "events", nameGis);
+                    index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, nameGis);                    
                 }
                 point = mp;
                 Node prev_ms = null;
@@ -305,7 +307,8 @@ public class TEMSLoader extends DriveLoader {
                     }
                     prev_ms = ms;
                 }
-                findOrCreateSectorDriveNode(point);
+                //TODO: Lagutko, 17.12.2009, this code didn't do anything? Do we need it?
+                //findOrCreateSectorDriveNode(point);
                 incSaved();
                 transaction.success();
             }
