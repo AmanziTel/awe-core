@@ -16,6 +16,7 @@ package org.amanzi.neo.loader;
 import java.util.List;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
@@ -84,6 +85,39 @@ public class OldNemoVersionLoader extends NemoLoader {
 
     }
 
+    protected void createPointNode(List<String> parsedLine) {
+        Transaction transaction = neo.beginTx();
+        try {
+            double lon = Double.parseDouble(getLongitude(parsedLine));
+            double lat = Double.parseDouble(getLatitude(parsedLine));
+            String time = getEventTime(parsedLine);
+            long timestamp = timeFormat.parse(time).getTime();
+            Node mp = neo.createNode();
+            mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+            mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
+            mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
+            mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+            findOrCreateFileNode(mp);
+            updateBBox(lat, lon);
+            checkCRS((float)lat, (float)lon, null);
+            // debug("Added measurement point: " + propertiesString(mp));
+            if (pointNode != null) {
+                pointNode.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
+            }
+            index(mp);
+            transaction.success();
+            pointNode = mp;
+            msNode = null;
+            createMsNode(parsedLine);
+        } catch (Exception e) {
+            NeoLoaderPlugin.error(e.getLocalizedMessage());
+            return;
+        } finally {
+            transaction.finish();
+        }
+    }
+
     @Override
     protected void initializeKnownHeaders() {
         super.initializeKnownHeaders();
@@ -105,7 +139,7 @@ public class OldNemoVersionLoader extends NemoLoader {
         return parsedLine.get(2);
     }
 
-    @Override
+
     protected void createMsNode(List<String> parsedLine) {
         if (pointNode == null) {
             NeoLoaderPlugin.error("Not saved: " + parsedLine);

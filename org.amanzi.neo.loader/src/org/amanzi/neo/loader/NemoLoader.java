@@ -15,7 +15,10 @@ package org.amanzi.neo.loader;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -37,10 +40,8 @@ import org.neo4j.api.core.Transaction;
  * @since 1.0.0
  */
 public class NemoLoader extends DriveLoader {
-    /** String TIME field */
-    protected static final String TIME = "time";
     /** String EVENT_ID field */
-    protected static final String EVENT_ID = "event_id";
+    protected static final String EVENT_ID = INeoConstants.EVENT_ID;
     /** String TIME_FORMAT field */
     protected static final String TIME_FORMAT = "HH:mm:ss.S";
     protected CSVParser parser = null;
@@ -77,44 +78,54 @@ public class NemoLoader extends DriveLoader {
     }
     @Override
     protected void parseLine(String line) {
-        if (line.startsWith("#")) {
-            return;
-        }
+
         if (parser == null) {
             determineFieldSepRegex(line);
         }
+
         List<String> parsedLine = parser.parse(line);
         if (parsedLine.size() < 1) {
             return;
         }
-        String eventId = getEventId(parsedLine);
+        Event event = new Event(parsedLine);
+        try {
+            event.analyseKnownParameters(headers);
+        } catch (Exception e) {
+            e.printStackTrace();
+            NeoLoaderPlugin.error(e.getLocalizedMessage());
+            return;
+        }
+
+        String eventId = event.eventId;
         if ("GPS".equalsIgnoreCase(eventId)) {
-            createPointNode(parsedLine);
+            createPointNode(event);
             return;
         }
         if (pointNode != null) {
-            createMsNode(parsedLine);
+            createMsNode(event);
         }
 
     }
 
-
     /**
-     * @param parsedLine
+     * @param event
      */
-    protected void createPointNode(List<String> parsedLine) {
+    protected void createPointNode(Event event) {
         Transaction transaction = neo.beginTx();
         try {
-            double lon = Double.parseDouble(getLongitude(parsedLine));
-            double lat = Double.parseDouble(getLatitude(parsedLine));
-            String time = getEventTime(parsedLine);
+            Float lon = (Float)event.parsedParameters.get("Lon.");
+            Float lat = (Float)event.parsedParameters.get("Lat.");
+            String time = event.time;
+            if (lon == null || lat == null) {
+                return;
+            }
             long timestamp = timeFormat.parse(time).getTime();
             Node mp = neo.createNode();
             mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
             mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
             mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-            mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
-            mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+            mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
+            mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());
             findOrCreateFileNode(mp);
             updateBBox(lat, lon);
             checkCRS((float)lat, (float)lon, null);
@@ -126,7 +137,7 @@ public class NemoLoader extends DriveLoader {
             transaction.success();
             pointNode = mp;
             msNode = null;
-            createMsNode(parsedLine);
+            createMsNode(event);
         } catch (Exception e) {
             NeoLoaderPlugin.error(e.getLocalizedMessage());
             return;
@@ -154,39 +165,25 @@ public class NemoLoader extends DriveLoader {
     }
 
     /**
-     * @param parsedLine
+     * @param event
      */
-    protected void createMsNode(List<String> parsedLine) {
+    protected void createMsNode(Event event) {
         if (pointNode == null) {
-            NeoLoaderPlugin.error("Not saved: " + parsedLine);
+            NeoLoaderPlugin.error("Not saved: " + event);
             return;
         }
         Transaction transaction = neo.beginTx();
         try {
-            String id = getEventId(parsedLine);
-            String time = getEventTime(parsedLine);
-            // TODO add parsing event parameters depends on eventId if necessary
-            String[] parameters;
-            if (parsedLine.size() <= 2) {
-                parameters = new String[0];
-            } else {
-                parameters = new String[parsedLine.size() - 2];
-                for (int i = 0; i < parameters.length; i++) {
-                    parameters[i] = parsedLine.get(i + 2);
-                }
-            }
+            String id = event.eventId;// getEventId(event);
+            String time = event.time;// getEventTime(event);
             Node ms = neo.createNode();
             ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
-            ms.setProperty(EVENT_ID, id);
-            ms.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
-            ms.setProperty(INeoConstants.PROPERTY_PARAMS_NAME, parameters);
+            event.store(ms, headers);
             pointNode.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
             if (msNode != null) {
                 msNode.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
             }
             msNode = ms;
-            // add to statistic
-            headers.get(EVENT_ID).parse(id);
             transaction.success();
         } finally {
             transaction.finish();
@@ -240,5 +237,114 @@ public class NemoLoader extends DriveLoader {
             }
         }
         parser = new CSVParser(fieldSepRegex);
+    }
+
+    public class Event {
+        protected String eventId;
+        protected String time;
+        protected List<String> contextId;
+        protected List<String> parameters;
+        protected Map<String, Object> parsedParameters;
+        private NemoEvents event;
+
+        /**
+         * 
+         */
+        public Event(List<String> parcedLine) {
+            parsedParameters = new LinkedHashMap<String, Object>();
+            parse(parcedLine);
+        }
+
+        /**
+         *
+         * @param parcedLine
+         */
+        protected void parse(List<String> parcedLine) {
+            eventId = parcedLine.get(0);
+            event = NemoEvents.getEventById(eventId);
+            time = parcedLine.get(1);
+            String numberContextId = parcedLine.get(2);
+            contextId = new ArrayList<String>();
+            Integer firstParamsId = 3;
+            if (!numberContextId.isEmpty()) {
+                int numContext = Integer.parseInt(numberContextId);
+                for (int i = 1; i <= numContext; i++) {
+                    contextId.add(parcedLine.get(firstParamsId++));
+                }
+            }
+            parameters = new ArrayList<String>();
+            for (int i = firstParamsId; i < parcedLine.size(); i++) {
+                parameters.add(parcedLine.get(i));
+            }
+        }
+
+        /**
+         *
+         */
+        private void analyseKnownParameters(Map<String, Header> statisticHeaders) {
+            if (parameters.isEmpty()) {
+                return;
+            }
+
+            if (event == null) {
+                return;
+            }
+            Map<String, Object> parParam = event.fill(parameters);
+            if (parParam.isEmpty()) {
+                return;
+            }
+            parsedParameters.putAll(parParam);
+            if (statisticHeaders == null) {
+                return;
+            }
+            for (String key : parParam.keySet()) {
+                if (!statisticHeaders.containsKey(key)) {
+                    Object value = parParam.get(key);
+                    if (value == null) {
+                        continue;
+                    }
+                    Header header = new Header(key, key, 0);
+                    if (value instanceof Float) {
+                        header = new FloatHeader(header);
+                    } else if (value instanceof Integer) {
+                        header = new IntegerHeader(header);
+                    } else if (value instanceof String) {
+                        header = new StringHeader(header);
+                    } else {
+                        continue;
+                    }
+                    statisticHeaders.put(key, header);
+                }
+            }
+        }
+
+
+
+        public void store(Node msNode, Map<String, Header> statisticHeaders) {
+            storeProperties(msNode, EVENT_ID, eventId, statisticHeaders);
+            storeProperties(msNode, INeoConstants.PROPERTY_TIME_NAME, time, statisticHeaders);
+            storeProperties(msNode, INeoConstants.EVENT_CONTEXT_ID, contextId.toArray(new String[0]), null);
+            for (String key : parsedParameters.keySet()) {
+                storeProperties(msNode, key, parsedParameters.get(key), statisticHeaders);
+            }
+        }
+
+        /**
+         * @param eventId2
+         * @param eventId3
+         * @param statisticHeaders
+         */
+        private void storeProperties(Node msNode, String key, Object value, Map<String, Header> statisticHeaders) {
+            if (value == null) {
+                return;
+            }
+            Header header = statisticHeaders == null ? null : statisticHeaders.get(key);
+            if (header == null) {
+                msNode.setProperty(key, value);
+            } else {
+                Object valueToSave = header.parse(value.toString());
+                msNode.setProperty(key, valueToSave);
+            }
+        }
     }
 }
