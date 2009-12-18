@@ -109,6 +109,9 @@ public class GeoNeo {
 
         public Coordinate getCoordinate() {
             if (coordinate == null)
+                if (coords == null) {
+                    return null;
+                }
                 coordinate = new Coordinate(coords[0], coords[1]);
             return coordinate;
         }
