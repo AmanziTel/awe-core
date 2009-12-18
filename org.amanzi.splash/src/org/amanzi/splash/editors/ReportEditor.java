@@ -49,6 +49,7 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
         IEditorInput fei = getEditorInput();
         setPartName(fei.getName());
         String rubyProjectName = ((FileEditorInput)fei).getFile().getParent().getProject().getName();
+        System.out.println("Ruby project name for '"+((FileEditorInput)fei).getFile().getName()+"': "+rubyProjectName);
         reportModel = new ReportModel(rubyProjectName);
         reportModel.addReportListener(this);
         createGUIPage();

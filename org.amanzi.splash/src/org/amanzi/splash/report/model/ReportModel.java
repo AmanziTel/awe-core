@@ -77,7 +77,6 @@ public class ReportModel {
         this.projectService = NeoCorePlugin.getDefault().getProjectService();
         this.service = SplashPlugin.getDefault().getReportService();
         this.rootNode = projectService.findRubyProject(rubyProjectName);
-        // this.report = new Report();
         try {
             initializeJRubyInterpreter();
         } catch (IOException e) {
@@ -120,8 +119,9 @@ public class ReportModel {
 
         HashMap<String, Object> globals = new HashMap<String, Object>();
         globals.put(REPORT_MODEL_RUBY_NAME, this);
-        globals.put(RUBY_PROJECT_NODE_ID_NAME, rootNode.getUnderlyingNode().getId());
-        // globals.put(JRUBY_PATH_RUBY_NAME, ScriptUtils.getJRubyHome());
+        if (rootNode != null) {
+            globals.put(RUBY_PROJECT_NODE_ID_NAME, rootNode.getUnderlyingNode().getId());
+        }
         makeRubyGlobals(runtime, globals);
 
         splashJob = new SplashJob();

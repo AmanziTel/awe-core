@@ -1,4 +1,18 @@
 module Neo4j
+  module NodeMixin
+    def method_missing(method_id, *args)
+      puts "NodeMixin.method_missing(#{method_id}): #{get_property(method_id)}"
+      if method_id=='node_type'
+        get_property(:type)
+      else
+        get_property(method_id)
+      end
+    end
+    def type
+      get_property(:type)
+    end
+  end
+
   module Relationships
     class NodeTraverser
       def stop_on(&proc)

@@ -20,6 +20,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
@@ -770,7 +774,7 @@ public class NetworkTreeView extends ViewPart {
          * If some data was committed to database than we must refresh content of TreeView
          */
         public void onNeoCommit(Object source) {
-            //TODO: Only modify part of tree specific to data modified
+            // TODO: Only modify part of tree specific to data modified
             viewer.getControl().getDisplay().syncExec(new Runnable() {
                 public void run() {
                     NetworkTreeView.this.viewer.refresh();
@@ -780,7 +784,7 @@ public class NetworkTreeView extends ViewPart {
     }
 
     /**
-     *Returns layer, that contains necessary gis node
+     * Returns layer, that contains necessary gis node
      * 
      * @param map map
      * @param gisNode gis node
@@ -972,7 +976,7 @@ public class NetworkTreeView extends ViewPart {
         public NeighbourAction(IStructuredSelection selection) {
             text = "Analyse neighbours";
             enabled = true;// selection.getFirstElement() instanceof NeoNode &&
-                           // !(selection.getFirstElement() instanceof Root);
+            // !(selection.getFirstElement() instanceof Root);
             if (enabled) {
                 this.selection = selection;
             }
@@ -1029,6 +1033,7 @@ public class NetworkTreeView extends ViewPart {
             return result;
         }
     }
+
     /**
      * <p>
      * Action to revert node name
@@ -1203,7 +1208,8 @@ public class NetworkTreeView extends ViewPart {
                         }
                         monitor.subTask("Extracting " + neoNode.toString());
                         Node node = neoNode.getNode();
-                        cleanTree(node, monitor); // Delete non-tree relations (and relink gis next
+                        cleanTree(node, monitor); // Delete non-tree relations (and relink gis
+                                                    // next
                         // links)
                         deleteIncomingRelations(node); // only delete all incoming relations once
                         // we've dealt with the GIS relations in
@@ -1257,7 +1263,8 @@ public class NetworkTreeView extends ViewPart {
                                 public boolean isReturnableNode(TraversalPosition currentPos) {
                                     Node cn = currentPos.currentNode();
                                     // if(orphans.size()<1){
-                                    // System.out.println("Checking node: "+cn.getProperty("name",cn.toString()));
+                                    // System.out.println("Checking node:
+                                    // "+cn.getProperty("name",cn.toString()));
                                     // System.out.println("\tnode id = "+cn.getId());
                                     // }
                                     return cn.getId() == refId || cn.getId() == netId;
@@ -1435,7 +1442,7 @@ public class NetworkTreeView extends ViewPart {
                     Transaction tx = neo.beginTx();
                     try {
                         monitor.subTask("Preparing report");
-                        LinkedHashMap<String,Node> deltaSitesNodes = new LinkedHashMap<String,Node>();
+                        LinkedHashMap<String, Node> deltaSitesNodes = new LinkedHashMap<String, Node>();
                         HashMap<String, Node> missingSitesNodes = new HashMap<String, Node>();
                         // The code below was originally designed for building on a previous report
                         // for performance
@@ -1462,7 +1469,7 @@ public class NetworkTreeView extends ViewPart {
                                 if (!otherNode.equals(networkNode)) {
                                     String key = networkNode.toString() + " & " + otherNode.toString();
                                     String altkey = otherNode.toString() + " & " + networkNode.toString();
-                                    if(!deltaSitesNodes.containsKey(key) && !deltaSitesNodes.containsKey(altkey)) {
+                                    if (!deltaSitesNodes.containsKey(key) && !deltaSitesNodes.containsKey(altkey)) {
                                         Node deltaSitesNode = neo.createNode();
                                         deltaSitesNode.setProperty("name", "changed sites");
                                         deltaSitesNode.setProperty("type", "delta_site");
@@ -1470,15 +1477,15 @@ public class NetworkTreeView extends ViewPart {
                                         deltaSitesNode.setProperty("network1", networkNode.toString());
                                         deltaSitesNode.setProperty("network2", otherNode.toString());
                                         reportNode.createRelationshipTo(deltaSitesNode, NetworkRelationshipTypes.CHILD);
-                                        deltaSitesNodes.put(key,deltaSitesNode);
+                                        deltaSitesNodes.put(key, deltaSitesNode);
                                     }
                                 }
                             }
                         }
                         // remove name ambiguity on multiple comparisons
-                        if(deltaSitesNodes.size() > 1) {
-                            for(java.util.Map.Entry<String, Node> entry: deltaSitesNodes.entrySet()) {
-                                entry.getValue().setProperty("name", "changed sites: "+entry.getKey());
+                        if (deltaSitesNodes.size() > 1) {
+                            for (java.util.Map.Entry<String, Node> entry : deltaSitesNodes.entrySet()) {
+                                entry.getValue().setProperty("name", "changed sites: " + entry.getKey());
                             }
                         }
 
@@ -1515,11 +1522,11 @@ public class NetworkTreeView extends ViewPart {
                         monitor.subTask("Calculating differences");
 
                         HashMap<NeoNode, ArrayList<DeltaSite>> missingSites = new HashMap<NeoNode, ArrayList<DeltaSite>>();
-                        HashMap<String,ArrayList<DeltaSite>> deltaSites = new HashMap<String,ArrayList<DeltaSite>>();
+                        HashMap<String, ArrayList<DeltaSite>> deltaSites = new HashMap<String, ArrayList<DeltaSite>>();
                         for (NeoNode networkNode : getValidNodes()) {
                             missingSites.put(networkNode, new ArrayList<DeltaSite>());
                         }
-                        for(java.util.Map.Entry<String, Node> entry: deltaSitesNodes.entrySet()) {
+                        for (java.util.Map.Entry<String, Node> entry : deltaSitesNodes.entrySet()) {
                             deltaSites.put(entry.getKey(), new ArrayList<DeltaSite>());
                         }
                         for (DeltaSite site : siteMap.values()) {
@@ -1528,15 +1535,15 @@ public class NetworkTreeView extends ViewPart {
                                     missingSites.get(networkNode).add(site);
                                 }
                             }
-                            for(java.util.Map.Entry<String, Node> entry: deltaSitesNodes.entrySet()) {
+                            for (java.util.Map.Entry<String, Node> entry : deltaSitesNodes.entrySet()) {
                                 String deltaKey = entry.getKey();
                                 Node deltaSitesNode = entry.getValue();
-                                if (site.hasDelta(deltaKey,deltaSitesNode)) {
+                                if (site.hasDelta(deltaKey, deltaSitesNode)) {
                                     deltaSites.get(deltaKey).add(site);
                                 }
                             }
                         }
-                        for(java.util.Map.Entry<String, Node> entry: deltaSitesNodes.entrySet()) {
+                        for (java.util.Map.Entry<String, Node> entry : deltaSitesNodes.entrySet()) {
                             deltaSitesNodes.get(entry.getKey()).setProperty("sites_count", deltaSites.get(entry.getKey()).size());
                         }
                         for (NeoNode networkNode : getValidNodes()) {
@@ -1563,7 +1570,7 @@ public class NetworkTreeView extends ViewPart {
                             tx = commit(neo, tx);
                             monitor.worked(reportWorkedUnit);
                         }
-                        for(java.util.Map.Entry<String, Node> entry: deltaSitesNodes.entrySet()) {
+                        for (java.util.Map.Entry<String, Node> entry : deltaSitesNodes.entrySet()) {
                             String deltaKey = entry.getKey();
                             Node deltaSitesNode = deltaSitesNodes.get(deltaKey);
                             for (DeltaSite site : deltaSites.get(entry.getKey())) {
@@ -1574,7 +1581,7 @@ public class NetworkTreeView extends ViewPart {
                                 for (Node node : site.nodes.values()) {
                                     deltaSite.createRelationshipTo(node, NetworkRelationshipTypes.DIFFERENT);
                                 }
-                                for (Map.Entry<String,DeltaSite.Pair> delta: site.getDelta(deltaKey).entrySet()){
+                                for (Map.Entry<String, DeltaSite.Pair> delta : site.getDelta(deltaKey).entrySet()) {
                                     deltaSite.setProperty("Delta " + delta.getKey(), delta.getValue().toString());
                                 }
                             }
@@ -1632,11 +1639,11 @@ public class NetworkTreeView extends ViewPart {
                     reportNode.createRelationshipTo(networkNode.getNode(), NetworkRelationshipTypes.DELTA_REPORT);
                 }
                 tx.success();
-                //NeoServiceProvider.getProvider().commit();
+                // NeoServiceProvider.getProvider().commit();
             } finally {
                 tx.finish();
             }
-            //viewer.refresh();
+            // viewer.refresh();
             return getPreviousReport();
         }
 
@@ -1709,15 +1716,51 @@ public class NetworkTreeView extends ViewPart {
             sb.append("' do\n  author '").append(System.getProperty("user.name")).append("'\n  date '").append(
                     new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'");
             for (NeoNode node : reportNode.getChildren()) {
-                sb.append("\n  table '").append(node.getNode().getProperty("name")).append("' do\n    self.nodes=[");
+                sb.append("\n  table '").append(node.getNode().getProperty("name")).append("' do\n");
                 NeoNode[] children = node.getChildren();
-                for (int i = 0; i < children.length; i++) {
-                    NeoNode child = children[i];
-                    sb.append(child.getNode().getId());
-                    if (i < children.length - 1)
-                        sb.append(",");
+                HashSet<String> properties = new HashSet<String>();
+                List<Long> ids = new ArrayList<Long>();
+                for (NeoNode neoNode : children) {
+                    if (node.getType().equals("delta_site")) {
+                        Iterable<String> propertyKeys = neoNode.getNode().getPropertyKeys();
+                        for (String propKey : propertyKeys) {
+                            Matcher matcher = Pattern.compile("(\\d+)([A-Z]{1})").matcher(propKey);
+                            if (!propKey.matches(".*(#).*")) {// "# '...' neighbours" excluded
+                                if (propKey.matches("Delta.*")) {
+                                    if (matcher.find()) {
+                                        // sector's property has been changed
+                                        String sector = matcher.group();
+                                        properties.add(propKey.substring(propKey.indexOf(sector) + sector.length() + 1));
+                                    } else {
+                                        // site's property has been changed
+                                        properties.add(propKey.split("\\s")[1]);
+                                    }
+                                } else {
+                                    properties.add(propKey);
+                                }
+                            }
+                        }
+                        // add sites
+                        Iterable<Relationship> relationshipsToSite = neoNode.getNode().getRelationships(
+                                NetworkRelationshipTypes.DIFFERENT, Direction.OUTGOING);
+                        for (Relationship relToSite : relationshipsToSite) {
+                            Node siteNode = relToSite.getEndNode();
+                            ids.add(siteNode.getId());
+                            // add sectors
+                            Iterable<Relationship> relationshipsToSector = siteNode.getRelationships(
+                                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+                            for (Relationship relToSector : relationshipsToSector) {
+                                ids.add(relToSector.getEndNode().getId());
+                            }
+                        }
+                    } else {
+                        ids.add(neoNode.getNode().getId());
+                    }
                 }
-                sb.append("]\n  end");
+                
+                addArray(sb, ids.toArray(), "    self.nodes=");
+                addArray(sb, properties.toArray(), "    self.properties=");
+                sb.append("  end");
             }
             sb.append("\nend");
             IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];//TODO correct
@@ -1746,6 +1789,28 @@ public class NetworkTreeView extends ViewPart {
             }
         }
 
+        /**
+         * @param sb
+         * @param prefix TODO
+         * @param ids
+         */
+        private void addArray(StringBuffer sb, Object[] array, String prefix) {
+            if (array.length != 0) {
+                sb.append(prefix).append("[");
+                for (int i = 0; i < array.length; i++) {
+                    Object obj = array[i];
+                    if (obj instanceof String) {
+                        sb.append("'").append(obj).append("'");
+                    } else {
+                        sb.append(obj);
+                    }
+                    if (i < array.length - 1)
+                        sb.append(",");
+                }
+                sb.append("]\n");
+            }
+        }
+
         @Override
         public String getText() {
             return "Generate delta report file";
@@ -1769,10 +1834,11 @@ public class NetworkTreeView extends ViewPart {
         }
 
     }
+
     private static class DeltaSite {
         private String name;
         private HashMap<String, Node> nodes = new HashMap<String, Node>();
-        private HashMap<String, HashMap<String,Pair>> deltas = new HashMap<String,HashMap<String,Pair>>();
+        private HashMap<String, HashMap<String, Pair>> deltas = new HashMap<String, HashMap<String, Pair>>();
 
         public DeltaSite(String name, String network, Node node) {
             this.name = name;
@@ -1821,8 +1887,9 @@ public class NetworkTreeView extends ViewPart {
                     for (Map.Entry<String, Pair> entry : delta.entrySet()) {
                         if (entry.getValue().same()) {
                             identical.add(entry.getKey());
-//                        } else {
-//                            System.out.println("Property changed for '"+entry.getKey()+"': "+entry.getValue());
+                            // } else {
+                            // System.out.println("Property changed for '"+entry.getKey()+"':
+                            // "+entry.getValue());
                         }
                     }
                     for (String key : identical) {
@@ -1836,11 +1903,11 @@ public class NetworkTreeView extends ViewPart {
         private void addProperties(HashMap<String, Pair> delta, Node node, String prefix) {
             for (String property : node.getPropertyKeys()) {
                 String key = property;
-                if(prefix!=null) {
+                if (prefix != null) {
                     key = prefix + " " + property;
                 }
                 Pair properties = delta.get(key);
-                if(properties==null){
+                if (properties == null) {
                     properties = new Pair();
                     delta.put(key, properties);
                     properties.left = node.getProperty(property);
@@ -1850,7 +1917,7 @@ public class NetworkTreeView extends ViewPart {
             }
         }
 
-        public Map<String,Pair> getDelta(String deltaKey) {
+        public Map<String, Pair> getDelta(String deltaKey) {
             return deltas.get(deltaKey);
         }
 

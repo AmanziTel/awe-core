@@ -84,6 +84,101 @@ module NodeUtils
   end
 end
 
+class Search
+  attr_accessor :name
+  def initialize(name,params)
+    @name=name
+    @traversers=[Neo4j.ref_node.traverse.outgoing(:CHILD).depth(1)]
+    @params=params
+  end
+
+  def traverse(direction, relation, depth)
+    puts "traverse called #{direction}|#{relation}|#{depth}"
+    new_traversers=[]
+    if direction==:outgoing
+      @traversers.each do |traverser|
+        new_traversers<<traverser.outgoing(relation).depth(depth)
+      end
+    elsif direction==:incoming
+      @traversers.each do |traverser|
+        new_traversers<<traverser.incoming(relation).depth(depth)
+      end
+    else #both
+      @traversers.each do |traverser|
+        new_traversers<<traverser.both(relation).depth(depth)
+      end
+    end
+    @traversers=new_traversers
+  end
+
+  def filter(&block)
+    puts "filter called"
+    new_traversers=[]
+    @traversers.each do |traverser|
+      new_traversers<<traverser.filter(&block)
+    end
+    @traversers=new_traversers
+  end
+
+  def stop(&block)
+    new_traversers=[]
+    @traversers.each do |traverser|
+      new_traversers<<traverser.stop_on(&block)
+    end
+    @traversers=new_traversers
+  end
+
+  def parent(&block)
+    puts "parent called"
+    self.instance_eval &block
+    new_traversers=[]
+    nodes=[]
+    @traversers.each do |traverser|
+      puts " --> traverser #{traverser}"
+      traverser.each do |node|
+        nodes<<node
+        puts " ----> node #{node}: #{node.props}"
+        node.relationships.nodes.each do |n|
+          puts " -------> node #{n}: #{n.props}"
+        end
+        puts " =======> node #{Neo4j.load(node.neo_node_id).traverse.outgoing(:AGGREGATION).depth(1).first}"
+        new_traversers<<Neo4j.load(node.neo_node_id).traverse
+      end
+      nodes.each do |node|
+        puts " ++++> node #{node}: #{node.traverse.outgoing(:AGGREGATION).depth(1).first}"
+      end
+    end
+    puts "new_traversers #{new_traversers.size}"
+    @traversers=new_traversers
+  end
+
+  def where(&block)
+    filter(&block)
+  end
+
+  def from(&block)
+    parent(&block)
+  end
+
+  #  alias_method :parent, :from
+  #  alias_method :filter, :where
+
+  def each
+    puts "each"
+#    result=Hash.new
+    @traversers.each do |traverser|
+      puts " --> traverser #{traverser}: #{traverser.internal_node}"
+      traverser.each do |node|
+        puts " ----> node #{node}: #{node.props}"
+        @params.each do |key,val|
+          puts "key.class=#{key.class}; val.class=#{val.class}"
+        end
+        yield node
+      end
+    end
+  end
+end
+
 class CellID
   attr_writer :beginRange
   attr_writer :endRange
@@ -258,6 +353,28 @@ class Chart
     @sheet=sheet_name
   end
 
+  def select(name,params,&block)
+    Neo4j::Transaction.run {
+      begin
+        puts "search: #{name} | #{params}"
+        search_function=Search.new(name,params)
+        search_function.instance_eval &block
+        ds=DefaultCategoryDataset.new()
+        search_function.each do |node|
+          puts "node found: #{node.props}"
+          params.each do |key,val|
+            puts "[#{key}]=#{node.get_property(key)}"
+            puts "[#{val}]=#{node.get_property(val)}"
+          end
+          ds.addValue(java.lang.Double.parseDouble(node.get_property(:value).to_s), "name", node.get_property(:name).to_s);
+        end
+        setDataset(ds)
+      rescue =>e
+        puts e
+      end
+    }
+  end
+
   def setup(&block)
     self.instance_eval(&block) #if block_given?
     Neo4j::Transaction.run {
@@ -348,9 +465,13 @@ def method_missing(method_id, *args)
 end
 
 def report (name, &block)
-  report=Report.new(name)
-  report.setup(&block)
-  $report_model.updateReport(report)
+  begin
+    report=Report.new(name)
+    report.setup(&block)
+    $report_model.updateReport(report)
+  rescue =>e
+    puts e
+  end
   #  report
 end
 
