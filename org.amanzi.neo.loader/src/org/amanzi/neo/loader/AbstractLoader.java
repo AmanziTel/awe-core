@@ -736,7 +736,7 @@ public abstract class AbstractLoader {
 
     private HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
     protected Transaction mainTx;
-    private int commitSize = 1000;
+    private int commitSize = 5000;
     protected String nameGis;
 
     protected List<String> getProperties(Class< ? extends Object> klass) {
