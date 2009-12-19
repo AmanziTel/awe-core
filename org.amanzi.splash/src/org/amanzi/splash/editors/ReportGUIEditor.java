@@ -59,9 +59,11 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.event.ChartChangeEvent;
 import org.jfree.chart.event.ChartChangeListener;
@@ -288,10 +290,41 @@ public class ReportGUIEditor extends EditorPart  {
         data1.widthHint = 600;
         data1.heightHint = 300;
         chartComposite.setLayoutData(data1);
+       
+        Composite buttonsPanel = new Composite(currComposite, SWT.NONE);
+        buttonsPanel.setLayout(new GridLayout());
+        buttonsPanel.setBackground(new Color(frame.getDisplay(), new RGB(255, 255, 255)));
+        
+        Button btnMoveUp = new Button(buttonsPanel, SWT.PUSH);
+        btnMoveUp.setImage(AbstractUIPlugin.imageDescriptorFromPlugin("org.amanzi.neo.loader", "/icons/16/Up.png").createImage());
+        btnMoveUp.addSelectionListener(new SelectionAdapter(){
 
-        Button btnEdit = new Button(currComposite, SWT.PUSH);
-        btnEdit.setText("Edit");
-        btnEdit.setEnabled(false);
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                movePartUp(chart);
+            }
+            
+        });
+        Button btnMoveDown = new Button(buttonsPanel, SWT.PUSH);
+        btnMoveDown.setImage(AbstractUIPlugin.imageDescriptorFromPlugin("org.amanzi.neo.loader", "/icons/16/Down.png").createImage());
+        btnMoveDown.addSelectionListener(new SelectionAdapter(){
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                movePartDown(chart);
+            }
+            
+        });
+        Button btnDelete = new Button(buttonsPanel, SWT.PUSH);
+        btnDelete.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
+        btnDelete.addSelectionListener(new SelectionAdapter(){
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                removePart(chart);
+            }
+            
+        });
         currComposite.layout();
         parts.add(currComposite);
     }
@@ -450,15 +483,7 @@ public class ReportGUIEditor extends EditorPart  {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int index = part.getIndex();
-                if (index>0){
-//                    Composite c1 = parts.get(index);
-//                    Composite c2 = parts.get(index-1);
-//                    parts.set(index-1, c2);
-//                    parts.set(index , c1);
-                    reportModel.getReport().movePartUp(part);
-                    repaint();
-                }
+                movePartUp(part);
             }
 
         });
@@ -468,15 +493,7 @@ public class ReportGUIEditor extends EditorPart  {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int index = part.getIndex();
-                if (index < parts.size() - 1) {
-//                    Composite c1 = parts.get(index);
-//                    Composite c2 = parts.get(index+1);
-//                    parts.set(index, c2);
-//                    parts.set(index + 1, c1);
-                    reportModel.getReport().movePartDown(part);
-                    repaint();
-                }
+                movePartDown(part);
             }
 
         });
@@ -486,10 +503,7 @@ public class ReportGUIEditor extends EditorPart  {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                parts.get(part.getIndex()).dispose();
-                parts.remove(part.getIndex());
-                forceRepaint();
-                reportModel.getReport().removePart(part);
+                removePart(part);
             }
 
         });
@@ -538,6 +552,41 @@ public class ReportGUIEditor extends EditorPart  {
      */
     public void setReportDataModified(boolean isReportDataModified) {
         this.isReportDataModified = isReportDataModified;
+    }
+
+    /**
+     *
+     * @param part
+     */
+    private void movePartUp(final IReportPart part) {
+        int index = part.getIndex();
+        if (index>0){
+            reportModel.getReport().movePartUp(part);
+            repaint();
+        }
+    }
+
+    /**
+     *
+     * @param part
+     */
+    private void movePartDown(final IReportPart part) {
+        int index = part.getIndex();
+        if (index < parts.size() - 1) {
+            reportModel.getReport().movePartDown(part);
+            repaint();
+        }
+    }
+
+    /**
+     *
+     * @param part
+     */
+    private void removePart(final IReportPart part) {
+        parts.get(part.getIndex()).dispose();
+        parts.remove(part.getIndex());
+        forceRepaint();
+        reportModel.getReport().removePart(part);
     }
 
     

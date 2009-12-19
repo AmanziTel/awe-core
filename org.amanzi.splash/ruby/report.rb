@@ -50,7 +50,7 @@ module NodeUtils
     traverser.first
   end
 
-  def create_chart_dataset(aggr_node,type=:bar)
+  def create_chart_dataset_aggr(aggr_node,type=:bar)
     ds=DefaultCategoryDataset.new()
     aggr_node.traverse.outgoing(:CHILD).depth(:all).each do |node|
       puts "count_node: #{node.get_property(:name)} - #{node.get_property(:value)}"
@@ -423,7 +423,7 @@ class Chart
           dataset_node=find_dataset(@statistics)
           if !@property.nil? and !@distribute.nil? and !@select.nil?
             aggr_node=find_aggr_node(dataset_node,@property,@distribute,@select)
-            setDataset(create_chart_dataset(aggr_node))
+            setDataset(create_chart_dataset_aggr(aggr_node))
           end
         elsif !@drive.nil?
           drive_node=find_dataset(@drive)
