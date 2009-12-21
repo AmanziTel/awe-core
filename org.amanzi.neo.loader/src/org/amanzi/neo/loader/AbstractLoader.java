@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -499,14 +498,7 @@ public abstract class AbstractLoader {
     }
 
     protected String[] splitLine(String line) {
-    	ArrayList<String> result = new ArrayList<String>();
-    	StringTokenizer tokenizer = new StringTokenizer(line, fieldSepRegex);
-    	
-    	while (tokenizer.hasMoreTokens()) {
-    		result.add(tokenizer.nextToken());
-    	}
-    	
-    	return result.toArray(new String[0]);
+    	return line.split(fieldSepRegex);
     }
 
     /**
