@@ -212,6 +212,7 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
      * Starts comparing for spreadsheets
      */
     public void compare() {
+    	long before = System.currentTimeMillis();
         SpreadsheetLineIterator firstIterator = new SpreadsheetLineIterator(firstSpreadsheet);
         SpreadsheetLineIterator secondIterator = new SpreadsheetLineIterator(secondSpreadsheet);
         
@@ -250,6 +251,8 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
         
         //add information about comparision
         addDeltaInformation();
+        
+        System.out.println("Compare takes " + (System.currentTimeMillis() - before) + " ms");
     }
     
     /**
@@ -407,7 +410,9 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
             addChange(cell1.getColumn());
         }
         else {
-            changesPerColumn.put(cell1.getColumn(), 0);
+        	if (changesPerColumn.get(cell1.getColumn()) == null) {
+        		changesPerColumn.put(cell1.getColumn(), 0);
+        	}
         }
         
         return new Pair<Cell, Boolean>(cell1, isChanged);

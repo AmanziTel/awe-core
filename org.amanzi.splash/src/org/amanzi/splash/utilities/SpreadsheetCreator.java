@@ -34,10 +34,8 @@ import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Transaction;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
+ * Class for creating Spreadsheets
+ * 
  * @author Lagutko_N
  * @since 1.0.0
  */

@@ -118,7 +118,20 @@ public abstract class AbstractHeaderNode extends CellNode {
      */
     public void addNextCell(CellNode newCellNode) {
         //compute a previous node for this cell
-        Node previousCellNode = getPreviousNode(newCellNode.getUnderlyingNode());
+        Node previousCellNode = null;
+        Node lastCellNode = null;
+        
+        Long lastCellId = getLastCellId();
+        if (lastCellId != null) {
+        	Node node = neoService.getNodeById(lastCellId);
+        	if ((Integer)node.getProperty(getIndexProperty()) < getCellIndex(newCellNode.getUnderlyingNode())) {
+        		lastCellNode = node;
+        	}
+        }
+        
+        if (lastCellNode == null) {
+        	previousCellNode = getPreviousNode(newCellNode.getUnderlyingNode());
+        }
         
         if (previousCellNode != null) {
             //if previous node exists than insert a new node 
@@ -130,13 +143,12 @@ public abstract class AbstractHeaderNode extends CellNode {
         }
         else {
             //if previous node didn't exist than add this cell to the end of Header's Cells
-            Long lastCellId = getLastCellId();
             if (lastCellId == null) {
                 //if there are no last cells, than last cell is current header cell
                 previousCellNode = getUnderlyingNode();
             }
             else {
-                previousCellNode = neoService.getNodeById(lastCellId);
+                previousCellNode = lastCellNode;
             }
             
             if (!previousCellNode.equals(newCellNode.getUnderlyingNode())) {
