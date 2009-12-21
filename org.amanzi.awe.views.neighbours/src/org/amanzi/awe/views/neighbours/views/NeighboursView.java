@@ -266,7 +266,7 @@ public class NeighboursView extends ViewPart {
                 List<Relationship> result = new ArrayList<Relationship>();
                 while (nodeIterator.hasNext()) {
                     Node mainNode = nodeIterator.next();
-                    for (Relationship relation : mainNode.getRelationships(NetworkRelationshipTypes.TRANSMISSION,
+                    for (Relationship relation : mainNode.getRelationships(NetworkRelationshipTypes.NEIGHBOUR,
                             Direction.OUTGOING)) {
                         if (NeoUtils.getNeighbourName(relation, "").equals(name)) {
                             result.add(relation);
