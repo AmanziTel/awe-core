@@ -26,6 +26,7 @@ import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
@@ -197,6 +198,8 @@ public class NemoLoader extends DriveLoader {
      */
     private void addDriveIndexes() {
         try {
+            addIndex(new MultiPropertyIndex<Long>("Index-timestamp-" + dataset, new String[] {"timestamp"},
+                    new MultiTimeIndexConverter(), 10));
             addIndex(new MultiPropertyIndex<Double>("Index-location-" + dataset, new String[] {"lat", "lon"},
                     new MultiDoubleConverter(0.001), 10));
         } catch (IOException e) {
