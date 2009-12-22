@@ -2866,7 +2866,12 @@ public class ReuseAnalyserView extends ViewPart {
             if (!(comparable1 instanceof ChartNode)) {
                 return 0;
             }
-            return ((Number)((ChartNode)comparable1).getNode().getProperty(INeoConstants.PROPERTY_VALUE_NAME)).intValue();
+            try {
+                return ((Number)((ChartNode)comparable1).getNode().getProperty(INeoConstants.PROPERTY_VALUE_NAME)).intValue();
+            } catch (Exception e) {
+                // TODO Handle Exception
+                throw (RuntimeException) new RuntimeException( ).initCause( e );
+            }
         }
 
         @Override

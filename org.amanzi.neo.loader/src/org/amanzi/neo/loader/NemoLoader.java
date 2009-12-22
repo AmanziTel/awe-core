@@ -147,24 +147,6 @@ public class NemoLoader extends DriveLoader {
     }
 
     /**
-     *
-     * @param parsedLine
-     * @return
-     */
-    protected String getLatitude(List<String> parsedLine) {
-        return parsedLine.get(4);
-    }
-
-    /**
-     *
-     * @param parsedLine
-     * @return
-     */
-    protected String getLongitude(List<String> parsedLine) {
-        return parsedLine.get(3);
-    }
-
-    /**
      * @param event
      */
     protected void createMsNode(Event event) {
@@ -245,7 +227,7 @@ public class NemoLoader extends DriveLoader {
         protected List<String> contextId;
         protected List<String> parameters;
         protected Map<String, Object> parsedParameters;
-        private NemoEvents event;
+        protected NemoEvents event;
 
         /**
          * 
@@ -281,7 +263,7 @@ public class NemoLoader extends DriveLoader {
         /**
          *
          */
-        private void analyseKnownParameters(Map<String, Header> statisticHeaders) {
+        protected void analyseKnownParameters(Map<String, Header> statisticHeaders) {
             if (parameters.isEmpty()) {
                 return;
             }
@@ -289,7 +271,7 @@ public class NemoLoader extends DriveLoader {
             if (event == null) {
                 return;
             }
-            Map<String, Object> parParam = event.fill(parameters);
+            Map<String, Object> parParam = event.fill(getVersion(), parameters);
             if (parParam.isEmpty()) {
                 return;
             }
@@ -318,6 +300,12 @@ public class NemoLoader extends DriveLoader {
             }
         }
 
+        /**
+         * @return
+         */
+        protected String getVersion() {
+            return "2.01";
+        }
 
 
         public void store(Node msNode, Map<String, Header> statisticHeaders) {
@@ -334,7 +322,7 @@ public class NemoLoader extends DriveLoader {
          * @param eventId3
          * @param statisticHeaders
          */
-        private void storeProperties(Node msNode, String key, Object value, Map<String, Header> statisticHeaders) {
+        protected void storeProperties(Node msNode, String key, Object value, Map<String, Header> statisticHeaders) {
             if (value == null) {
                 return;
             }
@@ -343,6 +331,10 @@ public class NemoLoader extends DriveLoader {
                 msNode.setProperty(key, value);
             } else {
                 Object valueToSave = header.parse(value.toString());
+                if (valueToSave==null){
+                    // NeoLoaderPlugin.info("Not saved key=" + key + "\t value=" + value);
+                    return;
+                }
                 msNode.setProperty(key, valueToSave);
             }
         }

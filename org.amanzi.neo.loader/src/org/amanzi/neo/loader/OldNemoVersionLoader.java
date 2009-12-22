@@ -13,11 +13,12 @@
 
 package org.amanzi.neo.loader;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
@@ -57,47 +58,63 @@ public class OldNemoVersionLoader extends NemoLoader {
     @Override
     protected void parseLine(String line) {
         try {
-            if (line.startsWith("#") || line.startsWith("*")) {
+            if (line.startsWith("*") || line.startsWith("#")) {
+                NeoLoaderPlugin.error("Not parsed: " + line);
                 return;
             }
-            if (parser == null) {
-                determineFieldSepRegex(line);
-            }
-            List<String> parsedLine = parser.parse(line);
-            if (parsedLine.size() < 8) {
-                return;
-            }
-            String longitude = getLongitude(parsedLine);
-            String latitude = getLatitude(parsedLine);
-            String latLon = latitude + "\t" + longitude;
-            if (latLong != null && latLong.equals(latLon)) {
-                createMsNode(parsedLine);
-            } else {
-                if (Double.parseDouble(latitude) == 0 && Double.parseDouble(longitude) == 0) {
-                    return;
-                }
-                latLong = latLon;
-                createPointNode(parsedLine);
-            }
+        if (parser == null) {
+            determineFieldSepRegex(line);
+        }
+
+        List<String> parsedLine = parser.parse(line);
+        if (parsedLine.size() < 1) {
+            return;
+        }
+        OldEvent event = new OldEvent(parsedLine);
+        try {
+            event.analyseKnownParameters(headers);
         } catch (Exception e) {
+            e.printStackTrace();
             NeoLoaderPlugin.error(e.getLocalizedMessage());
+            return;
+        }
+
+        String latLon = event.latitude + "\t" + event.longitude;
+        if (latLong != null && latLong.equals(latLon)) {
+            createMsNode(event);
+        } else {
+            if (Double.parseDouble(event.latitude) == 0 && Double.parseDouble(event.longitude) == 0) {
+                NeoLoaderPlugin.error("Not parsed: " + line);
+                return;
+            }
+            latLong = latLon;
+            createPointNode(event);
+        }
+        } catch (Exception e) {
+            e.printStackTrace();
+            NeoLoaderPlugin.error("Not parsed: " + line);
         }
 
     }
 
-    protected void createPointNode(List<String> parsedLine) {
+    @Override
+    protected void createPointNode(Event events) {
+        OldEvent event = (OldEvent)events;
         Transaction transaction = neo.beginTx();
         try {
-            double lon = Double.parseDouble(getLongitude(parsedLine));
-            double lat = Double.parseDouble(getLatitude(parsedLine));
-            String time = getEventTime(parsedLine);
+            Float lon = Float.parseFloat(event.longitude);
+            Float lat = Float.parseFloat(event.latitude);
+            String time = event.time;
+            if (lon == null || lat == null) {
+                return;
+            }
             long timestamp = timeFormat.parse(time).getTime();
             Node mp = neo.createNode();
             mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
             mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
             mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-            mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
-            mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+            mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
+            mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());
             findOrCreateFileNode(mp);
             updateBBox(lat, lon);
             checkCRS((float)lat, (float)lon, null);
@@ -109,8 +126,9 @@ public class OldNemoVersionLoader extends NemoLoader {
             transaction.success();
             pointNode = mp;
             msNode = null;
-            createMsNode(parsedLine);
+            createMsNode(event);
         } catch (Exception e) {
+            e.printStackTrace();
             NeoLoaderPlugin.error(e.getLocalizedMessage());
             return;
         } finally {
@@ -129,82 +147,55 @@ public class OldNemoVersionLoader extends NemoLoader {
 
     }
 
-    @Override
-    protected String getLongitude(List<String> parsedLine) {
-        return parsedLine.get(1);
-    }
+    public class OldEvent extends Event {
 
-    @Override
-    protected String getLatitude(List<String> parsedLine) {
-        return parsedLine.get(2);
-    }
+        private String longitude;
+        private String latitude;
+        private String height;
+        private String distance;
+        private String GPSstatus;
+        private String satelites;
+        private String velocity;
 
-
-    protected void createMsNode(List<String> parsedLine) {
-        if (pointNode == null) {
-            NeoLoaderPlugin.error("Not saved: " + parsedLine);
-            return;
-        }
-        Transaction transaction = neo.beginTx();
-        try {
-            String id = getEventId(parsedLine);
-            String time = getEventTime(parsedLine);
-
-            String[] parameters;
-            if (parsedLine.size() <= 8) {
-                parameters = new String[0];
-            } else {
-                parameters = new String[parsedLine.size() - 2];
-                for (int i = 0; i < parameters.length; i++) {
-                    parameters[i] = parsedLine.get(i + 2);
-                }
-            }
-            Node ms = neo.createNode();
-            ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
-            ms.setProperty(EVENT_ID, id);
-            ms.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
-            ms.setProperty(INeoConstants.PROPERTY_PARAMS_NAME, parameters);
-            String heightStr = parsedLine.get(3);
-            if (heightStr != null) {
-                Integer height = (Integer)headers.get(HEIGHT).parse(heightStr);
-                ms.setProperty(HEIGHT, height);
-            }
-            String distanceStr = parsedLine.get(4);
-            if (distanceStr != null) {
-                Integer distance = (Integer)headers.get(DISTANCE).parse(distanceStr);
-                ms.setProperty(DISTANCE, distance);
-            }
-            String gpsStatusStr = parsedLine.get(5);
-            if (gpsStatusStr != null) {
-                Integer gpsStatus = (Integer)headers.get(GPS_STATUS).parse(gpsStatusStr);
-                ms.setProperty(GPS_STATUS, gpsStatus);
-            }
-            String satelitesStr = parsedLine.get(6);
-            if (satelitesStr != null) {
-                Integer satelites = (Integer)headers.get(SATELITES).parse(satelitesStr);
-                ms.setProperty(SATELITES, satelites);
-            }
-            String velocityStr = parsedLine.get(7);
-            if (velocityStr != null) {
-                Integer velocity = (Integer)headers.get(VELOCITY).parse(velocityStr);
-                ms.setProperty(VELOCITY, velocity);
-            }
-            pointNode.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
-            if (msNode != null) {
-                msNode.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
-            }
-            msNode = ms;
-            // add to statistic
-            headers.get(EVENT_ID).parse(id);
-            transaction.success();
-        } finally {
-            transaction.finish();
+        /**
+         * @param parcedLine
+         */
+        public OldEvent(List<String> parcedLine) {
+            super(parcedLine);
         }
 
-    }
+        @Override
+        protected void parse(List<String> parcedLine) {
+            eventId = parcedLine.get(0);
+            longitude = parcedLine.get(1);
+            latitude = parcedLine.get(2);
+            height = parcedLine.get(3);
+            distance = parcedLine.get(4);
+            GPSstatus = parcedLine.get(5);
+            satelites = parcedLine.get(6);
+            velocity = parcedLine.get(7);
+            time = parcedLine.get(8);
+            event = NemoEvents.getEventById(eventId);
+            contextId = null;
+            parameters = new ArrayList<String>();
+            for (int i = 9; i < parcedLine.size(); i++) {
+                parameters.add(parcedLine.get(i));
+            }
+        }
 
-    @Override
-    protected String getEventTime(List<String> parsedLine) {
-        return parsedLine.get(8);
+        @Override
+        public void store(Node msNode, Map<String, Header> statisticHeaders) {
+            storeProperties(msNode, EVENT_ID, eventId, statisticHeaders);
+            storeProperties(msNode, INeoConstants.PROPERTY_TIME_NAME, time, statisticHeaders);
+            // TODO store header if necessary
+            for (String key : parsedParameters.keySet()) {
+                storeProperties(msNode, key, parsedParameters.get(key), statisticHeaders);
+            }
+        }
+
+        @Override
+        protected String getVersion() {
+            return "1.86";
+        }
     }
 }
