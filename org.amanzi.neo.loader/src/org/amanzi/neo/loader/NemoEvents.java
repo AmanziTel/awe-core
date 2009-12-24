@@ -4458,6 +4458,9 @@ public enum NemoEvents {
                     parsedParameters.put("Source params ID", getIntegerValue(parameters));
 
                 }
+                if (!parameters.hasNext()) {
+                    return parsedParameters;// TODO debug
+                }
                 parsedParameters.put("#nChs", getIntegerValue(parameters));
                 parsedParameters.put("#Params", getIntegerValue(parameters));
                 system = getIntegerValue(parameters);
@@ -7388,6 +7391,9 @@ public enum NemoEvents {
                 parsedParameters.put(key, lockType);
                 key = "#Params";
                 parsedParameters.put(key, getIntegerValue(parameters));
+                if (lockType == null) {
+                    return parsedParameters;// TODO debug
+                }
                 if (1 == lockType) {
                     parsedParameters.put("Locked channel", getIntegerValue(parameters));
                     parsedParameters.put("Locked band", getIntegerValue(parameters));
