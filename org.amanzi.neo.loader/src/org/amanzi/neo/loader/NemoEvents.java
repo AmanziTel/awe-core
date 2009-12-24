@@ -2576,6 +2576,7 @@ public enum NemoEvents {
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     parsedParameters.put("Sample duration", getIntegerValue(parameters));
                     parsedParameters.put("#PLA sets", getIntegerValue(parameters));
+                    parsedParameters.put("HS-PDSCH Rate", getIntegerValue(parameters));
                     parsedParameters.put("#params/PLA set", getIntegerValue(parameters));
                     parsedParameters.put("Percentage", getFloatValue(parameters));
                     parsedParameters.put("Modulation", getIntegerValue(parameters));
@@ -6101,7 +6102,7 @@ public enum NemoEvents {
                     parsedParameters.put("HSDPA UE categ.", getIntegerValue(parameters));
                     parsedParameters.put("HS-DSCH SC", getIntegerValue(parameters));
                     parsedParameters.put("#HS-SCCH", getIntegerValue(parameters));
-                    parsedParameters.put("Pwr. offset", getIntegerValue(parameters));
+                    parsedParameters.put("Pwr. offset", getFloatValue(parameters));
                     parsedParameters.put("ACK/NACK repetitions", getIntegerValue(parameters));
                     parsedParameters.put("H-RNTI", getIntegerValue(parameters));
                     parsedParameters.put("HSUPA UE categ.", getIntegerValue(parameters));
