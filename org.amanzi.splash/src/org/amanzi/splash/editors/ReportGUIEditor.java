@@ -29,6 +29,7 @@ import org.amanzi.splash.report.model.ReportTable;
 import org.amanzi.splash.report.model.ReportText;
 import org.apache.poi.hssf.record.formula.functions.Forecast;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MenuEvent;
@@ -198,19 +199,25 @@ public class ReportGUIEditor extends EditorPart  {
 
         Table table = new Table(currComposite, SWT.BORDER | SWT.MULTI);
         final String[] headers = reportTable.getHeaders();
-        TableColumn[] columns = new TableColumn[headers.length];
-        for (int i = 0; i < headers.length; i++) {
-            TableColumn tc = new TableColumn(table, SWT.LEFT);
-            tc.setText(headers[i]);
-            columns[i] = tc;
-        }
-        for (String[] row : reportTable.getTableItems()) {
-            final TableItem item = new TableItem(table, SWT.NONE);
-            item.setText(row);
-        }
-        //
-        for (TableColumn column : columns) {
-            column.pack();
+        try {
+            TableColumn[] columns = new TableColumn[headers.length];
+            for (int i = 0; i < headers.length; i++) {
+                TableColumn tc = new TableColumn(table, SWT.LEFT);
+                tc.setText(headers[i]);
+                columns[i] = tc;
+            }
+            for (String[] row : reportTable.getTableItems()) {
+                final TableItem item = new TableItem(table, SWT.NONE);
+                item.setText(row);
+            }
+            //
+            for (TableColumn column : columns) {
+                column.pack();
+            }
+        } catch (RuntimeException e) {
+            // TODO Handle RuntimeException
+           System.out.println("Table can't be created due to the error: "+e.getMessage());
+           e.printStackTrace();
         }
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
@@ -479,6 +486,7 @@ public class ReportGUIEditor extends EditorPart  {
             menu = new Menu(frame);
         MenuItem movePartUp = new MenuItem(menu, SWT.NONE);
         movePartUp.setText("Move up");
+        movePartUp.setImage(AbstractUIPlugin.imageDescriptorFromPlugin("org.amanzi.neo.loader", "/icons/16/Up.png").createImage());
         movePartUp.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -489,6 +497,7 @@ public class ReportGUIEditor extends EditorPart  {
         });
         MenuItem movePartDown = new MenuItem(menu, SWT.NONE);
         movePartDown.setText("Move down");
+        movePartDown.setImage(AbstractUIPlugin.imageDescriptorFromPlugin("org.amanzi.neo.loader", "/icons/16/Down.png").createImage());
         movePartDown.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -499,6 +508,7 @@ public class ReportGUIEditor extends EditorPart  {
         });
         MenuItem removePart = new MenuItem(menu, SWT.NONE);
         removePart.setText("Remove");
+        removePart.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
         removePart.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -507,17 +517,6 @@ public class ReportGUIEditor extends EditorPart  {
             }
 
         });
-        // menu.addMenuListener(new MenuListener() {
-        //
-        // @Override
-        // public void menuHidden(MenuEvent e) {
-        // }
-        //
-        // @Override
-        // public void menuShown(MenuEvent e) {
-        // }
-        //        
-        // });
         control.setMenu(menu);
 
     }

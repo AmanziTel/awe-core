@@ -24,10 +24,10 @@ end
 
 def init
   networkid=KPIPlugin.getDefault.getNetworkId
-  $network_root_node=if networkid==nil then nil else Neo4j.load(networkid) end
+  $network_root_node=if networkid==nil then nil else Neo4j.load_node(networkid) end
 puts $network_root_node
 driveId=KPIPlugin.getDefault.getDriveId
-$drive_root_node=if driveId==nil then nil else Neo4j.load(driveId) end	
+$drive_root_node=if driveId==nil then nil else Neo4j.load_node(driveId) end	
 puts $drive_root_node
 end
 

@@ -23,8 +23,10 @@ module Neo4j
 
     class StopEvaluator
       include org.neo4j.api.core.StopEvaluator
-      def initialize(proc)
+      
+      def initialize(proc, raw = false)
         @proc = proc
+        @raw = raw
       end
 
       def isStopNode( traversal_position )
@@ -35,7 +37,7 @@ module Neo4j
         else # otherwise we eval the proc in the context of the current node
           # do not stop on the start node
           return false if traversal_position.isStartNode()
-          eval_context = Neo4j::load(traversal_position.currentNode.getId)
+          eval_context = Neo4j::load_node(traversal_position.currentNode.getId, @raw)
           eval_context.instance_eval(&@proc)
         end
 
