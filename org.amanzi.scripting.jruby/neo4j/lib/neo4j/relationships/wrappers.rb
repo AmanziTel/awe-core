@@ -9,26 +9,27 @@ module Neo4j
     # Wrapper for org.neo4j.api.core.ReturnableEvaluator
     #
     # :api: private
-    class ReturnableEvaluator
+    class ReturnableEvaluator #:nodoc:
       include org.neo4j.api.core.ReturnableEvaluator
 
-      def initialize(proc)
+      def initialize(proc, raw = false)
         @proc = proc
+        @raw = raw
       end
 
       def isReturnableNode( traversal_position )
         # if the Proc takes one argument that we give it the traversal_position
         result = if @proc.arity == 1
           # wrap the traversal_position in the Neo4j.rb TraversalPostion object
-          @proc.call TraversalPosition.new(traversal_position)
+          @proc.call TraversalPosition.new(traversal_position, @raw)
         else # otherwise we eval the proc in the context of the current node
           # do not include the start node
           return false if traversal_position.isStartNode()
-          eval_context = Neo4j::load(traversal_position.currentNode.getId)
+          eval_context = Neo4j::load_node(traversal_position.currentNode.getId, @raw)
           eval_context.instance_eval(&@proc)
         end
 
-        # java does not treat nil as false so we need to do instead
+        # java does not treat nil as false so we need to do it instead
         (result)? true : false
       end
     end
@@ -38,7 +39,7 @@ module Neo4j
     # Used in the Neo4j Traversers.
     #
     # :api: private
-    class DepthStopEvaluator
+    class DepthStopEvaluator #:nodoc:
       include org.neo4j.api.core.StopEvaluator
 
       def initialize(depth)
@@ -55,14 +56,15 @@ module Neo4j
     # Each type is a singelton.
     # 
     # :api: private
-    class RelationshipType
+    class RelationshipType #:nodoc:
       include org.neo4j.api.core.RelationshipType
 
       @@names = {}
 
       def RelationshipType.instance(name)
-        return @@names[name] if @@names.include?(name)
-        @@names[name] = RelationshipType.new(name)
+        n = name.to_s
+        return @@names[n] if @@names.include?(n)
+        @@names[n] = RelationshipType.new(n)
       end
 
       def to_s

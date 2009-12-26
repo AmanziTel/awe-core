@@ -9,7 +9,7 @@ module Neo4j
   
   include_package neo4j_dir
   
-  #require 'neo4j/jars/neo-1.0-b8.jar'
-  #require 'neo4j/jars/shell-1.0-b8.jar'
+  #require 'neo4j/jars/neo-1.0-b10.jar'
+  #require 'neo4j/jars/shell-1.0-b10.jar'
   #require 'neo4j/jars/jta-1_1.jar'
 end

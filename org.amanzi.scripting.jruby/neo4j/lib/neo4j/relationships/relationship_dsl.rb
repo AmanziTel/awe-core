@@ -3,16 +3,20 @@ module Neo4j
 
     # Enables finding relationships for one node
     #
-    class RelationshipTraverser
+    class RelationshipDSL
       include Enumerable
-      extend TransactionalMixin
+      attr_reader :node
 
-      attr_reader :internal_node
-
-      def initialize(node)
+      def initialize(node, direction = :outgoing)
         @node = node
-        @internal_node = node.internal_node
-        @direction = org.neo4j.api.core.Direction::OUTGOING
+        case direction
+          when :outgoing
+            outgoing
+          when :incoming
+            incoming
+          when :both
+            both
+        end
       end
 
       def outgoing(type = nil)
@@ -24,6 +28,11 @@ module Neo4j
       def incoming(type = nil)
         @type = type
         @direction = org.neo4j.api.core.Direction::INCOMING
+        self
+      end
+
+      def filter(&filter_proc)
+        @filter_proc = filter_proc
         self
       end
 
@@ -44,14 +53,17 @@ module Neo4j
       #
       #  node1 = Neo4j::Node.new
       #  node2 = Neo4j::Node.new
-      #  node1.relationships.outgoing(:some_relationship_type) << node2
+      #  node1.rels.outgoing(:some_relationship_type) << node2  << node3
       #
       # ==== Returns
-      # a Relationship object (see Neo4j::RelationshipMixin)  representing this created relationship
+      # self - so that the << can be chained
       #
       # :api: public
       def <<(other_node)
-        @node._create_relationship(@type.to_s, other_node)
+        source,target = @node, other_node
+        source,target = target,source if @direction == org.neo4j.api.core.Direction::INCOMING
+        source.add_rel(@type, target)
+        self
       end
 
       def empty?
@@ -59,26 +71,24 @@ module Neo4j
       end
 
       # Return the first relationship or nil
-      #
       def first
-        iter = iterator
-        return nil unless iter.hasNext
-        return Neo4j.instance.load_relationship(iter.next)
+        find {true}
       end
 
       #
       # Returns the relationship object to the other node.
       #
       def [](other_node)
-        find {|r| r.end_node.neo_node_id == other_node.neo_node_id}
+        find {|r| r.end_node.neo_id == other_node.neo_id}
       end
 
 
       def each
         iter = iterator
         while (iter.hasNext) do
-          n = iter.next
-          yield Neo4j.instance.load_relationship(n)
+          rel = iter.next.wrapper
+          next if @filter_proc && !rel.instance_eval(&@filter_proc)
+          yield rel
         end
       end
 
@@ -88,17 +98,17 @@ module Neo4j
 
       def iterator
         # if type is nil then we traverse all relationship types of depth one
-        return @internal_node.getRelationships(@direction).iterator if @type.nil?
-        return @internal_node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
+        return @node.getRelationships(@direction).iterator if @type.nil?
+        return @node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
       end
 
       def to_s
-        "RelationshipTraverser [direction=#{@direction}, type=#{@type}]"
+        "RelationshipDSL [direction=#{@direction}, type=#{@type}]"
       end
 
-      # Used from RelationshipTraverser when traversing nodes instead of relationships.
+      # Used from RelationshipDSL when traversing nodes instead of relationships.
       #
-      class RelationshipsEnumeration
+      class RelationshipsEnumeration #:nodoc:
         include Enumerable
 
         def initialize(relationships)
@@ -106,20 +116,19 @@ module Neo4j
         end
 
         def first
-          iter = @relationships.iterator
-          return nil unless iter.hasNext()
-          rel = Neo4j.instance.load_relationship(iter.next)
-          rel.other_node(@relationships.internal_node)
+          find {true}
         end
 
+        def empty?
+          first.nil?
+        end
+        
         def each
           @relationships.each do |relationship|
-            yield relationship.other_node(@relationships.internal_node)
+            yield relationship.getOtherNode(@relationships.node).wrapper
           end
         end
       end
-
-      transactional :empty?, :<<
     end
 
 

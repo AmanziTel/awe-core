@@ -5,7 +5,7 @@ module Neo4j
   # 
   # There is one Indexer per Node root class.
   #
-  class Indexer
+  class Indexer  #:nodoc:
     attr_reader :document_updaters, :index_id
     attr_reader :property_indexer # for testing purpose
     
@@ -27,7 +27,7 @@ module Neo4j
 
     # only for testing purpose, e.g we need to redefine an existing class
     def self.remove_instance(clazz)
-      @instances.delete(clazz.root_class) unless @instances.nil?
+      @instances.delete(clazz.root_class) if !@instances.nil? && clazz.respond_to?(:root_class)
     end
 
 
@@ -66,7 +66,7 @@ module Neo4j
 
     # :api: private
     def index(node)
-      document = {:id => node.neo_node_id }
+      document = {:id => node.neo_id }
 
       @document_updaters.each do |updater|
         updater.update_document(document, node)
@@ -77,7 +77,7 @@ module Neo4j
 
     # :api: private
     def delete_index(node)
-      lucene_index.delete(node.neo_node_id)
+      lucene_index.delete(node.neo_id)
     end
 
 
@@ -126,7 +126,7 @@ module Neo4j
 
 
   # :api: private
-  class PropertyIndexer
+  class PropertyIndexer #:nodoc:
     attr_reader :properties
 
     def initialize
@@ -153,7 +153,7 @@ module Neo4j
   # relationship 'd'
   # 
   # :api: private
-  class RelationshipIndexer
+  class RelationshipIndexer #:nodoc:
     attr_reader :rel_type, :properties
     
     def initialize(rel_name, rel_type)
@@ -184,7 +184,7 @@ module Neo4j
 
     # :api: private
     def reindex_related_nodes(node)
-      related_nodes = node.relationships.both(@rel_type).nodes
+      related_nodes = node.rels.both(@rel_type).nodes
       related_nodes.each do |related_node|
         Indexer.index(related_node)
       end
@@ -197,7 +197,7 @@ module Neo4j
 
     # :api: private
     def update_document(document, node)
-      relationships = node.relationships.both(@rel_type).nodes
+      relationships = node.rels.both(@rel_type).nodes
       relationships.each do |other_node|
         @properties.each do |p|
           index_key = index_key(p)

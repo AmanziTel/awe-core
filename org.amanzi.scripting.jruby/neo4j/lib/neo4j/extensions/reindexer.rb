@@ -1,6 +1,10 @@
 module Neo4j
 
   module NodeMixin
+    def ignore_incoming_cascade_delete? (relationship)
+      # if it's an index node relationship then it should be allowed to cascade delete the node
+      return relationship.other_node(self) == IndexNode.instance
+    end
 
     module ClassMethods
 
@@ -19,7 +23,7 @@ module Neo4j
       # :api: public
       def all
         index_node = IndexNode.instance
-        index_node.relationships.outgoing(root_class)
+        index_node.rels.outgoing(self)
       end
 
     end
@@ -28,8 +32,6 @@ module Neo4j
 
   class IndexNode
     include NodeMixin
-    extend Neo4j::TransactionalMixin
-
 
     # Connects the given node with the reference node.
     # The type of the relationship will be the same as the class name of the
@@ -47,22 +49,24 @@ module Neo4j
     # :api: private
     def connect(node, type = node.class.root_class)
       rtype = Neo4j::Relationships::RelationshipType.instance(type)
-      @internal_node.createRelationshipTo(node.internal_node, rtype)
+      @_java_node.createRelationshipTo(node._java_node, rtype)
       nil
     end
 
     def on_node_created(node)
       # we have to avoid connecting to our self
-      connect(node) unless self == node
+      unless self == node
+        node.class.ancestors.grep(Class).each{|p| connect(node, p) if p.respond_to?(:all)}
+      end
     end
 
     def self.on_neo_started(neo_instance)
-      if neo_instance.ref_node.relationship?(:index_node)
+      if neo_instance.ref_node.rel?(:index_node)
         # we already have it, put it in instance variable so we do not have to look again
-        @index_node = neo_instance.ref_node.relationships.outgoing(:index_node).nodes.first
+        @index_node = neo_instance.ref_node.rels.outgoing(:index_node).nodes.first
       else
         @index_node = IndexNode.new # cache this so we do not have to look it up always
-        neo_instance.ref_node.relationships.outgoing(:index_node) << @index_node
+        neo_instance.ref_node.rels.outgoing(:index_node) << @index_node
       end
       Neo4j.event_handler.add(@index_node)
     end
@@ -78,16 +82,25 @@ module Neo4j
       @index_node
     end
 
-    transactional :connect
+    def self.instance?
+      !@index_node.nil?
+    end
+
   end
 
 
   # Add this so it can add it self as listener
   def self.load_reindexer
     Neo4j.event_handler.add(IndexNode)
-    # incase we already have started
-    Neo4j::Transaction.run { IndexNode.on_neo_started(Neo4j.instance) } if Neo4j.running?
+    # in case we already have started
+    Neo4j::Transaction.run { IndexNode.on_neo_started(Neo4j) } if Neo4j.running?
   end
+
+  def self.unload_reindexer
+    Neo4j.event_handler.remove(IndexNode)
+    Neo4j.event_handler.remove(IndexNode.instance) if IndexNode.instance?
+  end
+
 
   load_reindexer
 end

@@ -1,34 +1,35 @@
 module Neo4j
-  
+
   #
   # Raised when an operation was called without a running transaction.
   #
-  class NotInTransactionError < StandardError; end
-  
-  
+  class NotInTransactionError < StandardError;
+  end
+
+
   #
   # Raised when an operation was called when an transaction was already running.
   #
-  class AlreadyInTransactionError < StandardError; end
-  
-  
+  class AlreadyInTransactionError < StandardError;
+  end
+
+
   #
   # Wraps a Neo4j java transaction and lucene transactions.
   # There can only be one transaction per thread.
   #
   class Transaction
     attr_reader :neo_tx
-    
+
     @@counter = 0 # just for debugging purpose
 
-    
 
     # --------------------------------------------------------------------------
     #
     # Class methods
     #
-    class << self 
-      
+    class << self
+
 
       # :nodoc:
       # debugging method
@@ -37,13 +38,13 @@ module Neo4j
         res = ""
         for i in 2..7 do
           res << /\`([^\']+)\'/.match(caller(i).first)[1]
-          res << ', ' 
+          res << ', '
         end
         res
-      end 
+      end
 
-      def placebo?(tx)        
-        tx.java_object.java_type == 'org.neo4j.api.core.EmbeddedNeo$PlaceboTransaction'
+      def placebo?(tx)
+        tx.java_object.java_type == 'org.neo4j.api.core.EmbeddedNeoImpl$PlaceboTransaction'
       end
 
       # Creates a transaction. If one is already running then a 'placebo' transaction will be created instead.
@@ -51,25 +52,21 @@ module Neo4j
       # real transaction.
       #
       def new
-        tx = Neo4j.instance.begin_transaction
+        tx = Neo4j.instance.begin_tx
         if running?
           # expects a placebo transaction, check just in case
           raise "Expected placebo transaction since one normal is already running" unless placebo?(tx)
-          tx = Transaction.current.create_placebo_tx_if_not_already_exists         
+          tx = Transaction.current.create_placebo_tx_if_not_already_exists
           tx
         else
-          #Lagutko, 24.08.2009, since we use Neo4j RubyGem in AWE we didn't start NeoService using RubyCode
-          #but using Neoclipse functionality, and because of this here we will have a Placebo Transaction without
-          #any running Transactions in Neo4j RubyGem
-          raise "Expected NOT placebo transaction since no TX is running" if placebo?(tx)          
+          raise "Expected NOT placebo transaction since no TX is running" if placebo?(tx)
           super(tx)
         end
       end
-      
+
       # Runs a block in a Neo4j transaction
       #
-      # Most operations on neo requires an transaction. In Neo4j all read and write operations are
-      # wrapped automatically in an transaction. You will get much better performance if
+      # Most operations on neo requires an transaction. You will get much better performance if
       # one transaction is wrapped around several neo operation instead of running one transaction per
       # neo operation.
       # If one transaction is already running then a 'placebo' transaction will be created.
@@ -99,24 +96,23 @@ module Neo4j
       #
       # :api: public
       #
-      def run   # :yield: block of code to run inside a transaction
+      def run # :yield: block of code to run inside a transaction
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
 
         ret = nil
-        
+
         begin
           tx = Neo4j::Transaction.new
           ret = yield tx
-        rescue Exception => e
+        rescue Exception => bang
           #$NEO_LOGGER.warn{e.backtrace.join("\n")}
-          puts e          
-          tx.failure
-          raise e  
+          tx.failure unless tx.nil?
+          raise
         ensure
-          tx.finish  
-        end      
+          tx.finish unless tx.nil?
+        end
         ret
-      end  
+      end
 
 
       # Returns the current running transaction or nil
@@ -125,7 +121,7 @@ module Neo4j
       def current
         Thread.current[:transaction]
       end
-    
+
 
       # Returns true if there is a transaction for the current thread
       #
@@ -160,22 +156,22 @@ module Neo4j
       end
     end
 
-  
+
     #
     # --------------------------------------------------------------------------
     # Instance methods
     #
-    
-    
+
+
     def initialize(neo_tx)
       raise AlreadyInTransactionError.new if Transaction.running?
       @neo_tx = neo_tx
       @@counter += 1
       @id = @@counter
-      @failure = false   
-      Thread.current[:transaction] = self      
+      @failure = false
+      Thread.current[:transaction] = self
     end
-    
+
     def to_s
       "Transaction: placebo: #{placebo?}, #{@id} failure: #{failure?}, running #{Transaction.running?}, lucene: #{Lucene::Transaction.running?}, thread: #{Thread.current.to_s} #{@neo_tx}"
     end
@@ -188,7 +184,6 @@ module Neo4j
       @failure == true
     end
 
-    
 
     def placebo?
       false
@@ -197,19 +192,19 @@ module Neo4j
     def create_placebo_tx_if_not_already_exists
       @placebo ||= PlaceboTransaction.new(self)
     end
-    
-    
+
+
     # Marks this transaction as successful, which means that it will be commited 
     # upon invocation of finish() unless failure()  has or will be invoked before then.
     # 
     # :api: public
     def success
       raise NotInTransactionError.new unless Transaction.running?
-      $NEO_LOGGER.info{"success #{self.to_s}"}      
+      $NEO_LOGGER.info{"success #{self.to_s}"}
       @neo_tx.success
     end
-    
-    
+
+
     # Commits or marks this transaction for rollback, depending on whether
     # success() or failure() has been previously invoked.
     #
@@ -217,9 +212,14 @@ module Neo4j
     def finish
       raise NotInTransactionError.new unless Transaction.running?
       Neo4j.event_handler.tx_finished(self) unless failure?
-      @neo_tx.success unless failure?
-      @neo_tx.finish
-      @neo_tx=nil
+      begin
+        @neo_tx.success unless failure?
+        @neo_tx.finish
+        @neo_tx=nil
+      rescue Exception => bang
+        raise
+      end
+
       Thread.current[:transaction] = nil
 
       if Lucene::Transaction.running?
@@ -241,18 +241,18 @@ module Neo4j
       raise NotInTransactionError.new unless Transaction.running?
       @neo_tx.failure
       @failure = true
-      $NEO_LOGGER.info{"failure #{self.to_s}"}                        
+      $NEO_LOGGER.info{"failure #{self.to_s}"}
     end
-    
+
   end
-  
+
   #
   # This is returned when trying to create a new transaction while a transaction is already running.
   # This class will do nothing when the finish method is called.
   # Finish will only be called when the 'real' transaction does it.
   #
-  class PlaceboTransaction < DelegateClass(Transaction)
-    
+  class PlaceboTransaction < DelegateClass(Transaction) #:nodoc:
+
     def initialize(tx)
       puts 'placebo transaction initialize'
       super(tx)
@@ -272,5 +272,5 @@ module Neo4j
       "PLACEBO TX"
     end
   end
-  
+
 end

@@ -5,12 +5,12 @@ module Neo4j
     # Stores the relationship data for a Neo4j::NodeMixin class.
     #
     # :api: private
-    class RelationshipInfo
+    class RelationshipInfo #:nodoc:
       attr_accessor :info
       def initialize
         @info = {}
         # set defaults
-        @info[:relationship] = Relationships::Relationship
+        @info[:relationship] = nil # Relationships::Relationship
         @info[:outgoing] = true
       end
     

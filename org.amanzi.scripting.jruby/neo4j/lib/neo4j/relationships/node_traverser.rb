@@ -8,12 +8,13 @@ module Neo4j
     # Contains state about one specific traversal to be performed.
     class NodeTraverser
       include Enumerable
-      extend TransactionalMixin
 
-      attr_reader :internal_node
+      attr_accessor :raw
+      attr_reader :_java_node
 
-      def initialize(internal_node)
-        @internal_node = internal_node
+      def initialize(_java_node, raw = false)
+        @_java_node = _java_node
+        @raw = raw
         @stop_evaluator = DepthStopEvaluator.new(1)
         @types_and_dirs = [] # what types of relationships and which directions should be traversed
         @traverser_order = org.neo4j.api.core.Traverser::Order::BREADTH_FIRST
@@ -43,7 +44,7 @@ module Neo4j
       end
 
       def filter(&proc)
-        @returnable_evaluator = ReturnableEvaluator.new proc
+        @returnable_evaluator = ReturnableEvaluator.new(proc, @raw)
         self
       end
 
@@ -76,36 +77,52 @@ module Neo4j
       end
 
       def first
-        iter = iterator
-        return nil unless iter.hasNext
-        n = iter.next
-        Neo4j.load(n.get_id)
+        find {true}
       end
 
       def each
         iter = iterator
         while (iter.hasNext) do
-          n = iter.next
-          yield Neo4j.load(n.get_id)
+          if @raw
+            yield iter.next
+          else
+            yield iter.next.wrapper
+          end
         end
       end
 
-      def iterator
+      # Same as #each method but includes the TraversalPosition argument as a yield argument.
+      #
+      #
+      def each_with_position(&block)
+        traverser = create_traverser
+        iter = traverser.iterator
+        while (iter.hasNext) do
+          n = iter.next
+          tp = TraversalPosition.new(traverser.currentPosition(), @raw)
+          block.call Neo4j.load_node(n.get_id), tp
+        end
+      end
+
+
+      def create_traverser
         # check that we know which type of relationship should be traversed
         if @types_and_dirs.empty?
           raise IllegalTraversalArguments.new "Unknown type of relationship. Needs to know which type(s) of relationship in order to traverse. Please use the outgoing, incoming or both method."
         end
 
-        @internal_node.traverse(@traverser_order, @stop_evaluator,
-                                @returnable_evaluator, @types_and_dirs.to_java(:object)).iterator
+        @_java_node.traverse(@traverser_order, @stop_evaluator,
+                                @returnable_evaluator, @types_and_dirs.to_java(:object))
+      end
+
+      def iterator
+        create_traverser.iterator
       end
 
       def to_s
         "NodeTraverser [direction=#{@direction}, type=#{@type}]"
       end
 
-
-      transactional :empty?, :first
     end
 
 
