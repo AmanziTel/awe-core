@@ -166,6 +166,7 @@ public class DriveInquirerView extends ViewPart {
     private DateAxis domainAxis;
     private Long beginGisTime;
     private Long endGisTime;
+    private Long selectedTime;
     private List<Node> dataset;
     private int currentIndex;
     private TableViewer table;
@@ -540,6 +541,8 @@ public class DriveInquirerView extends ViewPart {
         //TODO fix when drive loader will be fixed
         Long start_time=(((dateStart.getHours()-2L)*60+dateStart.getMinutes())*60+dateStart.getSeconds())*1000;
         Long end_time=start_time+sLength.getSelection()*60*1000;
+        if (selectedTime==0L)
+            selectedTime=start_time;
         Long delta_sec=2L;
         Long delta_msec=delta_sec*1000;
         
@@ -596,11 +599,11 @@ public class DriveInquirerView extends ViewPart {
         sb.append("          ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
         sb.append("        }\n");
         sb.append("        ").append(TRAVERSE_NEXT_ALL);
-        sb.append("        stop{property? 'timestamp' and self[:timestamp]>").append(start_time+delta_msec).append("}\n");
+        sb.append("        stop{property? 'timestamp' and self[:timestamp]>").append(selectedTime+delta_msec).append("}\n");
         sb.append("      }\n");
         sb.append("      ").append(TRAVERSE_CHILD_1);
-        sb.append("      ").append("where {self[:type]=='ms' and self[:timestamp]<=").append(start_time+delta_msec)
-        .append(" and self[:timestamp]>=").append(start_time-delta_msec)
+        sb.append("      ").append("where {self[:type]=='ms' and self[:timestamp]<=").append(selectedTime+delta_msec)
+        .append(" and self[:timestamp]>=").append(selectedTime-delta_msec)
         .append(" and (property? 'event_type' or property? '").append(cProperty1.getText()).append("' or property? '").append(cProperty2.getText()).append("')}\n");
         sb.append("    end\n");
         sb.append("  end\n");
@@ -651,7 +654,8 @@ public class DriveInquirerView extends ViewPart {
         XYPlot xyplot = (XYPlot)chart.getPlot();
         ValueAxis valueaxis = xyplot.getDomainAxis();
         Range range = valueaxis.getRange();
-        double d = valueaxis.getLowerBound() + ((double)i / 100D) * range.getLength();
+        Double d = valueaxis.getLowerBound() + ((double)i / 100D) * range.getLength();
+        selectedTime=d.longValue();
         xyplot.setDomainCrosshairValue(d);
     }
 
