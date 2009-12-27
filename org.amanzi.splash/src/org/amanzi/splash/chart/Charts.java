@@ -40,15 +40,25 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.DatasetRenderingOrder;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.Dataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.time.TimeSeriesCollection;
 import org.neo4j.api.core.Node;
 
 /**
@@ -61,6 +71,10 @@ import org.neo4j.api.core.Node;
  */
 public class Charts implements IElementFactory {
     private static final String FACTORY_ID = Charts.class.getName();
+    /** Color COLOR_LEFT_PROPERTY field */
+    private static final Color COLOR_LEFT_PROPERTY = Color.black;
+    /** Color COLOR_RIGHT_PROPERTY field */
+    private static final Color COLOR_RIGHT_PROPERTY = Color.red;
 
     public static IEditorPart getActiveEditor() {
         IWorkbenchPage activePage = PlatformUI.getWorkbench().getWorkbenchWindows()[0].getActivePage();
@@ -167,7 +181,7 @@ public class Charts implements IElementFactory {
         JFreeChart chart = ChartFactory.createBarChart(reportChart.getTitle(), // chart title
                 reportChart.getDomainAxisLabel(), // domain axis label
                 reportChart.getRangeAxisLabel(), // range axis label
-                (CategoryDataset)reportChart.getDataset(), // data
+                ((CategoryPlot)reportChart.getPlot()).getDataset(), // data
                 reportChart.getOrientation(), // orientation
                 true, // include legend
                 true, // tooltips?
@@ -200,13 +214,13 @@ public class Charts implements IElementFactory {
     /**
      * This method creates a chart.
      * 
-     * @param dataset dataset provides the data to be displayed in the chart. The parameter is
+     * @param t dataset provides the data to be displayed in the chart. The parameter is
      *        provided by the 'createDataset()' method.
      * @return A chart.
      */
     public static JFreeChart createPieChart(DefaultPieDataset dataset) {
 
-        JFreeChart chart = ChartFactory.createPieChart3D("", dataset, true, true, true);
+        JFreeChart chart = ChartFactory.createPieChart3D("", dataset, true, true,true);
 
         return chart;
     }
@@ -331,4 +345,110 @@ public class Charts implements IElementFactory {
 
         return dataset;
     }
+    public static void applyDefaultSettings(Plot plot, Dataset dataset, int dsNum) {
+        if (plot instanceof XYPlot) {
+            XYPlot xyplot = (XYPlot)plot;
+
+            xyplot.setDomainAxis(new DateAxis("Time"));
+            xyplot.setDomainCrosshairVisible(true);
+            xyplot.setDomainCrosshairLockedOnData(false);
+            xyplot.setRangeCrosshairVisible(false);
+            xyplot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
+           
+            if (dataset instanceof TimeSeriesCollection) {
+
+                xyplot.setDataset(dsNum, (TimeSeriesCollection)dataset);
+
+                StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
+                standardxyitemrenderer.setBaseShapesFilled(true);
+                xyplot.setRenderer(dsNum, standardxyitemrenderer);
+//                if (dsNum == 0) {
+//                    xyplot.getRenderer(0).setSeriesPaint(0, new Color(0, 0, 0, 0));
+//                } else if (dsNum == 1) {
+//                    xyplot.getRenderer(1).setSeriesPaint(0, COLOR_LEFT_PROPERTY);
+//                } else if (dsNum == 2) {
+//                    xyplot.getRenderer(2).setSeriesPaint(0, COLOR_RIGHT_PROPERTY);
+//                }
+                NumberAxis numberaxis = new NumberAxis("Value");
+                numberaxis.setAutoRangeIncludesZero(false);
+                xyplot.setRangeAxis(dsNum, numberaxis);
+                xyplot.setRangeAxisLocation(dsNum, AxisLocation.BOTTOM_OR_LEFT);
+                xyplot.mapDatasetToRangeAxis(dsNum, dsNum);
+            } else if (dataset instanceof EventDataset) {
+                EventDataset eventDataset = (EventDataset)dataset;
+                xyplot.setDataset(dsNum, eventDataset);
+               
+                XYBarRenderer eventRenderer = new EventRenderer(eventDataset);
+                xyplot.setRenderer(dsNum, eventRenderer);
+               
+                NumberAxis rangeAxis = new NumberAxis("Events");
+                rangeAxis.setVisible(false);
+                xyplot.setRangeAxis(dsNum, rangeAxis);
+            }
+        }else if (plot instanceof CategoryPlot){
+         // get a reference to the plot for further customisation...
+            CategoryPlot categoryPlot = (CategoryPlot)plot;
+
+            // set the range axis to display integers only...
+            NumberAxis rangeAxis = new NumberAxis();
+            rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+            categoryPlot.setRangeAxis(rangeAxis);
+            
+            // disable bar outlines...
+            BarRenderer renderer = new BarRenderer();
+            renderer.setDrawBarOutline(false);
+            
+            // set up gradient paints for series...
+            GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
+            renderer.setSeriesPaint(0, gp0);
+            categoryPlot.setRenderer(renderer);
+            
+            CategoryAxis domainAxis = new CategoryAxis();
+            domainAxis.setCategoryLabelPositions(CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0));
+            categoryPlot.setDomainAxis(domainAxis);
+        }
+    }
+    public static void applyMainVisualSettings(Plot plot, String rangeAxisLablel, String domainAxisLabel,
+            PlotOrientation orientation) {
+        if (plot instanceof CategoryPlot) {
+            CategoryPlot categoryPlot = (CategoryPlot)plot;
+            if (rangeAxisLablel != null)
+                categoryPlot.getRangeAxis().setLabel(rangeAxisLablel);
+            categoryPlot.getDomainAxis().setLabel(domainAxisLabel);
+            categoryPlot.setOrientation(orientation);
+        } else if (plot instanceof XYPlot) {
+            XYPlot xyPlot = (XYPlot)plot;
+            if (rangeAxisLablel != null)
+                xyPlot.getRangeAxis().setLabel(rangeAxisLablel);
+            if (domainAxisLabel != null)
+                if (domainAxisLabel != null)
+
+                    xyPlot.getDomainAxis().setLabel(domainAxisLabel);
+            xyPlot.setOrientation(orientation);
+        }
+    }
+
+    public static JFreeChart createChart(Chart chart) {
+        switch (chart.getChartType()){
+        case BAR:
+            return Charts.createBarChart(chart);
+        case PIE:
+            return Charts.createPieChart(chart);
+        case LINE:
+            return Charts.createLineChart(chart);
+        case TIME:
+            default:
+            return new JFreeChart(chart.getPlot());
+        }
+    }
+
+    private static JFreeChart createLineChart(Chart chart) {
+        return null;
+    }
+
+    private static JFreeChart createPieChart(Chart chart) {
+        return  ChartFactory.createPieChart3D("", ((PiePlot)chart.getPlot()).getDataset(), true, true,true);
+    }
+    
+    
 }

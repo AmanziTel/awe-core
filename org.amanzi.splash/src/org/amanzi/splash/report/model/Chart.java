@@ -21,6 +21,7 @@ import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.splash.chart.ChartType;
 import org.amanzi.splash.report.IReportPart;
 import org.amanzi.splash.report.ReportPartType;
+import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.general.AbstractDataset;
 
@@ -42,6 +43,7 @@ public class Chart implements IReportPart {
     private String[] valuesProperties;
     private Long[] nodeIds;
     private List<String> errors = new ArrayList<String>();
+    private Plot plot;
     private AbstractDataset dataset;
     //JFReeChart settings
     private String title="";
@@ -232,6 +234,20 @@ public class Chart implements IReportPart {
      */
     public void setDataset(AbstractDataset dataset) {
         this.dataset = dataset;
+    }
+
+    /**
+     * @return Returns the plot.
+     */
+    public Plot getPlot() {
+        return plot;
+    }
+
+    /**
+     * @param plot The plot to set.
+     */
+    public void setPlot(Plot plot) {
+        this.plot = plot;
     }
 
     /**

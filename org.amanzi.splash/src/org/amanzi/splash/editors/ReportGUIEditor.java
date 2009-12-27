@@ -65,6 +65,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.event.ChartChangeEvent;
 import org.jfree.chart.event.ChartChangeListener;
@@ -236,17 +237,20 @@ public class ReportGUIEditor extends EditorPart  {
         final Composite currComposite = createContainer(chart);
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
         currComposite.setLayoutData(data);
-        DefaultCategoryDataset chartDataset = null;
-        final AbstractDataset dataset = chart.getDataset();
-        if (dataset != null) {
-            if (dataset instanceof DefaultCategoryDataset) {
-                chartDataset = (DefaultCategoryDataset)dataset;
-            }
-        } else {
-            chartDataset = reportModel.getChartDataset(chart);
-        }
-        final JFreeChart jFreeChart = Charts.createBarChart(chart);
-
+//        DefaultCategoryDataset chartDataset = null;
+//        final AbstractDataset dataset = chart.getDataset();
+//        if (dataset != null) {
+//            if (dataset instanceof DefaultCategoryDataset) {
+//                chartDataset = (DefaultCategoryDataset)dataset;
+//            }
+//        } else {
+//            chartDataset = reportModel.getChartDataset(chart);
+//        }
+//        final JFreeChart jFreeChart = Charts.createBarChart(chart);
+        final JFreeChart jFreeChart = Charts.createChart(chart);
+        jFreeChart.setTitle(chart.getTitle());
+        ChartUtilities.applyCurrentTheme(jFreeChart);
+        
         jFreeChart.addChangeListener(new ChartChangeListener() {
 
             @Override
@@ -291,8 +295,7 @@ public class ReportGUIEditor extends EditorPart  {
             }
         });
         ChartComposite chartComposite = new ChartComposite(currComposite, SWT.NONE, jFreeChart, true);
-//        System.out.println("Chart menu: " + chartComposite.getMenu());
-        createContextMenu(chartComposite, (IReportPart)chart);
+//        createContextMenu(chartComposite, (IReportPart)chart);
         GridData data1 = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
         data1.widthHint = 600;
         data1.heightHint = 300;

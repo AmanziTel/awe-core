@@ -13,8 +13,15 @@ include_class org.amanzi.splash.report.model.ReportText
 include_class org.amanzi.splash.report.model.ReportImage
 include_class org.amanzi.splash.report.model.ReportTable
 include_class org.amanzi.neo.core.service.NeoServiceProvider
+include_class org.amanzi.splash.chart.ChartType
+include_class org.amanzi.splash.chart.EventDataset
 include_class org.jfree.data.category.DefaultCategoryDataset;
 include_class org.jfree.chart.plot.PlotOrientation
+include_class org.jfree.chart.plot.Plot
+include_class org.jfree.data.time.Millisecond
+include_class org.jfree.data.time.TimeSeries
+include_class org.jfree.data.time.TimeSeriesCollection
+include_class org.amanzi.splash.chart.Charts
 begin
   neo_service = NeoServiceProvider.getProvider.getService
   database_location = NeoServiceProvider.getProvider.getDefaultDatabaseLocation
@@ -59,15 +66,53 @@ begin
     end
 
     def create_chart_dataset(nodes,category,values,type=:bar)
-      ds=DefaultCategoryDataset.new()
-      nodes.each do |node|
-        values.each do |value|
-          ds.addValue(java.lang.Double.parseDouble(node[value].to_s), value, node[category].to_s);
+      if type==:bar
+        ds=DefaultCategoryDataset.new()
+        nodes.each do |node|
+          values.each do |value|
+            ds.addValue(java.lang.Double.parseDouble(node[value].to_s), value, node[category].to_s);
+          end
+        end
+     elsif type==:pie
+        ds=DefaultPieDataset.new()
+        nodes.each do |node|
+          values.each do |value|
+            ds.setValue(node[category].to_s,java.lang.Double.parseDouble(node[value].to_s));#TODO may be value? 
+          end
         end
       end
       ds
     end
-
+    
+    def create_time_chart_dataset(nodes,name,time_period,time_property,value)
+      ds=TimeSeriesCollection.new()
+      series=TimeSeries.new(name)
+      puts "create_time_chart_dataset: #{name} : #{value}"
+      nodes.each do |node|
+        if time_period==:millisecond
+          if node.property? value
+          puts "#{node.neo_id} - #{node[time_property]} - #{node[value]}"
+            series.addOrUpdate(Millisecond.new(java.util.Date.new(node[time_property])), java.lang.Double.parseDouble(node[value].to_s));
+          end
+        end
+      end
+      ds.addSeries(series)
+      ds
+    end
+    
+    def create_event_chart_dataset(nodes,name,time_period,time_property,event_property,event_value)
+      ds=EventDataset.new(name,event_value)
+      nodes.each do |node|
+        if time_period==:millisecond
+          if node.property? event_property
+            puts "event found: #{node.neo_id} - #{node[time_property]} - #{node[event_property]}"
+            ds.addEvent(node[event_property], Millisecond.new(java.util.Date.new(node[time_property])))
+          end
+        end
+      end
+      ds
+    end
+    
     def  get_sub_nodes_with_props(parent, node_type, relation, time)
       time_format = '%H:%M:%S'
       parent.outgoing(relation).depth(:all).stop_on do
@@ -306,12 +351,10 @@ begin
           puts "======> [ReportTable.select]"
           nodes=Search.new(name,params)
           nodes.instance_eval &block
-          puts "nodes #{nodes.class}"
           @properties=params[:properties]if !params.nil?  #TODO  
           nodes.each do |n|
             properties=n.props.keys if @properties.nil?
             row=Array.new
-            puts "properties #{properties.class}"
             @properties.each do |p|
               if p!="id"
               row<< if n.property? p then n.get_property(p).to_s else "" end
@@ -338,6 +381,7 @@ begin
     attr_writer:property, :distribute, :select
     attr_writer :drive, :event, :property1, :property2, :start_time, :length
     def initialize(title)
+      @datasets=[]
       self.title = title
     end
 
@@ -350,12 +394,26 @@ begin
         begin
           nodes=Search.new(name,params)
           nodes.instance_eval &block
-          if params[:values].is_a? String
-            setDataset(create_chart_dataset(nodes,params[:categories],[params[:values]]))
-          elsif params[:values].is_a? Array
-            setDataset(create_chart_dataset(nodes,params[:categories],params[:values]))
+          if @type==:time
+            event=params[:event]
+            if !event.nil?
+              #assume that we have one value
+              @datasets<< create_event_chart_dataset(nodes,name,params[:time_period],params[:categories],params[:values],event)
+            else
+              params[:values].each do |value|
+                @datasets<< create_time_chart_dataset(nodes,value,params[:time_period],params[:categories],value)
+              end
+            end
           else
-            puts "Error: Only Strings or Arrays of Strings are supported for chart values!"
+            if params[:values].is_a? String
+              #            setDataset(create_chart_dataset(nodes,params[:categories],[params[:values]]))
+              @datasets<<create_chart_dataset(nodes,params[:categories],[params[:values]])
+            elsif params[:values].is_a? Array
+              @datasets<<create_chart_dataset(nodes,params[:categories],params[:values])
+              #            setDataset(create_chart_dataset(nodes,params[:categories],params[:values]))
+            else
+              puts "Error: Only Strings or Arrays of Strings are supported for chart values!"
+            end
           end
         rescue =>e
           puts e
@@ -378,58 +436,39 @@ begin
           setDomainAxisLabel(@domain_axis) if !@domain_axis.nil?
           setRangeAxisLabel(@range_axis) if !@range_axis.nil?
           @type=:bar if @type.nil?
-          #        chartType=Java::org.amanzi.splash.chart.ChartType.value_of(@type.to_s.upcase)
-          #        puts "type #{chartType}"
-          #        setChartType(Java::org.amanzi.splash.chart.ChartType.value_of(@type.to_s.upcase))
-          #        puts "setChartType"
+          setChartType(ChartType.value_of(@type.to_s.upcase))
+          #
           if !@sheet.nil?
-            if !@categories.nil?
-              if @categories.is_a? Range
-                setCategories(@categories.begin,@categories.end)
-              elsif @categories.is_a? String
-                setCategoriesProperty(@categories)
-              end
-            end
-            if !@values.nil?
-              if @values.is_a? Range
-                setValues(@values.begin,@values.end)
-              elsif @values.is_a? Array
-                setValuesProperties(@values.to_java(java.lang.String))
-              end
-              setSheet(@sheet)
-            end
+          setCategories(@categories.begin,@categories.end)if !@categories.nil?
+          setValues(@values.begin,@values.end) if !@values.nil?
+          setSheet(@sheet)
           elsif !@nodes.nil?
             setNodeIds(@nodes.to_java(java.lang.Long)) if @nodes.is_a? Array
             setCategoriesProperty(@categories) if !@categories.nil? and  @categories.is_a? String
             setValuesProperties(@values.to_java(java.lang.String)) if !@values.nil? and   @values.is_a? Array
-            setDataset(create_chart_dataset(@nodes,@categories,@values))
+            #            setDataset(create_chart_dataset(@nodes,@categories,@values))
+            @datasets<<create_chart_dataset(@nodes,@categories,@values)
           elsif !@statistics.nil?
             dataset_node=find_dataset(@statistics)
             if !@property.nil? and !@distribute.nil? and !@select.nil?
               aggr_node=find_aggr_node(find_dataset(@statistics),@property,@distribute,@select)
-              setDataset(create_chart_dataset_aggr(aggr_node))
+#                            setDataset(create_chart_dataset_aggr(aggr_node))
+              @datasets<<create_chart_dataset_aggr(aggr_node)
             end
-          elsif !@drive.nil?
-            drive_node=find_dataset(@drive)
-
-            time=Java::org.amanzi.neo.core.INeoConstants::PROPERTY_TIME_NAME
-            time_format = '%H:%M:%S'
-            start_time=DateTime.strptime(@start_time, time_format)
-            end_time=Time.gm(start_time.year,start_time.mon,start_time.day,start_time.hour,start_time.min,start_time.sec)+@length.to_i*60
-            puts "start_time #{start_time}"
-            puts "end_time #{end_time}"
-            nodes=get_sub_nodes_with_props(drive_node, Java::org.amanzi.neo.core.INeoConstants::MP_TYPE_NAME,:NEXT,end_time)
-            nodes.each do |node|
-              prop_time=node.get_property(time)
-              puts "node.id #{node.neo_id} #{prop_time}"
-            end
-            puts "drive_node #{drive_node}"
-            puts "@event #{@event}"
-            puts "@property1 #{@property1}"
-            puts "@property2 #{@property2}"
-            puts "@start_time #{@start_time}"
-            puts "@length #{@length}"
           end
+          
+          if @type==:time
+            plot=Java::org.jfree.chart.plot.XYPlot.new
+            for i in 0..@datasets.size-1
+              puts "i=#{i} #{@datasets[i]}" #TODO delete debug info
+              Charts.applyDefaultSettings(plot,@datasets[i],i)
+            end
+            Charts.applyMainVisualSettings(plot, getRangeAxisLabel(),getDomainAxisLabel(),getOrientation())
+          elsif @type==:bar
+            plot=Java::org.jfree.chart.plot.CategoryPlot.new
+            plot.setDataset(@datasets[0])
+          end
+            setPlot(plot)
         rescue =>e
           puts "An exception occured during the chart setup: #{e}"
         end
