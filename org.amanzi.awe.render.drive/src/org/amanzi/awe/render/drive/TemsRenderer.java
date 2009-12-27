@@ -61,7 +61,6 @@ import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 import org.neo4j.util.index.LuceneIndexService;
-import org.neo4j.util.index.LuceneReadOnlyIndexService;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -218,7 +217,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             boolean drawFull = true;
             boolean drawLite = true;
             boolean drawLabels = true;
-            eventIconSize = 6;
+            eventIconSize = 12;
             if (bounds_transformed == null) {
                 drawFull = false;
                 drawLite = false;
@@ -231,7 +230,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 drawFull = countScaled < maxSitesFull;
                 if (drawFull) {
                     eventIconSize = countScaled * 16 <= maxSitesFull ? 16 : countScaled * 4 <= maxSitesFull ? 12
-                            : countScaled * 2 <= maxSitesFull ? 8 : 6;
+                            : countScaled * 2 <= maxSitesFull ? 12 : 12;// 8 : 6;
                 }
                 drawLite = countScaled < maxSitesLite;
             }

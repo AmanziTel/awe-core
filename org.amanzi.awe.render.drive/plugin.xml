@@ -9,5 +9,12 @@
             name="Amanzi TEMS Renderer">
       </renderer>
    </extension>
-
+   <extension
+         point="net.refractions.udig.mapgraphic.mapgraphic">
+		 <mapGraphic
+         class="org.amanzi.awe.render.drive.LegendDrive"
+         icon="icons/legend.gif"
+         id="drive legend"
+         name="Drive legend"/>
+   </extension>
 </plugin>
