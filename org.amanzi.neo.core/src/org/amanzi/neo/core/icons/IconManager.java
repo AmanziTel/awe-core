@@ -39,6 +39,8 @@ import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 public class IconManager implements IPropertyChangeListener {
     public static enum EventIcons {
         CONNECT(new String[] {"sector_6.png", "sector_8.png", "sector_12.png", "sector_16.png", "sector_48.png"}),
+        CONNECT_GOOD(new String[] {"sector_good_16.png", "sector_good_16.png", "sector_good_16.png", "sector_good_16.png", "sector_good_16.png"}),
+        CONNECT_BAD(new String[] {"sector_bad_16.png", "sector_bad_16.png", "sector_bad_16.png", "sector_bad_16.png", "sector_bad_16.png"}),
         CALL_BLOCKED(new String[] {"event_call_blocked_6.png", "event_call_blocked_8.png", "event_call_blocked_12.png", "event_call_blocked_16.png", "event_call_blocked_48.png"}),
         CALL_DROPPED(new String[] {"event_call_dropped_6.png", "event_call_dropped_8.png", "event_call_dropped_12.png", "event_call_dropped_16.png", "event_call_dropped_48.png"}),
         CALL_FAILURE(new String[] {"event_call_failure_6.png", "event_call_failure_8.png", "event_call_failure_12.png", "event_call_failure_16.png", "event_call_failure_48.png"}),

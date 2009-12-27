@@ -40,7 +40,39 @@ import org.neo4j.api.core.Traverser.Order;
  */
 public enum DriveEvents {
 
-    UNKNOWN {
+    UNKNOWN_BAD {
+        @Override
+        public EventIcons getEventIcon() {
+            return EventIcons.CONNECT_BAD;
+        }
+
+        @Override
+        public boolean haveEvents(String aProperty) {
+            return false;
+        }
+
+        @Override
+        public String getDescription() {
+            return "unknown bad event";
+        }
+    },
+    UNKNOWN_GOOD {
+        @Override
+        public EventIcons getEventIcon() {
+            return EventIcons.CONNECT_GOOD;
+        }
+
+        @Override
+        public boolean haveEvents(String aProperty) {
+            return false;
+        }
+
+        @Override
+        public String getDescription() {
+            return "unknown good event";
+        }
+    },
+    UNKNOWN_NEUTRAL {
         @Override
         public EventIcons getEventIcon() {
             return EventIcons.CONNECT;
@@ -49,6 +81,11 @@ public enum DriveEvents {
         @Override
         public boolean haveEvents(String aProperty) {
             return false;
+        }
+
+        @Override
+        public String getDescription() {
+            return "unknown neutral event";
         }
     },
 
@@ -62,6 +99,11 @@ public enum DriveEvents {
         public boolean haveEvents(String aProperty) {
             return aProperty != null && aProperty.toLowerCase().contains("blocked");
         }
+
+        @Override
+        public String getDescription() {
+            return "call blocked";
+        }
     },
     CALL_DROPPED {
         @Override
@@ -72,6 +114,11 @@ public enum DriveEvents {
         @Override
         public boolean haveEvents(String aProperty) {
             return aProperty != null && aProperty.toLowerCase().contains("dropped");
+        }
+
+        @Override
+        public String getDescription() {
+            return "call dropped";
         }
     },
     CALL_FAILURE {
@@ -84,6 +131,11 @@ public enum DriveEvents {
         public boolean haveEvents(String aProperty) {
             return aProperty != null && aProperty.toLowerCase().contains("no service");
         }
+
+        @Override
+        public String getDescription() {
+            return "call failure";
+        }
     },
     CALL_SUCCESS {
         @Override
@@ -94,6 +146,11 @@ public enum DriveEvents {
         @Override
         public boolean haveEvents(String aProperty) {
             return aProperty != null && aProperty.toLowerCase().contains("good");
+        }
+
+        @Override
+        public String getDescription() {
+            return "call success";
         }
     },
     HANDOVER_FAILURE {
@@ -106,6 +163,11 @@ public enum DriveEvents {
         public boolean haveEvents(String aProperty) {
             return aProperty != null && aProperty.toLowerCase().contains("handover failure");
         }
+
+        @Override
+        public String getDescription() {
+            return "handower failure";
+        }
     },
     HANDOVER_SUCCESS {
         @Override
@@ -117,6 +179,11 @@ public enum DriveEvents {
         public boolean haveEvents(String aProperty) {
             final String property = aProperty == null ? null : aProperty.toLowerCase();
             return property != null && (property.contains("handover complete") || property.contains("ho command"));
+        }
+
+        @Override
+        public String getDescription() {
+            return "handower success";
         }
     };
     /**
@@ -194,6 +261,7 @@ public enum DriveEvents {
      */
     public static Set<DriveEvents> getAllEvents(Node mpNode, NeoService neo) {
         Set<DriveEvents> result = new HashSet<DriveEvents>();
+        Set<DriveEvents> unknownEwents = new HashSet<DriveEvents>();
         Transaction tx = neo == null ? null : neo.beginTx();
         try {
             Traverser traverser = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -210,18 +278,37 @@ public enum DriveEvents {
             boolean haveEvents = false;
             MSNODE: for (Node node : traverser) {
                 haveEvents=true;
+                String eventTxt = node.getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString();
                 for (DriveEvents event : DriveEvents.values()) {
                     if (result.contains(event)) {
                         continue;
                     }
-                    if (event.haveEvents(node.getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString())) {
+
+                    if (event.haveEvents(eventTxt)) {
                         result.add(event);
                         continue MSNODE;
                     }
                 }
+                if (result.isEmpty()) {
+                    DriveEvents unknownEvent;
+                    if (eventTxt.contains("disconnect abnormal") || eventTxt.contains("disconnect drop")
+                            || eventTxt.contains("block") || eventTxt.contains("failure")) {
+                        unknownEvent = UNKNOWN_BAD;
+                    } else if (eventTxt.contains("disconnect normal") || eventTxt.contains("completed")
+                            || eventTxt.contains("success") || eventTxt.contains("attempt success")
+                            || eventTxt.contains("connected") || eventTxt.contains("received") || eventTxt.contains("good")
+                            || eventTxt.contains("complete")) {
+                        unknownEvent = UNKNOWN_GOOD;
+                    } else {
+                        unknownEvent = UNKNOWN_NEUTRAL;
+                    }
+                    if (!unknownEwents.contains(unknownEvent)) {
+                        unknownEwents.add(unknownEvent);
+                    }
+                }
             }
             if (result.isEmpty()&&haveEvents){
-                result.add(UNKNOWN);
+                result.addAll(unknownEwents);
             }
         } finally {
             finishTx(tx);
@@ -253,6 +340,16 @@ public enum DriveEvents {
         if (events.contains(CALL_BLOCKED)) {
             return CALL_BLOCKED;
         }
+        if (events.contains(UNKNOWN_BAD)) {
+            return UNKNOWN_BAD;
+        }
         return events.iterator().next();
     }
+
+    /**
+     * Gets event description
+     * 
+     * @return
+     */
+    public abstract String getDescription();
 }
