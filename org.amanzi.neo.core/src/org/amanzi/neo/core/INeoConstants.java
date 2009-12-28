@@ -136,7 +136,13 @@ public class INeoConstants {
     public static final String PROPERTY_TYPE_EVENT = "event_type";
     
     public static final String EVENTS_LUCENE_INDEX_NAME = "events";
-    public static final String SECTOR_ID_PROPERTIES = "sector_id";
+    
+    /** String LOCATION_INDEX_NAME field */
+	public static final String LOCATION_INDEX_NAME = "Index-location-";
+	/** String TIMESTAMP_INDEX_NAME field */
+	public static final String TIMESTAMP_INDEX_NAME = "Index-timestamp-";
+
+	public static final String SECTOR_ID_PROPERTIES = "sector_id";
     public static final String DRIVE_GIS_NAME = "drive gis name";
     public static final String NETWORK_GIS_NAME = "network gis name";
 }
