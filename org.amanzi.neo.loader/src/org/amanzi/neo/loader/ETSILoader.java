@@ -33,29 +33,59 @@ import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
+ * Loader of ETSI data
+ * 
  * @author Lagutko_N
  * @since 1.0.0
  */
 public class ETSILoader extends DriveLoader {
 	
+	/*
+	 *  String COMMAND_PROPERTY_NAME field 
+	 */
+	private static final String COMMAND_PROPERTY_NAME = "command";
+	
+	/*
+	 * ETSI log file extension
+	 */
+	private static final String ETSI_LOG_FILE_EXTENSION = ".log";
+
+	/*
+	 * Timestamp format for ETSI log files
+	 */
 	private static final String TIMESTAMP_FORMAT = "HH:mm:ss,SSS";
 	
+	/*
+	 * Formatter for timestamp
+	 */
 	private SimpleDateFormat timestampFormat;
 	
+	/*
+	 * Previous Mp Node
+	 */
 	private Node previousMpNode;
 	
+	/*
+	 * List of mm nodes
+	 */
 	private ArrayList<Node> mmNodes = new ArrayList<Node>();
 	
+	/*
+	 * Current name of file node
+	 */
 	private String currentFileName;
 	
+	/*
+	 * Is new file proccesses
+	 */
 	private boolean newFile = true;
 	
 	/**
+	 * Creates a loader
 	 * 
+	 * @param directoryName name of directory to import
+	 * @param display
+	 * @param dataset name of dataset
 	 */
 	public ETSILoader(String directoryName, Display display, String dataset) {
 		if (dataset == null) {
@@ -97,6 +127,7 @@ public class ETSILoader extends DriveLoader {
 			startIndex++;
 		}
 		
+		//we should load all files #1, #2 and #3 in a single file node
 		if (newFile) {
 			String tempName = filename.substring(startIndex, filename.lastIndexOf("#"));
 			if ((currentFileName == null) || (!currentFileName.equals(tempName))) {
@@ -162,9 +193,16 @@ public class ETSILoader extends DriveLoader {
 		}
 	}
 	
+	/**
+	 * Creates Ms Node
+	 *
+	 * @param mpNode parent mp node
+	 * @param commandName name of command
+	 * @param parameters parameters of command
+	 */
 	private void createMsNode(Node mpNode, String commandName, HashMap<String, Object> parameters) {
 		Node msNode = neo.createNode();
-		msNode.setProperty("command", commandName);
+		msNode.setProperty(COMMAND_PROPERTY_NAME, commandName);
 		msNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
 		
 		if (parameters != null) {
@@ -195,6 +233,13 @@ public class ETSILoader extends DriveLoader {
 		mpNode.createRelationshipTo(msNode, GeoNeoRelationshipTypes.CHILD);
 	}
 	
+	/**
+	 * Creates Mm nodes for multiple properties of Ms node
+	 *
+	 * @param msNode parent ms node
+	 * @param name name of property
+	 * @param properties list of values for this property
+	 */
 	private void setPropertyToMmNodes(Node msNode, String name, List<?> properties) {
 		Node previousMmNode = null;
 		
@@ -224,6 +269,12 @@ public class ETSILoader extends DriveLoader {
 		}
 	}
 	
+	/**
+	 * Creates Mp node
+	 *
+	 * @param timestamp timestamp
+	 * @return created node
+	 */
 	private Node createMpNode(String timestamp) {
 		Node mpNode = neo.createNode();
 		mpNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
@@ -250,6 +301,12 @@ public class ETSILoader extends DriveLoader {
 		return mpNode;
 	}
 	
+	/**
+	 * Calculates list of files to import
+	 *
+	 * @param directoryName directory to import
+	 * @return list of files to import
+	 */
 	private ArrayList<File> getAllLogFilePathes(String directoryName) {
 		File directory = new File(directoryName);
 		ArrayList<File> result = new ArrayList<File>();
@@ -258,7 +315,8 @@ public class ETSILoader extends DriveLoader {
 			if (childFile.isDirectory()) {
 				result.addAll(getAllLogFilePathes(childFile.getAbsolutePath()));
 			}
-			else if (childFile.isFile()) {
+			else if (childFile.isFile() &&
+					 childFile.getName().endsWith(ETSI_LOG_FILE_EXTENSION)) {
 				result.add(childFile);
 			}
 		}
@@ -267,6 +325,9 @@ public class ETSILoader extends DriveLoader {
 		
 	}
 	
+	/**
+	 * Add Timestamp index
+	 */
 	private void addDriveIndexes() {
         try {
             addIndex(new MultiPropertyIndex<Long>(INeoConstants.TIMESTAMP_INDEX_NAME + dataset, new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
