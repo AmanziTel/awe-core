@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -201,6 +202,15 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String gisName = NeoUtils.getSimpleNodeName(geoNeo.getMainGisNode(), "");
+            Iterable<Relationship> relations = geoNeo.getMainGisNode().getRelationships(
+                    NetworkRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.INCOMING);
+            ArrayList<GeoNeo> networkGeoNeo = new ArrayList<GeoNeo>();
+            for (Relationship relationship : relations) {
+                GeoNeo network = getNetwork(relationship.getOtherNode(geoNeo.getMainGisNode()));
+                if (network != null) {
+                    networkGeoNeo.add(network);
+                }
+            }
             //String selectedProp = geoNeo.getPropertyName();
             aggNode = geoNeo.getAggrNode();
             Map<String, Object> selectionMap = getSelectionMap(geoNeo);
@@ -375,6 +385,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 if ((crossHairId1 != null && id == crossHairId1) || (crossHairId2 != null && crossHairId2 == id)) {
                     borderColor = COLOR_HIGHLIGHTED_SELECTED;
                 }
+
+
+
                 renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite);
                 if (drawLabels) {
                     double theta = 0.0;
@@ -433,6 +446,41 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 count++;
                 if (monitor.isCanceled())
                     break;
+                // TODO refactor
+                final Node mpNode = node.getNode();
+                if (!networkGeoNeo.isEmpty() && mpNode.hasProperty(INeoConstants.SECTOR_ID_PROPERTIES)) {
+                    Relationship relation = mpNode.getSingleRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING);
+                    if (relation != null) {
+                        Node sectorDrive = relation.getOtherNode(mpNode);
+
+                        for (Relationship relationSector : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR,
+                                Direction.OUTGOING)) {
+                            Node sector = null;
+                            Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
+                            for (GeoNeo networkGis : networkGeoNeo) {
+                                if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
+                                    sector = relationSector.getOtherNode(sectorDrive);
+                                    break;
+                                }
+                            }
+                            if (sector != null) {
+                                // TODO paint
+                                Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
+                                        .getOtherNode(sector);
+                                GeoNode siteGn = new GeoNode(site);
+                                location = siteGn.getCoordinate();
+                                try {
+                                    JTS.transform(location, world_location, transform_d2w);
+                                } catch (Exception e) {
+                                    // JTS.transform(location, world_location,
+                                    // transform_w2d.inverse());
+                                }
+                                java.awt.Point pSite = getContext().worldToPixel(siteGn.getCoordinate());
+                                g.drawLine(p.x, p.y, pSite.x, pSite.y);
+                            }
+                        }
+                    }
+                }
             }
             if (cached_node != null && drawLabels) {
                 renderLabel(g, 0, cached_node, cached_l_p, 0);
@@ -525,6 +573,30 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.done();
 
             tx.finish();            
+        }
+    }
+
+    /**
+     * @param otherNode
+     * @return
+     */
+    private GeoNeo getNetwork(Node networkNode) {
+        try {
+            List<ILayer> layers = getContext().getMap().getMapLayers();
+            for (ILayer iLayer : layers) {
+                if (iLayer.getGeoResource().canResolve(GeoNeo.class)) {
+                    GeoNeo resource;
+                    resource = iLayer.getGeoResource().resolve(GeoNeo.class, null);
+
+                    if (resource.getMainGisNode().equals(networkNode)) {
+                        return resource;
+                    }
+                }
+            }
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

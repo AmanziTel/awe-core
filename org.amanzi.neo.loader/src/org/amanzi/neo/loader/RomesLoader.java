@@ -85,7 +85,8 @@ public class RomesLoader extends DriveLoader {
             }
         });
         addMappedHeader("time", "Timestamp", "timestamp", new DateTimeMapper("HH:mm:ss"));
-        dropHeaderStats(new String[] {"time", "timestamp", "latitude", "longitude"});
+        addKnownHeader(INeoConstants.SECTOR_ID_PROPERTIES, ".*Server.*Report.*CI.*");
+        dropHeaderStats(new String[] {"time", "timestamp", "latitude", "longitude", INeoConstants.SECTOR_ID_PROPERTIES});
     }
 
     private void addDriveIndexes() {
@@ -175,8 +176,12 @@ public class RomesLoader extends DriveLoader {
                     Node ms = neo.createNode();
                     ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
-                        ms.setProperty(entry.getKey(), entry.getValue());
-                        haveEvents = haveEvents || INeoConstants.PROPERTY_TYPE_EVENT.equals(entry.getKey());
+                        if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
+                            mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
+                        } else {
+                            ms.setProperty(entry.getKey(), entry.getValue());
+                            haveEvents = haveEvents || INeoConstants.PROPERTY_TYPE_EVENT.equals(entry.getKey());
+                        }
                     }
                     // debug("\tAdded measurement: " + propertiesString(ms));
                     point.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);

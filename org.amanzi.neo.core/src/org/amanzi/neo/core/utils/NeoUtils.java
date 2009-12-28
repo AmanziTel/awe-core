@@ -18,10 +18,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
@@ -268,9 +266,9 @@ public class NeoUtils {
      * 
      * @return transaction
      */
-    public static Transaction beginTransaction(){
+    public static Transaction beginTransaction() {
         return NeoServiceProvider.getProvider().getService().beginTx();
-        
+
     }
 
     /**
@@ -310,6 +308,7 @@ public class NeoUtils {
             tx.finish();
         }
     }
+
     /**
      * Gets array of Numeric Fields
      * 
@@ -319,11 +318,11 @@ public class NeoUtils {
     public static String[] getNumericFields(Node node) {
         Transaction tx = beginTransaction();
         try {
-            if(node.hasProperty(INeoConstants.LIST_NUMERIC_PROPERTIES)) {
+            if (node.hasProperty(INeoConstants.LIST_NUMERIC_PROPERTIES)) {
                 return (String[])node.getProperty(INeoConstants.LIST_NUMERIC_PROPERTIES);
             }
             // TODO remove this after refactoring tems loader
-            if (node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME,"").equals(GisTypes.DRIVE.getHeader())) {
+            if (node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").equals(GisTypes.DRIVE.getHeader())) {
                 List<String> result = new ArrayList<String>();
                 Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
                         new ReturnableEvaluator() {
@@ -378,7 +377,7 @@ public class NeoUtils {
         if (neighbourName == null) {
             return relationships;
         }
-        ArrayList<Relationship> result=new ArrayList<Relationship>();
+        ArrayList<Relationship> result = new ArrayList<Relationship>();
         for (Relationship relation : relationships) {
             if (neighbourName.equals(getNeighbourName(relation, null))) {
                 result.add(relation);
@@ -516,7 +515,7 @@ public class NeoUtils {
                 return (Long)time;
             }
         }
-        //TODO: This code only supports Romes data, we need TEMS support also (later)
+        // TODO: This code only supports Romes data, we need TEMS support also (later)
         String time = (String)node.getProperty("time", null);
         if (time == null) {
             return null;
@@ -616,83 +615,155 @@ public class NeoUtils {
      * @param neo - NeoService
      * @return SectorDriveRoot node
      */
-    public static Node findOrCreateSectorDriveRoot(Node root, NeoService neo) {
-        Transaction tx = neo.beginTx();
+    public static Node findOrCreateSectorDriveRoot(Node root, NeoService service, boolean isNewTransaction) {
+
+        NeoService neo = isNewTransaction ? service : null;
+        Transaction tx = beginTx(neo);
         try {
             Relationship relation = root.getSingleRelationship(NetworkRelationshipTypes.SECTOR_DRIVE, Direction.OUTGOING);
             if (relation != null) {
                 return relation.getOtherNode(root);
             }
-            Node result = neo.createNode();
+            Node result = service.createNode();
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.ROOT_SECTOR_DRIVE);
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.ROOT_SECTOR_DRIVE);
             root.createRelationshipTo(result, NetworkRelationshipTypes.SECTOR_DRIVE);
-            tx.success();
+            successTx(tx);
             return result;
         } finally {
-            tx.finish();
+            finishTx(tx);
         }
 
     }
 
     /**
      * @param mpNode
-     * @param neo
+     * @param neo - if null then transaction do not created
      * @return
      */
-    public static Map<String, Object> getSectorIdentificationMap(Node mpNode, NeoService neo) {
-        Map<String, Object> result = new HashMap<String, Object>();
-        // TODO implement
-        return result;
-    }
+    public static Node findOrCreateSectorDrive(String aDriveName, Node sectorDriveRoot, Node mpNode, NeoService service,
+            boolean isNewTransaction) {
+        NeoService neo = isNewTransaction ? service : null;
+        Transaction tx = beginTx(neo);
+        try {
+            final Object idProperty = mpNode.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
+            if (idProperty == null) {
+                return null;
+            }
+            if (mpNode.hasRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING)) {
+                return mpNode.getSingleRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING).getOtherNode(mpNode);
+            }
+            Iterator<Node> iterator = sectorDriveRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,
+                    new ReturnableEvaluator() {
 
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            Node node = currentPos.currentNode();
+                            Object id = node.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
+
+                            return id != null && idProperty.equals(id);
+                        }
+                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+            Node result;
+            if (iterator.hasNext()) {
+                result = iterator.next();
+            } else {
+                result = service.createNode();
+                result.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, idProperty);
+                sectorDriveRoot.createRelationshipTo(result, NetworkRelationshipTypes.CHILD);
+            }
+            Relationship relation = result.createRelationshipTo(mpNode, NetworkRelationshipTypes.DRIVE);
+            relation.setProperty(INeoConstants.DRIVE_GIS_NAME, aDriveName);
+            successTx(tx);
+            return result;
+        } finally {
+            finishTx(tx);
+        }
+    }
 
     /**
-     * @param sectorDriveRoot
-     * @param identifyMap
-     * @param neo
-     * @return
+     * get all network gis nodes which linked with drive nodes
+     * 
+     * @param service NeoService
+     * @return Traverser
      */
-    public static Node findOrCreateSectorDrive(Node sectorDriveRoot, java.util.Map<String, Object> identifyMap, NeoService neo) {
-        // TODO implement
-        return null;
+    public static Traverser getLinkedNetworkTraverser(NeoService service) {
+        Transaction tx = service.beginTx();
+        try {
+            return service.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    if (!isGisNode(node)) {
+                        return false;
+                    }
+                    Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "");
+                    if (!type.equals(GisTypes.NETWORK.getHeader())) {
+                        return false;
+                    }
+                    return node.hasRelationship(NetworkRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.OUTGOING);
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+        } finally {
+            tx.finish();
+        }
     }
 
-    // /**
-    // * Forms Event image of mpNode
-    // *
-    // * @param mpNode - node
-    // * @param neo - neoservice
-    // * @return image or null if no event available
-    // */
-    // public static IconManager.EventIcons formEventImage(Node mpNode, NeoService neo) {
-    // Transaction tx = neo.beginTx();
-    // try{
-    // Iterator<Node> iterator = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new
-    // ReturnableEvaluator() {
-    //
-    // @Override
-    // public boolean isReturnableNode(TraversalPosition currentPos) {
-    // if (currentPos.isStartNode()) {
-    // return false;
-    // }
-    // Node node = currentPos.currentNode();
-    // boolean result = node.hasProperty(INeoConstants.PROPERTY_TYPE_EVENT);
-    // return result;
-    // }
-    // }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-    // if (!iterator.hasNext()) {
-    // return null;
-    // }
-    // String event = iterator.next().getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString();
-    // if (true || event.toLowerCase().contains("connect")) {
-    // return IconManager.EventIcons.CONNECT;
-    // }
-    // return null;
-    // }finally{
-    // tx.finish();
-    // }
-    //        
-    // }
+    private static void finishTx(Transaction tx) {
+        if (tx != null) {
+            tx.finish();
+        }
+    }
 
+    private static void successTx(Transaction tx) {
+        if (tx != null) {
+            tx.success();
+        }
+    }
+
+    private static Transaction beginTx(NeoService service) {
+        return service == null ? null : service.beginTx();
+    }
+
+    /**
+     * @param networkGis
+     * @param sectorDrive
+     * @param object
+     */
+    public static Node linkWithSector(Node networkGis, Node sectorDrive, NeoService service) {
+        Transaction tx = beginTx(service);
+        try {
+            // TODO use index?
+            String networkName = NeoUtils.getSimpleNodeName(networkGis, "");
+            for (Relationship relation : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING)) {
+                if (networkName.equals(relation.getProperty(INeoConstants.NETWORK_GIS_NAME, ""))) {
+                    return relation.getOtherNode(sectorDrive);
+                }
+            }
+            final Object id = sectorDrive.getProperty(INeoConstants.SECTOR_ID_PROPERTIES);
+            Iterator<Node> iterator = networkGis.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    if (!node.hasProperty("ci")) {
+                        return false;
+                    }
+                    return node.getProperty("ci").equals(id);
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+            if (!iterator.hasNext()) {
+                return null;
+            }
+            Node result = iterator.next();
+            Relationship relation = sectorDrive.createRelationshipTo(result, NetworkRelationshipTypes.SECTOR);
+            relation.setProperty(INeoConstants.NETWORK_GIS_NAME, networkName);
+            successTx(tx);
+            return result;
+        } finally {
+            finishTx(tx);
+        }
+
+    }
 }

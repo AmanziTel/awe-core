@@ -15,7 +15,6 @@ package org.amanzi.neo.loader;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -306,29 +305,29 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Node getRootNode() {
         return datasetNode != null ? datasetNode : file;
     }
-
-    /**
-     * finds or create if necessary "sector_drive" node depends on
-     * 
-     * @param point2
-     */
-    protected Node findOrCreateSectorDriveNode(Node mpNode) {
-
-        if (mpNode == null) {
-            return null;
-        }
-
-        Node root = getRootNode();
-        if (root == null) {
-            return null;
-        }
-        Map<String, Object> identifyMap = NeoUtils.getSectorIdentificationMap(mpNode, neo);
-        if (identifyMap.isEmpty()) {
-            return null;
-        }
-
-        Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(root, neo);
-        Node setorDriveNode = NeoUtils.findOrCreateSectorDrive(sectorDriveRoot, identifyMap, neo);
-        return setorDriveNode;
-    }
+    // TODO remove
+    // /**
+    // * finds or create if necessary "sector_drive" node depends on
+    // *
+    // * @param point2
+    // */
+    // protected Node findOrCreateSectorDriveNode(Node mpNode) {
+    //
+    // if (mpNode == null) {
+    // return null;
+    // }
+    //
+    // Node root = getRootNode();
+    // if (root == null) {
+    // return null;
+    // }
+    // Map<String, Object> identifyMap = NeoUtils.getSectorIdentificationMap(mpNode, neo);
+    // if (identifyMap.isEmpty()) {
+    // return null;
+    // }
+    //
+    // Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(root, neo);
+    // Node setorDriveNode = NeoUtils.findOrCreateSectorDrive(sectorDriveRoot, identifyMap, neo);
+    // return setorDriveNode;
+    // }
 }
