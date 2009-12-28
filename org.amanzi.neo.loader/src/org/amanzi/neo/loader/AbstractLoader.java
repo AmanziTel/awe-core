@@ -105,6 +105,7 @@ public abstract class AbstractLoader {
     @SuppressWarnings("unchecked")
     public static final Class[] KNOWN_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class,
             String.class};
+    private boolean indexesInitialized = false;
 
     protected class Header {
         private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard value sets if count
@@ -163,7 +164,7 @@ public abstract class AbstractLoader {
             }
         }
 
-        private void incType(Class< ? extends Object> klass) {
+        protected void incType(Class< ? extends Object> klass) {
             parseTypes.put(klass, parseTypes.get(klass) + 1);
         }
 
@@ -725,7 +726,7 @@ public abstract class AbstractLoader {
         return false;
     }
 
-    private HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
+    protected HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
     protected Transaction mainTx;
     private int commitSize = 5000;
     protected String nameGis;
@@ -953,9 +954,12 @@ public abstract class AbstractLoader {
             }
         }
     }
-
+    
     protected void initializeIndexes() {
-        for (MultiPropertyIndex< ? > index : indexes) {
+    	if (indexesInitialized) {
+    		return;
+    	}
+    	for (MultiPropertyIndex< ? > index : indexes) {
             try {
                 index.initialize(this.neo, null);
             } catch (IOException e) {
@@ -963,6 +967,7 @@ public abstract class AbstractLoader {
                 removeIndex(index);
             }
         }
+    	indexesInitialized = true;
     }
 
     protected void finishUpIndexes() {

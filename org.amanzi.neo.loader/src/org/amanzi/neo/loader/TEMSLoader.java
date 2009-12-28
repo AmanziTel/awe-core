@@ -119,9 +119,9 @@ public class TEMSLoader extends DriveLoader {
 
     private void addDriveIndexes() {
         try {
-            addIndex(new MultiPropertyIndex<Long>("Index-timestamp-" + dataset, new String[] {"timestamp"},
+            addIndex(new MultiPropertyIndex<Long>(INeoConstants.TIMESTAMP_INDEX_NAME + dataset, new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
                     new MultiTimeIndexConverter(), 10));
-            addIndex(new MultiPropertyIndex<Double>("Index-location-" + dataset, new String[] {"lat", "lon"},
+            addIndex(new MultiPropertyIndex<Double>(INeoConstants.LOCATION_INDEX_NAME + dataset, new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
                     new MultiDoubleConverter(0.001), 10));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);

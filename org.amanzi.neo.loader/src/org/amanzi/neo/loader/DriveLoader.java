@@ -38,8 +38,9 @@ import org.neo4j.api.core.Traverser.Order;
 import org.neo4j.util.index.LuceneIndexService;
 
 public abstract class DriveLoader extends AbstractLoader {
-    protected String dataset = null;
-    private Node file = null;
+	
+	protected String dataset = null;
+    protected Node file = null;
     private Node datasetNode = null;
     private static int[] times = new int[2];
     private HashMap<Integer, int[]> stats = new HashMap<Integer, int[]>();
@@ -90,7 +91,7 @@ public abstract class DriveLoader extends AbstractLoader {
      * 
      * @param measurement point to add as first point to file node if created
      */
-    protected final void findOrCreateFileNode(Node mp) {
+    protected void findOrCreateFileNode(Node mp) {
         if (file == null) {
             Transaction tx = neo.beginTx();
             try {
@@ -102,7 +103,14 @@ public abstract class DriveLoader extends AbstractLoader {
                 file.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
                 findOrCreateGISNode(mainFileNode, GisTypes.DRIVE.getHeader());
 
-                debug("Added '" + mp.getProperty(INeoConstants.PROPERTY_TIME_NAME) + "' as first measurement of '"
+                Object time = null;
+                if (mp.hasProperty(INeoConstants.PROPERTY_TIME_NAME)) {
+                	time = mp.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+                }
+                else if (mp.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
+                	time = mp.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
+                }
+                debug("Added '" + time + "' as first measurement of '"
                         + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
                 tx.success();
             } finally {
