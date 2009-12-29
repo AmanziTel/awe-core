@@ -92,6 +92,7 @@ public class NetworkRenderer extends RendererImpl {
     private boolean normalSiteName;
     private String sectorName;
     private boolean sectorLabeling;
+    private boolean noSiteName;
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
@@ -189,6 +190,7 @@ public class NetworkRenderer extends RendererImpl {
             }
         }
         normalSiteName = NeoStyleContent.DEF_SITE_NAME.equals(siteName);
+        noSiteName = !normalSiteName && NeoStyleContent.DEF_SECTOR_NAME.equals(siteName);
         sectorLabeling = !NeoStyleContent.DEF_SECTOR_NAME.equals(sectorName);
         g.setFont(font.deriveFont((float)fontSize));
         lineColor = new Color(drawColor.getRed(), drawColor.getGreen(), drawColor.getBlue(), alpha);
@@ -459,7 +461,7 @@ public class NetworkRenderer extends RendererImpl {
                     // calculate the size of a box to hold the text with some padding.
                     Rectangle rect = new Rectangle(p.x -1 , p.y - hgt + 1, adv + 2, hgt + 2);
                     boolean drawsLabel = findNonOverlapPosition(labelRec, hgt, p, rect);
-                    if (drawsLabel) {
+                    if (drawsLabel && !drawString.isEmpty()) {
                         labelRec.add(rect);
                         drawLabel(g, p, drawString);
                     }
@@ -620,7 +622,7 @@ public class NetworkRenderer extends RendererImpl {
      * @return site name
      */
     private String getSiteName(GeoNode node) {
-        return normalSiteName ? node.toString() : node.getNode().getProperty(siteName, node.toString()).toString();
+        return normalSiteName ? node.toString() : noSiteName ? "" : node.getNode().getProperty(siteName, "").toString();
     }
 
     private void drawSoftSurround(Graphics2D g, Shape outline) {

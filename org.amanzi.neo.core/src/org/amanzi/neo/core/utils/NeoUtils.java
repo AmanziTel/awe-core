@@ -18,8 +18,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
@@ -765,5 +767,36 @@ public class NeoUtils {
             finishTx(tx);
         }
 
+    }
+
+    /**
+     * @param mpNode
+     * @param object
+     * @return
+     */
+    public static Set<String> getEventsList(Node mpNode, NeoService service) {
+        // TODO store list of events in mp node
+        Transaction tx = beginTx(service);
+        try {
+            Set<String> result = new HashSet<String>();
+            Traverser traverse = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    if (currentPos.isStartNode()) {
+                        return false;
+                    }
+                    Node node = currentPos.currentNode();
+                    boolean result = node.hasProperty(INeoConstants.PROPERTY_TYPE_EVENT);
+                    return result;
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+            for (Node node : traverse) {
+                result.add(node.getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString());
+            }
+            return result;
+        } finally {
+            finishTx(tx);
+        }
     }
 }

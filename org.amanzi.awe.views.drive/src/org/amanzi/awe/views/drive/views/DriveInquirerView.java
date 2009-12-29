@@ -20,10 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -983,6 +982,10 @@ public class DriveInquirerView extends ViewPart {
             }
         }
         map.put(GeoConstant.Drive.SELECT_PROPERTY2, id);
+        map.put(GeoConstant.SELECTED_EVENT, cEvent.getText());
+        map.put(GeoConstant.EVENT_LIST, Collections.unmodifiableList(eventList));
+        map.put(GeoConstant.Drive.SELECT_PALETTE, cPalette.getText());
+
         geo.setProperty(GeoNeo.DRIVE_INQUIRER, map);
     }
 

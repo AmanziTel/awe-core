@@ -437,7 +437,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * @return String[]
      */
     private String[] getSiteName() {
-        return new String[] {NeoStyleContent.DEF_SITE_NAME, "lat", "lon"};
+        return new String[] {NeoStyleContent.DEF_SECTOR_NAME, NeoStyleContent.DEF_SITE_NAME, "lat", "lon"};
     }
 
     /**
