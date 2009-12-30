@@ -41,6 +41,8 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String ADD_NEW_MAP_MESSAGE;
     public static String ADD_LAYER_TITLE;
     public static String TOGLE_MESSAGE;
+    public static String CorrelateDialog_DialogTitle;
+    public static String CorrelateDialog_CorrelateButtonText;
     
     private NeoLoaderPluginMessages() {
     }
