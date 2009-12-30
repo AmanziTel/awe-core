@@ -24,6 +24,11 @@
        </command>
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.Correlate"
+             name="Correlate Data">
+       </command>
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadNeighbour"
              name="Load Neighbour Data">
        </command>
@@ -31,7 +36,12 @@
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadTransmission"
              name="Load Transmission Data">
-       </command>        
+       </command>     
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadETSI"
+             name="Load ETSI Data">
+       </command>   
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
@@ -47,6 +57,10 @@
              class="org.amanzi.neo.loader.handlers.LoadDriveHandler"
              commandId="org.amanzi.neo.loader.commands.LoadDrive">
        </handler>
+       <handler
+             class="org.amanzi.neo.loader.handlers.CorrelateHandler"
+             commandId="org.amanzi.neo.loader.commands.Correlate">
+       </handler>
         <handler
              class="org.amanzi.neo.loader.handlers.LoadNeighbourHandler"
              commandId="org.amanzi.neo.loader.commands.LoadNeighbour">
@@ -54,6 +68,10 @@
        <handler
              class="org.amanzi.neo.loader.handlers.LoadTransmissionHandler"
              commandId="org.amanzi.neo.loader.commands.LoadTransmission">
+       </handler>
+       <handler
+             class="org.amanzi.neo.loader.handlers.LoadETSIHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadETSI">
        </handler>
     </extension>
    
@@ -92,6 +110,28 @@
             		icon="icons/16/transmission.png"
             		id="org.amanzi.neo.loader.LoadTransmission"
                    	tooltip="Load Transmission Data">
+             </command>
+          </toolbar>
+       </menuContribution>
+    </extension>
+    
+    <extension
+          point="org.eclipse.ui.menus">
+       <menuContribution
+             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+          <toolbar
+                id="org.amanzi.neo.loader.toolbar.etsi">             
+             <command
+                   commandId="org.amanzi.neo.loader.commands.LoadETSI"
+            icon="icons/16/drive.png"
+            id="org.amanzi.neo.loader.LoadETSI"
+                   tooltip="Load ETSI Data">
+             </command>
+             <command
+                   commandId="org.amanzi.neo.loader.commands.Correlate"
+            icon="icons/16/transmission.png"
+            id="org.amanzi.neo.loader.Correlate"
+                   tooltip="Correlate Data">
              </command>
           </toolbar>
        </menuContribution>
@@ -144,6 +184,16 @@
              icon="icons/16/transmission.png"
              id="org.amanzi.neo.wizards.TransmissionImportWizard"
              name="Import Transmission data">
+          <description>
+ 				Import a data file from the local file system into the project
+          </description>
+       </wizard>  
+       <wizard  
+             category="org.amanzi.load"
+             class="org.amanzi.neo.wizards.ETSIImportWizard"
+             icon="icons/16/neighbour.png"
+             id="org.amanzi.neo.wizards.ESTIImportWizard"
+             name="Import ESTI data">
           <description>
  				Import a data file from the local file system into the project
           </description>
