@@ -229,10 +229,14 @@ public class GeoNeo {
 
     public Traverser makeGeoNeoTraverser(final Envelope searchBounds) {
         try {
-            MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(neo, "Index-location-" + name, new String[] {
-                    "lat", "lon"}, new MultiDoubleConverter(0.001));
-            return index.searchTraverser(new Double[] {searchBounds.getMinY(), searchBounds.getMinX()}, new Double[] {
-                    searchBounds.getMaxY(), searchBounds.getMaxX()});
+            if (false) {
+                throw new Exception("Disabling spatial index");
+            } else {
+                MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(neo, "Index-location-" + name, new String[] {
+                        "lat", "lon"}, new MultiDoubleConverter(0.001));
+                return index.searchTraverser(new Double[] {searchBounds.getMinY(), searchBounds.getMinX()}, new Double[] {
+                        searchBounds.getMaxY(), searchBounds.getMaxX()});
+            }
         } catch (Exception e) {
             System.out.println("GeoNeo: Failed to search location index, doing exhaustive search: "+e);
             if (searchBounds == null) {
