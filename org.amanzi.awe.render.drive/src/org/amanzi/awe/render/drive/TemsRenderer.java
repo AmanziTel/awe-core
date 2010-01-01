@@ -250,10 +250,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 double countScaled = dataScaled * geoNeo.getCount();
                 drawLabels = countScaled < maxSitesLabel;
                 drawFull = countScaled < maxSitesFull;
-                if (drawFull) {
-                    eventIconSize = countScaled * 16 <= maxSitesFull ? 16 : countScaled * 4 <= maxSitesFull ? 12
-                            : countScaled * 2 <= maxSitesFull ? 12 : 12;// 8 : 6;
-                }
+//                if (drawFull) {
+                    eventIconSize = countScaled * 32 <= maxSitesFull ? 32 :countScaled * 16 <= maxSitesFull ? 16 : countScaled * 4 <= maxSitesFull ? 12
+                            : countScaled * 2 <= maxSitesFull ? 8 : 6;
+//                }
                 drawLite = countScaled < maxSitesLite;
             }
             int trans = alpha;
@@ -816,7 +816,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             g.fillOval(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
         } else {
             g.setColor(fillColor);
-            g.fillOval(p.x - 1, p.y - 1, 3, 3);
+            g.fillOval(p.x - 2, p.y - 2, 5, 5);
         }
         g.setColor(oldColor);
     }
