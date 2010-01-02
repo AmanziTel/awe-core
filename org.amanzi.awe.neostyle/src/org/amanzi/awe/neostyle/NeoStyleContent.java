@@ -34,37 +34,25 @@ import org.eclipse.ui.IMemento;
  */
 public class NeoStyleContent extends StyleContent {
 
-    /** int DEF_SECTOR_TR field */
-    public static final int DEF_SECTOR_TR = 40;
-    /** int DEF_SYMB_SIZE field */
-    public static final int DEF_SYMB_SIZE = 15;
-    /** boolean DEF_FIX_SYMB_SIZE field */
-    public static final boolean DEF_FIX_SYMB_SIZE = false;
-    /** int DEF_LABELING field */
-    public static final int DEF_LABELING = 50;
-    /** int DEF_SMALL_SYMB field */
-    public static final int DEF_SMALL_SYMB = 100;
-    /** int DEF_SMALLEST_SYMB field */
-    public static final int DEF_SMALLEST_SYMB = 1000;
-    /** Color DEF_COLOR_LINE field */
-    public static final Color DEF_COLOR_LINE = Color.DARK_GRAY;
-    /** NeoStyleContent DEF_COLOR_LABEL field */
-    public static final Color DEF_COLOR_LABEL = Color.DARK_GRAY;
-    /** Color DEF_COLOR_FILL field */
-    public static final Color DEF_COLOR_FILL = new Color(255, 255, 128);
-    /** NeoStyleContent DEF_SECTOR_NAME field */
-    public static final String DEF_SECTOR_NAME = "no label";
-    /** NeoStyleContent DEF_SITE_NAME field */
-    public static final String DEF_SITE_NAME = "name";
-    /**
-     * NeoStyleContent DEF_FONT_SIZE field for network it is site font size
+    /*
+     * Default values for most fields
      */
+    public static final int DEF_SECTOR_TR = 40;
+    public static final int DEF_SYMB_SIZE = 15;
+    public static final boolean DEF_FIX_SYMB_SIZE = false;
+    public static final int DEF_LABELING = 50;
+    public static final int DEF_SMALL_SYMB = 100;
+    public static final int DEF_SMALLEST_SYMB = 1000;
+    public static final Color DEF_COLOR_LINE = Color.DARK_GRAY;
+    public static final Color DEF_COLOR_LABEL = Color.DARK_GRAY;
+    public static final Color DEF_COLOR_FILL = new Color(255, 255, 128);
+    public static final String DEF_SECTOR_NAME = "no label";
+    public static final String DEF_SITE_NAME = "name";
+    /** Network site font size */
     public static final Integer DEF_FONT_SIZE = 10;
     /** Network sector font size */
     public static final Integer DEF_FONT_SIZE_SECTOR = 8;
-    /** NeoStyleContent DEF_MAXIMUM_SYMBOL_SIZE field */
     public static final int DEF_MAXIMUM_SYMBOL_SIZE = 40;
-    /** NeoStyleContent DEF_COLOR_SITE field */
     public static final Color DEF_COLOR_SITE = Color.DARK_GRAY;
     public static final String ID = "org.amanzi.awe.neostyle.style";
     private static final String LINE_PRFX = "LINE_";
