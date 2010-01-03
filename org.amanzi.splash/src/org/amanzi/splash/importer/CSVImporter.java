@@ -29,8 +29,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.api.core.Transaction;
 
-import com.eteks.openjeks.format.CellFormat;
-
 
 /**
  * Importer of CVS data
@@ -111,8 +109,7 @@ public class CSVImporter extends AbstractImporter {
             CSVParser parser = new CSVParser(sep);
             int perc = 0;
             long totalBytes = fileSize;            
-            int prevPerc = 0;
-            CellFormat defaultFormat = new CellFormat();
+            int prevPerc = 0;            
             while (line != null  && line.lastIndexOf(sep) > 0){
                 NeoSplashUtil.logn("loading line #" + row);
 
@@ -121,7 +118,7 @@ public class CSVImporter extends AbstractImporter {
                 int j = 0;
                 while (it.hasNext()) {
                     String value = (String)it.next();
-                    Cell cell = new Cell(row, j, value, value, defaultFormat);
+                    Cell cell = new Cell(row, j, value, value, null);
                     //save a cell
                     saveCell(cell);
                     j++;
