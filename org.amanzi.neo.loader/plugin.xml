@@ -40,7 +40,7 @@
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadETSI"
-             name="Load ETSI Data">
+             name="Load TETRA Drive Data">
        </command>   
     </extension>
     <extension
@@ -125,7 +125,7 @@
                    commandId="org.amanzi.neo.loader.commands.LoadETSI"
             icon="icons/16/drive.png"
             id="org.amanzi.neo.loader.LoadETSI"
-                   tooltip="Load ETSI Data">
+                   tooltip="Load TETRA Drive Data">
              </command>
              <command
                    commandId="org.amanzi.neo.loader.commands.Correlate"
@@ -193,7 +193,7 @@
              class="org.amanzi.neo.wizards.ETSIImportWizard"
              icon="icons/16/neighbour.png"
              id="org.amanzi.neo.wizards.ESTIImportWizard"
-             name="Import ESTI data">
+             name="Import TETRA Drive Data">
           <description>
  				Import a data file from the local file system into the project
           </description>
