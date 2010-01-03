@@ -33,11 +33,12 @@ import org.eclipse.ui.IMemento;
  * @since 1.0.0
  */
 public class NeoStyleContent extends StyleContent {
+    public static final String ID = "org.amanzi.awe.neostyle.style";
 
     /*
      * Default values for most fields
      */
-    public static final int DEF_SECTOR_TR = 40;
+    public static final int DEF_TRANSPARENCY = 40;
     public static final int DEF_SYMB_SIZE = 15;
     public static final boolean DEF_FIX_SYMB_SIZE = false;
     public static final int DEF_LABELING = 50;
@@ -46,15 +47,16 @@ public class NeoStyleContent extends StyleContent {
     public static final Color DEF_COLOR_LINE = Color.DARK_GRAY;
     public static final Color DEF_COLOR_LABEL = Color.DARK_GRAY;
     public static final Color DEF_COLOR_FILL = new Color(255, 255, 128);
-    public static final String DEF_SECTOR_NAME = "no label";
-    public static final String DEF_SITE_NAME = "name";
+    public static final String DEF_NONE = "";
+    public static final String DEF_SECONDARY_PROPERTY = DEF_NONE;
+    public static final String DEF_MAIN_PROPERTY = "name";
     /** Network site font size */
     public static final Integer DEF_FONT_SIZE = 10;
     /** Network sector font size */
     public static final Integer DEF_FONT_SIZE_SECTOR = 8;
-    public static final int DEF_MAXIMUM_SYMBOL_SIZE = 40;
+    public static final Integer DEF_MAXIMUM_SYMBOL_SIZE = 40;
+    public static final Integer DEF_ICON_OFFSET = 0;
     public static final Color DEF_COLOR_SITE = Color.DARK_GRAY;
-    public static final String ID = "org.amanzi.awe.neostyle.style";
     private static final String LINE_PRFX = "LINE_";
     private static final String FILL_PRFX = "FILL_";
     private static final String LABEL_PRFX = "LABEL_";
@@ -67,6 +69,7 @@ public class NeoStyleContent extends StyleContent {
     private static final String SYMBOL_SIZE = "SYMBOL_SIZE";
     private static final String SECTOR_TRANSPARENCY = "SECTOR_TRANSPARENCY";
     private static final String MAX_SYMB_SIZE = "MAXIMUM_SYMBOL_SIZE";
+    private static final String ICON_OFFSET = "ICON_OFFSET";
     private static final String FONT_SIZE = "FONT_SIZE";
     private static final String FONT_SIZE_SECTOR = "FONT_SIZE_SECTOR";
     private static final String SITE_NAME = "SITE_NAME";
@@ -90,13 +93,14 @@ public class NeoStyleContent extends StyleContent {
                 result.setLabeling(DEF_LABELING);
                 result.setFixSymbolSize(DEF_FIX_SYMB_SIZE);
                 result.setSymbolSize(DEF_SYMB_SIZE);
-                result.setSectorTransparency(DEF_SECTOR_TR);
+                result.setSymbolTransparency(DEF_TRANSPARENCY);
                 result.setSiteFill(DEF_COLOR_SITE);
                 result.setMaximumSymbolSize(DEF_MAXIMUM_SYMBOL_SIZE);
+                result.setIconOffset(DEF_ICON_OFFSET);
                 result.setFontSize(DEF_FONT_SIZE);
                 result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
-                result.setSiteName(DEF_SITE_NAME);
-                result.setSectorName(DEF_SECTOR_NAME);
+                result.setMainProperty(DEF_MAIN_PROPERTY);
+                result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
                 // result.setNetwork(true);
                 return result;
             } else {
@@ -126,12 +130,13 @@ public class NeoStyleContent extends StyleContent {
         result.setLabeling(memento.getInteger(LABELING));
         result.setFixSymbolSize(Boolean.parseBoolean(memento.getString(FIX_SYMBOL)));
         result.setSymbolSize(memento.getInteger(SYMBOL_SIZE));
-        result.setSectorTransparency(memento.getInteger(SECTOR_TRANSPARENCY));
+        result.setSymbolTransparency(memento.getInteger(SECTOR_TRANSPARENCY));
         result.setMaximumSymbolSize(memento.getInteger(MAX_SYMB_SIZE));
+        result.setIconOffset(memento.getInteger(ICON_OFFSET));
         result.setFontSize(memento.getInteger(FONT_SIZE));
         result.setSectorFontSize(memento.getInteger(FONT_SIZE_SECTOR));
-        result.setSiteName((memento.getString(SITE_NAME)));
-        result.setSectorName((memento.getString(SECTOR_NAME)));
+        result.setMainProperty((memento.getString(SITE_NAME)));
+        result.setSecondaryProperty((memento.getString(SECTOR_NAME)));
         // result.setNetwork(getBoolean(memento, IS_NETWORK_STYLE, true));
         return result;
     }
@@ -173,12 +178,13 @@ public class NeoStyleContent extends StyleContent {
         memento.putInteger(LABELING, style.getLabeling());
         memento.putString(FIX_SYMBOL, String.valueOf(style.isFixSymbolSize()));
         memento.putInteger(SYMBOL_SIZE, style.getSymbolSize());
-        memento.putInteger(SECTOR_TRANSPARENCY, style.getSectorTransparency());
+        memento.putInteger(SECTOR_TRANSPARENCY, style.getSymbolTransparency());
         memento.putInteger(MAX_SYMB_SIZE, style.getMaximumSymbolSize());
+        memento.putInteger(ICON_OFFSET, style.getIconOffset());
         memento.putInteger(FONT_SIZE, style.getFontSize());
-        memento.putInteger(FONT_SIZE_SECTOR, style.getSectorFontSize());
-        memento.putString(SITE_NAME, style.getSiteName());
-        memento.putString(SECTOR_NAME, style.getSectorName());
+        memento.putInteger(FONT_SIZE_SECTOR, style.getSecondaryFontSize());
+        memento.putString(SITE_NAME, style.getMainProperty());
+        memento.putString(SECTOR_NAME, style.getSecondaryProperty());
     }
 
     /**

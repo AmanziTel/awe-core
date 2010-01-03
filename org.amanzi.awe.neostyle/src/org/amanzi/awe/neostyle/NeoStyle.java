@@ -32,61 +32,54 @@ public class NeoStyle {
     private Integer labeling;
     private boolean fixSymbolSize = NeoStyleContent.DEF_FIX_SYMB_SIZE;
     private Integer symbolSize;
-    private Integer sectorTransparency;
+    private Integer symbolTransparency;
     private Integer maximumSymbolSize;
+    private Integer iconOffset;
     private Integer fontSize;
-    private Integer sectorFontSize;
-    private String siteName;
-    private String sectorName;
+    private Integer secondaryFontSize;
+    private String mainProperty;
+    private String secondaryProperty;
+
     /**
-     * sets maximum size of symbol
-     * 
-     * @param maximumSymbolSize The maximumSymbolSize to set.
+     * @return Returns the main property to use for labelling.
      */
-    public void setMaximumSymbolSize(Integer maximumSymbolSize) {
-        this.maximumSymbolSize = maximumSymbolSize;
+    public String getMainProperty() {
+        return mainProperty != null ? mainProperty : NeoStyleContent.DEF_MAIN_PROPERTY;
     }
 
     /**
-     * @return Returns the siteName.
+     * @param name The main property to use for labelling.
      */
-    public String getSiteName() {
-        return siteName != null ? siteName : NeoStyleContent.DEF_SITE_NAME;
+    public void setMainProperty(String name) {
+        this.mainProperty = name;
     }
 
     /**
-     * @param siteName The siteName to set.
+     * @return Returns the secondary property to use for labelling.
      */
-    public void setSiteName(String siteName) {
-        this.siteName = siteName;
+    public String getSecondaryProperty() {
+        return secondaryProperty != null ? secondaryProperty : NeoStyleContent.DEF_NONE;
     }
 
     /**
-     * @return Returns the sectorName.
+     * @param name The secondary property to use for labelling.
      */
-    public String getSectorName() {
-        return sectorName != null ? sectorName : NeoStyleContent.DEF_SECTOR_NAME;
-    }
-
-    /**
-     * @param sectorName The sectorName to set.
-     */
-    public void setSectorName(String sectorName) {
-        this.sectorName = sectorName;
+    public void setSecondaryProperty(String name) {
+        this.secondaryProperty = name;
     }
 
     /**
      * @return Returns the sectorFontSize.
      */
-    public Integer getSectorFontSize() {
-        return sectorFontSize != null ? sectorFontSize : NeoStyleContent.DEF_FONT_SIZE_SECTOR;
+    public Integer getSecondaryFontSize() {
+        return secondaryFontSize != null ? secondaryFontSize : NeoStyleContent.DEF_FONT_SIZE_SECTOR;
     }
 
     /**
      * @param sectorFontSize The sectorFontSize to set.
      */
     public void setSectorFontSize(Integer sectorFontSize) {
-        this.sectorFontSize = sectorFontSize;
+        this.secondaryFontSize = sectorFontSize;
     }
 
     /**
@@ -228,17 +221,17 @@ public class NeoStyle {
     }
 
     /**
-     * @return Returns the sectorTransparency.
+     * @return Returns the current symbol transparency setting (0-100)
      */
-    public Integer getSectorTransparency() {
-        return sectorTransparency != null ? sectorTransparency : NeoStyleContent.DEF_SECTOR_TR;
+    public Integer getSymbolTransparency() {
+        return symbolTransparency != null ? symbolTransparency : NeoStyleContent.DEF_TRANSPARENCY;
     }
 
     /**
-     * @param sectorTransparency The sectorTransparency to set.
+     * @param transparency The symbol transparency to set from 0-100.
      */
-    public void setSectorTransparency(Integer sectorTransparency) {
-        this.sectorTransparency = sectorTransparency;
+    public void setSymbolTransparency(Integer transparency) {
+        this.symbolTransparency = transparency;
     }
 
     /**
@@ -260,6 +253,31 @@ public class NeoStyle {
      */
     public int getMaximumSymbolSize() {
         return maximumSymbolSize != null ? maximumSymbolSize : NeoStyleContent.DEF_MAXIMUM_SYMBOL_SIZE;
+    }
+
+    /**
+     * sets maximum size of symbol
+     * 
+     * @param maximumSymbolSize The maximumSymbolSize to set.
+     */
+    public void setMaximumSymbolSize(Integer maximumSymbolSize) {
+        this.maximumSymbolSize = maximumSymbolSize;
+    }
+
+    /**
+     * @return the icon offset
+     */
+    public int getIconOffset() {
+        return iconOffset != null ? iconOffset : NeoStyleContent.DEF_ICON_OFFSET;
+    }
+
+    /**
+     * sets icon offset
+     * 
+     * @param offset the icon offset to set
+     */
+    public void setIconOffset(Integer offset) {
+        this.iconOffset = offset;
     }
 
     /**

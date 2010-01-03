@@ -157,8 +157,8 @@ public class NetworkRenderer extends RendererImpl {
 
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID );     
-        siteName = NeoStyleContent.DEF_SITE_NAME;
-        sectorName = NeoStyleContent.DEF_SECTOR_NAME;
+        siteName = NeoStyleContent.DEF_MAIN_PROPERTY;
+        sectorName = NeoStyleContent.DEF_SECONDARY_PROPERTY;
         if (neostyle!=null){
             try {
                 siteColor = neostyle.getSiteFill();
@@ -175,23 +175,23 @@ public class NetworkRenderer extends RendererImpl {
                     surroundColor=Color.WHITE;
                 }
                 drawSize = neostyle.getSymbolSize();
-                alpha = 255 - (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
+                alpha = 255 - (int)((double)neostyle.getSymbolTransparency() / 100.0 * 255.0);
                 maxSitesLabel = neostyle.getLabeling();
                 maxSitesFull = neostyle.getSmallSymb();
                 maxSitesLite = neostyle.getSmallestSymb();
                 scaleSectors = !neostyle.isFixSymbolSize();
                 maxSymbolSize = neostyle.getMaximumSymbolSize();
                 fontSize = neostyle.getFontSize();
-                sectorFontSize = neostyle.getSectorFontSize();
-                siteName = neostyle.getSiteName();
-                sectorName = neostyle.getSectorName();
+                sectorFontSize = neostyle.getSecondaryFontSize();
+                siteName = neostyle.getMainProperty();
+                sectorName = neostyle.getSecondaryProperty();
             } catch (Exception e) {
                 //TODO: we can get here if an old style exists, and we have added new fields
             }
         }
-        normalSiteName = NeoStyleContent.DEF_SITE_NAME.equals(siteName);
-        noSiteName = !normalSiteName && NeoStyleContent.DEF_SECTOR_NAME.equals(siteName);
-        sectorLabeling = !NeoStyleContent.DEF_SECTOR_NAME.equals(sectorName);
+        normalSiteName = NeoStyleContent.DEF_MAIN_PROPERTY.equals(siteName);
+        noSiteName = !normalSiteName && NeoStyleContent.DEF_SECONDARY_PROPERTY.equals(siteName);
+        sectorLabeling = !NeoStyleContent.DEF_SECONDARY_PROPERTY.equals(sectorName);
         g.setFont(font.deriveFont((float)fontSize));
         lineColor = new Color(drawColor.getRed(), drawColor.getGreen(), drawColor.getBlue(), alpha);
         siteColor = new Color(siteColor.getRed(), siteColor.getGreen(), siteColor.getBlue(), alpha);

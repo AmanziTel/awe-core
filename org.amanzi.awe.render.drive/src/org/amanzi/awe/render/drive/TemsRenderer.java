@@ -94,11 +94,37 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private boolean normalSiteName;
     private boolean notMsLabel;
     private int eventIconSize;
+    private int eventIconOffset;
+    private boolean scaleIcons = false;
+    private int eventIconBaseSize = 12;
+    private int eventIconMaxSize = 32;
+    private static final int[] eventIconSizes = new int[]{6,8,12,16,32,48,64};
     private static final Color COLOR_HIGHLIGHTED = Color.CYAN;;
     private static final Color COLOR_HIGHLIGHTED_SELECTED = Color.RED;
 
     private LuceneIndexService index;
     private boolean notMpLabel;
+
+    private static int getIconSize(int size) {
+        int lower = eventIconSizes[0];
+        for (int s : eventIconSizes) {
+            if (size > s) {
+                lower = s;
+            }
+        }
+        return lower;
+    }
+
+    private static int calcIconSize(int min, int max, int minT, int maxT, double count) {
+        int iconSize = min;
+        try {
+            double ratio = (maxT - count) / (maxT - minT);
+            iconSize = min + (int)(ratio * (max - min));
+        } catch (Exception e) {
+            System.out.println("Error calculating icons sizes: " + e);
+        }
+        return getIconSize(iconSize);
+    }
 
     public TemsRenderer() {
         index = NeoServiceProvider.getProvider().getIndexService();
@@ -164,38 +190,47 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         int fontSize = font.getSize();
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);
-        mpName = NeoStyleContent.DEF_SITE_NAME;
-        msName = NeoStyleContent.DEF_SECTOR_NAME;
+        mpName = NeoStyleContent.DEF_MAIN_PROPERTY;
+        msName = NeoStyleContent.DEF_SECONDARY_PROPERTY;
+        eventIconSize = eventIconBaseSize;
         if (neostyle != null) {
             fillColor = neostyle.getFill();
             drawColor = neostyle.getLine();
-            alpha = 255 - (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
+            alpha = 255 - (int)((double)neostyle.getSymbolTransparency() / 100.0 * 255.0);
             try {
                 fillColor = neostyle.getFill();
                 drawColor = neostyle.getLine();
                 labelColor = neostyle.getLabel();
-                alpha = 255 - (int)((double)neostyle.getSectorTransparency() / 100.0 * 255.0);
+                alpha = 255 - (int)((double)neostyle.getSymbolTransparency() / 100.0 * 255.0);
                 // drawSize = neostyle.getSymbolSize();
                 drawSize = 3;
-                maxSitesLabel = neostyle.getLabeling();
+                maxSitesLabel = neostyle.getLabeling() / 4;
                 maxSitesFull = neostyle.getSmallSymb();
-                maxSitesLite = neostyle.getSmallestSymb();
+                maxSitesLite = neostyle.getSmallestSymb() * 10;
                 // scaleSectors = !neostyle.isFixSymbolSize();
                 // maxSymbolSize = neostyle.getMaximumSymbolSize();
                 fontSize = neostyle.getFontSize();
                 // TODO: Remove these when defaults from style work property
-                maxSitesLabel = 50;
-                maxSitesLite = 500;
-                maxSitesFull = 50;
-                mpName = neostyle.getSiteName();
-                msName = neostyle.getSectorName();
+//                maxSitesLabel = 50;
+//                maxSitesLite = 500;
+//                maxSitesFull = 50;
+                mpName = neostyle.getMainProperty();
+                msName = neostyle.getSecondaryProperty();
+                scaleIcons = !neostyle.isFixSymbolSize();
+                eventIconOffset = neostyle.getIconOffset();
+                eventIconBaseSize = getIconSize(neostyle.getSymbolSize());
+                eventIconMaxSize = getIconSize(neostyle.getMaximumSymbolSize());
+                eventIconSize = eventIconBaseSize;
+                if(neostyle.getSymbolSize() < eventIconSizes[0]) {
+                    eventIconSize = 0;
+                }
             } catch (Exception e) {
                 // TODO: we can get here if an old style exists, and we have added new fields
             }
         }
-        normalSiteName = NeoStyleContent.DEF_SITE_NAME.equals(mpName);
-        notMpLabel = !normalSiteName && NeoStyleContent.DEF_SECTOR_NAME.equals(mpName);
-        notMsLabel = NeoStyleContent.DEF_SECTOR_NAME.equals(msName);
+        normalSiteName = NeoStyleContent.DEF_MAIN_PROPERTY.equals(mpName);
+        notMpLabel = !normalSiteName && NeoStyleContent.DEF_SECONDARY_PROPERTY.equals(mpName);
+        notMsLabel = NeoStyleContent.DEF_SECONDARY_PROPERTY.equals(msName);
         g.setFont(font.deriveFont((float)fontSize));
 
         int drawWidth = 1 + 2 * drawSize;
@@ -239,7 +274,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             boolean drawFull = true;
             boolean drawLite = true;
             boolean drawLabels = true;
-            eventIconSize = 12;
             if (bounds_transformed == null) {
                 drawFull = false;
                 drawLite = false;
@@ -250,10 +284,18 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 double countScaled = dataScaled * geoNeo.getCount();
                 drawLabels = countScaled < maxSitesLabel;
                 drawFull = countScaled < maxSitesFull;
-//                if (drawFull) {
-                    eventIconSize = countScaled * 32 <= maxSitesFull ? 32 :countScaled * 16 <= maxSitesFull ? 16 : countScaled * 4 <= maxSitesFull ? 12
-                            : countScaled * 2 <= maxSitesFull ? 8 : 6;
-//                }
+                if(scaleIcons && eventIconSize > 0) {
+                    if (countScaled < maxSitesFull) {
+                        eventIconSize = calcIconSize(eventIconBaseSize, eventIconMaxSize, maxSitesLabel, maxSitesFull, countScaled);
+                    } else if (countScaled < maxSitesLite) {
+                        eventIconSize = calcIconSize(eventIconSizes[0], eventIconBaseSize, maxSitesFull, maxSitesLite, countScaled);
+                    } else {
+                        eventIconSize = 0;
+                    }
+                    if(eventIconSize > eventIconMaxSize) eventIconSize = eventIconMaxSize;
+//                    eventIconSize = countScaled * 32 <= maxSitesFull ? 32 :countScaled * 16 <= maxSitesFull ? 16 : countScaled * 4 <= maxSitesFull ? 12
+//                            : countScaled * 2 <= maxSitesFull ? 8 : 6;
+                }
                 drawLite = countScaled < maxSitesLite;
             }
             int trans = alpha;
@@ -545,67 +587,69 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             prev_p = null;
             prev_l_p = null;
             cached_node = null;
-            for (Node node1 : index.getNodes(INeoConstants.EVENTS_LUCENE_INDEX_NAME, gisName)) {
-                if (monitor.isCanceled())
-                    break;
-                GeoNode node = new GeoNode(node1);
-                Coordinate location = node.getCoordinate();
-
-                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
-                    continue; // Don't draw points outside viewport
-                }
-                try {
-                    JTS.transform(location, world_location, transform_d2w);
-                } catch (Exception e) {
-                    // JTS.transform(location, world_location, transform_w2d.inverse());
-                }
-
-                java.awt.Point p = getContext().worldToPixel(world_location);
-                if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
-                    prev_p = p;
-                    continue;
-                } else {
-                    prev_p = p;
-                }
-                double theta = 0.0;
-                double dx = 0.0;
-                double dy = 0.0;
-                if (prev_l_p == null) {
-                    prev_l_p = p;
-                    cached_l_p = p; // so we can draw first point using second point settings
-                    cached_node = node;
-                } else {
+            if(eventIconSize > 0) {
+                for (Node node1 : index.getNodes(INeoConstants.EVENTS_LUCENE_INDEX_NAME, gisName)) {
+                    if (monitor.isCanceled())
+                        break;
+                    GeoNode node = new GeoNode(node1);
+                    Coordinate location = node.getCoordinate();
+    
+                    if (bounds_transformed != null && !bounds_transformed.contains(location)) {
+                        continue; // Don't draw points outside viewport
+                    }
                     try {
-                        dx = p.x - prev_l_p.x;
-                        dy = p.y - prev_l_p.y;
-                        if (Math.abs(dx) < Math.abs(dy) / 2) {
-                            // drive goes north-south
-                            theta = 0;
-                        } else if (Math.abs(dy) < Math.abs(dx) / 2) {
-                            // drive goes east-west
-                            theta = Math.PI / 2;
-                        } else if (dx * dy < 0) {
-                            // drive has negative slope
-                            theta = -Math.PI / 4;
-                        } else {
-                            theta = Math.PI / 4;
-                        }
+                        JTS.transform(location, world_location, transform_d2w);
                     } catch (Exception e) {
+                        // JTS.transform(location, world_location, transform_w2d.inverse());
                     }
-                }
-                if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-                    renderEvents(g, node, p, theta);
-                    if (cached_node != null) {
-                        renderEvents(g, cached_node, cached_l_p, theta);
-                        cached_node = null;
-                        cached_l_p = null;
+    
+                    java.awt.Point p = getContext().worldToPixel(world_location);
+                    if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
+                        prev_p = p;
+                        continue;
+                    } else {
+                        prev_p = p;
                     }
-                    prev_l_p = p;
+                    double theta = 0.0;
+                    double dx = 0.0;
+                    double dy = 0.0;
+                    if (prev_l_p == null) {
+                        prev_l_p = p;
+                        cached_l_p = p; // so we can draw first point using second point settings
+                        cached_node = node;
+                    } else {
+                        try {
+                            dx = p.x - prev_l_p.x;
+                            dy = p.y - prev_l_p.y;
+                            if (Math.abs(dx) < Math.abs(dy) / 2) {
+                                // drive goes north-south
+                                theta = 0;
+                            } else if (Math.abs(dy) < Math.abs(dx) / 2) {
+                                // drive goes east-west
+                                theta = Math.PI / 2;
+                            } else if (dx * dy < 0) {
+                                // drive has negative slope
+                                theta = -Math.PI / 4;
+                            } else {
+                                theta = Math.PI / 4;
+                            }
+                        } catch (Exception e) {
+                        }
+                    }
+                    if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+                        renderEvents(g, node, p, theta);
+                        if (cached_node != null) {
+                            renderEvents(g, cached_node, cached_l_p, theta);
+                            cached_node = null;
+                            cached_l_p = null;
+                        }
+                        prev_l_p = p;
+                    }
+    
                 }
-
-            }
-            if (cached_node != null) {
-                renderEvents(g, cached_node, cached_l_p, 0);
+                if (cached_node != null) {
+                    renderEvents(g, cached_node, cached_l_p, 0);
+                }
             }
             for (String errName : colorErrors.keySet()) {
                 int errCount = colorErrors.get(errName);
@@ -831,21 +875,23 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private void renderEvents(Graphics2D g, GeoNode node, java.awt.Point p, double theta) {
         // null - use current transaction
         DriveEvents event = DriveEvents.getWorstEvent(node.getNode(), null);
-        if (event == null) {
+        if (event == null || eventIconSize < eventIconSizes[0]) {
             return;
         }
-        if (base_transform == null)
-            base_transform = g.getTransform();
-        g.setTransform(base_transform);
-        g.translate(p.x, p.y);
-        g.rotate(-theta);
-
         Image eventImage = event.getEventIcon().getImage(eventIconSize);
         if (eventImage != null) {
+            if (base_transform == null)
+                base_transform = g.getTransform();
+            g.setTransform(base_transform);
+            g.translate(p.x, p.y);
+            if(eventIconOffset>0) {
+                g.rotate(-theta);
+            }
+
             ImageObserver imOb = null;
             final int width = eventImage.getWidth(imOb);
             final int height = eventImage.getHeight(imOb);
-            g.drawImage(eventImage, -10 - width, -height / 2, width, height, imOb);
+            g.drawImage(eventImage, -eventIconOffset - width / 2, -height / 2, width, height, imOb);
             return;
         }
     }

@@ -53,34 +53,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     /** NeoStyleConfigurator ID field */
     public static final String ID = "org.amanzi.awe.neostyle.style";
 
-    private static final String SYMBOL_SIZE = "Symbol base size";
-    private static final String RADIO_SCALE_WITH_ZOOM = "Scale with zoom";
-    private static final String RADIO_FIXED_SYMB = "Use fixed size";
-    private static final String GROUP_SCALE_SYMB = "Symbol sizes";
-    private static final String LABELING = "Labels";
-    private static final String SMALL_SYMBOLS = "Small symbols";
-    private static final String SMALLEST_SYMBOLS = "Smallest symbols";
-    private static final String SECTOR_TRANSPARENCY = "Sector transparency (%)";
-    private static final String GROUP_SITE = "Site density thresholds";
-    private static final String COLOR_TITLE = "Label";
-    private static final String COLOR_LINE = "Line";
-    private static final String COLOR_FILL = "Sector fill";
-    private static final String COLOR_FILL_SITE = "Site fill";
-    private static final String MAX_SYMB_SIZE = "Maximum size";
-
-    private static final String DRIVE_FILL = "Fill";
-
-    private static final String FONT_SIZE = "Site font size";
-    private static final String FONT_SIZE_POINT = "Point font size";
-    private static final String FONT_SIZE_SECTOR = "Sector font size";
-    private static final String FONT_SIZE_MEAS = "Measurement  font size";
-
     private static final String[] FONT_SIZE_ARRAY = new String[] {"8", "9", "10", "11", "12", "14", "16", "18", "20", "24"};
-
-    private static final String SITE_NAME = "Site name";
-    private static final String POINT_NAME = "Point name";
-    private static final String SECTOR_NAME = "Sector name";
-    private static final String MEAS_NAME = "Measurment name";
+    private static final String[] ICON_SIZES = new String[] {"6", "8", "12", "16", "32", "48", "64"};
 
     public NeoStyleConfigurator() {
         super();
@@ -108,12 +82,14 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private Button rButton2;
     private Label lSymbolSize;
     private Spinner tSymbolSize;
-    private Label lSectorTr;
-    private Spinner tSectorTr;
-    private Label lSite;
+    private Label lTransparency;
+    private Spinner tTransparency;
+    private Label lFillSite;
     private ColorEditor cEdFillSite;
     private Label lMaxSymSize;
     private Spinner sMaxSymSize;
+    private Label lIconOffset;
+    private Spinner sIconOffset;
 
     private Group grSiteSymb;
 
@@ -121,23 +97,23 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     private boolean isNetwork;
 
-    private Combo sFontSize;
+    private Combo cFontSize;
 
-    private Combo cSiteName;
+    private Combo cMainProperty;
 
-    private Combo cSectorName;
+    private Combo cSecondaryProperty;
 
-    private Combo sSectorFontSize;
-
-    private Label lPointFontSize;
-
-    private Label lPointSiteName;
-
-    private Group labelsGroup;
+    private Combo cSecondaryFontSize;
 
     private Label lFontSize;
 
-    private Label lSectorName;
+    private Label lMainProperty;
+
+    private Group labelsGroup;
+
+    private Label lSecondaryFontSize;
+
+    private Label lSecondaryProperty;
 
     public void createControl(Composite parent) {
         FormLayout layout = new FormLayout();
@@ -157,7 +133,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         xGroup.setLayoutData(formData);
 
         labelFill = new Label(xGroup, SWT.NONE);
-        labelFill.setText(COLOR_FILL);
+        labelFill.setText(Messages.Color_Fill_Sector);
         cEdFill = new ColorEditor(xGroup);
         formData = new FormData();
         formData.top = new FormAttachment(0, 5);
@@ -167,32 +143,32 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.left = new FormAttachment(labelFill, 130);
         cEdFill.getButton().setLayoutData(formData);
 
-        lSite = new Label(xGroup, SWT.NONE);
-        lSite.setText(COLOR_FILL_SITE);
+        lFillSite = new Label(xGroup, SWT.NONE);
+        lFillSite.setText(Messages.Color_Fill_Site);
         cEdFillSite = new ColorEditor(xGroup);
         formData = new FormData();
         formData.top = new FormAttachment(labelFill, 15);
         formData.left = new FormAttachment(2);
-        lSite.setLayoutData(formData);
+        lFillSite.setLayoutData(formData);
         formData = new FormData();
         formData.left = new FormAttachment(labelFill, 130);
         formData.top = new FormAttachment(labelFill, 10);
         cEdFillSite.getButton().setLayoutData(formData);
 
         labelLine = new Label(xGroup, SWT.NONE);
-        labelLine.setText(COLOR_LINE);
+        labelLine.setText(Messages.Color_Line);
         cEdLine = new ColorEditor(xGroup);
         formData = new FormData();
-        formData.top = new FormAttachment(lSite, 15);
+        formData.top = new FormAttachment(lFillSite, 15);
         formData.left = new FormAttachment(2);
         labelLine.setLayoutData(formData);
         formData = new FormData();
         formData.left = new FormAttachment(labelFill, 130);
-        formData.top = new FormAttachment(lSite, 10);
+        formData.top = new FormAttachment(lFillSite, 10);
         cEdLine.getButton().setLayoutData(formData);
 
         labelLabel = new Label(xGroup, SWT.NONE);
-        labelLabel.setText(COLOR_TITLE);
+        labelLabel.setText(Messages.Color_Label);
         cEdLabel = new ColorEditor(xGroup);
         formData = new FormData();
         formData.top = new FormAttachment(labelLine, 15);
@@ -212,29 +188,29 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         labelsGroup.setLayoutData(formData);
         labelsGroup.setLayout(new GridLayout(2, false));
 
-        lPointFontSize = new Label(labelsGroup, SWT.NONE);
-        lPointFontSize.setText(FONT_SIZE);
-        lPointFontSize.setLayoutData(new GridData(SWT.LEFT));
-        sFontSize = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.RIGHT);
-        sFontSize.setItems(getDefaultFontItem());
-        sFontSize.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
-        lPointSiteName = new Label(labelsGroup, SWT.NONE);
-        lPointSiteName.setText(SITE_NAME);
-        lPointSiteName.setLayoutData(new GridData(SWT.LEFT));
-        cSiteName = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cSiteName.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
-
+        lMainProperty = new Label(labelsGroup, SWT.NONE);
+        lMainProperty.setText(Messages.Site_Property);
+        lMainProperty.setLayoutData(new GridData(SWT.LEFT));
+        cMainProperty = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cMainProperty.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
         lFontSize = new Label(labelsGroup, SWT.NONE);
-        lFontSize.setText(FONT_SIZE_SECTOR);
+        lFontSize.setText(Messages.Font_Size_Site);
         lFontSize.setLayoutData(new GridData(SWT.LEFT));
-        sSectorFontSize = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.RIGHT);
-        sSectorFontSize.setItems(getDefaultFontItem());
-        sSectorFontSize.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
-        lSectorName = new Label(labelsGroup, SWT.NONE);
-        lSectorName.setText(SECTOR_NAME);
-        lSectorName.setLayoutData(new GridData(SWT.LEFT));
-        cSectorName = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cSectorName.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
+        cFontSize = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.RIGHT);
+        cFontSize.setItems(getDefaultFontItem());
+        cFontSize.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
+
+        lSecondaryProperty = new Label(labelsGroup, SWT.NONE);
+        lSecondaryProperty.setText(Messages.Sector_Property);
+        lSecondaryProperty.setLayoutData(new GridData(SWT.LEFT));
+        cSecondaryProperty = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cSecondaryProperty.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
+        lSecondaryFontSize = new Label(labelsGroup, SWT.NONE);
+        lSecondaryFontSize.setText(Messages.Font_Size_Sector);
+        lSecondaryFontSize.setLayoutData(new GridData(SWT.LEFT));
+        cSecondaryFontSize = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.RIGHT);
+        cSecondaryFontSize.setItems(getDefaultFontItem());
+        cSecondaryFontSize.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
 
         // formData = new FormData();
         // formData.top = new FormAttachment(sFontSize, 5, SWT.CENTER);
@@ -246,7 +222,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         // sFontSize.setLayoutData(formData);
 
         grSiteSymb = new Group(parent, SWT.NONE);
-        grSiteSymb.setText(GROUP_SITE);
+        grSiteSymb.setText(Messages.Density_Thresholds);
         formData = new FormData();
         formData.top = new FormAttachment(labelsGroup, 15);
         formData.left = new FormAttachment(0, 5);
@@ -294,12 +270,12 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(tSmallSymb, 5);
         tLabeling.setLayoutData(formData);
 
-        lSmallestSymb.setText(SMALLEST_SYMBOLS);
-        lSmallSymb.setText(SMALL_SYMBOLS);
-        lLabeling.setText(LABELING);
+        lSmallestSymb.setText(Messages.Smallest_Symbols);
+        lSmallSymb.setText(Messages.Small_Symbols);
+        lLabeling.setText(Messages.Labels);
 
         grScale = new Group(parent, SWT.NONE);
-        grScale.setText(GROUP_SCALE_SYMB);
+        grScale.setText(Messages.Symbol_Sizes);
         formData = new FormData();
         formData.top = new FormAttachment(grSiteSymb, 15);
         formData.left = new FormAttachment(0, 5);
@@ -317,11 +293,11 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.left = new FormAttachment(rButton1, 10);
         rButton2.setLayoutData(formData);
 
-        rButton1.setText(RADIO_SCALE_WITH_ZOOM);
-        rButton2.setText(RADIO_FIXED_SYMB);
+        rButton1.setText(Messages.Symbol_Scale_With_Zoom);
+        rButton2.setText(Messages.Symbol_Use_Fixed_Size);
 
         lSymbolSize = new Label(grScale, SWT.NONE);
-        lSymbolSize.setText(SYMBOL_SIZE);
+        lSymbolSize.setText(Messages.Symbol_Size);
         tSymbolSize = new Spinner(grScale, SWT.BORDER);
         formData = new FormData();
         formData.top = new FormAttachment(tSymbolSize, 5, SWT.CENTER);
@@ -334,23 +310,23 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.right = new FormAttachment(100, -5);
         tSymbolSize.setLayoutData(formData);
 
-        lSectorTr = new Label(grScale, SWT.NONE);
-        lSectorTr.setText(SECTOR_TRANSPARENCY);
-        tSectorTr = new Spinner(grScale, SWT.BORDER);
+        lTransparency = new Label(grScale, SWT.NONE);
+        lTransparency.setText(Messages.Symbol_Transparency);
+        tTransparency = new Spinner(grScale, SWT.BORDER);
         formData = new FormData();
-        formData.top = new FormAttachment(tSectorTr, 5, SWT.CENTER);
+        formData.top = new FormAttachment(tTransparency, 5, SWT.CENTER);
         formData.left = new FormAttachment(2);
-        lSectorTr.setLayoutData(formData);
+        lTransparency.setLayoutData(formData);
 
         formData = new FormData();
         formData.left = new FormAttachment(70, 10);
         formData.top = new FormAttachment(tSymbolSize, 5);
         formData.right = new FormAttachment(100, -5);
-        tSectorTr.setLayoutData(formData);
+        tTransparency.setLayoutData(formData);
 
         lMaxSymSize = new Label(grScale, SWT.NONE);
         sMaxSymSize = new Spinner(grScale, SWT.BORDER);
-        lMaxSymSize.setText(MAX_SYMB_SIZE);
+        lMaxSymSize.setText(Messages.Symbol_Max_Size);
 
         formData = new FormData();
         formData.top = new FormAttachment(sMaxSymSize, 5, SWT.CENTER);
@@ -359,21 +335,37 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
         formData = new FormData();
         formData.left = new FormAttachment(70, 10);
-        formData.top = new FormAttachment(tSectorTr, 5);
+        formData.top = new FormAttachment(tTransparency, 5);
         formData.right = new FormAttachment(100, -5);
         sMaxSymSize.setLayoutData(formData);
+
+        lIconOffset = new Label(grScale, SWT.NONE);
+        sIconOffset = new Spinner(grScale, SWT.BORDER);
+        lIconOffset.setText(Messages.Icon_Offset);
+
+        formData = new FormData();
+        formData.top = new FormAttachment(sIconOffset, 5, SWT.CENTER);
+        formData.left = new FormAttachment(2);
+        lIconOffset.setLayoutData(formData);
+
+        formData = new FormData();
+        formData.left = new FormAttachment(70, 10);
+        formData.top = new FormAttachment(sMaxSymSize, 5);
+        formData.right = new FormAttachment(100, -5);
+        sIconOffset.setLayoutData(formData);
+
         // sets spinners range
         tLabeling.setMinimum(1);
         tLabeling.setMaximum(10000);
-        tSectorTr.setMinimum(1);
-        tSectorTr.setMaximum(100);
+        tTransparency.setMinimum(1);
+        tTransparency.setMaximum(100);
         tSmallestSymb.setMinimum(1);
         tSmallestSymb.setMaximum(10000);
         tSmallSymb.setMinimum(1);
         tSmallSymb.setMaximum(10000);
         tSymbolSize.setMinimum(1);
         tSymbolSize.setMaximum(10000);
-        tSectorTr.setMaximum(100);
+        tTransparency.setMaximum(100);
         rButton1.addSelectionListener(new SelectionListener() {
             
             @Override
@@ -415,16 +407,20 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             }
 
             tSymbolSize.setSelection(curStyle.getSymbolSize());
-            tSectorTr.setSelection(curStyle.getSectorTransparency());
+            tTransparency.setSelection(curStyle.getSymbolTransparency());
             sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
-            sFontSize.setText(String.valueOf(curStyle.getFontSize()));
-            sSectorFontSize.setText(String.valueOf(curStyle.getSectorFontSize()));
-            cSectorName.setItems(getSectorOrMeasurmentNames());
-            cSiteName.setItems(getSiteName());
-            cSectorName.setText(curStyle.getSectorName());
-            cSiteName.setText(curStyle.getSiteName());
+            cFontSize.setText(String.valueOf(curStyle.getFontSize()));
+            cSecondaryFontSize.setText(String.valueOf(curStyle.getSecondaryFontSize()));
+            cSecondaryProperty.setItems(getSecondaryPropertyChoices());
+            cMainProperty.setItems(getMainPropertyChoices());
+            cSecondaryProperty.setText(curStyle.getSecondaryProperty());
+            cMainProperty.setText(curStyle.getMainProperty());
+            sIconOffset.setSelection(curStyle.getIconOffset());
 
-            if (!isNetwork) {
+            if(isNetwork){
+                lIconOffset.setVisible(false);
+                sIconOffset.setVisible(false);
+            } else {
                 changeToDriveStyle();
             }
         } finally {
@@ -436,8 +432,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * 
      * @return String[]
      */
-    private String[] getSiteName() {
-        return new String[] {NeoStyleContent.DEF_SECTOR_NAME, NeoStyleContent.DEF_SITE_NAME, "lat", "lon"};
+    private String[] getMainPropertyChoices() {
+        return new String[] {NeoStyleContent.DEF_NONE, NeoStyleContent.DEF_MAIN_PROPERTY, "lat", "lon"};
     }
 
     /**
@@ -445,17 +441,15 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * 
      * @return array
      */
-    private String[] getSectorOrMeasurmentNames() {
+    private String[] getSecondaryPropertyChoices() {
         List<String> result = new ArrayList<String>();
-        result.add(NeoStyleContent.DEF_SECTOR_NAME);
+        result.add(NeoStyleContent.DEF_NONE);
         try {
             GeoNeo resource = getLayer().findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
-            // if (resource.getGisType() == GisTypes.NETWORK) {
-                String[] allFields = new PropertyHeader(resource.getMainGisNode()).getSectorOrMeasurmentNames();
-                if (allFields != null) {
-                    result.addAll(Arrays.asList(allFields));
-                }
-            // }
+            String[] allFields = new PropertyHeader(resource.getMainGisNode()).getSectorOrMeasurmentNames();
+            if (allFields != null) {
+                result.addAll(Arrays.asList(allFields));
+            }
             return result.toArray(new String[0]);
         } catch (IOException e) {
             // TODO Handle IOException
@@ -479,8 +473,12 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      *
      */
     private void changeToDriveStyle() {
-        labelFill.setText(DRIVE_FILL);
+        //Hide site fill color
+        lFillSite.setVisible(false);
         cEdFillSite.getButton().setVisible(false);
+
+        //Change sector fill to 'fill' and reset layout
+        labelFill.setText(Messages.Color_Fill_Drive);
         FormData formData = new FormData();
         formData.left = new FormAttachment(labelFill, 130);
         formData.top = new FormAttachment(labelFill, 10);
@@ -489,14 +487,13 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(labelFill, 15);
         formData.left = new FormAttachment(2);
         labelLine.setLayoutData(formData);
-        lSite.setVisible(false);
-        grSiteSymb.setVisible(false);
-        grScale.setVisible(false);
 
-        lPointFontSize.setText(FONT_SIZE_POINT);
-        lPointSiteName.setText(POINT_NAME);
-        lFontSize.setText(FONT_SIZE_MEAS);
-        lSectorName.setText(MEAS_NAME);
+        lSecondaryFontSize.setVisible(false);
+        cSecondaryFontSize.setVisible(false);
+
+        lFontSize.setText(Messages.Font_Size);
+        lMainProperty.setText(Messages.Point_Property);
+        lSecondaryProperty.setText(Messages.Measurement_Property);
     }
 
     @Override
@@ -511,15 +508,13 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         curStyle.setLabeling(getLabeling());
         curStyle.setFixSymbolSize(rButton2.getSelection());
         curStyle.setSymbolSize(getSymbolSize());
-        curStyle.setSectorTransparency(getSectorTransparency());
-        // font
+        curStyle.setSymbolTransparency(getSectorTransparency());
         curStyle.setFontSize(getLabelFontSize());
         curStyle.setSectorFontSize(getSectorFontSize());
-
         curStyle.setMaximumSymbolSize(sMaxSymSize.getSelection());
-        // property names
-        curStyle.setSiteName(cSiteName.getText());
-        curStyle.setSectorName(cSectorName.getText());
+        curStyle.setIconOffset(sIconOffset.getSelection());
+        curStyle.setMainProperty(cMainProperty.getText());
+        curStyle.setSecondaryProperty(cSecondaryProperty.getText());
         getStyleBlackboard().put(ID, curStyle);
     }
 
@@ -530,7 +525,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      */
     private Integer getSectorFontSize() {
         try {
-            return Integer.parseInt(sSectorFontSize.getText());
+            return Integer.parseInt(cSecondaryFontSize.getText());
         } catch (NumberFormatException e) {
             return NeoStyleContent.DEF_FONT_SIZE_SECTOR;
         }
@@ -543,7 +538,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      */
     private Integer getLabelFontSize() {
         try {
-            return Integer.parseInt(sFontSize.getText());
+            return Integer.parseInt(cFontSize.getText());
         } catch (NumberFormatException e) {
             return NeoStyleContent.DEF_FONT_SIZE;
         }
@@ -553,7 +548,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * @return
      */
     private Integer getSectorTransparency() {
-        return tSectorTr.getSelection();
+        return tTransparency.getSelection();
     }
 
     /**
