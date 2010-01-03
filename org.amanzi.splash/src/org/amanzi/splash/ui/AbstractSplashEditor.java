@@ -1141,6 +1141,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 
 	private static int chartCounter = 0;
 
+	@SuppressWarnings("deprecation")
 	public void plotCellsBarChart() {
 		String chartName = "";
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
