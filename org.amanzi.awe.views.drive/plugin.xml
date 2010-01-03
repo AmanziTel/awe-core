@@ -15,7 +15,7 @@
       <extension
          point="org.eclipse.ui.views">
       <view
-            name="Correlatiom Manager"
+            name="Correlation"
             icon="icons/drive.png"
             category="org.amanzi.awe.script"
             class="org.amanzi.awe.views.drive.views.CorrelationManager"
