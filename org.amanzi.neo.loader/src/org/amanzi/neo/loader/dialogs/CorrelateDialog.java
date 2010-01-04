@@ -21,6 +21,10 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.correlate.ETSICorrellator;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -177,9 +181,8 @@ public class CorrelateDialog {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				ETSICorrellator correlator = new ETSICorrellator();
-				correlator.correlate(firstCombo.getText(), secondCombo.getText());
 				dialogShell.close();
+				runCorrelation();
 			}
 			
 			@Override
@@ -199,6 +202,20 @@ public class CorrelateDialog {
 					
 			}
 		});
+	}
+	
+	private void runCorrelation() {
+		Job correlateJob = new Job("Correlation Job") {
+			
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				ETSICorrellator correlator = new ETSICorrellator();
+				correlator.correlate(firstCombo.getText(), secondCombo.getText());
+				return Status.OK_STATUS;
+			}
+		};
+		
+		correlateJob.schedule(50);
 	}
 
 	/**
