@@ -208,7 +208,7 @@ public class RomesLoader extends DriveLoader {
     public static void main(String[] args) {
         NeoLoaderPlugin.debug = false;
         if (args.length < 1)
-            args = new String[] {"amanzi/test.ASC"};
+            args = new String[] {"amanzi/G_YA004_090723_W09_Test.ASC"};
         EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
         try {
             for (String filename : args) {
