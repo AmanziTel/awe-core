@@ -6,7 +6,6 @@ Bundle-Version: 0.4.0.awe
 Bundle-Activator: org.neo4j.neoclipse.Activator
 Bundle-Vendor: Neo4j.org
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Import-Package: org.eclipse.core.commands.common,
  org.eclipse.core.runtime,
  org.eclipse.core.runtime.preferences,
@@ -55,3 +54,4 @@ Export-Package: org.neo4j.neoclipse;x-friends:="org.amanzi.awe.catalog.neo,org.a
  org.neo4j.neoclipse.property;x-friends:="org.amanzi.awe.networktree",
  org.neo4j.neoclipse.view
 Eclipse-LazyStart: true
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
