@@ -45,6 +45,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -98,9 +99,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private boolean scaleIcons = false;
     private int eventIconBaseSize = 12;
     private int eventIconMaxSize = 32;
-    private static final int[] eventIconSizes = new int[]{6,8,12,16,32,48,64};
+    private static final int[] eventIconSizes = new int[] {6, 8, 12, 16, 32, 48, 64};
     private static final Color COLOR_HIGHLIGHTED = Color.CYAN;;
     private static final Color COLOR_HIGHLIGHTED_SELECTED = Color.RED;
+    private static final Color FADE_LINE = new Color(127, 127, 127, 127);
 
     private LuceneIndexService index;
     private boolean notMpLabel;
@@ -148,14 +150,20 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         render(g, monitor);
     }
 
-    private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException {
+    private Pair<MathTransform, MathTransform> setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException {
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error:
         // bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
+        Pair<MathTransform, MathTransform> oldTransform = new Pair<MathTransform, MathTransform>(transform_d2w, transform_w2d);
         this.transform_d2w = CRS.findMathTransform(dataCrs, worldCrs, lenient);
         this.transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient);
+        return oldTransform;
     }
 
+    private void setCrsTransforms(Pair<MathTransform, MathTransform> oldTransform) throws FactoryException {
+        this.transform_d2w = oldTransform.left();
+        this.transform_w2d = oldTransform.right();
+    }
     private Envelope getTransformedBounds() throws TransformException {
         ReferencedEnvelope bounds = getRenderBounds();
         if (bounds == null) {
@@ -211,9 +219,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 // maxSymbolSize = neostyle.getMaximumSymbolSize();
                 fontSize = neostyle.getFontSize();
                 // TODO: Remove these when defaults from style work property
-//                maxSitesLabel = 50;
-//                maxSitesLite = 500;
-//                maxSitesFull = 50;
+                // maxSitesLabel = 50;
+                // maxSitesLite = 500;
+                // maxSitesFull = 50;
                 mpName = neostyle.getMainProperty();
                 msName = neostyle.getSecondaryProperty();
                 scaleIcons = !neostyle.isFixSymbolSize();
@@ -221,7 +229,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 eventIconBaseSize = getIconSize(neostyle.getSymbolSize());
                 eventIconMaxSize = getIconSize(neostyle.getMaximumSymbolSize());
                 eventIconSize = eventIconBaseSize;
-                if(neostyle.getSymbolSize() < eventIconSizes[0]) {
+                if (neostyle.getSymbolSize() < eventIconSizes[0]) {
                     eventIconSize = 0;
                 }
             } catch (Exception e) {
@@ -237,7 +245,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         NeoService neo = NeoServiceProvider.getProvider().getService();
 
         Transaction tx = neo.beginTx();
-
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
@@ -268,7 +275,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 }
             }
             // Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
-            setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
+            Pair<MathTransform, MathTransform> driveTransform = setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
             Envelope data_bounds = geoNeo.getBounds();
             boolean drawFull = true;
@@ -284,7 +291,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 double countScaled = dataScaled * geoNeo.getCount();
                 drawLabels = countScaled < maxSitesLabel;
                 drawFull = countScaled < maxSitesFull;
-                if(scaleIcons && eventIconSize > 0) {
+                if (scaleIcons && eventIconSize > 0) {
                     if (countScaled < maxSitesFull) {
                         eventIconSize = calcIconSize(eventIconBaseSize, eventIconMaxSize, maxSitesLabel, maxSitesFull, countScaled);
                     } else if (countScaled < maxSitesLite) {
@@ -292,9 +299,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     } else {
                         eventIconSize = 0;
                     }
-                    if(eventIconSize > eventIconMaxSize) eventIconSize = eventIconMaxSize;
-//                    eventIconSize = countScaled * 32 <= maxSitesFull ? 32 :countScaled * 16 <= maxSitesFull ? 16 : countScaled * 4 <= maxSitesFull ? 12
-//                            : countScaled * 2 <= maxSitesFull ? 8 : 6;
+                    if (eventIconSize > eventIconMaxSize)
+                        eventIconSize = eventIconMaxSize;
+                    // eventIconSize = countScaled * 32 <= maxSitesFull ? 32 :countScaled * 16 <=
+                    // maxSitesFull ? 16 : countScaled * 4 <= maxSitesFull ? 12
+                    // : countScaled * 2 <= maxSitesFull ? 8 : 6;
                 }
                 drawLite = countScaled < maxSitesLite;
             }
@@ -335,19 +344,21 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 beginTime = (Long)selectionMap.get(GeoConstant.Drive.BEGIN_TIME);
                 endTime = (Long)selectionMap.get(GeoConstant.Drive.END_TIME);
                 if (beginTime != null && endTime != null && beginTime <= endTime) {
+                    // TODO use time index for speed performance?
                     for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
                         Long time = NeoUtils.getNodeTime(node.getNode());
                         if (time != null && time >= beginTime && time <= endTime) {
                             selectedNodes.add(node.getNode());
                         }
                     }
+
                 }
             }
-            boolean needDrawLines = palette != null && selected_events != null && !networkGeoNeo.isEmpty() && beginTime != null
-                    && endTime != null && beginTime <= endTime;
-            boolean allEvents = needDrawLines && selected_events.equals(GeoConstant.ALL_EVENTS);
+            boolean needDrawLines = !networkGeoNeo.isEmpty() & beginTime != null && endTime != null && beginTime <= endTime;
+            boolean haveSelectedEvents = needDrawLines && palette != null && selected_events != null;
+            boolean allEvents = haveSelectedEvents && selected_events.equals(GeoConstant.ALL_EVENTS);
             Color eventColor = null;
-            if (needDrawLines && !allEvents) {
+            if (haveSelectedEvents && !allEvents) {
                 int i = eventList.indexOf(selected_events);
                 if (i < 0) {
                     i = 0;
@@ -530,6 +541,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     Long time = NeoUtils.getNodeTime(mpNode);
                     // if (true) {
                     if (time != null && time >= beginTime && time <= endTime) {
+                        Color lineColor;
+                        if (haveSelectedEvents) {
                         Set<String> events = NeoUtils.getEventsList(mpNode, null);
                         if (!events.isEmpty() && (allEvents || events.contains(selected_events))) {
                             if (allEvents) {
@@ -541,40 +554,50 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                 int index = i % colors.length;
                                 eventColor = colors[index];
                             }
-                            Relationship relation = mpNode
-                                    .getSingleRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING);
-                            if (relation != null) {
-                                Node sectorDrive = relation.getOtherNode(mpNode);
+                            lineColor = eventColor;
+                        } else {
+                            lineColor = FADE_LINE;
+                            }
+                        } else {
+                            lineColor = FADE_LINE;
+                        }
+                        Relationship relation = mpNode.getSingleRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING);
+                        if (relation != null) {
+                            Node sectorDrive = relation.getOtherNode(mpNode);
 
-                                for (Relationship relationSector : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR,
-                                        Direction.OUTGOING)) {
-                                    Node sector = null;
-                                    Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
-                                    for (GeoNeo networkGis : networkGeoNeo) {
-                                        if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
-                                            sector = relationSector.getOtherNode(sectorDrive);
-                                            break;
-                                        }
+                            for (Relationship relationSector : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR,
+                                    Direction.OUTGOING)) {
+                                Node sector = null;
+                                Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
+                                GeoNeo networkGisNode = null;
+                                for (GeoNeo networkGis : networkGeoNeo) {
+                                    if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
+                                        sector = relationSector.getOtherNode(sectorDrive);
+                                        networkGisNode = networkGis;
+                                        break;
                                     }
-                                    if (sector != null) {
-                                        // TODO paint
-                                        Node site = sector
-                                                .getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
-                                                .getOtherNode(sector);
-                                        GeoNode siteGn = new GeoNode(site);
-                                        location = siteGn.getCoordinate();
-                                        try {
-                                            JTS.transform(location, world_location, transform_d2w);
-                                        } catch (Exception e) {
-                                            // JTS.transform(location, world_location,
-                                            // transform_w2d.inverse());
-                                        }
-                                        java.awt.Point pSite = getContext().worldToPixel(siteGn.getCoordinate());
-                                        Color oldColor = g.getColor();
-                                        g.setColor(eventColor);
-                                        g.drawLine(p.x, p.y, pSite.x, pSite.y);
-                                        g.setColor(oldColor);
+                                }
+                                if (sector != null) {
+                                    setCrsTransforms(networkGisNode.getCRS());// TODO use cache for
+                                                                              // store CRS?
+                                    // TODO paint
+                                    Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
+                                            .getOtherNode(sector);
+                                    GeoNode siteGn = new GeoNode(site);
+                                    location = siteGn.getCoordinate();
+                                    try {
+                                        JTS.transform(location, world_location, transform_d2w);
+                                    } catch (Exception e) {
+                                        // JTS.transform(location, world_location,
+                                        // transform_w2d.inverse());
                                     }
+                                    java.awt.Point pSite = getContext().worldToPixel(siteGn.getCoordinate());
+                                    Color oldColor = g.getColor();
+                                    g.setColor(lineColor);
+                                    g.drawLine(p.x, p.y, pSite.x, pSite.y);
+                                    g.setColor(oldColor);
+                                    // restore old transform;
+                                    setCrsTransforms(driveTransform);
                                 }
                             }
                         }
@@ -587,13 +610,13 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             prev_p = null;
             prev_l_p = null;
             cached_node = null;
-            if(eventIconSize > 0) {
+            if (eventIconSize > 0) {
                 for (Node node1 : index.getNodes(INeoConstants.EVENTS_LUCENE_INDEX_NAME, gisName)) {
                     if (monitor.isCanceled())
                         break;
                     GeoNode node = new GeoNode(node1);
                     Coordinate location = node.getCoordinate();
-    
+
                     if (bounds_transformed != null && !bounds_transformed.contains(location)) {
                         continue; // Don't draw points outside viewport
                     }
@@ -602,7 +625,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     } catch (Exception e) {
                         // JTS.transform(location, world_location, transform_w2d.inverse());
                     }
-    
+
                     java.awt.Point p = getContext().worldToPixel(world_location);
                     if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
                         prev_p = p;
@@ -645,7 +668,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         }
                         prev_l_p = p;
                     }
-    
+
                 }
                 if (cached_node != null) {
                     renderEvents(g, cached_node, cached_l_p, 0);
@@ -674,7 +697,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             // if (geoNeo != null)
             // geoNeo.close();
             monitor.done();
-
 
         }
     }
@@ -885,7 +907,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 base_transform = g.getTransform();
             g.setTransform(base_transform);
             g.translate(p.x, p.y);
-            if(eventIconOffset>0) {
+            if (eventIconOffset > 0) {
                 g.rotate(-theta);
             }
 
