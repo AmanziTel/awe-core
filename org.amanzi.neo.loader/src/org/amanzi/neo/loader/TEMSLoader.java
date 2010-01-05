@@ -259,7 +259,11 @@ public class TEMSLoader extends DriveLoader {
                 Node mp = neo.createNode();
                 mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
                 mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
-                mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
+                if (timestamp != 0) {
+                    mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
+                    updateTimestampMinMax(timestamp);
+                }
+
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
