@@ -209,7 +209,7 @@ public class ETSICorrellator {
 	}
 	
 	/**
-	 * Initialized Timestamp index for dataset
+	 * Initialize Timestamp index for dataset
 	 *
 	 * @param datasetName name of dataset
 	 */

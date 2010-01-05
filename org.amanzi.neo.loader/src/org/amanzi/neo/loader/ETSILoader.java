@@ -53,7 +53,7 @@ public class ETSILoader extends DriveLoader {
 	/*
 	 * Timestamp format for ETSI log files
 	 */
-	private static final String TIMESTAMP_FORMAT = "HH:mm:ss,SSS";
+	private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
 	
 	/*
 	 * Formatter for timestamp
@@ -110,7 +110,6 @@ public class ETSILoader extends DriveLoader {
 	public void run(IProgressMonitor monitor) throws IOException {
 		ArrayList<File> allFiles = getAllLogFilePathes(filename);
 		monitor.beginTask("Loading ETSI data", allFiles.size());
-		long before = System.currentTimeMillis();
 		for (File logFile : allFiles) {
 			monitor.subTask("Loading file " + logFile.getAbsolutePath());
 			
@@ -122,7 +121,6 @@ public class ETSILoader extends DriveLoader {
 			
 			monitor.worked(1);
 		}
-		System.out.println("Load takes " + (System.currentTimeMillis() - before));
 	}
 	
 	@Override
@@ -287,7 +285,6 @@ public class ETSILoader extends DriveLoader {
 		Node mpNode = neo.createNode();
 		mpNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
 		
-		timestamp = timestamp.substring(timestamp.indexOf(" ") + 1, timestamp.length());
 		try {
 			long timestampValue = timestampFormat.parse(timestamp).getTime();
 			

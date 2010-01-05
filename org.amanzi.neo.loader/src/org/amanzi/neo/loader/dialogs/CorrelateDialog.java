@@ -181,8 +181,8 @@ public class CorrelateDialog {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				dialogShell.close();
-				runCorrelation();
+				runCorrelation(firstCombo.getText(), secondCombo.getText());
+				dialogShell.close();				
 			}
 			
 			@Override
@@ -204,13 +204,13 @@ public class CorrelateDialog {
 		});
 	}
 	
-	private void runCorrelation() {
+	private void runCorrelation(final String firstDataset, final String secondDataset) {
 		Job correlateJob = new Job("Correlation Job") {
 			
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				ETSICorrellator correlator = new ETSICorrellator();
-				correlator.correlate(firstCombo.getText(), secondCombo.getText());
+				correlator.correlate(firstDataset, secondDataset);
 				return Status.OK_STATUS;
 			}
 		};
