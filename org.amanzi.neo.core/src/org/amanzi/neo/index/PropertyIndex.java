@@ -228,7 +228,8 @@ public class PropertyIndex<E extends Comparable<E>> {
 
         @Override
         public int indexOf(Float value, Float origin, Float stepSize) {
-            return (int)((value - origin) / stepSize);
+            // We found Math.floor() performed as well as 'if+cast+floor', so use it only
+            return (int)(Math.floor((value - origin) / stepSize));
         }
 
         @Override
@@ -260,8 +261,8 @@ public class PropertyIndex<E extends Comparable<E>> {
 
         @Override
         public int indexOf(Double value, Double origin, Double stepSize) {
-            final double result = (double)(value - origin) / stepSize;
-            return result >= 0 ? (int)result : (int)(Math.floor(result));
+        	// We found Math.floor() performed as well as 'if+cast+floor', so use it only
+            return (int)(Math.floor((value - origin) / stepSize));
         }
 
         @Override
@@ -678,6 +679,7 @@ public class PropertyIndex<E extends Comparable<E>> {
      * @param args
      */
     public static void main(String[] args) {
+        castAndFloorTests();
         Random random = new Random(0);
         SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
         EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
@@ -721,5 +723,62 @@ public class PropertyIndex<E extends Comparable<E>> {
             timer.mark("shutdown");
             timer.printStats(System.out);
         }
+    }
+
+    /**
+     * Test code for the bug fix in the calculation for converting a value to an index. Originally
+     * we simply cast the result to an int, but this actually gives incorrect answers because
+     * everything in the range -0.999 to +0.999 will be at index 0, which should only cover a range
+     * of 1.0 not a range of 2.0. The fix is to use Math.floor() but that is only required for
+     * negative values. So the question is, should we use Math.floor for all cases, or use an if
+     * switch and use (int) for positive and Math.floor for negative. The results of the tests below
+     * indicate that the performance of 'if+cast+floor' is about the same as 'floor' alone. So we
+     * simplify the code by using only floor.
+     */
+    private static void castAndFloorTests() {
+        int max = 100;
+        float maxf = (float)max / 10.0f;
+        float offf = maxf / 2.0f;
+        /* Test that Math floor always works while (int) fails for negative values */
+        for(int x=0;x<max;x++){
+            float fval = ((float)x)/maxf-offf;
+            double dval = ((double)x)/maxf-offf;
+            int[] i = new int[]{(int)fval,(int)Math.floor(fval),(int)dval,(int)Math.floor(dval)};
+            System.out.println("x["+x+"]: f["+fval+"]("+i[0]+","+i[1]+") \td["+dval+"]("+i[2]+","+i[3]+")");
+        }
+        /* Performance test */
+        max = 1000000;
+        maxf = (float)max / 10.0f;
+        offf = maxf / 2.0f;
+        long startTime = System.currentTimeMillis();
+        for(int x=0;x<max;x++){
+            float fval = ((float)x)/maxf-offf;
+            double dval = ((double)x)/maxf-offf;
+            @SuppressWarnings("unused")
+            int[] i = new int[]{(int)Math.floor(fval),(int)Math.floor(dval)};
+//                if(i[0]!=i[1]){
+//                    System.out.println("x["+x+"]: f["+fval+"]("+i[0]+") =! \td["+dval+"]("+i[1]+")");
+//                }
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("Took "+(endTime-startTime)+"ms to perform 1m (int)Math.floor(val)");
+        startTime = System.currentTimeMillis();
+        for(int x=0;x<max;x++){
+            float fval = ((float)x)/maxf-offf;
+            double dval = ((double)x)/maxf-offf;
+            @SuppressWarnings("unused")
+            int[] i;
+            if(fval<0){
+                i = new int[]{(int)Math.floor(fval),(int)Math.floor(dval)};
+            } else {
+                i = new int[]{(int)fval,(int)dval};
+            }
+//                if(i[0]!=i[1]){
+//                    System.out.println("x["+x+"]: f["+fval+"]("+i[0]+") =! \td["+dval+"]("+i[1]+")");
+//                }
+        }
+        endTime = System.currentTimeMillis();
+        System.out.println("Took "+(endTime-startTime)+"ms to perform 1m casts (int)val");
+        return;
     }
 }
