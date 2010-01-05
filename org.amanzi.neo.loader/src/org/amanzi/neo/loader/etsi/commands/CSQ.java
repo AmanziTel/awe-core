@@ -26,13 +26,6 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
  */
 class CSQ extends AbstractETSICommand {
 	
-	/**
-	 * @param syntax
-	 */
-	public CSQ(CommandSyntax syntax) {
-		super(syntax);
-	}
-
 	/*
 	 * Command name
 	 */

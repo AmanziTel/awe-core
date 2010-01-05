@@ -25,10 +25,6 @@ import java.util.StringTokenizer;
  */
 public abstract class AbstractETSICommand {
 	
-	public enum CommandSyntax {
-		READ, SET, EXECUTE;
-	}
-	
 	/*
 	 * Delimiter of parameters in result
 	 */
@@ -44,15 +40,12 @@ public abstract class AbstractETSICommand {
 	 */
 	protected static final String COMMAND_PREFIX = "AT+";
 	
-	private CommandSyntax syntax;
-	
 	/*
 	 * List of parameters in command
 	 */
 	protected ArrayList<ETSICommandParameter> parameters = new ArrayList<ETSICommandParameter>();
 	
-	public AbstractETSICommand(CommandSyntax syntax) {
-		this.syntax = syntax;
+	public AbstractETSICommand() {
 		initializeParameters();
 	}
 
@@ -82,7 +75,7 @@ public abstract class AbstractETSICommand {
 	 * @param tokenizer string with command results
 	 * @return map that contains name of parameter and it's value
 	 */
-	public HashMap<String, Object> getResults(StringTokenizer tokenizer) {
+	public HashMap<String, Object> getResults(CommandSyntax syntax, StringTokenizer tokenizer) {
 		switch (syntax) {
 		case READ:
 			tokenizer.nextToken(":");		

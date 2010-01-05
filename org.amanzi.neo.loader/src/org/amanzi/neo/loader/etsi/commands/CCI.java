@@ -26,13 +26,6 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
  */
 class CCI extends AbstractETSICommand {
 	
-	/**
-	 * @param syntax
-	 */
-	public CCI(CommandSyntax syntax) {
-		super(syntax);
-	}
-
 	/*
 	 * Command name 
 	 */

@@ -27,6 +27,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand;
+import org.amanzi.neo.loader.etsi.commands.CommandSyntax;
 import org.amanzi.neo.loader.etsi.commands.ETSICommandPackage;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -39,6 +40,11 @@ import org.neo4j.api.core.Node;
  * @since 1.0.0
  */
 public class ETSILoader extends DriveLoader {
+	
+	/*
+	 * 
+	 */
+	private static final String UNSOLICITED = "<UNSOLICITED>";
 	
 	/*
 	 *  String COMMAND_PROPERTY_NAME field 
@@ -151,7 +157,7 @@ public class ETSILoader extends DriveLoader {
 	
 	@Override
 	protected void parseLine(String line) {
-		StringTokenizer tokenizer = new StringTokenizer(line, "=|");
+		StringTokenizer tokenizer = new StringTokenizer(line, "|");
 		if (!tokenizer.hasMoreTokens()) {
 			return;
 		}
@@ -181,24 +187,63 @@ public class ETSILoader extends DriveLoader {
 		}
 		
 		if (ETSICommandPackage.isETSICommand(commandName)) {
+			CommandSyntax syntax = ETSICommandPackage.getCommandSyntax(commandName);
+			if (syntax == CommandSyntax.SET) { 
+				int equalsIndex = commandName.indexOf("=");
+				tokenizer = new StringTokenizer(commandName.substring(equalsIndex).trim());
+				commandName = commandName.substring(0, equalsIndex);
+			}
+			
+			AbstractETSICommand command = ETSICommandPackage.getCommand(commandName, syntax);
+			if ((command == null) && (!commandName.equals(UNSOLICITED))) {
+				return;
+			}
+			
 			//get a real name of command without set or get postfix
 			Node mpNode = createMpNode(timestamp);
-			if (mpNode != null) {			
+			if (mpNode != null) {
 				//parse parameters of command
 				HashMap<String, Object> parameters = null;
 				
-				AbstractETSICommand command = ETSICommandPackage.getCommand(commandName);
-				if (command != null) {					
-					parameters = command.getResults(tokenizer);
-				}
+				parameters = command.getResults(syntax, tokenizer);
 				if (command != null) {
 					commandName = command.getName();
 				}
 				else {
 					commandName = ETSICommandPackage.getRealCommandName(commandName);
 				}
+					
+				if (!commandName.equals(UNSOLICITED)) {
+					createMsNode(mpNode, commandName, parameters);
+				}
 				
-				createMsNode(mpNode, commandName, parameters);
+				if (syntax == CommandSyntax.EXECUTE) {
+					while (tokenizer.hasMoreTokens()) {
+						String maybeTimestamp = tokenizer.nextToken();						
+						if (maybeTimestamp.startsWith("~")) {
+							timestamp = maybeTimestamp;
+						}
+						else if (maybeTimestamp.startsWith("+")) {
+							int colonIndex = maybeTimestamp.indexOf(":");
+							commandName = maybeTimestamp.substring(1, colonIndex);
+							StringTokenizer paramTokenizer = new StringTokenizer(maybeTimestamp.substring(colonIndex + 1).trim());
+							syntax = ETSICommandPackage.getCommandSyntax(commandName);
+							command = ETSICommandPackage.getCommand(commandName, syntax);
+						
+							if (command != null) {
+								//should be a result of command
+								parameters = command.getResults(syntax, paramTokenizer);
+								if (command != null) {
+									commandName = command.getName();
+								}
+								else {
+									commandName = ETSICommandPackage.getRealCommandName(commandName);
+								}
+							}
+							createMsNode(mpNode, commandName, parameters);
+						}
+					}
+				}
 			}
 		}
 	}

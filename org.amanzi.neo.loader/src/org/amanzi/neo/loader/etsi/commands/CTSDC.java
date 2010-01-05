@@ -20,22 +20,13 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
 
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
+ * AT+CTSDC command
+ * 
  * @author Lagutko_N
  * @since 1.0.0
  */
 class CTSDC extends AbstractETSICommand {
 	
-	/**
-	 * @param syntax
-	 */
-	public CTSDC(CommandSyntax syntax) {
-		super(syntax);
-	}
-
 	/*
 	 * Command name
 	 */
@@ -72,11 +63,6 @@ class CTSDC extends AbstractETSICommand {
 				break;
 			}
 			result.put(singleParameter.getName(), singleParameter.parseString(parametersTokenizer.nextToken().trim()));
-		}
-		
-		
-		while (parametersTokenizer.hasMoreTokens()) {
-			
 		}
 		
 		return result;

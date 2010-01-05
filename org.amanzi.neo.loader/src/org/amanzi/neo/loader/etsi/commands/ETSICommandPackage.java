@@ -15,7 +15,6 @@ package org.amanzi.neo.loader.etsi.commands;
 
 import java.util.HashMap;
 
-import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand.CommandSyntax;
 
 /**
  * Package of ETSI command
@@ -31,12 +30,13 @@ public class ETSICommandPackage {
 	private static HashMap<String, AbstractETSICommand> commandsMap = new HashMap<String, AbstractETSICommand>();
 	
 	static {
-		registerReadSyntaxCommand(new CCI(CommandSyntax.READ));
-		registerReadSyntaxCommand(new CBS(CommandSyntax.READ));
-		registerReadSyntaxCommand(new CSQ(CommandSyntax.READ));
-		registerReadSyntaxCommand(new CNUM(CommandSyntax.READ));
-		
-		registerSetSyntaxCommand(new CTSDC(CommandSyntax.SET));
+		registerCommand(new CCI());
+		registerCommand(new CBS());
+		registerCommand(new CSQ());
+		registerCommand(new CNUM());
+		registerCommand(new CTSDC());
+		registerCommand(new ATD());
+		registerCommand(new ATH());
 	}
 	
 	/**
@@ -44,12 +44,8 @@ public class ETSICommandPackage {
 	 * 
 	 * @param command ETSI command
 	 */
-	private static void registerReadSyntaxCommand(AbstractETSICommand command) {
-		commandsMap.put(command.getName() + "?", command);
-	}
-	
-	private static void registerSetSyntaxCommand(AbstractETSICommand command) {
-		commandsMap.put(command.getName() + "=", command);
+	private static void registerCommand(AbstractETSICommand command) {
+		commandsMap.put(command.getName(), command);
 	}
 	
 	/**
@@ -58,8 +54,28 @@ public class ETSICommandPackage {
 	 * @param commandName name of command
 	 * @return command
 	 */
-	public static AbstractETSICommand getCommand(String commandName) {		
-		return commandsMap.get(commandName);
+	public static AbstractETSICommand getCommand(String commandName, CommandSyntax syntax) {
+		if (syntax == CommandSyntax.EXECUTE) {
+			for (String singleCommandName : commandsMap.keySet()) {
+				if (commandName.startsWith(singleCommandName)) {
+					return commandsMap.get(singleCommandName);
+				}
+			}
+			return null;
+		}
+		else {
+			return commandsMap.get(commandName);
+		}
+	}
+	
+	public static CommandSyntax getCommandSyntax(String commandName) {
+		if (commandName.contains("?")) {
+			return CommandSyntax.READ;
+		}
+		if (commandName.contains("=")) {
+			return CommandSyntax.SET;
+		}
+		return CommandSyntax.EXECUTE;
 	}
 	
 	/**
@@ -69,7 +85,7 @@ public class ETSICommandPackage {
 	 * @return is it ETSI command
 	 */
 	public static boolean isETSICommand(String commandName) {
-		return commandName.startsWith("AT");
+		return commandName.toUpperCase().startsWith("AT");
 	}
 	
 	/**
