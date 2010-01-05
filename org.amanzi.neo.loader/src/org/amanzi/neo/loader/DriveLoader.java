@@ -51,6 +51,8 @@ public abstract class DriveLoader extends AbstractLoader {
     private int countValidChanged = 0;
     protected Integer hours = null;
     protected Calendar _workDate = null;
+    protected Long minTimeStamp = null;
+    protected Long maxTimeStamp = null;
     /** How many units of work for the progress monitor for each file */
     public static final int WORKED_PER_FILE = 100;
     
@@ -302,11 +304,18 @@ public abstract class DriveLoader extends AbstractLoader {
      * because it is possible, or even probable, to write an importer that does not need it.
      */
     protected void finishUp() {
+        if (minTimeStamp != null) {
+            gis.setProperty(INeoConstants.MIN_TIMESTAMP, minTimeStamp);
+        }
+        if (maxTimeStamp != null) {
+            gis.setProperty(INeoConstants.MAX_TIMESTAMP, maxTimeStamp);
+        }
         try {
             super.finishUpGis(datasetNode == null ? file : datasetNode);
         } catch (MalformedURLException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
+
     }
 
     /**
@@ -338,6 +347,9 @@ public abstract class DriveLoader extends AbstractLoader {
         _workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
         _workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
         _workDate.set(Calendar.SECOND, nodeDate.getSeconds());
-        return _workDate.getTimeInMillis();
+        final long timestamp = _workDate.getTimeInMillis();
+        minTimeStamp = minTimeStamp == null ? timestamp : Math.min(minTimeStamp, timestamp);
+        maxTimeStamp = maxTimeStamp == null ? timestamp : Math.max(maxTimeStamp, timestamp);
+        return timestamp;
     }
 }

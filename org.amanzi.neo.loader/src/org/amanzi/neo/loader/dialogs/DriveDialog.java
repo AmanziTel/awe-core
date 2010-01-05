@@ -71,7 +71,7 @@ public class DriveDialog {
      * Names of supported files for Drive data
      */
     public static final String[] Drive_FILE_NAMES = {
-        "Drive Test Data (*.FMT; *.ASC)",
+"Drive Test Data (*.FMT; *.ASC; *.nmf; *.dt1)",
         "TEMS Drive Test Export (*.FMT)",
         "Romes drive test export (*.ASC)",
  "Nemo drive test export (*.nmf)", "Nemo drive test export (*.dt1)",
@@ -81,7 +81,7 @@ public class DriveDialog {
      * Extensions of supported files for Drive data
      */
     public static final String[] Drive_FILE_EXTENSIONS = {
-        "*.FMT;*.fmt;*.ASC;*.asc",
+"*.FMT;*.fmt;*.ASC;*.asc;*.dt1;*.DT1;*.NMF;*.nmf",
         "*.FMT;*.fmt",
         "*.ASC;*.asc",
  "*.NMF;*.nmf",

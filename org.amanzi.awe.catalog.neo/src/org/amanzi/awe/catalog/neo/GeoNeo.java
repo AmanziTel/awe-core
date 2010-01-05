@@ -373,10 +373,11 @@ public class GeoNeo {
     private class GeoIterator implements Iterator<GeoNode> {
         private Iterator<Node> iterator;
         private GeoNode next;
-        private Transaction transaction;
+
+        // private Transaction transaction;
 
         private GeoIterator(Node gisNode, Envelope bounds) {
-            this.transaction = neo.beginTx();
+            // this.transaction = neo.beginTx();
             this.iterator = makeGeoNeoTraverser(bounds).iterator();
         }
 
@@ -389,8 +390,8 @@ public class GeoNeo {
                     next = null;
             }
             if (next == null) {
-                transaction.success();
-                transaction.finish();
+                // transaction.success();
+                // transaction.finish();
             }
             return next != null;
         }

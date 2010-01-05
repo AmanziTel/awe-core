@@ -670,11 +670,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            tx.finish();
             // if (geoNeo != null)
             // geoNeo.close();
             monitor.done();
 
-            tx.finish();
+
         }
     }
 

@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
@@ -44,6 +43,8 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -129,7 +130,7 @@ public class DriveInquirerView extends ViewPart {
      * The ID of the view as specified by the extension.
      */
     public static final String ID = "org.amanzi.awe.views.drive.views.DriveInquirerView";
-    private static final String CHART_TITLE = "Drive";
+    private static final String CHART_TITLE = "";
     private static final String TITLE_X_AXIS = "Time";
     private static final String LOG_LABEL = "Logarithmic counts";
     private static final String PALETTE_LABEL = "Palette";
@@ -166,12 +167,16 @@ public class DriveInquirerView extends ViewPart {
     private Long beginGisTime;
     private Long endGisTime;
     private Long selectedTime;
-    private List<Node> dataset;
+    // private List<Node> dataset;
     private int currentIndex;
     private TableViewer table;
     private TableLabelProvider labelProvider;
     private TableContentProvider provider;
     private Slider slider;
+    /**
+     * Index for Timestamps
+     */
+    MultiPropertyIndex<Long> timestampIndex = null;
 
     public void createPartControl(Composite parent) {
         Composite frame = new Composite(parent, SWT.FILL);
@@ -732,25 +737,25 @@ public class DriveInquirerView extends ViewPart {
      *go to previos gis node
      */
     private void previosGis() {
-        int index = currentIndex;
-        int size = dataset.size();
-        if (index < 0 || size < 2) {
+        // int index = currentIndex;
+        if (currentIndex <= 0) {
             return;
         }
-        index--;
-
-        if (index < 0) {
-            index = size - 1;
-        }
-        currentIndex = index;
-        Node root = dataset.get(currentIndex);
-        Node mp = getFirstMpNode(root);
-        Long time = NeoUtils.getNodeTime(mp);
-        beginGisTime = time;
-        mp = getLastMpNode(mp);
-        endGisTime = NeoUtils.getNodeTime(mp);
-        setBeginTime(time);;
-        updateChart();
+        currentIndex--;
+        cDrive.select(currentIndex);
+        changeDrive();
+        // if (index < 0) {
+        // index = size - 1;
+        // }
+        // currentIndex = index;
+        // Node root = dataset.get(currentIndex);
+        // Node mp = getFirstMpNode(root);
+        // Long time = NeoUtils.getNodeTime(mp);
+        // beginGisTime = time;
+        // mp = getLastMpNode(mp);
+        // endGisTime = NeoUtils.getNodeTime(mp);
+        // setBeginTime(time);
+        // updateChart();
     }
 
     /**
@@ -766,25 +771,13 @@ public class DriveInquirerView extends ViewPart {
      *go to next gis node
      */
     private void nextGis() {
-        int index = currentIndex;
-        int size = dataset.size();
-        if (index < 0 || size < 2) {
+        int size = cDrive.getItemCount();
+        if (currentIndex < 0 || currentIndex + 1 >= size) {
             return;
         }
-        index++;
-
-        if (index >= size) {
-            index = 0;
-        }
-        currentIndex = index;
-        Node root = dataset.get(currentIndex);
-        Node mp = getFirstMpNode(root);
-        Long time = NeoUtils.getNodeTime(mp);
-        beginGisTime = time;
-        mp = getLastMpNode(mp);
-        endGisTime = NeoUtils.getNodeTime(mp);
-        setBeginTime(time);
-        updateChart();
+        currentIndex++;
+        cDrive.select(currentIndex);
+        changeDrive();
     }
 
     /**
@@ -823,11 +816,11 @@ public class DriveInquirerView extends ViewPart {
         Long beginTime = getBeginTime();
         String propertyName = cProperty1.getText();
         if (!propertyName.equals(xydataset1.getPropertyName())) {
-            xydataset1.updateDataset(propertyName, dataset.get(currentIndex), beginTime, sLength.getSelection(), propertyName);
+            xydataset1.updateDataset(propertyName, beginTime, sLength.getSelection(), propertyName);
         }
         propertyName = cProperty2.getText();
         if (!propertyName.equals(xydataset2.getPropertyName())) {
-            xydataset2.updateDataset(propertyName, dataset.get(currentIndex), beginTime, sLength.getSelection(), propertyName);
+            xydataset2.updateDataset(propertyName, beginTime, sLength.getSelection(), propertyName);
         }
         propertyName = cEvent.getText();
         if (!propertyName.equals(eventDataset.getPropertyName())) {
@@ -847,7 +840,7 @@ public class DriveInquirerView extends ViewPart {
      * @return Long
      */
     private Long getBeginTime() {
-        Date date = new Date(0);
+        Date date = new Date(beginGisTime);
         date.setHours(dateStart.getHours());
         date.setMinutes(dateStart.getMinutes());
         date.setSeconds(dateStart.getSeconds());
@@ -879,8 +872,8 @@ public class DriveInquirerView extends ViewPart {
         if (gis == null || event.isEmpty() || property1.isEmpty() || property2.isEmpty()) {
             setsVisible(false);
         }
-        Node root = dataset.get(currentIndex);
-        chart.setTitle(CHART_TITLE + " " + NeoUtils.getSimpleNodeName(root, ""));
+        chart.getTitle().setVisible(false);
+        // chart.setTitle(CHART_TITLE + " " + NeoUtils.getSimpleNodeName(root, ""));
         Integer length = sLength.getSelection();
         Long time = getBeginTime();
         Date date = new Date(time);
@@ -888,9 +881,9 @@ public class DriveInquirerView extends ViewPart {
         domainAxis.setMaximumDate(new Date(time + length * 1000 * 60));
 
 
-        xydataset1.updateDataset(cProperty1.getText(), root, time, length, cProperty1.getText());
-        xydataset2.updateDataset(cProperty2.getText(), root, time, length, cProperty2.getText());
-        eventDataset.updateDataset(cEvent.getText(), root, time, length, cEvent.getText());
+        xydataset1.updateDataset(cProperty1.getText(), time, length, cProperty1.getText());
+        xydataset2.updateDataset(cProperty2.getText(), time, length, cProperty2.getText());
+        eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
 
         setsVisible(true);
         fireEventUpdateChart();
@@ -1051,9 +1044,9 @@ public class DriveInquirerView extends ViewPart {
         Transaction tx = NeoUtils.beginTransaction();
         try {
             Node gis = getGisNode();
-            dataset = new ArrayList<Node>();
-            dataset.addAll(NeoUtils.getAllFileNodes(gis).getAllNodes());
-            currentIndex = 0;
+//            dataset = new ArrayList<Node>();
+//            dataset.addAll(NeoUtils.getAllFileNodes(gis).getAllNodes());
+            currentIndex = cDrive.getSelectionIndex();
             PropertyHeader propertyHeader = new PropertyHeader(gis);
             Collection<String> events = propertyHeader.getEvents();
             eventList = new ArrayList<String>();
@@ -1070,13 +1063,14 @@ public class DriveInquirerView extends ViewPart {
                 cProperty1.select(0);
                 cProperty2.select(0);
             }
-            Node root = dataset.get(currentIndex);
-            Node mp = getFirstMpNode(root);
-            Long time = NeoUtils.getNodeTime(mp);
-            beginGisTime = time;
-            mp = getLastMpNode(mp);
-            endGisTime = NeoUtils.getNodeTime(mp);
-            setBeginTime(time);
+            initializeIndex(cDrive.getText());
+//            Node root = dataset.get(currentIndex);
+//            Node mp = getFirstMpNode(root);
+//            Long time = NeoUtils.getNodeTime(mp);
+            beginGisTime = (Long)gis.getProperty(INeoConstants.MIN_TIMESTAMP, null);
+//            mp = getLastMpNode(mp);
+            endGisTime = (Long)gis.getProperty(INeoConstants.MAX_TIMESTAMP, null);
+            setBeginTime(beginGisTime);
 
         } finally {
             tx.finish();
@@ -1193,8 +1187,9 @@ public class DriveInquirerView extends ViewPart {
         xyplot.setDomainCrosshairLockedOnData(false);
         xyplot.setRangeCrosshairVisible(false);
         JFreeChart jfreechart = new JFreeChart(CHART_TITLE, JFreeChart.DEFAULT_TITLE_FONT, xyplot, true);
-        ChartUtilities.applyCurrentTheme(jfreechart);
 
+        ChartUtilities.applyCurrentTheme(jfreechart);
+        jfreechart.getTitle().setVisible(false);
         axisNumeric1 = xyplot.getRangeAxis(2);
         axisNumeric2 = xyplot.getRangeAxis(1);
         axisLog1 = new LogarithmicAxis(axisNumeric1.getLabel());
@@ -1242,7 +1237,6 @@ public class DriveInquirerView extends ViewPart {
      * @since 1.0.0
      */
     private class EventDataset extends AbstractIntervalXYDataset {
-        private Node root;
         private Long beginTime;
         private Long length;
         private TimeSeries series;
@@ -1266,8 +1260,7 @@ public class DriveInquirerView extends ViewPart {
          * @param propertyName - property name
          * @param event - event value
          */
-        public void updateDataset(String name, Node root, Long beginTime, int length, String propertyName) {
-            this.root = root;
+        public void updateDataset(String name, Long beginTime, int length, String propertyName) {
             this.beginTime = beginTime;
             this.length = (long)length * 1000 * 60;
             this.propertyName = propertyName;
@@ -1292,7 +1285,6 @@ public class DriveInquirerView extends ViewPart {
          */
         public EventDataset() {
             super();
-            root = null;
             beginTime = null;
             length = null;
             series = null;
@@ -1310,7 +1302,7 @@ public class DriveInquirerView extends ViewPart {
             Transaction tx = NeoUtils.beginTransaction();
             try {
                 series = new TimeSeries(name);
-                Iterator<Node> nodeIterator = getNodeIterator(root, beginTime, length).iterator();
+                Iterator<Node> nodeIterator = getNodeIterator(beginTime, length).iterator();
                 while (nodeIterator.hasNext()) {
                     Node node = (Node)nodeIterator.next();
                     Long time = NeoUtils.getNodeTime(node);
@@ -1433,7 +1425,6 @@ public class DriveInquirerView extends ViewPart {
      */
     private class TimeDataset extends AbstractXYDataset {
 
-        private Node root;
         private Long beginTime;
         private Long length;
         private TimeSeries series;
@@ -1457,8 +1448,7 @@ public class DriveInquirerView extends ViewPart {
          * @param propertyName - property name
          * @param event - event value
          */
-        public void updateDataset(String name, Node root, Long beginTime, int length, String propertyName) {
-            this.root = root;
+        public void updateDataset(String name, Long beginTime, int length, String propertyName) {
             this.beginTime = beginTime;
             this.length = (long)length * 1000 * 60;
             this.propertyName = propertyName;
@@ -1473,7 +1463,6 @@ public class DriveInquirerView extends ViewPart {
          */
         public TimeDataset() {
             super();
-            root = null;
             beginTime = null;
             length = null;
             series = null;
@@ -1491,7 +1480,7 @@ public class DriveInquirerView extends ViewPart {
             Transaction tx = NeoUtils.beginTransaction();
             try {
                 series = new TimeSeries(name);
-                Iterator<Node> nodeIterator = getNodeIterator(root, beginTime, length).iterator();
+                Iterator<Node> nodeIterator = getNodeIterator(beginTime, length).iterator();
                 while (nodeIterator.hasNext()) {
                     Node node = (Node)nodeIterator.next();
                     Long time = NeoUtils.getNodeTime(node);
@@ -1782,31 +1771,32 @@ public class DriveInquirerView extends ViewPart {
      * @param length - end time
      * @return
      */
-    private Iterable<Node> getNodeIterator(Node root, final Long beginTime, final Long length) {
-
-        return root.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
-
-            @Override
-            public boolean isStopNode(TraversalPosition currentPos) {
-                Node node = currentPos.currentNode();
-                if (!NeoUtils.getNodeType(node, "").equals(INeoConstants.MP_TYPE_NAME)) {
-                    return false;
-                }
-                Long nodeTime = NeoUtils.getNodeTime(node);
-                return nodeTime == null ? true : (nodeTime - beginTime > length);
-            }
-        }, new ReturnableEvaluator() {
-
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                Node node = currentPos.currentNode();
-                if (!NeoUtils.getNodeType(node, "").equals(INeoConstants.MP_TYPE_NAME)) {
-                    return false;
-                }
-                Long nodeTime = NeoUtils.getNodeTime(node);
-                return nodeTime == null ? false : (nodeTime - beginTime <= length);
-            }
-        }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+    private Iterable<Node> getNodeIterator(final Long beginTime, final Long length) {
+        return timestampIndex.searchTraverser(new Long[] {beginTime}, new Long[] {beginTime + length + 1});
+        // return root.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+        //
+        // @Override
+        // public boolean isStopNode(TraversalPosition currentPos) {
+        // Node node = currentPos.currentNode();
+        // if (!NeoUtils.getNodeType(node, "").equals(INeoConstants.MP_TYPE_NAME)) {
+        // return false;
+        // }
+        // Long nodeTime = NeoUtils.getNodeTime(node);
+        // return nodeTime == null ? true : (nodeTime - beginTime > length);
+        // }
+        // }, new ReturnableEvaluator() {
+        //
+        // @Override
+        // public boolean isReturnableNode(TraversalPosition currentPos) {
+        // Node node = currentPos.currentNode();
+        // if (!NeoUtils.getNodeType(node, "").equals(INeoConstants.MP_TYPE_NAME)) {
+        // return false;
+        // }
+        // Long nodeTime = NeoUtils.getNodeTime(node);
+        // return nodeTime == null ? false : (nodeTime - beginTime <= length);
+        // }
+        // }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT,
+        // Direction.OUTGOING);
     }
 
     /**
@@ -1850,5 +1840,20 @@ public class DriveInquirerView extends ViewPart {
             }
         }
 
+    }
+
+    /**
+     * Initialized Timestamp index for dataset
+     * 
+     * @param datasetName name of dataset
+     */
+    private void initializeIndex(String datasetName) {
+        try {
+            timestampIndex = new MultiPropertyIndex<Long>(INeoConstants.TIMESTAMP_INDEX_NAME + datasetName,
+                    new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
+            timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 }
