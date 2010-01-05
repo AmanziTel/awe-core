@@ -18,26 +18,29 @@ import java.util.StringTokenizer;
 
 import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
 
+
 /**
- * AT+CCI command
- * 
+ * TODO Purpose of 
+ * <p>
+ *
+ * </p>
  * @author Lagutko_N
  * @since 1.0.0
  */
-class CCI extends AbstractETSICommand {
+class CTSDC extends AbstractETSICommand {
 	
 	/**
 	 * @param syntax
 	 */
-	public CCI(CommandSyntax syntax) {
+	public CTSDC(CommandSyntax syntax) {
 		super(syntax);
 	}
 
 	/*
-	 * Command name 
+	 * Command name
 	 */
-	private static final String COMMAND_NAME = "CCI";
-	
+	private static final String COMMAND_NAME = "CTSDC";
+
 	@Override
 	public String getName() {
 		return COMMAND_PREFIX + COMMAND_NAME;
@@ -45,15 +48,17 @@ class CCI extends AbstractETSICommand {
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new ETSICommandParameter("MNI", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("RSSI", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("BER", ParamterType.FLOAT));
-		parameters.add(new ETSICommandParameter("LA", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("F", ParamterType.FLOAT));
-		parameters.add(new ETSICommandParameter("C1", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("BNC_LA", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("BNC_C2", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("BNC_RSSI", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("AI Service", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("called party ident type", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("area", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("hook", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("simplex", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("end-to-end encryption", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("comms_type", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("slots/codec", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("RqTx", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("priority", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter("CLIR control", ParamterType.INTEGER));
 	}
 
 	@Override
@@ -67,6 +72,11 @@ class CCI extends AbstractETSICommand {
 				break;
 			}
 			result.put(singleParameter.getName(), singleParameter.parseString(parametersTokenizer.nextToken().trim()));
+		}
+		
+		
+		while (parametersTokenizer.hasMoreTokens()) {
+			
 		}
 		
 		return result;

@@ -348,8 +348,17 @@ public abstract class DriveLoader extends AbstractLoader {
         _workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
         _workDate.set(Calendar.SECOND, nodeDate.getSeconds());
         final long timestamp = _workDate.getTimeInMillis();
-        minTimeStamp = minTimeStamp == null ? timestamp : Math.min(minTimeStamp, timestamp);
-        maxTimeStamp = maxTimeStamp == null ? timestamp : Math.max(maxTimeStamp, timestamp);
+        updateTimestampMinMax(timestamp);
         return timestamp;
     }
+
+	/**
+	 * Updates Min and Max timestamp values for this gis
+	 *
+	 * @param timestamp
+	 */
+	protected void updateTimestampMinMax(final long timestamp) {
+		minTimeStamp = minTimeStamp == null ? timestamp : Math.min(minTimeStamp, timestamp);
+        maxTimeStamp = maxTimeStamp == null ? timestamp : Math.max(maxTimeStamp, timestamp);
+	}
 }

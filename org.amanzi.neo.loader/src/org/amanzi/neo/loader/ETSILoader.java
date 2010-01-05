@@ -151,7 +151,7 @@ public class ETSILoader extends DriveLoader {
 	
 	@Override
 	protected void parseLine(String line) {
-		StringTokenizer tokenizer = new StringTokenizer(line, "|");
+		StringTokenizer tokenizer = new StringTokenizer(line, "=|");
 		if (!tokenizer.hasMoreTokens()) {
 			return;
 		}
@@ -184,17 +184,21 @@ public class ETSILoader extends DriveLoader {
 			//get a real name of command without set or get postfix
 			Node mpNode = createMpNode(timestamp);
 			if (mpNode != null) {			
-				String realName = ETSICommandPackage.getRealCommandName(commandName);
-				
 				//parse parameters of command
 				HashMap<String, Object> parameters = null;
 				
-				AbstractETSICommand command = ETSICommandPackage.getCommand(realName);
+				AbstractETSICommand command = ETSICommandPackage.getCommand(commandName);
 				if (command != null) {					
 					parameters = command.getResults(tokenizer);
 				}
+				if (command != null) {
+					commandName = command.getName();
+				}
+				else {
+					commandName = ETSICommandPackage.getRealCommandName(commandName);
+				}
 				
-				createMsNode(mpNode, realName, parameters);
+				createMsNode(mpNode, commandName, parameters);
 			}
 		}
 	}
@@ -287,6 +291,8 @@ public class ETSILoader extends DriveLoader {
 		
 		try {
 			long timestampValue = timestampFormat.parse(timestamp).getTime();
+			
+			updateTimestampMinMax(timestampValue);
 			
 			mpNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestampValue);
 		}

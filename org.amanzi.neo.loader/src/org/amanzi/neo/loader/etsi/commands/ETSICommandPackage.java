@@ -15,6 +15,8 @@ package org.amanzi.neo.loader.etsi.commands;
 
 import java.util.HashMap;
 
+import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand.CommandSyntax;
+
 /**
  * Package of ETSI command
  * 
@@ -29,10 +31,12 @@ public class ETSICommandPackage {
 	private static HashMap<String, AbstractETSICommand> commandsMap = new HashMap<String, AbstractETSICommand>();
 	
 	static {
-		registerCommand(new CCI());
-		registerCommand(new CBS());
-		registerCommand(new CSQ());
-		registerCommand(new CNUM());
+		registerReadSyntaxCommand(new CCI(CommandSyntax.READ));
+		registerReadSyntaxCommand(new CBS(CommandSyntax.READ));
+		registerReadSyntaxCommand(new CSQ(CommandSyntax.READ));
+		registerReadSyntaxCommand(new CNUM(CommandSyntax.READ));
+		
+		registerSetSyntaxCommand(new CTSDC(CommandSyntax.SET));
 	}
 	
 	/**
@@ -40,8 +44,12 @@ public class ETSICommandPackage {
 	 * 
 	 * @param command ETSI command
 	 */
-	private static void registerCommand(AbstractETSICommand command) {
-		commandsMap.put(command.getName(), command);
+	private static void registerReadSyntaxCommand(AbstractETSICommand command) {
+		commandsMap.put(command.getName() + "?", command);
+	}
+	
+	private static void registerSetSyntaxCommand(AbstractETSICommand command) {
+		commandsMap.put(command.getName() + "=", command);
 	}
 	
 	/**

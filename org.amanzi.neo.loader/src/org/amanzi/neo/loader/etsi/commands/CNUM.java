@@ -27,6 +27,13 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
  */
 class CNUM extends AbstractETSICommand {
 	
+	/**
+	 * @param syntax
+	 */
+	public CNUM(CommandSyntax syntax) {
+		super(syntax);
+	}
+
 	/*
 	 * Command name
 	 */

@@ -26,6 +26,13 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
  */
 class CBS extends AbstractETSICommand {
 	
+	/**
+	 * @param syntax
+	 */
+	public CBS(CommandSyntax syntax) {
+		super(syntax);
+	}
+
 	/*
 	 * Name of command
 	 */
