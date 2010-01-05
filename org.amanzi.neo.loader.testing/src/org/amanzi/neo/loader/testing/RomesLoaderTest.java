@@ -36,7 +36,7 @@ public class RomesLoaderTest {
     private static final long MAX_LOAD_TIME = 5 * 1000;
     protected static String filesDir = "files/romes/";
     protected static EmbeddedNeo neo;
-    private static String filename = "test.ASC";
+    private static String filename = "G_YA004_090723_W09_Test.ASC";
     private static long loadTime;
 
 
