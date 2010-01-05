@@ -108,13 +108,21 @@ public class ETSILoader extends DriveLoader {
 	
 	@Override
 	public void run(IProgressMonitor monitor) throws IOException {
-		for (File logFile : getAllLogFilePathes(filename)) {
+		ArrayList<File> allFiles = getAllLogFilePathes(filename);
+		monitor.beginTask("Loading ETSI data", allFiles.size());
+		long before = System.currentTimeMillis();
+		for (File logFile : allFiles) {
+			monitor.subTask("Loading file " + logFile.getAbsolutePath());
+			
 			filename = logFile.getAbsolutePath();
 			newFile = true;
 			typedProperties = null;
 	
-			super.run(monitor);
+			super.run(null);
+			
+			monitor.worked(1);
 		}
+		System.out.println("Load takes " + (System.currentTimeMillis() - before));
 	}
 	
 	@Override
