@@ -13,7 +13,11 @@
 
 package org.amanzi.neo.loader;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +62,18 @@ public class OldNemoVersionLoader extends NemoLoader {
     @Override
     protected void parseLine(String line) {
         try {
-            if (line.startsWith("*") || line.startsWith("#")) {
+            if (_workDate == null && line.startsWith("***")) {
+                _workDate = new GregorianCalendar();
+                Date date;
+                try {
+                    date = new SimpleDateFormat("dd.MM.yyyy").parse(line.split("     ")[2]);
+                } catch (Exception e) {
+                    NeoLoaderPlugin.error("Wrong time format\n" + e.getLocalizedMessage());
+                    date = new Date(new File(filename).lastModified());
+                }
+                _workDate.setTime(date);
+
+            } else if (line.startsWith("*") || line.startsWith("#")) {
                 NeoLoaderPlugin.error("Not parsed: " + line);
                 return;
             }
@@ -108,11 +123,13 @@ public class OldNemoVersionLoader extends NemoLoader {
             if (lon == null || lat == null) {
                 return;
             }
-            long timestamp = timeFormat.parse(time).getTime();
+            long timestamp = getTimeStamp(timeFormat.parse(time));
             Node mp = neo.createNode();
             mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
             mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
-            mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            if (timestamp != 0) {
+                mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            }
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());
             findOrCreateFileNode(mp);

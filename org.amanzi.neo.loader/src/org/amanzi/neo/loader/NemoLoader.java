@@ -13,9 +13,12 @@
 
 package org.amanzi.neo.loader;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,11 +123,13 @@ public class NemoLoader extends DriveLoader {
             if (lon == null || lat == null) {
                 return;
             }
-            long timestamp = timeFormat.parse(time).getTime();
+            long timestamp = getTimeStamp(timeFormat.parse(time));
             Node mp = neo.createNode();
             mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
             mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
-            mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            if (timestamp != 0) {
+                mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            }
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());
             findOrCreateFileNode(mp);
@@ -277,6 +282,18 @@ public class NemoLoader extends DriveLoader {
             Map<String, Object> parParam = event.fill(getVersion(), parameters);
             if (parParam.isEmpty()) {
                 return;
+            }
+            if (_workDate == null && event == NemoEvents.START) {
+                _workDate = new GregorianCalendar();
+                Date date;
+                try {
+                    date = new SimpleDateFormat("dd.MM.yyyy").parse((String)parParam.get("Date"));
+
+                } catch (Exception e) {
+                    NeoLoaderPlugin.error("Wrong time format" + e.getLocalizedMessage());
+                    date = new Date(new File(filename).lastModified());
+                }
+                _workDate.setTime(date);
             }
             parsedParameters.putAll(parParam);
             if (statisticHeaders == null) {

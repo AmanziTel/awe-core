@@ -402,10 +402,31 @@ public abstract class AbstractLoader {
      * @author craig
      * @since 1.0.0
      */
-    protected class DateTimeMapper implements PropertyMapper {
+    protected class DateTimeMapper extends DateMapper {
+
+        /**
+         * @param format
+         */
+        protected DateTimeMapper(String format) {
+            super(format);
+        }
+
+        @Override
+        public Object mapValue(String time) {
+            Date datetime = (Date)super.mapValue(time);
+            return datetime == null ? 0L : datetime.getTime();
+        }
+    }
+
+    /**
+     * Convenience implementation of a property mapper that understands date formats. Construct with
+     * a date-time pattern understood by java.text.SimpleDateFormat. If you pass null of an invalid
+     * format, then the default of "HH:mm:ss" will be used.
+     */
+    protected class DateMapper implements PropertyMapper {
         private SimpleDateFormat format;
 
-        protected DateTimeMapper(String format) {
+        protected DateMapper(String format) {
             try {
                 this.format = new SimpleDateFormat(format);
             } catch (Exception e) {
@@ -420,12 +441,11 @@ public abstract class AbstractLoader {
                 datetime = format.parse(time);
             } catch (ParseException e) {
                 error(e.getLocalizedMessage());
-                return 0L;
+                return null;
             }
-            return datetime.getTime();
+            return datetime;
         }
     }
-
     /**
      * Convenience implementation of a property mapper that assumes the object is a String. This is
      * useful for overriding the default behavior of detecting field formats, and simply keeping the

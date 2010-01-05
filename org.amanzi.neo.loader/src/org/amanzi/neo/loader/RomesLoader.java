@@ -12,9 +12,17 @@
  */
 package org.amanzi.neo.loader;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -39,6 +47,7 @@ public class RomesLoader extends DriveLoader {
     private long timestamp = 0L;
     private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
 
+
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
      * 
@@ -48,9 +57,35 @@ public class RomesLoader extends DriveLoader {
      */
     public RomesLoader(String filename, Display display, String dataset) {
         initialize("Romes", null, filename, display, dataset);
+        initData();
         initializeLuceneIndex();
         initializeKnownHeaders();
         addDriveIndexes();
+    }
+
+    /**
+     *initialize start date
+     */
+    private void initData() {
+        Pattern p = Pattern.compile(".*_(\\d{6})_.*");
+        Matcher m = p.matcher(filename);
+        Date date;
+        if (m.matches()) {
+            String dateText = m.group(1);
+            try {
+                date = (new SimpleDateFormat("yyMMdd")).parse(dateText);
+            } catch (ParseException e) {
+                NeoLoaderPlugin.error("Wrong filename format: " + filename);
+                // TODO ask user?
+                date = new Date(new File(filename).lastModified());
+            }
+        } else {
+            NeoLoaderPlugin.error("Wrong filename format: " + filename);
+            // TODO ask user?
+            date = new Date(new File(filename).lastModified());
+        }
+        _workDate = new GregorianCalendar();
+        _workDate.setTime(date);
     }
 
     /**
@@ -62,6 +97,7 @@ public class RomesLoader extends DriveLoader {
      */
     public RomesLoader(NeoService neo, String filename) {
         initialize("Romes", neo, filename, null, null);
+        initData();
         initializeLuceneIndex();
         initializeKnownHeaders();
         addDriveIndexes();
@@ -84,8 +120,9 @@ public class RomesLoader extends DriveLoader {
                 return originalValue.replaceAll("HO Command.*", "HO Command");
             }
         });
-        addMappedHeader("time", "Timestamp", "timestamp", new DateTimeMapper("HH:mm:ss"));
+        addMappedHeader("time", "Timestamp", "timestamp", new DateMapper("HH:mm:ss"));
         addKnownHeader(INeoConstants.SECTOR_ID_PROPERTIES, ".*Server.*Report.*CI.*");
+        addNonDataHeaders(Arrays.asList(new String[] {"timestamp"}));
         dropHeaderStats(new String[] {"time", "timestamp", "latitude", "longitude", INeoConstants.SECTOR_ID_PROPERTIES});
     }
 
@@ -101,6 +138,7 @@ public class RomesLoader extends DriveLoader {
     }
 
     protected void parseLine(String line) {
+        try {
         // debug(line);
         String fields[] = splitLine(line);
         if (fields.length < 2)
@@ -114,7 +152,8 @@ public class RomesLoader extends DriveLoader {
         last_line = lineNumber;
         Map<String, Object> lineData = makeDataMap(fields);
         this.time = (String)lineData.get("time");
-        this.timestamp = (Long)lineData.get("timestamp");
+        Date nodeDate = (Date)lineData.get("timestamp");
+        this.timestamp = getTimeStamp(nodeDate);
         Float latitude = (Float)lineData.get("latitude");        
         Float longitude = (Float)lineData.get("longitude");
         if (time == null || latitude == null || longitude == null) {
@@ -133,7 +172,14 @@ public class RomesLoader extends DriveLoader {
         if (lineData.size() > 0) {
             data.add(lineData);
         }
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.printStackTrace();
+            e.printStackTrace();
+        }
     }
+
+
 
     /**
      * After all lines have been parsed, this method is called. In this loader we save remaining
@@ -156,7 +202,9 @@ public class RomesLoader extends DriveLoader {
                 Node mp = neo.createNode();
                 mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
                 mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
-                mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
+                if (this.timestamp != 0) {
+                    mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
+                }
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);                
                 mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
@@ -178,7 +226,8 @@ public class RomesLoader extends DriveLoader {
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
                             mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
-                        } else {
+                        } else if (!"timestamp".equals(entry.getKey())) {// timestamp do not store
+                                                                         // in ms node
                             ms.setProperty(entry.getKey(), entry.getValue());
                             haveEvents = haveEvents || INeoConstants.PROPERTY_TYPE_EVENT.equals(entry.getKey());
                         }

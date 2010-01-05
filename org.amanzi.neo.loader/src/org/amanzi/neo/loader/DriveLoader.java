@@ -13,6 +13,8 @@
 package org.amanzi.neo.loader;
 
 import java.net.MalformedURLException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -47,6 +49,8 @@ public abstract class DriveLoader extends AbstractLoader {
     private int countValidMessage = 0;
     private int countValidLocation = 0;
     private int countValidChanged = 0;
+    protected Integer hours = null;
+    protected Calendar _workDate = null;
     /** How many units of work for the progress monitor for each file */
     public static final int WORKED_PER_FILE = 100;
     
@@ -313,29 +317,27 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Node getRootNode() {
         return datasetNode != null ? datasetNode : file;
     }
-    // TODO remove
-    // /**
-    // * finds or create if necessary "sector_drive" node depends on
-    // *
-    // * @param point2
-    // */
-    // protected Node findOrCreateSectorDriveNode(Node mpNode) {
-    //
-    // if (mpNode == null) {
-    // return null;
-    // }
-    //
-    // Node root = getRootNode();
-    // if (root == null) {
-    // return null;
-    // }
-    // Map<String, Object> identifyMap = NeoUtils.getSectorIdentificationMap(mpNode, neo);
-    // if (identifyMap.isEmpty()) {
-    // return null;
-    // }
-    //
-    // Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(root, neo);
-    // Node setorDriveNode = NeoUtils.findOrCreateSectorDrive(sectorDriveRoot, identifyMap, neo);
-    // return setorDriveNode;
-    // }
+
+    /**
+     * get Timestamp of nodeDate
+     * 
+     * @param nodeDate date of node
+     * @return long (0 if nodeDate==null)
+     */
+    protected long getTimeStamp(Date nodeDate) {
+        if (nodeDate == null || _workDate == null) {
+            return 0L;
+        }
+        final int nodeHours = nodeDate.getHours();
+        if (hours != null && hours > nodeHours) {
+            // next day
+            _workDate.add(Calendar.DAY_OF_MONTH, 1);
+
+        }
+        hours = nodeHours;
+        _workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
+        _workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
+        _workDate.set(Calendar.SECOND, nodeDate.getSeconds());
+        return _workDate.getTimeInMillis();
+    }
 }
