@@ -26,7 +26,7 @@ import org.rubypeople.rdt.ui.PreferenceConstants;
 
 public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 	
-	private final String DEFAULT_RUBY_PROJECT_NAME = "AWEScript";
+	private static final String DEFAULT_RUBY_PROJECT_NAME = "AWEScript";
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.IWorkbenchWizard#init(org.eclipse.ui.IWorkbench, org.eclipse.jface.viewers.IStructuredSelection)
@@ -85,7 +85,7 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 	 * @throws CoreException
 	 */
 	
-	private IRubyProject configureRubyProject(String rubyProjectName, String aweProjectName) throws CoreException {
+	public static IRubyProject configureRubyProject(String rubyProjectName, String aweProjectName) throws CoreException {
 		if (rubyProjectName == null) {
 			rubyProjectName = aweProjectName + "." + DEFAULT_RUBY_PROJECT_NAME;
 		}
@@ -128,7 +128,7 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 	 * @return
 	 */
 	
-	private ILoadpathEntry[] getDefaultLoadpathEntry() {
+	private static ILoadpathEntry[] getDefaultLoadpathEntry() {
 		ILoadpathEntry[] defaultJRELibrary = PreferenceConstants.getDefaultRubyVMLibrary();
 		String compliance = null;
 		IPath jreContainerPath = new Path(RubyRuntime.RUBY_CONTAINER);
