@@ -164,6 +164,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         this.transform_d2w = oldTransform.left();
         this.transform_w2d = oldTransform.right();
     }
+
     private Envelope getTransformedBounds() throws TransformException {
         ReferencedEnvelope bounds = getRenderBounds();
         if (bounds == null) {
@@ -251,9 +252,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             String gisName = NeoUtils.getSimpleNodeName(geoNeo.getMainGisNode(), "");
             Iterable<Relationship> relations = geoNeo.getMainGisNode().getRelationships(
                     NetworkRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.INCOMING);
-            ArrayList<GeoNeo> networkGeoNeo = new ArrayList<GeoNeo>();
+            ArrayList<IGeoResource> networkGeoNeo = new ArrayList<IGeoResource>();
             for (Relationship relationship : relations) {
-                GeoNeo network = getNetwork(relationship.getOtherNode(geoNeo.getMainGisNode()));
+                IGeoResource network = getNetwork(relationship.getOtherNode(geoNeo.getMainGisNode()));
                 if (network != null) {
                     networkGeoNeo.add(network);
                 }
@@ -275,7 +276,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 }
             }
             // Integer propertyAdjacency = geoNeo.getPropertyAdjacency();
-            Pair<MathTransform, MathTransform> driveTransform = setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
+            setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
             Envelope data_bounds = geoNeo.getBounds();
             boolean drawFull = true;
@@ -351,7 +352,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             selectedNodes.add(node.getNode());
                         }
                     }
-
                 }
             }
             boolean needDrawLines = !networkGeoNeo.isEmpty() & beginTime != null && endTime != null && beginTime <= endTime;
@@ -543,20 +543,20 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     if (time != null && time >= beginTime && time <= endTime) {
                         Color lineColor;
                         if (haveSelectedEvents) {
-                        Set<String> events = NeoUtils.getEventsList(mpNode, null);
-                        if (!events.isEmpty() && (allEvents || events.contains(selected_events))) {
-                            if (allEvents) {
-                                int i = eventList.indexOf(events.iterator().next());
-                                if (i < 0) {
-                                    i = 0;
+                            Set<String> events = NeoUtils.getEventsList(mpNode, null);
+                            if (!events.isEmpty() && (allEvents || events.contains(selected_events))) {
+                                if (allEvents) {
+                                    int i = eventList.indexOf(events.iterator().next());
+                                    if (i < 0) {
+                                        i = 0;
+                                    }
+                                    Color[] colors = palette.getColors(palette.getMaxColors());
+                                    int index = i % colors.length;
+                                    eventColor = colors[index];
                                 }
-                                Color[] colors = palette.getColors(palette.getMaxColors());
-                                int index = i % colors.length;
-                                eventColor = colors[index];
-                            }
-                            lineColor = eventColor;
-                        } else {
-                            lineColor = FADE_LINE;
+                                lineColor = eventColor;
+                            } else {
+                                lineColor = FADE_LINE;
                             }
                         } else {
                             lineColor = FADE_LINE;
@@ -569,18 +569,18 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                     Direction.OUTGOING)) {
                                 Node sector = null;
                                 Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
-                                GeoNeo networkGisNode = null;
-                                for (GeoNeo networkGis : networkGeoNeo) {
+                                IGeoResource networkGisNode = null;
+                                for (IGeoResource networkResource : networkGeoNeo) {
+                                    GeoNeo networkGis = networkResource.resolve(GeoNeo.class, null);
                                     if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
                                         sector = relationSector.getOtherNode(sectorDrive);
-                                        networkGisNode = networkGis;
+                                        networkGisNode = networkResource;
                                         break;
                                     }
                                 }
                                 if (sector != null) {
-                                    setCrsTransforms(networkGisNode.getCRS());// TODO use cache for
-                                                                              // store CRS?
-                                    // TODO paint
+                                    Pair<MathTransform, MathTransform> driveTransform = setCrsTransforms(networkGisNode.getInfo(
+                                            monitor).getCRS());// TODO
                                     Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
                                             .getOtherNode(sector);
                                     GeoNode siteGn = new GeoNode(site);
@@ -591,7 +591,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                         // JTS.transform(location, world_location,
                                         // transform_w2d.inverse());
                                     }
-                                    java.awt.Point pSite = getContext().worldToPixel(siteGn.getCoordinate());
+                                    java.awt.Point pSite = getContext().worldToPixel(world_location);
+                                    // TODO find SECTOR location.
                                     Color oldColor = g.getColor();
                                     g.setColor(lineColor);
                                     g.drawLine(p.x, p.y, pSite.x, pSite.y);
@@ -705,7 +706,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      * @param otherNode
      * @return
      */
-    private GeoNeo getNetwork(Node networkNode) {
+    private IGeoResource getNetwork(Node networkNode) {
         try {
             List<ILayer> layers = getContext().getMap().getMapLayers();
             for (ILayer iLayer : layers) {
@@ -714,7 +715,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     resource = iLayer.getGeoResource().resolve(GeoNeo.class, null);
 
                     if (resource.getMainGisNode().equals(networkNode)) {
-                        return resource;
+                        return iLayer.getGeoResource();
                     }
                 }
             }
