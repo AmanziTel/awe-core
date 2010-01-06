@@ -12,10 +12,9 @@
  */
 package org.amanzi.awe.awe.views.view.provider;
 
-import java.util.Iterator;
-
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -81,28 +80,35 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
     public Object getParent(Object element) {
         Transaction tx = neoServiceProvider.getService().beginTx();
         try {
-        if (element instanceof NeoNode) {
-            Node node = ((NeoNode)element).getNode();
-            if (node.equals(neoServiceProvider.getService().getReferenceNode())) {
-                return null;
-            } else {
-                Root root = getRoot();
-                NeoNode[] rootChildren = root.getChildren();
-                for (NeoNode neoNode : rootChildren) {
-                    if (neoNode.getNode().equals(node)) {
-                        return root;
+            if (element instanceof NeoNode) {
+                Node node = ((NeoNode)element).getNode();
+                Node referenceNode = neoServiceProvider.getService().getReferenceNode();
+                if (node.equals(referenceNode)) {
+                    return null;
+                } else {
+                    Root root = getRoot();
+                    NeoNode[] rootChildren = root.getChildren();
+                    for (NeoNode neoNode : rootChildren) {
+                        if (neoNode.getNode().equals(node)) {
+                            return root;
+                        }
+                    }
+                    Iterable<Relationship> relationships = node
+                            .getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+                    for (Relationship relation : relationships) {
+                        Node parentNode = relation.getOtherNode(node);
+                        if (parentNode.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) || parentNode.equals(referenceNode)) {
+                            return new NeoNode(parentNode);
+                        }
+                    }
+                    relationships = node.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+                    for (Relationship relation : relationships) {
+                        Node parentNode = relation.getOtherNode(node);
+                        if (parentNode.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) || parentNode.equals(referenceNode)) {
+                            return new NeoNode(parentNode);
+                        }
                     }
                 }
-                Iterator<Relationship> relationships = node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
-                        .iterator();
-                if (!relationships.hasNext()) {
-                    relationships = node.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
-                    if (!relationships.hasNext()) {
-                        return null;
-                    }
-                }
-                return new NeoNode(relationships.next().getStartNode());
-            }
         }
         return null;
         } finally {
