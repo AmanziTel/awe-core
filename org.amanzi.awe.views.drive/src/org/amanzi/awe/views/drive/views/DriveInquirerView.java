@@ -37,6 +37,7 @@ import net.refractions.udig.ui.graphics.Glyph;
 import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -128,6 +129,8 @@ import org.neo4j.api.core.Traverser.Order;
  */
 public class DriveInquirerView extends ViewPart {
 
+    /** int MIN_FIELD_WIDTH field */
+    private static final int MIN_FIELD_WIDTH = 50;
     /** Color COLOR_RIGHT_PROPERTY field */
     private static final Color COLOR_RIGHT_PROPERTY = Color.red;
     /** Color COLOR_LEFT_PROPERTY field */
@@ -142,6 +145,16 @@ public class DriveInquirerView extends ViewPart {
     private static final String PALETTE_LABEL = "Palette";
     private static final String ALL_EVENTS = "all events";
     protected static final String EVENT = "event_type";
+    // memento keys
+    private static final String MEM_DRIVE = "MEM_DRIVE";
+    private static final String MEM_PROPERTY1 = "MEM_PROPERTY1";
+    private static final String MEM_PROPERTY2 = "MEM_PROPERTY2";
+    private static final String MEM_EVENT = "MEM_EVENT";
+    private static final String MEM_START_TIME = "MEM_START_TIME";
+    private static final String MEM_TIME_LENGTH = "MEM_TIME_LENGTH";
+    private static final String MEM_LOGARITHM = "MEM_LOGARITHM";
+    private static final String MEM_PALETTE = "MEM_PALETTE";
+
     private JFreeChart chart;
     private ChartComposite chartFrame;
     private Combo cDrive;
@@ -185,6 +198,15 @@ public class DriveInquirerView extends ViewPart {
     MultiPropertyIndex<Long> timestampIndex = null;
     private Long oldStartTime = null;
     private Integer oldTimeLength = null;
+    // init values
+    private String initProperty1;
+    private String initDrive;
+    private String initProperty2;
+    private String initEvent;
+    private String initTime;
+    private Integer initTimeLen;
+    private String initLogarithm;
+    private String initPalette;
 
     public void createPartControl(Composite parent) {
         Composite frame = new Composite(parent, SWT.FILL);
@@ -195,6 +217,12 @@ public class DriveInquirerView extends ViewPart {
         frame.setLayout(formLayout);
 
         Composite child = new Composite(frame, SWT.FILL);
+        FormData fData = new FormData();
+        fData.top = new FormAttachment(0, 2);
+        fData.left = new FormAttachment(0, 2);
+        fData.right = new FormAttachment(100, -2);
+
+        child.setLayoutData(fData);
         final GridLayout layout = new GridLayout(12, false);
         child.setLayout(layout);
         Label label = new Label(child, SWT.FLAT);
@@ -203,7 +231,7 @@ public class DriveInquirerView extends ViewPart {
         cDrive = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 
         GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        layoutData.minimumWidth = 50;
+        layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cDrive.setLayoutData(layoutData);
 
         label = new Label(child, SWT.FLAT);
@@ -212,7 +240,7 @@ public class DriveInquirerView extends ViewPart {
         cEvent = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        layoutData.minimumWidth = 50;
+        layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cEvent.setLayoutData(layoutData);
 
         label = new Label(child, SWT.NONE);
@@ -220,7 +248,7 @@ public class DriveInquirerView extends ViewPart {
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cProperty1 = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        layoutData.minimumWidth = 50;
+        layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cProperty1.setLayoutData(layoutData);
 
         label = new Label(child, SWT.FLAT);
@@ -229,14 +257,16 @@ public class DriveInquirerView extends ViewPart {
         cProperty2 = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        layoutData.minimumWidth = 50;
+        layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cProperty2.setLayoutData(layoutData);
 
         label = new Label(child, SWT.FLAT);
         label.setText("Start Time:");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         dateStart = new DateTime(child, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
-        dateStart.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        GridData dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        dateStartlayoutData.minimumWidth = 75;
+        dateStart.setLayoutData(dateStartlayoutData);
 
         label = new Label(child, SWT.FLAT);
         label.setText("Length:");
@@ -245,11 +275,13 @@ public class DriveInquirerView extends ViewPart {
         sLength.setMinimum(1);
         sLength.setMaximum(1000);
         sLength.setSelection(5);
-        dateStart.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        GridData timeLenlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        timeLenlayoutData.minimumWidth = 35;
+        sLength.setLayoutData(timeLenlayoutData);
 
         chart = createChart();
         chartFrame = new ChartComposite(frame, SWT.NONE, chart, true);
-        FormData fData = new FormData();
+        fData = new FormData();
         fData.top = new FormAttachment(child, 2);
         fData.left = new FormAttachment(0, 2);
         fData.right = new FormAttachment(100, -2);
@@ -258,7 +290,7 @@ public class DriveInquirerView extends ViewPart {
         chartFrame.setLayoutData(fData);
 
         slider = new Slider(frame, SWT.NONE);
-        slider.setValues(50, 0, 100, 1, 1, 1);
+        slider.setValues(MIN_FIELD_WIDTH, 0, 100, 1, 1, 1);
         fData = new FormData();
         fData.left = new FormAttachment(0, 0);
         fData.right = new FormAttachment(100, 0);
@@ -354,7 +386,70 @@ public class DriveInquirerView extends ViewPart {
         cDrive.setItems(getDriveItems());
 
         addListeners();
+        initializeStartupProperties();
+    }
 
+    /**
+     * initialize startup properies;
+     */
+    private void initializeStartupProperties() {
+        if (!setProperty(cDrive, initDrive)) {
+            return;
+        }
+        formPropertyLists();
+        setProperty(cProperty1, initProperty1);
+        setProperty(cProperty2, initProperty2);
+        setProperty(cEvent, initEvent);
+        try {
+            if (initTime != null) {
+                long beginTime = Long.parseLong(initTime);
+                setBeginTime(beginTime);
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+        }
+        if (initTimeLen != null) {
+            sLength.setSelection(initTimeLen);
+        }
+        setProperty(cPalette, initPalette);
+        try {
+            if (initLogarithm != null) {
+                boolean l = Boolean.parseBoolean(initLogarithm);
+                bLogarithmic.setSelection(l);
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+        }
+        if (bLogarithmic.getSelection()) {
+            XYPlot plot = (XYPlot)chart.getPlot();
+            plot.setRangeAxis(2, axisLog1);
+            plot.setRangeAxis(1, axisLog2);
+            axisLog1.autoAdjustRange();
+            axisLog2.autoAdjustRange();
+        }
+        updateChart();
+    }
+
+    /**
+     * Sets value into property
+     * 
+     * @param combo - Combo
+     * @param value - value
+     * @return if sets is correctly - return true else false
+     */
+    private boolean setProperty(Combo combo, String value) {
+        if (combo == null || value == null) {
+            return false;
+        }
+        for (int i = 0; i < combo.getItemCount(); i++) {
+            if (combo.getItem(i).equals(value)) {
+                combo.select(i);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -962,7 +1057,6 @@ public class DriveInquirerView extends ViewPart {
         xydataset1.updateDataset(cProperty1.getText(), time, length, cProperty1.getText());
         xydataset2.updateDataset(cProperty2.getText(), time, length, cProperty2.getText());
         eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
-
         setsVisible(true);
         fireEventUpdateChart();
     }
@@ -1938,13 +2032,40 @@ public class DriveInquirerView extends ViewPart {
     @Override
     public void saveState(IMemento memento) {
         super.saveState(memento);
-        // TODO implement
+        String drive = cDrive.getText();
+        String property1 = cProperty1.getText();
+        String property2 = cProperty2.getText();
+        String event = cEvent.getText();
+        Long startTime = getBeginTime();
+        String time = startTime == null ? null : startTime.toString();
+        Integer timeLength = sLength.getSelection();
+        Boolean logarithm = bLogarithmic.getSelection();
+        String paletteName = cPalette.getText();
+        memento.putString(MEM_DRIVE, drive);
+        memento.putString(MEM_PROPERTY1, property1);
+        memento.putString(MEM_PROPERTY2, property2);
+        memento.putString(MEM_EVENT, event);
+        memento.putString(MEM_START_TIME, time);
+        memento.putInteger(MEM_TIME_LENGTH, timeLength);
+        memento.putString(MEM_LOGARITHM, logarithm.toString());
+        memento.putString(MEM_PALETTE, paletteName);
+
     }
 
     @Override
     public void init(IViewSite site, IMemento memento) throws PartInitException {
         super.init(site, memento);
-        // TODO implement
+        if (memento == null) {
+            return;
+        }
+        initDrive = memento.getString(MEM_DRIVE);
+        initProperty1 = memento.getString(MEM_PROPERTY1);
+        initProperty2 = memento.getString(MEM_PROPERTY2);
+        initEvent = memento.getString(MEM_EVENT);
+        initTime = memento.getString(MEM_START_TIME);
+        initTimeLen = memento.getInteger(MEM_TIME_LENGTH);
+        initLogarithm = memento.getString(MEM_LOGARITHM);
+        initPalette = memento.getString(MEM_PALETTE);
     }
 
 }
