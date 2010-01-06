@@ -692,7 +692,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
 	public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
 
 		if (!editorInput.exists())
-			throw new PartInitException(editorInput.getName() + "does not exist.");
+			throw new PartInitException(editorInput.getName() + " does not exist.");
 
 		IEditorInput ei = validateEditorInput(editorInput);
 
