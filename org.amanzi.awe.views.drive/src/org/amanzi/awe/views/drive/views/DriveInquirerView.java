@@ -57,6 +57,10 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -75,6 +79,8 @@ import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
@@ -177,6 +183,8 @@ public class DriveInquirerView extends ViewPart {
      * Index for Timestamps
      */
     MultiPropertyIndex<Long> timestampIndex = null;
+    private Long oldStartTime = null;
+    private Integer oldTimeLength = null;
 
     public void createPartControl(Composite parent) {
         Composite frame = new Composite(parent, SWT.FILL);
@@ -403,18 +411,7 @@ public class DriveInquirerView extends ViewPart {
         });
         cProperty1.addSelectionListener(listener);
         cProperty2.addSelectionListener(listener);
-        dateStart.addSelectionListener(new SelectionListener() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                changeDate();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
         bLogarithmic.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -439,18 +436,69 @@ public class DriveInquirerView extends ViewPart {
                 widgetSelected(e);
             }
         });
-        sLength.addSelectionListener(new SelectionListener() {
+        // change
+        // dateStart.addSelectionListener(new SelectionListener() {
+        //
+        // @Override
+        // public void widgetSelected(SelectionEvent e) {
+        // changeDate();
+        // }
+        //
+        // @Override
+        // public void widgetDefaultSelected(SelectionEvent e) {
+        // widgetSelected(e);
+        // }
+        // });
+        dateStart.addFocusListener(new FocusListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateChart();
+            public void focusLost(FocusEvent e) {
+                changeDate();
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
+            public void focusGained(FocusEvent e) {
             }
         });
+        dateStart.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
+                    changeDate();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+        });
+        // change time length
+        sLength.addFocusListener(new FocusListener() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                changeTimeLenght();
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+            }
+        });
+        sLength.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
+                    changeTimeLenght();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+        });
+
         bRight.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -499,7 +547,6 @@ public class DriveInquirerView extends ViewPart {
                 widgetSelected(e);
             }
         });
-
         slider.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -531,6 +578,24 @@ public class DriveInquirerView extends ViewPart {
             }
             
         });
+    }
+
+    /**
+     * Change time length
+     */
+    protected void changeTimeLenght() {
+        if (!isTimeLengthChanged()) {
+            return;
+        }
+        updateChart();
+        oldTimeLength = sLength.getSelection();
+    }
+
+    /**
+     * @return
+     */
+    private boolean isTimeLengthChanged() {
+        return oldTimeLength == null || sLength.getSelection() != oldTimeLength;
     }
 
     private void generateReport() {
@@ -784,12 +849,25 @@ public class DriveInquirerView extends ViewPart {
      *change drive
      */
     protected void changeDate() {
+        if (!isStartDateChanged()) {
+            return;
+        }
         Node gis = getGisNode();
 
         if (gis == null) {
             return;
         }
         updateChart();
+        oldStartTime = getBeginTime();
+    }
+
+    /**
+     *Check changing start date
+     * 
+     * @return true if start date was changed
+     */
+    private boolean isStartDateChanged() {
+        return oldStartTime == null || !getBeginTime().equals(oldStartTime);
     }
 
     /**
@@ -1856,4 +1934,17 @@ public class DriveInquirerView extends ViewPart {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
+
+    @Override
+    public void saveState(IMemento memento) {
+        super.saveState(memento);
+        // TODO implement
+    }
+
+    @Override
+    public void init(IViewSite site, IMemento memento) throws PartInitException {
+        super.init(site, memento);
+        // TODO implement
+    }
+
 }
