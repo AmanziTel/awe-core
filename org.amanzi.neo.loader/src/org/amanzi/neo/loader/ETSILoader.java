@@ -186,7 +186,7 @@ public class ETSILoader extends DriveLoader {
 			return;
 		}
 		
-		if (ETSICommandPackage.isETSICommand(commandName)) {
+		if (ETSICommandPackage.isETSICommand(commandName) || (commandName.equals(UNSOLICITED))) {
 			CommandSyntax syntax = ETSICommandPackage.getCommandSyntax(commandName);
 			if (syntax == CommandSyntax.SET) { 
 				int equalsIndex = commandName.indexOf("=");
@@ -195,7 +195,7 @@ public class ETSILoader extends DriveLoader {
 			}
 			
 			AbstractETSICommand command = ETSICommandPackage.getCommand(commandName, syntax);
-			if ((command == null) && (!commandName.equals(UNSOLICITED))) {
+			if (command == null) {
 				return;
 			}
 			

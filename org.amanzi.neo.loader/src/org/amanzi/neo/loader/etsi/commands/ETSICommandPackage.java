@@ -38,6 +38,7 @@ public class ETSICommandPackage {
 		registerCommand(new ATD());
 		registerCommand(new ATH());
 		registerCommand(new ATA());
+		registerCommand(new UNSOLICITED());
 	}
 	
 	/**
