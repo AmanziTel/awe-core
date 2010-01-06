@@ -47,11 +47,6 @@ public class ETSILoader extends DriveLoader {
 	private static final String UNSOLICITED = "<UNSOLICITED>";
 	
 	/*
-	 *  String COMMAND_PROPERTY_NAME field 
-	 */
-	private static final String COMMAND_PROPERTY_NAME = "command";
-	
-	/*
 	 * ETSI log file extension
 	 */
 	private static final String ETSI_LOG_FILE_EXTENSION = ".log";
@@ -70,6 +65,11 @@ public class ETSILoader extends DriveLoader {
 	 * Previous Mp Node
 	 */
 	private Node previousMpNode;
+	
+	/*
+	 * Previous Ms Node 
+	 */
+	private Node previousMsNode;
 	
 	/*
 	 * List of mm nodes
@@ -257,7 +257,7 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private void createMsNode(Node mpNode, String commandName, HashMap<String, Object> parameters) {
 		Node msNode = neo.createNode();
-		msNode.setProperty(COMMAND_PROPERTY_NAME, commandName);
+		msNode.setProperty(INeoConstants.COMMAND_PROPERTY_NAME, commandName);
 		msNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
 		
 		if (parameters != null) {
@@ -286,6 +286,11 @@ public class ETSILoader extends DriveLoader {
 		mmNodes.clear();
 		
 		mpNode.createRelationshipTo(msNode, GeoNeoRelationshipTypes.CHILD);
+		
+		if (previousMsNode != null) {
+			previousMsNode.createRelationshipTo(msNode, GeoNeoRelationshipTypes.NEXT);
+		}
+		previousMsNode = msNode;
 	}
 	
 	/**
@@ -353,6 +358,7 @@ public class ETSILoader extends DriveLoader {
 			previousMpNode.createRelationshipTo(mpNode, GeoNeoRelationshipTypes.NEXT);
 		}
 		previousMpNode = mpNode;
+		previousMsNode = null;
 		
 		return mpNode;
 	}
@@ -391,6 +397,5 @@ public class ETSILoader extends DriveLoader {
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
-    }
-
+    }	
 }
