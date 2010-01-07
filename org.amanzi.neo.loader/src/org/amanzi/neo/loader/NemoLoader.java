@@ -62,7 +62,7 @@ public class NemoLoader extends DriveLoader {
      * @param dataset to add data to
      */
     public NemoLoader(String filename, Display display, String dataset) {
-        initialize("Romes", null, filename, display, dataset);
+        initialize("Nemo", null, filename, display, dataset);
         timeFormat = new SimpleDateFormat(TIME_FORMAT);
         pointNode = null;
         initializeKnownHeaders();
