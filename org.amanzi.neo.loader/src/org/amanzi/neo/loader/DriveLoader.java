@@ -310,12 +310,7 @@ public abstract class DriveLoader extends AbstractLoader {
         if (maxTimeStamp != null) {
             gis.setProperty(INeoConstants.MAX_TIMESTAMP, maxTimeStamp);
         }
-        try {
-            super.finishUpGis(datasetNode == null ? file : datasetNode);
-        } catch (MalformedURLException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-
+        super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
     }
 
     /**

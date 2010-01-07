@@ -1287,12 +1287,16 @@ public abstract class AbstractLoader {
      * @param mainNode to use to connect to the AWE project
      * @throws MalformedURLException
      */
-    protected final void finishUpGis(Node mainNode) throws MalformedURLException {
-        cleanupGisNode();
+    public static final void finishUpGis(Node mainNode) throws MalformedURLException {
+        NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
         if (neoProvider != null) {
             NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(LoaderUtils.getAweProjectName(), mainNode);
             addDataToCatalog();
         }
+    }
+    
+    public Node getGisNode() {
+    	return gis;
     }
 
     /**
@@ -1310,8 +1314,9 @@ public abstract class AbstractLoader {
      * 
      * @throws MalformedURLException
      */
-    protected void addDataToCatalog() throws MalformedURLException {
+    protected static void addDataToCatalog() throws MalformedURLException {
     	//TODO: Lagutko, 17.12.2009, can be run as a Job
+    	NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
         if (neoProvider != null) {
             String databaseLocation = neoProvider.getDefaultDatabaseLocation();
             NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(

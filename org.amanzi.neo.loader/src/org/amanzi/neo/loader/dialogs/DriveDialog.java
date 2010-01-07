@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.dialogs;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -638,6 +639,14 @@ public class DriveDialog {
 			}
 		}
         
+        if (driveLoader != null) {
+        	try {
+        		DriveLoader.finishUpGis(driveLoader.getGisNode());
+        	}
+        	catch (MalformedURLException e) {
+        		NeoLoaderPlugin.error(e.getMessage());
+        	}
+        }
 		DriveLoader.printTimesStats();
         long memAfter = calculateMemoryUsage();
         NeoLoaderPlugin.info("Memory profile for drive load went from "+memBefore+" to "+memAfter);

@@ -256,6 +256,7 @@ public class NetworkLoader extends AbstractLoader {
         }
         try {
             // add network to project and gis node to catalog
+        	super.cleanupGisNode();
             super.finishUpGis(network);
             if (!isTest()) {
                 showNetworkTree();
