@@ -108,7 +108,7 @@ public class ETSIImportWizardPage extends WizardPage {
         Label label = new Label(main, SWT.LEFT);
         label.setText("Dataset:");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
-        dataset = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
+        dataset = new Combo(main, SWT.DROP_DOWN);
         dataset.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
         dataset.setItems(getAllDatasets());
         dataset.addSelectionListener(new SelectionListener() {
