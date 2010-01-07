@@ -273,7 +273,7 @@ public class ETSIStatisticsDialog {
 		cancel.setLayoutData(cancelButtonFormData);
 		
 		calculateStatistics = new Button(panel, SWT.CENTER);
-		calculateStatistics.setText(Messages.Statistics_Dialog_Cancel_button);
+		calculateStatistics.setText(Messages.Statistics_Dialog_Calculate_button);
 		calculateStatistics.setEnabled(false);
 		FormData loadButtonFormData = new FormData();
 		loadButtonFormData.right = new FormAttachment(cancel, -10);
