@@ -111,6 +111,14 @@ public class ETSIImportWizardPage extends WizardPage {
         dataset = new Combo(main, SWT.DROP_DOWN);
         dataset.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
         dataset.setItems(getAllDatasets());
+        dataset.addModifyListener(new ModifyListener() {
+			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				datasetName = dataset.getText();
+				setPageComplete(isValidPage());
+			}
+		});
         dataset.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -176,6 +184,9 @@ public class ETSIImportWizardPage extends WizardPage {
      * @return Returns the selected Dataset name.
      */
     public String getDatasetName() {
+    	if (datasetName == null) {
+    		return dataset.getText();
+    	}
         return datasetName;
     }
 }
