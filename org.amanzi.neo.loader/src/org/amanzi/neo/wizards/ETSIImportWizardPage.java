@@ -18,6 +18,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -44,6 +45,31 @@ import org.neo4j.api.core.Traverser;
  * @since 1.0.0
  */
 public class ETSIImportWizardPage extends WizardPage {
+	
+	private class DirectoryEditor extends DirectoryFieldEditor {
+		
+		/**
+	     * Creates a directory field editor.
+	     * 
+	     * @param name the name of the preference this field editor works on
+	     * @param labelText the label text of the field editor
+	     * @param parent the parent of the field editor's control
+	     */
+	    public DirectoryEditor(String name, String labelText, Composite parent) {
+	        super(name, labelText, parent);
+	    }
+		
+		/* (non-Javadoc)
+	     * Method declared on StringButtonFieldEditor.
+	     * Opens the directory chooser dialog and returns the selected directory.
+	     */
+	    protected String changePressed() {
+	    	getTextControl().setText(DriveDialog.getDefaultDirectory());
+	    	
+	    	return super.changePressed();
+	    }
+		
+	}
 
 
     private String fileName;
@@ -98,8 +124,7 @@ public class ETSIImportWizardPage extends WizardPage {
                 widgetSelected(e);
             }
         });        
-        editor = new DirectoryFieldEditor("fileSelectESTI", "Directory: ", main); // NON-NLS-1
-
+        editor = new DirectoryEditor("fileSelectESTI", "Directory: ", main); // NON-NLS-1
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
@@ -116,6 +141,7 @@ public class ETSIImportWizardPage extends WizardPage {
     protected void setFileName(String fileName) {
         this.fileName = fileName;
         setPageComplete(isValidPage());
+        DriveDialog.setDefaultDirectory(fileName);
     }
 
     /**
