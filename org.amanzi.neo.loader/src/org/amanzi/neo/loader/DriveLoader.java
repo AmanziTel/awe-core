@@ -356,4 +356,9 @@ public abstract class DriveLoader extends AbstractLoader {
 		minTimeStamp = minTimeStamp == null ? timestamp : Math.min(minTimeStamp, timestamp);
         maxTimeStamp = maxTimeStamp == null ? timestamp : Math.max(maxTimeStamp, timestamp);
 	}
+	
+	public Node getDatasetNode() {
+    	return datasetNode == null ? file : datasetNode;
+    }
+
 }

@@ -1295,10 +1295,6 @@ public abstract class AbstractLoader {
         }
     }
     
-    public Node getGisNode() {
-    	return gis;
-    }
-
     /**
      * Is this a test case running outside AWE application
      * 

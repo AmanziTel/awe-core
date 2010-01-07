@@ -127,6 +127,9 @@ public class ETSILoader extends DriveLoader {
 			
 			monitor.worked(1);
 		}
+		
+		super.cleanupGisNode();
+		super.finishUpGis(getDatasetNode());
 	}
 	
 	@Override
