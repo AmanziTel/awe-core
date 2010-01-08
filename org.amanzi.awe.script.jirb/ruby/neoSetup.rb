@@ -8,3 +8,5 @@ neo_service = NeoServiceProvider.getProvider.getService
 
 Neo4j::Config[:storage_path] = database_location
 Neo4j::start(neo_service)
+
+true
