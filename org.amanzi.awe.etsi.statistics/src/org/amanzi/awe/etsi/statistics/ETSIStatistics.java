@@ -276,6 +276,9 @@ public class ETSIStatistics extends SpreadsheetCreator {
 				row++;
 			}
 		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 		finally {
 			tx.success();
 			tx.finish();

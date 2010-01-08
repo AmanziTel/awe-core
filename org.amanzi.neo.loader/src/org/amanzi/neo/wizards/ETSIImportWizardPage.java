@@ -184,9 +184,6 @@ public class ETSIImportWizardPage extends WizardPage {
      * @return Returns the selected Dataset name.
      */
     public String getDatasetName() {
-    	if (datasetName == null) {
-    		return dataset.getText();
-    	}
         return datasetName;
     }
 }
