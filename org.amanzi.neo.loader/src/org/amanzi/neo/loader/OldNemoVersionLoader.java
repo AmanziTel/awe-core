@@ -50,9 +50,11 @@ public class OldNemoVersionLoader extends NemoLoader {
     protected String latLong = null;
 
     /**
-     * @param filename
-     * @param display
-     * @param dataset
+     * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
+     * 
+     * @param filename of file to load
+     * @param display for opening message dialogs
+     * @param dataset to add data to
      */
     public OldNemoVersionLoader(String filename, Display display, String dataset) {
         super(filename, display, dataset);
@@ -77,34 +79,34 @@ public class OldNemoVersionLoader extends NemoLoader {
                 NeoLoaderPlugin.error("Not parsed: " + line);
                 return;
             }
-        if (parser == null) {
-            determineFieldSepRegex(line);
-        }
+            if (parser == null) {
+                determineFieldSepRegex(line);
+            }
 
-        List<String> parsedLine = parser.parse(line);
-        if (parsedLine.size() < 1) {
-            return;
-        }
-        OldEvent event = new OldEvent(parsedLine);
-        try {
-            event.analyseKnownParameters(headers);
-        } catch (Exception e) {
-            e.printStackTrace();
-            NeoLoaderPlugin.error(e.getLocalizedMessage());
-            return;
-        }
-
-        String latLon = event.latitude + "\t" + event.longitude;
-        if (latLong != null && latLong.equals(latLon)) {
-            createMsNode(event);
-        } else {
-            if (Double.parseDouble(event.latitude) == 0 && Double.parseDouble(event.longitude) == 0) {
-                NeoLoaderPlugin.error("Not parsed: " + line);
+            List<String> parsedLine = parser.parse(line);
+            if (parsedLine.size() < 1) {
                 return;
             }
-            latLong = latLon;
-            createPointNode(event);
-        }
+            OldEvent event = new OldEvent(parsedLine);
+            try {
+                event.analyseKnownParameters(headers);
+            } catch (Exception e) {
+                e.printStackTrace();
+                NeoLoaderPlugin.error(e.getLocalizedMessage());
+                return;
+            }
+
+            String latLon = event.latitude + "\t" + event.longitude;
+            if (latLong != null && latLong.equals(latLon)) {
+                createMsNode(event);
+            } else {
+                if (Double.parseDouble(event.latitude) == 0 && Double.parseDouble(event.longitude) == 0) {
+                    NeoLoaderPlugin.error("Not parsed: " + line);
+                    return;
+                }
+                latLong = latLon;
+                createPointNode(event);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             NeoLoaderPlugin.error("Not parsed: " + line);
@@ -164,10 +166,19 @@ public class OldNemoVersionLoader extends NemoLoader {
 
     }
 
+    /**
+     * <p>
+     * Event - provide information about command (1 row from log file) for file version "1.86"
+     * </p>
+     * 
+     * @author cinkel_a
+     * @since 1.0.0
+     */
     public class OldEvent extends Event {
 
         private String longitude;
         private String latitude;
+        // TODO should we store this property in node?
         private String height;
         private String distance;
         private String GPSstatus;

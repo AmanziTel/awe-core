@@ -54,6 +54,7 @@ public class NemoLoader extends DriveLoader {
     protected Node pointNode;
     protected SimpleDateFormat timeFormat;
     protected Node msNode;
+
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
      * 
@@ -70,7 +71,7 @@ public class NemoLoader extends DriveLoader {
     }
 
     /**
-     *
+     * initialize headers
      */
     protected void initializeKnownHeaders() {
         headers.put(EVENT_ID, new StringHeader(new Header(EVENT_ID, EVENT_ID, 0)));
@@ -80,6 +81,7 @@ public class NemoLoader extends DriveLoader {
         // headers.put(mapRule.key, new MappedHeader(headers.get(TIME), mapRule));
 
     }
+
     @Override
     protected void parseLine(String line) {
 
@@ -112,7 +114,9 @@ public class NemoLoader extends DriveLoader {
     }
 
     /**
-     * @param event
+     * create mp node
+     * 
+     * @param event - event
      */
     protected void createPointNode(Event event) {
         Transaction transaction = neo.beginTx();
@@ -153,7 +157,9 @@ public class NemoLoader extends DriveLoader {
     }
 
     /**
-     * @param event
+     * create ms node
+     * 
+     * @param event - event
      */
     protected void createMsNode(Event event) {
         if (pointNode == null) {
@@ -229,6 +235,14 @@ public class NemoLoader extends DriveLoader {
         parser = new CSVParser(fieldSepRegex);
     }
 
+    /**
+     * <p>
+     * Event - provide information about command (1 row from log file)
+     * </p>
+     * 
+     * @author cinkel_a
+     * @since 1.0.0
+     */
     public class Event {
         protected String eventId;
         protected String time;
@@ -238,7 +252,7 @@ public class NemoLoader extends DriveLoader {
         protected NemoEvents event;
 
         /**
-         * 
+         * constructor
          */
         public Event(List<String> parcedLine) {
             parsedParameters = new LinkedHashMap<String, Object>();
@@ -246,8 +260,9 @@ public class NemoLoader extends DriveLoader {
         }
 
         /**
-         *
-         * @param parcedLine
+         *parse line
+         * 
+         * @param parcedLine - list of string tag
          */
         protected void parse(List<String> parcedLine) {
             eventId = parcedLine.get(0);
@@ -269,7 +284,7 @@ public class NemoLoader extends DriveLoader {
         }
 
         /**
-         *
+         *create parsedParameters - list of parsed parameters of event.
          */
         protected void analyseKnownParameters(Map<String, Header> statisticHeaders) {
             if (parameters.isEmpty()) {
@@ -321,13 +336,20 @@ public class NemoLoader extends DriveLoader {
         }
 
         /**
-         * @return
+         * get version of file format
+         * 
+         * @return ff version
          */
         protected String getVersion() {
             return "2.01";
         }
 
-
+        /**
+         * store all properties in ms node
+         * 
+         * @param msNode - ms node
+         * @param statisticHeaders - statistic headers
+         */
         public void store(Node msNode, Map<String, Header> statisticHeaders) {
             storeProperties(msNode, EVENT_ID, eventId, statisticHeaders);
             storeProperties(msNode, INeoConstants.PROPERTY_TIME_NAME, time, statisticHeaders);
@@ -338,9 +360,12 @@ public class NemoLoader extends DriveLoader {
         }
 
         /**
-         * @param eventId2
-         * @param eventId3
-         * @param statisticHeaders
+         * Store property in node
+         * 
+         * @param msNode - ms node
+         * @param key - key
+         * @param value - value
+         * @param statisticHeaders - statistic headers
          */
         protected void storeProperties(Node msNode, String key, Object value, Map<String, Header> statisticHeaders) {
             if (value == null) {
@@ -350,8 +375,9 @@ public class NemoLoader extends DriveLoader {
             if (header == null) {
                 msNode.setProperty(key, value);
             } else {
+                // TODO remove double parsing
                 Object valueToSave = header.parse(value.toString());
-                if (valueToSave==null){
+                if (valueToSave == null) {
                     // NeoLoaderPlugin.info("Not saved key=" + key + "\t value=" + value);
                     return;
                 }

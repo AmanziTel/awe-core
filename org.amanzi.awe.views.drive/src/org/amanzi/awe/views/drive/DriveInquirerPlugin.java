@@ -23,6 +23,8 @@ import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
@@ -111,6 +113,16 @@ public class DriveInquirerPlugin extends AbstractUIPlugin implements IUpdateData
         }, true);
     }
 
+    /**
+     * Print a message and information about exception to Log
+     * 
+     * @param message message
+     * @param e exception
+     */
+
+    public static void error(String message, Throwable e) {
+        getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message == null ? "" : message, e)); //$NON-NLS-1$
+    }
     @Override
     public void databaseUpdated(UpdateDatabaseEvent event) {
         updateView();

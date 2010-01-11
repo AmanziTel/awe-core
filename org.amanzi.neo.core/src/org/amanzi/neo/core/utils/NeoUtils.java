@@ -410,12 +410,24 @@ public class NeoUtils {
         return result;
     }
 
+    /**
+     * gets neighbour property name
+     * 
+     * @param aNeighbourName - name of neighbour
+     * @return property name
+     */
     public static String getNeighbourPropertyName(String aNeighbourName) {
         return String.format("# '%s' neighbours", aNeighbourName);
     }
 
-    public static String getTransmissionPropertyName(String aNeighbourName) {
-        return String.format("# '%s' transmissions", aNeighbourName);
+    /**
+     * get Transmission property name
+     * 
+     * @param aTransmissionName name of transmission
+     * @return property name
+     */
+    public static String getTransmissionPropertyName(String aTransmissionName) {
+        return String.format("# '%s' transmissions", aTransmissionName);
     }
 
     /**
@@ -464,7 +476,9 @@ public class NeoUtils {
     }
 
     /**
-     * @param node
+     * delete node and all relation from/to it
+     * 
+     * @param node - node to delete
      */
     public static void deleteSingleNode(Node node) {
         Transaction tx = beginTransaction();
@@ -507,8 +521,10 @@ public class NeoUtils {
     }
 
     /**
-     * @param node
-     * @return
+     * get timestamp of node
+     * 
+     * @param node node
+     * @return (Long) timestamp
      */
     public static Long getNodeTime(Node node) {
         if (node.hasProperty("timestamp")) {
@@ -534,7 +550,10 @@ public class NeoUtils {
     }
 
     /**
-     * @param gis
+     * get Traverser of all file node
+     * 
+     * @param gis - gis node
+     * @return Traverser
      */
     public static Traverser getAllFileNodes(Node gis) {
         return gis.traverse(Order.DEPTH_FIRST, getStopEvaluator(3), new ReturnableEvaluator() {
@@ -547,8 +566,10 @@ public class NeoUtils {
     }
 
     /**
-     * @param nodeId
-     * @return
+     * gets node by id
+     * 
+     * @param nodeId node id
+     * @return node
      */
     public static Node getNodeById(Long nodeId) {
         return nodeId == null ? null : NeoServiceProvider.getProvider().getService().getNodeById(nodeId);
@@ -611,7 +632,7 @@ public class NeoUtils {
     }
 
     /**
-     * finds or create if necessary
+     * finds or create if necessary SectorDriveRoot node
      * 
      * @param root - root node of drive network
      * @param neo - NeoService
@@ -639,9 +660,11 @@ public class NeoUtils {
     }
 
     /**
-     * @param mpNode
-     * @param neo - if null then transaction do not created
-     * @return
+     * find or create sector-drive node
+     * 
+     * @param mpNode - mp node
+     * @param neo - neo service if null then transaction do not created
+     * @return sector-drive node
      */
     public static Node findOrCreateSectorDrive(String aDriveName, Node sectorDriveRoot, Node mpNode, NeoService service,
             boolean isNewTransaction) {
@@ -712,26 +735,45 @@ public class NeoUtils {
         }
     }
 
+    /**
+     * finish transaction if it not null
+     * 
+     * @param tx -Transaction or null
+     */
     private static void finishTx(Transaction tx) {
         if (tx != null) {
             tx.finish();
         }
     }
 
+    /**
+     * mark success transaction if it not null
+     * 
+     * @param tx -Transaction or null
+     */
     private static void successTx(Transaction tx) {
         if (tx != null) {
             tx.success();
         }
     }
 
+    /**
+     * begin transaction
+     * 
+     * @param service
+     * @return Transaction if service present else null
+     */
     private static Transaction beginTx(NeoService service) {
         return service == null ? null : service.beginTx();
     }
 
     /**
-     * @param networkGis
-     * @param sectorDrive
-     * @param object
+     * link SectorDrive node with sector node
+     * 
+     * @param networkGis network gis node
+     * @param sectorDrive - SectorDrive node
+     * @param service - neo service if null then transaction do not created
+     * @return sector node or null if sector not found
      */
     public static Node linkWithSector(Node networkGis, Node sectorDrive, NeoService service) {
         Transaction tx = beginTx(service);
@@ -770,9 +812,11 @@ public class NeoUtils {
     }
 
     /**
-     * @param mpNode
-     * @param object
-     * @return
+     * get list of all event of mp node
+     * 
+     * @param mpNode mp node
+     * @param service - neo service if null then transaction do not created
+     * @return list of all event of mp node
      */
     public static Set<String> getEventsList(Node mpNode, NeoService service) {
         // TODO store list of events in mp node

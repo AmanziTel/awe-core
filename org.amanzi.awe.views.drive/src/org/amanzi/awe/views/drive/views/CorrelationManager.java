@@ -14,9 +14,11 @@
 package org.amanzi.awe.views.drive.views;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.amanzi.awe.views.drive.DriveInquirerPlugin;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
@@ -211,18 +213,14 @@ public class CorrelationManager extends ViewPart {
                         removeCorrelation(wrapper);
                     }
                 });
-                // if (item.getBounds(0).contains(point)) {
-                // fillServMenu(manager, (RelationWrapper)item.getData());
-                // } else if (item.getBounds(1).contains(point)) {
-                // fillNeighMenu(manager, (RelationWrapper)item.getData());
-                //
-                // }
             }
         }
     }
 
     /**
-     * @param wrapper
+     * Remove correlation
+     * 
+     * @param wrapper - correlation wrapper
      */
     protected void removeCorrelation(final RowWrapper wrapper) {
         Transaction tx = service.beginTx();
@@ -232,7 +230,7 @@ public class CorrelationManager extends ViewPart {
 
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                    managerRemoveNetworkDriveCorrelation(wrapper);
+                    managerRemoveNetworkDriveCorrelation(monitor, wrapper);
 
                     return Status.OK_STATUS;
                 }
@@ -245,10 +243,13 @@ public class CorrelationManager extends ViewPart {
     }
 
     /**
-     * @param wrapper
+     * Remove correlation manager
+     * 
+     * @param monitor
+     * @param wrapper - correlation wrapper
      * @return
      */
-    protected void managerRemoveNetworkDriveCorrelation(RowWrapper wrapper) {
+    protected void managerRemoveNetworkDriveCorrelation(IProgressMonitor monitor, RowWrapper wrapper) {
         Transaction tx = service.beginTx();
         try {
             wrapper.getRelation().delete();
@@ -259,7 +260,8 @@ public class CorrelationManager extends ViewPart {
             Node root = NeoUtils.findOrCreateSectorDriveRoot(wrapper.getDriveNode(), service, false);
             for (Relationship relation : root.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                 Node node = relation.getOtherNode(root);
-                for (Relationship sectorRelation : node.getRelationships(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING)) {
+                Iterable<Relationship> relationships = node.getRelationships(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING);
+                for (Relationship sectorRelation : relationships) {
                     if (sectorRelation.getProperty(INeoConstants.NETWORK_GIS_NAME).equals(wrapper.getNetworkName())) {
                         relation.delete();
                         break;
@@ -273,7 +275,7 @@ public class CorrelationManager extends ViewPart {
     }
 
     /**
-     * correlate network and drive gis nodes
+     * Correlate network-drive trees correlate network and drive gis nodes
      */
     protected void correlateNetworkDrive() {
         final Node networkGis = gisNetworkNodes.get(cNetwork.getText());
@@ -285,7 +287,7 @@ public class CorrelationManager extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                setNetworkDriveCorrelation(networkGis, driveGis);
+                setNetworkDriveCorrelation(monitor, networkGis, driveGis);
                 updateInputFromDisplay();
 
                 return Status.OK_STATUS;
@@ -296,10 +298,13 @@ public class CorrelationManager extends ViewPart {
     }
 
     /**
-     * @param driveGis
-     * @param networkGis
+     * correlation manager
+     * 
+     * @param monitor - IProgressMonitor
+     * @param driveGis - drive gis node
+     * @param networkGis - network gis node
      */
-    protected void setNetworkDriveCorrelation(Node networkGis, Node driveGis) {
+    protected void setNetworkDriveCorrelation(IProgressMonitor monitor, Node networkGis, Node driveGis) {
         Transaction tx = service.beginTx();
         try {
             for (Relationship relation : networkGis.getRelationships(NetworkRelationshipTypes.LINKED_NETWORK_DRIVE,
@@ -328,10 +333,14 @@ public class CorrelationManager extends ViewPart {
                 if (sectorDrive != null) {
                     NeoUtils.linkWithSector(networkGis, sectorDrive, null);
                 }
+                monitor.setTaskName("Node time " + new Date(NeoUtils.getNodeTime(node)));
             }
             tx.success();
+
         } catch (Exception e) {
-            e.printStackTrace();
+            // TODO remove catch all exception after debug
+            // e.printStackTrace();
+            DriveInquirerPlugin.error(e.getLocalizedMessage(), e);
         } finally {
             tx.finish();
         }
@@ -401,7 +410,7 @@ public class CorrelationManager extends ViewPart {
     }
 
     /**
-     *
+     *fire update from Display thread
      */
     protected void updateInputFromDisplay() {
         ActionUtil.getInstance().runTask(new Runnable() {
@@ -413,6 +422,14 @@ public class CorrelationManager extends ViewPart {
         }, true);
     }
 
+    /**
+     * <p>
+     * Label provider
+     * </p>
+     * 
+     * @author cinkel_a
+     * @since 1.0.0
+     */
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
 
         private ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
@@ -441,7 +458,7 @@ public class CorrelationManager extends ViewPart {
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
 
-                // TODO implement
+                // TODO implement other column if necessary
 
             }
             tabl.setHeaderVisible(true);
@@ -524,8 +541,10 @@ public class CorrelationManager extends ViewPart {
         private final Relationship relation;
 
         /**
-         * @param node
-         * @param relation
+         * Constructor
+         * 
+         * @param node network node
+         * @param relation - relation
          */
         public RowWrapper(Node node, Relationship relation) {
             this.networkNode = node;
