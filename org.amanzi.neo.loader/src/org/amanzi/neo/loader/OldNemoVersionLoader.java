@@ -58,7 +58,7 @@ public class OldNemoVersionLoader extends NemoLoader {
      */
     public OldNemoVersionLoader(String filename, Display display, String dataset) {
         super(filename, display, dataset);
-        possibleFieldSepRegexes = new char[] {' ', '\t', ',', ';'};
+        possibleFieldSepRegexes = new String[] {" ", "\t", ",", ";"};
     }
 
     @Override
@@ -74,16 +74,18 @@ public class OldNemoVersionLoader extends NemoLoader {
                     date = new Date(new File(filename).lastModified());
                 }
                 _workDate.setTime(date);
+                return;
 
             } else if (line.startsWith("*") || line.startsWith("#")) {
                 NeoLoaderPlugin.error("Not parsed: " + line);
                 return;
             }
+            
             if (parser == null) {
-                determineFieldSepRegex(line);
+            	determineFieldSepRegex(line);
             }
-
-            List<String> parsedLine = parser.parse(line);
+        	
+            List<String> parsedLine = splitLine(line);
             if (parsedLine.size() < 1) {
                 return;
             }

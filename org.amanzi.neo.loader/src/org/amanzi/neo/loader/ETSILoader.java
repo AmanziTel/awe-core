@@ -30,6 +30,7 @@ import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand;
 import org.amanzi.neo.loader.etsi.commands.CommandSyntax;
 import org.amanzi.neo.loader.etsi.commands.ETSICommandPackage;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
 
@@ -86,6 +87,11 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private boolean newFile = true;
 	
+	/*
+	 * Is it a last file to proccess
+	 */
+	private boolean lastFile = false;
+	
 	/**
 	 * Creates a loader
 	 * 
@@ -114,7 +120,11 @@ public class ETSILoader extends DriveLoader {
 	
 	@Override
 	public void run(IProgressMonitor monitor) throws IOException {
+		monitor.beginTask("Loading ETSI data", 2);
+		monitor.subTask("Searching for files to load");
 		ArrayList<File> allFiles = getAllLogFilePathes(filename);
+		
+		monitor = SubMonitor.convert(monitor, allFiles.size());
 		monitor.beginTask("Loading ETSI data", allFiles.size());
 		for (File logFile : allFiles) {
 			monitor.subTask("Loading file " + logFile.getAbsolutePath());
@@ -128,8 +138,12 @@ public class ETSILoader extends DriveLoader {
 			monitor.worked(1);
 		}
 		
-		super.cleanupGisNode();
-		super.finishUpGis(getDatasetNode());
+		lastFile = true;
+		
+		cleanupGisNode();
+		finishUpGis(getDatasetNode());
+		commit(false);
+		
 		basename = dataset;
 		printStats(false);
 	}
@@ -402,5 +416,27 @@ public class ETSILoader extends DriveLoader {
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
-    }	
+    }
+	
+	@Override
+	protected boolean haveHeaders() {
+        return true;
+    }
+	
+	int prevLineNumber = 0;
+	
+	@Override
+	protected void commit(boolean restart) {
+		if (restart) {
+			if (lineNumber > prevLineNumber + commitSize) {
+                super.commit(true);
+                prevLineNumber = lineNumber;
+            }
+		}
+		else {
+			if (lastFile) {
+				super.commit(restart);
+			}
+		}
+	}
 }

@@ -49,6 +49,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
@@ -87,7 +88,7 @@ public abstract class AbstractLoader {
     protected String basename = null;
     private Display display;
     private String fieldSepRegex;
-    private String[] possibleFieldSepRegexes = new String[] {"\t", "\\,", "\\;"};
+    protected String[] possibleFieldSepRegexes = new String[] {"\t", "\\,", "\\;", ",", ";"};
     protected int lineNumber = 0;
     private int limit = 0;
     private double[] bbox;
@@ -106,6 +107,8 @@ public abstract class AbstractLoader {
     public static final Class[] KNOWN_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class,
             String.class};
     private boolean indexesInitialized = false;
+    
+    protected CSVParser parser;
 
     protected class Header {
         private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard value sets if count
@@ -507,7 +510,7 @@ public abstract class AbstractLoader {
             this.neo = this.neoProvider.getService();
     }
 
-    private void determineFieldSepRegex(String line) {
+    protected void determineFieldSepRegex(String line) {
         int maxMatch = 0;
         for (String regex : possibleFieldSepRegexes) {
             String[] fields = line.split(regex);
@@ -516,10 +519,11 @@ public abstract class AbstractLoader {
                 fieldSepRegex = regex;
             }
         }
+        parser = new CSVParser(fieldSepRegex.charAt(0));
     }
-
-    protected String[] splitLine(String line) {
-    	return line.split(fieldSepRegex);
+    
+    protected List<String> splitLine(String line) {
+    	return parser.parse(line);
     }
 
     /**
@@ -679,8 +683,8 @@ public abstract class AbstractLoader {
     protected final void parseHeader(String line) {
         debug(line);
         determineFieldSepRegex(line);
-        String fields[] = splitLine(line);
-        if (fields.length < 2)
+        List<String> fields = splitLine(line);
+        if (fields.size() < 2)
             return;
         int index = 0;
         for (String headerName : fields) {
@@ -748,7 +752,7 @@ public abstract class AbstractLoader {
 
     protected HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
     protected Transaction mainTx;
-    private int commitSize = 5000;
+    protected int commitSize = 5000;
     protected String nameGis;
 
     protected List<String> getProperties(Class< ? extends Object> klass) {
@@ -794,12 +798,12 @@ public abstract class AbstractLoader {
         }
     }
 
-    protected final LinkedHashMap<String, Object> makeDataMap(String[] fields) {
+    protected final LinkedHashMap<String, Object> makeDataMap(List<String> fields) {
         LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
         for (String key : headers.keySet()) {
             try {
                 Header header = headers.get(key);
-                String field = fields[header.index];
+                String field = fields.get(header.index);
                 if (field == null || field.length() < 1 || field.equals("?")) {
                     continue;
                 }
@@ -910,6 +914,7 @@ public abstract class AbstractLoader {
             String line;
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
+                
                 if (!haveHeaders()) {
                 	parseHeader(line);                	
                 }
@@ -997,7 +1002,7 @@ public abstract class AbstractLoader {
     }
 
     protected void commit(boolean restart) {
-        if (mainTx != null) {
+    	if (mainTx != null) {
             flushIndexes();
             mainTx.success();
             mainTx.finish();

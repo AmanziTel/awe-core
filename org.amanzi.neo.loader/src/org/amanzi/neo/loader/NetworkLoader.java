@@ -332,7 +332,7 @@ public class NetworkLoader extends AbstractLoader {
         private Map<String, Integer> channelMap = new HashMap<String, Integer>();
         Map<String,Object> lineData = null;
 
-        private NetworkHeader(String[] fields) {
+        private NetworkHeader(List<String> fields) {
             lineData = makeDataMap(fields);
             for (String header : lineData.keySet()) {
                 String name = headerName(header);
@@ -350,7 +350,7 @@ public class NetworkLoader extends AbstractLoader {
             }
         }
 
-        private void setData(String[] fields){
+        private void setData(List<String> fields){
             lineData = makeDataMap(fields);
         }
 
@@ -410,8 +410,8 @@ public class NetworkLoader extends AbstractLoader {
 
 	protected void parseLine(String line) {
         debug(line);
-        String fields[] = splitLine(line);
-        if (fields.length < 3)
+        List<String> fields = splitLine(line);
+        if (fields.size() < 3)
             return;
         if (this.isOverLimit())
             return;

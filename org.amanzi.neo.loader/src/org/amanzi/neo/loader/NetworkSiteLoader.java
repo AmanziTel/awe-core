@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -59,8 +60,8 @@ public class NetworkSiteLoader extends AbstractLoader {
     }
     @Override
     protected void parseLine(String line) {
-        String fields[] = splitLine(line);
-        if (fields.length < 3)
+        List<String> fields = splitLine(line);
+        if (fields.size() < 3)
             return;
         if (this.isOverLimit())
             return;        
@@ -163,7 +164,7 @@ public class NetworkSiteLoader extends AbstractLoader {
         private ArrayList<String> siteData = new ArrayList<String>();
         Map<String, Object> lineData = null;
 
-        private NetworkHeader(String[] fields) {
+        private NetworkHeader(List<String> fields) {
             lineData = makeDataMap(fields);
             for (String header : lineData.keySet()) {
                 String name = headerName(header);
@@ -175,7 +176,7 @@ public class NetworkSiteLoader extends AbstractLoader {
             }
         }
 
-        private void setData(String[] fields) {
+        private void setData(List<String> fields) {
             lineData = makeDataMap(fields);
         }
 

@@ -26,7 +26,6 @@ import java.util.Map;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
-import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
@@ -48,9 +47,7 @@ public class NemoLoader extends DriveLoader {
     protected static final String EVENT_ID = INeoConstants.EVENT_ID;
     /** String TIME_FORMAT field */
     protected static final String TIME_FORMAT = "HH:mm:ss.S";
-    protected CSVParser parser = null;
     protected char fieldSepRegex;
-    protected char[] possibleFieldSepRegexes = new char[] {'\t', ',', ';'};
     protected Node pointNode;
     protected SimpleDateFormat timeFormat;
     protected Node msNode;
@@ -68,6 +65,7 @@ public class NemoLoader extends DriveLoader {
         pointNode = null;
         initializeKnownHeaders();
         addDriveIndexes();
+        possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     }
 
     /**
@@ -84,12 +82,11 @@ public class NemoLoader extends DriveLoader {
 
     @Override
     protected void parseLine(String line) {
-
-        if (parser == null) {
-            determineFieldSepRegex(line);
+    	if (parser == null) {
+        	determineFieldSepRegex(line);
         }
 
-        List<String> parsedLine = parser.parse(line);
+        List<String> parsedLine = splitLine(line);
         if (parsedLine.size() < 1) {
             return;
         }
@@ -219,23 +216,6 @@ public class NemoLoader extends DriveLoader {
     }
 
     /**
-     * determine parser
-     * 
-     * @param line - first event line
-     */
-    protected void determineFieldSepRegex(String line) {
-        int maxMatch = 0;
-        for (char regex : possibleFieldSepRegexes) {
-            String[] fields = line.split(String.valueOf(regex));
-            if (fields.length > maxMatch) {
-                maxMatch = fields.length;
-                fieldSepRegex = regex;
-            }
-        }
-        parser = new CSVParser(fieldSepRegex);
-    }
-
-    /**
      * <p>
      * Event - provide information about command (1 row from log file)
      * </p>
@@ -302,6 +282,7 @@ public class NemoLoader extends DriveLoader {
                 _workDate = new GregorianCalendar();
                 Date date;
                 try {
+                	//TODO: Lagutko, 12.01.2010 move SimleDateFormat to constants
                     date = new SimpleDateFormat("dd.MM.yyyy").parse((String)parParam.get("Date"));
 
                 } catch (Exception e) {

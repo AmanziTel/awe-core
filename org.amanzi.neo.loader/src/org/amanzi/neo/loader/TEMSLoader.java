@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -140,8 +141,8 @@ public class TEMSLoader extends DriveLoader {
 
     protected void parseLine(String line) {
         // debug(line);
-        String fields[] = splitLine(line);
-        if (fields.length < 2)
+        List<String> fields = splitLine(line);
+        if (fields.size() < 2)
             return;
         if (this.isOverLimit())
             return;

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -140,8 +141,8 @@ public class RomesLoader extends DriveLoader {
     protected void parseLine(String line) {
         try {
         // debug(line);
-        String fields[] = splitLine(line);
-        if (fields.length < 2)
+        List<String> fields = splitLine(line);
+        if (fields.size() < 2)
             return;
         if (this.isOverLimit())
             return;
