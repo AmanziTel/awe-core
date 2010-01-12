@@ -20,9 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -168,6 +170,7 @@ public class DriveInquirerView extends ViewPart {
     private Button bReport;
     private LinkedHashMap<String, Node> gisDriveNodes;
     private DateTime dateStart;
+    private Long dateStartTimestamp = null;
     private Spinner sLength;
     private Label lLogarithmic;
     private Button bLogarithmic;
@@ -844,6 +847,7 @@ public class DriveInquirerView extends ViewPart {
      * @param time - time
      */
     private void setBeginTime(Long time) {
+        dateStartTimestamp = time;
         Date date = new Date(time);
         dateStart.setHours(date.getHours());
         dateStart.setMinutes(date.getMinutes());
@@ -947,6 +951,7 @@ public class DriveInquirerView extends ViewPart {
         if (!isStartDateChanged()) {
             return;
         }
+        setTimeFromField();
         Node gis = getGisNode();
 
         if (gis == null) {
@@ -954,6 +959,19 @@ public class DriveInquirerView extends ViewPart {
         }
         updateChart();
         oldStartTime = getBeginTime();
+    }
+
+    /**
+     * Sets time from datetime field
+     */
+    private void setTimeFromField() {
+        GregorianCalendar cl = new GregorianCalendar();
+        cl.setTimeInMillis(dateStartTimestamp);
+        cl.set(Calendar.HOUR_OF_DAY, dateStart.getHours());
+        cl.set(Calendar.MINUTE, dateStart.getMinutes());
+        cl.set(Calendar.SECOND, dateStart.getSeconds());
+        dateStartTimestamp = cl.getTimeInMillis();
+
     }
 
     /**

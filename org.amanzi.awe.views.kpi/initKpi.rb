@@ -10,24 +10,25 @@ database_location = NeoServiceProvider.getProvider.getDefaultDatabaseLocation
 
 Neo4j::Config[:storage_path] = database_location
 Neo4j::start(neo_service)
-
-def sum(property_set)
+module KpiBuilder
+def sum2(property_set)
   property_set.sum
 end
 def count(property_set)
   property_set.count
 end
-
-def allFormula
-  ["sum","count"]
 end
-
+def allFormula
+  KpiBuilder.instance_methods
+end
+include KpiBuilder
 def init
   networkid=KPIPlugin.getDefault.getNetworkId
   $network_root_node=if networkid==nil then nil else Neo4j.load_node(networkid) end
 puts $network_root_node
 driveId=KPIPlugin.getDefault.getDriveId
 $drive_root_node=if driveId==nil then nil else Neo4j.load_node(driveId) end	
+
 puts $drive_root_node
 end
 

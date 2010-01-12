@@ -36,11 +36,13 @@ import org.osgi.framework.BundleContext;
  * The activator class controls the plug-in life cycle
  */
 public class KPIPlugin extends AbstractUIPlugin {
-
+    /** AbstractLoader DEFAULT_DIRRECTORY_LOADER field */
+    public static final String DEFAULT_DIRRECTORY_LOADER = "DEFAULT_DIRRECTORY_LOADER";
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.amanzi.awe.views.kpi";
     private static String CONSOLE_NAME = "NeoLoader Console";
     private static final int BUFFER = 0;
+    private Object synch = new Object();
     private PrintStream output = null;
     private PrintStream error = null;
 	// The shared instance
@@ -63,7 +65,6 @@ public class KPIPlugin extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-        initializeRuby();
 	}
 
     /**
@@ -165,6 +166,18 @@ public class KPIPlugin extends AbstractUIPlugin {
      * @return runtime
      */
     public Ruby getRubyRuntime() {
+        if (runtime == null) {
+            synchronized (synch) {
+                if (runtime == null) {
+                    try {
+                        initializeRuby();
+                    } catch (Exception e) {
+                        // TODO Handle IOException
+                        throw (RuntimeException)new RuntimeException().initCause(e);
+                    }
+                }
+            }
+        }
         return runtime;
     }
 
@@ -216,4 +229,18 @@ public class KPIPlugin extends AbstractUIPlugin {
         return driveId;
     }
 
+    public String getDirectory() {
+        return getPluginPreferences().getString(DEFAULT_DIRRECTORY_LOADER);
+    }
+
+    /**
+     * Sets Default Directory path for file dialogs in TEMSLoad and NetworkLoad
+     * 
+     * @param newDirectory new default directory
+     * @author Lagutko_N
+     */
+
+    public void setDirectory(String newDirectory) {
+        getPluginPreferences().setValue(DEFAULT_DIRRECTORY_LOADER, newDirectory);
+    }
 }

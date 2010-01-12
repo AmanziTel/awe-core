@@ -19,7 +19,9 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -33,6 +35,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.MessageBox;
@@ -88,6 +92,15 @@ public class KpiView extends ViewPart {
 
     private static final String LB_DRIVE = "Drive:";
 
+    private static final String B_SAVE = "Save";
+
+    private static final String B_INIT = "Init";
+
+    private static final String DIALOG_TITLE = "Open Ruby Script file";
+
+    private static final String[] RUBY_FILE_NAMES = new String[] {"Ruby files (*.rb"};
+    private static final String[] RUBY_FILE_EXT = new String[] {"*.rb"};
+
     private Text editor;
 
     private Button bRun;
@@ -105,6 +118,10 @@ public class KpiView extends ViewPart {
     private LinkedHashMap<String, Node> networks = new LinkedHashMap<String, Node>();
 
     private LinkedHashMap<String, Node> drives = new LinkedHashMap<String, Node>();
+
+    private Button bSave;
+
+    private Button bInit;
 
 	/**
 	 * The constructor.
@@ -129,9 +146,14 @@ public class KpiView extends ViewPart {
         bRun.setText(B_RUN);
         bRun.setImage(KPIPlugin.getImageDescriptor("icons/run.gif").createImage());
         bTest = new Button(bottom, SWT.PUSH);
-
         bTest.setText(B_TEST);
         bTest.setImage(KPIPlugin.getImageDescriptor("icons/test.gif").createImage());
+        bSave = new Button(bottom, SWT.PUSH);
+        bSave.setText(B_SAVE);
+        bSave.setImage(KPIPlugin.getImageDescriptor("icons/save.png").createImage());
+        bInit = new Button(bottom, SWT.PUSH);
+        bInit.setText(B_INIT);
+        bInit.setImage(KPIPlugin.getImageDescriptor("icons/init.png").createImage());
         Label labelNetwork = new Label(top, SWT.LEFT);
         labelNetwork.setText(LB_NETWORK);
         networkNode = new Combo(top, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -195,22 +217,18 @@ public class KpiView extends ViewPart {
         editor.setLayoutData(layoutData);
 
         //buttons
-        bottom.setLayout(new FormLayout());
+        bottom.setLayout(new GridLayout(4, true));
 
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(10);
-        layoutData.right = new FormAttachment(40);
-        layoutData.bottom = new FormAttachment(100, -2);
-        bRun.setLayoutData(layoutData);
-
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(60);
-        layoutData.right = new FormAttachment(90);
-        layoutData.bottom = new FormAttachment(100, -2);
-        bTest.setLayoutData(layoutData);
-
+        // bRun.setLayoutData(layoutData);
+        //
+        // layoutData = new FormData();
+        // layoutData.left = new FormAttachment(60);
+        // layoutData.right = new FormAttachment(90);
+        // layoutData.bottom = new FormAttachment(100, -2);
+        // bTest.setLayoutData(layoutData);
 
         right.setLayout(new GridLayout(2, true));
+        // right
         Label label = new Label(right, SWT.CENTER);
         label.setText("Formulas:");
         label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
@@ -236,10 +254,17 @@ public class KpiView extends ViewPart {
      *
      */
     private void fillList() {
-        formulaList.setItems(getAllFormulas());
+        fillFormulas();
         networkNode.setItems(getAllNetworks());
         driveNode.setItems(getAllDrive());
 
+    }
+
+    /**
+     *
+     */
+    private void fillFormulas() {
+        formulaList.setItems(getAllFormulas());
     }
 
     /**
@@ -314,6 +339,26 @@ public class KpiView extends ViewPart {
             return null;
         }
     }
+
+    private void initRubyScript() {
+        final FileDialog dlg = new FileDialog(Display.getCurrent().getActiveShell(), SWT.OPEN);
+        dlg.setText(DIALOG_TITLE);
+        dlg.setFilterNames(RUBY_FILE_NAMES);
+        dlg.setFilterExtensions(RUBY_FILE_EXT);
+        dlg.setFilterPath(KPIPlugin.getDefault().getDirectory());
+        final String filename = dlg.open();
+        if (filename != null) {
+            String script = NeoSplashUtil.getScriptContent(filename);
+            Pair<Boolean, Exception> parseResult = testScript(script);
+            if (parseResult.getLeft()) {
+                KPIPlugin.getDefault().getRubyRuntime().evalScriptlet(script);
+                fillFormulas();
+            } else {
+                testError(parseResult.getRight().getLocalizedMessage());
+            }
+        }
+    }
+
 
     /**
      * get script content for "formula.rb"
@@ -403,6 +448,18 @@ public class KpiView extends ViewPart {
         };
         networkNode.addSelectionListener(listener);
         driveNode.addSelectionListener(listener);
+        bInit.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                initRubyScript();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
     }
 
     /**
@@ -494,16 +551,31 @@ public class KpiView extends ViewPart {
      * parsing script in editor
      */
     protected void testScript() {
+        Pair<Boolean, Exception> parceResult = testScript(getScriptText());
+        if (parceResult.getLeft()) {
+            testOk();
+        } else {
+            testError(parceResult.getRight().getLocalizedMessage());
+        }
+    }
+
+    /**
+     * parsing script
+     * 
+     * @param aTestScript -parsing script content
+     * @return Pair<true-no errors,null or exception if error present>
+     */
+    protected Pair<Boolean, Exception> testScript(String aTestScript) {
         Ruby rubyRuntime = KPIPlugin.getDefault().getRubyRuntime();
         try {
             ThreadContext context = rubyRuntime.getCurrentContext();
             DynamicScope currentScope = context.getCurrentScope();
             ManyVarsDynamicScope newScope = new ManyVarsDynamicScope(new EvalStaticScope(currentScope.getStaticScope()),
                     currentScope);
-            rubyRuntime.parseEval(getScriptText(), "<script>", newScope, 0);
-            testOk();
+            rubyRuntime.parseEval(aTestScript, "<script>", newScope, 0);
+            return new Pair<Boolean, Exception>(true, null);
         } catch (Exception e) {
-            testError(e.getLocalizedMessage());
+            return new Pair<Boolean, Exception>(false, e);
         }
     }
 
