@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.wizards;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -136,9 +137,19 @@ public class ETSIImportWizardPage extends WizardPage {
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
+                dataset.setText(getDatasetDefaultName());
             }
         });
         setControl(main);
+    }
+    
+    private String getDatasetDefaultName() {
+    	String result = editor.getStringValue();
+    	int index = result.lastIndexOf(File.separator);
+    	if (index > 0) {
+    		return result.substring(index + 1);
+    	}
+    	return result;
     }
 
     /**
