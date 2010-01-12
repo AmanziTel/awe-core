@@ -130,6 +130,8 @@ public class ETSILoader extends DriveLoader {
 		
 		super.cleanupGisNode();
 		super.finishUpGis(getDatasetNode());
+		basename = dataset;
+		printStats(false);
 	}
 	
 	@Override

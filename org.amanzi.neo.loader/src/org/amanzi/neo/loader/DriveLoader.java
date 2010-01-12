@@ -12,7 +12,6 @@
  */
 package org.amanzi.neo.loader;
 
-import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -211,8 +210,10 @@ public abstract class DriveLoader extends AbstractLoader {
             int[] pn_counts = stats.get(pn_code);
             notify("\t" + pn_code + " measured " + pn_counts[0] + " times (average Ec/Io = " + pn_counts[1] / pn_counts[0] + ")");
         }
-        if (file != null && verbose) {
-            printMeasurements(file);
+        if (file != null) {
+        	if (verbose) {
+        		printMeasurements(file);
+        	}
         } else {
             error("No measurement file node found");
         }
