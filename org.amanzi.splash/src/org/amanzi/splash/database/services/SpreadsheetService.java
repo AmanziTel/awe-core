@@ -44,6 +44,9 @@ import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
+import org.rubypeople.rdt.refactoring.core.renamelocal.LocalVariableRenamer;
+import org.rubypeople.rdt.refactoring.documentprovider.DocumentProvider;
+import org.rubypeople.rdt.refactoring.documentprovider.StringDocumentProvider;
 
 import com.eteks.openjeks.format.CellFormat;
 
@@ -719,6 +722,22 @@ public class SpreadsheetService {
 				for (CellNode cellInColumn : cellInRow.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, true)) {
 					cellInColumn.setCellRow(cellInColumn.getCellRow() + 1);
 					spreadsheet.updateCellIndex(cellInColumn);
+					
+					Iterator<CellNode> referencedNode = cellInColumn.getReferencedNodes();
+					String formula = cellInColumn.getDefinition();
+					
+					while (referencedNode.hasNext()) {
+						CellNode nodeToUpdate = referencedNode.next();
+						
+						int oldRow = nodeToUpdate.getCellRow();
+						int newRow = oldRow + 1;
+						int column = nodeToUpdate.getCellColumn();						
+												
+						formula = updatingFormula(formula, oldRow, column, newRow, column);
+					}
+					if (formula != null) {
+						cellInColumn.setDefinition(formula);
+					}
 				}
 				int columnIndex = cellInRow.getCellColumn();	        
 				spreadsheet.clearCellIndex(rowIndex, columnIndex);
@@ -727,6 +746,7 @@ public class SpreadsheetService {
 		}
 		catch (Exception e) {
 			transaction.failure();
+			e.printStackTrace();
 		}
 		finally {
 			transaction.finish();
@@ -986,5 +1006,27 @@ public class SpreadsheetService {
 			//commit changes to database
 			NeoServiceProvider.getProvider().commit();
 		}
+	}
+	
+	private String updatingFormula(String formula, int rowIndex, int columnIndex, int newRowIndex, int newColumnIndex) {
+		String oldCellId = new CellID(rowIndex - 1, columnIndex - 1).getFullID().toLowerCase();
+		String newCellId = new CellID(newRowIndex - 1, newColumnIndex - 1).getFullID().toLowerCase();
+		String prefix = oldCellId + " = 0\n";
+		
+		if (formula == null) {
+			return null;
+		}
+		
+		if (!formula.contains("=")) {
+			return null;
+		}
+		
+		String formulaToEdit = prefix + formula.substring(formula.indexOf("=") + 1);
+		
+		StringDocumentProvider provider = new StringDocumentProvider("Cell script", formulaToEdit);
+		LocalVariableRenamer renamer = new LocalVariableRenamer(provider, oldCellId, newCellId);
+		DocumentProvider result = renamer.rename();
+		String newFormula = result.getActiveFileContent();
+		return "=" + newFormula.substring(newFormula.indexOf("\n") + 1);
 	}
 }
