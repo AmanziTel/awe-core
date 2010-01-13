@@ -87,11 +87,6 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private boolean newFile = true;
 	
-	/*
-	 * Is it a last file to proccess
-	 */
-	private boolean lastFile = false;
-	
 	/**
 	 * Creates a loader
 	 * 
@@ -138,11 +133,8 @@ public class ETSILoader extends DriveLoader {
 			monitor.worked(1);
 		}
 		
-		lastFile = true;
-		
 		cleanupGisNode();
 		finishUpGis(getDatasetNode());
-		commit(false);
 		
 		basename = dataset;
 		printStats(false);
@@ -423,20 +415,4 @@ public class ETSILoader extends DriveLoader {
         return true;
     }
 	
-	int prevLineNumber = 0;
-	
-	@Override
-	protected void commit(boolean restart) {
-		if (restart) {
-			if (lineNumber > prevLineNumber + commitSize) {
-                super.commit(true);
-                prevLineNumber = lineNumber;
-            }
-		}
-		else {
-			if (lastFile) {
-				super.commit(restart);
-			}
-		}
-	}
 }
