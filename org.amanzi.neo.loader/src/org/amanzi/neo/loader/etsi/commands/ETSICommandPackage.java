@@ -66,7 +66,7 @@ public class ETSICommandPackage {
 			return null;
 		}
 		else {
-			return commandsMap.get(commandName);
+			return commandsMap.get(getRealCommandName(commandName));
 		}
 	}
 	
