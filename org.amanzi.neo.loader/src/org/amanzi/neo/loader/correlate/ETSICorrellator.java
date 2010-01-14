@@ -22,6 +22,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.neo4j.api.core.Direction;
@@ -68,6 +69,7 @@ public class ETSICorrellator {
 	 */
 	public void correlate(String firstDataset, String secondDataset) {
 		Transaction tx = neoService.beginTx();
+        NeoUtils.addTransactionLog(tx, Thread.currentThread(), "correlate");
 		try {
 			initializeIndex(secondDataset);
 		

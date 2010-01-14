@@ -12,9 +12,7 @@
  */
 package org.amanzi.awe.render.network;
 
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.Plugin;
-import org.neo4j.api.core.Transaction;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -28,7 +26,7 @@ public class Activator extends Plugin {
 	// The shared instance
 	private static Activator plugin;
 
-    private Transaction currentTransaction;
+    // private Transaction currentTransaction;
 	
 	/**
 	 * The constructor
@@ -43,7 +41,7 @@ public class Activator extends Plugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-        currentTransaction = NeoServiceProvider.getProvider().getService().beginTx();
+        // currentTransaction = NeoServiceProvider.getProvider().getService().beginTx();
 	}
 
 	/**
@@ -52,7 +50,7 @@ public class Activator extends Plugin {
 	 */
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
-        currentTransaction.finish();
+        // currentTransaction.finish();
 		super.stop(context);
 	}
 

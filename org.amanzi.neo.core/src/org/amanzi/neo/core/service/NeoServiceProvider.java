@@ -146,10 +146,10 @@ public class NeoServiceProvider implements IPropertyChangeListener{
         }
 
     }
-    
+
     /**
-     * Returns current location of Neo-database 
-     *
+     * Returns current location of Neo-database
+     * 
      * @return
      */
     

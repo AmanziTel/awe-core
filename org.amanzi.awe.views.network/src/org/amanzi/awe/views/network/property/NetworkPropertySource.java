@@ -14,7 +14,6 @@ package org.amanzi.awe.views.network.property;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -145,6 +144,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "updateLayer");
                 try {
                     Node gisNode = NeoUtils.findGisNodeByChild((Node)container);
                     if (gisNode != null) {

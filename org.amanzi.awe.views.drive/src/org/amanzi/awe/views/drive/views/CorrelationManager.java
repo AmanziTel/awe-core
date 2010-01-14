@@ -251,6 +251,7 @@ public class CorrelationManager extends ViewPart {
      */
     protected void managerRemoveNetworkDriveCorrelation(IProgressMonitor monitor, RowWrapper wrapper) {
         Transaction tx = service.beginTx();
+        NeoUtils.addTransactionLog(tx, Thread.currentThread(), "managerRemoveNetworkDriveCorrelation");
         try {
             wrapper.getRelation().delete();
             tx.success();
@@ -306,6 +307,7 @@ public class CorrelationManager extends ViewPart {
      */
     protected void setNetworkDriveCorrelation(IProgressMonitor monitor, Node networkGis, Node driveGis) {
         Transaction tx = service.beginTx();
+        NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setNetworkDriveCorrelation");
         try {
             for (Relationship relation : networkGis.getRelationships(NetworkRelationshipTypes.LINKED_NETWORK_DRIVE,
                     Direction.OUTGOING)) {

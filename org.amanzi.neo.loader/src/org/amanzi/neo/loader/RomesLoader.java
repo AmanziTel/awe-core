@@ -205,6 +205,7 @@ public class RomesLoader extends DriveLoader {
                 mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
                 if (this.timestamp != 0) {
                     mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
+                    updateTimestampMinMax(timestamp);
                 }
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);                

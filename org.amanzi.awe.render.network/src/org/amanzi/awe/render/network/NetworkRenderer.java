@@ -201,6 +201,7 @@ public class NetworkRenderer extends RendererImpl {
         Map<Point, String> labelsMap = new HashMap<Point, String>();
         NeoService neo = NeoServiceProvider.getProvider().getService();
         Transaction tx = neo.beginTx();
+        NeoUtils.addTransactionLog(tx, Thread.currentThread(), "render Network");
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));

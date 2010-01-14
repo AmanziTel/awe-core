@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.core.utils;
 
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -842,5 +843,17 @@ public class NeoUtils {
         } finally {
             finishTx(tx);
         }
+    }
+
+    public static void addTransactionLog(Transaction transaction, Thread thread, String description) {
+        PrintStream out;
+        final String simpleName = transaction == null ? "" : transaction.getClass().getSimpleName();
+        if (simpleName.isEmpty() || simpleName.equals("TransactionImpl")) {
+            out = System.out;
+        } else {
+            out = System.err;
+        }
+        out.println(new StringBuilder("Transaction:\t").append(thread.getId()).append("\t").append(thread.getName()).append("\t")
+                .append(simpleName).append("\t").append(description));
     }
 }

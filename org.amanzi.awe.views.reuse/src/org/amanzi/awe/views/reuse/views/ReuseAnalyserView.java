@@ -614,6 +614,7 @@ public class ReuseAnalyserView extends ViewPart {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoUtils.beginTransaction();
+                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "saveColors");
                 try {
                     RGB rgbLeft = colorLeft.getColorValue();
                     if (rgbLeft != null) {
@@ -932,6 +933,7 @@ public class ReuseAnalyserView extends ViewPart {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoUtils.beginTransaction();
+                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "dbWork");
                 try {
 
                     return Status.OK_STATUS;
@@ -950,11 +952,17 @@ public class ReuseAnalyserView extends ViewPart {
 
             @Override
             public void run() {
-                title = aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
+                Transaction tx = NeoUtils.beginTransaction();
+                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setTitle");
+                try {
+                    title = aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
+                } finally {
+                    tx.finish();
+                }
             }
 
         }));
-        dbJob.schedule();
+        // dbJob.schedule();
         currentPalette = getPalette(aggrNode);
         colorLeft.setColorValue(getColorLeft(aggrNode));
         colorRight.setColorValue(getColorRight(aggrNode));
@@ -1266,6 +1274,7 @@ public class ReuseAnalyserView extends ViewPart {
         public IStatus run(IProgressMonitor monitor) {
             try {
                 Transaction tx = NeoUtils.beginTransaction();
+                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "ComputeStatisticsJob");
                 try {
                     node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select, monitor);
                     tx.success();
@@ -2750,6 +2759,8 @@ public class ReuseAnalyserView extends ViewPart {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     Transaction tx = NeoUtils.beginTransaction();
+                    NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setPalette");
+
                     try {
                     if (aggrNode != null) {
                         if (currentPalette != null) {
@@ -2802,6 +2813,7 @@ public class ReuseAnalyserView extends ViewPart {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     Transaction tx = NeoUtils.beginTransaction();
+                    NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setAggrNode");
                     try {
                         Iterator<Node> iteratorChild = aggrNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
                                 ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)

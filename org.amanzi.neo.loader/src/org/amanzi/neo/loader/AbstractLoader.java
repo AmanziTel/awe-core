@@ -906,6 +906,7 @@ public abstract class AbstractLoader {
         String characterSet = NeoLoaderPlugin.getDefault().getCharacterSet();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, characterSet));
         mainTx = neo.beginTx();
+        NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "AbstractLoader");
         try {
             initializeIndexes();
             int perc = is.percentage();
