@@ -37,14 +37,11 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
@@ -65,10 +62,6 @@ import org.neo4j.api.core.Transaction;
  * @author craig
  */
 public class NetworkLoader extends AbstractLoader {
-    /** String LOAD_NETWORK_TITLE field */
-    private static final String LOAD_NETWORK_TITLE = "Load Network";
-    private static final String LOAD_NETWORK_MSG = "This network is already loaded into the database.\nDo you wish to overwrite the data?";
-
     /**
 	 * This class handles the CRS specification.
 	 * Currently it is hard coded to return WGS84 (EPSG:4326) for data that looks like lat/long
@@ -221,7 +214,7 @@ public class NetworkLoader extends AbstractLoader {
             trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
         } catch (Exception e) {
         }
-        if (findOrCreateNetworkNode(network, askIfOverwrite(), false) != null) {
+        if ((network = findOrCreateNetworkNode(network, false)) != null) {
             return null != findOrCreateGISNode(network, GisTypes.NETWORK.getHeader());
         } else {
             return false;
@@ -493,29 +486,7 @@ public class NetworkLoader extends AbstractLoader {
         }
     }
 
-    
-
-    private static boolean askIfOverwrite() {
-        int resultMsg = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
-            int result;
-            @Override
-            public void run() {
-                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES
-                        | SWT.NO);
-                msg.setText(LOAD_NETWORK_TITLE);
-                msg.setMessage(LOAD_NETWORK_MSG);
-                result = msg.open();
-            }
-
-            @Override
-            public Integer getValue() {
-                return new Integer(result);
-            }
-        });
-        return resultMsg == SWT.YES;
-    }
-
-	/**
+    /**
 	 * This code expects you to create a transaction around it, so don't forget to do that.
 	 * @param parent
 	 * @param type

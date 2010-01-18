@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.index.MultiPropertyIndex;
@@ -111,6 +112,10 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private Node currentDirectoryNode;
 	
+	private Node currentCallNode;
+	
+	private Node previousCallNode;
+	
 	/**
 	 * Creates a loader
 	 * 
@@ -156,7 +161,7 @@ public class ETSILoader extends DriveLoader {
 		}
 		
 		basename = networkName;
-		this.networkNode = findOrCreateNetworkNode(null, false, true);			
+		this.networkNode = findOrCreateNetworkNode(null, true);			
 		findOrCreateGISNode(this.networkNode, GisTypes.NETWORK.getHeader());
 		gis = null;		
 		basename = oldBasename;
@@ -550,6 +555,22 @@ public class ETSILoader extends DriveLoader {
 	@Override
 	protected boolean haveHeaders() {
         return true;
-    }
-	
+	}
+
+	private Node createCallNode() {
+		Transaction transaction = neo.beginTx();
+		try {
+			currentCallNode = neo.createNode();
+			
+			transaction.success();
+		}
+		catch (Exception e) {
+			NeoCorePlugin.error(null, e);
+		}
+		finally {
+			transaction.finish();
+		}
+		
+		return currentCallNode;
+	}
 }

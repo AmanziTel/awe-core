@@ -64,7 +64,9 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
@@ -80,6 +82,11 @@ import org.neo4j.api.core.Traverser.Order;
 public abstract class AbstractLoader {
     /** AbstractLoader DEFAULT_DIRRECTORY_LOADER field */
     public static final String DEFAULT_DIRRECTORY_LOADER = "DEFAULT_DIRRECTORY_LOADER";
+    
+    /** String LOAD_NETWORK_TITLE field */
+    private static final String LOAD_NETWORK_TITLE = "Load Network";
+    private static final String LOAD_NETWORK_MSG = "This network is already loaded into the database.\nDo you wish to overwrite the data?";
+    
     private String typeName = "CSV";
     protected NeoService neo;
     private NeoServiceProvider neoProvider;
@@ -1518,7 +1525,7 @@ public abstract class AbstractLoader {
      * 
      * @param gis gis node
      */
-	protected Node findOrCreateNetworkNode(Node network, boolean askIfOverwrite, boolean returnFounded) {
+	protected Node findOrCreateNetworkNode(Node network, boolean returnFounded) {
         if (network == null) {
             Transaction tx = neo.beginTx();
             try {
@@ -1540,19 +1547,17 @@ public abstract class AbstractLoader {
                     if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(basename)) {
                         debug("Found matching Network node " + node + ": " + node.getProperty("name", "").toString());
                         try {
+                        	if (returnFounded) {
+                        		return node;
+                        	}
                             // remove all incoming relationships
                             for (Relationship relationshipIn : node.getRelationships(Direction.INCOMING)) {
                                 relationshipIn.delete();
                             }
                             if(isTest()) throw new Exception("Test mode");
                             PlatformUI.getWorkbench();
-                            if (!askIfOverwrite) {
-                            	if (returnFounded) {
-                            		return node;
-                            	}
-                            	else {
-                            		return null;
-                            	}
+                            if (!askIfOverwrite()) {
+                            	return null;
                         	}
                             NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
                         } catch (Exception e) {
@@ -1575,6 +1580,26 @@ public abstract class AbstractLoader {
             }
         }
         return network;
+    }
+	
+	private static boolean askIfOverwrite() {
+        int resultMsg = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
+            int result;
+            @Override
+            public void run() {
+                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES
+                        | SWT.NO);
+                msg.setText(LOAD_NETWORK_TITLE);
+                msg.setMessage(LOAD_NETWORK_MSG);
+                result = msg.open();
+            }
+
+            @Override
+            public Integer getValue() {
+                return new Integer(result);
+            }
+        });
+        return resultMsg == SWT.YES;
     }
 
 }
