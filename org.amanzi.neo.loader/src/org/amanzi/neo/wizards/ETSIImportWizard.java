@@ -45,7 +45,7 @@ public class ETSIImportWizard extends Wizard implements IImportWizard {
         Job job = new Job("Load ETSI '" + (new File(mainPage.getFileName())).getName() + "'") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-            	ETSILoader loader = new ETSILoader(mainPage.getFileName(), null, mainPage.getDatasetName());
+            	ETSILoader loader = new ETSILoader(mainPage.getFileName(), null, mainPage.getDatasetName(), mainPage.getNetworkName());
                 
                 try {
                 	loader.run(monitor);

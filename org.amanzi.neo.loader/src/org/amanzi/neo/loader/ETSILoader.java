@@ -19,20 +19,29 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand;
 import org.amanzi.neo.loader.etsi.commands.CommandSyntax;
 import org.amanzi.neo.loader.etsi.commands.ETSICommandPackage;
+import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * Loader of ETSI data
@@ -87,15 +96,30 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private boolean newFile = true;
 	
+	/*
+	 * Network node for Probes data
+	 */
+	private Node networkNode;
+	
+	/*
+	 * Name of directory
+	 */
+	private String directoryName;
+	
+	/*
+	 * Node for current directory
+	 */
+	private Node currentDirectoryNode;
+	
 	/**
 	 * Creates a loader
 	 * 
 	 * @param directoryName name of directory to import
 	 * @param display
-	 * @param dataset name of dataset
+	 * @param datasetName name of dataset
 	 */
-	public ETSILoader(String directoryName, Display display, String dataset) {
-		if (dataset == null) {
+	public ETSILoader(String directoryName, Display display, String datasetName, String networkName) {
+		if (datasetName == null) {
 			int startIndex = directoryName.lastIndexOf(File.separator);
 			if (startIndex < 0) {
 				startIndex = 0;
@@ -103,14 +127,39 @@ public class ETSILoader extends DriveLoader {
 			else {
 				startIndex++;
 			}
-			dataset = directoryName.substring(startIndex);
+			datasetName = directoryName.substring(startIndex);
 		}
-		initialize("ETSI", null, directoryName, display, dataset);
-		this.filename = directoryName;
+		
+		this.directoryName = directoryName;
+		this.filename = directoryName;		
+		
+		initialize("ETSI", null, directoryName, display, datasetName);
+		initializeNetwork(networkName);
 		
 		addDriveIndexes();
 		
 		timestampFormat = new SimpleDateFormat(TIMESTAMP_FORMAT);
+	}
+	
+	/**
+	 * Initializes Network for probes
+	 *
+	 * @param networkName name of network
+	 */
+	private void initializeNetwork(String networkName) {
+		String oldBasename = basename;
+		if ((networkName == null) || (networkName.length() == 0)) {
+			networkName = basename + " Probes";
+		}
+		else {
+			networkName = networkName.trim();
+		}
+		
+		basename = networkName;
+		this.networkNode = findOrCreateNetworkNode(null, false, true);			
+		findOrCreateGISNode(this.networkNode, GisTypes.NETWORK.getHeader());
+		gis = null;		
+		basename = oldBasename;
 	}
 	
 	@Override
@@ -125,6 +174,8 @@ public class ETSILoader extends DriveLoader {
 			monitor.subTask("Loading file " + logFile.getAbsolutePath());
 			
 			filename = logFile.getAbsolutePath();
+			currentDirectoryNode = findOrCreateDirectoryNode(null, logFile.getParentFile());
+			
 			newFile = true;
 			typedProperties = null;
 	
@@ -138,6 +189,69 @@ public class ETSILoader extends DriveLoader {
 		
 		basename = dataset;
 		printStats(false);
+	}
+	
+	/**
+	 * Searches for Directory node and creates it if it cannot be found
+	 *
+	 * @param parentDirectoryNode node of parent directory
+	 * @param directoryFile file of Directory
+	 * @return founded directory node
+	 */
+	private Node findOrCreateDirectoryNode(Node parentDirectoryNode, File directoryFile) {
+		Transaction tx = neo.beginTx();
+		try {			
+			final String directoryName = directoryFile.getName();
+			String directoryPath = directoryFile.getPath();
+			
+			if (!directoryPath.equals(this.directoryName)) {
+				parentDirectoryNode = findOrCreateDirectoryNode(parentDirectoryNode, directoryFile.getParentFile());
+			}
+		
+			if (parentDirectoryNode == null) {
+				parentDirectoryNode = getDatasetNode();
+				if (parentDirectoryNode == null) {
+					parentDirectoryNode = findOrCreateDatasetNode(neo.getReferenceNode(), dataset);
+					datasetNode = parentDirectoryNode;
+					findOrCreateGISNode(parentDirectoryNode, GisTypes.DRIVE.getHeader());
+				}
+			}
+		
+			Iterator<Node> directoryIterator = parentDirectoryNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+			
+				@Override
+				public boolean isReturnableNode(TraversalPosition currentPos) {
+					return currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME) &&
+						   currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.DIRECTORY_TYPE_NAME) &&
+						   currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_NAME_NAME) &&
+						   currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(directoryName);
+				}
+			}, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+		
+			if (directoryIterator.hasNext()) {
+				tx.success();
+				return directoryIterator.next();
+			}
+			else {
+				Node directoryNode = neo.createNode();
+				directoryNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DIRECTORY_TYPE_NAME);
+				directoryNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, directoryName);
+				directoryNode.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, directoryPath);
+				
+				parentDirectoryNode.createRelationshipTo(directoryNode, GeoNeoRelationshipTypes.NEXT);
+				
+				tx.success();
+				return directoryNode;
+			}
+		}
+		catch (Exception e) {
+			NeoLoaderPlugin.exception(e);
+			tx.failure();
+			return null;
+		}
+		finally {
+			tx.finish();
+		}		
 	}
 	
 	@Override
@@ -163,7 +277,30 @@ public class ETSILoader extends DriveLoader {
 			newFile = false;
 		}
 		
-		super.findOrCreateFileNode(mp);
+		if (file == null) {
+			Iterator<Node> files = currentDirectoryNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+				
+				@Override
+				public boolean isReturnableNode(TraversalPosition currentPos) {
+					return currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME) &&
+						   currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.FILE_TYPE_NAME) &&
+						   currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_NAME_NAME) &&
+						   currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename);
+				}
+			}, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+			
+			if (files.hasNext()) {
+				file = files.next();
+			}
+			else {
+				file = neo.createNode();
+				file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
+				file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
+				file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
+				currentDirectoryNode.createRelationshipTo(file, GeoNeoRelationshipTypes.NEXT);
+			}
+			file.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
+		}		
 	}
 	
 	@Override

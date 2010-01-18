@@ -42,7 +42,7 @@ public abstract class DriveLoader extends AbstractLoader {
 	
 	protected String dataset = null;
     protected Node file = null;
-    private Node datasetNode = null;
+    protected Node datasetNode = null;
     private static int[] times = new int[2];
     private HashMap<Integer, int[]> stats = new HashMap<Integer, int[]>();
     private int countValidMessage = 0;
@@ -52,6 +52,7 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Calendar _workDate = null;
     protected Long minTimeStamp = null;
     protected Long maxTimeStamp = null;
+    
     /** How many units of work for the progress monitor for each file */
     public static final int WORKED_PER_FILE = 100;
     
@@ -169,7 +170,8 @@ public abstract class DriveLoader extends AbstractLoader {
      * @param datasetName name of dataset node
      * @return dataset node
      */
-    private final Node findOrCreateDatasetNode(Node root, final String datasetName) {
+    protected final Node findOrCreateDatasetNode(Node root, final String datasetName) {
+    	
         if (datasetName == null || datasetName.isEmpty()) {
             return null;
         }

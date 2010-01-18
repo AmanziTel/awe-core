@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.dialogs.DriveDialog;
@@ -33,7 +34,10 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
 
@@ -76,9 +80,12 @@ public class ETSIImportWizardPage extends WizardPage {
     private String fileName;
     private Composite main;
     private Combo dataset;
+    private Combo network;
     private DirectoryFieldEditor editor;
-    private ArrayList<String> members;
+    private ArrayList<String> datasetMembers;
+    private ArrayList<String> networkMembers;
     private String datasetName;
+    private String networkName;
 
     /**
      * Constructor
@@ -116,16 +123,14 @@ public class ETSIImportWizardPage extends WizardPage {
 			
 			@Override
 			public void modifyText(ModifyEvent e) {
-				datasetName = dataset.getText();
-				setPageComplete(isValidPage());
+				datasetName = dataset.getText();				
 			}
 		});
         dataset.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	datasetName = dataset.getSelectionIndex() < 0 ? null : members.get(dataset.getSelectionIndex());
-                setPageComplete(isValidPage());
+            	datasetName = dataset.getSelectionIndex() < 0 ? null : datasetMembers.get(dataset.getSelectionIndex());                
             }
 
             @Override
@@ -133,11 +138,39 @@ public class ETSIImportWizardPage extends WizardPage {
                 widgetSelected(e);
             }
         });        
+        
+        Label networkLabel = new Label(main, SWT.LEFT);
+        networkLabel.setText("Network:");
+        networkLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 2));
+        network = new Combo(main, SWT.DROP_DOWN);
+        network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 2));
+        network.setItems(getGisItems());
+        network.addModifyListener(new ModifyListener() {
+			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				networkName = network.getText();
+			}
+		});
+        network.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				networkName = network.getSelectionIndex() < 0 ? null : networkMembers.get(network.getSelectionIndex());
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				widgetSelected(e);
+			}
+		});
+        
         editor = new DirectoryEditor("fileSelectESTI", "Directory: ", main); // NON-NLS-1
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
                 dataset.setText(getDatasetDefaultName());
+                network.setText(getNetworkDefaultName());
             }
         });
         setControl(main);
@@ -149,7 +182,16 @@ public class ETSIImportWizardPage extends WizardPage {
     	if (index > 0) {
     		return result.substring(index + 1);
     	}
-    	return result;
+    	return result;    	
+    }
+    
+    private String getNetworkDefaultName() {
+    	String result = editor.getStringValue();
+    	int index = result.lastIndexOf(File.separator);
+    	if (index > 0) {
+    		result = result.substring(index + 1);
+    	}
+    	return result + " Probes";    	
     }
 
     /**
@@ -171,14 +213,44 @@ public class ETSIImportWizardPage extends WizardPage {
     private String[] getAllDatasets() {
         Transaction tx = NeoUtils.beginTransaction();
         try {        	
-        	members = new ArrayList<String>();
+        	datasetMembers = new ArrayList<String>();
         	Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
                     NeoServiceProvider.getProvider().getService().getReferenceNode());
             for (Node node : allDatasetTraverser) {
-                members.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+                datasetMembers.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             }
             
-            return members.toArray(new String[] {});
+            return datasetMembers.toArray(new String[] {});
+        } finally {
+            tx.finish();
+        }
+    }
+    
+    /**
+     * Forms list of GIS nodes
+     * 
+     * @return array of GIS nodes
+     */
+    private String[] getGisItems() {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            NeoService service = NeoServiceProvider.getProvider().getService();
+            Node refNode = service.getReferenceNode();
+            networkMembers = new ArrayList<String>();
+            String header = GisTypes.NETWORK.getHeader();
+            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(
+                                INeoConstants.GIS_TYPE_NAME)
+                        && header.equals(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, ""))) {
+                    String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                    networkMembers.add(id);
+                }
+            }
+
+            return networkMembers.toArray(new String[] {});
         } finally {
             tx.finish();
         }
@@ -196,5 +268,9 @@ public class ETSIImportWizardPage extends WizardPage {
      */
     public String getDatasetName() {
         return datasetName;
+    }
+    
+    public String getNetworkName() {
+    	return networkName;
     }
 }

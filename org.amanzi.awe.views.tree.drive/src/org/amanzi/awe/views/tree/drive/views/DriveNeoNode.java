@@ -59,7 +59,7 @@ public class DriveNeoNode extends NeoNode {
         if (isFileNode()) {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
                     GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-        } else if (isDatasetNode()) {
+        } else if (isDatasetNode() || isDirectoryNode()) {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
                     GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         } else {
@@ -99,7 +99,7 @@ public class DriveNeoNode extends NeoNode {
     @Override
     public boolean hasChildren() {
         return node.hasRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
-                || ((isFileNode() || isDatasetNode()) && node.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING));
+                || ((isFileNode() || isDatasetNode() || isDirectoryNode()) && node.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING));
     }
 
     /**
@@ -109,5 +109,9 @@ public class DriveNeoNode extends NeoNode {
      */
     private boolean isFileNode() {
         return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.FILE_TYPE_NAME);
+    }
+    
+    private boolean isDirectoryNode() {
+    	return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.DIRECTORY_TYPE_NAME);
     }
 }

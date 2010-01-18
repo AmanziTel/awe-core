@@ -36,7 +36,6 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
@@ -53,11 +52,7 @@ import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser.Order;
 
 /**
  * This class was written to handle CSV (tab delimited) network data from ice.net in Sweden.
@@ -226,7 +221,7 @@ public class NetworkLoader extends AbstractLoader {
             trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
         } catch (Exception e) {
         }
-        if (findOrCreateNetworkNode() != null) {
+        if (findOrCreateNetworkNode(network, askIfOverwrite(), false) != null) {
             return null != findOrCreateGISNode(network, GisTypes.NETWORK.getHeader());
         } else {
             return false;
@@ -498,64 +493,7 @@ public class NetworkLoader extends AbstractLoader {
         }
     }
 
-    /**
-     * This code finds the specified network node in the database, creating its own transaction for
-     * that.
-     * 
-     * @param gis gis node
-     */
-	private Node findOrCreateNetworkNode() {
-        if (network == null) {
-            Transaction tx = neo.beginTx();
-            try {
-                for (Node node : neo.getReferenceNode().traverse(Order.BREADTH_FIRST, new StopEvaluator() {
-
-                    @Override
-                    public boolean isStopNode(TraversalPosition currentPos) {
-                        return currentPos.depth() > 3;
-                    }
-                }, new ReturnableEvaluator() {
-
-                    @Override
-                    public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
-                                NetworkElementTypes.NETWORK.toString());
-                    }
-                }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
-                    debug("Testing possible Network node " + node + ": " + node.getProperty("name", "").toString());
-                    if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(basename)) {
-                        debug("Found matching Network node " + node + ": " + node.getProperty("name", "").toString());
-                        try {
-                            // remove all incoming relationships
-                            for (Relationship relationshipIn : node.getRelationships(Direction.INCOMING)) {
-                                relationshipIn.delete();
-                            }
-                            if(isTest()) throw new Exception("Test mode");
-                            PlatformUI.getWorkbench();
-                            if (!askIfOverwrite())
-                                return null;
-                            NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
-                        } catch (Exception e) {
-                            // we are in test mode, automatically agree to overwrite network
-                            deleteTree(node);
-                            deleteNode(node);
-                        }
-                        break;
-                    }
-                }
-                network = neo.createNode();
-                network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementTypes.NETWORK.toString());
-                network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-                network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-                tx.success();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                tx.finish();
-            }
-        }
-        return network;
-    }
+    
 
     private static boolean askIfOverwrite() {
         int resultMsg = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {

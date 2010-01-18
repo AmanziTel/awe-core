@@ -33,6 +33,7 @@ public class INeoConstants {
     public static final String PROPERTY_LON_NAME = "lon";
     public static final String PROPERTY_LAT_NAME = "lat";
     public static final String FILE_TYPE_NAME = "file";
+    public static final String DIRECTORY_TYPE_NAME = "directory";
     public static final String DATASET_TYPE_NAME = "dataset";
     public static final String PROPERTY_FILENAME_NAME = "filename";
     public static final String MP_TYPE_NAME = "mp";
