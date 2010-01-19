@@ -38,8 +38,6 @@ import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
@@ -145,9 +143,7 @@ public class NetworkLoader extends AbstractLoader {
      */
     private void addNetworkIndexes() {
         try {
-            addIndex(NetworkElementTypes.SITE.toString(), new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(basename),
-                    new String[] {"lat", "lon"},
-                    new MultiDoubleConverter(0.001), 10));
+            addIndex(NetworkElementTypes.SITE.toString(), NeoUtils.getLocationIndexProperty(basename));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }

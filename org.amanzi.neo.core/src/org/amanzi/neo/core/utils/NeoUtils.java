@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.core.utils;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -34,6 +35,9 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
@@ -885,7 +889,7 @@ public class NeoUtils {
      * @param datasetName - dataset name
      * @return index name
      */
-    public static String getTimeIndexName(String datasetName) {
+    private static String getTimeIndexName(String datasetName) {
         return TIMESTAMP_INDEX_NAME + datasetName;
     }
 
@@ -895,7 +899,7 @@ public class NeoUtils {
      * @param datasetName - dataset name
      * @return index name
      */
-    public static String getLocationIndexName(String datasetName) {
+    private static String getLocationIndexName(String datasetName) {
         return LOCATION_INDEX_NAME + datasetName;
     }
 
@@ -914,5 +918,29 @@ public class NeoUtils {
         } finally {
             finishTx(tx);
         }
+    }
+
+    /**
+     * Gets timestamp index property
+     * 
+     * @param name - dataset name
+     * @return timestamp index property
+     * @throws IOException
+     */
+    public static MultiPropertyIndex<Long> getTimeIndexProperty(String name) throws IOException {
+        return new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(name),
+                new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
+    }
+
+    /**
+     * Get location index
+     * 
+     * @param name - dataset name
+     * @return location index
+     * @throws IOException
+     */
+    public static MultiPropertyIndex<Double> getLocationIndexProperty(String name) throws IOException {
+        return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(name), new String[] {
+                INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME}, new MultiDoubleConverter(0.001), 10);
     }
 }

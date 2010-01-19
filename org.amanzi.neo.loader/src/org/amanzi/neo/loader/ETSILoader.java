@@ -28,8 +28,6 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand;
 import org.amanzi.neo.loader.etsi.commands.CommandSyntax;
 import org.amanzi.neo.loader.etsi.commands.ETSICommandPackage;
@@ -622,9 +620,7 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private void addDriveIndexes() {
         try {
-            addIndex(INeoConstants.HEADER_M, new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(dataset),
-                    new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
-                    new MultiTimeIndexConverter(), 10));            
+            addIndex(INeoConstants.HEADER_M, NeoUtils.getTimeIndexProperty(dataset));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }

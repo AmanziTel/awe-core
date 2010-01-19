@@ -27,9 +27,6 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
-import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
@@ -209,12 +206,8 @@ public class NemoLoader extends DriveLoader {
      */
     private void addDriveIndexes() {
         try {
-            addIndex(INeoConstants.HEADER_M, new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(dataset),
-                    new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
-                    new MultiTimeIndexConverter(), 10));
-            addIndex(INeoConstants.MP_TYPE_NAME, new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(dataset),
-                    new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
-                    new MultiDoubleConverter(0.001), 10));
+            addIndex(INeoConstants.HEADER_M, NeoUtils.getTimeIndexProperty(dataset));
+            addIndex(INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(dataset));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
