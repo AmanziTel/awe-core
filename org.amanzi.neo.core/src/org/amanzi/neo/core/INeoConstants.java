@@ -59,6 +59,7 @@ public class INeoConstants {
     public static final String PROPERTY_STATS = "stats_properties";
     public static final String EVENT_ID = "event_id";
     public static final String EVENT_CONTEXT_ID = "context_id";
+    public static final String CALL_TYPE_NAME = "call";
     
     /*
      * Type Splash

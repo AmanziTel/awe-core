@@ -210,11 +210,10 @@ public class NemoLoader extends DriveLoader {
     private void addDriveIndexes() {
         try {
             addIndex(INeoConstants.HEADER_M, new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(dataset),
-                    new String[] {"timestamp"},
+                    new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
                     new MultiTimeIndexConverter(), 10));
             addIndex(INeoConstants.MP_TYPE_NAME, new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(dataset),
-                    new String[] {"lat",
-                    "lon"},
+                    new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
                     new MultiDoubleConverter(0.001), 10));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);

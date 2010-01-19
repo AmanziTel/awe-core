@@ -53,6 +53,80 @@ import org.neo4j.api.core.Traverser.Order;
  */
 public class ETSILoader extends DriveLoader {
 	
+	public class Call {
+		
+		private long callSetupBeginTime;
+		
+		private long callSetupEndTime;
+		
+		private long callEndTime;
+
+		/**
+		 * @return Returns the callBeginTime.
+		 */
+		public long getCallSetupBeginTime() {
+			return callSetupBeginTime;
+		}
+
+		/**
+		 * @param callSetupBeginTime The callBeginTime to set.
+		 */
+		public void setCallSetupBeginTime(long callSetupBeginTime) {
+			this.callSetupBeginTime = callSetupBeginTime;
+		}
+
+		/**
+		 * @return Returns the callEndTime.
+		 */
+		public long getCallSetupEndTime() {
+			return callSetupEndTime;
+		}
+
+		/**
+		 * @param callSetupEndTime The callEndTime to set.
+		 */
+		public void setCallSetupEndTime(long callSetupEndTime) {
+			this.callSetupEndTime = callSetupEndTime;
+		}
+
+		/**
+		 * @return Returns the callEndTime.
+		 */
+		public long getCallEndTime() {
+			return callEndTime;
+		}
+
+		/**
+		 * @param callEndTime The callEndTime to set.
+		 */
+		public void setCallEndTime(long callEndTime) {
+			this.callEndTime = callEndTime;
+		}
+		
+	}
+	
+	private enum CallEvents {
+		CALL_SETUP_BEGIN("atd"),
+		CALL_SETUP_END("CTOCP"),
+		CALL_END("ATH");
+		
+		private String commandName;
+		
+		private CallEvents(String commandName) {
+			this.commandName = commandName;
+		}
+		
+		public static CallEvents getCallEvent(String commandName) {
+			for (CallEvents event : values()) {
+				if (event.commandName.equals(commandName)) {
+					return event;
+				}
+			}
+			
+			return null;
+		}
+	}
+	
 	/*
 	 * 
 	 */
@@ -113,9 +187,9 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private Node currentDirectoryNode;
 	
-	private Node currentCallNode;
-	
 	private Node previousCallNode;
+	
+	private Call call;
 	
 	/**
 	 * Creates a loader
@@ -319,6 +393,16 @@ public class ETSILoader extends DriveLoader {
 		//get a timestamp
 		String timestamp = tokenizer.nextToken();
 		
+		//try to parse timestamp
+		long timestampValue;
+		try {
+			timestampValue = timestampFormat.parse(timestamp).getTime();
+		}
+		catch (ParseException e) {
+			error(e.getMessage());
+			return;
+		}
+		
 		if (!tokenizer.hasMoreTokens()) {
 			//if no more tokens than skip parsing
 			return;
@@ -354,12 +438,12 @@ public class ETSILoader extends DriveLoader {
 			}
 			
 			//get a real name of command without set or get postfix
-			Node mpNode = createMpNode(timestamp);
+			Node mpNode = createMpNode(timestampValue);
 			if (mpNode != null) {
 				//parse parameters of command
 				HashMap<String, Object> parameters = null;
 				
-				parameters = command.getResults(syntax, tokenizer);
+				parameters = processCommand(timestampValue, command, syntax, tokenizer);
 				if (command != null) {
 					commandName = command.getName();
 				}
@@ -412,7 +496,7 @@ public class ETSILoader extends DriveLoader {
 	private void createMsNode(Node mpNode, String commandName, HashMap<String, Object> parameters) {
 		Node msNode = neo.createNode();
 		msNode.setProperty(INeoConstants.COMMAND_PROPERTY_NAME, commandName);
-		msNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
+		msNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
 		
 		if (parameters != null) {
 			for (String name : parameters.keySet()) {
@@ -489,21 +573,13 @@ public class ETSILoader extends DriveLoader {
 	 * @param timestamp timestamp
 	 * @return created node
 	 */
-	private Node createMpNode(String timestamp) {
+	private Node createMpNode(long timestamp) {
 		Node mpNode = neo.createNode();
-		mpNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+		mpNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
 		
-		try {
-			long timestampValue = timestampFormat.parse(timestamp).getTime();
+		updateTimestampMinMax(timestamp);
 			
-			updateTimestampMinMax(timestampValue);
-			
-			mpNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestampValue);
-		}
-		catch (ParseException e) {
-			debug(e.getMessage());
-			return null;
-		}
+		mpNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
 		
 		index(mpNode);
 		findOrCreateFileNode(mpNode);
@@ -558,11 +634,61 @@ public class ETSILoader extends DriveLoader {
 	protected boolean haveHeaders() {
         return true;
 	}
+	
+	private HashMap<String, Object> processCommand(long timestamp, AbstractETSICommand command, CommandSyntax syntax, StringTokenizer tokenizer) {
+		HashMap<String, Object> result = command.getResults(syntax, tokenizer);
+		
+		if (command.isCallCommand()) {
+			String commandName = command.getName();
+			
+			CallEvents event = CallEvents.getCallEvent(commandName);
+			
+			processCallEvent(event, timestamp);
+		}
+		
+		return result;
+	}
+	
+	private void processCallEvent(CallEvents event, long timestamp) {
+		switch (event) {
+		case CALL_SETUP_BEGIN:
+			call = new Call();
+			call.setCallSetupBeginTime(timestamp);
+			break;
+		case CALL_SETUP_END:
+			call.setCallSetupEndTime(timestamp);
+			break;
+		case CALL_END:
+			call.setCallEndTime(timestamp);
+			saveCall();
+			break;
+		}
+	}
+	
+	private void saveCall() {
+		if (call != null) {
+			Node callNode = createCallNode(previousCallNode);
+			
+			long setupDuration = call.getCallSetupEndTime() - call.getCallSetupBeginTime();
+			long callDuration = call.getCallEndTime() - call.getCallSetupBeginTime();
+			
+			callNode.setProperty("setupDuration", setupDuration);
+			callNode.setProperty("callDuration", callDuration);
+			
+			previousCallNode = callNode;
+		}
+	}
 
-	private Node createCallNode() {
+	private Node createCallNode(Node previousNode) {
 		Transaction transaction = neo.beginTx();
+		Node result = null;
 		try {
-			currentCallNode = neo.createNode();
+			result = neo.createNode();
+			result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.CALL_TYPE_NAME);
+			
+			if (previousNode != null) {
+				previousNode.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
+			}
 			
 			transaction.success();
 		}
@@ -573,6 +699,6 @@ public class ETSILoader extends DriveLoader {
 			transaction.finish();
 		}
 		
-		return currentCallNode;
+		return previousNode;
 	}
 }

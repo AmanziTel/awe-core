@@ -86,5 +86,8 @@ public abstract class AbstractETSICommand {
 		
 		return null;
 	}
+
+	public abstract boolean isCallCommand();
+	
 	
 }

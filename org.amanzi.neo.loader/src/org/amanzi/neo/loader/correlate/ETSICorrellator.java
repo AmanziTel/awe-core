@@ -73,13 +73,14 @@ public class ETSICorrellator {
 		try {
 			initializeIndex(secondDataset);
 		
-			MpNodeIterator mpIterator = getMpNodeIterator(firstDataset);
+			MNodeIterator mIterator = getMNodeIterator(firstDataset);
 		
-			while (mpIterator.hasNext()) {
-				Node firstMp = mpIterator.next();
+			while (mIterator.hasNext()) {
+				Node firstM = mIterator.next();
+				Node firstMp = getMpNode(firstM);
 				
-				Node secondMp = determineNode((Long)firstMp.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME));
-				
+				Node secondMp = determineNode((Long)firstM.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME));
+								
 				correlateNodes(firstMp, secondMp);
 			}
 			
@@ -202,10 +203,10 @@ public class ETSICorrellator {
 	 * @param datasetName dataset name
 	 * @return iterator
 	 */
-	private MpNodeIterator getMpNodeIterator(String datasetName) {
+	private MNodeIterator getMNodeIterator(String datasetName) {
 		Node datasetNode = getDatasetNode(datasetName);
 		if (datasetNode != null) {
-			return new MpNodeIterator(datasetNode);
+			return new MNodeIterator(datasetNode);
 		}
 		return null;
 	}
@@ -226,13 +227,21 @@ public class ETSICorrellator {
 		}
 	}
 	
+	private Node getMpNode(Node mNode) {
+		Iterator<Node> mpNodes = mNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator();
+		if (mpNodes.hasNext()) {
+			return mpNodes.next();
+		}
+		return null;
+	}
+	
 	/**
-	 * Class that provides iteration through all mp nodes of dataset
+	 * Class that provides iteration through all m nodes of dataset
 	 * 
 	 * @author Lagutko_N
 	 * @since 1.0.0
 	 */
-	private class MpNodeIterator implements Iterator<Node> {
+	private class MNodeIterator implements Iterator<Node> {
 		
 		/*
 		 * Iterator for file nodes
@@ -241,19 +250,28 @@ public class ETSICorrellator {
 		/*
 		 * Iterator for mp nodes
 		 */
-		Iterator<Node> mpIterator;
+		Iterator<Node> mIterator;
 		
 		/**
 		 * Constructor
 		 * 
 		 * @param datasetNode name of dataset
 		 */
-		public MpNodeIterator(Node datasetNode) {
-			fileIterator = datasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+		public MNodeIterator(Node datasetNode) {
+			fileIterator = datasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+				
+				@Override
+				public boolean isReturnableNode(TraversalPosition currentPos) {
+					if (currentPos.depth() > 0) {
+						return NeoUtils.isFileNode(currentPos.currentNode());
+					}
+					return false;
+				}
+			}, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
 			
 			if (fileIterator.hasNext()) {
 				Node fileNode = fileIterator.next();
-				updateMpIterator(fileNode);
+				updateMIterator(fileNode);
 			}
 		}
 		
@@ -262,21 +280,21 @@ public class ETSICorrellator {
 		 *
 		 * @param fileNode
 		 */
-		private void updateMpIterator(Node fileNode) {
-			mpIterator = fileNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+		private void updateMIterator(Node fileNode) {
+			mIterator = fileNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
 		}
 
 		@Override
 		public boolean hasNext() {
 			boolean hasNext = false;
 			
-			if (mpIterator != null) {
-				hasNext = mpIterator.hasNext();
+			if (mIterator != null) {
+				hasNext = mIterator.hasNext();
 			}		
 			if (!hasNext) {
 				if (fileIterator.hasNext()) {
-					updateMpIterator(fileIterator.next());
-					return mpIterator.hasNext();
+					updateMIterator(fileIterator.next());
+					return mIterator.hasNext();
 				}
 			}
 			return hasNext;
@@ -285,7 +303,7 @@ public class ETSICorrellator {
 		@Override
 		public Node next() {
 			if (hasNext()) {
-				return mpIterator.next();
+				return mIterator.next();
 			}
 			throw new NoSuchElementException();
 		}

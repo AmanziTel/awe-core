@@ -44,4 +44,9 @@ class ATH extends AbstractETSICommand {
 		return null;
 	}
 
+	@Override
+	public boolean isCallCommand() {
+		return false;
+	}
+
 }

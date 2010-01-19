@@ -65,4 +65,9 @@ class CCI extends AbstractETSICommand {
 		return result;
 	}
 
+	@Override
+	public boolean isCallCommand() {
+		return false;
+	}
+
 }
