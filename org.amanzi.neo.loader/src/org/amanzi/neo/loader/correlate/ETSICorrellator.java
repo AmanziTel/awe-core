@@ -24,7 +24,6 @@ import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
@@ -218,8 +217,7 @@ public class ETSICorrellator {
 	 */
 	private void initializeIndex(String datasetName) {
 		try {
-            timestampIndex = new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(datasetName),
-                    new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
+            timestampIndex = NeoUtils.getTimeIndexProperty(datasetName);
 			timestampIndex.initialize(neoService, null);
 		}
 		catch (IOException e) {
