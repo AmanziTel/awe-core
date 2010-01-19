@@ -46,7 +46,7 @@ public class INeoConstants {
     public static final String PROPERTY_TIME_NAME = "time";
     public static final String PROPERTY_TIMESTAMP_NAME = "timestamp";
     public static final String PROPERTY_PARAMS_NAME = "event_parameters";
-    public static final String HEADER_MS = "ms";
+    public static final String HEADER_M = "m";
     public static final String GIS_TYPE_NAME = "gis";
     public static final String PROPERTY_BBOX_NAME = "bbox";
     public static final String PROPERTY_CRS_NAME = "crs";
@@ -138,11 +138,6 @@ public class INeoConstants {
     
     public static final String EVENTS_LUCENE_INDEX_NAME = "events";
     
-    /** String LOCATION_INDEX_NAME field */
-	public static final String LOCATION_INDEX_NAME = "Index-location-";
-	/** String TIMESTAMP_INDEX_NAME field */
-	public static final String TIMESTAMP_INDEX_NAME = "Index-timestamp-";
-
 	public static final String SECTOR_ID_PROPERTIES = "sector_id";
     public static final String DRIVE_GIS_NAME = "drive gis name";
     public static final String NETWORK_GIS_NAME = "network gis name";

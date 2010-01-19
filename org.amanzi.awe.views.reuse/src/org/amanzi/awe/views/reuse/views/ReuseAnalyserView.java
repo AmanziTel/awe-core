@@ -1712,7 +1712,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @return
      */
     private Node getNodeToLink(Node node) {
-        if (NeoUtils.getNodeType(node, "").equals(INeoConstants.HEADER_MS)) {
+        if (NeoUtils.getNodeType(node, "").equals(INeoConstants.HEADER_M)) {
             return node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(node);
         }
         return node;
@@ -2265,7 +2265,7 @@ public class ReuseAnalyserView extends ViewPart {
         int count = 0;
         for (Relationship relation : mpNode.getRelationships(MeasurementRelationshipTypes.CHILD, Direction.OUTGOING)) {
             Node node = relation.getEndNode();
-            if (INeoConstants.HEADER_MS.equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""))) {
+            if (INeoConstants.HEADER_M.equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""))) {
                 result = result + ((Number)node.getProperty(properties, new Double(0))).doubleValue();
                 count++;
             }
@@ -2721,7 +2721,7 @@ public class ReuseAnalyserView extends ViewPart {
         public boolean isReturnableNode(TraversalPosition traversalposition) {
             Node curNode = traversalposition.currentNode();
             Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-            return type != null && (INeoConstants.HEADER_MS.equals(type.toString()) || "sector".equals(type.toString()));
+            return type != null && (INeoConstants.HEADER_M.equals(type.toString()) || "sector".equals(type.toString()));
             }
         }
 

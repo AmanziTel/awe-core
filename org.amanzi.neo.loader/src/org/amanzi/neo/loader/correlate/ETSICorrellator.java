@@ -217,7 +217,8 @@ public class ETSICorrellator {
 	 */
 	private void initializeIndex(String datasetName) {
 		try {
-			timestampIndex = new MultiPropertyIndex<Long>(INeoConstants.TIMESTAMP_INDEX_NAME + datasetName, new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
+            timestampIndex = new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(datasetName),
+                    new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
 			timestampIndex.initialize(neoService, null);
 		}
 		catch (IOException e) {

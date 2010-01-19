@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.CatalogPlugin;
@@ -102,7 +103,8 @@ public abstract class AbstractLoader {
     private double[] bbox;
     private long savedData = 0;
     private long started = System.currentTimeMillis();
-    private ArrayList<MultiPropertyIndex<?>> indexes = new ArrayList<MultiPropertyIndex<?>>();
+    // private ArrayList<MultiPropertyIndex<?>> indexes = new ArrayList<MultiPropertyIndex<?>>();
+    private LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>> indexes = new LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>>();
     private ArrayList<Pattern> headerFilters = new ArrayList<Pattern>();
     private LinkedHashMap<String, List<String>> knownHeaders = new LinkedHashMap<String, List<String>>();
     private LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
@@ -193,15 +195,18 @@ public abstract class AbstractLoader {
                         // Exceeded absolute threashold, drop map
                         System.out.println("Property values exceeded maximum count, no longer tracking value set: " + this.key);
                         discard = true;
-                    } else if (values.size() >= MIN_PROPERTY_VALUE_SPREAD_COUNT) {
-                        // Exceeded minor threshold, test spread and then decide
-                        float spread = (float)values.size() / (float)parseCount;
-                        if (spread > MAX_PROPERTY_VALUE_SPREAD) {
-                            // Exceeded maximum spread, too much property variety, drop map
-                            System.out.println("Property shows excessive variation, no longer tracking value set: " + this.key);
-                            discard = true;
-                        }
                     }
+                    // TODO if we do not use parse method this check will be wrong
+                    // else if (values.size() >= MIN_PROPERTY_VALUE_SPREAD_COUNT) {
+                    // // Exceeded minor threshold, test spread and then decide
+                    // float spread = (float)values.size() / (float)parseCount;
+                    // if (spread > MAX_PROPERTY_VALUE_SPREAD) {
+                    // // Exceeded maximum spread, too much property variety, drop map
+                    // System.out.println("Property shows excessive variation, no longer tracking value set: "
+                    // + this.key);
+                    // discard = true;
+                    // }
+                    // }
                 }
                 if (discard) {
                     // Detected too much variety in property values, stop counting
@@ -958,55 +963,77 @@ public abstract class AbstractLoader {
         }
     }
 
+    // TODO add thread safe???
 
-    protected void addIndex(MultiPropertyIndex< ? > index) {
-        indexes.add(index);
+    protected void addIndex(String nodeType, MultiPropertyIndex< ? > index) {
+        ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
+        if (indList == null) {
+            indList = new ArrayList<MultiPropertyIndex< ? >>();
+            indexes.put(nodeType, indList);
+        }
+        indList.add(index);
     }
 
-    protected void removeIndex(MultiPropertyIndex< ? > index) {
-        indexes.remove(index);
+    protected void removeIndex(String nodeType, MultiPropertyIndex< ? > index) {
+        ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
+        if (indList != null) {
+            indList.remove(index);
+        }
+
     }
 
     protected void index(Node node) {
-        for (MultiPropertyIndex< ? > index : indexes) {
+        String nodeType = NeoUtils.getNodeType(node, "");
+        ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
+        if (indList == null) {
+            return;
+        }
+        for (MultiPropertyIndex< ? > index : indList) {
             try {
                 index.add(node);
             } catch (IOException e) {
                 // TODO:Log error
-                removeIndex(index);
+                removeIndex(nodeType, index);
             }
         }
     }
 
     protected void flushIndexes() {
-        for (MultiPropertyIndex< ? > index : indexes) {
+        for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
+
+            for (MultiPropertyIndex< ? > index : entry.getValue()) {
             try {
                 index.flush();
             } catch (IOException e) {
                 // TODO:Log error
-                removeIndex(index);
+                    removeIndex(entry.getKey(), index);
             }
         }
+    }
     }
     
     protected void initializeIndexes() {
     	if (indexesInitialized) {
     		return;
     	}
-    	for (MultiPropertyIndex< ? > index : indexes) {
+        for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
+            for (MultiPropertyIndex< ? > index : entry.getValue()) {
             try {
                 index.initialize(this.neo, null);
             } catch (IOException e) {
                 // TODO:Log error
-                removeIndex(index);
+                    removeIndex(entry.getKey(), index);
             }
+        }
         }
     	indexesInitialized = true;
     }
 
     protected void finishUpIndexes() {
-        for (MultiPropertyIndex< ? > index : indexes) {
+        for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
+            for (MultiPropertyIndex< ? > index : entry.getValue()) {
             index.finishUp();
+        }
         }
     }
 

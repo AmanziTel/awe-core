@@ -56,6 +56,8 @@ import org.neo4j.api.core.Traverser.Order;
  * @since 1.0.0
  */
 public class NeoUtils {
+    private static final String TIMESTAMP_INDEX_NAME = "Index-timestamp-";
+    private static final String LOCATION_INDEX_NAME = "Index-location-";
     private NeoUtils() {
 
     }
@@ -90,14 +92,14 @@ public class NeoUtils {
      * @return node name or empty string
      */
     public static String getNodeName(Node node) {
-        String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
-        if (type.equals(INeoConstants.MP_TYPE_NAME)) {
-            return node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
-
-        } else if (type.equals(INeoConstants.HEADER_MS)) {
-            return node.getProperty(INeoConstants.PROPERTY_CODE_NAME, "").toString();
-
-        }
+        // String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
+        // if (type.equals(INeoConstants.MP_TYPE_NAME)) {
+        // return node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
+        //        
+        // } else if (type.equals(INeoConstants.HEADER_M)) {
+        // return node.getProperty(INeoConstants.PROPERTY_CODE_NAME, "").toString();
+        //        
+        // }
         return getSimpleNodeName(node, "");
     }
 
@@ -120,6 +122,26 @@ public class NeoUtils {
      */
     public static boolean isFileNode(Node node) {
         return node != null && INeoConstants.FILE_TYPE_NAME.equals(getNodeType(node, ""));
+    }
+
+    /**
+     * check node by type
+     * 
+     * @param node node
+     * @return true if node is file node
+     */
+    public static boolean isDrivePointNode(Node node) {
+        return node != null && INeoConstants.MP_TYPE_NAME.equals(getNodeType(node, ""));
+    }
+
+    /**
+     * check node by type
+     * 
+     * @param node node
+     * @return true if node is file node
+     */
+    public static boolean isDriveMNode(Node node) {
+        return node != null && INeoConstants.HEADER_M.equals(getNodeType(node, ""));
     }
 
     /**
@@ -334,7 +356,7 @@ public class NeoUtils {
                             public boolean isReturnableNode(TraversalPosition traversalposition) {
                                 Node curNode = traversalposition.currentNode();
                                 Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-                                return type != null && (INeoConstants.HEADER_MS.equals(type.toString()));
+                                return type != null && (INeoConstants.HEADER_M.equals(type.toString()));
                             }
                         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
                         .iterator();
@@ -619,7 +641,7 @@ public class NeoUtils {
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node curNode = currentPos.currentNode();
-                return getNodeType(curNode, "").equals(INeoConstants.HEADER_MS) && curNode.hasProperty(msName);
+                return getNodeType(curNode, "").equals(INeoConstants.HEADER_M) && curNode.hasProperty(msName);
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
         for (Node nodeMs : traverse) {
@@ -855,5 +877,42 @@ public class NeoUtils {
         }
         out.println(new StringBuilder("Transaction:\t").append(thread.getId()).append("\t").append(thread.getName()).append("\t")
                 .append(simpleName).append("\t").append(description));
+    }
+
+    /**
+     * gets name of timestamp index
+     * 
+     * @param datasetName - dataset name
+     * @return index name
+     */
+    public static String getTimeIndexName(String datasetName) {
+        return TIMESTAMP_INDEX_NAME + datasetName;
+    }
+
+    /**
+     * gets name of location index
+     * 
+     * @param datasetName - dataset name
+     * @return index name
+     */
+    public static String getLocationIndexName(String datasetName) {
+        return LOCATION_INDEX_NAME + datasetName;
+    }
+
+    /**
+     * Returns pair of min and max timestamps for this dataset
+     * 
+     * @param driveGisNode drive gis node
+     * @param service neoservice if null then transaction do not created
+     * @return pair of min and max timestamps
+     */
+    public static Pair<Long, Long> getMinMaxTimeOfDataset(Node driveGisNode, NeoService service) {
+        Transaction tx = beginTx(service);
+        try {
+            return new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null), (Long)driveGisNode
+                    .getProperty(INeoConstants.MAX_TIMESTAMP, null));
+        } finally {
+            finishTx(tx);
+        }
     }
 }

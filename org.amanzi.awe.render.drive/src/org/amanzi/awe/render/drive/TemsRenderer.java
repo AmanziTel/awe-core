@@ -46,6 +46,8 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -137,7 +139,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         ILayer layer = getContext().getLayer();
         // Are there any resources in the layer that respond to the GeoNeo class (should be the case
         // if we found a Neo4J database with GeoNeo data)
-        // TODO: Limit this to network data only
         IGeoResource resource = layer.findGeoResource(GeoNeo.class);
         if (resource != null) {
             renderGeoNeo(destination, resource, monitor);
@@ -211,18 +212,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 drawColor = neostyle.getLine();
                 labelColor = neostyle.getLabel();
                 alpha = 255 - (int)((double)neostyle.getSymbolTransparency() / 100.0 * 255.0);
-                // drawSize = neostyle.getSymbolSize();
                 drawSize = 3;
                 maxSitesLabel = neostyle.getLabeling() / 4;
                 maxSitesFull = neostyle.getSmallSymb();
                 maxSitesLite = neostyle.getSmallestSymb() * 10;
-                // scaleSectors = !neostyle.isFixSymbolSize();
-                // maxSymbolSize = neostyle.getMaximumSymbolSize();
                 fontSize = neostyle.getFontSize();
-                // TODO: Remove these when defaults from style work property
-                // maxSitesLabel = 50;
-                // maxSitesLite = 500;
-                // maxSitesFull = 50;
                 mpName = neostyle.getMainProperty();
                 msName = neostyle.getSecondaryProperty();
                 scaleIcons = !neostyle.isFixSymbolSize();
@@ -234,7 +228,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     eventIconSize = 0;
                 }
             } catch (Exception e) {
-                // TODO: we can get here if an old style exists, and we have added new fields
+                e.printStackTrace();
+                // we can get here if an old style exists, and we have added new fields
             }
         }
         normalSiteName = NeoStyleContent.DEF_MAIN_PROPERTY.equals(mpName);
@@ -330,6 +325,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             // First we find all selected points to draw with a highlight behind the main points
             ArrayList<Node> selectedPoints = new ArrayList<Node>();
             final Set<Node> selectedNodes = new HashSet<Node>(geoNeo.getSelectedNodes());
+
             // TODO refactor selection point (for example: in draws mp node add method
             // isSelected(node))
             Long beginTime = null;
@@ -345,12 +341,17 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 beginTime = (Long)selectionMap.get(GeoConstant.Drive.BEGIN_TIME);
                 endTime = (Long)selectionMap.get(GeoConstant.Drive.END_TIME);
                 if (beginTime != null && endTime != null && beginTime <= endTime) {
-                    // TODO use time index for speed performance?
-                    for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
-                        Long time = NeoUtils.getNodeTime(node.getNode());
-                        if (time != null && time >= beginTime && time <= endTime) {
-                            selectedNodes.add(node.getNode());
+                    MultiPropertyIndex<Long> timestampIndex = new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(geoNeo
+                            .getName()),
+                            new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
+                    timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
+                    for (Node node : timestampIndex.searchTraverser(new Long[] {beginTime}, new Long[] {endTime})) {
+                        if (!node.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
+                            continue;
                         }
+                        Node mpNode = node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(
+                                node);
+                        selectedNodes.add(mpNode);
                     }
                 }
             }
@@ -367,21 +368,23 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 int index = i % colors.length;
                 eventColor = colors[index];
             }
+            // TODO is it really necessary draw selection before drawing all mp node instead drawing
+            // in one traverse?
             for (Node node : selectedNodes) {
-                if ("file".equals(node.getProperty("type", ""))) {
+                if (NeoUtils.isFileNode(node)) {
                     // Select all 'mp' nodes in that file
                     for (Node rnode : node.traverse(Traverser.Order.BREADTH_FIRST, new StopEvaluator() {
                         @Override
                         public boolean isStopNode(TraversalPosition currentPos) {
-                            return !currentPos.isStartNode() && "file".equals(currentPos.currentNode().getProperty("type", ""));
+                            return !currentPos.isStartNode() && !NeoUtils.isDriveMNode(currentPos.currentNode());
                         }
                     }, new ReturnableEvaluator() {
 
                         @Override
                         public boolean isReturnableNode(TraversalPosition currentPos) {
-                            return "mp".equals(currentPos.currentNode().getProperty("type", ""));
+                            return NeoUtils.isDrivePointNode(currentPos.currentNode());
                         }
-                    }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                    }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
                         selectedPoints.add(rnode);
                     }
                 } else {
@@ -390,13 +393,13 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     Node rnode : node.traverse(Traverser.Order.DEPTH_FIRST, new StopEvaluator() {
                         @Override
                         public boolean isStopNode(TraversalPosition currentPos) {
-                            return "mp".equals(currentPos.currentNode().getProperty("type", ""));
+                            return NeoUtils.isDrivePointNode(currentPos.currentNode());
                         }
                     }, new ReturnableEvaluator() {
 
                         @Override
                         public boolean isReturnableNode(TraversalPosition currentPos) {
-                            return "mp".equals(currentPos.currentNode().getProperty("type", ""));
+                            return NeoUtils.isDrivePointNode(currentPos.currentNode());
                         }
                     }, NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
                         selectedPoints.add(rnode);
@@ -734,7 +737,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     + endNode.getProperty("name", null) + ", type:" + endNode.getProperty("type", null) + ", index:"
                     + endNode.getProperty("index", null) + ", level:" + endNode.getProperty("level", null) + ", max:"
                     + endNode.getProperty("max", null) + ", min:" + endNode.getProperty("min", null));
-            for (Relationship relationship : node.getNode().getRelationships(NeoIndexRelationshipTypes.CHILD, Direction.INCOMING)) {
+            for (Relationship relationship : node.getNode().getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.INCOMING)) {
                 endNode = relationship.getStartNode();
                 System.out.println("Trying possible index node: id:" + endNode.getId() + ", name:"
                         + endNode.getProperty("name", null) + ", type:" + endNode.getProperty("type", null) + ", index:"
@@ -756,7 +759,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         Coordinate world_location = new Coordinate();
         try {
             INDEX_LOOP: for (Node index : indexNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                    ReturnableEvaluator.ALL_BUT_START_NODE, NeoIndexRelationshipTypes.CHILD, Direction.BOTH)) {
+                    ReturnableEvaluator.ALL_BUT_START_NODE, NeoIndexRelationshipTypes.IND_CHILD, Direction.BOTH)) {
                 int[] ind = (int[])index.getProperty("index", new int[0]);
                 if (ind.length == 2) {
                     double[] max = (double[])index.getProperty("max", new double[0]);

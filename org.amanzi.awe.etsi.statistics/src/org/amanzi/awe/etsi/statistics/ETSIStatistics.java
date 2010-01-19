@@ -24,6 +24,7 @@ import java.util.Iterator;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
@@ -480,18 +481,8 @@ public class ETSIStatistics extends SpreadsheetCreator {
 	 */
 	private Pair<Long, Long> getMinMaxTimeOfDataset(String datasetName) {
 		Node gis = getGisNode(datasetName);
+        return NeoUtils.getMinMaxTimeOfDataset(gis, null);
 		
-		Long min = null;
-		if (gis.hasProperty(INeoConstants.MIN_TIMESTAMP)) {
-			min = (Long)gis.getProperty(INeoConstants.MIN_TIMESTAMP);
-		}
-		
-		Long max = null;
-		if (gis.hasProperty(INeoConstants.MAX_TIMESTAMP)) {
-			max = (Long)gis.getProperty(INeoConstants.MAX_TIMESTAMP);
-		}
-		
-		return new Pair<Long, Long>(min, max);
 	}
 	
 	/**
@@ -501,7 +492,8 @@ public class ETSIStatistics extends SpreadsheetCreator {
 	 * @throws IOException
 	 */
 	private void initializeIndex(String datasetName) throws IOException {
-		timestampIndex = new MultiPropertyIndex<Long>(INeoConstants.TIMESTAMP_INDEX_NAME + datasetName, new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
+        timestampIndex = new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(datasetName),
+                new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
 		timestampIndex.initialize(neoService, null);
 	}
 	

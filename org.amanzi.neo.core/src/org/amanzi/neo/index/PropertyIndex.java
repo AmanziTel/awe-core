@@ -292,7 +292,7 @@ public class PropertyIndex<E extends Comparable<E>> {
     }
 
     public enum NeoIndexRelationshipTypes implements RelationshipType {
-        CHILD, NEXT, INDEX;
+        IND_CHILD, IND_NEXT, INDEX;
     }
 
     /**
@@ -384,12 +384,12 @@ public class PropertyIndex<E extends Comparable<E>> {
 
         private void linkTo(Node lowerNode) {
             if (indexNode != null && lowerNode != null) {
-                indexNode.createRelationshipTo(lowerNode, NeoIndexRelationshipTypes.CHILD);
+                indexNode.createRelationshipTo(lowerNode, NeoIndexRelationshipTypes.IND_CHILD);
             }
         }
 
         private void searchChildrenOf(Node parentIndex) {
-            for (Relationship rel : parentIndex.getRelationships(NeoIndexRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            for (Relationship rel : parentIndex.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
                 Node child = rel.getEndNode();
                 int testIndex = (Integer)child.getProperty("index");
                 if (testIndex == index) {
@@ -443,7 +443,7 @@ public class PropertyIndex<E extends Comparable<E>> {
     }
 
     private Node getIndexChildOf(Node parent) {
-        for (Relationship rel : parent.getRelationships(NeoIndexRelationshipTypes.CHILD, Direction.OUTGOING)) {
+        for (Relationship rel : parent.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
             Node child = rel.getEndNode();
             Integer index = (Integer)child.getProperty("index", null);
             Integer level = (Integer)child.getProperty("level", null);
@@ -466,11 +466,11 @@ public class PropertyIndex<E extends Comparable<E>> {
             }
             if (highestIndex != null) {
                 // Deleting any previous starting relationships
-                for (Relationship rel : root.getRelationships(NeoIndexRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                for (Relationship rel : root.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
                     rel.delete();
                 }
                 // Make a new one to the top node (might be same as before or higher level node
-                root.createRelationshipTo(highestIndex, NeoIndexRelationshipTypes.CHILD);
+                root.createRelationshipTo(highestIndex, NeoIndexRelationshipTypes.IND_CHILD);
             }
         }
     }
@@ -491,7 +491,7 @@ public class PropertyIndex<E extends Comparable<E>> {
                 origin = value;
             }
             Node indexNode = getIndexNode(value);
-            indexNode.createRelationshipTo(node, NeoIndexRelationshipTypes.CHILD);
+            indexNode.createRelationshipTo(node, NeoIndexRelationshipTypes.IND_CHILD);
             return indexNode;
         } else {
             return null;
@@ -699,7 +699,7 @@ public class PropertyIndex<E extends Comparable<E>> {
                 node.setProperty("value", (float)(random.nextInt(10)));
                 node.setProperty("dbm", (float)(10 - random.nextInt(60)));
                 if (prevNode != null) {
-                    prevNode.createRelationshipTo(node, NeoIndexRelationshipTypes.NEXT);
+                    prevNode.createRelationshipTo(node, NeoIndexRelationshipTypes.IND_NEXT);
                 }
                 prevNode = node;
                 index.add(node);

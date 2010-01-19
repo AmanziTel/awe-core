@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
@@ -39,13 +40,13 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
 
 public class RomesLoader extends DriveLoader {
-    private Node point = null;
+    private Node mNode = null;
     private int first_line = 0;
     private int last_line = 0;
     private Float currentLatitude = null;
     private Float currentLongitude = null;
     private String time = null;
-    private long timestamp = 0L;
+    // private long timestamp = 0L;
     private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
 
 
@@ -129,9 +130,12 @@ public class RomesLoader extends DriveLoader {
 
     private void addDriveIndexes() {
         try {
-            addIndex(new MultiPropertyIndex<Long>("Index-timestamp-" + dataset, new String[] {"timestamp"},
+            addIndex(INeoConstants.HEADER_M, new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(dataset),
+                    new String[] {"timestamp"},
                     new MultiTimeIndexConverter(), 10));
-            addIndex(new MultiPropertyIndex<Double>("Index-location-" + dataset, new String[] {"lat", "lon"},
+            addIndex(INeoConstants.MP_TYPE_NAME, new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(dataset),
+                    new String[] {"lat",
+                    "lon"},
                     new MultiDoubleConverter(0.001), 10));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -153,8 +157,8 @@ public class RomesLoader extends DriveLoader {
         last_line = lineNumber;
         Map<String, Object> lineData = makeDataMap(fields);
         this.time = (String)lineData.get("time");
-        Date nodeDate = (Date)lineData.get("timestamp");
-        this.timestamp = getTimeStamp(nodeDate);
+            // Date nodeDate = (Date)lineData.get("timestamp");
+            // this.timestamp = getTimeStamp(nodeDate);
         Float latitude = (Float)lineData.get("latitude");        
         Float longitude = (Float)lineData.get("longitude");
         if (time == null || latitude == null || longitude == null) {
@@ -203,54 +207,73 @@ public class RomesLoader extends DriveLoader {
                 Node mp = neo.createNode();
                 mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
                 mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
-                if (this.timestamp != 0) {
-                    mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
-                    updateTimestampMinMax(timestamp);
-                }
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);                
                 mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
                 mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
-                findOrCreateFileNode(mp);
-                updateBBox(currentLatitude, currentLongitude);
-                checkCRS(currentLatitude, currentLongitude, null);
-                // debug("Added measurement point: " + propertiesString(mp));
-                if (point != null) {
-                    point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
-                }
                 index(mp);
-                point = mp;
+
+
+                // debug("Added measurement point: " + propertiesString(mp));
+
                 Node prev_ms = null;
                 boolean haveEvents = false;
                 for (Map<String, Object> dataLine : data) {
                     Node ms = neo.createNode();
-                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
+                    findOrCreateFileNode(ms);
+                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
                             mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
-                        } else if (!"timestamp".equals(entry.getKey())) {// timestamp do not store
-                                                                         // in ms node
+                            // ms.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
+                        } else if ("timestamp".equals(entry.getKey())) {
+                            long timeStamp = getTimeStamp(((Date)entry.getValue()));
+                            if (timeStamp != 0) {
+                                ms.setProperty(entry.getKey(), timeStamp);
+                                mp.setProperty(entry.getKey(), timeStamp);
+                            }
+                        } else {
                             ms.setProperty(entry.getKey(), entry.getValue());
                             haveEvents = haveEvents || INeoConstants.PROPERTY_TYPE_EVENT.equals(entry.getKey());
                         }
                     }
                     // debug("\tAdded measurement: " + propertiesString(ms));
-                    point.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
-                    if (prev_ms != null) {
-                        prev_ms.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
+                    mp.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
+                    if (mNode != null) {
+                        mNode.createRelationshipTo(ms, GeoNeoRelationshipTypes.NEXT);
                     }
-                    prev_ms = ms;
+                    ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, getMNodeName(dataLine));
+                    mNode = ms;
+                    // if (prev_ms != null) {
+                    // prev_ms.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
+                    // }
+                    index(ms);
+                    // prev_ms = ms;
                 }
                 if (haveEvents) {
                     index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, nameGis);
                 }
                 incSaved();
+                updateBBox(currentLatitude, currentLongitude);
+                checkCRS(currentLatitude, currentLongitude, null);
                 transaction.success();
             } finally {
                 transaction.finish();
             }
         }
         data.clear();
+    }
+
+    /**
+     * get name of m node
+     * 
+     * @param dataLine - node data
+     * @return node name
+     */
+    private String getMNodeName(Map<String, Object> dataLine) {
+        // TODO check name of node
+        Object timeNode = dataLine.get("time");
+        return timeNode == null ? "ms node" : timeNode.toString();
     }
 
     /**

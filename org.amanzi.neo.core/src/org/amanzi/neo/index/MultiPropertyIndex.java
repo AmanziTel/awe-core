@@ -202,12 +202,12 @@ public class MultiPropertyIndex<E extends Object> {
 
         private void linkTo(Node lowerNode) {
             if (indexNode != null && lowerNode != null) {
-                indexNode.createRelationshipTo(lowerNode, PropertyIndex.NeoIndexRelationshipTypes.CHILD);
+                indexNode.createRelationshipTo(lowerNode, PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD);
             }
         }
 
         private void searchChildrenOf(Node parentIndex) {
-            for (Relationship rel : parentIndex.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            for (Relationship rel : parentIndex.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
                 Node child = rel.getEndNode();
                 int[] testIndex = (int[])child.getProperty("index");
                 if (Arrays.equals(testIndex, indices)) {
@@ -406,7 +406,7 @@ public class MultiPropertyIndex<E extends Object> {
             toDelete.add(indexNode);
             while (toDelete.size() > 0) {
                 Node node = toDelete.remove(0);
-                for (Relationship rel : node.getRelationships(NeoIndexRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                for (Relationship rel : node.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
                     toDelete.add(rel.getEndNode());
                     rel.delete();
                 }
@@ -418,7 +418,7 @@ public class MultiPropertyIndex<E extends Object> {
     }
 
     private Node getIndexChildOf(Node parent) {
-        for (Relationship rel : parent.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.CHILD, Direction.OUTGOING)) {
+        for (Relationship rel : parent.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
             Node child = rel.getEndNode();
             int[] index = (int[])child.getProperty("index", null);
             Integer level = (Integer)child.getProperty("level", null);
@@ -452,11 +452,11 @@ public class MultiPropertyIndex<E extends Object> {
             }
             if (highestIndex != null) {
                 // Deleting any previous starting relationships
-                for (Relationship rel : root.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                for (Relationship rel : root.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
                     rel.delete();
                 }
                 // Make a new one to the top node (might be same as before or higher level node
-                root.createRelationshipTo(highestIndex, PropertyIndex.NeoIndexRelationshipTypes.CHILD);
+                root.createRelationshipTo(highestIndex, PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD);
             }
         }
     }
@@ -512,7 +512,7 @@ public class MultiPropertyIndex<E extends Object> {
                     origin = Arrays.copyOf(values, values.length);
                 }
                 Node indexNode = getIndexNode(values);
-                indexNode.createRelationshipTo(node, PropertyIndex.NeoIndexRelationshipTypes.CHILD);
+                indexNode.createRelationshipTo(node, PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD);
                 return indexNode;
             } else {
                 return null;
@@ -641,8 +641,8 @@ public class MultiPropertyIndex<E extends Object> {
             // Create a Stop/Returnable evaluator that understands the range in terms of the index
             SearchEvaluator searchEvaluator = new SearchEvaluator(min, max, resolution);
             // Then we return a traverser using this evaluator
-            return this.root.traverse(Order.DEPTH_FIRST, searchEvaluator, searchEvaluator, NeoIndexRelationshipTypes.CHILD,
-                    Direction.OUTGOING, NeoIndexRelationshipTypes.NEXT, Direction.OUTGOING);
+            return this.root.traverse(Order.DEPTH_FIRST, searchEvaluator, searchEvaluator, NeoIndexRelationshipTypes.IND_CHILD,
+                    Direction.OUTGOING, NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING);
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -653,8 +653,8 @@ public class MultiPropertyIndex<E extends Object> {
             // Create a Stop/Returnable evaluator that understands the range in terms of the index
             SearchEvaluator searchEvaluator = new SearchEvaluator(min, max, null);
             // Then we return a traverser using this evaluator
-            return this.root.traverse(Order.DEPTH_FIRST, searchEvaluator, searchEvaluator, NeoIndexRelationshipTypes.CHILD,
-                    Direction.OUTGOING, NeoIndexRelationshipTypes.NEXT, Direction.OUTGOING);
+            return this.root.traverse(Order.DEPTH_FIRST, searchEvaluator, searchEvaluator, NeoIndexRelationshipTypes.IND_CHILD,
+                    Direction.OUTGOING, NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING);
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -1002,7 +1002,7 @@ public class MultiPropertyIndex<E extends Object> {
                     node.setProperty("latitude", latitude);
                     node.setProperty("longitude", longitude);
                     if (prevNode != null) {
-                        prevNode.createRelationshipTo(node, PropertyIndex.NeoIndexRelationshipTypes.NEXT);
+                        prevNode.createRelationshipTo(node, PropertyIndex.NeoIndexRelationshipTypes.IND_NEXT);
                     }
                     prevNode = node;
                     timeIndex.add(node);

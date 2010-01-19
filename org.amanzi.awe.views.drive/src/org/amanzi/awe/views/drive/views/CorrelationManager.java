@@ -14,7 +14,6 @@
 package org.amanzi.awe.views.drive.views;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -26,9 +25,11 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -288,7 +289,8 @@ public class CorrelationManager extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                setNetworkDriveCorrelation(monitor, networkGis, driveGis);
+                SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
+                setNetworkDriveCorrelation(monitor2, networkGis, driveGis);
                 updateInputFromDisplay();
 
                 return Status.OK_STATUS;
@@ -307,7 +309,11 @@ public class CorrelationManager extends ViewPart {
      */
     protected void setNetworkDriveCorrelation(IProgressMonitor monitor, Node networkGis, Node driveGis) {
         Transaction tx = service.beginTx();
+        int perc = 0;
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setNetworkDriveCorrelation");
+        Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(driveGis, null);
+        long totalTime = minMax.getRight() - minMax.getLeft();
+        int prevPerc = 0;
         try {
             for (Relationship relation : networkGis.getRelationships(NetworkRelationshipTypes.LINKED_NETWORK_DRIVE,
                     Direction.OUTGOING)) {
@@ -316,18 +322,27 @@ public class CorrelationManager extends ViewPart {
                 }
             }
             networkGis.createRelationshipTo(driveGis, NetworkRelationshipTypes.LINKED_NETWORK_DRIVE);
-            Traverser traverse = driveGis.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+            Traverser traverse = driveGis.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+                
+                @Override
+                public boolean isStopNode(TraversalPosition currentPos) {
+                    if (currentPos.isStartNode()) {
+                        return false;
+                    }
+                    Relationship rel = currentPos.lastRelationshipTraversed();
+                    if (NetworkRelationshipTypes.CHILD.name().equals(rel.getType().name())) {
+                        return !NeoUtils.isDriveMNode(currentPos.currentNode());
+                    }
+                    return false;
+                }
+            }, new ReturnableEvaluator() {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node = currentPos.currentNode();
-                    String type = NeoUtils.getNodeType(node, "");
-                    if (!type.equals(INeoConstants.MP_TYPE_NAME)) {
-                        return false;
-                    }
-                    return node.hasProperty(INeoConstants.SECTOR_ID_PROPERTIES);
+                    return node.hasProperty(INeoConstants.SECTOR_ID_PROPERTIES)&&NeoUtils.isDrivePointNode(node);
                 }
-            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            }, NetworkRelationshipTypes.CHILD, Direction.BOTH, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(driveGis, service, false);
             for (Node node : traverse) {
                 Node sectorDrive = NeoUtils.findOrCreateSectorDrive(NeoUtils.getSimpleNodeName(driveGis, null), sectorDriveRoot,
@@ -335,7 +350,12 @@ public class CorrelationManager extends ViewPart {
                 if (sectorDrive != null) {
                     NeoUtils.linkWithSector(networkGis, sectorDrive, null);
                 }
-                monitor.setTaskName("Node time " + new Date(NeoUtils.getNodeTime(node)));
+                Long time = NeoUtils.getNodeTime(node);
+                perc = (int)((time - minMax.getLeft()) * 100 / totalTime);
+                if (perc > prevPerc) {
+                    monitor.worked(perc - prevPerc);
+                    prevPerc = perc;
+                }
             }
             tx.success();
 

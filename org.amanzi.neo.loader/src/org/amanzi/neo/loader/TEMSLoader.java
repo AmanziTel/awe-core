@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
@@ -120,9 +121,11 @@ public class TEMSLoader extends DriveLoader {
 
     private void addDriveIndexes() {
         try {
-            addIndex(new MultiPropertyIndex<Long>(INeoConstants.TIMESTAMP_INDEX_NAME + dataset, new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
+            addIndex(INeoConstants.HEADER_M, new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(dataset),
+                    new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
                     new MultiTimeIndexConverter(), 10));
-            addIndex(new MultiPropertyIndex<Double>(INeoConstants.LOCATION_INDEX_NAME + dataset, new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
+            addIndex(INeoConstants.MP_TYPE_NAME, new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(dataset),
+                    new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
                     new MultiDoubleConverter(0.001), 10));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -293,7 +296,7 @@ public class TEMSLoader extends DriveLoader {
                     double mw = signal[0] / signal[1];
                     Node ms = neo.createNode();
                     String[] cc = chanCode.split("\\t");
-                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
+                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
                     ms.setProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME, Integer.parseInt(cc[0]));
                     ms.setProperty(INeoConstants.PROPERTY_CODE_NAME, Integer.parseInt(cc[1]));
                     if (event != null) {

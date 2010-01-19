@@ -23,6 +23,7 @@ import java.util.Set;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -274,7 +275,8 @@ public class GeoNeo {
             if (false) {
                 throw new Exception("Disabling spatial index");
             } else {
-                MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(neo, "Index-location-" + name, new String[] {
+                MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(neo, NeoUtils.getLocationIndexName(name),
+                        new String[] {
                         "lat", "lon"}, new MultiDoubleConverter(0.001));
                 return index.searchTraverser(new Double[] {searchBounds.getMinY(), searchBounds.getMinX()}, new Double[] {
                         searchBounds.getMaxY(), searchBounds.getMaxX()});

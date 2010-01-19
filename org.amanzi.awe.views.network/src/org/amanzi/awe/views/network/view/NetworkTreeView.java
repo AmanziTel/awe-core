@@ -20,7 +20,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +55,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -286,9 +285,9 @@ public class NetworkTreeView extends ViewPart {
 
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                String type = getNodeType(currentPos.currentNode(), "");
+                String type = NeoUtils.getNodeType(currentPos.currentNode(), "");
                 return !(type.equals(INeoConstants.AWE_PROJECT_NODE_TYPE) || type.equals(INeoConstants.GIS_TYPE_NAME))
-                        && getNodeName(currentPos.currentNode()).toLowerCase().contains(text);
+                        && NeoUtils.getNodeName(currentPos.currentNode()).toLowerCase().contains(text);
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         // TODO needs sort by name
@@ -305,7 +304,7 @@ public class NetworkTreeView extends ViewPart {
 
             @Override
             public boolean isStopNode(TraversalPosition currentPos) {
-                String nodeType = getNodeType(currentPos.currentNode(), "");
+                String nodeType = NeoUtils.getNodeType(currentPos.currentNode(), "");
                 boolean result = (nodeType.equals(INeoConstants.FILE_TYPE_NAME) || nodeType.equals(INeoConstants.DATASET_TYPE_NAME));
                 return result;
             }
@@ -701,7 +700,7 @@ public class NetworkTreeView extends ViewPart {
                         || NetworkElementTypes.BSC.toString().equals(nodeType) || "delta_network".equals(nodeType)
                         || "delta_site".equals(nodeType) || "delta_sector".equals(nodeType) || "missing_sites".equals(nodeType)
                         || "missing_sectors".equals(nodeType) || "missing_site".equals(nodeType)
-                        || "missing_sector".equals(nodeType) || INeoConstants.HEADER_MS.toString().equalsIgnoreCase(nodeType)
+                        || "missing_sector".equals(nodeType) || INeoConstants.HEADER_M.toString().equalsIgnoreCase(nodeType)
                         || INeoConstants.MP_TYPE_NAME.toString().equalsIgnoreCase(nodeType)
                         || INeoConstants.FILE_TYPE_NAME.toString().equalsIgnoreCase(nodeType)
                         || INeoConstants.DATASET_TYPE_NAME.toString().equalsIgnoreCase(nodeType)) {
@@ -837,38 +836,6 @@ public class NetworkTreeView extends ViewPart {
         }
         return null;
 
-    }
-
-    // TODO move to utility class
-    /**
-     * Gets node type
-     * 
-     * @param node node
-     * @return node type or empty string
-     */
-    public static String getNodeName(Node node) {
-        String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
-        if (type.equals(INeoConstants.MP_TYPE_NAME)) {
-            return node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
-
-        } else if (type.equals(INeoConstants.HEADER_MS)) {
-            return node.getProperty(INeoConstants.PROPERTY_CODE_NAME, "").toString();
-
-        } else {
-            return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
-        }
-    }
-
-    /**
-     * gets node name
-     * 
-     * @param node node
-     * @param defValue default value
-     * @return node name or defValue
-     */
-    public static String getNodeType(Node node, String... defValue) {
-        String def = defValue == null || defValue.length < 1 ? null : defValue[0];
-        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, def);
     }
 
     /**
@@ -1123,7 +1090,7 @@ public class NetworkTreeView extends ViewPart {
                 Object element = iterator.next();
                 if (element != null && element instanceof NeoNode && !(element instanceof Root)) {
                     nodesToDelete.add((NeoNode)element);
-                    nodeTypes.add(getNodeType(((NeoNode)element).getNode()));
+                    nodeTypes.add(NeoUtils.getNodeType(((NeoNode)element).getNode()));
                 }
             }
             String type = nodeTypes.size() == 1 ? nodeTypes.iterator().next() : "node";

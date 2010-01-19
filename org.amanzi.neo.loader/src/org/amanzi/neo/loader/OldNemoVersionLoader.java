@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
@@ -99,13 +98,12 @@ public class OldNemoVersionLoader extends NemoLoader {
             }
 
             String latLon = event.latitude + "\t" + event.longitude;
-            if (latLong != null && latLong.equals(latLon)) {
-                createMsNode(event);
-            } else {
-                if (Double.parseDouble(event.latitude) == 0 && Double.parseDouble(event.longitude) == 0) {
-                    NeoLoaderPlugin.error("Not parsed: " + line);
-                    return;
-                }
+            if (Double.parseDouble(event.latitude) == 0 && Double.parseDouble(event.longitude) == 0) {
+                NeoLoaderPlugin.error("Not parsed: " + line);
+                return;
+            }
+            createMsNode(event);
+            if (latLong == null || !latLong.equals(latLon)) {
                 latLong = latLon;
                 createPointNode(event);
             }
@@ -127,27 +125,17 @@ public class OldNemoVersionLoader extends NemoLoader {
             if (lon == null || lat == null) {
                 return;
             }
-            long timestamp = getTimeStamp(timeFormat.parse(time));
             Node mp = neo.createNode();
             mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
             mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
-            if (timestamp != 0) {
-                mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-            }
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());
-            findOrCreateFileNode(mp);
             updateBBox(lat, lon);
             checkCRS((float)lat, (float)lon, null);
             // debug("Added measurement point: " + propertiesString(mp));
-            if (pointNode != null) {
-                pointNode.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
-            }
             index(mp);
             transaction.success();
             pointNode = mp;
-            msNode = null;
-            createMsNode(event);
         } catch (Exception e) {
             e.printStackTrace();
             NeoLoaderPlugin.error(e.getLocalizedMessage());

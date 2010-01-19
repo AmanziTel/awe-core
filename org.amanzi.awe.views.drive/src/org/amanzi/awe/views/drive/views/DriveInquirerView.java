@@ -1513,9 +1513,6 @@ public class DriveInquirerView extends ViewPart {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    if (currentPos.isStartNode()) {
-                        return false;
-                    }
                     Node node = currentPos.currentNode();
                     boolean result = node.hasProperty(EVENT);
                     return result;
@@ -1699,9 +1696,6 @@ public class DriveInquirerView extends ViewPart {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    if (currentPos.isStartNode()) {
-                        return false;
-                    }
                     Node node = currentPos.currentNode();
                     return node.hasProperty(propertyName);
                 }
@@ -2039,7 +2033,7 @@ public class DriveInquirerView extends ViewPart {
      */
     private void initializeIndex(String datasetName) {
         try {
-            timestampIndex = new MultiPropertyIndex<Long>(INeoConstants.TIMESTAMP_INDEX_NAME + datasetName,
+            timestampIndex = new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(datasetName),
                     new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
             timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
         } catch (IOException e) {

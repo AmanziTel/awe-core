@@ -24,8 +24,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
@@ -49,8 +50,10 @@ public class NemoLoader extends DriveLoader {
     protected static final String TIME_FORMAT = "HH:mm:ss.S";
     protected char fieldSepRegex;
     protected Node pointNode;
+    protected Node parentMnode;
     protected SimpleDateFormat timeFormat;
-    protected Node msNode;
+
+    // protected Node msNode;
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -100,14 +103,11 @@ public class NemoLoader extends DriveLoader {
         }
 
         String eventId = event.eventId;
+        createMsNode(event);
         if ("GPS".equalsIgnoreCase(eventId)) {
             createPointNode(event);
             return;
         }
-        if (pointNode != null) {
-            createMsNode(event);
-        }
-
     }
 
     /**
@@ -124,27 +124,18 @@ public class NemoLoader extends DriveLoader {
             if (lon == null || lat == null) {
                 return;
             }
-            long timestamp = getTimeStamp(timeFormat.parse(time));
             Node mp = neo.createNode();
             mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
             mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
-            if (timestamp != 0) {
-                mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-            }
+
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());
-            findOrCreateFileNode(mp);
+
             updateBBox(lat, lon);
             checkCRS((float)lat, (float)lon, null);
-            // debug("Added measurement point: " + propertiesString(mp));
-            if (pointNode != null) {
-                pointNode.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
-            }
             index(mp);
             transaction.success();
             pointNode = mp;
-            msNode = null;
-            createMsNode(event);
         } catch (Exception e) {
             NeoLoaderPlugin.error(e.getLocalizedMessage());
             return;
@@ -159,23 +150,35 @@ public class NemoLoader extends DriveLoader {
      * @param event - event
      */
     protected void createMsNode(Event event) {
-        if (pointNode == null) {
-            NeoLoaderPlugin.error("Not saved: " + event);
-            return;
-        }
         Transaction transaction = neo.beginTx();
         try {
             String id = event.eventId;// getEventId(event);
             String time = event.time;// getEventTime(event);
+            long timestamp = getTimeStamp(timeFormat.parse(time));
             Node ms = neo.createNode();
-            ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
+            findOrCreateFileNode(ms);
+            ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
             event.store(ms, headers);
-            pointNode.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
-            if (msNode != null) {
-                msNode.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
+            if (timestamp != 0) {
+                ms.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             }
-            msNode = ms;
+            if (parentMnode != null) {
+                parentMnode.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
+            }
+            if (pointNode != null) {
+                pointNode.createRelationshipTo(ms, NetworkRelationshipTypes.CHILD);
+                if (timestamp != 0) {
+                    pointNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                }
+            }
+            ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
+            index(ms);
+            parentMnode = ms;
             transaction.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            NeoLoaderPlugin.error(e.getLocalizedMessage());
+            return;
         } finally {
             transaction.finish();
         }
@@ -206,9 +209,12 @@ public class NemoLoader extends DriveLoader {
      */
     private void addDriveIndexes() {
         try {
-            addIndex(new MultiPropertyIndex<Long>("Index-timestamp-" + dataset, new String[] {"timestamp"},
+            addIndex(INeoConstants.HEADER_M, new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(dataset),
+                    new String[] {"timestamp"},
                     new MultiTimeIndexConverter(), 10));
-            addIndex(new MultiPropertyIndex<Double>("Index-location-" + dataset, new String[] {"lat", "lon"},
+            addIndex(INeoConstants.MP_TYPE_NAME, new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(dataset),
+                    new String[] {"lat",
+                    "lon"},
                     new MultiDoubleConverter(0.001), 10));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -364,6 +370,7 @@ public class NemoLoader extends DriveLoader {
                 }
                 msNode.setProperty(key, valueToSave);
             }
+            msNode.setProperty(key, value);
         }
     }
 }

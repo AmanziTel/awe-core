@@ -27,6 +27,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand;
@@ -411,7 +412,7 @@ public class ETSILoader extends DriveLoader {
 	private void createMsNode(Node mpNode, String commandName, HashMap<String, Object> parameters) {
 		Node msNode = neo.createNode();
 		msNode.setProperty(INeoConstants.COMMAND_PROPERTY_NAME, commandName);
-		msNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
+		msNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
 		
 		if (parameters != null) {
 			for (String name : parameters.keySet()) {
@@ -545,7 +546,8 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private void addDriveIndexes() {
         try {
-            addIndex(new MultiPropertyIndex<Long>(INeoConstants.TIMESTAMP_INDEX_NAME + dataset, new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
+            addIndex(INeoConstants.HEADER_M, new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(dataset),
+                    new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
                     new MultiTimeIndexConverter(), 10));            
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);

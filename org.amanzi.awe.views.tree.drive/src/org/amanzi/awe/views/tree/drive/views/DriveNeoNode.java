@@ -13,7 +13,6 @@
 package org.amanzi.awe.views.tree.drive.views;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.INeoConstants;
@@ -36,7 +35,7 @@ import org.neo4j.api.core.Traverser.Order;
  */
 public class DriveNeoNode extends NeoNode {
     /** int TRUNCATE_NODE field */
-    private static final int TRUNCATE_NODE = 10;
+    protected static final int TRUNCATE_NODE = 10;
 
     /**
      * Constructor
@@ -45,11 +44,6 @@ public class DriveNeoNode extends NeoNode {
      */
     public DriveNeoNode(Node node) {
         super(node);
-        if (getType().equals(INeoConstants.MP_TYPE_NAME)) {
-            name = node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
-        } else if (getType().equals(INeoConstants.HEADER_MS)) {
-            name = node.getProperty(INeoConstants.PROPERTY_CODE_NAME, "").toString();
-        }
     }
 
     @Override
@@ -69,20 +63,22 @@ public class DriveNeoNode extends NeoNode {
         int i = 0;
         ArrayList<DriveNeoNode> subnodes = new ArrayList<DriveNeoNode>();
         for (Node node : traverse) {
-            if (++i <= TRUNCATE_NODE) {
+            // todo now aggregation works only for nodes with type=m
+            if (++i <= TRUNCATE_NODE || !isFileNode()) {
                 children.add(new DriveNeoNode(node));
             } else {
-                subnodes.add(new DriveNeoNode(node));
+                children.add(new AggregatesNode(node));
+                break;
             }
         }
         // there are no necessary to create aggregated node for one subnode
-        if (subnodes.size() > 1) {
-            Collections.sort(children, new NeoNodeComparator());
-            children.add(new AggregatesNode(subnodes));
-        } else {
-            children.addAll(subnodes);
-            Collections.sort(children, new NeoNodeComparator());
-        }
+        // if (subnodes.size() > 1) {
+        // Collections.sort(children, new NeoNodeComparator());
+        // children.add(new AggregatesNode(subnodes));
+        // } else {
+        // children.addAll(subnodes);
+        // Collections.sort(children, new NeoNodeComparator());
+        // }
         return children.toArray(NO_NODES);
     }
 

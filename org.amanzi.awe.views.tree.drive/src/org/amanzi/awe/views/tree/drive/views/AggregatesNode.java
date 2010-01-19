@@ -13,9 +13,15 @@
 package org.amanzi.awe.views.tree.drive.views;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.Node;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
+import org.neo4j.api.core.Traverser;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * <p>
@@ -27,27 +33,42 @@ import org.amanzi.awe.views.network.proxy.NeoNode;
  */
 public class AggregatesNode extends DriveNeoNode {
 
-	private final ArrayList<DriveNeoNode> subnodes;
+    // private final ArrayList<DriveNeoNode> subnodes;
 
     /**
      * Constructor
      * 
      * @param subnodes - list of subnodes
      */
-	public AggregatesNode(ArrayList<DriveNeoNode> subnodes) {
+    public AggregatesNode(Node firstNode) {
 		//for icons sets the first node
-		super(subnodes.get(0).getNode());
-		this.subnodes = subnodes;
-        Collections.sort(this.subnodes, new NeoNodeComparator());
-		name="and "+subnodes.size()+" more";
+        super(firstNode);
+        // this.subnodes = subnodes;
+        // Collections.sort(this.subnodes, new NeoNodeComparator());
+        // TODO compute size if necessary
+        name = name + " aggregation";
+        // name="and "+subnodes.size()+" more";
 	}
 	@Override
 	public NeoNode[] getChildren() {
-		//TODO adds aggregate subnodes if necessary
-		return subnodes.toArray(NO_NODES);
+        ArrayList<NeoNode> children = new ArrayList<NeoNode>();
+        children.add(new DriveNeoNode(getNode()));
+        Traverser traverse;
+        traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
+                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        int i = 0;
+        for (Node node : traverse) {
+            if (++i <= TRUNCATE_NODE) {
+                children.add(new DriveNeoNode(node));
+            } else {
+                children.add(new AggregatesNode(node));
+                break;
+            }
+        }
+        return children.toArray(NO_NODES);
 	}
 	@Override
 	public boolean hasChildren() {
-		return !subnodes.isEmpty();
+        return getNode().hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
 	}
 }

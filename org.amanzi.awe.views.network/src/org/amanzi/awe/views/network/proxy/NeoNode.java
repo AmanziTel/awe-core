@@ -19,6 +19,7 @@ import java.util.Comparator;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
@@ -58,7 +59,7 @@ public class NeoNode {
 
     public NeoNode(Node node) {
         this.node = node;
-        this.name = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+        this.name = NeoUtils.getSimpleNodeName(node, "");
     }
     
     /**
