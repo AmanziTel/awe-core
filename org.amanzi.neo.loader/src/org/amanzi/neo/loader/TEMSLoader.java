@@ -260,30 +260,40 @@ public class TEMSLoader extends DriveLoader {
         if (signals.size() > 0) {
             Transaction transaction = neo.beginTx();
             try {
+                Node m = neo.createNode();
+                m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
+                m.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
+                m.setProperty(INeoConstants.PROPERTY_NAME_NAME, this.time);
+                if (timestamp != 0) {
+                    m.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
+                    updateTimestampMinMax(timestamp);
+                }
+                findOrCreateFileNode(m);
                 Node mp = neo.createNode();
                 mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
-                mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
                 if (timestamp != 0) {
                     mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
                     updateTimestampMinMax(timestamp);
                 }
+                mp.createRelationshipTo(m, GeoNeoRelationshipTypes.CHILD);
 
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
                 mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
-                findOrCreateFileNode(mp);
+
                 updateBBox(currentLatitude, currentLongitude);
                 checkCRS(currentLatitude, currentLongitude, null);
                 debug("Added measurement point: " + propertiesString(mp));
                 if (point != null) {
-                    point.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
+                    point.createRelationshipTo(m, GeoNeoRelationshipTypes.NEXT);
                 }
                 index(mp);
+                index(m);
                 if (event!=null){
                     index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, nameGis);                    
                 }
-                point = mp;
+                point = m;
                 Node prev_ms = null;
                 TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
                 for (String chanCode : signals.keySet()) {
@@ -296,9 +306,10 @@ public class TEMSLoader extends DriveLoader {
                     double mw = signal[0] / signal[1];
                     Node ms = neo.createNode();
                     String[] cc = chanCode.split("\\t");
-                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
+                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
                     ms.setProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME, Integer.parseInt(cc[0]));
                     ms.setProperty(INeoConstants.PROPERTY_CODE_NAME, Integer.parseInt(cc[1]));
+                    ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, cc[1]);
                     if (event != null) {
                         ms.setProperty(INeoConstants.PROPERTY_TYPE_EVENT, event);
                         event = null;
