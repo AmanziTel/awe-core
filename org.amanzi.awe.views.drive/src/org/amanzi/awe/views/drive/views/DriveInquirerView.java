@@ -47,7 +47,6 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -2033,8 +2032,7 @@ public class DriveInquirerView extends ViewPart {
      */
     private void initializeIndex(String datasetName) {
         try {
-            timestampIndex = new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(datasetName),
-                    new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
+            timestampIndex = NeoUtils.getTimeIndexProperty(datasetName);
             timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
