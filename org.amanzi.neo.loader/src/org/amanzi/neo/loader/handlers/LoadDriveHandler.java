@@ -12,10 +12,14 @@
  */
 package org.amanzi.neo.loader.handlers;
 
-import org.amanzi.neo.loader.dialogs.DriveDialog;
+import org.amanzi.neo.wizards.TemsImportWizard;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IImportWizard;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
@@ -29,10 +33,15 @@ import org.eclipse.ui.handlers.HandlerUtil;
 public class LoadDriveHandler extends AbstractHandler {
 
     @Override
-    public Object execute(ExecutionEvent arg0) throws ExecutionException {
-            DriveDialog dialog = new DriveDialog(HandlerUtil.getActiveShell(arg0));
-            dialog.open();
-            return null;
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+        IImportWizard wizard = new TemsImportWizard();
+        wizard.init(workbenchWindow.getWorkbench(), null);
+        Shell parent = workbenchWindow.getShell();
+        WizardDialog dialog = new WizardDialog(parent, wizard);
+        dialog.create();
+        dialog.open();
+        return null;
     }
 
 }

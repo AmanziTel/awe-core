@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -197,7 +198,8 @@ public class ETSILoader extends DriveLoader {
 	 * @param datasetName name of dataset
 	 */
 	public ETSILoader(String directoryName, Display display, String datasetName, String networkName) {
-		if (datasetName == null) {
+        driveType = DriveTypes.AMS;
+        if (datasetName == null) {
 			int startIndex = directoryName.lastIndexOf(File.separator);
 			if (startIndex < 0) {
 				startIndex = 0;

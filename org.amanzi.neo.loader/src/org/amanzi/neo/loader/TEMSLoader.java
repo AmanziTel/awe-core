@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -56,6 +57,7 @@ public class TEMSLoader extends DriveLoader {
      * @param dataset to add data to
      */
     public TEMSLoader(String filename, Display display, String dataset) {
+        driveType = DriveTypes.TEMS;
         initialize("TEMS", null, filename, display, dataset);
         initializeLuceneIndex();
         initializeKnownHeaders();      
@@ -70,6 +72,7 @@ public class TEMSLoader extends DriveLoader {
      * @param display
      */
     public TEMSLoader(NeoService neo, String filename) {
+        driveType = DriveTypes.TEMS;
         initialize("TEMS", neo, filename, null, null);
         initializeLuceneIndex();
         initializeKnownHeaders();

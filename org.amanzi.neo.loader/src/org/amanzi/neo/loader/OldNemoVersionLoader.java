@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
@@ -29,7 +30,7 @@ import org.neo4j.api.core.Transaction;
 
 /**
  * <p>
- * NeoLoader for old version nemo file format
+ * NeoLoader for old version (1.8x) nemo file format
  * </p>
  * 
  * @author Cinkel_A
@@ -57,6 +58,7 @@ public class OldNemoVersionLoader extends NemoLoader {
      */
     public OldNemoVersionLoader(String filename, Display display, String dataset) {
         super(filename, display, dataset);
+        driveType = DriveTypes.NEMO1;
         possibleFieldSepRegexes = new String[] {" ", "\t", ",", ";"};
     }
 

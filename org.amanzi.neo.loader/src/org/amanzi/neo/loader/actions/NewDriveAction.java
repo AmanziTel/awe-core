@@ -13,9 +13,12 @@
 
 package org.amanzi.neo.loader.actions;
 
-import org.amanzi.neo.loader.dialogs.DriveDialog;
+import org.amanzi.neo.wizards.TemsImportWizard;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
@@ -28,18 +31,23 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
  */
 public class NewDriveAction implements IWorkbenchWindowActionDelegate {
     private IWorkbenchWindow window;
+
     @Override
     public void dispose() {
     }
 
     @Override
     public void init(IWorkbenchWindow window) {
-        this.window=window;
+        this.window = window;
     }
 
     @Override
     public void run(IAction action) {
-        DriveDialog dialog = new DriveDialog(window.getShell());
+        IImportWizard wizard = new TemsImportWizard();
+        wizard.init(window.getWorkbench(), null);
+        Shell parent = window.getShell();
+        WizardDialog dialog = new WizardDialog(parent, wizard);
+        dialog.create();
         dialog.open();
     }
 

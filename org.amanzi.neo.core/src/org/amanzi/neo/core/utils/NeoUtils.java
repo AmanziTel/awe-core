@@ -31,6 +31,7 @@ import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -942,5 +943,22 @@ public class NeoUtils {
     public static MultiPropertyIndex<Double> getLocationIndexProperty(String name) throws IOException {
         return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(name), new String[] {
                 INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME}, new MultiDoubleConverter(0.001), 10);
+    }
+
+    /**
+     *Return type of dataset
+     * 
+     * @param datasetNode dataset node
+     * @param service neoservice if null then transaction do not created
+     * @return DriveTypes or null
+     */
+    public static DriveTypes getDatasetType(Node datasetNode, NeoService service) {
+        Transaction tx = beginTx(service);
+        try {
+            String typeId = (String)datasetNode.getProperty(INeoConstants.DRIVE_TYPE, null);
+            return DriveTypes.findById(typeId);
+        } finally {
+            finishTx(tx);
+        }
     }
 }

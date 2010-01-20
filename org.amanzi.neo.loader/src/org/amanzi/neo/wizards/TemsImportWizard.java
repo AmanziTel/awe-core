@@ -28,7 +28,7 @@ import org.eclipse.ui.IWorkbench;
 public class TemsImportWizard extends Wizard implements IImportWizard {
 
     /** String PAGE_TITLE field */
-    private static final String PAGE_TITLE = "Import Network File";
+    private static final String PAGE_TITLE = "Import Drive data File";
     /** String PAGE_DESCR field */
     private static final String PAGE_DESCR = "Import a file from the local file system into the workspace";
     private TemsImportWizardPage mainPage;

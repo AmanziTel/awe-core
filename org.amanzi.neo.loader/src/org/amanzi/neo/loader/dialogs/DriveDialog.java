@@ -25,7 +25,9 @@ import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.NemoLoader;
@@ -45,6 +47,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -154,7 +157,7 @@ public class DriveDialog {
 
     private Button removeAllFilesFromLoaded;
 
-	private Combo combo;
+	private Combo cDataset;
 	private String datasetName;
 	/* 
 	 * Default directory for file dialogs 
@@ -165,7 +168,11 @@ public class DriveDialog {
      */
     private WizardPage wizardPage = null;
 
-    private String extension = null;
+    private LinkedHashMap<String, Node> dataset = new LinkedHashMap<String, Node>();
+
+    private Label ldataset;
+
+    // private String extension = null;
 
 	/**
 	 * Creates a Shell and add GUI elements
@@ -290,36 +297,76 @@ public class DriveDialog {
 		GridData data = new GridData(SWT.FILL, SWT.BOTTOM, true, false);
 		panel.setLayoutData(data);
 
-		Label ldataset=new Label(panel, SWT.NONE);
+        ldataset = new Label(panel, SWT.NONE);
 		ldataset.setText(NeoLoaderPluginMessages.DriveDialog_DatasetLabel);
-		combo = new Combo(panel, SWT.NONE);
+		cDataset = new Combo(panel, SWT.NONE);
         FormData dLabel = new FormData(); 
         dLabel.left = new FormAttachment(0, 5);
-        dLabel.top = new FormAttachment(combo, 5, SWT.CENTER);
+        dLabel.top = new FormAttachment(cDataset, 5, SWT.CENTER);
         ldataset.setLayoutData(dLabel);
 
         FormData dCombo = new FormData(); 
         dCombo.left = new FormAttachment(ldataset, 5);
         dCombo.top = new FormAttachment(0, 2);
         dCombo.right = new FormAttachment(40,3);
-        combo.setLayoutData(dCombo);
+        cDataset.setLayoutData(dCombo);
         
         //TODO: Check if the following line is needed
         //Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-        ArrayList<String> datasetList = new ArrayList<String>();
         Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
                 NeoServiceProvider.getProvider().getService().getReferenceNode());
         for (Node node : allDatasetTraverser) {
-            datasetList.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            dataset.put((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME), node);
         }
-        combo.setItems(datasetList.toArray(new String[]{}));
+        cDataset.setItems(dataset.keySet().toArray(new String[0]));
+        cDataset.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                changeDatasetSelection();
+            }
+        });
+        cDataset.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeDatasetSelection();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
 	}
-	
-	/**
-	 * Creates List for choosing Files
-	 * 
-	 * @param parent
-	 */
+
+    /**
+     * change dataset selection
+     */
+    protected void changeDatasetSelection() {
+        try {
+            Node datasetNode = dataset.get(cDataset.getText());
+            if (datasetNode != null) {
+                ArrayList<String> filrsToRemove = new ArrayList<String>();
+                for (Map.Entry<String, String> entry : loadedFiles.entrySet()) {
+                    if (!checkExtension(getFileExt(entry.getValue()))) {
+                        filrsToRemove.add(entry.getKey());
+                    }
+                }
+                for (String fileName : filrsToRemove) {
+                    removeFileToLoad(fileName);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Creates List for choosing Files
+     * 
+     * @param parent
+     */
 	
 	private void createFolderSelectionComposite(Composite parent) {
 		Composite panel = new Composite(parent, SWT.NONE);
@@ -454,8 +501,8 @@ public class DriveDialog {
 				// User has selected to open a single file
 		        FileDialog dlg = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
 				dlg.setText(NeoLoaderPluginMessages.DriveDialog_FileDialogTitle);
-		        dlg.setFilterNames(Drive_FILE_NAMES);
-		        dlg.setFilterExtensions(Drive_FILE_EXTENSIONS);
+                dlg.setFilterNames(getFilerNames());
+                dlg.setFilterExtensions(getFilterExtensions());
 		        dlg.setFilterPath(getDefaultDirectory());
 				
 		        String fn = dlg.open();
@@ -465,18 +512,15 @@ public class DriveDialog {
                     Pattern extRegex = Pattern.compile(".*\\.(\\w+)$");
 		        	FileFilter fileFilter = null;
 		        	for (String name : dlg.getFileNames()) {
-		        	    if(fileFilter == null) {
 		        	        Matcher m = extRegex.matcher(name);
+		        	        String extension="";
 		        	        if(m.matches()) {
-		        	            String extension = m.group(1);
-		        	            fileFilter = new DriveFileFilter(extension);
-		        	            setExtension(extension);
+		        	            extension = m.group(1);
 		        	        }
-		        	    }
-		        	    if(fileFilter == null || fileFilter.accept(new File(name))) {
+                        if (checkExtension(extension)) {
     		        		addFileToLoad(name, dlg.getFilterPath(), true);
-    			        	if (combo.getText().isEmpty()){
-    			        		combo.setText(name);
+    			        	if (cDataset.getText().isEmpty()){
+    			        		cDataset.setText(name);
     			        	}
 		        	    }
 		        	}
@@ -551,7 +595,7 @@ public class DriveDialog {
 
 			
 		});
-		combo.addModifyListener(new ModifyListener() {
+		cDataset.addModifyListener(new ModifyListener() {
 			
 			@Override
 			public void modifyText(ModifyEvent e) {
@@ -560,8 +604,54 @@ public class DriveDialog {
 		});
 		
 	}
-	public void runLoadingJob() {
-		datasetName=combo.getText();
+
+    /**
+     * @param extension
+     * @return
+     */
+    protected boolean checkExtension(String extension) {
+        Node datasetNode = dataset.get(cDataset.getText());
+        if (datasetNode == null) {
+            if (loadedFiles.isEmpty()) {
+                return true;
+            }
+            String file = loadedFiles.values().iterator().next();
+            return extension.equals(getFileExt(file));
+        } else {
+            return NeoUtils.getDatasetType(datasetNode, null).getExtension().equalsIgnoreCase(extension);
+        }
+    }
+
+    /**
+     * get file descriptions
+     * 
+     * @return
+     */
+    protected String[] getFilterExtensions() {
+        Node datasetNode = dataset.get(cDataset.getText());
+        if (datasetNode == null) {
+            return DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.NEMO1, DriveTypes.NEMO2);
+        } else {
+            return DriveTypes.getFileExtensions(NeoUtils.getDatasetType(datasetNode, null));
+        }
+    }
+
+    /**
+     * get file extensions
+     * 
+     * @return
+     */
+    protected String[] getFilerNames() {
+        Node datasetNode = dataset.get(cDataset.getText());
+        if (datasetNode == null) {
+            return DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.NEMO1, DriveTypes.NEMO2);
+        } else {
+            return DriveTypes.getFileDescriptions(NeoUtils.getDatasetType(datasetNode, null));
+        }
+    }
+
+    public void runLoadingJob() {
+		datasetName=cDataset.getText();
 		LoadDriveJob job = new LoadDriveJob(dialogShell.getDisplay());
 		job.schedule(50);
 	}	
@@ -586,9 +676,10 @@ public class DriveDialog {
         }				
 	}
 	
-    private void setExtension(String extension) {
-        this.extension  = extension;
-    }
+
+    // private void setExtension(String extension) {
+    // this.extension = extension;
+    // }
     
 
 	/**
@@ -615,7 +706,8 @@ public class DriveDialog {
         for (String fileName : loadedFiles.keySet()) {
             String filePath = loadedFiles.get(fileName);
 			try {
-			    if(extension.toLowerCase().equals("fmt")) {
+                String extension = getFileExt(filePath);
+                if (extension.toLowerCase().equals("fmt")) {
 			    	driveLoader = new TEMSLoader(filePath, display, datasetName);			         
 			    } else if(extension.toLowerCase().equals("asc")) {
                     driveLoader = new RomesLoader(filePath, display, datasetName);
@@ -666,6 +758,18 @@ public class DriveDialog {
         }
 
         monitor.done();
+    }
+
+    /**
+     * gets file extension
+     * 
+     * @param filePath file path
+     * @return file ext
+     */
+    public String getFileExt(String filePath) {
+        int del = 1 + filePath.lastIndexOf(".");
+        String extension = filePath.substring(del);
+        return extension;
     }
 	
 	private static String memText(long memAfter, long memBefore){
@@ -740,6 +844,9 @@ public class DriveDialog {
 	
 	private void addFileToLoad(String name) {
 		String path = folderFiles.get(name);
+        if (!checkExtension(getFileExt(path))) {
+            return;
+        }
 		folderFiles.remove(name);
 		folderFilesList.remove(name);
 		
@@ -769,7 +876,7 @@ public class DriveDialog {
 	 */
 	
 	private void checkLoadButton() {
-		boolean enabled = filesToLoadList.getItemCount() > 0;
+        boolean enabled = filesToLoadList.getItemCount() > 0 && !cDataset.getText().trim().isEmpty();
         loadButton.setEnabled(enabled/*&&combo.getText().length()>0*/);
         if (wizardPage!=null){
             wizardPage.setPageComplete(enabled);

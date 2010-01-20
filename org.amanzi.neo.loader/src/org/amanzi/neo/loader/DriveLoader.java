@@ -19,6 +19,7 @@ import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
@@ -40,7 +41,8 @@ import org.neo4j.util.index.LuceneIndexService;
 
 public abstract class DriveLoader extends AbstractLoader {
 	
-	protected String dataset = null;
+    protected DriveTypes driveType;
+    protected String dataset = null;
     protected Node file = null;
     protected Node datasetNode = null;
     private static int[] times = new int[2];
@@ -184,6 +186,7 @@ public abstract class DriveLoader extends AbstractLoader {
         Node result = neo.createNode();
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DATASET_TYPE_NAME);
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, datasetName);
+        result.setProperty(INeoConstants.DRIVE_TYPE, driveType.getId());
         return result;
     }
 

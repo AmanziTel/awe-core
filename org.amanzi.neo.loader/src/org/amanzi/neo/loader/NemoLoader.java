@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -60,6 +61,7 @@ public class NemoLoader extends DriveLoader {
      * @param dataset to add data to
      */
     public NemoLoader(String filename, Display display, String dataset) {
+        driveType = DriveTypes.NEMO2;
         initialize("Nemo", null, filename, display, dataset);
         timeFormat = new SimpleDateFormat(TIME_FORMAT);
         pointNode = null;

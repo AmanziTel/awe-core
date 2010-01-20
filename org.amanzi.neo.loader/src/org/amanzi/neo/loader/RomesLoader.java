@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -55,6 +56,7 @@ public class RomesLoader extends DriveLoader {
      * @param dataset to add data to
      */
     public RomesLoader(String filename, Display display, String dataset) {
+        driveType = DriveTypes.ROMES;
         initialize("Romes", null, filename, display, dataset);
         initData();
         initializeLuceneIndex();
