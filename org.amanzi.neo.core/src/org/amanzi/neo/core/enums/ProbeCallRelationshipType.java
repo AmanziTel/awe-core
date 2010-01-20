@@ -11,42 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.core.enums;
 
-import java.util.HashMap;
-import java.util.StringTokenizer;
-
+import org.neo4j.api.core.RelationshipType;
 
 /**
- * ATD command
- * 
+ * TODO Purpose of 
+ * <p>
+ *
+ * </p>
  * @author Lagutko_N
  * @since 1.0.0
  */
-class ATD extends AbstractETSICommand {
+public enum ProbeCallRelationshipType implements RelationshipType {
 	
-	/*
-	 * Name of command
-	 */
-	private static final String COMMAND_NAME = "atd";
-	
-	@Override
-	public String getName() {
-		return COMMAND_NAME;
-	}
-
-	@Override
-	protected void initializeParameters() {
-	}
-
-	@Override
-	protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
-		return null;
-	}
-
-	@Override
-	public boolean isCallCommand() {
-		return true;
-	}
+	DRIVE_CALL,
+	PROBE_CALL;
 
 }

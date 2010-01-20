@@ -148,6 +148,26 @@ public class NeoUtils {
     public static boolean isDriveMNode(Node node) {
         return node != null && INeoConstants.HEADER_M.equals(getNodeType(node, ""));
     }
+    
+    /**
+     * Is this node a Probe node
+     *
+     * @param node node to check
+     * @return is this node a Probe node
+     */
+    public static boolean isProbeNode(Node node) {
+    	return node != null && INeoConstants.PROBE_TYPE_NAME.equals(getNodeType(node, ""));
+    }
+    
+    /**
+     * Is this node a Call node
+     *
+     * @param node node to check
+     * @return is this node a Call node
+     */
+    public static boolean isCallNode(Node node) {
+    	return node != null && INeoConstants.CALL_TYPE_NAME.equals(getNodeType(node, ""));
+    }
 
     /**
      * gets stop evaluator with necessary depth
@@ -943,6 +963,121 @@ public class NeoUtils {
     public static MultiPropertyIndex<Double> getLocationIndexProperty(String name) throws IOException {
         return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(name), new String[] {
                 INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME}, new MultiDoubleConverter(0.001), 10);
+    }
+    
+    /**
+     * Searches for the Probe node by it's name
+     *
+     * @param networkNode Network that should contain Probe
+     * @param probeName name of Probe
+     * @return Probe node
+     */
+    public static Node findOrCreateProbeNode(Node networkNode, final String probeName, NeoService service) {
+		Transaction tx = beginTx(service);
+		Node result = null;
+		try {
+			Iterator<Node> probeIterator = networkNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+			
+				@Override
+				public boolean isReturnableNode(TraversalPosition currentPos) {
+					return NeoUtils.isProbeNode(currentPos.currentNode()) && 
+						   probeName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
+				}
+			}, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+		
+			if (probeIterator.hasNext()) {
+				result = probeIterator.next();
+			}
+			else {
+				result = service.createNode();
+				result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.PROBE_TYPE_NAME);
+				result.setProperty(INeoConstants.PROPERTY_NAME_NAME, probeName);
+			
+				networkNode.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
+			}
+			tx.success();
+		}
+		catch (Exception e) {
+			NeoCorePlugin.error(null, e);
+			tx.failure();
+		}
+		finally {
+			tx.finish();
+		}
+		
+		return result;
+	}
+    
+    /**
+     * Returns a Probe Calls node for current dataset and network
+     *
+     * @param datasetName name of dataset
+     * @param probesName name of probe
+     * @param probesNode node for probe
+     * @param service Neo Serivce
+     * @return a Probe Calls node for current dataset
+     */
+    public static Node getCallsNode(final String datasetName, String probesName, Node probesNode, NeoService service) {
+    	Transaction tx = beginTx(service);
+    	Node callsNode = null;
+    	try {
+    		Iterator<Node> callsIterator = probesNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+				
+				@Override
+				public boolean isReturnableNode(TraversalPosition currentPos) {
+					return datasetName.equals(currentPos.currentNode().getProperty(INeoConstants.DATASET_TYPE_NAME, ""));
+				}
+			}, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+    		
+    		if (callsIterator.hasNext()) {
+    			callsNode = callsIterator.next();
+    		}
+    		else {
+    			callsNode = service.createNode();
+    			callsNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.CALLS_TYPE_NAME);
+    			callsNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, probesName + " - " + datasetName);
+    			callsNode.setProperty(INeoConstants.DATASET_TYPE_NAME, datasetName);
+    			
+    			probesNode.createRelationshipTo(callsNode, GeoNeoRelationshipTypes.CHILD);
+    		}
+    		
+    		tx.success();
+    	}
+    	catch (Exception e) {
+    		NeoCorePlugin.error(null, e);
+    		tx.failure();
+    	}
+    	finally {
+    		tx.finish();
+    	}
+    	
+    	return callsNode;
+    }
+    
+    /**
+     * Returns last Call from Probe Calls queue
+     *
+     * @param probeCallsNode Probe Calls node
+     * @param service Neo service
+     * @return last Call node
+     */
+    public static Node getLastCallFromProbeCalls(Node probeCallsNode, NeoService service) {
+    	Transaction tx = beginTx(service);
+    	Node callNode = null;
+    	try {
+    		Long lastCallId = (Long)probeCallsNode.getProperty(INeoConstants.LAST_CALL_NODE_ID_PROPERTY_NAME, null);
+    		
+    		if (lastCallId != null) {
+    			callNode = service.getNodeById(lastCallId);
+    		}
+    		
+    		tx.success();
+    	}
+    	finally {
+    		tx.finish();
+    	}
+    	
+    	return callNode;
     }
 
     /**

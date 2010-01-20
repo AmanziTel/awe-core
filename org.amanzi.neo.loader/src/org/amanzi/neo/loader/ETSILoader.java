@@ -28,7 +28,9 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand;
 import org.amanzi.neo.loader.etsi.commands.CommandSyntax;
 import org.amanzi.neo.loader.etsi.commands.ETSICommandPackage;
@@ -59,6 +61,8 @@ public class ETSILoader extends DriveLoader {
 		private long callSetupEndTime;
 		
 		private long callEndTime;
+		
+		private ArrayList<Node> relatedNodes = new ArrayList<Node>();
 
 		/**
 		 * @return Returns the callBeginTime.
@@ -100,6 +104,14 @@ public class ETSILoader extends DriveLoader {
 		 */
 		public void setCallEndTime(long callEndTime) {
 			this.callEndTime = callEndTime;
+		}
+		
+		public void addRelatedNode(Node mNode) {
+			relatedNodes.add(mNode);
+		}
+		
+		public ArrayList<Node> getRelatedNodes() {
+			return relatedNodes;
 		}
 		
 	}
@@ -147,9 +159,9 @@ public class ETSILoader extends DriveLoader {
 	private SimpleDateFormat timestampFormat;
 	
 	/*
-	 * Previous Mp Node
+	 * Previous M Node
 	 */
-	private Node previousMpNode;
+	private Node previousMNode;
 	
 	/*
 	 * Previous Ms Node 
@@ -186,9 +198,13 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private Node currentDirectoryNode;
 	
-	private Node previousCallNode;
-	
 	private Call call;
+	
+	private HashMap<String, Pair<Node, Node>> probesCache = new HashMap<String, Pair<Node, Node>>();
+	
+	private Node currentProbeCalls;
+	
+	private Node lastCallInProbe;
 	
 	/**
 	 * Creates a loader
@@ -253,6 +269,7 @@ public class ETSILoader extends DriveLoader {
 		for (File logFile : allFiles) {
 			monitor.subTask("Loading file " + logFile.getAbsolutePath());
 			
+			String probeName = initializeProbeNodes(logFile);
 			filename = logFile.getAbsolutePath();
 			currentDirectoryNode = findOrCreateDirectoryNode(null, logFile.getParentFile());
 			
@@ -262,6 +279,8 @@ public class ETSILoader extends DriveLoader {
 			super.run(null);
 			
 			monitor.worked(1);
+			
+			updateProbeCache(probeName);
 		}
 		
 		cleanupGisNode();
@@ -269,6 +288,38 @@ public class ETSILoader extends DriveLoader {
 		
 		basename = dataset;
 		printStats(false);
+	}
+	
+	private void updateProbeCache(String probeName) {
+		Transaction tx = neo.beginTx();
+		try {
+			if (lastCallInProbe != null) {
+				currentProbeCalls.setProperty(INeoConstants.LAST_CALL_NODE_ID_PROPERTY_NAME, lastCallInProbe.getId());
+			}
+			tx.success();
+		}
+		finally {
+			tx.finish();
+		}
+		probesCache.put(probeName, new Pair<Node, Node>(currentProbeCalls, lastCallInProbe));
+	}
+	
+	private String initializeProbeNodes(File logFile) {
+		String fileName = logFile.getName();
+		int index = fileName.indexOf("#");
+		String probeName = fileName;
+		if (index > -1) {
+			probeName = probeName.substring(0, index);
+		}
+		
+		Pair<Node, Node> probeNodes = probesCache.get(probeName);
+		if (probeNodes == null) {
+			Node probeNode = NeoUtils.findOrCreateProbeNode(networkNode, probeName, neo);
+			currentProbeCalls = NeoUtils.getCallsNode(dataset, probeName, probeNode, neo);
+			lastCallInProbe = NeoUtils.getLastCallFromProbeCalls(currentProbeCalls, neo);
+		}
+		
+		return probeName;
 	}
 	
 	/**
@@ -352,7 +403,7 @@ public class ETSILoader extends DriveLoader {
 				filename = tempName;
 				basename = filename;
 				file = null;
-				previousMpNode = null;
+				previousMNode = null;
 			}
 			newFile = false;
 		}
@@ -393,16 +444,6 @@ public class ETSILoader extends DriveLoader {
 		//get a timestamp
 		String timestamp = tokenizer.nextToken();
 		
-		//try to parse timestamp
-		long timestampValue;
-		try {
-			timestampValue = timestampFormat.parse(timestamp).getTime();
-		}
-		catch (ParseException e) {
-			error(e.getMessage());
-			return;
-		}
-		
 		if (!tokenizer.hasMoreTokens()) {
 			//if no more tokens than skip parsing
 			return;
@@ -437,13 +478,23 @@ public class ETSILoader extends DriveLoader {
 				return;
 			}
 			
+			//try to parse timestamp
+			long timestampValue;
+			try {
+				timestampValue = timestampFormat.parse(timestamp).getTime();
+			}
+			catch (ParseException e) {
+				error(e.getMessage());
+				return;
+			}
+			
 			//get a real name of command without set or get postfix
-			Node mpNode = createMpNode(timestampValue);
-			if (mpNode != null) {
+			Node mNode = createMNode(timestampValue);
+			if (mNode != null) {
 				//parse parameters of command
 				HashMap<String, Object> parameters = null;
 				
-				parameters = processCommand(timestampValue, command, syntax, tokenizer);
+				parameters = processCommand(mNode, timestampValue, command, syntax, tokenizer);
 				if (command != null) {
 					commandName = command.getName();
 				}
@@ -452,7 +503,7 @@ public class ETSILoader extends DriveLoader {
 				}
 					
 				if (!commandName.equals(UNSOLICITED)) {
-					createMsNode(mpNode, commandName, parameters);
+					createMsNode(mNode, commandName, parameters);
 				}
 				
 				if (syntax == CommandSyntax.EXECUTE) {
@@ -460,6 +511,13 @@ public class ETSILoader extends DriveLoader {
 						String maybeTimestamp = tokenizer.nextToken();						
 						if (maybeTimestamp.startsWith("~")) {
 							timestamp = maybeTimestamp;
+							try {
+								timestampValue = timestampFormat.parse(timestamp.substring(1)).getTime();
+							}
+							catch (ParseException e) {
+								error(e.getMessage());
+								return;
+							}
 						}
 						else if (maybeTimestamp.startsWith("+")) {
 							int colonIndex = maybeTimestamp.indexOf(":");
@@ -470,7 +528,7 @@ public class ETSILoader extends DriveLoader {
 						
 							if (command != null) {
 								//should be a result of command
-								parameters = command.getResults(syntax, paramTokenizer);
+								parameters = processCommand(mNode, timestampValue, command, syntax, paramTokenizer);
 								if (command != null) {
 									commandName = command.getName();
 								}
@@ -478,7 +536,7 @@ public class ETSILoader extends DriveLoader {
 									commandName = ETSICommandPackage.getRealCommandName(commandName);
 								}
 							}
-							createMsNode(mpNode, commandName, parameters);
+							createMsNode(mNode, commandName, parameters);
 						}
 					}
 				}
@@ -573,7 +631,7 @@ public class ETSILoader extends DriveLoader {
 	 * @param timestamp timestamp
 	 * @return created node
 	 */
-	private Node createMpNode(long timestamp) {
+	private Node createMNode(long timestamp) {
 		Node mpNode = neo.createNode();
 		mpNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
 		
@@ -584,10 +642,10 @@ public class ETSILoader extends DriveLoader {
 		index(mpNode);
 		findOrCreateFileNode(mpNode);
 		
-		if (previousMpNode != null) {
-			previousMpNode.createRelationshipTo(mpNode, GeoNeoRelationshipTypes.NEXT);
+		if (previousMNode != null) {
+			previousMNode.createRelationshipTo(mpNode, GeoNeoRelationshipTypes.NEXT);
 		}
-		previousMpNode = mpNode;
+		previousMNode = mpNode;
 		previousMsNode = null;
 		
 		return mpNode;
@@ -633,7 +691,7 @@ public class ETSILoader extends DriveLoader {
         return true;
 	}
 	
-	private HashMap<String, Object> processCommand(long timestamp, AbstractETSICommand command, CommandSyntax syntax, StringTokenizer tokenizer) {
+	private HashMap<String, Object> processCommand(Node mNode, long timestamp, AbstractETSICommand command, CommandSyntax syntax, StringTokenizer tokenizer) {
 		HashMap<String, Object> result = command.getResults(syntax, tokenizer);
 		
 		if (command.isCallCommand()) {
@@ -641,31 +699,40 @@ public class ETSILoader extends DriveLoader {
 			
 			CallEvents event = CallEvents.getCallEvent(commandName);
 			
-			processCallEvent(event, timestamp);
+			processCallEvent(mNode, event, timestamp);
 		}
 		
 		return result;
 	}
 	
-	private void processCallEvent(CallEvents event, long timestamp) {
+	private void processCallEvent(Node relatedNode, CallEvents event, long timestamp) {
 		switch (event) {
 		case CALL_SETUP_BEGIN:
 			call = new Call();
-			call.setCallSetupBeginTime(timestamp);
+			call.setCallSetupBeginTime(timestamp);			
 			break;
 		case CALL_SETUP_END:
-			call.setCallSetupEndTime(timestamp);
+			if (call != null) {
+				call.setCallSetupEndTime(timestamp);
+			}
 			break;
 		case CALL_END:
-			call.setCallEndTime(timestamp);
-			saveCall();
+			if (call != null) {
+				call.setCallEndTime(timestamp);
+				saveCall();
+			}
 			break;
+		default:
+			return;
+		}
+		if (call != null) {
+			call.addRelatedNode(relatedNode);
 		}
 	}
 	
 	private void saveCall() {
 		if (call != null) {
-			Node callNode = createCallNode(previousCallNode);
+			Node callNode = createCallNode(lastCallInProbe);
 			
 			long setupDuration = call.getCallSetupEndTime() - call.getCallSetupBeginTime();
 			long callDuration = call.getCallEndTime() - call.getCallSetupBeginTime();
@@ -673,7 +740,21 @@ public class ETSILoader extends DriveLoader {
 			callNode.setProperty("setupDuration", setupDuration);
 			callNode.setProperty("callDuration", callDuration);
 			
-			previousCallNode = callNode;
+			//create relationship to M node
+			for (Node mNode : call.getRelatedNodes()) {
+				mNode.createRelationshipTo(callNode, ProbeCallRelationshipType.DRIVE_CALL);
+			}
+			
+			//create relationship to previous Call node
+			if (lastCallInProbe != null) {
+				lastCallInProbe.createRelationshipTo(callNode, GeoNeoRelationshipTypes.NEXT);
+			}
+			
+			//create relationshiop to Prove Calls node
+			currentProbeCalls.createRelationshipTo(callNode, ProbeCallRelationshipType.PROBE_CALL);
+			
+			lastCallInProbe = callNode;
+			call = null;
 		}
 	}
 
@@ -697,6 +778,6 @@ public class ETSILoader extends DriveLoader {
 			transaction.finish();
 		}
 		
-		return previousNode;
+		return result;
 	}
 }

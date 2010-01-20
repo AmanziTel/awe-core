@@ -18,6 +18,7 @@ import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.ReturnableEvaluator;
@@ -58,10 +59,10 @@ public class DriveNeoNode extends NeoNode {
                     GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         } else {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
-                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, 
+                    ProbeCallRelationshipType.DRIVE_CALL, Direction.OUTGOING);
         }
         int i = 0;
-        ArrayList<DriveNeoNode> subnodes = new ArrayList<DriveNeoNode>();
         for (Node node : traverse) {
             // todo now aggregation works only for nodes with type=m
             if (++i <= TRUNCATE_NODE || !isFileNode()) {
@@ -70,15 +71,7 @@ public class DriveNeoNode extends NeoNode {
                 children.add(new AggregatesNode(node));
                 break;
             }
-        }
-        // there are no necessary to create aggregated node for one subnode
-        // if (subnodes.size() > 1) {
-        // Collections.sort(children, new NeoNodeComparator());
-        // children.add(new AggregatesNode(subnodes));
-        // } else {
-        // children.addAll(subnodes);
-        // Collections.sort(children, new NeoNodeComparator());
-        // }
+        }        
         return children.toArray(NO_NODES);
     }
 

@@ -18,17 +18,17 @@ import java.util.StringTokenizer;
 
 
 /**
- * ATD command
+ * CTOCP command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-class ATD extends AbstractETSICommand {
+class CTOCP extends AbstractETSICommand {
 	
 	/*
 	 * Name of command
 	 */
-	private static final String COMMAND_NAME = "atd";
+	private static final String COMMAND_NAME = "CTOCP";
 	
 	@Override
 	public String getName() {

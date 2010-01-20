@@ -151,7 +151,7 @@ public class ETSIImportWizardPage extends WizardPage {
 			public void modifyText(ModifyEvent e) {
 				networkName = network.getText();
 			}
-		});
+		});        
         network.addSelectionListener(new SelectionListener() {
 			
 			@Override

@@ -47,7 +47,7 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
     }
 
     @Override
-public Object getParent(Object element) {
+    public Object getParent(Object element) {
         // TODO optimize
         Transaction tx = neoServiceProvider.getService().beginTx();
         String type = "";

@@ -15,15 +15,20 @@ package org.amanzi.awe.views.network.proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * Proxy class that provides access for Node, it's children and properties
@@ -89,8 +94,12 @@ public class NeoNode {
     public NeoNode[] getChildren() {
         if(children==null) {
             children = new ArrayList<NeoNode>();
-            for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.CHILD,Direction.OUTGOING)){
-                children.add(new NeoNode(relationship.getEndNode()));
+            Iterator<Node> childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+            										 NetworkRelationshipTypes.CHILD,Direction.OUTGOING, 
+            										 ProbeCallRelationshipType.PROBE_CALL, Direction.OUTGOING).iterator();
+            
+            while (childrens.hasNext()) {
+                children.add(new NeoNode(childrens.next()));
             }
             if(children.size()==0) {
                 for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.MISSING,Direction.OUTGOING)){
