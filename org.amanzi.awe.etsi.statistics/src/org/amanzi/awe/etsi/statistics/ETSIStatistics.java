@@ -27,7 +27,6 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.utilities.SpreadsheetCreator;
 import org.eclipse.core.runtime.IPath;
@@ -492,8 +491,7 @@ public class ETSIStatistics extends SpreadsheetCreator {
 	 * @throws IOException
 	 */
 	private void initializeIndex(String datasetName) throws IOException {
-        timestampIndex = new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(datasetName),
-                new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
+        timestampIndex = NeoUtils.getTimeIndexProperty(datasetName);
 		timestampIndex.initialize(neoService, null);
 	}
 	

@@ -47,7 +47,6 @@ import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -341,9 +340,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 beginTime = (Long)selectionMap.get(GeoConstant.Drive.BEGIN_TIME);
                 endTime = (Long)selectionMap.get(GeoConstant.Drive.END_TIME);
                 if (beginTime != null && endTime != null && beginTime <= endTime) {
-                    MultiPropertyIndex<Long> timestampIndex = new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(geoNeo
-                            .getName()),
-                            new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
+                    MultiPropertyIndex<Long> timestampIndex = NeoUtils.getTimeIndexProperty(geoNeo.getName());
                     timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
                     for (Node node : timestampIndex.searchTraverser(new Long[] {beginTime}, new Long[] {endTime})) {
                         if (!node.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
