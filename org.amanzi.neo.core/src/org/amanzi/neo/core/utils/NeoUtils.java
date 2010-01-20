@@ -889,7 +889,7 @@ public class NeoUtils {
      * @param datasetName - dataset name
      * @return index name
      */
-    private static String getTimeIndexName(String datasetName) {
+    public static String getTimeIndexName(String datasetName) {
         return TIMESTAMP_INDEX_NAME + datasetName;
     }
 
@@ -899,7 +899,7 @@ public class NeoUtils {
      * @param datasetName - dataset name
      * @return index name
      */
-    private static String getLocationIndexName(String datasetName) {
+    public static String getLocationIndexName(String datasetName) {
         return LOCATION_INDEX_NAME + datasetName;
     }
 
