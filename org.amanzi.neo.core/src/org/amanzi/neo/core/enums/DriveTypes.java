@@ -24,8 +24,13 @@ import java.util.ArrayList;
  * @since 1.0.0
  */
 public enum DriveTypes {
-    TEMS("tems", "fmt", "TEMS Drive Test Export (*.FMT)"), ROMES("romes", "asc", "Romes drive test export (*.ASC)"), NEMO2("nemo2",
-            "nmf", "Nemo drive test export (*.nmf)"), NEMO1("nemo1", "dt1", "Nemo drive test export (*.dt1)"), AMS("ams", "log", "");
+    TEMS("tems", "fmt", "TEMS Drive Test Export (*.FMT)"), 
+    ROMES("romes", "asc", "Romes drive test export (*.ASC)"), 
+    NEMO2("nemo2", "nmf", "Nemo drive test export (*.nmf)"), 
+    NEMO1("nemo1", "dt1", "Nemo drive test export (*.dt1)"), 
+    AMS("ams", "log", "");
+    
+    //TODO: Lagutko: comments
     private final String id;
     private final String extension;
     private final String description;
