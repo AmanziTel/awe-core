@@ -53,14 +53,14 @@ public class DriveNeoNode extends NeoNode {
         Traverser traverse;
         if (isFileNode()) {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
-                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, 
+                    ProbeCallRelationshipType.DRIVE_CALL, Direction.OUTGOING);
         } else if (isDatasetNode() || isDirectoryNode()) {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
                     GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         } else {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
-                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, 
-                    ProbeCallRelationshipType.DRIVE_CALL, Direction.OUTGOING);
+                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
         }
         int i = 0;
         for (Node node : traverse) {
