@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -86,6 +87,7 @@ public class ETSIImportWizardPage extends WizardPage {
     private ArrayList<String> networkMembers;
     private String datasetName;
     private String networkName;
+    private ArrayList<String> wrongDatasetMembers;
 
     /**
      * Constructor
@@ -106,7 +108,8 @@ public class ETSIImportWizardPage extends WizardPage {
      * @return true if page valid
      */
     protected boolean isValidPage() {
-        return fileName != null;
+        return fileName != null && datasetName != null && !datasetName.trim().isEmpty()
+                && !wrongDatasetMembers.contains(datasetName);
     }
 
     @Override
@@ -123,14 +126,16 @@ public class ETSIImportWizardPage extends WizardPage {
 			
 			@Override
 			public void modifyText(ModifyEvent e) {
-				datasetName = dataset.getText();				
+                datasetName = dataset.getText();
+                setPageComplete(isValidPage());
 			}
 		});
         dataset.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	datasetName = dataset.getSelectionIndex() < 0 ? null : datasetMembers.get(dataset.getSelectionIndex());                
+                datasetName = dataset.getSelectionIndex() < 0 ? null : datasetMembers.get(dataset.getSelectionIndex());
+                setPageComplete(isValidPage());
             }
 
             @Override
@@ -169,8 +174,12 @@ public class ETSIImportWizardPage extends WizardPage {
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
-                dataset.setText(getDatasetDefaultName());
-                network.setText(getNetworkDefaultName());
+                if (dataset.getText().isEmpty()) {
+                    dataset.setText(getDatasetDefaultName());
+                }
+                if (network.getText().isEmpty()) {
+                    network.setText(getNetworkDefaultName());
+                }
             }
         });
         setControl(main);
@@ -213,13 +222,18 @@ public class ETSIImportWizardPage extends WizardPage {
     private String[] getAllDatasets() {
         Transaction tx = NeoUtils.beginTransaction();
         try {        	
-        	datasetMembers = new ArrayList<String>();
+            datasetMembers = new ArrayList<String>();
+        	wrongDatasetMembers = new ArrayList<String>();
         	Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
                     NeoServiceProvider.getProvider().getService().getReferenceNode());
             for (Node node : allDatasetTraverser) {
-                datasetMembers.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+                String name = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                if (NeoUtils.getDatasetType(node, null)!=DriveTypes.AMS){
+                    wrongDatasetMembers.add(name); 
+                }else{
+                    datasetMembers.add(name);
+                }
             }
-            
             return datasetMembers.toArray(new String[] {});
         } finally {
             tx.finish();
