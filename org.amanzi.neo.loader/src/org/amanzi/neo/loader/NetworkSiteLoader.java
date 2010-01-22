@@ -46,6 +46,7 @@ public class NetworkSiteLoader extends AbstractLoader {
     private NetworkHeader networkHeader = null;
     public ArrayList<String> lineErrors = new ArrayList<String>();
     private final Node networkNode;
+    private boolean needParceHeader;
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
      * 
@@ -136,7 +137,7 @@ public class NetworkSiteLoader extends AbstractLoader {
      * @param regexes
      */
     private void addMainHeader(String key, String[] regexes) {
-        addKnownHeader(key, regexes);
+        addKnownHeader(1, key, regexes);
         mainHeaders.add(key);
     }
 
@@ -145,18 +146,19 @@ public class NetworkSiteLoader extends AbstractLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
+        needParceHeader = true;
         // Known headers that are not sector data properties
         addMainHeader(SITE_ID_KEY, new String[] {"SITE_ID"});
         // addMainHeader("type", new String[] {"TYPE"});
         // Stop statistics collection for properties we will not save to the sector
-        addNonDataHeaders(mainHeaders);
+        addNonDataHeaders(1, mainHeaders);
 
         // force String types on some risky headers (sometimes these look like integers)
-        useMapper(SITE_ID_KEY, new StringMapper());
+        useMapper(1, SITE_ID_KEY, new StringMapper());
 
         // Known headers that are sector data properties
-        addKnownHeader("beamwidth", new String[] {".*beamwidth.*", "beam", "hbw"});
-        addKnownHeader("azimuth", new String[] {".*azimuth.*"});
+        addKnownHeader(1, "beamwidth", new String[] {".*beamwidth.*", "beam", "hbw"});
+        addKnownHeader(1, "azimuth", new String[] {".*azimuth.*"});
     }
 
     private class NetworkHeader {
@@ -166,8 +168,9 @@ public class NetworkSiteLoader extends AbstractLoader {
 
         private NetworkHeader(List<String> fields) {
             lineData = makeDataMap(fields);
+            HeaderMaps headerMap = getHeaderMap(1);
             for (String header : lineData.keySet()) {
-                String name = headerName(header);
+                String name = headerMap.headerName(header);
                 if (mainHeaders.contains(header)) {
                     mainKeys.put(header, name);
                 } else {
@@ -198,6 +201,20 @@ public class NetworkSiteLoader extends AbstractLoader {
                 return value.toString();
             }
         }
+    }
+
+    @Override
+    protected Node getStoringNode(Integer key) {
+        return gis;
+    }
+
+    @Override
+    protected boolean needParceHeaders() {
+        if (needParceHeader) {
+            needParceHeader = false;
+            return true;
+        }
+        return false;
     }
 
 }

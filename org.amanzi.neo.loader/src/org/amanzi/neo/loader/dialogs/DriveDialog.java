@@ -690,11 +690,12 @@ public class DriveDialog {
 	
 	private void loadDriveData(Display display, IProgressMonitor monitor) {
 		
-		display.asyncExec(new Runnable() {
-			public void run() {
-				dialogShell.close();
-			}
-		});
+
+        // display.asyncExec(new Runnable() {
+        // public void run() {
+        // dialogShell.close();
+        // }
+        // });
 		
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();

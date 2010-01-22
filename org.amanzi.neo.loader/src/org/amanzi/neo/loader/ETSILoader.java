@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -200,6 +201,8 @@ public class ETSILoader extends DriveLoader {
 	private Node currentProbeCalls;
 	
 	private Node lastCallInProbe;
+
+    private LinkedHashMap<String, Header> headers;
 	
 	private Node callDataset;
 	
@@ -265,6 +268,7 @@ public class ETSILoader extends DriveLoader {
 		
 		monitor = SubMonitor.convert(monitor, allFiles.size());
 		monitor.beginTask("Loading ETSI data", allFiles.size());
+        headers = getHeaderMap(1).headers;
 		for (File logFile : allFiles) {
 			monitor.subTask("Loading file " + logFile.getAbsolutePath());
 			
@@ -273,8 +277,8 @@ public class ETSILoader extends DriveLoader {
 			currentDirectoryNode = findOrCreateDirectoryNode(null, logFile.getParentFile());
 			
 			newFile = true;
-			typedProperties = null;
-	
+            getHeaderMap(1).typedProperties = null;
+
 			super.run(null);
 			
 			monitor.worked(1);
@@ -677,10 +681,11 @@ public class ETSILoader extends DriveLoader {
         }
     }
 	
-	@Override
-	protected boolean haveHeaders() {
-        return true;
-	}
+
+    // @Override
+    // protected boolean haveHeaders() {
+    // return true;
+    // }
 	
 	private HashMap<String, Object> processCommand(Node mNode, long timestamp, AbstractETSICommand command, CommandSyntax syntax, StringTokenizer tokenizer) {
 		HashMap<String, Object> result = command.getResults(syntax, tokenizer);
@@ -772,4 +777,9 @@ public class ETSILoader extends DriveLoader {
 		
 		return result;
 	}
+
+    @Override
+    protected Node getStoringNode(Integer key) {
+        return datasetNode;
+    }
 }

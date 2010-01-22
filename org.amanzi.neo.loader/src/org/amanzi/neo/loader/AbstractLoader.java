@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -83,11 +84,11 @@ import org.neo4j.api.core.Traverser.Order;
 public abstract class AbstractLoader {
     /** AbstractLoader DEFAULT_DIRRECTORY_LOADER field */
     public static final String DEFAULT_DIRRECTORY_LOADER = "DEFAULT_DIRRECTORY_LOADER";
-    
+
     /** String LOAD_NETWORK_TITLE field */
     private static final String LOAD_NETWORK_TITLE = "Load Network";
     private static final String LOAD_NETWORK_MSG = "This network is already loaded into the database.\nDo you wish to overwrite the data?";
-    
+    protected Map<Integer, HeaderMaps> headersMap = new HashMap<Integer, HeaderMaps>();
     private String typeName = "CSV";
     protected NeoService neo;
     private NeoServiceProvider neoProvider;
@@ -103,21 +104,17 @@ public abstract class AbstractLoader {
     private double[] bbox;
     private long savedData = 0;
     private long started = System.currentTimeMillis();
+    private boolean headerWasParced;
     // private ArrayList<MultiPropertyIndex<?>> indexes = new ArrayList<MultiPropertyIndex<?>>();
     private LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>> indexes = new LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>>();
-    private ArrayList<Pattern> headerFilters = new ArrayList<Pattern>();
-    private LinkedHashMap<String, List<String>> knownHeaders = new LinkedHashMap<String, List<String>>();
-    private LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
-    protected LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
-    private TreeSet<String> dropStatsHeaders = new TreeSet<String>();
-    private TreeSet<String> nonDataHeaders = new TreeSet<String>();
+
     @SuppressWarnings("unchecked")
     public static final Class[] NUMERIC_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class};
     @SuppressWarnings("unchecked")
     public static final Class[] KNOWN_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class,
             String.class};
     private boolean indexesInitialized = false;
-    
+
     protected CSVParser parser;
 
     protected class Header {
@@ -157,9 +154,9 @@ public abstract class AbstractLoader {
         Object parse(String field) {
             if (invalid(field))
                 return null;
-            parseCount++;            
+            parseCount++;
             try {
-            	int value = Integer.parseInt(field);
+                int value = Integer.parseInt(field);
                 incValue(value);
                 incType(Integer.class);
                 return value;
@@ -462,6 +459,7 @@ public abstract class AbstractLoader {
             return datetime;
         }
     }
+
     /**
      * Convenience implementation of a property mapper that assumes the object is a String. This is
      * useful for overriding the default behavior of detecting field formats, and simply keeping the
@@ -534,9 +532,9 @@ public abstract class AbstractLoader {
         }
         parser = new CSVParser(fieldSepRegex.charAt(0));
     }
-    
+
     protected List<String> splitLine(String line) {
-    	return parser.parse(line);
+        return parser.parse(line);
     }
 
     /**
@@ -550,40 +548,6 @@ public abstract class AbstractLoader {
     protected final static String cleanHeader(String header) {
         return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_")
                 .replaceAll("\\_$", "").toLowerCase();
-    }
-
-    /**
-     * @return true if we have parsed the header line and know the properties to load
-     */
-    protected boolean haveHeaders() {
-        return headers.size() > 0;
-    }
-
-    /**
-     * Get the header name for the specified key, if it exists
-     * 
-     * @param key
-     * @return
-     */
-    protected String headerName(String key) {
-        Header header = headers.get(key);
-        return header == null ? null : header.name;
-    }
-
-    /**
-     * Add a number of regular expression strings to use as filters for deciding which properties to
-     * save. If this method is never used, and the filters are empty, then all properties are
-     * processed. Since the saving code is done in the specific loader, not using this method can
-     * cause a lot more parsing of data than is necessary, so it is advised to use this. Note also
-     * that the filter regular expressions are applied to the cleaned headers, not the original ones
-     * found in the file.
-     * 
-     * @param filters
-     */
-    protected void addHeaderFilters(String[] filters) {
-        for (String filter : filters) {
-            headerFilters.add(Pattern.compile(filter));
-        }
     }
 
     /**
@@ -601,8 +565,8 @@ public abstract class AbstractLoader {
      * @param key the name to use for the property
      * @param regex a regular expression to use to find the property
      */
-    protected void addKnownHeader(String key, String regex) {
-        addKnownHeader(key, new String[] {regex});
+    protected void addKnownHeader(Integer headerId, String key, String regex) {
+        addKnownHeader(headerId, key, new String[] {regex});
     }
 
     /**
@@ -621,14 +585,47 @@ public abstract class AbstractLoader {
      * @param key the name to use for the property
      * @param array of regular expressions to use to find the single property
      */
-    protected void addKnownHeader(String key, String[] regexes) {
-        if (knownHeaders.containsKey(key)) {
-            List<String> value = knownHeaders.get(key);
+    protected void addKnownHeader(Integer headerId, String key, String[] regexes) {
+        HeaderMaps header = getHeaderMap(headerId);
+        if (header.knownHeaders.containsKey(key)) {
+            List<String> value = header.knownHeaders.get(key);
             value.addAll(Arrays.asList(regexes));
-            knownHeaders.put(key, value);
+            header.knownHeaders.put(key, value);
         } else {
-            knownHeaders.put(key, Arrays.asList(regexes));
+            header.knownHeaders.put(key, Arrays.asList(regexes));
         }
+    }
+
+    /**
+     * Add a number of regular expression strings to use as filters for deciding which properties to
+     * save. If this method is never used, and the filters are empty, then all properties are
+     * processed. Since the saving code is done in the specific loader, not using this method can
+     * cause a lot more parsing of data than is necessary, so it is advised to use this. Note also
+     * that the filter regular expressions are applied to the cleaned headers, not the original ones
+     * found in the file.
+     * 
+     * @param filters
+     */
+    protected void addHeaderFilters(Integer headerMapId, String[] filters) {
+        HeaderMaps header = getHeaderMap(headerMapId);
+        for (String filter : filters) {
+            header.headerFilters.add(Pattern.compile(filter));
+        }
+    }
+
+    /**
+     * gets header map
+     * 
+     * @param headerId
+     * @return
+     */
+    protected HeaderMaps getHeaderMap(Integer headerMapId) {
+        HeaderMaps header = headersMap.get(headerMapId);
+        if (header == null) {
+            header = new HeaderMaps();
+            headersMap.put(headerMapId, header);
+        }
+        return header;
     }
 
     /**
@@ -650,8 +647,9 @@ public abstract class AbstractLoader {
      * @param key of new header
      * @param mapper the mapper required to convert values from the old to the new
      */
-    protected final void addMappedHeader(String original, String name, String key, PropertyMapper mapper) {
-        mappedHeaders.put(original, new MappedHeaderRule(name, key, mapper));
+    protected final void addMappedHeader(Integer headerMapId, String original, String name, String key, PropertyMapper mapper) {
+        HeaderMaps header = getHeaderMap(headerMapId);
+        header.mappedHeaders.put(original, new MappedHeaderRule(name, key, mapper));
     }
 
     /**
@@ -668,17 +666,20 @@ public abstract class AbstractLoader {
      * @param key of header/property
      * @param mapper the mapper required to convert values
      */
-    protected final void useMapper(String key, PropertyMapper mapper) {
-        mappedHeaders.put(key, new MappedHeaderRule(null, key, mapper));
+    protected final void useMapper(Integer headerMapId, String key, PropertyMapper mapper) {
+        HeaderMaps headerMap = getHeaderMap(headerMapId);
+        headerMap.mappedHeaders.put(key, new MappedHeaderRule(null, key, mapper));
     }
 
-    protected final void dropHeaderStats(String[] keys) {
-        dropStatsHeaders.addAll(Arrays.asList(keys));
+    protected final void dropHeaderStats(Integer headerMapId, String[] keys) {
+        HeaderMaps headerMap = getHeaderMap(headerMapId);
+        headerMap.dropStatsHeaders.addAll(Arrays.asList(keys));
     }
 
-    protected final void addNonDataHeaders(Collection<String> keys) {
-        dropStatsHeaders.addAll(keys);
-        nonDataHeaders.addAll(keys);
+    protected final void addNonDataHeaders(Integer headerMapId, Collection<String> keys) {
+        HeaderMaps headerMap = getHeaderMap(headerMapId);
+        headerMap.dropStatsHeaders.addAll(keys);
+        headerMap.nonDataHeaders.addAll(keys);
     }
 
     /**
@@ -702,120 +703,95 @@ public abstract class AbstractLoader {
         int index = 0;
         for (String headerName : fields) {
             String header = cleanHeader(headerName);
-            if (headerAllowed(header)) {
-                boolean added = false;
-                debug("Added header[" + index + "] = " + header);
-                KNOWN: for (String key : knownHeaders.keySet()) {
-                    if (!headers.containsKey(key)) {
-                        for (String regex : knownHeaders.get(key)) {
-                            for (String testString : new String[] {header, headerName}) {
-                                if (testString.toLowerCase().matches(regex.toLowerCase())) {
-                                    debug("Added known header[" + index + "] = " + key);
-                                    headers.put(key, new Header(headerName, key, index));
-                                    added = true;
-                                    break KNOWN;
+            for (HeaderMaps headerMap : headersMap.values()) {
+
+                if (headerMap.headerAllowed(header)) {
+                    boolean added = false;
+                    debug("Added header[" + index + "] = " + header);
+                    KNOWN: for (String key : headerMap.knownHeaders.keySet()) {
+                        if (!headerMap.headers.containsKey(key)) {
+                            for (String regex : headerMap.knownHeaders.get(key)) {
+                                for (String testString : new String[] {header, headerName}) {
+                                    if (testString.toLowerCase().matches(regex.toLowerCase())) {
+                                        debug("Added known header[" + index + "] = " + key);
+                                        headerMap.headers.put(key, new Header(headerName, key, index));
+                                        added = true;
+                                        break KNOWN;
+                                    }
                                 }
                             }
                         }
                     }
+                    if (!added/* !headers.containsKey(header) */) {
+                        headerMap.headers.put(header, new Header(headerName, header, index));
+                    }
                 }
-                if (!added/* !headers.containsKey(header) */) {
-                    headers.put(header, new Header(headerName, header, index));
-                }
+                headerWasParced = headerWasParced || !headerMap.headers.isEmpty();
             }
             index++;
         }
         // Now add any new properties created from other existing properties using mapping rules
-        for (String key : mappedHeaders.keySet()) {
-            if (headers.containsKey(key)) {
-                MappedHeaderRule mapRule = mappedHeaders.get(key);
-                if (headers.containsKey(mapRule.key)) {
-                    // We only allow replacement if the user passed null for the name
-                    if (mapRule.name == null) {
-                        headers.put(mapRule.key, new MappedHeader(headers.get(key), mapRule));
+        for (HeaderMaps headerMap : headersMap.values()) {
+            for (String key : headerMap.mappedHeaders.keySet()) {
+                if (headerMap.headers.containsKey(key)) {
+                    MappedHeaderRule mapRule = headerMap.mappedHeaders.get(key);
+                    if (headerMap.headers.containsKey(mapRule.key)) {
+                        // We only allow replacement if the user passed null for the name
+                        if (mapRule.name == null) {
+                            headerMap.headers.put(mapRule.key, new MappedHeader(headerMap.headers.get(key), mapRule));
+                        } else {
+                            notify("Cannot add mapped header with key '" + mapRule.key + "': header with that name already exists");
+                        }
                     } else {
-                        notify("Cannot add mapped header with key '" + mapRule.key + "': header with that name already exists");
+                        headerMap.headers.put(mapRule.key, new MappedHeader(headerMap.headers.get(key), mapRule));
                     }
                 } else {
-                    headers.put(mapRule.key, new MappedHeader(headers.get(key), mapRule));
+                    notify("No original header found matching mapped header key: " + key);
                 }
-            } else {
-                notify("No original header found matching mapped header key: " + key);
             }
-        }
-        for (String key : dropStatsHeaders) {
-            Header header = headers.get(key);
-            if (header != null) {
-                header.dropStats();
+            for (String key : headerMap.dropStatsHeaders) {
+                Header header = headerMap.headers.get(key);
+                if (header != null) {
+                    header.dropStats();
+                }
             }
         }
     }
 
-    private boolean headerAllowed(String header) {
-        if (headerFilters == null || headerFilters.size() < 1) {
-            return true;
-        }
-        for (Pattern filter : headerFilters) {
-            if (filter.matcher(header).matches()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
     protected Transaction mainTx;
     protected int commitSize = 5000;
     protected String nameGis;
 
-    protected List<String> getProperties(Class< ? extends Object> klass) {
-        if (typedProperties == null) {
-            makeTypedProperties();
-        }
-        return typedProperties.get(klass);
-    }
 
-    protected List<String> getNumericProperties() {
-        ArrayList<String> results = new ArrayList<String>();
-        for (Class< ? extends Object> klass : NUMERIC_PROPERTY_TYPES) {
-            results.addAll(getProperties(klass));
-        }
-        return results;
-    }
 
-    protected List<String> getDataProperties() {
-        ArrayList<String> results = new ArrayList<String>();
-        results.addAll(getNumericProperties());
-        for (String key : getProperties(String.class)) {
-            if (headers.get(key).parseCount > 0) {
-                results.add(key);
-            }
-        }
-        return results;
-    }
+    // protected List<String> getNumericProperties() {
+    // ArrayList<String> results = new ArrayList<String>();
+    // for (Class< ? extends Object> klass : NUMERIC_PROPERTY_TYPES) {
+    // results.addAll(getProperties(klass));
+    // }
+    // return results;
+    // }
 
-    private void makeTypedProperties() {
-        this.typedProperties = new HashMap<Class< ? extends Object>, List<String>>();
-        for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
-            this.typedProperties.put(klass, new ArrayList<String>());
-        }
-        for (String key : headers.keySet()) {
-            Header header = headers.get(key);
-            if (header.parseCount > 0) {
-                for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
-                    if (header.knownType() == klass) {
-                        this.typedProperties.get(klass).add(header.key);
-                    }
-                }
-            }
-        }
-    }
+    // protected List<String> getDataProperties() {
+    // ArrayList<String> results = new ArrayList<String>();
+    // results.addAll(getNumericProperties());
+    // for (String key : getProperties(String.class)) {
+    // if (headers.get(key).parseCount > 0) {
+    // results.add(key);
+    // }
+    // }
+    // return results;
+    // }
+
+
 
     protected final LinkedHashMap<String, Object> makeDataMap(List<String> fields) {
         LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
-        for (String key : headers.keySet()) {
+        for (HeaderMaps headerMap : headersMap.values()) {
+
+            for (String key : headerMap.headers.keySet()) {
             try {
-                Header header = headers.get(key);
+                    Header header = headerMap.headers.get(key);
                 String field = fields.get(header.index);
                 if (field == null || field.length() < 1 || field.equals("?")) {
                     continue;
@@ -827,20 +803,21 @@ public abstract class AbstractLoader {
                 if (header.shouldConvert()) {
                     Class< ? extends Object> klass = header.knownType();
                     if (klass == Integer.class) {
-                        headers.put(key, new IntegerHeader(header));
+                            headerMap.headers.put(key, new IntegerHeader(header));
                     } else if (klass == Float.class) {
-                        headers.put(key, new FloatHeader(header));
+                            headerMap.headers.put(key, new FloatHeader(header));
                     } else {
-                        headers.put(key, new StringHeader(header));
+                            headerMap.headers.put(key, new StringHeader(header));
                     }
                 }
             } catch (Exception e) {
                 // TODO Handle Exception
             }
         }
+        }
         return map;
     }
-    
+
     private Display currentDisplay = null;
 
     protected final void debug(final String line) {
@@ -877,10 +854,10 @@ public abstract class AbstractLoader {
 
     private final void runInDisplay(Runnable runnable) {
         if (display != null) {
-        	if (currentDisplay == null) {
-        		currentDisplay = PlatformUI.getWorkbench().getDisplay();
-        	}
-        	currentDisplay.asyncExec(runnable);
+            if (currentDisplay == null) {
+                currentDisplay = PlatformUI.getWorkbench().getDisplay();
+            }
+            currentDisplay.asyncExec(runnable);
         } else {
             runnable.run();
         }
@@ -926,14 +903,14 @@ public abstract class AbstractLoader {
             int prevPerc = 0;
             int prevLineNumber = 0;
             String line;
+            headerWasParced = !needParceHeaders();
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-                
-                if (!haveHeaders()) {
-                	parseHeader(line);                	
-                }
-                else {
-                	parseLine(line);                    
+
+                if (!headerWasParced) {
+                    parseHeader(line);
+                } else {
+                    parseLine(line);
                 }
                 if (monitor != null) {
                     if (monitor.isCanceled())
@@ -962,6 +939,13 @@ public abstract class AbstractLoader {
             commit(false);
         }
     }
+
+    /**
+     * check necessity of parsing headers
+     * 
+     * @return
+     */
+    protected abstract boolean needParceHeaders();
 
     // TODO add thread safe???
 
@@ -1002,43 +986,43 @@ public abstract class AbstractLoader {
         for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
 
             for (MultiPropertyIndex< ? > index : entry.getValue()) {
-            try {
-                index.flush();
-            } catch (IOException e) {
-                // TODO:Log error
+                try {
+                    index.flush();
+                } catch (IOException e) {
+                    // TODO:Log error
                     removeIndex(entry.getKey(), index);
+                }
             }
         }
     }
-    }
-    
+
     protected void initializeIndexes() {
-    	if (indexesInitialized) {
-    		return;
-    	}
+        if (indexesInitialized) {
+            return;
+        }
         for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
             for (MultiPropertyIndex< ? > index : entry.getValue()) {
-            try {
-                index.initialize(this.neo, null);
-            } catch (IOException e) {
-                // TODO:Log error
+                try {
+                    index.initialize(this.neo, null);
+                } catch (IOException e) {
+                    // TODO:Log error
                     removeIndex(entry.getKey(), index);
+                }
             }
         }
-        }
-    	indexesInitialized = true;
+        indexesInitialized = true;
     }
 
     protected void finishUpIndexes() {
         for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
             for (MultiPropertyIndex< ? > index : entry.getValue()) {
-            index.finishUp();
-        }
+                index.finishUp();
+            }
         }
     }
 
     protected void commit(boolean restart) {
-    	if (mainTx != null) {
+        if (mainTx != null) {
             flushIndexes();
             mainTx.success();
             mainTx.finish();
@@ -1197,16 +1181,19 @@ public abstract class AbstractLoader {
     }
 
     protected final void saveProperties() {
-        if (gis != null) {
+        for (Map.Entry<Integer, HeaderMaps> entryHeader : headersMap.entrySet()) {
+            Node storingRootNode=getStoringNode(entryHeader.getKey());
+            if (storingRootNode != null) {
             Transaction transaction = neo.beginTx();
             try {
                 Node propNode;
-                Relationship propRel = gis.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+                    Relationship propRel = storingRootNode.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES,
+                            Direction.OUTGOING);
                 if (propRel == null) {
                     propNode = neo.createNode();
                     propNode.setProperty("name", NeoUtils.getNodeName(gis));
                     propNode.setProperty("type", "gis_properties");
-                    gis.createRelationshipTo(propNode, GeoNeoRelationshipTypes.PROPERTIES);
+                        storingRootNode.createRelationshipTo(propNode, GeoNeoRelationshipTypes.PROPERTIES);
                 } else {
                     propNode = propRel.getEndNode();
                 }
@@ -1217,14 +1204,14 @@ public abstract class AbstractLoader {
                 }
                 for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
                     String typeName = makePropertyTypeName(klass);
-                    List<String> properties = getProperties(klass);
+                        List<String> properties = entryHeader.getValue().getProperties(klass);
                     if (properties != null && properties.size() > 0) {
                         Node propTypeNode = propTypeNodes.get(typeName);
                         if (propTypeNode == null) {
                             propTypeNode = neo.createNode();
                             propTypeNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, typeName);
                             propTypeNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "gis_property_type");
-                            savePropertiesToNode(propTypeNode, properties);
+                                savePropertiesToNode(entryHeader.getValue(), propTypeNode, properties);
                             propNode.createRelationshipTo(propTypeNode, GeoNeoRelationshipTypes.CHILD);
                         } else {
                             TreeSet<String> combinedProperties = new TreeSet<String>();
@@ -1233,7 +1220,7 @@ public abstract class AbstractLoader {
                             if (previousProperties != null)
                                 combinedProperties.addAll(Arrays.asList(previousProperties));
                             combinedProperties.addAll(properties);
-                            savePropertiesToNode(propTypeNode, combinedProperties);
+                                savePropertiesToNode(entryHeader.getValue(), propTypeNode, combinedProperties);
                         }
                     }
                 }
@@ -1242,9 +1229,18 @@ public abstract class AbstractLoader {
                 transaction.finish();
             }
         }
+        }
     }
 
-    private void savePropertiesToNode(Node propTypeNode, Collection<String> properties) {
+    /**
+     * get root for statistic node
+     * 
+     * @param key - statistic id
+     * @return Node or null
+     */
+    protected abstract Node getStoringNode(Integer key);
+
+    private void savePropertiesToNode(HeaderMaps headerMaps, Node propTypeNode, Collection<String> properties) {
         propTypeNode.setProperty("properties", properties.toArray(new String[properties.size()]));
         HashMap<String, Node> valueNodes = new HashMap<String, Node>();
         ArrayList<String> noStatsProperties = new ArrayList<String>();
@@ -1255,11 +1251,11 @@ public abstract class AbstractLoader {
             valueNodes.put(property, valueNode);
         }
         for (String property : properties) {
-            if (!nonDataHeaders.contains(property)) {
+            if (!headerMaps.nonDataHeaders.contains(property)) {
                 dataProperties.add(property);
             }
             Node valueNode = valueNodes.get(property);
-            Header header = headers.get(property);
+            Header header = headerMaps.headers.get(property);
             // if current headers do not contain information about property - we do not handling
             // this property
             if (header == null) {
@@ -1317,11 +1313,6 @@ public abstract class AbstractLoader {
         return klass.getName().replaceAll("java.lang.", "").toLowerCase();
     }
 
-    public void clearCaches() {
-        this.headers.clear();
-        this.knownHeaders.clear();
-    }
-
     /**
      * This method adds the loaded data to the GIS catalog. This is achieved by
      * <ul>
@@ -1340,7 +1331,7 @@ public abstract class AbstractLoader {
             addDataToCatalog();
         }
     }
-    
+
     /**
      * Is this a test case running outside AWE application
      * 
@@ -1350,6 +1341,11 @@ public abstract class AbstractLoader {
         return neoProvider == null;
     }
 
+    public void clearCaches() {
+        for (HeaderMaps headerMap : headersMap.values()) {
+            headerMap.clearCaches();
+        }
+    }
     /**
      * This method adds the loaded data to the GIS catalog. The neo-catalog entry is created or
      * updated.
@@ -1357,8 +1353,8 @@ public abstract class AbstractLoader {
      * @throws MalformedURLException
      */
     protected static void addDataToCatalog() throws MalformedURLException {
-    	//TODO: Lagutko, 17.12.2009, can be run as a Job
-    	NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
+        // TODO: Lagutko, 17.12.2009, can be run as a Job
+        NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
         if (neoProvider != null) {
             String databaseLocation = neoProvider.getDefaultDatabaseLocation();
             NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
@@ -1526,10 +1522,12 @@ public abstract class AbstractLoader {
 
     private void printHeaderStats() {
         notify("Determined Columns:");
-        for (String key : headers.keySet()) {
-            Header header = headers.get(key);
-            if (header.parseCount > 0) {
-                notify("\t" + header.knownType() + " loaded: " + header.parseCount + " => " + key);
+        for (HeaderMaps hm : headersMap.values()) {
+            for (String key : hm.headers.keySet()) {
+                Header header = hm.headers.get(key);
+                if (header.parseCount > 0) {
+                    notify("\t" + header.knownType() + " loaded: " + header.parseCount + " => " + key);
+                }
             }
         }
     }
@@ -1550,47 +1548,53 @@ public abstract class AbstractLoader {
     public int getCommitSize() {
         return commitSize;
     }
-    
+
     /**
      * This code finds the specified network node in the database, creating its own transaction for
      * that.
      * 
      * @param gis gis node
      */
-	protected Node findOrCreateNetworkNode(Node network, boolean returnFounded) {
+    protected Node findOrCreateNetworkNode(Node network, boolean returnFounded) {
         if (network == null) {
             Transaction tx = neo.beginTx();
             try {
-                for (Node node : neo.getReferenceNode().traverse(Order.BREADTH_FIRST, new StopEvaluator() {
+                for (Node node : neo.getReferenceNode().traverse(
+                        Order.BREADTH_FIRST,
+                        new StopEvaluator() {
 
-                    @Override
-                    public boolean isStopNode(TraversalPosition currentPos) {
-                        return currentPos.depth() > 3;
-                    }
-                }, new ReturnableEvaluator() {
+                            @Override
+                            public boolean isStopNode(TraversalPosition currentPos) {
+                                return currentPos.depth() > 3;
+                            }
+                        },
+                        new ReturnableEvaluator() {
 
-                    @Override
-                    public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
-                                NetworkElementTypes.NETWORK.toString());
-                    }
-                }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                            @Override
+                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
+                                        NetworkElementTypes.NETWORK.toString());
+                            }
+                        }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD,
+                        Direction.OUTGOING,
+                        GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
                     debug("Testing possible Network node " + node + ": " + node.getProperty("name", "").toString());
                     if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(basename)) {
                         debug("Found matching Network node " + node + ": " + node.getProperty("name", "").toString());
                         try {
-                        	if (returnFounded) {
-                        		return node;
-                        	}
+                            if (returnFounded) {
+                                return node;
+                            }
                             // remove all incoming relationships
                             for (Relationship relationshipIn : node.getRelationships(Direction.INCOMING)) {
                                 relationshipIn.delete();
                             }
-                            if(isTest()) throw new Exception("Test mode");
+                            if (isTest())
+                                throw new Exception("Test mode");
                             PlatformUI.getWorkbench();
                             if (!askIfOverwrite()) {
-                            	return null;
-                        	}
+                                return null;
+                            }
                             NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
                         } catch (Exception e) {
                             // we are in test mode, automatically agree to overwrite network
@@ -1613,14 +1617,14 @@ public abstract class AbstractLoader {
         }
         return network;
     }
-	
-	private static boolean askIfOverwrite() {
+
+    private static boolean askIfOverwrite() {
         int resultMsg = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
             int result;
+
             @Override
             public void run() {
-                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES
-                        | SWT.NO);
+                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
                 msg.setText(LOAD_NETWORK_TITLE);
                 msg.setMessage(LOAD_NETWORK_MSG);
                 result = msg.open();
@@ -1632,6 +1636,76 @@ public abstract class AbstractLoader {
             }
         });
         return resultMsg == SWT.YES;
+    }
+
+    protected class HeaderMaps {
+        protected HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
+        protected ArrayList<Pattern> headerFilters = new ArrayList<Pattern>();
+        protected LinkedHashMap<String, List<String>> knownHeaders = new LinkedHashMap<String, List<String>>();
+        protected LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
+        protected LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
+        protected TreeSet<String> dropStatsHeaders = new TreeSet<String>();
+        protected TreeSet<String> nonDataHeaders = new TreeSet<String>();
+
+        /**
+         * @return true if we have parsed the header line and know the properties to load
+         */
+        protected boolean haveHeaders() {
+            return headers.size() > 0;
+        }
+
+        /**
+         * Get the header name for the specified key, if it exists
+         * 
+         * @param key
+         * @return
+         */
+        protected String headerName(String key) {
+            Header header = headers.get(key);
+            return header == null ? null : header.name;
+        }
+
+
+        public void clearCaches() {
+            this.headers.clear();
+            this.knownHeaders.clear();
+        }
+
+        protected boolean headerAllowed(String header) {
+            if (headerFilters == null || headerFilters.size() < 1) {
+                return true;
+            }
+            for (Pattern filter : headerFilters) {
+                if (filter.matcher(header).matches()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        protected List<String> getProperties(Class< ? extends Object> klass) {
+            if (typedProperties == null) {
+                makeTypedProperties();
+            }
+            return typedProperties.get(klass);
+        }
+
+        private void makeTypedProperties() {
+            this.typedProperties = new HashMap<Class< ? extends Object>, List<String>>();
+            for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
+                this.typedProperties.put(klass, new ArrayList<String>());
+            }
+            for (String key : headers.keySet()) {
+                Header header = headers.get(key);
+                if (header.parseCount > 0) {
+                    for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
+                        if (header.knownType() == klass) {
+                            this.typedProperties.get(klass).add(header.key);
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }

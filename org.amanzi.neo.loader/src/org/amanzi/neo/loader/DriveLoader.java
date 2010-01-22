@@ -45,6 +45,7 @@ public abstract class DriveLoader extends AbstractLoader {
     protected String dataset = null;
     protected Node file = null;
     protected Node datasetNode = null;
+    protected Node virtualDatasetNode = null;
     private static int[] times = new int[2];
     private HashMap<Integer, int[]> stats = new HashMap<Integer, int[]>();
     private int countValidMessage = 0;
@@ -54,6 +55,7 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Calendar _workDate = null;
     protected Long minTimeStamp = null;
     protected Long maxTimeStamp = null;
+    private boolean needParceHeader = true;
     
     /** How many units of work for the progress monitor for each file */
     public static final int WORKED_PER_FILE = 100;
@@ -421,4 +423,12 @@ public abstract class DriveLoader extends AbstractLoader {
 		return virtualDataset;
 	}
 
+    @Override
+    protected boolean needParceHeaders() {
+        if (needParceHeader) {
+            needParceHeader = false;
+            return true;
+        }
+        return false;
+    }
 }

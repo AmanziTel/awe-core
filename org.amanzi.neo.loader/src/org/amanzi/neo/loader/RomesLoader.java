@@ -109,22 +109,22 @@ public class RomesLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
-        addHeaderFilters(new String[] {"time.*", "events", ".*latitude.*", ".*longitude.*", ".*server_report.*",
+        addHeaderFilters(1, new String[] {"time.*", "events", ".*latitude.*", ".*longitude.*", ".*server_report.*",
                 ".*state_machine.*", ".*layer_3_message.*", ".*handover_analyzer.*"});
-        addKnownHeader("time", "time.*");
-        addKnownHeader("latitude", ".*latitude.*");
-        addKnownHeader("longitude", ".*longitude.*");
-        addMappedHeader("events", "Event Type", "event_type", new PropertyMapper() {
+        addKnownHeader(1, "time", "time.*");
+        addKnownHeader(1, "latitude", ".*latitude.*");
+        addKnownHeader(1, "longitude", ".*longitude.*");
+        addMappedHeader(1, "events", "Event Type", "event_type", new PropertyMapper() {
 
             @Override
             public Object mapValue(String originalValue) {
                 return originalValue.replaceAll("HO Command.*", "HO Command");
             }
         });
-        addMappedHeader("time", "Timestamp", "timestamp", new DateMapper("HH:mm:ss"));
-        addKnownHeader(INeoConstants.SECTOR_ID_PROPERTIES, ".*Server.*Report.*CI.*");
-        addNonDataHeaders(Arrays.asList(new String[] {"timestamp"}));
-        dropHeaderStats(new String[] {"time", "timestamp", "latitude", "longitude", INeoConstants.SECTOR_ID_PROPERTIES});
+        addMappedHeader(1, "time", "Timestamp", "timestamp", new DateMapper("HH:mm:ss"));
+        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, ".*Server.*Report.*CI.*");
+        addNonDataHeaders(1, Arrays.asList(new String[] {"timestamp"}));
+        dropHeaderStats(1, new String[] {"time", "timestamp", "latitude", "longitude", INeoConstants.SECTOR_ID_PROPERTIES});
     }
 
     private void addDriveIndexes() {
@@ -292,5 +292,10 @@ public class RomesLoader extends DriveLoader {
         } finally {
             neo.shutdown();
         }
+    }
+
+    @Override
+    protected Node getStoringNode(Integer key) {
+        return datasetNode;
     }
 }

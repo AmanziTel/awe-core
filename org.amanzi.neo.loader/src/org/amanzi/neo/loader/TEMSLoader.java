@@ -15,7 +15,6 @@ package org.amanzi.neo.loader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -84,11 +83,12 @@ public class TEMSLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
-        addHeaderFilters(new String[] {"time", "ms", "message_type", "event", ".*latitude", ".*longitude", ".*active_set.*1",
-                ".*pilot_set.*"});
-        addKnownHeader("latitude", ".*latitude");
-        addKnownHeader("longitude", ".*longitude");
-        addMappedHeader("event", "Event Type", "event_type", new PropertyMapper() {
+        // addHeaderFilters(new String[] {"time", "ms", "message_type", "event", ".*latitude",
+        // ".*longitude", ".*active_set.*1",
+        // ".*pilot_set.*"});
+        addKnownHeader(1, "latitude", ".*latitude");
+        addKnownHeader(1, "longitude", ".*longitude");
+        addMappedHeader(1, "event", "Event Type", "event_type", new PropertyMapper() {
 
             @Override
             public Object mapValue(String originalValue) {
@@ -97,7 +97,7 @@ public class TEMSLoader extends DriveLoader {
         });
         
         final SimpleDateFormat df = new SimpleDateFormat(TIMESTAMP_DATE_FORMAT);
-        addMappedHeader("time", "Timestamp", "timestamp", new PropertyMapper() {
+        addMappedHeader(1, "time", "Timestamp", "timestamp", new PropertyMapper() {
 
             @Override
             public Object mapValue(String time) {
@@ -111,12 +111,14 @@ public class TEMSLoader extends DriveLoader {
                 return datetime.getTime();
             }
         });
-        addNonDataHeaders(Arrays.asList(new String[] {"time", "timestamp", "latitude", "longitude", "all_pilot_set_count"}));
-        for (int i = 0; i < 13; i++) {
-            String[] array = new String[] {"all_active_set_channel_" + i, "all_active_set_pn_" + i, "all_active_set_ec_io_" + i,
-                    "all_pilot_set_ec_io_" + i, "all_pilot_set_channel_" + i, "all_pilot_set_pn_" + i};
-            addNonDataHeaders(Arrays.asList(array));
-        }
+        // addNonDataHeaders(Arrays.asList(new String[] {"time", "timestamp", "latitude",
+        // "longitude", "all_pilot_set_count"}));
+        // for (int i = 0; i < 13; i++) {
+        // String[] array = new String[] {"all_active_set_channel_" + i, "all_active_set_pn_" + i,
+        // "all_active_set_ec_io_" + i,
+        // "all_pilot_set_ec_io_" + i, "all_pilot_set_channel_" + i, "all_pilot_set_pn_" + i};
+        // addNonDataHeaders(Arrays.asList(array));
+        // }
     }
 
     private void addDriveIndexes() {
@@ -360,5 +362,10 @@ public class TEMSLoader extends DriveLoader {
         } finally {
             neo.shutdown();
         }
+    }
+
+    @Override
+    protected Node getStoringNode(Integer key) {
+        return key == 1 ? datasetNode : virtualDatasetNode;
     }
 }

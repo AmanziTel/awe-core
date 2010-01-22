@@ -50,6 +50,7 @@ public class NemoLoader extends DriveLoader {
     protected Node pointNode;
     protected Node parentMnode;
     protected SimpleDateFormat timeFormat;
+    protected LinkedHashMap<String, Header> headers;
 
     // protected Node msNode;
 
@@ -63,11 +64,13 @@ public class NemoLoader extends DriveLoader {
     public NemoLoader(String filename, Display display, String dataset) {
         driveType = DriveTypes.NEMO2;
         initialize("Nemo", null, filename, display, dataset);
+        headers = getHeaderMap(1).headers;
         timeFormat = new SimpleDateFormat(TIME_FORMAT);
         pointNode = null;
         initializeKnownHeaders();
         addDriveIndexes();
         possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
+
     }
 
     /**
@@ -366,5 +369,15 @@ public class NemoLoader extends DriveLoader {
             }
             msNode.setProperty(key, value);
         }
+    }
+
+    @Override
+    protected Node getStoringNode(Integer key) {
+        return datasetNode;
+    }
+
+    @Override
+    protected boolean needParceHeaders() {
+        return false;
     }
 }
