@@ -1096,4 +1096,9 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
+    
+    public static boolean isVirtualDataset(Node datasetNode) {
+    	return getNodeType(datasetNode, "").equals(INeoConstants.DATASET_TYPE_NAME) &&
+    		   datasetNode.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING);
+    }
 }

@@ -201,6 +201,10 @@ public class ETSILoader extends DriveLoader {
 	
 	private Node lastCallInProbe;
 	
+	private Node callDataset;
+	
+	private Node lastCallInDataset;
+	
 	/**
 	 * Creates a loader
 	 * 
@@ -312,6 +316,10 @@ public class ETSILoader extends DriveLoader {
 			Node probeNode = NeoUtils.findOrCreateProbeNode(networkNode, probeName, neo);
 			currentProbeCalls = NeoUtils.getCallsNode(dataset, probeName, probeNode, neo);
 			lastCallInProbe = NeoUtils.getLastCallFromProbeCalls(currentProbeCalls, neo);
+		}
+		else {
+			currentProbeCalls = probeNodes.getLeft();
+			lastCallInProbe = probeNodes.getRight();
 		}
 		
 		return probeName;
@@ -715,7 +723,7 @@ public class ETSILoader extends DriveLoader {
 	
 	private void saveCall() {
 		if (call != null) {
-			Node callNode = createCallNode(lastCallInProbe);
+			Node callNode = createCallNode();
 			
 			long setupDuration = call.getCallSetupEndTime() - call.getCallSetupBeginTime();
 			long callDuration = call.getCallEndTime() - call.getCallSetupBeginTime();
@@ -725,32 +733,33 @@ public class ETSILoader extends DriveLoader {
 			
 			//create relationship to M node
 			for (Node mNode : call.getRelatedNodes()) {
-				mNode.createRelationshipTo(callNode, ProbeCallRelationshipType.DRIVE_CALL);
+				callNode.createRelationshipTo(mNode, GeoNeoRelationshipTypes.CHILD);
 			}
 			
-			//create relationship to previous Call node
-			if (lastCallInProbe != null) {
-				lastCallInProbe.createRelationshipTo(callNode, GeoNeoRelationshipTypes.NEXT);
+			//create relationship to call dataset
+			if (callDataset == null) {
+				callDataset = getVirtualDataset(dataset + " Calls", DriveTypes.AMS_CALLS);
+				callDataset.createRelationshipTo(callNode, GeoNeoRelationshipTypes.NEXT);
 			}
 			
 			//create relationshiop to Prove Calls node
 			currentProbeCalls.createRelationshipTo(callNode, ProbeCallRelationshipType.PROBE_CALL);
 			
-			lastCallInProbe = callNode;
 			call = null;
 		}
 	}
 
-	private Node createCallNode(Node previousNode) {
+	private Node createCallNode() {
 		Transaction transaction = neo.beginTx();
 		Node result = null;
 		try {
 			result = neo.createNode();
 			result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.CALL_TYPE_NAME);
 			
-			if (previousNode != null) {
-				previousNode.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
+			if (lastCallInProbe != null) {
+				lastCallInProbe.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
 			}
+			lastCallInProbe = result;
 			
 			transaction.success();
 		}

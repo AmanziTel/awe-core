@@ -19,6 +19,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.ReturnableEvaluator;
@@ -51,11 +52,10 @@ public class DriveNeoNode extends NeoNode {
     public NeoNode[] getChildren() {
         ArrayList<NeoNode> children = new ArrayList<NeoNode>();
         Traverser traverse;
-        if (isFileNode()) {
+        if (isFileNode() || NeoUtils.isVirtualDataset(node)) {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
-                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, 
-                    ProbeCallRelationshipType.DRIVE_CALL, Direction.OUTGOING);
-        } else if (isDatasetNode() || isDirectoryNode()) {
+                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        } else if (isDatasetNode() || isDirectoryNode()) {        	
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
                     GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         } else {

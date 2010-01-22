@@ -62,7 +62,7 @@ public class INeoConstants {
     public static final String CALL_TYPE_NAME = "call";
     public static final String PROBE_TYPE_NAME = "probe";
     public static final String CALLS_TYPE_NAME = "calls";
-    public static final String LAST_CALL_NODE_ID_PROPERTY_NAME = "last_call_node_id";
+    public static final String LAST_CALL_NODE_ID_PROPERTY_NAME = "last_call_node_id";    
     // dataset property
     public static final String DRIVE_TYPE = "drive_type";
     /*

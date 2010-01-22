@@ -60,6 +60,8 @@ public abstract class DriveLoader extends AbstractLoader {
     
     //TODO: Lagutko, 17.12.2009, maybe create this indexes on rendering but not on importing? 
     protected static LuceneIndexService index;
+    
+    private HashMap<String, Node> virtualDatasets = new HashMap<String, Node>();
 
     /**
      * Initialize Loader with a specified set of parameters 
@@ -366,5 +368,57 @@ public abstract class DriveLoader extends AbstractLoader {
 	public Node getDatasetNode() {
     	return datasetNode == null ? file : datasetNode;
     }
+	
+	/**
+	 * Returns a Virtual Dataset by it's name
+	 *
+	 * @param name name of Dataset
+	 * @param datasetType type of Dataset
+	 * @return dataset node
+	 */
+	protected Node getVirtualDataset(final String name, DriveTypes datasetType) {
+		Node virtualDataset = virtualDatasets.get(name);
+		if (virtualDataset != null) {
+			return virtualDataset;
+		}
+		Transaction tx = neo.beginTx();
+		try {
+			if (datasetNode == null) {
+				Node gisNode = findOrCreateGISNode(neo.getReferenceNode(), GisTypes.DRIVE.getHeader());
+				datasetNode = findOrCreateDatasetNode(gisNode, dataset);
+			}
+		
+			Iterator<Node> virtualDatasetsIterator = datasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+			
+				@Override
+				public boolean isReturnableNode(TraversalPosition currentPos) {
+					return name.equals(NeoUtils.getNodeName(currentPos.currentNode()));
+				}
+			}, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
+		
+			if (virtualDatasetsIterator.hasNext()) {
+				virtualDataset = virtualDatasetsIterator.next();
+			}
+			else {
+				virtualDataset = neo.createNode();
+				virtualDataset.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DATASET_TYPE_NAME);
+				virtualDataset.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+				virtualDataset.setProperty(INeoConstants.DRIVE_TYPE, datasetType.getId());				
+				
+				datasetNode.createRelationshipTo(virtualDataset, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
+				
+				virtualDatasets.put(name, virtualDataset);
+			}
+			tx.success();
+		}
+		catch (Exception e) {
+			tx.failure();
+		}
+		finally {
+			tx.finish();
+		}
+		
+		return virtualDataset;
+	}
 
 }

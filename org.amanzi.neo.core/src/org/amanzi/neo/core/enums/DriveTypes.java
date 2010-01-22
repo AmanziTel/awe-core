@@ -28,7 +28,9 @@ public enum DriveTypes {
     ROMES("romes", "asc", "Romes drive test export (*.ASC)"), 
     NEMO2("nemo2", "nmf", "Nemo drive test export (*.nmf)"), 
     NEMO1("nemo1", "dt1", "Nemo drive test export (*.dt1)"), 
-    AMS("ams", "log", "");
+    AMS("ams", "log", ""),
+    AMS_CALLS("amd", "", "");
+    
     
     //TODO: Lagutko: comments
     private final String id;
