@@ -1260,6 +1260,11 @@ public abstract class AbstractLoader {
             }
             Node valueNode = valueNodes.get(property);
             Header header = headers.get(property);
+            // if current headers do not contain information about property - we do not handling
+            // this property
+            if (header == null) {
+                continue;
+            }
             HashMap<Object, Integer> values = header.values;
             if (values == null) {
                 if (valueNode != null) {
