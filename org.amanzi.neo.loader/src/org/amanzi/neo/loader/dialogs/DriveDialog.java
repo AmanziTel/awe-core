@@ -17,6 +17,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -709,7 +711,7 @@ public class DriveDialog {
 			try {
                 String extension = getFileExt(filePath);
                 if (extension.toLowerCase().equals("fmt")) {
-			    	driveLoader = new TEMSLoader(filePath, display, datasetName);			         
+                    driveLoader = new TEMSLoader(getDate(filePath), filePath, display, datasetName);
 			    } else if(extension.toLowerCase().equals("asc")) {
                     driveLoader = new RomesLoader(filePath, display, datasetName);
                 } else if (extension.toLowerCase().equals("nmf")) {
@@ -759,6 +761,23 @@ public class DriveDialog {
         }
 
         monitor.done();
+    }
+
+    /**
+     * Gets Data of TEMS file
+     * 
+     * @param filePath file path
+     * @return data
+     */
+    private Calendar getDate(String filePath) {
+        // TODO implement in feature 913
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.setTimeInMillis(new File(filePath).lastModified());
+        calendar.set(Calendar.HOUR, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar;
     }
 
     /**

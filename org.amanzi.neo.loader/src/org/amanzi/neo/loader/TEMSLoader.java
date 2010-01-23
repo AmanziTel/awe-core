@@ -12,11 +12,16 @@
  */
 package org.amanzi.neo.loader;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -34,7 +39,7 @@ import org.neo4j.api.core.Transaction;
 
 public class TEMSLoader extends DriveLoader {
     private static final String TIMESTAMP_DATE_FORMAT = "HH:mm:ss.S";
-	private Node point = null;
+    // private Node point = null;
     private int first_line = 0;
     private int last_line = 0;
     private String previous_ms = null;
@@ -45,8 +50,10 @@ public class TEMSLoader extends DriveLoader {
     private String time = null;
     private long timestamp = 0L;
     private HashMap<String, float[]> signals = new HashMap<String, float[]>();
-    private String event;   
-    
+    private String event;
+    private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    private Node mNode;
+    private Node virtualMnode;
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -55,12 +62,15 @@ public class TEMSLoader extends DriveLoader {
      * @param display for opening message dialogs
      * @param dataset to add data to
      */
-    public TEMSLoader(String filename, Display display, String dataset) {
+    public TEMSLoader(Calendar workDate, String filename, Display display, String dataset) {
+        _workDate = workDate;
         driveType = DriveTypes.TEMS;
+        mNode = null;
+        virtualMnode = null;
         initialize("TEMS", null, filename, display, dataset);
         initializeLuceneIndex();
-        initializeKnownHeaders();      
-        addDriveIndexes();          
+        initializeKnownHeaders();
+        addDriveIndexes();
     }
 
     /**
@@ -72,6 +82,10 @@ public class TEMSLoader extends DriveLoader {
      */
     public TEMSLoader(NeoService neo, String filename) {
         driveType = DriveTypes.TEMS;
+        virtualMnode = null;
+        mNode = null;
+        _workDate = new GregorianCalendar();
+        _workDate.setTimeInMillis(new File(filename).lastModified());
         initialize("TEMS", neo, filename, null, null);
         initializeLuceneIndex();
         initializeKnownHeaders();
@@ -95,7 +109,7 @@ public class TEMSLoader extends DriveLoader {
                 return originalValue.replaceAll("HO Command.*", "HO Command");
             }
         });
-        
+
         final SimpleDateFormat df = new SimpleDateFormat(TIMESTAMP_DATE_FORMAT);
         addMappedHeader(1, "time", "Timestamp", "timestamp", new PropertyMapper() {
 
@@ -108,7 +122,7 @@ public class TEMSLoader extends DriveLoader {
                     error(e.getLocalizedMessage());
                     return 0L;
                 }
-                return datetime.getTime();
+                return datetime;
             }
         });
         // addNonDataHeaders(Arrays.asList(new String[] {"time", "timestamp", "latitude",
@@ -136,11 +150,12 @@ public class TEMSLoader extends DriveLoader {
      * properties map.
      */
     protected void finishUp() {
-        saveData();      
+        saveData();
         super.finishUp();
     }
 
     protected void parseLine(String line) {
+
         // debug(line);
         List<String> fields = splitLine(line);
         if (fields.size() < 2)
@@ -151,13 +166,13 @@ public class TEMSLoader extends DriveLoader {
         // debug(line);
 
         this.time = lineData.get("time").toString();
-        this.timestamp = (Long)lineData.get("timestamp");
+        this.timestamp = getTimeStamp((Date)lineData.get("timestamp"));
         String ms = (String)lineData.get("ms");
         event = (String)lineData.get("event"); // currently only getting this as a change
 
         // marker
         String message_type = (String)lineData.get("message_type"); // need this to filter for only
-                                                                    // relevant messages
+        // relevant messages
         // message_id = lineData.get("message_id"); // parsing this is not faster
         if (!"EV-DO Pilot Sets Ver2".equals(message_type))
             return;
@@ -170,19 +185,21 @@ public class TEMSLoader extends DriveLoader {
         // TODO: If number of PN codes does not match number of EC-IO make sure to align correct
         // values to PNs
 
-        Float latitude = (Float)lineData.get("latitude");        
+        Float latitude = (Float)lineData.get("latitude");
         Float longitude = (Float)lineData.get("longitude");
         if (time == null || latitude == null || longitude == null) {
             return;
         }
-        if ((latitude != null) && 
-        	(longitude != null) &&        	
-        	(((currentLatitude == null) && (currentLongitude == null)) ||
-        	((Math.abs(currentLatitude - latitude) > 10E-10) ||
-        	 (Math.abs(currentLongitude - longitude) > 10E-10)))) {
-        	currentLatitude = latitude;
-        	currentLongitude = longitude;
+        if ((latitude != null)
+                && (longitude != null)
+                && (((currentLatitude == null) && (currentLongitude == null)) || ((Math.abs(currentLatitude - latitude) > 10E-10) || (Math
+                        .abs(currentLongitude - longitude) > 10E-10)))) {
+            currentLatitude = latitude;
+            currentLongitude = longitude;
             saveData(); // persist the current data to database
+        }
+        if (!lineData.isEmpty()) {
+            data.add(lineData);
         }
         this.incValidLocation();
 
@@ -255,91 +272,141 @@ public class TEMSLoader extends DriveLoader {
      * number of signal strength measurements.
      */
     private void saveData() {
-        if (signals.size() > 0) {
+        if (signals.size() > 0 || !data.isEmpty()) {
             Transaction transaction = neo.beginTx();
             try {
-                Node m = neo.createNode();
-                m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
-                m.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
-                m.setProperty(INeoConstants.PROPERTY_NAME_NAME, this.time);
-                if (timestamp != 0) {
-                    m.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
-                    updateTimestampMinMax(timestamp);
-                }
-                findOrCreateFileNode(m);
                 Node mp = neo.createNode();
-                mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
                 if (timestamp != 0) {
                     mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
                     updateTimestampMinMax(timestamp);
                 }
-                mp.createRelationshipTo(m, GeoNeoRelationshipTypes.CHILD);
-
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
                 mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
+                mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+                index(mp);
+                if (!data.isEmpty()) {
+                    Node prev_m = null;
+                    boolean haveEvents = false;
+                    for (Map<String, Object> dataLine : data) {
+                        Node m = neo.createNode();
+                        findOrCreateFileNode(m);
+                        m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
+                        for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
+                            if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
+                                mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
+                                // ms.setProperty(INeoConstants.SECTOR_ID_PROPERTIES,
+                                // entry.getValue());
+                            } else if ("timestamp".equals(entry.getKey())) {
+                                long timeStamp = getTimeStamp(((Date)entry.getValue()));
+                                if (timeStamp != 0) {
+                                    m.setProperty(entry.getKey(), timeStamp);
+                                    mp.setProperty(entry.getKey(), timeStamp);
+                                }
+                            } else {
+                                m.setProperty(entry.getKey(), entry.getValue());
+                                haveEvents = haveEvents || INeoConstants.PROPERTY_TYPE_EVENT.equals(entry.getKey());
+                            }
+                        }
+                        // debug("\tAdded measurement: " + propertiesString(ms));
+                        mp.createRelationshipTo(m, MeasurementRelationshipTypes.CHILD);
+                        if (mNode != null) {
+                            mNode.createRelationshipTo(m, GeoNeoRelationshipTypes.NEXT);
+                        }
+                        m.setProperty(INeoConstants.PROPERTY_NAME_NAME, getMNodeName(dataLine));
+                        mNode = m;
+                        index(m);
+                    }
+                    if (haveEvents) {
+                        index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, nameGis);
+                    }
+                }
+                if (!signals.isEmpty()) {
+                    LinkedHashMap<String, Header> statisticHeader = getHeaderMap(2).headers;
+                    if (statisticHeader.isEmpty()) {
+                        Header header = new Header(INeoConstants.PRPOPERTY_CHANNEL_NAME, INeoConstants.PRPOPERTY_CHANNEL_NAME, 0);
+                        header = new IntegerHeader(header);
+                        statisticHeader.put(INeoConstants.PRPOPERTY_CHANNEL_NAME, header);
+                        header = new Header(INeoConstants.PROPERTY_CODE_NAME, INeoConstants.PROPERTY_CODE_NAME, 0);
+                        header = new IntegerHeader(header);
+                        statisticHeader.put(INeoConstants.PROPERTY_CODE_NAME, header);
+                        header = new Header(INeoConstants.PROPERTY_DBM_NAME, INeoConstants.PROPERTY_DBM_NAME, 0);
+                        header = new FloatHeader(header);
+                        statisticHeader.put(INeoConstants.PROPERTY_DBM_NAME, header);
+                        header = new Header(INeoConstants.PROPERTY_MW_NAME, INeoConstants.PROPERTY_MW_NAME, 0);
+                        header = new FloatHeader(header);
+                        statisticHeader.put(INeoConstants.PROPERTY_MW_NAME, header);
+                    }
 
+                   
+
+
+                    Node prev_ms = null;
+                    TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
+                    for (String chanCode : signals.keySet()) {
+                        float[] signal = signals.get(chanCode);
+                        sorted_signals.put(signal[1] / signal[0], chanCode);
+                    }
+                    for (Map.Entry<Float, String> entry : sorted_signals.entrySet()) {
+                        String chanCode = entry.getValue();
+                        float[] signal = signals.get(chanCode);
+                        double mw = signal[0] / signal[1];
+                        Node ms = neo.createNode();
+                        String[] cc = chanCode.split("\\t");
+
+                        ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
+                        Header header = statisticHeader.get(INeoConstants.PRPOPERTY_CHANNEL_NAME);
+                        Object valueToSave = header.parse(cc[0]);
+                        ms.setProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME, valueToSave);
+                        header = statisticHeader.get(INeoConstants.PROPERTY_CODE_NAME);
+                        valueToSave = header.parse(cc[1]);
+                        ms.setProperty(INeoConstants.PROPERTY_CODE_NAME, valueToSave);
+                        ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, cc[1]);
+                        float dbm = LoaderUtils.mw2dbm(mw);
+                        header = statisticHeader.get(INeoConstants.PROPERTY_DBM_NAME);
+                        valueToSave = header.parse(String.valueOf(dbm));
+                        ms.setProperty(INeoConstants.PROPERTY_DBM_NAME, valueToSave);
+
+                        header = statisticHeader.get(INeoConstants.PROPERTY_MW_NAME);
+                        valueToSave = header.parse(String.valueOf(mw));
+                        ms.setProperty(INeoConstants.PROPERTY_MW_NAME, mw);
+                        debug("\tAdded measurement: " + propertiesString(ms));
+
+                        findOrCreateVirtualFileNode(ms);
+                        if (virtualMnode != null) {
+                            virtualMnode.createRelationshipTo(ms, GeoNeoRelationshipTypes.NEXT);
+                        }
+
+                        virtualMnode = ms;
+                        mp.createRelationshipTo(ms, GeoNeoRelationshipTypes.VIRTUAL_CHILD);
+                    }
+                }
                 updateBBox(currentLatitude, currentLongitude);
                 checkCRS(currentLatitude, currentLongitude, null);
-                debug("Added measurement point: " + propertiesString(mp));
-                if (point != null) {
-                    point.createRelationshipTo(m, GeoNeoRelationshipTypes.NEXT);
-                }
-                index(mp);
-                index(m);
-                if (event!=null){
-                    index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, nameGis);                    
-                }
-                point = m;
-                Node prev_ms = null;
-                TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
-                for (String chanCode : signals.keySet()) {
-                    float[] signal = signals.get(chanCode);
-                    sorted_signals.put(signal[1] / signal[0], chanCode);
-                }
-                for (Map.Entry<Float, String> entry : sorted_signals.entrySet()) {
-                    String chanCode = entry.getValue();
-                    float[] signal = signals.get(chanCode);
-                    double mw = signal[0] / signal[1];
-                    Node ms = neo.createNode();
-                    String[] cc = chanCode.split("\\t");
-                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
-                    ms.setProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME, Integer.parseInt(cc[0]));
-                    ms.setProperty(INeoConstants.PROPERTY_CODE_NAME, Integer.parseInt(cc[1]));
-                    ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, cc[1]);
-                    if (event != null) {
-                        ms.setProperty(INeoConstants.PROPERTY_TYPE_EVENT, event);
-                        event = null;
-                    }
-                    float dbm = LoaderUtils.mw2dbm(mw);
-                    ms.setProperty(INeoConstants.PROPERTY_DBM_NAME, dbm);
-                    ms.setProperty(INeoConstants.PROPERTY_MW_NAME, mw);
-                    debug("\tAdded measurement: " + propertiesString(ms));
-                    point.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
-                    if (prev_ms != null) {
-                        prev_ms.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
-                    } else {
-                        mp.setProperty("name", Integer.toString((int)Math.rint(dbm)));
-                    }
-                    prev_ms = ms;
-                }
-                //TODO: Lagutko, 17.12.2009, this code didn't do anything? Do we need it?
-                //findOrCreateSectorDriveNode(point);
                 incSaved();
                 transaction.success();
-            }
-            catch (Exception e) {
-            	e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 transaction.finish();
             }
         }
         signals.clear();
+        data.clear();
         first_line = 0;
         last_line = 0;
     }
 
+    /**
+     * get name of m node
+     * 
+     * @param dataLine - node data
+     * @return node name
+     */
+    private Object getMNodeName(Map<String, Object> dataLine) {
+        return "m";
+    }
 
     /**
      * @param args

@@ -743,7 +743,7 @@ public class ETSILoader extends DriveLoader {
 			
 			//create relationship to call dataset
 			if (callDataset == null) {
-				callDataset = getVirtualDataset(dataset + " Calls", DriveTypes.AMS_CALLS);
+                callDataset = getVirtualDataset(DriveTypes.AMS_CALLS);
 				callDataset.createRelationshipTo(callNode, GeoNeoRelationshipTypes.NEXT);
 			}
 			

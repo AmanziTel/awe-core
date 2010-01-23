@@ -44,6 +44,7 @@ public abstract class DriveLoader extends AbstractLoader {
     protected DriveTypes driveType;
     protected String dataset = null;
     protected Node file = null;
+    protected Node virtualFile = null;
     protected Node datasetNode = null;
     protected Node virtualDatasetNode = null;
     private static int[] times = new int[2];
@@ -100,6 +101,36 @@ public abstract class DriveLoader extends AbstractLoader {
 
     /**
      * Finds or create necessary file node, including finding or creating related dataset and gis nodes.
+     * 
+     * @param measurement point to add as first point to file node if created
+     */
+    protected void findOrCreateVirtualFileNode(Node mp) {
+        if (virtualFile == null) {
+            Transaction tx = neo.beginTx();
+            try {
+                virtualDatasetNode = getVirtualDataset(DriveTypes.MS);
+                Node reference = neo.getReferenceNode();
+                virtualFile = findOrCreateFileNode(reference, virtualDatasetNode);
+
+                virtualFile.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
+
+                Object time = null;
+                if (mp.hasProperty(INeoConstants.PROPERTY_TIME_NAME)) {
+                    time = mp.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+                } else if (mp.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
+                    time = mp.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
+                }
+                debug("Added '" + time + "' as first measurement of '" + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
+    }
+
+    /**
+     * Finds or create necessary file node, including finding or creating related dataset and gis
+     * nodes.
      * 
      * @param measurement point to add as first point to file node if created
      */
@@ -378,7 +409,8 @@ public abstract class DriveLoader extends AbstractLoader {
 	 * @param datasetType type of Dataset
 	 * @return dataset node
 	 */
-	protected Node getVirtualDataset(final String name, DriveTypes datasetType) {
+    protected Node getVirtualDataset(DriveTypes datasetType) {
+        final String name = datasetType.getFullDatasetName(dataset);
 		Node virtualDataset = virtualDatasets.get(name);
 		if (virtualDataset != null) {
 			return virtualDataset;

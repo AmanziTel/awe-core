@@ -29,7 +29,30 @@ public enum DriveTypes {
     NEMO2("nemo2", "nmf", "Nemo drive test export (*.nmf)"), 
     NEMO1("nemo1", "dt1", "Nemo drive test export (*.dt1)"), 
     AMS("ams", "log", ""),
-    AMS_CALLS("amd", "", "");
+ AMS_CALLS(
+            "amd", "", "") {
+        @Override
+        public boolean isVirtual() {
+            return true;
+        }
+
+        @Override
+        public String getFullDatasetName(String datasetName) {
+            return datasetName + " Calls";
+        }
+    },
+    MS("ms", "", "") {
+        @Override
+        public boolean isVirtual() {
+            return true;
+        }
+
+        @Override
+        public String getFullDatasetName(String datasetName) {
+            return datasetName + " (measurment)";
+        }
+    };
+    
     
     
     //TODO: Lagutko: comments
@@ -116,6 +139,25 @@ public enum DriveTypes {
             }
         }
         return null;
+    }
+
+    /**
+     * check dataset is virtual
+     * 
+     * @return
+     */
+    public boolean isVirtual() {
+        return false;
+    }
+
+    /**
+     * gets full dataset name
+     * 
+     * @param datasetName- name of Dataset
+     * @return full dataset name
+     */
+    public String getFullDatasetName(String datasetName) {
+        return datasetName;
     }
 
 }

@@ -39,7 +39,7 @@ import org.neo4j.api.core.Traverser.Order;
  * @since 1.0.0
  */
 public enum DriveEvents {
-
+    // unknown bad event
     UNKNOWN_BAD {
         @Override
         public EventIcons getEventIcon() {
@@ -56,6 +56,7 @@ public enum DriveEvents {
             return "unknown bad event";
         }
     },
+    // unknown good event
     UNKNOWN_GOOD {
         @Override
         public EventIcons getEventIcon() {
@@ -72,6 +73,7 @@ public enum DriveEvents {
             return "unknown good event";
         }
     },
+    // unknown neutral event
     UNKNOWN_NEUTRAL {
         @Override
         public EventIcons getEventIcon() {
@@ -88,7 +90,7 @@ public enum DriveEvents {
             return "unknown neutral event";
         }
     },
-
+    // call blocked
     CALL_BLOCKED {
         @Override
         public EventIcons getEventIcon() {
@@ -105,6 +107,7 @@ public enum DriveEvents {
             return "call blocked";
         }
     },
+    // call dropped
     CALL_DROPPED {
         @Override
         public EventIcons getEventIcon() {
@@ -121,6 +124,7 @@ public enum DriveEvents {
             return "call dropped";
         }
     },
+    // call failure
     CALL_FAILURE {
         @Override
         public EventIcons getEventIcon() {
@@ -137,6 +141,7 @@ public enum DriveEvents {
             return "call failure";
         }
     },
+    // call success
     CALL_SUCCESS {
         @Override
         public EventIcons getEventIcon() {
@@ -153,6 +158,7 @@ public enum DriveEvents {
             return "call success";
         }
     },
+    // HANDOVER_FAILURE
     HANDOVER_FAILURE {
         @Override
         public EventIcons getEventIcon() {
@@ -169,6 +175,7 @@ public enum DriveEvents {
             return "handower failure";
         }
     },
+    // HANDOVER_SUCCESS
     HANDOVER_SUCCESS {
         @Override
         public EventIcons getEventIcon() {
