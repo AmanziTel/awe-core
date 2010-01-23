@@ -771,6 +771,26 @@ public class DriveDialog {
      */
     private Calendar getDate(String filePath) {
         // TODO implement in feature 913
+        // ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
+        // int result;
+        //
+        // @Override
+        // public void run() {
+        //
+        // MessageDialogWithToggle dialog = new DateTimeDialogWithToggle(PlatformUI.getWorkbench()
+        // .getActiveWorkbenchWindow().getShell(),
+        // "ssss", null, // accept the default window icon
+        // "ssss", MessageDialogWithToggle.QUESTION, new String[] { IDialogConstants.YES_LABEL,
+        // IDialogConstants.NO_LABEL}, 0, "sss", true, 10, 10, 10);
+        // dialog.open();
+        // result = dialog.getReturnCode();
+        // }
+        //
+        // @Override
+        // public Integer getValue() {
+        // return result;
+        // }
+        // });
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTimeInMillis(new File(filePath).lastModified());
         calendar.set(Calendar.HOUR, 0);
