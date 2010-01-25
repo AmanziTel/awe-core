@@ -55,58 +55,71 @@ import org.neo4j.api.core.Traverser.Order;
  */
 public class ETSILoader extends DriveLoader {
 	
-	public class Call {
+	public enum CallType {
+		SUCCESS, FAILURE;
+	}
+	
+	public enum CallDirection {
+		INCOMING, OUTGOING;
+	}
+	
+	private class Call {
 		
-		private long callSetupBeginTime;
+		private ArrayList<Long> callParameters = new ArrayList<Long>();
 		
-		private long callSetupEndTime;
+		private int callSetupBeginTime = 0;
 		
-		private long callEndTime;
+		private int callSetupEndTime = 1;
+		
+		private CallType callType;
+		
+		private CallDirection callDirection;
+		
+		private int callTerminationBegin = 2;
+		
+		private int callTerminationEnd = 3;
+		
+		private int lastProccessedParameter;
 		
 		private ArrayList<Node> relatedNodes = new ArrayList<Node>();
+		
+		public Call() {
+			callParameters.add(0l);
+			callParameters.add(0l);
+			callParameters.add(0l);
+			callParameters.add(0l);
+		}
 
 		/**
 		 * @return Returns the callBeginTime.
 		 */
 		public long getCallSetupBeginTime() {
-			return callSetupBeginTime;
+			return callParameters.get(callSetupBeginTime);
 		}
 
 		/**
 		 * @param callSetupBeginTime The callBeginTime to set.
 		 */
 		public void setCallSetupBeginTime(long callSetupBeginTime) {
-			this.callSetupBeginTime = callSetupBeginTime;
+			callParameters.set(this.callSetupBeginTime, callSetupBeginTime);
+			lastProccessedParameter = this.callSetupBeginTime;
 		}
 
 		/**
 		 * @return Returns the callEndTime.
 		 */
 		public long getCallSetupEndTime() {
-			return callSetupEndTime;
+			return callParameters.get(callSetupEndTime);
 		}
 
 		/**
 		 * @param callSetupEndTime The callEndTime to set.
 		 */
 		public void setCallSetupEndTime(long callSetupEndTime) {
-			this.callSetupEndTime = callSetupEndTime;
+			callParameters.set(this.callSetupEndTime, callSetupEndTime);
+			lastProccessedParameter = this.callSetupEndTime;
 		}
 
-		/**
-		 * @return Returns the callEndTime.
-		 */
-		public long getCallEndTime() {
-			return callEndTime;
-		}
-
-		/**
-		 * @param callEndTime The callEndTime to set.
-		 */
-		public void setCallEndTime(long callEndTime) {
-			this.callEndTime = callEndTime;
-		}
-		
 		public void addRelatedNode(Node mNode) {
 			relatedNodes.add(mNode);
 		}
@@ -114,13 +127,85 @@ public class ETSILoader extends DriveLoader {
 		public ArrayList<Node> getRelatedNodes() {
 			return relatedNodes;
 		}
+
+		/**
+		 * @return Returns the callType.
+		 */
+		public CallType getCallType() {
+			return callType;
+		}
+
+		/**
+		 * @param callType The callType to set.
+		 */
+		public void setCallType(CallType callType) {
+			this.callType = callType;
+		}
+
+		/**
+		 * @return Returns the callDirection.
+		 */
+		public CallDirection getCallDirection() {
+			return callDirection;
+		}
+
+		/**
+		 * @param callDirection The callDirection to set.
+		 */
+		public void setCallDirection(CallDirection callDirection) {
+			this.callDirection = callDirection;
+		}
+
+		/**
+		 * @return Returns the callTerminationBegin.
+		 */
+		public long getCallTerminationBegin() {
+			return callParameters.get(callTerminationBegin);
+		}
+
+		/**
+		 * @param callTerminationBegin The callTerminationBegin to set.
+		 */
+		public void setCallTerminationBegin(long callTerminationBegin) {
+			callParameters.set(this.callTerminationBegin, callTerminationBegin);
+			lastProccessedParameter = this.callTerminationBegin;
+		}
+
+		/**
+		 * @return Returns the callTerminationEnd.
+		 */
+		public long getCallTerminationEnd() {
+			return callParameters.get(callTerminationEnd);
+		}
+
+		/**
+		 * @param callTerminationEnd The callTerminationEnd to set.
+		 */
+		public void setCallTerminationEnd(long callTerminationEnd) {
+			callParameters.set(this.callTerminationEnd, callTerminationEnd);
+			lastProccessedParameter = this.callTerminationEnd;
+		}
+		
+		public void error(long timestamp) {
+			switch (lastProccessedParameter) {
+			case 0: 
+			case 2:
+				callParameters.set(lastProccessedParameter + 1, timestamp);
+				break;
+			}
+		}
 		
 	}
 	
 	private enum CallEvents {
-		CALL_SETUP_BEGIN("atd"),
-		CALL_SETUP_END("CTOCP"),
-		CALL_END("ATH");
+		OUTGOING_CALL_SETUP_BEGIN("atd"),
+		OUTGOING_CALL_SETUP_END("CTOCP"),
+		OUTGOING_CALL_TERMINATION_BEGIN("ATH"),
+		TERMINATION_END("CTCR"),
+		INCOMING_CALL_SETUP_BEGIN("ATA"),
+		INCOMING_CALL_SETUP_END("CTCC"),
+		ERROR("CME ERROR");
+		
 		
 		private String commandName;
 		
@@ -510,68 +595,39 @@ public class ETSILoader extends DriveLoader {
 				return;
 			}
 			
-			//try to parse timestamp
-			long timestampValue;
-			try {
-				timestampValue = timestampFormat.parse(timestamp).getTime();
+			boolean isCallCommand = processCommand(timestamp, command, syntax, tokenizer, false);
+			if (command != null) {
+				commandName = command.getName();
 			}
-			catch (ParseException e) {
-				error(e.getMessage());
-				return;
+			else {
+				commandName = ETSICommandPackage.getRealCommandName(commandName);
 			}
-			
-			//get a real name of command without set or get postfix
-			Node mNode = createMNode(timestampValue);
-			if (mNode != null) {
-				//parse parameters of command
-				HashMap<String, Object> parameters = null;
-				
-				parameters = processCommand(mNode, timestampValue, command, syntax, tokenizer);
-				if (command != null) {
-					commandName = command.getName();
-				}
-				else {
-					commandName = ETSICommandPackage.getRealCommandName(commandName);
-				}
 					
-				if (!commandName.equals(UNSOLICITED)) {
-					updateMNode(mNode, commandName, parameters);
-				}
-				
-				if (syntax == CommandSyntax.EXECUTE) {
-					while (tokenizer.hasMoreTokens()) {
-						String maybeTimestamp = tokenizer.nextToken();						
-						if (maybeTimestamp.startsWith("~")) {
-							timestamp = maybeTimestamp;
-							try {
-								timestampValue = timestampFormat.parse(timestamp.substring(1)).getTime();
-							}
-							catch (ParseException e) {
-								error(e.getMessage());
-								return;
-							}
-						}
-						else if (maybeTimestamp.startsWith("+")) {
-							int colonIndex = maybeTimestamp.indexOf(":");
-							commandName = maybeTimestamp.substring(1, colonIndex);
-							StringTokenizer paramTokenizer = new StringTokenizer(maybeTimestamp.substring(colonIndex + 1).trim());
-							syntax = ETSICommandPackage.getCommandSyntax(commandName);
-							command = ETSICommandPackage.getCommand(commandName, syntax);
-						
+			if (syntax == CommandSyntax.EXECUTE) {
+				while (tokenizer.hasMoreTokens()) {
+					String maybeTimestamp = tokenizer.nextToken();						
+					if (maybeTimestamp.startsWith("~")) {
+						timestamp = maybeTimestamp.substring(1);						
+					}
+					else if (maybeTimestamp.startsWith("+")) {
+						int colonIndex = maybeTimestamp.indexOf(":");
+						commandName = maybeTimestamp.substring(1, colonIndex);
+						StringTokenizer paramTokenizer = new StringTokenizer(maybeTimestamp.substring(colonIndex + 1).trim());
+						syntax = ETSICommandPackage.getCommandSyntax(commandName);
+						command = ETSICommandPackage.getCommand(commandName, syntax);
+					
+						if (command != null) {
+							//should be a result of command
+							processCommand(timestamp, command, syntax, paramTokenizer, isCallCommand);
 							if (command != null) {
-								//should be a result of command
-								parameters = processCommand(mNode, timestampValue, command, syntax, paramTokenizer);
-								if (command != null) {
-									commandName = command.getName();
-								}
-								else {
-									commandName = ETSICommandPackage.getRealCommandName(commandName);
-								}
+								commandName = command.getName();
 							}
-							updateMNode(mNode, commandName, parameters);
+							else {
+								commandName = ETSICommandPackage.getRealCommandName(commandName);
+							}
 						}
 					}
-				}
+				}	
 			}
 		}
 	}
@@ -584,6 +640,7 @@ public class ETSILoader extends DriveLoader {
 	 * @param parameters parameters of command
 	 */
 	private void updateMNode(Node mNode, String commandName, HashMap<String, Object> parameters) {
+		mNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, commandName);
 		if (parameters != null) {
 			for (String name : parameters.keySet()) {
 				Object value = parameters.get(name);
@@ -712,37 +769,85 @@ public class ETSILoader extends DriveLoader {
     // return true;
     // }
 	
-	private HashMap<String, Object> processCommand(Node mNode, long timestamp, AbstractETSICommand command, CommandSyntax syntax, StringTokenizer tokenizer) {
+	private boolean processCommand(String timestamp, AbstractETSICommand command, CommandSyntax syntax, StringTokenizer tokenizer, boolean callCommandResult) {
+		//try to parse timestamp
+		long timestampValue;
+		try {
+			timestampValue = timestampFormat.parse(timestamp).getTime();
+		}
+		catch (ParseException e) {
+			error(e.getMessage());
+			return false;
+		}
+		
+		boolean isCallCommand = command.isCallCommand();
+		
 		HashMap<String, Object> result = command.getResults(syntax, tokenizer);
 		
-		if (command.isCallCommand()) {
+		Node mNode = createMNode(timestampValue);
+		
+		if (isCallCommand) {
 			String commandName = command.getName();
 			
 			CallEvents event = CallEvents.getCallEvent(commandName);
 			
-			processCallEvent(mNode, event, timestamp);
+			boolean processEvent = (event == CallEvents.ERROR) ? callCommandResult : true;
+			//do not proccess event if it's error for not Call Command result
+			if (processEvent) {
+				processCallEvent(mNode, event, timestampValue);
+			}
 		}
 		
-		return result;
+		if (!command.getName().equals(UNSOLICITED)) {
+			updateMNode(mNode, command.getName(), result);
+		}
+		
+		return isCallCommand;
 	}
 	
 	private void processCallEvent(Node relatedNode, CallEvents event, long timestamp) {
 		switch (event) {
-		case CALL_SETUP_BEGIN:
+		case OUTGOING_CALL_SETUP_BEGIN:
 			call = new Call();
+			call.setCallDirection(CallDirection.OUTGOING);
 			call.setCallSetupBeginTime(timestamp);			
 			break;
-		case CALL_SETUP_END:
+		case OUTGOING_CALL_SETUP_END:
 			if (call != null) {
 				call.setCallSetupEndTime(timestamp);
 			}
 			break;
-		case CALL_END:
+		case OUTGOING_CALL_TERMINATION_BEGIN:
 			if (call != null) {
-				call.setCallEndTime(timestamp);
+				call.setCallTerminationBegin(timestamp);				
+			}
+			break;
+		case TERMINATION_END:
+			if (call != null) {
+				call.setCallTerminationEnd(timestamp);
+				call.setCallType(CallType.SUCCESS);
+				call.addRelatedNode(relatedNode);
 				saveCall();
 			}
 			break;
+		case INCOMING_CALL_SETUP_BEGIN:
+			call = new Call();
+			call.setCallSetupBeginTime(timestamp);
+			call.setCallDirection(CallDirection.INCOMING);
+			break;
+		case INCOMING_CALL_SETUP_END:
+			if (call != null) {
+				call.setCallSetupEndTime(timestamp);
+			}
+			break;
+		case ERROR:
+			if (call != null) {
+				call.error(timestamp);
+				call.setCallType(CallType.FAILURE);
+				call.setCallTerminationEnd(timestamp);
+				call.addRelatedNode(relatedNode);
+				saveCall();
+			}
 		default:
 			return;
 		}
@@ -753,49 +858,53 @@ public class ETSILoader extends DriveLoader {
 	
 	private void saveCall() {
 		if (call != null) {
-			Node callNode = createCallNode();
+			Node callNode = createCallNode(call.getRelatedNodes());
 			
 			long setupDuration = call.getCallSetupEndTime() - call.getCallSetupBeginTime();
-			long callDuration = call.getCallEndTime() - call.getCallSetupBeginTime();
+			long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
 			
 			//TODO: move names to constants
 			callNode.setProperty("setupDuration", setupDuration);
-			callNode.setProperty("callDuration", callDuration);
-			
-			//create relationship to M node
-			for (Node mNode : call.getRelatedNodes()) {
-				callNode.createRelationshipTo(mNode, GeoNeoRelationshipTypes.CHILD);
+			callNode.setProperty("callType", call.getCallType().toString());
+			callNode.setProperty("callDirection", call.getCallDirection().toString());
+			if (call.getCallDirection() == CallDirection.OUTGOING) {
+				callNode.setProperty("terminationDuration", terminationDuration);
 			}
-			
-			//create relationship to Probe Calls
-			if (lastCallInProbe != null) {
-				lastCallInProbe.createRelationshipTo(callNode, ProbeCallRelationshipType.NEXT_CALL);
-			}
-			else {
-				//create relationshiop to Probe Calls node
-				currentProbeCalls.createRelationshipTo(callNode, ProbeCallRelationshipType.NEXT_CALL);				
-			}
-			lastCallInProbe = callNode;
-			
-			//create relationship to Dataset Calls
-			if (lastCallInDataset == null) {
-				callDataset.createRelationshipTo(callNode, GeoNeoRelationshipTypes.NEXT);
-			}
-			else {
-				lastCallInDataset.createRelationshipTo(callNode, GeoNeoRelationshipTypes.NEXT);
-			}
-			lastCallInDataset = callNode;
 			
 			call = null;
 		}
 	}
 
-	private Node createCallNode() {
+	private Node createCallNode(ArrayList<Node> relatedNodes) {
 		Transaction transaction = neo.beginTx();
 		Node result = null;
 		try {
 			result = neo.createNode();
 			result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.CALL_TYPE_NAME);
+			
+			//create relationship to M node
+			for (Node mNode : relatedNodes) {
+				result.createRelationshipTo(mNode, GeoNeoRelationshipTypes.CHILD);
+			}
+			
+			//create relationship to Probe Calls
+			if (lastCallInProbe != null) {
+				lastCallInProbe.createRelationshipTo(result, ProbeCallRelationshipType.NEXT_CALL);
+			}
+			else {
+				//create relationshiop to Probe Calls node
+				currentProbeCalls.createRelationshipTo(result, ProbeCallRelationshipType.NEXT_CALL);				
+			}
+			lastCallInProbe = result;
+			
+			//create relationship to Dataset Calls
+			if (lastCallInDataset == null) {
+				callDataset.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
+			}
+			else {
+				lastCallInDataset.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
+			}
+			lastCallInDataset = result;
 			
 			transaction.success();
 		}

@@ -16,19 +16,20 @@ package org.amanzi.neo.loader.etsi.commands;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
+import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
 
 /**
- * ATA command
+ * CME ERROR command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-class ATA extends AbstractETSICommand {
+class CME extends AbstractETSICommand {
 	
 	/*
 	 * Name of command
 	 */
-	private static final String COMMAND_NAME = "ATA";
+	private static final String COMMAND_NAME = "CME ERROR";
 	
 	@Override
 	public String getName() {
@@ -37,11 +38,23 @@ class ATA extends AbstractETSICommand {
 
 	@Override
 	protected void initializeParameters() {
+		parameters.add(new ETSICommandParameter("error code", ParamterType.INTEGER));
 	}
 
 	@Override
 	protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
-		return null;
+		HashMap<String, Object> result = new HashMap<String, Object>();
+		
+		StringTokenizer parametersTokenizer = new StringTokenizer(tokenizer.nextToken(RESULT_DELIMITER), PARAMETER_DELIMITER);
+		
+		for (ETSICommandParameter singleParameter : parameters) {
+			if (!parametersTokenizer.hasMoreTokens()) {
+				break;
+			}
+			result.put(singleParameter.getName(), singleParameter.parseString(parametersTokenizer.nextToken().trim()));
+		}
+		
+		return result;
 	}
 
 	@Override

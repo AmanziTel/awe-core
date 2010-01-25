@@ -40,6 +40,9 @@ public class ETSICommandPackage {
 		registerCommand(new ATA());
 		registerCommand(new UNSOLICITED());
 		registerCommand(new CTOCP());
+		registerCommand(new CTCR());
+		registerCommand(new CTCC());
+		registerCommand(new CME());
 	}
 	
 	/**

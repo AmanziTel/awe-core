@@ -161,6 +161,16 @@ public class NeoUtils {
     }
     
     /**
+     * Is this node a Probe Calls node
+     *
+     * @param node node to check
+     * @return is this node a Probe Calls node
+     */
+    public static boolean isProbeCallsNode(Node node) {
+    	return node != null && INeoConstants.CALLS_TYPE_NAME.equals(getNodeType(node, ""));
+    }
+    
+    /**
      * Is this node a Call node
      *
      * @param node node to check

@@ -81,6 +81,7 @@ public abstract class AbstractETSICommand {
 			tokenizer.nextToken(":");		
 			return parseResults(tokenizer);
 		case SET:
+		case EXECUTE:
 			return parseResults(tokenizer);
 		}
 		

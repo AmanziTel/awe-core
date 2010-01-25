@@ -94,9 +94,15 @@ public class NeoNode {
     public NeoNode[] getChildren() {
         if(children==null) {
             children = new ArrayList<NeoNode>();
-            Iterator<Node> childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
-            										 NetworkRelationshipTypes.CHILD,Direction.OUTGOING, 
-            										 ProbeCallRelationshipType.PROBE_CALL, Direction.OUTGOING).iterator();
+            Iterator<Node> childrens = null;
+            if (NeoUtils.isProbeCallsNode(node)) {
+            	childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
+						  				  ProbeCallRelationshipType.NEXT_CALL,Direction.OUTGOING).iterator();
+            }
+            else {
+            	childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+            							  NetworkRelationshipTypes.CHILD,Direction.OUTGOING).iterator();
+            }
             
             while (childrens.hasNext()) {
                 children.add(new NeoNode(childrens.next()));

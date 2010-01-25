@@ -18,17 +18,17 @@ import java.util.StringTokenizer;
 
 
 /**
- * ATA command
+ * CTCC command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-class ATA extends AbstractETSICommand {
+class CTCC extends AbstractETSICommand {
 	
 	/*
 	 * Name of command
 	 */
-	private static final String COMMAND_NAME = "ATA";
+	private static final String COMMAND_NAME = "CTCC";
 	
 	@Override
 	public String getName() {
