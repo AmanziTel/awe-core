@@ -433,6 +433,6 @@ public class TEMSLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return key == 1 ? datasetNode : virtualDatasetNode;
+        return key == 1 ? datasetNode : getVirtualDataset(DriveTypes.MS);
     }
 }

@@ -208,6 +208,8 @@ public class ETSILoader extends DriveLoader {
 	
 	private Node lastCallInDataset;
 	
+	private String networkName;
+	
 	/**
 	 * Creates a loader
 	 * 
@@ -228,11 +230,12 @@ public class ETSILoader extends DriveLoader {
 			datasetName = directoryName.substring(startIndex);
 		}
 		
+        
 		this.directoryName = directoryName;
 		this.filename = directoryName;		
+		this.networkName = networkName;
 		
 		initialize("ETSI", null, directoryName, display, datasetName);
-		initializeNetwork(networkName);
 		
 		addDriveIndexes();
 		
@@ -260,6 +263,26 @@ public class ETSILoader extends DriveLoader {
 		basename = oldBasename;
 	}
 	
+	private void initializeDatasets(String datasetName) {
+		Transaction tx = neo.beginTx();
+		try {
+			datasetNode = findOrCreateDatasetNode(neo.getReferenceNode(), dataset);
+			findOrCreateGISNode(datasetNode, GisTypes.DRIVE.getHeader());
+			
+			callDataset = getVirtualDataset(DriveTypes.AMS_CALLS);
+			
+			tx.success();
+		}
+		catch (Exception e) {
+			tx.failure();
+			NeoCorePlugin.error(null, e);
+			throw new RuntimeException(e);
+		}
+		finally {
+			tx.finish();
+		}
+	}
+	
 	@Override
 	public void run(IProgressMonitor monitor) throws IOException {
 		monitor.beginTask("Loading ETSI data", 2);
@@ -269,6 +292,10 @@ public class ETSILoader extends DriveLoader {
 		monitor = SubMonitor.convert(monitor, allFiles.size());
 		monitor.beginTask("Loading ETSI data", allFiles.size());
         headers = getHeaderMap(1).headers;
+        
+        initializeNetwork(networkName);
+		initializeDatasets(dataset);
+        
 		for (File logFile : allFiles) {
 			monitor.subTask("Loading file " + logFile.getAbsolutePath());
 			
@@ -318,7 +345,7 @@ public class ETSILoader extends DriveLoader {
 		Pair<Node, Node> probeNodes = probesCache.get(probeName);
 		if (probeNodes == null) {
 			Node probeNode = NeoUtils.findOrCreateProbeNode(networkNode, probeName, neo);
-			currentProbeCalls = NeoUtils.getCallsNode(dataset, probeName, probeNode, neo);
+			currentProbeCalls = NeoUtils.getCallsNode(callDataset, probeName, probeNode, neo);
 			lastCallInProbe = NeoUtils.getLastCallFromProbeCalls(currentProbeCalls, neo);
 		}
 		else {
@@ -349,9 +376,7 @@ public class ETSILoader extends DriveLoader {
 			if (parentDirectoryNode == null) {
 				parentDirectoryNode = getDatasetNode();
 				if (parentDirectoryNode == null) {
-					parentDirectoryNode = findOrCreateDatasetNode(neo.getReferenceNode(), dataset);
-					datasetNode = parentDirectoryNode;
-					findOrCreateGISNode(parentDirectoryNode, GisTypes.DRIVE.getHeader());
+					parentDirectoryNode = datasetNode;
 				}
 			}
 		
@@ -733,6 +758,7 @@ public class ETSILoader extends DriveLoader {
 			long setupDuration = call.getCallSetupEndTime() - call.getCallSetupBeginTime();
 			long callDuration = call.getCallEndTime() - call.getCallSetupBeginTime();
 			
+			//TODO: move names to constants
 			callNode.setProperty("setupDuration", setupDuration);
 			callNode.setProperty("callDuration", callDuration);
 			
@@ -741,14 +767,24 @@ public class ETSILoader extends DriveLoader {
 				callNode.createRelationshipTo(mNode, GeoNeoRelationshipTypes.CHILD);
 			}
 			
-			//create relationship to call dataset
-			if (callDataset == null) {
-                callDataset = getVirtualDataset(DriveTypes.AMS_CALLS);
+			//create relationship to Probe Calls
+			if (lastCallInProbe != null) {
+				lastCallInProbe.createRelationshipTo(callNode, ProbeCallRelationshipType.NEXT_CALL);
+			}
+			else {
+				//create relationshiop to Probe Calls node
+				currentProbeCalls.createRelationshipTo(callNode, ProbeCallRelationshipType.NEXT_CALL);				
+			}
+			lastCallInProbe = callNode;
+			
+			//create relationship to Dataset Calls
+			if (lastCallInDataset == null) {
 				callDataset.createRelationshipTo(callNode, GeoNeoRelationshipTypes.NEXT);
 			}
-			
-			//create relationshiop to Prove Calls node
-			currentProbeCalls.createRelationshipTo(callNode, ProbeCallRelationshipType.PROBE_CALL);
+			else {
+				lastCallInDataset.createRelationshipTo(callNode, GeoNeoRelationshipTypes.NEXT);
+			}
+			lastCallInDataset = callNode;
 			
 			call = null;
 		}
@@ -760,11 +796,6 @@ public class ETSILoader extends DriveLoader {
 		try {
 			result = neo.createNode();
 			result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.CALL_TYPE_NAME);
-			
-			if (lastCallInProbe != null) {
-				lastCallInProbe.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
-			}
-			lastCallInProbe = result;
 			
 			transaction.success();
 		}
@@ -781,5 +812,10 @@ public class ETSILoader extends DriveLoader {
     @Override
     protected Node getStoringNode(Integer key) {
         return datasetNode;
+    }
+    
+    @Override
+    protected boolean needParceHeaders() {
+    	return false;
     }
 }

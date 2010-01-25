@@ -46,7 +46,6 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Node file = null;
     protected Node virtualFile = null;
     protected Node datasetNode = null;
-    protected Node virtualDatasetNode = null;
     private static int[] times = new int[2];
     private HashMap<Integer, int[]> stats = new HashMap<Integer, int[]>();
     private int countValidMessage = 0;
@@ -108,7 +107,7 @@ public abstract class DriveLoader extends AbstractLoader {
         if (virtualFile == null) {
             Transaction tx = neo.beginTx();
             try {
-                virtualDatasetNode = getVirtualDataset(DriveTypes.MS);
+                Node virtualDatasetNode = getVirtualDataset(DriveTypes.MS);
                 Node reference = neo.getReferenceNode();
                 virtualFile = findOrCreateFileNode(reference, virtualDatasetNode);
 
@@ -139,7 +138,6 @@ public abstract class DriveLoader extends AbstractLoader {
             Transaction tx = neo.beginTx();
             try {
                 Node reference = neo.getReferenceNode();
-                datasetNode = findOrCreateDatasetNode(reference, dataset);
                 file = findOrCreateFileNode(reference, datasetNode);
 
                 Node mainFileNode = datasetNode == null ? file : datasetNode;
@@ -417,11 +415,6 @@ public abstract class DriveLoader extends AbstractLoader {
 		}
 		Transaction tx = neo.beginTx();
 		try {
-			if (datasetNode == null) {
-				Node gisNode = findOrCreateGISNode(neo.getReferenceNode(), GisTypes.DRIVE.getHeader());
-				datasetNode = findOrCreateDatasetNode(gisNode, dataset);
-			}
-		
 			Iterator<Node> virtualDatasetsIterator = datasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 			
 				@Override

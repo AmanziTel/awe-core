@@ -35,6 +35,7 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
@@ -1017,17 +1018,19 @@ public class NeoUtils {
      * @param service Neo Serivce
      * @return a Probe Calls node for current dataset
      */
-    public static Node getCallsNode(final String datasetName, String probesName, Node probesNode, NeoService service) {
+    public static Node getCallsNode(Node datasetNode, String probesName, Node probesNode, NeoService service) {
     	Transaction tx = beginTx(service);
     	Node callsNode = null;
     	try {
-    		Iterator<Node> callsIterator = probesNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+    		final String datasetName = NeoUtils.getNodeName(datasetNode);
+    		Iterator<Node> callsIterator = probesNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 				
 				@Override
 				public boolean isReturnableNode(TraversalPosition currentPos) {
 					return datasetName.equals(currentPos.currentNode().getProperty(INeoConstants.DATASET_TYPE_NAME, ""));
 				}
-			}, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+			}, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, 
+			   GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
     		
     		if (callsIterator.hasNext()) {
     			callsNode = callsIterator.next();
@@ -1039,6 +1042,7 @@ public class NeoUtils {
     			callsNode.setProperty(INeoConstants.DATASET_TYPE_NAME, datasetName);
     			
     			probesNode.createRelationshipTo(callsNode, GeoNeoRelationshipTypes.CHILD);
+    			datasetNode.createRelationshipTo(callsNode, ProbeCallRelationshipType.PROBE_DATASET);
     		}
     		
     		tx.success();
@@ -1065,9 +1069,9 @@ public class NeoUtils {
     	Transaction tx = beginTx(service);
     	Node callNode = null;
     	try {
-    		Long lastCallId = (Long)probeCallsNode.getProperty(INeoConstants.LAST_CALL_NODE_ID_PROPERTY_NAME, null);
+    		Long lastCallId = (Long)probeCallsNode.getProperty(INeoConstants.LAST_CALL_NODE_ID_PROPERTY_NAME, new Long(-1));
     		
-    		if (lastCallId != null) {
+    		if (lastCallId != -1) {
     			callNode = service.getNodeById(lastCallId);
     		}
     		

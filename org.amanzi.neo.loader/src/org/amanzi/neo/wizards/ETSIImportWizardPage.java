@@ -200,6 +200,9 @@ public class ETSIImportWizardPage extends WizardPage {
     	if (index > 0) {
     		result = result.substring(index + 1);
     	}
+    	if ((result == null) || (result.length() == 0)) {
+    		return result;
+    	}
     	return result + " Probes";    	
     }
 

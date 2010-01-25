@@ -25,7 +25,9 @@ import org.neo4j.api.core.RelationshipType;
  */
 public enum ProbeCallRelationshipType implements RelationshipType {
 	
+	PROBE_DATASET,
 	DRIVE_CALL,
-	PROBE_CALL;
+	PROBE_CALL,
+	NEXT_CALL;
 
 }
