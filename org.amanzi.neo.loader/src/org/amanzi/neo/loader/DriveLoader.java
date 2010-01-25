@@ -138,6 +138,7 @@ public abstract class DriveLoader extends AbstractLoader {
             Transaction tx = neo.beginTx();
             try {
                 Node reference = neo.getReferenceNode();
+                datasetNode = findOrCreateDatasetNode(reference, dataset);
                 file = findOrCreateFileNode(reference, datasetNode);
 
                 Node mainFileNode = datasetNode == null ? file : datasetNode;
