@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.correlate.ETSICorrellator;
@@ -129,10 +130,6 @@ public class CorrelateDialog {
 				}
 				previous = item;
 				
-				if (item != null) {
-					secondCombo.remove(item);
-				}
-				
 				if ((firstCombo.getText() != null) && (secondCombo.getText() != null) &&
 					(firstCombo.getText().length() > 0) && (secondCombo.getText().length() > 0)) {
 					correlate.setEnabled(true);
@@ -158,10 +155,6 @@ public class CorrelateDialog {
 					firstCombo.add(previous);
 				}
 				previous = item;
-				
-				if (item != null) {
-					firstCombo.remove(item);
-				}
 				
 				if ((firstCombo.getText() != null) && (secondCombo.getText() != null) &&
 						(firstCombo.getText().length() > 0) && (secondCombo.getText().length() > 0)) {
@@ -233,14 +226,14 @@ public class CorrelateDialog {
 		
 		firstCombo = new Combo(parent, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 		firstCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		addComboItems(firstCombo);
+		firstCombo.setItems(getAMSDatasets());
 		
 		Label secondComboLabel = new Label(parent, SWT.NONE);
 		secondComboLabel.setText("Select second dataset to correlate");
 		
 		secondCombo = new Combo(parent, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 		secondCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		addComboItems(secondCombo);
+		secondCombo.setItems(getNonAMSDatasets());
 		
 		createFinishButtons(parent);
 	}
@@ -278,32 +271,46 @@ public class CorrelateDialog {
 	}
 	
 	/**
-	 * Adds items to combo
+	 * Returns array of names of all Non-AMS datasets
 	 *
-	 * @param combo combo to update
+	 * @return names of all Non-AMS datasets
 	 */
-	private void addComboItems(Combo combo) {
-		for (String dataSetName : getAllDatasets()) {
-			combo.add(dataSetName);
-		}
-	}
-	
-	/**
-     * Forms list of Datasets
-     * 
-     * @return array of Datasets nodes
-     */
-    private ArrayList<String> getAllDatasets() {
+	private String[] getNonAMSDatasets() {
     	ArrayList<String> result = new ArrayList<String>();
-        Transaction tx = NeoUtils.beginTransaction();
+    	Transaction tx = NeoUtils.beginTransaction();
         try {        	
         	Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
                     NeoServiceProvider.getProvider().getService().getReferenceNode());        	
             for (Node node : allDatasetTraverser) {
-            	result.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            	DriveTypes type = NeoUtils.getDatasetType(node, NeoServiceProvider.getProvider().getService());
+            	if (type != DriveTypes.AMS) {
+            		result.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            	}
             }
-            
-            return result;
+            return result.toArray(new String[] {});
+        } finally {
+            tx.finish();
+        }
+    }
+    
+	/**
+	 * Returns array of names of all AMS datasets
+	 *
+	 * @return name of all AMS datasets
+	 */
+    private String[] getAMSDatasets() {
+    	ArrayList<String> result = new ArrayList<String>();
+    	Transaction tx = NeoUtils.beginTransaction();
+        try {        	
+        	Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
+                    NeoServiceProvider.getProvider().getService().getReferenceNode());        	
+            for (Node node : allDatasetTraverser) {
+            	DriveTypes type = NeoUtils.getDatasetType(node, NeoServiceProvider.getProvider().getService());
+            	if (type == DriveTypes.AMS) {
+            		result.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            	}
+            }
+            return result.toArray(new String[] {});
         } finally {
             tx.finish();
         }
