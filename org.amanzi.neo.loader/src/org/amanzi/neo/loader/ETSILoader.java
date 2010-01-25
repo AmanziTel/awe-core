@@ -67,9 +67,9 @@ public class ETSILoader extends DriveLoader {
 		
 		private ArrayList<Long> callParameters = new ArrayList<Long>();
 		
-		private int callSetupBeginTime = 0;
+		private int callSetupBegin = 0;
 		
-		private int callSetupEndTime = 1;
+		private int callSetupEnd = 1;
 		
 		private CallType callType;
 		
@@ -93,31 +93,31 @@ public class ETSILoader extends DriveLoader {
 		/**
 		 * @return Returns the callBeginTime.
 		 */
-		public long getCallSetupBeginTime() {
-			return callParameters.get(callSetupBeginTime);
+		public long getCallSetupBegin() {
+			return callParameters.get(callSetupBegin);
 		}
 
 		/**
 		 * @param callSetupBeginTime The callBeginTime to set.
 		 */
 		public void setCallSetupBeginTime(long callSetupBeginTime) {
-			callParameters.set(this.callSetupBeginTime, callSetupBeginTime);
-			lastProccessedParameter = this.callSetupBeginTime;
+			callParameters.set(this.callSetupBegin, callSetupBeginTime);
+			lastProccessedParameter = this.callSetupBegin;
 		}
 
 		/**
 		 * @return Returns the callEndTime.
 		 */
-		public long getCallSetupEndTime() {
-			return callParameters.get(callSetupEndTime);
+		public long getCallSetupEnd() {
+			return callParameters.get(callSetupEnd);
 		}
 
 		/**
 		 * @param callSetupEndTime The callEndTime to set.
 		 */
 		public void setCallSetupEndTime(long callSetupEndTime) {
-			callParameters.set(this.callSetupEndTime, callSetupEndTime);
-			lastProccessedParameter = this.callSetupEndTime;
+			callParameters.set(this.callSetupEnd, callSetupEndTime);
+			lastProccessedParameter = this.callSetupEnd;
 		}
 
 		public void addRelatedNode(Node mNode) {
@@ -758,6 +758,7 @@ public class ETSILoader extends DriveLoader {
 	private void addDriveIndexes() {
         try {
             addIndex(INeoConstants.HEADER_M, NeoUtils.getTimeIndexProperty(dataset));
+            addIndex(INeoConstants.CALL_TYPE_NAME, NeoUtils.getTimeIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -858,9 +859,9 @@ public class ETSILoader extends DriveLoader {
 	
 	private void saveCall() {
 		if (call != null) {
-			Node callNode = createCallNode(call.getRelatedNodes());
+			Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes());
 			
-			long setupDuration = call.getCallSetupEndTime() - call.getCallSetupBeginTime();
+			long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
 			long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
 			
 			//TODO: move names to constants
@@ -875,12 +876,15 @@ public class ETSILoader extends DriveLoader {
 		}
 	}
 
-	private Node createCallNode(ArrayList<Node> relatedNodes) {
+	private Node createCallNode(long timestamp, ArrayList<Node> relatedNodes) {
 		Transaction transaction = neo.beginTx();
 		Node result = null;
 		try {
 			result = neo.createNode();
 			result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.CALL_TYPE_NAME);
+			result.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+			
+			index(result);
 			
 			//create relationship to M node
 			for (Node mNode : relatedNodes) {
