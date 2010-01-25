@@ -50,7 +50,7 @@ NodeSet.new filter($drive_root_node,'ms', {:event => true}.merge(options))
 end
 def filter(root_node,type_name,options={})
 options.merge! 'type' => type_name
-root_node.traverse.outgoing(:CHILD, :NEXT).depth(:all).filter do
+root_node.outgoing(:CHILD, :NEXT).depth(:all).filter do
 node_properties = props # defined in Neo4j::NodeMixin
 options.keys.find{|key| options[key]==true ? node_properties[key] : node_properties[key] === options[key]}
 end
