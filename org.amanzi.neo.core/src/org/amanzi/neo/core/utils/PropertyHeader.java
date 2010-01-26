@@ -160,6 +160,7 @@ public class PropertyHeader {
     private String[] getDefinedNumericFields() {
         List<String> ints = new ArrayList<String>();
         List<String> floats = new ArrayList<String>();
+        List<String> longs = new ArrayList<String>();
         List<String> result = new ArrayList<String>();
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
         if (propRel != null) {
@@ -173,12 +174,15 @@ public class PropertyHeader {
                         ints.addAll(Arrays.asList(properties));
                     } else if (propType.equals("float")) {
                         floats.addAll(Arrays.asList(properties));
+                    } else if (propType.equals("long")) {
+                        longs.addAll(Arrays.asList(properties));
                     }
                 }
             }
         }
         result.addAll(ints);
         result.addAll(floats);
+        result.addAll(longs);
         return result.toArray(new String[0]);
     }
 
