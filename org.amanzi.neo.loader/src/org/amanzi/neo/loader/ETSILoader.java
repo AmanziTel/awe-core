@@ -393,7 +393,8 @@ public class ETSILoader extends DriveLoader {
 			currentDirectoryNode = findOrCreateDirectoryNode(null, logFile.getParentFile());
 			
 			newFile = true;
-            getHeaderMap(1).typedProperties = null;
+            getHeaderMap(REAL_DATASET_HEADER_INDEX).typedProperties = null;
+            getHeaderMap(CALL_DATASET_HEADER_INDEX).typedProperties = null;
 
 			super.run(null);
 			
@@ -904,7 +905,7 @@ public class ETSILoader extends DriveLoader {
 			
 			if (call.getCallDirection() == CallDirection.OUTGOING) {
 				callNode.setProperty(INeoConstants.CALL_TERMINATION, terminationDuration);
-				setProperty(headers, callNode, INeoConstants.CALL_TERMINATION, call.getCallDirection().toString());
+				setProperty(headers, callNode, INeoConstants.CALL_TERMINATION, terminationDuration);
 			}
 			
 			call = null;
