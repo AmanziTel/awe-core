@@ -556,8 +556,7 @@ public class CorrelationManager extends ViewPart {
      */
     private class RowWrapper {
 
-        private String networkName;
-        private final Node networkNode;
+        private String networkName;        
         private final Node driveNode;
         private String driveName;
         private final Relationship relation;
@@ -569,7 +568,6 @@ public class CorrelationManager extends ViewPart {
          * @param relation - relation
          */
         public RowWrapper(Node node, Relationship relation) {
-            this.networkNode = node;
             this.relation = relation;
             Transaction tx = service.beginTx();
             try {
@@ -594,13 +592,6 @@ public class CorrelationManager extends ViewPart {
          */
         public String getDriveName() {
             return driveName;
-        }
-
-        /**
-         * @return Returns the networkNode.
-         */
-        public Node getNetworkNode() {
-            return networkNode;
         }
 
         /**
