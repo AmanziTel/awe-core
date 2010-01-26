@@ -964,7 +964,9 @@ public abstract class AbstractLoader {
             indList = new ArrayList<MultiPropertyIndex< ? >>();
             indexes.put(nodeType, indList);
         }
-        indList.add(index);
+        if (!indList.contains(index)) {
+            indList.add(index);
+        }
     }
 
     protected void removeIndex(String nodeType, MultiPropertyIndex< ? > index) {

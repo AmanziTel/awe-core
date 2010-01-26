@@ -32,6 +32,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand;
 import org.amanzi.neo.loader.etsi.commands.CommandSyntax;
 import org.amanzi.neo.loader.etsi.commands.ETSICommandPackage;
@@ -297,6 +298,8 @@ public class ETSILoader extends DriveLoader {
 	
 	private String networkName;
 	
+	private HashMap<String, MultiPropertyIndex<Long>> callTimestampIndexes = new HashMap<String, MultiPropertyIndex<Long>>();
+	
 	/**
 	 * Creates a loader
 	 * 
@@ -433,6 +436,7 @@ public class ETSILoader extends DriveLoader {
 			Node probeNode = NeoUtils.findOrCreateProbeNode(networkNode, probeName, neo);
 			currentProbeCalls = NeoUtils.getCallsNode(callDataset, probeName, probeNode, neo);
 			lastCallInProbe = NeoUtils.getLastCallFromProbeCalls(currentProbeCalls, neo);
+			getProbeCallsIndex(NeoUtils.getNodeName(currentProbeCalls));
 		}
 		else {
 			currentProbeCalls = probeNodes.getLeft();
@@ -770,6 +774,29 @@ public class ETSILoader extends DriveLoader {
         }
     }
 	
+	private MultiPropertyIndex<Long> getProbeCallsIndex(String probeCallsName) {
+	    MultiPropertyIndex<Long> result = callTimestampIndexes.get(probeCallsName);
+	    
+	    if (result == null) {
+	        Transaction tx = neo.beginTx();
+	        try {
+	            result = NeoUtils.getTimeIndexProperty(probeCallsName);	            
+	            result.initialize(neo, null);
+	            
+	            callTimestampIndexes.put(probeCallsName, result);
+	            tx.success();
+	        } catch (IOException e) {
+	            tx.failure();
+	            throw (RuntimeException)new RuntimeException().initCause(e);
+	        }
+	        finally {
+	            tx.finish();
+	        }
+	    }
+	    
+	    return result;
+	}
+	
 	private boolean processCommand(String timestamp, AbstractETSICommand command, CommandSyntax syntax, StringTokenizer tokenizer, boolean callCommandResult) {
 		//try to parse timestamp
 		long timestampValue;
@@ -894,6 +921,10 @@ public class ETSILoader extends DriveLoader {
 			
 			index(result);
 			
+			//index for Probe Calls
+			MultiPropertyIndex<Long> callIndex = getProbeCallsIndex(NeoUtils.getNodeName(currentProbeCalls));
+			callIndex.add(result);
+			
 			//create relationship to M node
 			for (Node mNode : relatedNodes) {
 				result.createRelationshipTo(mNode, GeoNeoRelationshipTypes.CHILD);
@@ -945,5 +976,13 @@ public class ETSILoader extends DriveLoader {
     @Override
     protected boolean needParceHeaders() {
     	return false;
+    }
+    
+    @Override
+    protected void finishUpIndexes() {
+        for (MultiPropertyIndex<Long> singleIndex : callTimestampIndexes.values()) {
+            singleIndex.finishUp();
+        }
+        super.finishUpIndexes();
     }
 }

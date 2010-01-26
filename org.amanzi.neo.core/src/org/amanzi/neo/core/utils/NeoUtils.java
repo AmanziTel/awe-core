@@ -117,7 +117,14 @@ public class NeoUtils {
      * @return node name or empty string
      */
     public static String getSimpleNodeName(PropertyContainer node, String defValue) {
-        return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
+        Transaction tx = beginTransaction();
+        try {
+            return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
+        }
+        finally {
+            tx.success();
+            tx.finish();
+        }
     }
 
     /**
