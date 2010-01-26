@@ -105,7 +105,8 @@ public abstract class AbstractLoader {
     private long savedData = 0;
     private long started = System.currentTimeMillis();
     private boolean headerWasParced;
-    // private ArrayList<MultiPropertyIndex<?>> indexes = new ArrayList<MultiPropertyIndex<?>>();
+    // private ArrayList<MultiPropertyIndex<?>> indexes = new
+    // ArrayList<MultiPropertyIndex<?>>();
     private LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>> indexes = new LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>>();
 
     @SuppressWarnings("unchecked")
@@ -118,13 +119,12 @@ public abstract class AbstractLoader {
     protected CSVParser parser;
 
     protected class Header {
-        private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard value sets if count
-        // exceeds 100
-        private static final float MAX_PROPERTY_VALUE_SPREAD = 0.5f; // discard value sets if
-        // spread exceeds 50%
-        private static final int MIN_PROPERTY_VALUE_SPREAD_COUNT = 50; // only calculate spread
-        // after this number of data
-        // points
+        private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard
+        // value sets if count exceeds 100
+        private static final float MAX_PROPERTY_VALUE_SPREAD = 0.5f; // discard
+        // value sets if spread exceeds 50%
+        private static final int MIN_PROPERTY_VALUE_SPREAD_COUNT = 50; // only
+        // calculate spread after this number of data points
         int index;
         String key;
         String name;
@@ -186,19 +186,24 @@ public abstract class AbstractLoader {
                 }
                 boolean discard = false;
                 if (count == 0) {
-                    // We have a new value, so adding it will increase the size of the map
-                    // We should perform threshold tests to decide whether to drop the map or not
+                    // We have a new value, so adding it will increase the size
+                    // of the map
+                    // We should perform threshold tests to decide whether to
+                    // drop the map or not
                     if (values.size() >= MAX_PROPERTY_VALUE_COUNT) {
                         // Exceeded absolute threashold, drop map
                         System.out.println("Property values exceeded maximum count, no longer tracking value set: " + this.key);
                         discard = true;
                     }
-                    // TODO if we do not use parse method this check will be wrong
-                    // else if (values.size() >= MIN_PROPERTY_VALUE_SPREAD_COUNT) {
+                    // TODO if we do not use parse method this check will be
+                    // wrong
+                    // else if (values.size() >=
+                    // MIN_PROPERTY_VALUE_SPREAD_COUNT) {
                     // // Exceeded minor threshold, test spread and then decide
                     // float spread = (float)values.size() / (float)parseCount;
                     // if (spread > MAX_PROPERTY_VALUE_SPREAD) {
-                    // // Exceeded maximum spread, too much property variety, drop map
+                    // // Exceeded maximum spread, too much property variety,
+                    // drop map
                     // System.out.println("Property shows excessive variation, no longer tracking value set: "
                     // + this.key);
                     // discard = true;
@@ -206,7 +211,8 @@ public abstract class AbstractLoader {
                     // }
                 }
                 if (discard) {
-                    // Detected too much variety in property values, stop counting
+                    // Detected too much variety in property values, stop
+                    // counting
                     dropStats();
                 } else {
                     values.put(value, count + 1);
@@ -375,13 +381,16 @@ public abstract class AbstractLoader {
             super(old);
             this.key = mapRule.key;
             if (mapRule.name != null) {
-                // We only replace the name if the new one is valid, otherwise inherit from the old
+                // We only replace the name if the new one is valid, otherwise
+                // inherit from the old
                 // header
-                // This allows for support of header replacing rules, as well as duplicating rules
+                // This allows for support of header replacing rules, as well as
+                // duplicating rules
                 this.name = mapRule.name;
             }
             this.mapper = mapRule.mapper;
-            this.values = new HashMap<Object, Integer>(); // need to make a new values list,
+            this.values = new HashMap<Object, Integer>(); // need to make a new
+            // values list,
             // otherwise we share the same data as
             // the original
         }
@@ -730,13 +739,15 @@ public abstract class AbstractLoader {
             }
             index++;
         }
-        // Now add any new properties created from other existing properties using mapping rules
+        // Now add any new properties created from other existing properties
+        // using mapping rules
         for (HeaderMaps headerMap : headersMap.values()) {
             for (String key : headerMap.mappedHeaders.keySet()) {
                 if (headerMap.headers.containsKey(key)) {
                     MappedHeaderRule mapRule = headerMap.mappedHeaders.get(key);
                     if (headerMap.headers.containsKey(mapRule.key)) {
-                        // We only allow replacement if the user passed null for the name
+                        // We only allow replacement if the user passed null for
+                        // the name
                         if (mapRule.name == null) {
                             headerMap.headers.put(mapRule.key, new MappedHeader(headerMap.headers.get(key), mapRule));
                         } else {
@@ -762,8 +773,6 @@ public abstract class AbstractLoader {
     protected int commitSize = 5000;
     protected String nameGis;
 
-
-
     // protected List<String> getNumericProperties() {
     // ArrayList<String> results = new ArrayList<String>();
     // for (Class< ? extends Object> klass : NUMERIC_PROPERTY_TYPES) {
@@ -783,37 +792,37 @@ public abstract class AbstractLoader {
     // return results;
     // }
 
-
-
     protected final LinkedHashMap<String, Object> makeDataMap(List<String> fields) {
         LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
         for (HeaderMaps headerMap : headersMap.values()) {
 
             for (String key : headerMap.headers.keySet()) {
-            try {
+                try {
                     Header header = headerMap.headers.get(key);
-                String field = fields.get(header.index);
-                if (field == null || field.length() < 1 || field.equals("?")) {
-                    continue;
-                }
-                Object value = header.parse(field);
-                map.put(key, value); // TODO: Decide if we should actually use the name here
-
-                // Now speed up parsing once we are certain of the column types
-                if (header.shouldConvert()) {
-                    Class< ? extends Object> klass = header.knownType();
-                    if (klass == Integer.class) {
-                            headerMap.headers.put(key, new IntegerHeader(header));
-                    } else if (klass == Float.class) {
-                            headerMap.headers.put(key, new FloatHeader(header));
-                    } else {
-                            headerMap.headers.put(key, new StringHeader(header));
+                    String field = fields.get(header.index);
+                    if (field == null || field.length() < 1 || field.equals("?")) {
+                        continue;
                     }
+                    Object value = header.parse(field);
+                    map.put(key, value); // TODO: Decide if we should actually
+                    // use the name here
+
+                    // Now speed up parsing once we are certain of the column
+                    // types
+                    if (header.shouldConvert()) {
+                        Class< ? extends Object> klass = header.knownType();
+                        if (klass == Integer.class) {
+                            headerMap.headers.put(key, new IntegerHeader(header));
+                        } else if (klass == Float.class) {
+                            headerMap.headers.put(key, new FloatHeader(header));
+                        } else {
+                            headerMap.headers.put(key, new StringHeader(header));
+                        }
+                    }
+                } catch (Exception e) {
+                    // TODO Handle Exception
                 }
-            } catch (Exception e) {
-                // TODO Handle Exception
             }
-        }
         }
         return map;
     }
@@ -1026,7 +1035,8 @@ public abstract class AbstractLoader {
             flushIndexes();
             mainTx.success();
             mainTx.finish();
-            // System.out.println("Commit: Memory: "+(Runtime.getRuntime().totalMemory() -
+            // System.out.println("Commit: Memory: "+(Runtime.getRuntime().totalMemory()
+            // -
             // Runtime.getRuntime().freeMemory()));
             if (restart) {
                 mainTx = neo.beginTx();
@@ -1131,8 +1141,7 @@ public abstract class AbstractLoader {
 
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
-                                INeoConstants.GIS_TYPE_NAME)
+                        return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.GIS_TYPE_NAME)
                                 && currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(name)
                                 && currentPos.currentNode().getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").equals(gisType);
                     }
@@ -1182,53 +1191,53 @@ public abstract class AbstractLoader {
 
     protected final void saveProperties() {
         for (Map.Entry<Integer, HeaderMaps> entryHeader : headersMap.entrySet()) {
-            Node storingRootNode=getStoringNode(entryHeader.getKey());
+            Node storingRootNode = getStoringNode(entryHeader.getKey());
             if (storingRootNode != null) {
-            Transaction transaction = neo.beginTx();
-            try {
-                Node propNode;
+                Transaction transaction = neo.beginTx();
+                try {
+                    Node propNode;
                     Relationship propRel = storingRootNode.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES,
                             Direction.OUTGOING);
-                if (propRel == null) {
-                    propNode = neo.createNode();
-                    propNode.setProperty("name", NeoUtils.getNodeName(gis));
-                    propNode.setProperty("type", "gis_properties");
+                    if (propRel == null) {
+                        propNode = neo.createNode();
+                        propNode.setProperty("name", NeoUtils.getNodeName(gis));
+                        propNode.setProperty("type", "gis_properties");
                         storingRootNode.createRelationshipTo(propNode, GeoNeoRelationshipTypes.PROPERTIES);
-                } else {
-                    propNode = propRel.getEndNode();
-                }
-                HashMap<String, Node> propTypeNodes = new HashMap<String, Node>();
-                for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                        ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                    propTypeNodes.put(node.getProperty("name").toString(), node);
-                }
-                for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
-                    String typeName = makePropertyTypeName(klass);
+                    } else {
+                        propNode = propRel.getEndNode();
+                    }
+                    HashMap<String, Node> propTypeNodes = new HashMap<String, Node>();
+                    for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                            ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        propTypeNodes.put(node.getProperty("name").toString(), node);
+                    }
+                    for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
+                        String typeName = makePropertyTypeName(klass);
                         List<String> properties = entryHeader.getValue().getProperties(klass);
-                    if (properties != null && properties.size() > 0) {
-                        Node propTypeNode = propTypeNodes.get(typeName);
-                        if (propTypeNode == null) {
-                            propTypeNode = neo.createNode();
-                            propTypeNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, typeName);
-                            propTypeNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "gis_property_type");
+                        if (properties != null && properties.size() > 0) {
+                            Node propTypeNode = propTypeNodes.get(typeName);
+                            if (propTypeNode == null) {
+                                propTypeNode = neo.createNode();
+                                propTypeNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, typeName);
+                                propTypeNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "gis_property_type");
                                 savePropertiesToNode(entryHeader.getValue(), propTypeNode, properties);
-                            propNode.createRelationshipTo(propTypeNode, GeoNeoRelationshipTypes.CHILD);
-                        } else {
-                            TreeSet<String> combinedProperties = new TreeSet<String>();
-                            String[] previousProperties = (String[])propTypeNode.getProperty(INeoConstants.NODE_TYPE_PROPERTIES,
-                                    null);
-                            if (previousProperties != null)
-                                combinedProperties.addAll(Arrays.asList(previousProperties));
-                            combinedProperties.addAll(properties);
+                                propNode.createRelationshipTo(propTypeNode, GeoNeoRelationshipTypes.CHILD);
+                            } else {
+                                TreeSet<String> combinedProperties = new TreeSet<String>();
+                                String[] previousProperties = (String[])propTypeNode.getProperty(
+                                        INeoConstants.NODE_TYPE_PROPERTIES, null);
+                                if (previousProperties != null)
+                                    combinedProperties.addAll(Arrays.asList(previousProperties));
+                                combinedProperties.addAll(properties);
                                 savePropertiesToNode(entryHeader.getValue(), propTypeNode, combinedProperties);
+                            }
                         }
                     }
+                    transaction.success();
+                } finally {
+                    transaction.finish();
                 }
-                transaction.success();
-            } finally {
-                transaction.finish();
             }
-        }
         }
     }
 
@@ -1256,7 +1265,8 @@ public abstract class AbstractLoader {
             }
             Node valueNode = valueNodes.get(property);
             Header header = headerMaps.headers.get(property);
-            // if current headers do not contain information about property - we do not handling
+            // if current headers do not contain information about property - we
+            // do not handling
             // this property
             if (header == null) {
                 continue;
@@ -1346,6 +1356,7 @@ public abstract class AbstractLoader {
             headerMap.clearCaches();
         }
     }
+
     /**
      * This method adds the loaded data to the GIS catalog. The neo-catalog entry is created or
      * updated.
@@ -1597,7 +1608,8 @@ public abstract class AbstractLoader {
                             }
                             NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
                         } catch (Exception e) {
-                            // we are in test mode, automatically agree to overwrite network
+                            // we are in test mode, automatically agree to
+                            // overwrite network
                             deleteTree(node);
                             deleteNode(node);
                         }
@@ -1664,7 +1676,6 @@ public abstract class AbstractLoader {
             Header header = headers.get(key);
             return header == null ? null : header.name;
         }
-
 
         public void clearCaches() {
             this.headers.clear();

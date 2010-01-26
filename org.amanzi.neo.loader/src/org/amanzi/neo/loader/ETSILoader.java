@@ -239,6 +239,10 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
 	
+	private static final int REAL_DATASET_HEADER_INDEX = 0;
+	
+	private static final int CALL_DATASET_HEADER_INDEX = 1;
+	
 	/*
 	 * Formatter for timestamp
 	 */
@@ -287,9 +291,7 @@ public class ETSILoader extends DriveLoader {
 	
 	private Node lastCallInProbe;
 
-    private LinkedHashMap<String, Header> headers;
-	
-	private Node callDataset;
+    private Node callDataset;
 	
 	private Node lastCallInDataset;
 	
@@ -376,7 +378,6 @@ public class ETSILoader extends DriveLoader {
 		
 		monitor = SubMonitor.convert(monitor, allFiles.size());
 		monitor.beginTask("Loading ETSI data", allFiles.size());
-        headers = getHeaderMap(1).headers;
         
         initializeNetwork(networkName);
 		initializeDatasets(dataset);
@@ -640,23 +641,13 @@ public class ETSILoader extends DriveLoader {
 	 * @param parameters parameters of command
 	 */
 	private void updateMNode(Node mNode, String commandName, HashMap<String, Object> parameters) {
+		LinkedHashMap<String, Header> headers = getHeaderMap(REAL_DATASET_HEADER_INDEX).headers;
 		mNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, commandName);
 		if (parameters != null) {
 			for (String name : parameters.keySet()) {
 				Object value = parameters.get(name);
 				if (!(value instanceof List<?>)) {
-					//add value to statistics
-					Header header = headers.get(name);
-					if (header == null) {
-						header = new Header(name, name, 1);
-						
-						headers.put(name, header);
-					}
-					header.parseCount++;
-					header.incValue(value);
-					header.incType(value.getClass());
-					
-					mNode.setProperty(name, parameters.get(name));
+				    setProperty(headers, mNode, name, parameters.get(name));
 				}
 				else {
 					setPropertyToMmNodes(mNode, name, (List<?>)value);
@@ -665,6 +656,21 @@ public class ETSILoader extends DriveLoader {
 		}
 		
 		mmNodes.clear();
+	}
+	
+	private void setProperty(LinkedHashMap<String, Header> headers, Node node, String propertyName, Object value) {
+	    //add value to statistics
+        Header header = headers.get(propertyName);
+        if (header == null) {
+            header = new Header(propertyName, propertyName, 1);
+            
+            headers.put(propertyName, header);
+        }
+        header.parseCount++;
+        header.incValue(value);
+        header.incType(value.getClass());
+        
+        node.setProperty(propertyName, value);
 	}
 	
 	/**
@@ -858,11 +864,20 @@ public class ETSILoader extends DriveLoader {
 			long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
 			long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
 			
+			LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
+			
 			callNode.setProperty(INeoConstants.CALL_SETUP_DURATION, setupDuration);
+			setProperty(headers, callNode, INeoConstants.CALL_SETUP_DURATION, setupDuration);
+			
 			callNode.setProperty(INeoConstants.CALL_TYPE, call.getCallType().toString());
+			setProperty(headers, callNode, INeoConstants.CALL_TYPE, call.getCallType().toString());
+			
 			callNode.setProperty(INeoConstants.CALL_DIRECTION, call.getCallDirection().toString());
+			setProperty(headers, callNode, INeoConstants.CALL_DIRECTION, call.getCallDirection().toString());
+			
 			if (call.getCallDirection() == CallDirection.OUTGOING) {
 				callNode.setProperty(INeoConstants.CALL_TERMINATION, terminationDuration);
+				setProperty(headers, callNode, INeoConstants.CALL_TERMINATION, call.getCallDirection().toString());
 			}
 			
 			call = null;
@@ -917,7 +932,14 @@ public class ETSILoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return datasetNode;
+    	switch (key) {
+    	case REAL_DATASET_HEADER_INDEX:
+    		return datasetNode;
+    	case CALL_DATASET_HEADER_INDEX:
+    		return callDataset;
+    	default:
+    		return null;    			
+    	}
     }
     
     @Override
