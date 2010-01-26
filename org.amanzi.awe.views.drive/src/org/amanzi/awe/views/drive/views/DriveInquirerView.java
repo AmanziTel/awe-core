@@ -951,7 +951,7 @@ public class DriveInquirerView extends ViewPart {
             return;
         }
         setTimeFromField();
-        Node gis = getGisNode();
+        Node gis = getDatasetNodes();
 
         if (gis == null) {
             return;
@@ -1054,7 +1054,7 @@ public class DriveInquirerView extends ViewPart {
      *update chart
      */
     private void updateChart() {
-        Node gis = getGisNode();
+        Node gis = getDatasetNodes();
         String event = cEvent.getText();
         String property1 = cProperty1.getText();
         String property2 = cProperty1.getText();
@@ -1083,7 +1083,7 @@ public class DriveInquirerView extends ViewPart {
      */
     private void fireEventUpdateChart() {
         IMap activeMap = ApplicationGIS.getActiveMap();
-        Node gis = getGisNode();
+        Node gis = getDatasetNodes();
         if (activeMap != ApplicationGIS.NO_MAP) {
             try {
                 for (ILayer layer : activeMap.getMapLayers()) {
@@ -1127,7 +1127,7 @@ public class DriveInquirerView extends ViewPart {
      * @param geo
      */
     private void setProperty(GeoNeo geo) {
-        Node gisNode = getGisNode();
+        Node gisNode = getDatasetNodes();
         if (!geo.getMainGisNode().equals(gisNode)) {
             return;
         }
@@ -1232,7 +1232,7 @@ public class DriveInquirerView extends ViewPart {
     private void formPropertyLists() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            Node gis = getGisNode();
+            Node gis = getDatasetNodes();
 //            dataset = new ArrayList<Node>();
 //            dataset.addAll(NeoUtils.getAllFileNodes(gis).getAllNodes());
             currentIndex = cDrive.getSelectionIndex();
@@ -1305,7 +1305,7 @@ public class DriveInquirerView extends ViewPart {
      * 
      * @return node
      */
-    private Node getGisNode() {
+    private Node getDatasetNodes() {
         return gisDriveNodes == null ? null : gisDriveNodes.get(cDrive.getText());
     }
 
@@ -1316,24 +1316,8 @@ public class DriveInquirerView extends ViewPart {
      */
     private String[] getDriveItems() {
         NeoService service = NeoServiceProvider.getProvider().getService();
-        Node refNode = service.getReferenceNode();
-        gisDriveNodes = new LinkedHashMap<String, Node>();
-
-        Transaction tx = service.beginTx();
-        try {
-            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();
-                Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
-                if (NeoUtils.isGisNode(node) && type.equals(GisTypes.DRIVE.getHeader())) {
-                    String id = NeoUtils.getSimpleNodeName(node, null);
-                    gisDriveNodes.put(id, node);
-                }
-            }
-
-            return gisDriveNodes.keySet().toArray(new String[] {});
-        } finally {
-            tx.finish();
-        }
+        gisDriveNodes = NeoUtils.getAllDatasetNodes(service);
+        return gisDriveNodes.keySet().toArray(new String[] {});
     }
 
     public void setFocus() {
