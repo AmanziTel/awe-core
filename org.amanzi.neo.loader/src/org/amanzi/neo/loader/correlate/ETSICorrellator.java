@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
@@ -60,6 +62,8 @@ public class ETSICorrellator {
 		neoService = NeoServiceProvider.getProvider().getService();
 	}
 	
+	private MultiPropertyIndex<Double> realDatasetLocationIndex, callDatasetLocationIndex;
+	
 	/**
 	 * Starts correlating
 	 *
@@ -71,22 +75,31 @@ public class ETSICorrellator {
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "correlate");
 		try {
 			initializeIndex(secondDataset);
+			
+			Node realDatasetNode = getDatasetNode(firstDataset);
+			String callDatasetName = getCallDatasetName(realDatasetNode, firstDataset);
+			createNewIndexes(firstDataset, callDatasetName);
 		
-			MNodeIterator mIterator = getMNodeIterator(firstDataset);
+			MNodeIterator mIterator = getMNodeIterator(realDatasetNode);
 		
 			while (mIterator.hasNext()) {
 				Node firstM = mIterator.next();
-				Node firstMp = getMpNode(firstM);
 				
-				Node secondMp = determineNode((Long)firstM.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME));
+				Node callNode = determineCallNode(firstM);
+				
+				Node mpNode = determineNode((Long)firstM.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME));
 								
-				correlateNodes(firstMp, secondMp);
+				correlateNodes(firstM, callNode, mpNode);
 			}
+			
+			realDatasetLocationIndex.finishUp();
+			callDatasetLocationIndex.finishUp();
 			
 			tx.success();
 		}
 		catch (Exception e) {
 			tx.failure();
+			NeoCorePlugin.error(null, e);
 		}
 		finally {
 			tx.finish();
@@ -100,44 +113,45 @@ public class ETSICorrellator {
 	 * @param first first node to correlate
 	 * @param second second node to correlate
 	 */
-	private void correlateNodes(Node first, Node second) {
-		if ((first == null) || (second == null)) {
-			return;
-		}
-		
-		Node correlationNode = getCorrelationNode(first);
-		if (correlationNode == null) {
-			correlationNode = getCorrelationNode(second);
-		}
-		else {
-			second.createRelationshipTo(correlationNode, GeoNeoRelationshipTypes.CORRELATE_LEFT);
-		}
-		if (correlationNode == null) {		
-			correlationNode = neoService.createNode();
-			correlationNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "correlation_node");
-			
-			first.createRelationshipTo(correlationNode, GeoNeoRelationshipTypes.CORRELATE_RIGHT);
-			second.createRelationshipTo(correlationNode, GeoNeoRelationshipTypes.CORRELATE_LEFT);
-		}
-		else {
-			first.createRelationshipTo(correlationNode, GeoNeoRelationshipTypes.CORRELATE_RIGHT);
-		}
-		
+	private void correlateNodes(Node mNode, Node callNode, Node orignalMNode) {
+	    if (orignalMNode == null) {
+	        return;
+	    }
+	    try {
+	        //add a real child to m node
+	        Node originalMpNode = getMpNode(orignalMNode);
+	        
+	        Node newMpNode = copyMPNode(originalMpNode);
+	        mNode.createRelationshipTo(newMpNode, GeoNeoRelationshipTypes.CHILD);
+	        realDatasetLocationIndex.add(newMpNode);
+	        
+	        if (callNode != null) {
+	            newMpNode = copyMPNode(originalMpNode);
+	            callNode.createRelationshipTo(newMpNode, GeoNeoRelationshipTypes.VIRTUAL_CHILD);
+	            callDatasetLocationIndex.add(newMpNode);
+	        }
+	    }
+	    catch (IOException e) {
+	        NeoCorePlugin.error(null, e);	        
+	    }
 	}
 	
-	/**
-	 * Tries to find already created correlation node
-	 *
-	 * @param rootNode root node
-	 * @return correlation node
-	 */
-	private Node getCorrelationNode(Node rootNode) {
-		Iterator<Node> correlationNodeIterator = rootNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CORRELATE_RIGHT, Direction.OUTGOING, GeoNeoRelationshipTypes.CORRELATE_LEFT, Direction.OUTGOING).iterator();
-		if (correlationNodeIterator.hasNext()) {
-			return correlationNodeIterator.next();
-		}
-		return null;
+	private Node copyMPNode(Node originalMPNode) {
+	    Node newMpNode = neoService.createNode();	    
+	    for (String propertyName : originalMPNode.getPropertyKeys()) {
+	        newMpNode.setProperty(propertyName, originalMPNode.getProperty(propertyName));
+	    }
+	    
+	    return newMpNode;
 	}
+	
+	private Node getMpNode(Node mNode) {
+        Iterator<Node> mpNodes = mNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator();
+        if (mpNodes.hasNext()) {
+            return mpNodes.next();
+        }
+        return null;
+    }
 	
 	/**
 	 * Searches for the node indexed by timestamp
@@ -153,7 +167,7 @@ public class ETSICorrellator {
 		long delta = 180000;
 		
 		for (Node node : timestampIndex.find(new Long[] {min}, new Long[] {max})) {
-			long currentTimestamp = (Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
+		    long currentTimestamp = (Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
 			long newDelta = Math.abs(currentTimestamp - timestamp);
 			if (newDelta < delta) {
 				result = node;
@@ -199,11 +213,10 @@ public class ETSICorrellator {
 	/**
 	 * Returns MpNode Iterator for dataset
 	 *
-	 * @param datasetName dataset name
+	 * @param datasetName dataset node
 	 * @return iterator
 	 */
-	private MNodeIterator getMNodeIterator(String datasetName) {
-		Node datasetNode = getDatasetNode(datasetName);
+	private MNodeIterator getMNodeIterator(Node datasetNode) {
 		if (datasetNode != null) {
 			return new MNodeIterator(datasetNode);
 		}
@@ -225,12 +238,61 @@ public class ETSICorrellator {
 		}
 	}
 	
-	private Node getMpNode(Node mNode) {
-		Iterator<Node> mpNodes = mNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator();
-		if (mpNodes.hasNext()) {
-			return mpNodes.next();
-		}
-		return null;
+	private void createNewIndexes(String datasetName, String virtualDatasetName) {
+	    try {
+	        realDatasetLocationIndex = NeoUtils.getLocationIndexProperty(datasetName);
+	        realDatasetLocationIndex.initialize(neoService, null);
+	        
+	        callDatasetLocationIndex = NeoUtils.getLocationIndexProperty(virtualDatasetName);
+	        callDatasetLocationIndex.initialize(neoService, null);
+	    }
+	    catch (IOException e) {
+	        throw (RuntimeException)new RuntimeException().initCause(e);
+	    }
+	}
+	
+	private String getCallDatasetName(Node realDataset, String realDatasetName) {
+	    Node virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(realDataset, DriveTypes.AMS_CALLS.getFullDatasetName(realDatasetName), neoService);
+	    
+	    if (virtualDataset != null) {
+	        return NeoUtils.getNodeName(virtualDataset);
+	    }
+	    else {
+	        return null;
+	    }
+	}
+	
+	private Node determineCallNode(Node mNode) {
+	    Iterator<Node> mNodesIterator = mNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) { 
+                return (currentPos.depth() == 1) && (NeoUtils.isCallNode(currentPos.currentNode()));
+            }
+        }, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator();
+	    
+	    if (mNodesIterator.hasNext()) {
+	        Node callNode = mNodesIterator.next();
+	        
+	        //check that this Call node is not correlated yet, e.g. didn't have VIRTUAL_CHILD relationship to mp node
+	        Iterator<Node> mpNodesIterator = callNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return (currentPos.depth() == 1) && (NeoUtils.isDrivePointNode(currentPos.currentNode()));
+                }
+            }, GeoNeoRelationshipTypes.VIRTUAL_CHILD, Direction.OUTGOING).iterator();
+	        
+	        if (mpNodesIterator.hasNext()) {
+	            return null;
+	        }
+	        else {
+	            return callNode;
+	        }
+	    }
+	    else {
+	        return null;
+	    }
 	}
 	
 	/**

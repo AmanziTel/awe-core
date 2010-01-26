@@ -430,36 +430,10 @@ public abstract class DriveLoader extends AbstractLoader {
 		if (virtualDataset != null) {
 			return virtualDataset;
 		}
-		Transaction tx = neo.beginTx();
-		try {
-			Iterator<Node> virtualDatasetsIterator = datasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-			
-				@Override
-				public boolean isReturnableNode(TraversalPosition currentPos) {
-					return name.equals(NeoUtils.getNodeName(currentPos.currentNode()));
-				}
-			}, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
+		virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(datasetNode, name, neo);
 		
-			if (virtualDatasetsIterator.hasNext()) {
-				virtualDataset = virtualDatasetsIterator.next();
-			}
-			else {
-				virtualDataset = neo.createNode();
-				virtualDataset.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DATASET_TYPE_NAME);
-				virtualDataset.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
-				virtualDataset.setProperty(INeoConstants.DRIVE_TYPE, datasetType.getId());				
-				
-				datasetNode.createRelationshipTo(virtualDataset, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
-				
-				virtualDatasets.put(name, virtualDataset);
-			}
-			tx.success();
-		}
-		catch (Exception e) {
-			tx.failure();
-		}
-		finally {
-			tx.finish();
+		if (virtualDataset != null) {
+		    virtualDatasets.put(name, virtualDataset);
 		}
 		
 		return virtualDataset;

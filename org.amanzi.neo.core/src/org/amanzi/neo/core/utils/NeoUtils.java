@@ -1161,4 +1161,40 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
+    
+    public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, final String virtualDatasetName, NeoService neo) {
+        Node virtualDataset = null;
+        Transaction tx = neo.beginTx();        
+        try {
+            Iterator<Node> virtualDatasetsIterator = realDatasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+            
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return virtualDatasetName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
+                }
+            }, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
+        
+            if (virtualDatasetsIterator.hasNext()) {
+                virtualDataset = virtualDatasetsIterator.next();
+            }
+            else {
+                virtualDataset = neo.createNode();
+                virtualDataset.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DATASET_TYPE_NAME);
+                virtualDataset.setProperty(INeoConstants.PROPERTY_NAME_NAME, virtualDatasetName);
+                virtualDataset.setProperty(INeoConstants.DRIVE_TYPE, realDatasetNode.getId());              
+                
+                realDatasetNode.createRelationshipTo(virtualDataset, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
+            }
+            tx.success();
+        }
+        catch (Exception e) {
+            tx.failure();
+            NeoCorePlugin.error(null, e);
+        }
+        finally {
+            tx.finish();
+        }
+        
+        return virtualDataset;
+    }
 }
