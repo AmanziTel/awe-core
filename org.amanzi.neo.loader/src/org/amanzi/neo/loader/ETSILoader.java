@@ -764,12 +764,6 @@ public class ETSILoader extends DriveLoader {
         }
     }
 	
-
-    // @Override
-    // protected boolean haveHeaders() {
-    // return true;
-    // }
-	
 	private boolean processCommand(String timestamp, AbstractETSICommand command, CommandSyntax syntax, StringTokenizer tokenizer, boolean callCommandResult) {
 		//try to parse timestamp
 		long timestampValue;
@@ -864,12 +858,11 @@ public class ETSILoader extends DriveLoader {
 			long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
 			long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
 			
-			//TODO: move names to constants
-			callNode.setProperty("setupDuration", setupDuration);
-			callNode.setProperty("callType", call.getCallType().toString());
-			callNode.setProperty("callDirection", call.getCallDirection().toString());
+			callNode.setProperty(INeoConstants.CALL_SETUP_DURATION, setupDuration);
+			callNode.setProperty(INeoConstants.CALL_TYPE, call.getCallType().toString());
+			callNode.setProperty(INeoConstants.CALL_DIRECTION, call.getCallDirection().toString());
 			if (call.getCallDirection() == CallDirection.OUTGOING) {
-				callNode.setProperty("terminationDuration", terminationDuration);
+				callNode.setProperty(INeoConstants.CALL_TERMINATION, terminationDuration);
 			}
 			
 			call = null;
