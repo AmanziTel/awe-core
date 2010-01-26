@@ -41,4 +41,21 @@ public enum CallProperties {
         return id;
     }
 
+    /**
+     * Gets enum by id
+     * 
+     * @param enumId - enum id
+     * @return CallProperties or null
+     */
+    public static CallProperties getEnumById(String enumId) {
+        if (enumId == null) {
+            return null;
+        }
+        for (CallProperties call : CallProperties.values()) {
+            if (call.getId().equals(enumId)) {
+                return call;
+            }
+        }
+        return null;
+    }
 }

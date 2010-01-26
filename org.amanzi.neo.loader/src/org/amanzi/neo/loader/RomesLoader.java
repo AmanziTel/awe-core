@@ -221,7 +221,7 @@ public class RomesLoader extends DriveLoader {
                             mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
                             // ms.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
                         } else if ("timestamp".equals(entry.getKey())) {
-                            long timeStamp = getTimeStamp(((Date)entry.getValue()));
+                            long timeStamp = getTimeStamp(1, ((Date)entry.getValue()));
                             if (timeStamp != 0) {
                                 ms.setProperty(entry.getKey(), timeStamp);
                                 mp.setProperty(entry.getKey(), timeStamp);

@@ -723,7 +723,7 @@ public class ETSILoader extends DriveLoader {
 		Node mNode = neo.createNode();
 		mNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
 		
-		updateTimestampMinMax(timestamp);
+        updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
 			
 		mNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
 		
@@ -918,7 +918,7 @@ public class ETSILoader extends DriveLoader {
 			result = neo.createNode();
 			result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.CALL_TYPE_NAME);
 			result.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-			
+            updateTimestampMinMax(CALL_DATASET_HEADER_INDEX, timestamp);
 			index(result);
 			
 			//index for Probe Calls

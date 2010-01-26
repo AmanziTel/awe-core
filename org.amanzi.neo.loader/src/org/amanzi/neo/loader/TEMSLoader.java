@@ -138,6 +138,7 @@ public class TEMSLoader extends DriveLoader {
     private void addDriveIndexes() {
         try {
             addIndex(INeoConstants.HEADER_M, NeoUtils.getTimeIndexProperty(dataset));
+            addIndex(INeoConstants.HEADER_MS, NeoUtils.getTimeIndexProperty(DriveTypes.MS.getFullDatasetName(dataset)));
             addIndex(INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(dataset));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -166,7 +167,7 @@ public class TEMSLoader extends DriveLoader {
         // debug(line);
 
         this.time = lineData.get("time").toString();
-        this.timestamp = getTimeStamp((Date)lineData.get("timestamp"));
+        this.timestamp = getTimeStamp(1, (Date)lineData.get("timestamp"));
         String ms = (String)lineData.get("ms");
         event = (String)lineData.get("event"); // currently only getting this as a change
 
@@ -278,7 +279,7 @@ public class TEMSLoader extends DriveLoader {
                 Node mp = neo.createNode();
                 if (timestamp != 0) {
                     mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
-                    updateTimestampMinMax(timestamp);
+                    updateTimestampMinMax(1, timestamp);
                 }
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
@@ -299,7 +300,7 @@ public class TEMSLoader extends DriveLoader {
                                 // ms.setProperty(INeoConstants.SECTOR_ID_PROPERTIES,
                                 // entry.getValue());
                             } else if ("timestamp".equals(entry.getKey())) {
-                                long timeStamp = getTimeStamp(((Date)entry.getValue()));
+                                long timeStamp = getTimeStamp(1, ((Date)entry.getValue()));
                                 if (timeStamp != 0) {
                                     m.setProperty(entry.getKey(), timeStamp);
                                     mp.setProperty(entry.getKey(), timeStamp);
@@ -337,6 +338,7 @@ public class TEMSLoader extends DriveLoader {
                         header = new Header(INeoConstants.PROPERTY_MW_NAME, INeoConstants.PROPERTY_MW_NAME, 0);
                         header = new FloatHeader(header);
                         statisticHeader.put(INeoConstants.PROPERTY_MW_NAME, header);
+
                     }
 
                    
@@ -372,7 +374,11 @@ public class TEMSLoader extends DriveLoader {
                         valueToSave = header.parse(String.valueOf(mw));
                         ms.setProperty(INeoConstants.PROPERTY_MW_NAME, mw);
                         debug("\tAdded measurement: " + propertiesString(ms));
-
+                        if (timestamp != 0) {
+                            ms.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
+                            updateTimestampMinMax(2, timestamp);
+                        }
+                        index(ms);
                         findOrCreateVirtualFileNode(ms);
                         if (virtualMnode != null) {
                             virtualMnode.createRelationshipTo(ms, GeoNeoRelationshipTypes.NEXT);

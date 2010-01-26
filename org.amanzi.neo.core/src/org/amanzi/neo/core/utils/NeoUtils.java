@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -145,6 +146,16 @@ public class NeoUtils {
      */
     public static boolean isDrivePointNode(Node node) {
         return node != null && INeoConstants.MP_TYPE_NAME.equals(getNodeType(node, ""));
+    }
+
+    /**
+     * check node by type
+     * 
+     * @param node node
+     * @return true if node is file node
+     */
+    public static boolean isDatasetNode(Node node) {
+        return node != null && INeoConstants.DATASET_TYPE_NAME.equals(getNodeType(node, ""));
     }
 
     /**
@@ -1121,5 +1132,33 @@ public class NeoUtils {
     public static boolean isVirtualDataset(Node datasetNode) {
     	return getNodeType(datasetNode, "").equals(INeoConstants.DATASET_TYPE_NAME) &&
     		   datasetNode.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING);
+    }
+
+    /**
+     * Gets all dataset nodes
+     * 
+     * @param service neoservice can not be null
+     * @return Map<node name,dataset node>
+     */
+    public static LinkedHashMap<String, Node> getAllDatasetNodes(NeoService service) {
+        Transaction tx = beginTx(service);
+        LinkedHashMap<String, Node> result=new LinkedHashMap<String, Node>();
+        try {
+            Traverser traverser=service.getReferenceNode().traverse(Order.DEPTH_FIRST,getStopEvaluator(3), new ReturnableEvaluator() {
+                
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                            Node node = currentPos.currentNode();
+                            return isDatasetNode(node);
+                }
+                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING,
+                    GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
+            for (Node node : traverser) {
+                result.put(getNodeName(node), node);
+            }
+            return result;
+        } finally {
+            finishTx(tx);
+        }
     }
 }

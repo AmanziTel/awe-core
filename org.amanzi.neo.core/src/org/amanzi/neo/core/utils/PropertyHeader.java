@@ -48,6 +48,7 @@ public class PropertyHeader {
     private static final String RELATION_PROPERTY = "property";
     private final Node node;
     private boolean isGis;
+    private boolean isDataset;
     private GisTypes gisType;
 
     /**
@@ -58,6 +59,7 @@ public class PropertyHeader {
     public PropertyHeader(Node node) {
         isGis=NeoUtils.isGisNode(node);
             gisType=isGis?GisTypes.findGisTypeByHeader((String)node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME,null)):null;
+        isDataset = !isGis && NeoUtils.isDatasetNode(node);
         this.node = node;
     }
 
@@ -113,7 +115,7 @@ public class PropertyHeader {
      */
     public String[] getNumericFields() {
         
-        return isGis ? getDefinedNumericFields() : NeoUtils.getNumericFields(node);
+        return isGis || isDataset ? getDefinedNumericFields() : NeoUtils.getNumericFields(node);
     }
 
     /**
@@ -122,7 +124,8 @@ public class PropertyHeader {
      * @return data vault
      */
     public PropertyHeader getDataVault() {
-        return isGis?new PropertyHeader(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node)):this;
+        return isGis || isDataset ? new PropertyHeader(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
+                .getOtherNode(node)) : this;
     }
 
     public String[] getAllFields() {
@@ -260,7 +263,7 @@ public class PropertyHeader {
      * @return list of possible event
      */
     public Collection<String> getEvents() {
-        if (GisTypes.DRIVE != gisType) {
+        if (gisType != null) {
             return null;
         }
         Set<String> result = new HashSet<String>();

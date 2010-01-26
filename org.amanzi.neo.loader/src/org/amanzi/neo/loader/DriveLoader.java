@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -26,6 +27,7 @@ import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
@@ -53,8 +55,7 @@ public abstract class DriveLoader extends AbstractLoader {
     private int countValidChanged = 0;
     protected Integer hours = null;
     protected Calendar _workDate = null;
-    protected Long minTimeStamp = null;
-    protected Long maxTimeStamp = null;
+    protected HashMap<Integer, Pair<Long, Long>> timeStamp = new HashMap<Integer, Pair<Long, Long>>();
     private boolean needParceHeader = true;
     
     /** How many units of work for the progress monitor for each file */
@@ -344,12 +345,20 @@ public abstract class DriveLoader extends AbstractLoader {
      * because it is possible, or even probable, to write an importer that does not need it.
      */
     protected void finishUp() {
-        if (minTimeStamp != null) {
-            gis.setProperty(INeoConstants.MIN_TIMESTAMP, minTimeStamp);
+        for (Map.Entry<Integer, Pair<Long, Long>> entry : timeStamp.entrySet()) {
+            Node storeNode = getStoringNode(entry.getKey());
+            if (storeNode != null) {
+                Long minTimeStamp = entry.getValue().getLeft();
+                if (minTimeStamp != null) {
+                    storeNode.setProperty(INeoConstants.MIN_TIMESTAMP, minTimeStamp);
+                }
+                Long maxTimeStamp = entry.getValue().getRight();
+                if (maxTimeStamp != null) {
+                    storeNode.setProperty(INeoConstants.MAX_TIMESTAMP, maxTimeStamp);
+                }
+            }
         }
-        if (maxTimeStamp != null) {
-            gis.setProperty(INeoConstants.MAX_TIMESTAMP, maxTimeStamp);
-        }
+
         super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
     }
 
@@ -368,7 +377,7 @@ public abstract class DriveLoader extends AbstractLoader {
      * @param nodeDate date of node
      * @return long (0 if nodeDate==null)
      */
-    protected long getTimeStamp(Date nodeDate) {
+    protected long getTimeStamp(Integer key, Date nodeDate) {
         if (nodeDate == null || _workDate == null) {
             return 0L;
         }
@@ -383,7 +392,7 @@ public abstract class DriveLoader extends AbstractLoader {
         _workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
         _workDate.set(Calendar.SECOND, nodeDate.getSeconds());
         final long timestamp = _workDate.getTimeInMillis();
-        updateTimestampMinMax(timestamp);
+        updateTimestampMinMax(key, timestamp);
         return timestamp;
     }
 
@@ -392,9 +401,16 @@ public abstract class DriveLoader extends AbstractLoader {
 	 *
 	 * @param timestamp
 	 */
-	protected void updateTimestampMinMax(final long timestamp) {
-		minTimeStamp = minTimeStamp == null ? timestamp : Math.min(minTimeStamp, timestamp);
-        maxTimeStamp = maxTimeStamp == null ? timestamp : Math.max(maxTimeStamp, timestamp);
+    protected void updateTimestampMinMax(Integer key, final long timestamp) {
+        Pair<Long, Long> pair = timeStamp.get(key);
+        if (pair == null) {
+            pair = new Pair<Long, Long>(null, null);
+            timeStamp.put(key, pair);
+        }
+        Long minTimeStamp = pair.getLeft() == null ? timestamp : Math.min(pair.getLeft(), timestamp);
+        Long maxTimeStamp = pair.getRight() == null ? timestamp : Math.max(pair.getRight(), timestamp);
+        pair.setLeft(minTimeStamp);
+        pair.setRight(maxTimeStamp);
 	}
 	
 	public Node getDatasetNode() {

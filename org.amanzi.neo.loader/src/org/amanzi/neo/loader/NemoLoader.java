@@ -156,7 +156,7 @@ public class NemoLoader extends DriveLoader {
         try {
             String id = event.eventId;// getEventId(event);
             String time = event.time;// getEventTime(event);
-            long timestamp = getTimeStamp(timeFormat.parse(time));
+            long timestamp = getTimeStamp(1, timeFormat.parse(time));
             Node ms = neo.createNode();
             findOrCreateFileNode(ms);
             ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
