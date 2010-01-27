@@ -26,6 +26,7 @@ import java.util.StringTokenizer;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
@@ -894,18 +895,18 @@ public class ETSILoader extends DriveLoader {
 			
 			LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 			
-			callNode.setProperty(INeoConstants.CALL_SETUP_DURATION, setupDuration);
-			setProperty(headers, callNode, INeoConstants.CALL_SETUP_DURATION, setupDuration);
+            callNode.setProperty(CallProperties.SETUP_DURATION.getId(), setupDuration);
+            setProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), setupDuration);
 			
-			callNode.setProperty(INeoConstants.CALL_TYPE, call.getCallType().toString());
-			setProperty(headers, callNode, INeoConstants.CALL_TYPE, call.getCallType().toString());
+			callNode.setProperty(CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
+            setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
 			
-			callNode.setProperty(INeoConstants.CALL_DIRECTION, call.getCallDirection().toString());
-			setProperty(headers, callNode, INeoConstants.CALL_DIRECTION, call.getCallDirection().toString());
+			callNode.setProperty(CallProperties.CALL_DIRECTION.getId(), call.getCallDirection().toString());
+            setProperty(headers, callNode, CallProperties.CALL_DIRECTION.getId(), call.getCallDirection().toString());
 			
 			if (call.getCallDirection() == CallDirection.OUTGOING) {
-				callNode.setProperty(INeoConstants.CALL_TERMINATION, terminationDuration);
-				setProperty(headers, callNode, INeoConstants.CALL_TERMINATION, terminationDuration);
+                callNode.setProperty(CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
+                setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
 			}
 			
 			call = null;
