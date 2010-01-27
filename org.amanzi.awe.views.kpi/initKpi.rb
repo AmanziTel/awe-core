@@ -11,7 +11,7 @@ database_location = NeoServiceProvider.getProvider.getDefaultDatabaseLocation
 Neo4j::Config[:storage_path] = database_location
 Neo4j::start(neo_service)
 module KpiBuilder
-def sum2(property_set)
+def sum(property_set)
   property_set.sum
 end
 def count(property_set)

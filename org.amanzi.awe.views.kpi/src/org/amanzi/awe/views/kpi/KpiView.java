@@ -245,6 +245,8 @@ public class KpiView extends ViewPart {
         layoutDataPr.horizontalSpan = 1;
         propertyList = new List(right, SWT.BORDER | SWT.V_SCROLL);
         propertyList.setLayoutData(layoutDataPr);
+        // TODO implement save function
+        bSave.setVisible(false);
         fillList();
         addListeners();
 
