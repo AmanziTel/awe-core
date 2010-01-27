@@ -431,7 +431,7 @@ public class ReuseAnalyserView extends ViewPart {
                         }
                     }
                 } else {
-                    if (threeBlend.getSelection()) {
+                    if (threeBlend.getSelection() && chartmouseevent.getEntity() instanceof CategoryItemEntity) {
                         CategoryItemEntity entity = (CategoryItemEntity)chartmouseevent.getEntity();
                         Comparable columnKey = entity.getColumnKey();
                         middleColumn = (ChartNode)columnKey;
