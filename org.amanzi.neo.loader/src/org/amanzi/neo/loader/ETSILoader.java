@@ -49,6 +49,7 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
 
+
 /**
  * Loader of ETSI data
  * 
@@ -57,13 +58,7 @@ import org.neo4j.api.core.Traverser.Order;
  */
 public class ETSILoader extends DriveLoader {
 	
-	public enum CallType {
-		SUCCESS, FAILURE;
-	}
-	
-	public enum CallDirection {
-		INCOMING, OUTGOING;
-	}
+
 	
 	private class Call {
 		
@@ -73,9 +68,9 @@ public class ETSILoader extends DriveLoader {
 		
 		private int callSetupEnd = 1;
 		
-		private CallType callType;
+        private CallProperties.CallType callType;
 		
-		private CallDirection callDirection;
+		private CallProperties.CallDirection callDirection;
 		
 		private int callTerminationBegin = 2;
 		
@@ -133,28 +128,28 @@ public class ETSILoader extends DriveLoader {
 		/**
 		 * @return Returns the callType.
 		 */
-		public CallType getCallType() {
+        public CallProperties.CallType getCallType() {
 			return callType;
 		}
 
 		/**
 		 * @param callType The callType to set.
 		 */
-		public void setCallType(CallType callType) {
+        public void setCallType(CallProperties.CallType callType) {
 			this.callType = callType;
 		}
 
 		/**
 		 * @return Returns the callDirection.
 		 */
-		public CallDirection getCallDirection() {
+        public CallProperties.CallDirection getCallDirection() {
 			return callDirection;
 		}
 
 		/**
 		 * @param callDirection The callDirection to set.
 		 */
-		public void setCallDirection(CallDirection callDirection) {
+        public void setCallDirection(CallProperties.CallDirection callDirection) {
 			this.callDirection = callDirection;
 		}
 
@@ -839,7 +834,7 @@ public class ETSILoader extends DriveLoader {
 		switch (event) {
 		case OUTGOING_CALL_SETUP_BEGIN:
 			call = new Call();
-			call.setCallDirection(CallDirection.OUTGOING);
+            call.setCallDirection(CallProperties.CallDirection.OUTGOING);
 			call.setCallSetupBeginTime(timestamp);			
 			break;
 		case OUTGOING_CALL_SETUP_END:
@@ -855,7 +850,7 @@ public class ETSILoader extends DriveLoader {
 		case TERMINATION_END:
 			if (call != null) {
 				call.setCallTerminationEnd(timestamp);
-				call.setCallType(CallType.SUCCESS);
+                call.setCallType(CallProperties.CallType.SUCCESS);
 				call.addRelatedNode(relatedNode);
 				saveCall();
 			}
@@ -863,7 +858,7 @@ public class ETSILoader extends DriveLoader {
 		case INCOMING_CALL_SETUP_BEGIN:
 			call = new Call();
 			call.setCallSetupBeginTime(timestamp);
-			call.setCallDirection(CallDirection.INCOMING);
+            call.setCallDirection(CallProperties.CallDirection.INCOMING);
 			break;
 		case INCOMING_CALL_SETUP_END:
 			if (call != null) {
@@ -873,7 +868,7 @@ public class ETSILoader extends DriveLoader {
 		case ERROR:
 			if (call != null) {
 				call.error(timestamp);
-				call.setCallType(CallType.FAILURE);
+                call.setCallType(CallProperties.CallType.FAILURE);
 				call.setCallTerminationEnd(timestamp);
 				call.addRelatedNode(relatedNode);
 				saveCall();
@@ -904,7 +899,7 @@ public class ETSILoader extends DriveLoader {
 			callNode.setProperty(CallProperties.CALL_DIRECTION.getId(), call.getCallDirection().toString());
             setProperty(headers, callNode, CallProperties.CALL_DIRECTION.getId(), call.getCallDirection().toString());
 			
-			if (call.getCallDirection() == CallDirection.OUTGOING) {
+            if (call.getCallDirection() == CallProperties.CallDirection.OUTGOING) {
                 callNode.setProperty(CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
                 setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
 			}

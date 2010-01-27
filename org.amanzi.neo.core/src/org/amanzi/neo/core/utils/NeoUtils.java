@@ -1199,4 +1199,32 @@ public class NeoUtils {
         
         return virtualDataset;
     }
+
+    /**
+     * @param amsCalls
+     * @param service
+     * @return
+     */
+    public static LinkedHashMap<String, Node> getAllDatasetNodesByType(final DriveTypes datasetType, NeoService service) {
+        Transaction tx = beginTx(service);
+        LinkedHashMap<String, Node> result = new LinkedHashMap<String, Node>();
+        try {
+            Traverser traverser = service.getReferenceNode().traverse(Order.DEPTH_FIRST, getStopEvaluator(3),
+                    new ReturnableEvaluator() {
+
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            Node node = currentPos.currentNode();
+                            return isDatasetNode(node) && getDatasetType(node, null) == datasetType;
+                        }
+                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING,
+                    GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
+            for (Node node : traverser) {
+                result.put(getNodeName(node), node);
+            }
+            return result;
+        } finally {
+            finishTx(tx);
+        }
+    }
 }

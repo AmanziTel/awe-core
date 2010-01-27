@@ -22,8 +22,21 @@ package org.amanzi.neo.core.enums;
  * @since 1.0.0
  */
 public enum CallProperties {
-    SETUP_DURATION("setup_duration"), CALL_TYPE("call_type"), CALL_DIRECTION("call_direction"), TERMINATION_DURATION(
-            "termination_duration");
+
+    SETUP_DURATION("setup_duration"), CALL_TYPE("call_type") {
+        @Override
+        public boolean needMappedCount() {
+            return true;
+        }
+    },
+    CALL_DIRECTION("call_direction") {
+        @Override
+        public boolean needMappedCount() {
+            return true;
+        }
+    },
+    TERMINATION_DURATION("termination_duration");
+
     private final String id;
 
     /**
@@ -40,6 +53,15 @@ public enum CallProperties {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * Need mapped count
+     * 
+     * @return
+     */
+    public boolean needMappedCount() {
+        return false;
     }
 
     /**
@@ -67,5 +89,13 @@ public enum CallProperties {
             }
         }
         return null;
+    }
+
+    public enum CallType {
+        SUCCESS, FAILURE;
+    }
+
+    public enum CallDirection {
+        INCOMING, OUTGOING;
     }
 }
