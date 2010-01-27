@@ -46,7 +46,6 @@ import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
@@ -222,6 +221,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String ERROR_MSG_NULL = "It is not found numerical values of the selected property";
     // error messages for statistic calculation
     private String errorMsg = UNKNOWN_ERROR;
+    private GeoNeoRelationshipTypes childRelation;
 
     public void createPartControl(Composite parent) {
         aggregatedProperties.clear();
@@ -1425,11 +1425,17 @@ public class ReuseAnalyserView extends ViewPart {
         } else if (isStringProperty(propertyName)) {
             return createStringChart(gisNode, aggrNode, propertyName, distribute, select, monitor);
         }
+
         boolean isAggregatedProperty = isAggregatedProperty(propertyName);
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
         //List<Number> aggregatedValues = new ArrayList<Number>();
         GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
         final GisTypes typeOfGis = geoNode.getGisType();
+        if (typeOfGis == GisTypes.DRIVE) {
+            Node gisDataset = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(gisNode);
+            childRelation = NeoUtils.isVirtualDataset(gisDataset) ? GeoNeoRelationshipTypes.VIRTUAL_CHILD
+                    : GeoNeoRelationshipTypes.NEXT;
+        }
         int totalWork = (int)geoNode.getCount() * 2;
         System.out.println("Starting to compute statistics for "+propertyName+" with estimated work size of "+totalWork);
         monitor.beginTask("Calculating statistics for "+propertyName, totalWork);
@@ -1459,7 +1465,7 @@ public class ReuseAnalyserView extends ViewPart {
                 Number valueNum = (Number)propertyValue;
                 if (typeOfGis == GisTypes.DRIVE && select != Select.EXISTS) {
                     //Lagutko, 27.01.2010, m node can have no relationships to mp
-                    Relationship relationshipToMp = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+                    Relationship relationshipToMp = node.getSingleRelationship(childRelation, Direction.INCOMING);
                     if (relationshipToMp == null) {
                         continue;
                     }
@@ -1730,30 +1736,20 @@ public class ReuseAnalyserView extends ViewPart {
      * @param propertyName -name of properties
      * @return first value
      */
-    private Number getFirstValueOfMpNode(Node mpNode, String propertyName) {
+    private Number getFirstValueOfMpNode(Node mpNode, final String propertyName) {
         Double result = null;
-        Iterator<Node> iterator = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+        Traverser traverse = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                return !currentPos.currentNode().hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+                return !currentPos.isStartNode() && currentPos.currentNode().hasProperty(propertyName);
             }
-        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-        if (!iterator.hasNext()) {
-            return null;
+        }, childRelation, Direction.OUTGOING);
+        Node minNode = null;
+        for (Node node : traverse) {
+            minNode = minNode == null || minNode.getId() > node.getId() ? node : minNode;
         }
-        Node node = iterator.next();
-        do {
-            if (node.hasProperty(propertyName)) {
-                return (Number)node.getProperty(propertyName);
-            }
-            Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-            if (relation == null) {
-                return null;
-            }
-            node = relation.getOtherNode(node);
-
-        } while (true);
+        return minNode == null ? null : (Number)minNode.getProperty(propertyName);
     }
 
     /**
@@ -2265,15 +2261,13 @@ public class ReuseAnalyserView extends ViewPart {
      * @param mpNode
      * @return
      */
-    private static Number calculateAverageValueOfMpNode(Node mpNode, String properties) {
+    private Number calculateAverageValueOfMpNode(Node mpNode, String properties) {
         Double result = new Double(0);
         int count = 0;
-        for (Relationship relation : mpNode.getRelationships(MeasurementRelationshipTypes.CHILD, Direction.OUTGOING)) {
+        for (Relationship relation : mpNode.getRelationships(childRelation, Direction.OUTGOING)) {
             Node node = relation.getEndNode();
-            if (INeoConstants.HEADER_M.equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""))) {
                 result = result + ((Number)node.getProperty(properties, new Double(0))).doubleValue();
                 count++;
-            }
         }
         return count == 0 ? 0 : (double)result / (double)count;
     }
@@ -2727,7 +2721,10 @@ public class ReuseAnalyserView extends ViewPart {
             Node curNode = traversalposition.currentNode();
             Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
             //TODO: Lagutko: use from constants
-            return type != null && (INeoConstants.HEADER_M.equals(type.toString()) || "sector".equals(type.toString()));
+            // TODO optimize
+            return type != null
+                    && (INeoConstants.HEADER_M.equals(type) || "sector".equals(type) || INeoConstants.HEADER_MS.equals(type) || INeoConstants.CALL_TYPE_NAME
+                            .equals(type));
             }
         }
 
