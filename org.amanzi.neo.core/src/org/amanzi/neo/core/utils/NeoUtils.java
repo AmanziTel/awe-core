@@ -1199,6 +1199,30 @@ public class NeoUtils {
         
         return virtualDataset;
     }
+    
+    public static Node createGISNode(Node parent, String gisName, String gisType, NeoService neo) {
+        Node gisNode = null;
+        
+        Transaction transaction = beginTx(neo);
+        try {
+            gisNode = neo.createNode();
+            gisNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
+            gisNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, gisName);
+            gisNode.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
+            parent.createRelationshipTo(gisNode, NetworkRelationshipTypes.CHILD);
+            
+            transaction.success();
+        }
+        catch (Exception e) {
+            transaction.failure();
+            NeoCorePlugin.error(null, e);
+        }
+        finally {
+            transaction.finish();
+        }
+        
+        return gisNode;
+    }
 
     /**
      * @param amsCalls

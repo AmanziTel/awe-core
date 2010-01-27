@@ -377,6 +377,7 @@ public abstract class DriveLoader extends AbstractLoader {
      * @param nodeDate date of node
      * @return long (0 if nodeDate==null)
      */
+    @SuppressWarnings("deprecation")
     protected long getTimeStamp(Integer key, Date nodeDate) {
         if (nodeDate == null || _workDate == null) {
             return 0L;
@@ -431,6 +432,8 @@ public abstract class DriveLoader extends AbstractLoader {
 			return virtualDataset;
 		}
 		virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(datasetNode, datasetType, neo);
+		//also we should create a GIS node for this dataset
+		findOrCreateGISNode(virtualDataset, GisTypes.DRIVE.getHeader());
 		
 		if (virtualDataset != null) {
 		    virtualDatasets.put(name, virtualDataset);

@@ -39,6 +39,7 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.internal.impl.MapImpl;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
@@ -92,7 +93,7 @@ public abstract class AbstractLoader {
     private String typeName = "CSV";
     protected NeoService neo;
     private NeoServiceProvider neoProvider;
-    protected Node gis = null;
+    protected HashMap<String, Node> gisNodes = new HashMap<String, Node>();
     private CRS crs = null;
     protected String filename = null;
     protected String basename = null;
@@ -120,10 +121,6 @@ public abstract class AbstractLoader {
 
     protected class Header {
         private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard
-        // value sets if count exceeds 100
-        private static final float MAX_PROPERTY_VALUE_SPREAD = 0.5f; // discard
-        // value sets if spread exceeds 50%
-        private static final int MIN_PROPERTY_VALUE_SPREAD_COUNT = 50; // only
         // calculate spread after this number of data points
         int index;
         String key;
@@ -1068,9 +1065,13 @@ public abstract class AbstractLoader {
 
     protected final void checkCRS(float lat, float lon, String hint) {
         if (crs == null) {
-            crs = CRS.fromLocation(lat, lon, hint);
-            gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
-            gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
+            //TODO: Lagutko, need to be corrected
+            for (Node gis : gisNodes.values()) {
+                crs = CRS.fromLocation(lat, lon, hint);
+            
+                gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
+                gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
+            }
         }
     }
 
@@ -1084,30 +1085,24 @@ public abstract class AbstractLoader {
      * @return gis node for mainNode
      */
     protected final Node findOrCreateGISNode(Node mainNode, String gisType) {
+        String gisName = NeoUtils.getNodeName(mainNode);
+        Node gis = gisNodes.get(gisName);
+        
         if (gis == null) {
             Transaction transaction = neo.beginTx();
             try {
                 nameGis = NeoUtils.getNodeName(mainNode);
                 Node reference = neo.getReferenceNode();
-                for (Relationship relationship : mainNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)) {
-                    Node node = relationship.getStartNode();
-                    if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.GIS_TYPE_NAME)) {
-                        if (!node.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator().hasNext()) {
-                            node.createRelationshipTo(mainNode, GeoNeoRelationshipTypes.NEXT);
-                        }
-                        gis = node;
-                        bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
-                        break;
-                    }
+                
+                gis = NeoUtils.findGisNode(nameGis);
+                if (gis != null) {
+                    bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
                 }
-                if (gis == null) {
+                else {
                     gis = findMatchingGisNode(nameGis, gisType);
                     if (gis == null) {
-                        gis = neo.createNode();
-                        gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.GIS_TYPE_NAME);
-                        gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, nameGis);
-                        gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
-                        reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
+                        gis = NeoUtils.createGISNode(reference, nameGis, gisType, neo);
+                        gisNodes.put(nameGis, gis);
                     } else {
                         deleteOldGisNodes(nameGis, gisType, gis);
                     }
@@ -1202,7 +1197,7 @@ public abstract class AbstractLoader {
                             Direction.OUTGOING);
                     if (propRel == null) {
                         propNode = neo.createNode();
-                        propNode.setProperty("name", NeoUtils.getNodeName(gis));
+                        propNode.setProperty("name", NeoUtils.getNodeName(storingRootNode));
                         propNode.setProperty("type", "gis_properties");
                         storingRootNode.createRelationshipTo(propNode, GeoNeoRelationshipTypes.PROPERTIES);
                     } else {
@@ -1384,6 +1379,16 @@ public abstract class AbstractLoader {
             }
         }
     }
+    
+    /**
+     * Clean all gis nodes of any old statistics, and then update the basic statistics
+     * 
+     */
+    protected final void cleanupGisNode() {
+       for (Node gisNode : gisNodes.values()) {
+           cleanupGisNode(gisNode);
+       }
+    }
 
     /**
      * Clean the gis node of any old statistics, and then update the basic statistics
@@ -1391,7 +1396,7 @@ public abstract class AbstractLoader {
      * @param mainNode to use to connect to the AWE project
      * @throws MalformedURLException
      */
-    protected final void cleanupGisNode() {
+    private final void cleanupGisNode(Node gis) {
         if (gis != null) {
             Transaction transaction = neo.beginTx();
             try {
@@ -1412,45 +1417,57 @@ public abstract class AbstractLoader {
             }
         }
     }
+    
+    /**
+     * Collects a list of GIS nodes that should be added to map
+     *
+     * @return list of GIS nodes
+     */
+    protected ArrayList<Node> getGisNodes() {
+        ArrayList<Node> result = new ArrayList<Node>();
+        
+        result.add(getStoringNode(0));
+        
+        return result;
+    }
 
     /**
      * adds gis to active map
      * 
      * @param gis node
      */
-    public void addLayerToMap() {
+    public void addLayersToMap() {
         try {
             String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
             URL url = new URL("file://" + databaseLocation);
             IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, url, null);
-            final IMap map = ApplicationGIS.getActiveMap();
-            if (curService != null && gis != null && NetworkLoader.findLayerByNode(map, gis) == null
-                    && confirmAddToMap(map, NeoUtils.getNodeName(gis))) {
-                java.util.List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
-                java.util.List<ILayer> layerList = new ArrayList<ILayer>();
-                for (IGeoResource iGeoResource : curService.resources(null)) {
-                    if (iGeoResource.canResolve(Node.class)) {
-                        if (iGeoResource.resolve(Node.class, null).equals(gis)) {
-                            listGeoRes.add(iGeoResource);
-                            layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, 0));
-                            break;
-                        }
+            IMap map = ApplicationGIS.getActiveMap();
+            if (confirmAddToMap(map, basename)) {
+                List<ILayer> layerList = new ArrayList<ILayer>();
+                List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
+                for (Node gis : getGisNodes()) {
+                    map = ApplicationGIS.getActiveMap();
+                    if (curService != null && NetworkLoader.findLayerByNode(map, gis) == null) {
+                        for (IGeoResource iGeoResource : curService.resources(null)) {
+                            if (iGeoResource.canResolve(Node.class)) {
+                                if (iGeoResource.resolve(Node.class, null).equals(gis)) {
+                                    listGeoRes.add(iGeoResource);
+                                    break;
+                                }
+                            }
+                        };
                     }
-                };
+                }
+                layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, 0));
+                
                 IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
                 if (preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER)) {
-                    zoomToLayer(layerList);
+                    zoomToLayer(layerList);                    
                 }
             }
-        } catch (MalformedURLException e) {
-            // TODO Handle MalformedURLException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (IOException e) {
-            // TODO Handle IOException
-            throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (Exception e) {
-            e.printStackTrace();
-            e.printStackTrace();
+            NeoCorePlugin.error(null, e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 

@@ -344,8 +344,7 @@ public class ETSILoader extends DriveLoader {
 		
 		basename = networkName;
 		this.networkNode = findOrCreateNetworkNode(null, true);			
-		findOrCreateGISNode(this.networkNode, GisTypes.NETWORK.getHeader());
-		gis = null;		
+		findOrCreateGISNode(this.networkNode, GisTypes.NETWORK.getHeader());				
 		basename = oldBasename;
 	}
 	
@@ -924,7 +923,7 @@ public class ETSILoader extends DriveLoader {
 			
 			//create relationship to M node
 			for (Node mNode : relatedNodes) {
-				result.createRelationshipTo(mNode, GeoNeoRelationshipTypes.CHILD);
+				result.createRelationshipTo(mNode, ProbeCallRelationshipType.CALL_M);
 			}
 			
 			//create relationship to Probe Calls
@@ -962,9 +961,9 @@ public class ETSILoader extends DriveLoader {
     protected Node getStoringNode(Integer key) {
     	switch (key) {
     	case REAL_DATASET_HEADER_INDEX:
-    		return datasetNode;
+    		return gisNodes.get(dataset);
     	case CALL_DATASET_HEADER_INDEX:
-    		return callDataset;
+    		return gisNodes.get(DriveTypes.AMS_CALLS.getFullDatasetName(dataset));
     	default:
     		return null;    			
     	}
@@ -981,5 +980,25 @@ public class ETSILoader extends DriveLoader {
             singleIndex.finishUp();
         }
         super.finishUpIndexes();
+    }
+    
+    @Override
+    protected ArrayList<Node> getGisNodes() {
+        ArrayList<Node> result = new ArrayList<Node>();
+        
+        Iterator<Node> gisNodes = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return NeoUtils.isGisNode(currentPos.currentNode());
+            }
+        }, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING,
+           GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
+        
+        while (gisNodes.hasNext()) {
+            result.add(gisNodes.next());            
+        }
+        
+        return result;
     }
 }

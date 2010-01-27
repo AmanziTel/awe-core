@@ -381,7 +381,7 @@ public class NemoLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return datasetNode;
+        return gisNodes.get(dataset);
     }
 
     @Override

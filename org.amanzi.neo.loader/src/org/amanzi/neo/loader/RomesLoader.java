@@ -210,7 +210,6 @@ public class RomesLoader extends DriveLoader {
 
                 // debug("Added measurement point: " + propertiesString(mp));
 
-                Node prev_ms = null;
                 boolean haveEvents = false;
                 for (Map<String, Object> dataLine : data) {
                     Node ms = neo.createNode();
@@ -296,6 +295,6 @@ public class RomesLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return datasetNode;
+        return gisNodes.get(dataset);
     }
 }

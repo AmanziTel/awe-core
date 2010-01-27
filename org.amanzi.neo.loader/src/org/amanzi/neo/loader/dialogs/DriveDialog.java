@@ -757,7 +757,7 @@ public class DriveDialog {
         NeoLoaderPlugin.info("Persistent memory change: "+memText(memAfter, memBefore));
 
         if(driveLoader!=null) {
-            driveLoader.addLayerToMap();
+            driveLoader.addLayersToMap();
         }
 
         monitor.done();

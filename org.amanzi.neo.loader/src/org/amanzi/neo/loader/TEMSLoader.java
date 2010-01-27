@@ -21,21 +21,28 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.swt.widgets.Display;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser.Order;
 
 public class TEMSLoader extends DriveLoader {
     private static final String TIMESTAMP_DATE_FORMAT = "HH:mm:ss.S";
@@ -137,9 +144,12 @@ public class TEMSLoader extends DriveLoader {
 
     private void addDriveIndexes() {
         try {
+            String virtualDatasetName = DriveTypes.MS.getFullDatasetName(dataset);
+            
             addIndex(INeoConstants.HEADER_M, NeoUtils.getTimeIndexProperty(dataset));
-            addIndex(INeoConstants.HEADER_MS, NeoUtils.getTimeIndexProperty(DriveTypes.MS.getFullDatasetName(dataset)));
+            addIndex(INeoConstants.HEADER_MS, NeoUtils.getTimeIndexProperty(virtualDatasetName));
             addIndex(INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(dataset));
+            addIndex(INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(virtualDatasetName));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -288,7 +298,6 @@ public class TEMSLoader extends DriveLoader {
                 mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
                 index(mp);
                 if (!data.isEmpty()) {
-                    Node prev_m = null;
                     boolean haveEvents = false;
                     for (Map<String, Object> dataLine : data) {
                         Node m = neo.createNode();
@@ -344,7 +353,6 @@ public class TEMSLoader extends DriveLoader {
                    
 
 
-                    Node prev_ms = null;
                     TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
                     for (String chanCode : signals.keySet()) {
                         float[] signal = signals.get(chanCode);
@@ -439,6 +447,44 @@ public class TEMSLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return key == 1 ? datasetNode : getVirtualDataset(DriveTypes.MS);
+        String datasetName = null;
+        if (key == 1) {
+            datasetName = dataset;
+        }
+        else {
+            datasetName = DriveTypes.MS.getFullDatasetName(dataset);
+        }
+        
+        return gisNodes.get(datasetName);
+    }
+    
+    @Override
+    protected ArrayList<Node> getGisNodes() {
+        ArrayList<Node> result = new ArrayList<Node>();
+        
+        Transaction transaction = neo.beginTx();
+        try {
+            Iterator<Node> gisNodes = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+            
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return NeoUtils.isGisNode(currentPos.currentNode());
+                }   
+            }, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING,
+               GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
+        
+            while (gisNodes.hasNext()) {
+                result.add(gisNodes.next());            
+            }
+        }
+        catch (Exception e) {
+            NeoCorePlugin.error(null, e);
+            transaction.failure();
+        }
+        finally {
+            transaction.finish();
+        }
+        
+        return result;
     }
 }

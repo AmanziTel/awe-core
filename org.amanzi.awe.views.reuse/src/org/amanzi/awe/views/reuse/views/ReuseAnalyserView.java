@@ -1458,7 +1458,12 @@ public class ReuseAnalyserView extends ViewPart {
                 propertyValue = node.getProperty(propertyName);
                 Number valueNum = (Number)propertyValue;
                 if (typeOfGis == GisTypes.DRIVE && select != Select.EXISTS) {
-                    Node mpNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+                    //Lagutko, 27.01.2010, m node can have no relationships to mp
+                    Relationship relationshipToMp = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+                    if (relationshipToMp == null) {
+                        continue;
+                    }
+                    Node mpNode = relationshipToMp.getStartNode();
                     Number oldValue = mpMap.get(mpNode);
                     if (oldValue == null) {
                         if (select == Select.FIRST) {
@@ -2721,6 +2726,7 @@ public class ReuseAnalyserView extends ViewPart {
         public boolean isReturnableNode(TraversalPosition traversalposition) {
             Node curNode = traversalposition.currentNode();
             Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
+            //TODO: Lagutko: use from constants
             return type != null && (INeoConstants.HEADER_M.equals(type.toString()) || "sector".equals(type.toString()));
             }
         }

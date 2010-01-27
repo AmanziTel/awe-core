@@ -7355,7 +7355,6 @@ public enum NemoEvents {
 
         @Override
         public Map<String, Object> fill(String version, List<String> params) {
-            Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             return parsedParameters;
         }

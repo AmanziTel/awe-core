@@ -122,12 +122,12 @@ public class ETSICorrellator {
 	        Node originalMpNode = getMpNode(orignalMNode);
 	        
 	        Node newMpNode = copyMPNode(originalMpNode);
-	        mNode.createRelationshipTo(newMpNode, GeoNeoRelationshipTypes.CHILD);
+	        newMpNode.createRelationshipTo(mNode, GeoNeoRelationshipTypes.CHILD);
 	        realDatasetLocationIndex.add(newMpNode);
 	        
 	        if (callNode != null) {
 	            newMpNode = copyMPNode(originalMpNode);
-	            callNode.createRelationshipTo(newMpNode, GeoNeoRelationshipTypes.VIRTUAL_CHILD);
+	            newMpNode.createRelationshipTo(callNode, GeoNeoRelationshipTypes.VIRTUAL_CHILD);
 	            callDatasetLocationIndex.add(newMpNode);
 	        }
 	    }

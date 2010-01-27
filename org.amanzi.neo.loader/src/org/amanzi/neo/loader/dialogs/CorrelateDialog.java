@@ -283,7 +283,7 @@ public class CorrelateDialog {
                     NeoServiceProvider.getProvider().getService().getReferenceNode());        	
             for (Node node : allDatasetTraverser) {
             	DriveTypes type = NeoUtils.getDatasetType(node, NeoServiceProvider.getProvider().getService());
-            	if (type != DriveTypes.AMS) {
+            	if ((type != DriveTypes.AMS) && (type != DriveTypes.AMS_CALLS)) {
             		result.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             	}
             }

@@ -205,7 +205,8 @@ public class NetworkSiteLoader extends AbstractLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return gis;
+        //TODO: Lagutko: need to be refactored
+        return gisNodes.values().iterator().next();
     }
 
     @Override

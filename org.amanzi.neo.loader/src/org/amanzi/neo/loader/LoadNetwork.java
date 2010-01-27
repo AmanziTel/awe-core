@@ -106,7 +106,7 @@ public class LoadNetwork extends AbstractActionTool {
                         SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
                         networkLoader.run(monitor2);
                         networkLoader.printStats(false);
-                        networkLoader.addLayerToMap();
+                        networkLoader.addLayersToMap();
                     } catch (IOException e) {
                         NeoCorePlugin.error("Error loading Network file", e);
                     }

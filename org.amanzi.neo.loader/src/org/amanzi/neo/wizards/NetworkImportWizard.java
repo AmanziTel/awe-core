@@ -55,7 +55,7 @@ public class NetworkImportWizard extends Wizard implements IImportWizard {
                     networkLoader.setup();
                     networkLoader.run(monitor);
                     networkLoader.printStats(false);
-                    networkLoader.addLayerToMap();
+                    networkLoader.addLayersToMap();
                 } catch (IOException e) {
                     NeoCorePlugin.error("Error loading Network file", e);
                     return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
