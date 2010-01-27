@@ -7,3 +7,4 @@ Bundle-Vendor: amanzi.org
 Require-Bundle: net.refractions.udig.ui,
  org.eclipse.core.runtime,
  net.refractions.udig.project
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
