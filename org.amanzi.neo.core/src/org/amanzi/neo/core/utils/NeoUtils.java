@@ -1162,8 +1162,10 @@ public class NeoUtils {
         }
     }
     
-    public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, final String virtualDatasetName, NeoService neo) {
+    public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, DriveTypes driveType, NeoService neo) {
         Node virtualDataset = null;
+        String realDatasetName = NeoUtils.getNodeName(realDatasetNode);
+        final String virtualDatasetName = driveType.getFullDatasetName(realDatasetName);
         Transaction tx = neo.beginTx();        
         try {
             Iterator<Node> virtualDatasetsIterator = realDatasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -1181,7 +1183,7 @@ public class NeoUtils {
                 virtualDataset = neo.createNode();
                 virtualDataset.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DATASET_TYPE_NAME);
                 virtualDataset.setProperty(INeoConstants.PROPERTY_NAME_NAME, virtualDatasetName);
-                virtualDataset.setProperty(INeoConstants.DRIVE_TYPE, realDatasetNode.getId());              
+                virtualDataset.setProperty(INeoConstants.DRIVE_TYPE, driveType.getId());              
                 
                 realDatasetNode.createRelationshipTo(virtualDataset, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
             }

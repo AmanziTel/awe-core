@@ -430,7 +430,7 @@ public abstract class DriveLoader extends AbstractLoader {
 		if (virtualDataset != null) {
 			return virtualDataset;
 		}
-		virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(datasetNode, name, neo);
+		virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(datasetNode, datasetType, neo);
 		
 		if (virtualDataset != null) {
 		    virtualDatasets.put(name, virtualDataset);

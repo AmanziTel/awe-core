@@ -240,9 +240,11 @@ public class ETSICorrellator {
 	
 	private void createNewIndexes(String datasetName, String virtualDatasetName) {
 	    try {
+	        NeoCorePlugin.getDefault().getProjectService().deleteMultiPropertyIndex(NeoUtils.getLocationIndexName(datasetName));
 	        realDatasetLocationIndex = NeoUtils.getLocationIndexProperty(datasetName);
 	        realDatasetLocationIndex.initialize(neoService, null);
 	        
+	        NeoCorePlugin.getDefault().getProjectService().deleteMultiPropertyIndex(NeoUtils.getLocationIndexName(virtualDatasetName));
 	        callDatasetLocationIndex = NeoUtils.getLocationIndexProperty(virtualDatasetName);
 	        callDatasetLocationIndex.initialize(neoService, null);
 	    }
@@ -252,7 +254,7 @@ public class ETSICorrellator {
 	}
 	
 	private String getCallDatasetName(Node realDataset, String realDatasetName) {
-	    Node virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(realDataset, DriveTypes.AMS_CALLS.getFullDatasetName(realDatasetName), neoService);
+	    Node virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(realDataset, DriveTypes.AMS_CALLS, neoService);
 	    
 	    if (virtualDataset != null) {
 	        return NeoUtils.getNodeName(virtualDataset);

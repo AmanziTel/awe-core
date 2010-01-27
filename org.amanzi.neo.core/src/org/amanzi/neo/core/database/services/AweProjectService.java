@@ -36,6 +36,8 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.index.PropertyIndex;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
@@ -428,10 +430,13 @@ public class AweProjectService {
                 deleteNode.delete();
             }
             transaction.success();
+        }
+        catch (Exception e) {
+            NeoCorePlugin.error(null, e);
+            transaction.failure();
         } finally {
             transaction.finish();
         }
-
     }
 	/**
 	 * Find script node
@@ -1012,5 +1017,30 @@ public class AweProjectService {
             transaction.finish();
         }
         return report;
+    }
+    
+    public void deleteMultiPropertyIndex(final String indexName) {
+        Transaction transaction = neoService.beginTx();
+        try {
+            Iterator<Node> indexNodes = neoService.getReferenceNode().traverse(Order.BREADTH_FIRST,         
+                                                                               StopEvaluator.DEPTH_ONE,
+                                                                               new ReturnableEvaluator() {
+                                                                                
+                                                                                   @Override
+                                                                                   public boolean isReturnableNode(TraversalPosition currentPos) {
+                                                                                       return indexName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
+                                                                                   }
+                                                                                }, PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING).iterator();
+            if (indexNodes.hasNext()) {                
+                deleteNode(indexNodes.next());
+            }
+        }
+        catch (Exception e) {
+            NeoCorePlugin.error(null, e);
+            transaction.failure();
+        }
+        finally {
+            transaction.finish();
+        }
     }
 }
