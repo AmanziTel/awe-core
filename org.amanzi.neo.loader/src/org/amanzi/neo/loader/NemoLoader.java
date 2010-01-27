@@ -29,6 +29,7 @@ import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.apache.xerces.impl.xpath.regex.ParseException;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
@@ -156,7 +157,14 @@ public class NemoLoader extends DriveLoader {
         try {
             String id = event.eventId;// getEventId(event);
             String time = event.time;// getEventTime(event);
-            long timestamp = getTimeStamp(1, timeFormat.parse(time));
+            long timestamp;
+            try {
+                timestamp = getTimeStamp(1, timeFormat.parse(time));
+            } catch (ParseException e) {
+                // some parameters do not have time
+                // NeoLoaderPlugin.error(e.getLocalizedMessage());
+                timestamp = 0;
+            }
             Node ms = neo.createNode();
             findOrCreateFileNode(ms);
             ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
