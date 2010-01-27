@@ -1283,8 +1283,24 @@ public class DriveInquirerView extends ViewPart {
      */
     private String[] getDriveItems() {
         NeoService service = NeoServiceProvider.getProvider().getService();
-        gisDriveNodes = NeoUtils.getAllDatasetNodes(service);
-        return gisDriveNodes.keySet().toArray(new String[] {});
+        Node refNode = service.getReferenceNode();
+        gisDriveNodes = new LinkedHashMap<String, Node>();
+
+        Transaction tx = service.beginTx();
+        try {
+            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
+                if (NeoUtils.isGisNode(node) && type.equals(GisTypes.DRIVE.getHeader())) {
+                    String id = NeoUtils.getSimpleNodeName(node, null);
+                    gisDriveNodes.put(id, node);
+                }
+            }
+
+            return gisDriveNodes.keySet().toArray(new String[] {});
+        } finally {
+            tx.finish();
+        }
     }
 
     public void setFocus() {
