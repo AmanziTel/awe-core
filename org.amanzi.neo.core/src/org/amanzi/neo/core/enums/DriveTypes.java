@@ -29,7 +29,8 @@ public enum DriveTypes {
     NEMO2("nemo2", "nmf", "Nemo drive test export (*.nmf)"), 
     NEMO1("nemo1", "dt1", "Nemo drive test export (*.dt1)"), 
     AMS("ams", "log", ""),
-    AMS_CALLS("amd", "", "") {
+ AMS_CALLS(
+            "ams calls", "", "") {
         @Override
         public boolean isVirtual() {
             return true;
