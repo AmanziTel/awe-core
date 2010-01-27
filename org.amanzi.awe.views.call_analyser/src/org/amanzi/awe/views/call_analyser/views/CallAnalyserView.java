@@ -14,6 +14,7 @@ import org.amanzi.awe.views.call_analyser.CallHandler;
 import org.amanzi.awe.views.call_analyser.CallTimePeriods;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.DriveTypes;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -584,6 +585,7 @@ public class CallAnalyserView extends ViewPart {
         probeCallDataset.clear();
         if (drive != null) {
             probeCallDataset.put(KEY_ALL, null);
+            Pair<Long, Long> minMax;
             NeoService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
@@ -591,10 +593,11 @@ public class CallAnalyserView extends ViewPart {
                     Node probeCall = relation.getOtherNode(drive);
                     probeCallDataset.put(NeoUtils.getNodeName(probeCall), probeCall);
                 }
+                minMax = NeoUtils.getMinMaxTimeOfDataset(drive.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
+                        Direction.INCOMING).getOtherNode(drive), service);
             } finally {
                 tx.finish();
             }
-            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(drive, service);
             beginDriveTime = minMax.getLeft();
             endDriveTime = minMax.getRight();
             setStartTime(beginDriveTime);
