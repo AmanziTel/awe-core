@@ -22,7 +22,8 @@ package org.amanzi.neo.core.enums;
  * @since 1.0.0
  */
 public enum CallProperties {
-    SETUP_DURATION("setupDuration"), CALL_TYPE("callType"), CALL_DIRECTION("callDirection");
+    SETUP_DURATION("setup_duration"), CALL_TYPE("call_type"), CALL_DIRECTION("call_direction"), TERMINATION_DURATION(
+            "termination_duration");
     private final String id;
 
     /**
@@ -39,6 +40,15 @@ public enum CallProperties {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * is properties needs to analyse
+     * 
+     * @return coolean
+     */
+    public boolean isAnalysed() {
+        return true;
     }
 
     /**
