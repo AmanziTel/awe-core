@@ -106,7 +106,7 @@ public class GeoNeo {
 
         public GeoNode(Node node) {
             this.coords = getCoords(node);
-        	this.node = node;
+            this.node = node;
         }
 
         public Coordinate getCoordinate() {
@@ -114,7 +114,7 @@ public class GeoNeo {
                 if (coords == null) {
                     return null;
                 }
-                coordinate = new Coordinate(coords[0], coords[1]);
+            coordinate = new Coordinate(coords[0], coords[1]);
             return coordinate;
         }
 
@@ -142,20 +142,20 @@ public class GeoNeo {
         public String toString() {
             return getName();
         }
-        
+
         private static double[] getCoords(Node next) {
-        	double[] result = getCoordsFromNode(next);
-        	
-        	//Lagutko, 3.01.2010, if we didn't find coordinates from current node
-        	//than we should try to find them from correlated node
-        	if (result == null) {
-        		Node correlatedNode = getCorrelatedNode(next);
-        		if (correlatedNode != null) {
-        			result = getCoordsFromNode(correlatedNode);
-        		}
-        	}
-        	
-        	return result;
+            double[] result = getCoordsFromNode(next);
+
+            // Lagutko, 3.01.2010, if we didn't find coordinates from current node
+            // than we should try to find them from correlated node
+            if (result == null) {
+                Node correlatedNode = getCorrelatedNode(next);
+                if (correlatedNode != null) {
+                    result = getCoordsFromNode(correlatedNode);
+                }
+            }
+
+            return result;
         }
 
         private static double[] getCoordsFromNode(Node next) {
@@ -170,33 +170,36 @@ public class GeoNeo {
                     }
                 }
             }
-            
+
             return null;
         }
-        
+
         /**
          * Searches for the correlated node for current node
-         *
+         * 
          * @param next current node
          * @return correlated node
          * @author Lagutko_N
          */
         private static Node getCorrelatedNode(Node next) {
-        	Iterator<Node> correlationNode = next.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CORRELATE_RIGHT, Direction.OUTGOING).iterator();        	
-        	
-        	if (correlationNode.hasNext()) {
-        		Node currentNode = correlationNode.next();
-        		Iterator<Node> correlatedNodes = currentNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CORRELATE_LEFT, Direction.INCOMING).iterator();
-        		
-        		while (correlatedNodes.hasNext()) {
-        			Node correlatedNode = correlatedNodes.next();
-        			if (!correlatedNode.equals(currentNode)) {
-        				return correlatedNode;
-        			}
-        		}
-        	}
-        	
-        	return null;
+            Iterator<Node> correlationNode = next.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,
+                    ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CORRELATE_RIGHT, Direction.OUTGOING).iterator();
+
+            if (correlationNode.hasNext()) {
+                Node currentNode = correlationNode.next();
+                Iterator<Node> correlatedNodes = currentNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,
+                        ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CORRELATE_LEFT, Direction.INCOMING)
+                        .iterator();
+
+                while (correlatedNodes.hasNext()) {
+                    Node correlatedNode = correlatedNodes.next();
+                    if (!correlatedNode.equals(currentNode)) {
+                        return correlatedNode;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 
@@ -272,17 +275,14 @@ public class GeoNeo {
 
     public Traverser makeGeoNeoTraverser(final Envelope searchBounds) {
         try {
-            if (false) {
-                throw new Exception("Disabling spatial index");
-            } else {
-                MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(neo, NeoUtils.getLocationIndexName(name),
-                        new String[] {
-                        "lat", "lon"}, new MultiDoubleConverter(0.001));
-                return index.searchTraverser(new Double[] {searchBounds.getMinY(), searchBounds.getMinX()}, new Double[] {
-                        searchBounds.getMaxY(), searchBounds.getMaxX()});
-            }
+            MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(neo, NeoUtils.getLocationIndexName(name),
+                    new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
+                    new MultiDoubleConverter(0.001));
+            return index.searchTraverser(new Double[] {searchBounds.getMinY(), searchBounds.getMinX()}, new Double[] {
+                    searchBounds.getMaxY(), searchBounds.getMaxX()});
+
         } catch (Exception e) {
-            System.out.println("GeoNeo: Failed to search location index, doing exhaustive search: "+e);
+            System.out.println("GeoNeo: Failed to search location index, doing exhaustive search: " + e);
             if (searchBounds == null) {
                 return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
                         ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);

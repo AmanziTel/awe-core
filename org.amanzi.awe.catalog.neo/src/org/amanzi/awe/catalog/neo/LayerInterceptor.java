@@ -101,7 +101,7 @@ public class LayerInterceptor implements net.refractions.udig.project.intercepto
      * @return true if user agree
      */
     private boolean askToRename(final String oldName, final String newName) {
-        return (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+        return ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
             int result;
 
             @Override
@@ -114,7 +114,7 @@ public class LayerInterceptor implements net.refractions.udig.project.intercepto
             }
 
             @Override
-            public Object getValue() {
+            public Integer getValue() {
                 return result;
             }
         }) == SWT.YES;

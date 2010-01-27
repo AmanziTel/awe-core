@@ -19,3 +19,4 @@ Export-Package: org.amanzi.awe.catalog.neo;
    org.neo4j.api.core"
 Bundle-Activator: org.amanzi.awe.catalog.neo.NeoCatalogPlugin
 Eclipse-LazyStart: true
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

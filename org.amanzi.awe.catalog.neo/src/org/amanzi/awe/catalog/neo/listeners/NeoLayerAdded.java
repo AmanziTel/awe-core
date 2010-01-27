@@ -42,14 +42,11 @@ public class NeoLayerAdded implements LayerInterceptor {
      * @since 1.0.0
      */
     private static class NeoRunner implements Runnable {
-        private final Layer layer;
-
         /**
          * @param layer
          */
         public NeoRunner(Layer layer) {
-            super();
-            this.layer = layer;
+            super();         
         }
 
         @Override
