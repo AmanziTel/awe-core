@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.ui,
  org.jruby,
  org.amanzi.splash,
  org.amanzi.neo.core;bundle-version="1.0.0"
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
 Bundle-ClassPath: .
 Bundle-Activator: org.amanzi.awe.script.jirb.Activator
