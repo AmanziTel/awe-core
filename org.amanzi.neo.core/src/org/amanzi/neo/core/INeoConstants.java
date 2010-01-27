@@ -151,10 +151,4 @@ public class INeoConstants {
     public static final String MAX_TIMESTAMP = "max timestamp";
     
     public static final String COMMAND_PROPERTY_NAME = "command";
-    
-    //call properites
-    public static final String CALL_SETUP_DURATION = "setup_duration";
-    public static final String CALL_TYPE = "call_type";
-    public static final String CALL_DIRECTION = "call_direction";
-    public static final String CALL_TERMINATION = "termination_duration";
 }
