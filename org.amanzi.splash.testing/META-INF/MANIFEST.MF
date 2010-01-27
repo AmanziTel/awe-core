@@ -13,3 +13,4 @@ Eclipse-LazyStart: true
 Eclipse-RegisterBuddy: org.jtestr
 Export-Package: org.amanzi.splash.testing
 Bundle-Vendor: amanzi.org
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
