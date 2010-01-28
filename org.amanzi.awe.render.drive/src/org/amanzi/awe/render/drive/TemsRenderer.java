@@ -16,6 +16,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ImageObserver;
 import java.io.IOException;
@@ -238,7 +239,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
         int drawWidth = 1 + 2 * drawSize;
         NeoService neo = NeoServiceProvider.getProvider().getService();
-
         Transaction tx = neo.beginTx();
         try {
             monitor.subTask("connecting");
@@ -592,7 +592,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                         // transform_w2d.inverse());
                                     }
                                     java.awt.Point pSite = getContext().worldToPixel(world_location);
-                                    // TODO find SECTOR location.
+                                    pSite = getSectorCenter(g, sector, pSite);
+
                                     Color oldColor = g.getColor();
                                     g.setColor(lineColor);
                                     g.drawLine(p.x, p.y, pSite.x, pSite.y);
@@ -700,6 +701,31 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.done();
 
         }
+    }
+
+    /**
+     * Gets center of sector
+     * 
+     * @param sector
+     * @param pSite
+     * @return
+     */
+    private Point getSectorCenter(Graphics2D g, Node sector, Point pSite) {
+        // double beamwidth = ((Number)sector.getProperty("beamwidth", 360.0)).doubleValue();
+        double azimuth = ((Number)sector.getProperty("azimuth", Double.NaN)).doubleValue();
+        if (azimuth == Double.NaN) {
+            return pSite;
+        }
+        double angdeg = -90 + azimuth;
+        AffineTransform transform2 = new AffineTransform(g.getTransform());
+        transform2.translate(pSite.x, pSite.y);
+        transform2.rotate(Math.toRadians(angdeg), 0, 0);
+        double xLoc = 10;
+        double yLoc = 0;
+        transform2.concatenate(g.getTransform());
+        int x = (int)(transform2.getScaleX() * xLoc + transform2.getShearX() * yLoc + transform2.getTranslateX());
+        int y = (int)(transform2.getShearY() * xLoc + transform2.getScaleY() * yLoc + transform2.getTranslateY());
+        return new Point(x, y);
     }
 
     /**
