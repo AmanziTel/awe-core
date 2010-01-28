@@ -16,6 +16,7 @@ package org.amanzi.printing;
 import net.refractions.udig.printing.model.Box;
 import net.refractions.udig.printing.model.ModelFactory;
 import net.refractions.udig.printing.model.Page;
+import net.refractions.udig.printing.model.impl.MapBoxPrinter;
 import net.refractions.udig.printing.ui.internal.AbstractTemplate;
 import net.refractions.udig.project.internal.Map;
 
@@ -39,6 +40,7 @@ public class ChartTemplate extends AbstractTemplate {
     private static final int MARGIN = 10;// from BasicTemplate
     private static final int SPACING = 10;// from BasicTemplate
     private int height;
+    private int width;
 
     @Override
     public String getName() {
@@ -47,22 +49,53 @@ public class ChartTemplate extends AbstractTemplate {
 
     @Override
     public void init(Page page, Map map) {
-        int height = page.getSize().height;
-        int width = page.getSize().width;
-        final int chartWidth = width;
-//        final int chartHeight;
-        addChart();
-        addTable();
+        height = page.getSize().height;
+        width = page.getSize().width;
+        Dimension mapSize = addMap(map);
+        Dimension chartSize = addChart(mapSize);
+        addTable(mapSize, chartSize);
+    }
+
+    /**
+     * Adds a map
+     * 
+     * @param map map to be added
+     * @return map size
+     */
+    private Dimension addMap(Map map) {
+        Box mapBox = ModelFactory.eINSTANCE.createBox();
+        MapBoxPrinter mapBoxPrinter = new MapBoxPrinter();
+        mapBox.setID("Standard Map Box"); //$NON-NLS-1$
+        mapBox.setBoxPrinter(mapBoxPrinter);
+        mapBoxPrinter.setMap(map);
+
+        // calculate mapSize
+        int bothMargins = (MARGIN * 2);
+        int mapWidth = width - bothMargins - SPACING;
+        int mapHeight = (height - bothMargins) / 2;
+        Dimension mapSize = new Dimension(mapWidth, mapHeight);
+        mapBox.setSize(mapSize);
+        mapBox.setLocation(new Point(MARGIN, MARGIN));
+        boxes.add(mapBox);
+        return mapSize;
     }
 
     /**
      * Adds a table
+     * 
+     * @param mapSize TODO
+     * @param chartSize TODO
      */
-    private void addTable() {
+    private void addTable(Dimension mapSize, Dimension chartSize) {
         Box tableBox = ModelFactory.eINSTANCE.createBox();
 
-        tableBox.setSize(new Dimension(200, 300));
-        tableBox.setLocation(new Point(MARGIN, MARGIN + height + 10));
+        int bothMargins = (MARGIN * 2);
+        int tableWidth = width - bothMargins;
+        int currentHeight = mapSize.height + chartSize.height + 2 * SPACING + MARGIN;
+        int tableHeight = height - currentHeight - MARGIN;
+        Dimension tableSize = new Dimension(tableWidth, tableHeight);
+        tableBox.setSize(tableSize);
+        tableBox.setLocation(new Point(MARGIN, currentHeight + SPACING));
 
         TableBoxPrinter tableBoxPrinter = new TableBoxPrinter();
         tableBoxPrinter.setTable(TableBoxPrinter.getTestTable());
@@ -74,25 +107,31 @@ public class ChartTemplate extends AbstractTemplate {
 
     /**
      * Adds a chart
+     * 
+     * @param mapSize TODO
+     * @return chart size
      */
-    private void addChart() {
+    private Dimension addChart(Dimension mapSize) {
         Box chartBox = ModelFactory.eINSTANCE.createBox();
 
-        chartBox.setSize(new Dimension(300, 300));
-        chartBox.setLocation(new Point(MARGIN, MARGIN));
-
-        height = chartBox.getSize().height;
+        int bothMargins = (MARGIN * 2);
+        int chartWidth = width - bothMargins;
+        int chartHeight = (height - mapSize.height - bothMargins) / 2;
+        Dimension chartSize = new Dimension(chartWidth, chartHeight);
+        chartBox.setSize(chartSize);
+        chartBox.setLocation(new Point(MARGIN, MARGIN + mapSize.height + SPACING));
 
         JFreeChartBoxPrinter chartBoxPrinter = new JFreeChartBoxPrinter();
         chartBoxPrinter.setChart(createChart());
         chartBox.setBoxPrinter(chartBoxPrinter);
 
         boxes.add(chartBox);
-
+        return chartSize;
     }
 
     /**
      * Creates test chart
+     * 
      * @return a chart
      */
     private JFreeChart createChart() {
