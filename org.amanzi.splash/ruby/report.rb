@@ -308,7 +308,13 @@ begin
               n=Neo4j.load_node(n) if n.is_a? Fixnum
               @properties=n.props.keys if @properties.nil?
               row=Array.new
-              @properties.each {|p| if p!="id" then row<<n.get_property(p).to_s else row<<n.neo_id.to_s end}
+              @properties.each do |p| 
+                if p!="id"
+                row<<if n.property? p then n.get_property(p).to_s else "" end 
+                else 
+                  row<<n.neo_id.to_s 
+                end
+            end
               addRow(row.to_java(java.lang.String))
             end
             setHeaders(@properties.to_java(java.lang.String)) if @properties.is_a? Array
@@ -348,7 +354,7 @@ begin
     def select(name,params,&block)
       Neo4j::Transaction.run {
         begin
-          puts "======> [ReportTable.select]"
+#          puts "======> [ReportTable.select]"
           nodes=Search.new(name,params)
           nodes.instance_eval &block
           @properties=params[:properties]if !params.nil?  #TODO  
@@ -357,8 +363,8 @@ begin
             row=Array.new
             @properties.each do |p|
               if p!="id"
-              row<< if n.property? p then n.get_property(p).to_s else "" end
-              else 
+                row<< if n.property? p then n.get_property(p).to_s else "" end 
+              else
                 row<<n.neo_id.to_s
               end
             end
