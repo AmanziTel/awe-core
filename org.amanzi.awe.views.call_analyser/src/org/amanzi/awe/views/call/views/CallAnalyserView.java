@@ -1,4 +1,4 @@
-package org.amanzi.awe.views.call_analyser.views;
+package org.amanzi.awe.views.call.views;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -9,9 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.views.call_analyser.AggregateCall;
-import org.amanzi.awe.views.call_analyser.CallHandler;
-import org.amanzi.awe.views.call_analyser.CallTimePeriods;
+import org.amanzi.awe.views.call.AggregateCall;
+import org.amanzi.awe.views.call.CallHandler;
+import org.amanzi.awe.views.call.CallTimePeriods;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -87,7 +87,7 @@ public class CallAnalyserView extends ViewPart {
     /**
      * The ID of the view as specified by the extension.
      */
-    public static final String ID = "org.amanzi.awe.views.call_analyser.views.CallAnalyserView";
+    public static final String ID = "org.amanzi.awe.views.call.views.CallAnalyserView";
 
     private static final int MIN_FIELD_WIDTH = 50;
     public static final int DEF_SIZE = 100;

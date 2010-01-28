@@ -1,4 +1,4 @@
-package org.amanzi.awe.views.call_analyser;
+package org.amanzi.awe.views.call;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -10,7 +10,7 @@ import org.osgi.framework.BundleContext;
 public class CallAnalyserPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.amanzi.awe.views.call_analyser";
+	public static final String PLUGIN_ID = "org.amanzi.awe.views.call";
 
 	// The shared instance
 	private static CallAnalyserPlugin plugin;
