@@ -207,24 +207,4 @@
              label="New Amanzi Report">
        </action>
     </extension>
-    <extension
-          point="net.refractions.udig.printing.ui.templateFactories">
-       <templateFactory
-             class="org.amanzi.splash.printing.ChartTemplateFactory"
-             id="org.amanzi.splash.chartTemplateFactory">
-       </templateFactory>
-    </extension>
-    <extension
-          point="net.refractions.udig.printing.ui.boxprinter">
-       <boxprinter
-             class="org.amanzi.splash.printing.JFreeChartBoxPrinter"
-             name="Chart"
-             visible="true">
-       </boxprinter>
-       <boxprinter
-             class="org.amanzi.splash.printing.TableBoxPrinter"
-             name="Table"
-             visible="true">
-       </boxprinter>
-    </extension>
 </plugin>
