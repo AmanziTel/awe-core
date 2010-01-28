@@ -706,9 +706,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     /**
      * Gets center of sector
      * 
-     * @param sector
-     * @param pSite
-     * @return
+     * @param sector sector mode
+     * @param pSite site coordinate
+     * @return sector coordinate
      */
     private Point getSectorCenter(Graphics2D g, Node sector, Point pSite) {
         // double beamwidth = ((Number)sector.getProperty("beamwidth", 360.0)).doubleValue();
