@@ -12,8 +12,11 @@
  */
 package org.amanzi.rdt.console;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 
@@ -21,7 +24,6 @@ import org.amanzi.rdt.internal.launching.AweLaunchingPlugin;
 import org.amanzi.rdt.internal.launching.AweLaunchingPluginMessages;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
-import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
@@ -216,11 +218,54 @@ public class RubyConsole extends IOConsole implements IConsole {
 	    for (String startScript : START_SCRIPTS) {	        
 	        URL scriptUrl = FileLocator.toFileURL(AweLaunchingPlugin.getDefault().getBundle().getEntry(startScript));
 		
-	        String script = NeoSplashUtil.getScriptContent(scriptUrl.getPath());
+	        String script = getScriptContent(scriptUrl.getPath());
 		
 	        runtime.evalScriptlet(script);
 	    }		
 	}
+	
+	/**
+     * Returns content of script
+     * 
+     * @param scriptPath Path of script
+     * @return string with content of file
+     * @author Lagutko_N
+     */
+    public static String getScriptContent(String scriptPath) {
+        if (scriptPath == null) {
+            //TODO: handle this situation
+            return null;
+        }                
+        String content = null;
+        try {
+            content = inputStreamToString(new FileInputStream(scriptPath));
+        }        
+        catch (IOException e) {
+            AweLaunchingPlugin.log(null, e);
+        }
+
+        return content;
+    }
+    
+    /**
+     * Utility function that converts input stream to String
+     * 
+     * @param stream InputStream
+     * @return String
+     * @throws IOException 
+     * @author Lagutko_N
+     */
+
+    private static String inputStreamToString(InputStream stream) throws IOException {
+        StringBuffer buffer = new StringBuffer();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            buffer.append(line).append("\n");
+        }
+        reader.close();
+        return buffer.toString();
+    }
 	
 	/**
 	 * Runs script by path

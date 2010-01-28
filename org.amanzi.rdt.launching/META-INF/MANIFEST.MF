@@ -19,7 +19,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.integrator.awe,
  org.rubypeople.rdt.core,
  org.eclipse.jface.text,
- org.amanzi.splash,
  net.refractions.udig.project;bundle-version="1.1.1",
  org.amanzi.neo.core;bundle-version="1.0.0"
 Eclipse-LazyStart: true
