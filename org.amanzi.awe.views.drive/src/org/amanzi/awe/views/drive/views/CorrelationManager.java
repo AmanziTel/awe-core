@@ -13,10 +13,17 @@
 
 package org.amanzi.awe.views.drive.views;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.project.ILayer;
+import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.ui.ApplicationGIS;
+
+import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.drive.DriveInquirerPlugin;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -232,7 +239,7 @@ public class CorrelationManager extends ViewPart {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     managerRemoveNetworkDriveCorrelation(monitor, wrapper);
-
+                    updateDriveLayer(wrapper.getNetworkNode(), wrapper.getDriveNode());
                     return Status.OK_STATUS;
                 }
             };
@@ -292,7 +299,7 @@ public class CorrelationManager extends ViewPart {
                 SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
                 setNetworkDriveCorrelation(monitor2, networkGis, driveGis);
                 updateInputFromDisplay();
-
+                updateDriveLayer(networkGis, driveGis);
                 return Status.OK_STATUS;
             }
 
@@ -560,6 +567,7 @@ public class CorrelationManager extends ViewPart {
         private final Node driveNode;
         private String driveName;
         private final Relationship relation;
+        private final Node networkNode;
 
         /**
          * Constructor
@@ -568,6 +576,7 @@ public class CorrelationManager extends ViewPart {
          * @param relation - relation
          */
         public RowWrapper(Node node, Relationship relation) {
+            this.networkNode = node;
             this.relation = relation;
             Transaction tx = service.beginTx();
             try {
@@ -608,6 +617,47 @@ public class CorrelationManager extends ViewPart {
             return relation;
         }
 
+        /**
+         * @return Returns the networkNode.
+         */
+        public Node getNetworkNode() {
+            return networkNode;
+        }
+
+    }
+
+    /**
+     * updates drive layers if both layer are present on map
+     * 
+     * @param gisNetwork - network gis node
+     * @param gisDrive - network drive node
+     */
+    public void updateDriveLayer(Node gisNetwork, Node gisDrive) {
+        IMap activeMap = ApplicationGIS.getActiveMap();
+        if (activeMap != ApplicationGIS.NO_MAP) {
+            try {
+                ILayer layerDrive = null;
+                ILayer layerNetwork = null;
+                for (ILayer layer : activeMap.getMapLayers()) {
+                    IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
+                    if (resourse != null) {
+                        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
+                        Node layerGisNode = geo.getMainGisNode();
+                        if (layerGisNode.equals(gisDrive)) {
+                            layerDrive = layer;
+                        } else if (layerGisNode.equals(gisNetwork)) {
+                            layerNetwork = layer;
+                        }
+                        if (layerDrive != null && layerNetwork != null) {
+                            layerDrive.refresh(null);
+                            return;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        }
     }
 
 }
