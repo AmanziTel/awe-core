@@ -15,7 +15,7 @@
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadNetworkSite"
-             name="Load Network Site Data">
+             name="Add Site Data">
        </command>
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
@@ -25,7 +25,7 @@
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.Correlate"
-             name="Correlate Data">
+             name="Associate Probe and Drive Data">
        </command>
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
@@ -40,7 +40,7 @@
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadETSI"
-             name="Load TETRA Drive Data">
+             name="Load Probe Data">
        </command>   
     </extension>
     <extension
@@ -91,7 +91,7 @@
                    commandId="org.amanzi.neo.loader.commands.LoadNetworkSite"
             icon="icons/16/network_site.png"
             id="org.amanzi.neo.loader.LoadNetworkSite"
-                   tooltip="Load Network Site Data">
+                   tooltip="Add Site Data">
              </command>
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"
@@ -125,13 +125,13 @@
                    commandId="org.amanzi.neo.loader.commands.LoadETSI"
             icon="icons/16/drive.png"
             id="org.amanzi.neo.loader.LoadETSI"
-                   tooltip="Load TETRA Drive Data">
+                   tooltip="Load Probe Data">
              </command>
              <command
                    commandId="org.amanzi.neo.loader.commands.Correlate"
             icon="icons/16/transmission.png"
             id="org.amanzi.neo.loader.Correlate"
-                   tooltip="Correlate Data">
+                   tooltip="Associate Probe and Drive Data">
              </command>
           </toolbar>
        </menuContribution>
