@@ -694,63 +694,65 @@ public class DriveInquirerView extends ViewPart {
     }
 
     private void generateReport() {
-//        GregorianCalendar calendar = new GregorianCalendar();
-//        calendar.set(GregorianCalendar.HOUR_OF_DAY, dateStart.getHours());
-//        calendar.set(GregorianCalendar.MINUTE, dateStart.getMinutes());
-//        calendar.set(GregorianCalendar.SECOND, dateStart.getSeconds());
-//        System.out.println("time (calendar): "+calendar.getTimeInMillis());
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.setTimeInMillis(beginGisTime);
+        calendar.set(GregorianCalendar.HOUR_OF_DAY, dateStart.getHours());
+        calendar.set(GregorianCalendar.MINUTE, dateStart.getMinutes());
+        calendar.set(GregorianCalendar.SECOND, dateStart.getSeconds());
+        System.out.println("[DEBUG]calendar.getTimeInMillis()"+calendar.getTimeInMillis());// TODO delete debug info
         
+      
         final String TRAVERSE_NEXT_ALL = "traverse(:outgoing, :NEXT, :all)\n";
         final String TRAVERSE_CHILD_1 = "traverse(:outgoing, :CHILD, 1)\n";
         //TODO fix when drive loader will be fixed
-        Long start_time=(((dateStart.getHours()-2L)*60+dateStart.getMinutes())*60+dateStart.getSeconds())*1000;
+//        Long start_time=(((dateStart.getHours()-2L)*60+dateStart.getMinutes())*60+dateStart.getSeconds())*1000;
+        Long start_time=calendar.getTimeInMillis();
         Long end_time=start_time+sLength.getSelection()*60*1000;
-        if (selectedTime==0L)
+        if (selectedTime==null)
             selectedTime=start_time;
         Long delta_sec=2L;
         Long delta_msec=delta_sec*1000;
         
-        System.out.println("time: "+dateStart.getHours()+":"+dateStart.getMinutes()+":"+dateStart.getSeconds());
+//        System.out.println("time: "+dateStart.getHours()+":"+dateStart.getMinutes()+":"+dateStart.getSeconds());
         StringBuffer sb = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(
                 System.getProperty("user.name")).append("'\n  date '")
                 .append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n  chart 'Drive ").append(cDrive.getText()).append("' do\n");
         sb.append("    self.type=:time\n");
-       
+  
         //event dataset
         sb.append("    select 'event dataset', :categories=>'timestamp', :values=>'event_type', :time_period=>:millisecond, :event=>'")
         .append(cEvent.getText()).append("' do\n");
+//        sb.append("      from{\n");
         sb.append("      from{\n");
-        sb.append("        from{\n");
-        sb.append("          ").append(TRAVERSE_CHILD_1);
-        sb.append("          ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
-        sb.append("        }\n");
-        sb.append("        ").append(TRAVERSE_NEXT_ALL);
-        sb.append("        stop{property? 'timestamp' and self[:timestamp]>").append(end_time).append("}\n");
+        sb.append("        ").append(TRAVERSE_CHILD_1);
+        sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
         sb.append("      }\n");
-        sb.append("      ").append(TRAVERSE_CHILD_1);
-        sb.append("      ").append("where {self[:type]=='ms' and self[:timestamp]<=").append(end_time)
-        .append(" and self[:timestamp]>=").append(start_time).append(" and property? 'event_type'");
+        sb.append("      ").append(TRAVERSE_NEXT_ALL);
+        sb.append("      stop{property? 'timestamp' and self[:timestamp]>").append(end_time).append("}\n");
+//        sb.append("      }\n");
+//        sb.append("      ").append(TRAVERSE_CHILD_1);
+        sb.append("      ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(end_time)
+        .append(" and self[:timestamp]>=").append(start_time).append(") and property? 'event_type'");
         if (!cEvent.getText().equals(ALL_EVENTS)){
             sb.append(" and self[:event_type]=='").append(cEvent.getText()).append("'}\n");
         }else{
             sb.append("}\n");
         }
         sb.append("    end\n");
-        
         //property datasets
         sb.append("    select 'property datasets', :categories=>'timestamp', :values=>['").append(cProperty1.getText()).append("', '").append(cProperty2.getText()).append("'], :time_period=>:millisecond do\n");
         sb.append("      from{\n");
-        sb.append("        from{\n");
-        sb.append("          ").append(TRAVERSE_CHILD_1);
-        sb.append("          ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
+//        sb.append("        from{\n");
+        sb.append("        ").append(TRAVERSE_CHILD_1);
+        sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
         sb.append("        }\n");
         sb.append("        ").append(TRAVERSE_NEXT_ALL);
         sb.append("        stop{property? 'timestamp' and self[:timestamp]>").append(end_time).append("}\n");
-        sb.append("      }\n");
-        sb.append("      ").append(TRAVERSE_CHILD_1);
-        sb.append("      ").append("where {self[:type]=='ms' and self[:timestamp]<=").append(end_time)
+//        sb.append("      }\n");
+//        sb.append("      ").append(TRAVERSE_CHILD_1);
+        sb.append("      ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(end_time)
         .append(" and self[:timestamp]>=").append(start_time)
-        .append(" and (property? '").append(cProperty1.getText()).append("' or property? '").append(cProperty2.getText()).append("')}\n");
+        .append(") and (property? '").append(cProperty1.getText()).append("' or property? '").append(cProperty2.getText()).append("')}\n");
         sb.append("    end\n");
         sb.append("  end\n");//chart end
         
@@ -758,17 +760,17 @@ public class DriveInquirerView extends ViewPart {
         sb.append("  table 'Drive table' do\n");
         sb.append("    select 'drive table data', :properties=>['id','type','time','timestamp', 'event_type', '").append(cProperty1.getText()).append("', '").append(cProperty2.getText()).append("'] do\n");
         sb.append("      from{\n");
-        sb.append("        from{\n");
-        sb.append("          ").append(TRAVERSE_CHILD_1);
-        sb.append("          ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
-        sb.append("        }\n");
-        sb.append("        ").append(TRAVERSE_NEXT_ALL);
-        sb.append("        stop{property? 'timestamp' and self[:timestamp]>").append(selectedTime+delta_msec).append("}\n");
+//        sb.append("        from{\n");
+        sb.append("        ").append(TRAVERSE_CHILD_1);
+        sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
         sb.append("      }\n");
-        sb.append("      ").append(TRAVERSE_CHILD_1);
-        sb.append("      ").append("where {self[:type]=='ms' and self[:timestamp]<=").append(selectedTime+delta_msec)
+        sb.append("      ").append(TRAVERSE_NEXT_ALL);
+        sb.append("      stop{property? 'timestamp' and self[:timestamp]>").append(selectedTime+delta_msec).append("}\n");
+//        sb.append("      }\n");
+//        sb.append("      ").append(TRAVERSE_CHILD_1);
+        sb.append("    ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(selectedTime+delta_msec)
         .append(" and self[:timestamp]>=").append(selectedTime-delta_msec)
-        .append(" and (property? 'event_type' or property? '").append(cProperty1.getText()).append("' or property? '").append(cProperty2.getText()).append("')}\n");
+        .append(") and (property? 'event_type' or property? '").append(cProperty1.getText()).append("' or property? '").append(cProperty2.getText()).append("')}\n");
         sb.append("    end\n");
         sb.append("  end\n");
         sb.append("end\n");
