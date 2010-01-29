@@ -46,6 +46,8 @@ public class Messages extends NLS {
     
     public static String Import_Job; 
     
+    public static String Default_SpreadsheetName;
+    
     private Messages() {
     }
 

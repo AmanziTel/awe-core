@@ -35,6 +35,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.splash.compare.SpreadsheetComparator;
@@ -434,6 +435,28 @@ public class NeoSplashUtil {
 		}
 		
 		return result;
+	}
+	
+	public static String getFreeSpreadsheetName(String startName, String containerName){
+		AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+		if(projectService == null){
+			return startName;
+		}
+		RubyProjectNode root = projectService.findRubyProject(containerName);
+		if(root == null){
+			return startName;
+		}
+		int i = 1;        
+        String oldSpreadsheetName = new String(startName);
+        String newSpreadsheetName = new String(startName); 
+        String spreadsheetName;
+        SpreadsheetNode spreadsheetNode = null;
+        do {
+            spreadsheetName = newSpreadsheetName;
+            spreadsheetNode = projectService.findSpreadsheet(root, spreadsheetName);
+            newSpreadsheetName = oldSpreadsheetName.concat(Integer.toString(i++));
+        } while (spreadsheetNode != null);
+        return spreadsheetName;
 	}
 	
 	/**

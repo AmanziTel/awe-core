@@ -18,6 +18,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.splash.utilities.Messages;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
@@ -43,6 +44,8 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.rubypeople.rdt.internal.core.RubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.OpenNewRubyProjectWizardAction;
 
+import com.sun.corba.se.impl.protocol.giopmsgheaders.Message;
+
 /**
  * The "New" wizard page allows setting the container for the new file as well
  * as the file name. The page will only accept file name without the extension
@@ -51,7 +54,6 @@ import org.rubypeople.rdt.internal.ui.wizards.OpenNewRubyProjectWizardAction;
 
 public class SplashNewSpreadsheetWizardPage extends WizardPage {
 	private Text containerText;
-	private static int nameCounter = 1;
 	private Text fileText;
 
 	private ISelection selection;
@@ -193,8 +195,9 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
                 }
             }
 		}
-		fileText.setText("sheet" + nameCounter);
-		nameCounter++;
+		
+		String sheetName = NeoSplashUtil.getFreeSpreadsheetName(Messages.Default_SpreadsheetName, getContainerName());
+		fileText.setText(sheetName);
 	}
 
 	/**
@@ -249,11 +252,11 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		//TODO: Lagutko: must be added computing for Root Node of Spreadsheet
         //Lagutko: it's a fake because for now Root Node is a Reference Node
         final RubyProjectNode root = NeoCorePlugin.getDefault().getProjectService().findRubyProject(getContainerName());// SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
-        boolean isExist = (Boolean)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+        boolean isExist = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Boolean>() {
 
             private boolean result;
             
-            public Object getValue() {
+            public Boolean getValue() {
                 return result;
             }
 
