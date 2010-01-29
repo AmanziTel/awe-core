@@ -329,7 +329,7 @@ public class TEMSLoader extends DriveLoader {
                         index(m);
                     }
                     if (haveEvents) {
-                        index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, nameGis);
+                        index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, dataset);
                     }
                 }
                 if (!signals.isEmpty()) {

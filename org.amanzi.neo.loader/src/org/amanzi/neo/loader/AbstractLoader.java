@@ -768,7 +768,6 @@ public abstract class AbstractLoader {
 
     protected Transaction mainTx;
     protected int commitSize = 5000;
-    protected String nameGis;
 
     // protected List<String> getNumericProperties() {
     // ArrayList<String> results = new ArrayList<String>();
@@ -1091,20 +1090,19 @@ public abstract class AbstractLoader {
         if (gis == null) {
             Transaction transaction = neo.beginTx();
             try {
-                nameGis = NeoUtils.getNodeName(mainNode);
                 Node reference = neo.getReferenceNode();
                 
-                gis = NeoUtils.findGisNode(nameGis);
+                gis = NeoUtils.findGisNode(gisName);
                 if (gis != null) {
                     bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
                 }
                 else {
-                    gis = findMatchingGisNode(nameGis, gisType);
+                    gis = findMatchingGisNode(gisName, gisType);
                     if (gis == null) {
-                        gis = NeoUtils.createGISNode(reference, nameGis, gisType, neo);
-                        gisNodes.put(nameGis, gis);
+                        gis = NeoUtils.createGISNode(reference, gisName, gisType, neo);
+                        gisNodes.put(gisName, gis);
                     } else {
-                        deleteOldGisNodes(nameGis, gisType, gis);
+                        deleteOldGisNodes(gisName, gisType, gis);
                     }
                     boolean hasRelationship = false;
                     for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
