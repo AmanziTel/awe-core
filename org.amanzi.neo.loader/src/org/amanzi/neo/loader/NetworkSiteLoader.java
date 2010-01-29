@@ -94,7 +94,8 @@ public class NetworkSiteLoader extends AbstractLoader {
                 }
                 siteNode.setProperty(key, entry.getValue());
             }
-            incSaved();
+
+            gisNodes.values().iterator().next().incSaved();
             transaction.success();
             // return true;
         } catch (Exception e) {
@@ -206,7 +207,7 @@ public class NetworkSiteLoader extends AbstractLoader {
     @Override
     protected Node getStoringNode(Integer key) {
         //TODO: Lagutko: need to be refactored
-        return gisNodes.values().iterator().next();
+        return gisNodes.values().iterator().next().getGis();
     }
 
     @Override

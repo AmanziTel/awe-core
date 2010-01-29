@@ -46,6 +46,7 @@ import org.neo4j.api.core.Traverser.Order;
 
 public class TEMSLoader extends DriveLoader {
     private static final String TIMESTAMP_DATE_FORMAT = "HH:mm:ss.S";
+    private static final String MS_KEY = "ms";
     // private Node point = null;
     private int first_line = 0;
     private int last_line = 0;
@@ -61,6 +62,7 @@ public class TEMSLoader extends DriveLoader {
     private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
     private Node mNode;
     private Node virtualMnode;
+    private String virtualDatasetName;
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -149,7 +151,7 @@ public class TEMSLoader extends DriveLoader {
             addIndex(INeoConstants.HEADER_M, NeoUtils.getTimeIndexProperty(dataset));
             addIndex(INeoConstants.HEADER_MS, NeoUtils.getTimeIndexProperty(virtualDatasetName));
             addIndex(INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(dataset));
-            addIndex(INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(virtualDatasetName));
+            addMappedIndex(MS_KEY, INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(virtualDatasetName));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -286,18 +288,19 @@ public class TEMSLoader extends DriveLoader {
         if (signals.size() > 0 || !data.isEmpty()) {
             Transaction transaction = neo.beginTx();
             try {
-                Node mp = neo.createNode();
-                if (timestamp != 0) {
-                    mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
-                    updateTimestampMinMax(1, timestamp);
-                }
-                mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
-                mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
-                mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
-                mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
-                mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
-                index(mp);
+
                 if (!data.isEmpty()) {
+                    Node mp = neo.createNode();
+                    if (timestamp != 0) {
+                        mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
+                        updateTimestampMinMax(1, timestamp);
+                    }
+                    mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
+                    mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
+                    mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
+                    mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
+                    mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+                    index(mp);
                     boolean haveEvents = false;
                     for (Map<String, Object> dataLine : data) {
                         Node m = neo.createNode();
@@ -331,8 +334,24 @@ public class TEMSLoader extends DriveLoader {
                     if (haveEvents) {
                         index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, dataset);
                     }
+                    GisProperties gisProperties = getGisProperties(dataset);
+                    gisProperties.updateBBox(currentLatitude, currentLongitude);
+                    gisProperties.checkCRS(currentLatitude, currentLongitude, null);
+                    gisProperties.incSaved();
                 }
                 if (!signals.isEmpty()) {
+                    Node mp = neo.createNode();
+                    if (timestamp != 0) {
+                        mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, this.timestamp);
+                        updateTimestampMinMax(1, timestamp);
+                    }
+                    mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
+                    mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
+                    mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
+                    mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
+                    mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+                    index(MS_KEY, mp);
+
                     LinkedHashMap<String, Header> statisticHeader = getHeaderMap(2).headers;
                     if (statisticHeader.isEmpty()) {
                         Header header = new Header(INeoConstants.PRPOPERTY_CHANNEL_NAME, INeoConstants.PRPOPERTY_CHANNEL_NAME, 0);
@@ -347,12 +366,7 @@ public class TEMSLoader extends DriveLoader {
                         header = new Header(INeoConstants.PROPERTY_MW_NAME, INeoConstants.PROPERTY_MW_NAME, 0);
                         header = new FloatHeader(header);
                         statisticHeader.put(INeoConstants.PROPERTY_MW_NAME, header);
-
                     }
-
-                   
-
-
                     TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
                     for (String chanCode : signals.keySet()) {
                         float[] signal = signals.get(chanCode);
@@ -388,17 +402,20 @@ public class TEMSLoader extends DriveLoader {
                         }
                         index(ms);
                         findOrCreateVirtualFileNode(ms);
+                        GisProperties gisProperties = getGisProperties(getVirtualDatasetName());
+                        gisProperties.incSaved();
                         if (virtualMnode != null) {
                             virtualMnode.createRelationshipTo(ms, GeoNeoRelationshipTypes.NEXT);
                         }
 
                         virtualMnode = ms;
-                        mp.createRelationshipTo(ms, GeoNeoRelationshipTypes.VIRTUAL_CHILD);
+                        mp.createRelationshipTo(ms, GeoNeoRelationshipTypes.CHILD);
                     }
+                    GisProperties gisProperties = getGisProperties(getVirtualDatasetName());
+                    gisProperties.updateBBox(currentLatitude, currentLongitude);
+                    gisProperties.checkCRS(currentLatitude, currentLongitude, null);
                 }
-                updateBBox(currentLatitude, currentLongitude);
-                checkCRS(currentLatitude, currentLongitude, null);
-                incSaved();
+
                 transaction.success();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -410,6 +427,18 @@ public class TEMSLoader extends DriveLoader {
         data.clear();
         first_line = 0;
         last_line = 0;
+    }
+
+    /**
+     *get name of virtual dataset
+     * 
+     * @return
+     */
+    private String getVirtualDatasetName() {
+        if (virtualDatasetName == null) {
+            virtualDatasetName = DriveTypes.MS.getFullDatasetName(dataset);
+        }
+        return virtualDatasetName;
     }
 
     /**
@@ -452,10 +481,10 @@ public class TEMSLoader extends DriveLoader {
             datasetName = dataset;
         }
         else {
-            datasetName = DriveTypes.MS.getFullDatasetName(dataset);
+            datasetName = getVirtualDatasetName();
         }
         
-        return gisNodes.get(datasetName);
+        return gisNodes.get(datasetName).getGis();
     }
     
     @Override

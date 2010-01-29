@@ -133,9 +133,9 @@ public class NemoLoader extends DriveLoader {
 
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());
-
-            updateBBox(lat, lon);
-            checkCRS((float)lat, (float)lon, null);
+            GisProperties gisProperties = getGisProperties(dataset);
+            gisProperties.updateBBox(lat, lon);
+            gisProperties.checkCRS((float)lat, (float)lon, null);
             index(mp);
             transaction.success();
             pointNode = mp;
@@ -381,7 +381,7 @@ public class NemoLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return gisNodes.get(dataset);
+        return gisNodes.get(dataset).getGis();
     }
 
     @Override

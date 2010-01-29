@@ -39,7 +39,6 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.internal.impl.MapImpl;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
@@ -93,8 +92,7 @@ public abstract class AbstractLoader {
     private String typeName = "CSV";
     protected NeoService neo;
     private NeoServiceProvider neoProvider;
-    protected HashMap<String, Node> gisNodes = new HashMap<String, Node>();
-    private CRS crs = null;
+    protected HashMap<String, GisProperties> gisNodes = new HashMap<String, GisProperties>();
     protected String filename = null;
     protected String basename = null;
     private Display display;
@@ -102,13 +100,13 @@ public abstract class AbstractLoader {
     protected String[] possibleFieldSepRegexes = new String[] {"\t", "\\,", "\\;", ",", ";"};
     protected int lineNumber = 0;
     private int limit = 0;
-    private double[] bbox;
     private long savedData = 0;
     private long started = System.currentTimeMillis();
     private boolean headerWasParced;
     // private ArrayList<MultiPropertyIndex<?>> indexes = new
     // ArrayList<MultiPropertyIndex<?>>();
     private LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>> indexes = new LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>>();
+    private LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>> mappedIndexes = new LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>>();
 
     @SuppressWarnings("unchecked")
     public static final Class[] NUMERIC_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class};
@@ -882,8 +880,17 @@ public abstract class AbstractLoader {
         return limit > 0 && savedData > limit;
     }
 
-    protected void incSaved() {
+    private void incSaved() {
         savedData++;
+    }
+
+    protected void incSaved(String gisName) {
+        incSaved();
+        GisProperties gisPr = gisNodes.get(gisName);
+        if (gisPr != null) {
+            gisPr.incSaved();
+        }
+
     }
 
     /**
@@ -965,6 +972,19 @@ public abstract class AbstractLoader {
         }
     }
 
+    protected void addMappedIndex(String key, String nodeType, MultiPropertyIndex< ? > index) {
+        LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>> mappIndex = mappedIndexes.get(key);
+        if (mappIndex == null) {
+            mappIndex = new LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>();
+            mappedIndexes.put(key, mappIndex);
+        }
+        HashSet<MultiPropertyIndex< ? >> indSet = mappIndex.get(nodeType);
+        if (indSet == null) {
+            indSet = new HashSet<MultiPropertyIndex< ? >>();
+            mappIndex.put(nodeType, indSet);
+        }
+        indSet.add(index);
+    }
     protected void removeIndex(String nodeType, MultiPropertyIndex< ? > index) {
         ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
         if (indList != null) {
@@ -973,6 +993,22 @@ public abstract class AbstractLoader {
 
     }
 
+    /**
+     *remove mapped index
+     * 
+     * @param key map key
+     * @param nodeType - node type
+     * @param index - index
+     */
+    private void removeMappedIndex(String key, String nodeType, MultiPropertyIndex< ? > index) {
+        LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>> mapIn = mappedIndexes.get(key);
+        if (mapIn != null) {
+            HashSet<MultiPropertyIndex< ? >> indList = mapIn.get(nodeType);
+            if (indList != null) {
+                indList.remove(index);
+            }
+        }
+    }
     protected void index(Node node) {
         String nodeType = NeoUtils.getNodeType(node, "");
         ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
@@ -989,6 +1025,31 @@ public abstract class AbstractLoader {
         }
     }
 
+    /**
+     * Indexes mapped
+     * 
+     * @param key - index key
+     * @param node - node
+     */
+    protected void index(String key, Node node) {
+        String nodeType = NeoUtils.getNodeType(node, "");
+        LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>> indMap = mappedIndexes.get(key);
+        if (indMap == null) {
+            return;
+        }
+        HashSet<MultiPropertyIndex< ? >> indList = indMap.get(nodeType);
+        if (indList == null) {
+            return;
+        }
+        for (MultiPropertyIndex< ? > index : indList) {
+            try {
+                index.add(node);
+            } catch (IOException e) {
+                NeoLoaderPlugin.error(e.getLocalizedMessage());
+                removeMappedIndex(key, nodeType, index);
+            }
+        }
+    }
     protected void flushIndexes() {
         for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
 
@@ -998,6 +1059,20 @@ public abstract class AbstractLoader {
                 } catch (IOException e) {
                     // TODO:Log error
                     removeIndex(entry.getKey(), index);
+                }
+            }
+        }
+        for (Entry<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>> entryInd : mappedIndexes.entrySet()) {
+            if (entryInd.getValue() != null) {
+                for (Entry<String, HashSet<MultiPropertyIndex< ? >>> entry : entryInd.getValue().entrySet()) {
+                    for (MultiPropertyIndex< ? > index : entry.getValue()) {
+                        try {
+                            index.flush();
+                        } catch (IOException e) {
+                            // TODO:Log error
+                            removeMappedIndex(entryInd.getKey(), entry.getKey(), index);
+                        }
+                    }
                 }
             }
         }
@@ -1017,13 +1092,37 @@ public abstract class AbstractLoader {
                 }
             }
         }
+        for (Entry<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>> entryInd : mappedIndexes.entrySet()) {
+            if (entryInd.getValue() != null) {
+                for (Entry<String, HashSet<MultiPropertyIndex< ? >>> entry : entryInd.getValue().entrySet()) {
+                    for (MultiPropertyIndex< ? > index : entry.getValue()) {
+                        try {
+                            index.initialize(this.neo, null);
+                        } catch (IOException e) {
+                            NeoLoaderPlugin.error(e.getLocalizedMessage());
+                            removeMappedIndex(entryInd.getKey(), entry.getKey(), index);
+                        }
+                    }
+                }
+            }
+        }
         indexesInitialized = true;
     }
+
 
     protected void finishUpIndexes() {
         for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
             for (MultiPropertyIndex< ? > index : entry.getValue()) {
                 index.finishUp();
+            }
+        }
+        for (Entry<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>> entryInd : mappedIndexes.entrySet()) {
+            if (entryInd.getValue() != null) {
+                for (Entry<String, HashSet<MultiPropertyIndex< ? >>> entry : entryInd.getValue().entrySet()) {
+                    for (MultiPropertyIndex< ? > index : entry.getValue()) {
+                        index.finishUp();
+                    }
+                }
             }
         }
     }
@@ -1062,17 +1161,7 @@ public abstract class AbstractLoader {
     protected void finishUp() {
     }
 
-    protected final void checkCRS(float lat, float lon, String hint) {
-        if (crs == null) {
-            //TODO: Lagutko, need to be corrected
-            for (Node gis : gisNodes.values()) {
-                crs = CRS.fromLocation(lat, lon, hint);
-            
-                gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
-                gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
-            }
-        }
-    }
+
 
     /**
      * Search the database for the 'gis' node for this dataset. If none found it created an
@@ -1085,22 +1174,19 @@ public abstract class AbstractLoader {
      */
     protected final Node findOrCreateGISNode(Node mainNode, String gisType) {
         String gisName = NeoUtils.getNodeName(mainNode);
-        Node gis = gisNodes.get(gisName);
+        GisProperties gisProperties = gisNodes.get(gisName);
         
-        if (gis == null) {
+        if (gisProperties == null) {
             Transaction transaction = neo.beginTx();
             try {
                 Node reference = neo.getReferenceNode();
                 
-                gis = NeoUtils.findGisNode(gisName);
-                if (gis != null) {
-                    bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
-                }
-                else {
+                Node gis = NeoUtils.findGisNode(gisName);
+                if (gis == null) {
                     gis = findMatchingGisNode(gisName, gisType);
+                    // TODO analyse this code on bugs
                     if (gis == null) {
                         gis = NeoUtils.createGISNode(reference, gisName, gisType, neo);
-                        gisNodes.put(gisName, gis);
                     } else {
                         deleteOldGisNodes(gisName, gisType, gis);
                     }
@@ -1114,12 +1200,14 @@ public abstract class AbstractLoader {
                         gis.createRelationshipTo(mainNode, GeoNeoRelationshipTypes.NEXT);
                     }
                 }
+                gisProperties = new GisProperties(gis);
+                gisNodes.put(gisName, gisProperties);
                 transaction.success();
             } finally {
                 transaction.finish();
             }
         }
-        return gis;
+        return gisProperties.getGis();
     }
 
     private Traverser makeGisTraverser(final String name, final String gisType) {
@@ -1383,8 +1471,8 @@ public abstract class AbstractLoader {
      * 
      */
     protected final void cleanupGisNode() {
-       for (Node gisNode : gisNodes.values()) {
-           cleanupGisNode(gisNode);
+        for (GisProperties gisProperties : gisNodes.values()) {
+            cleanupGisNode(gisProperties);
        }
     }
 
@@ -1394,13 +1482,14 @@ public abstract class AbstractLoader {
      * @param mainNode to use to connect to the AWE project
      * @throws MalformedURLException
      */
-    private final void cleanupGisNode(Node gis) {
-        if (gis != null) {
+    private final void cleanupGisNode(GisProperties gisProperties) {
+        if (gisProperties != null) {
             Transaction transaction = neo.beginTx();
             try {
-                if (bbox != null) {
-                    gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
-                    gis.setProperty("count", savedData + (Long)gis.getProperty("count", 0L));
+                Node gis = gisProperties.getGis();
+                if (gisProperties.getBbox() != null) {
+                    gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, gisProperties.getBbox());
+                    gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
                 }
                 HashSet<Node> nodeToDelete = new HashSet<Node>();
                 for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING)) {
@@ -1533,20 +1622,7 @@ public abstract class AbstractLoader {
         return System.currentTimeMillis() - started;
     }
 
-    protected final void updateBBox(double lat, double lon) {
-        if (bbox == null) {
-            bbox = new double[] {lon, lon, lat, lat};
-        } else {
-            if (bbox[0] > lon)
-                bbox[0] = lon;
-            if (bbox[1] < lon)
-                bbox[1] = lon;
-            if (bbox[2] > lat)
-                bbox[2] = lat;
-            if (bbox[3] < lat)
-                bbox[3] = lat;
-        }
-    }
+
 
     private void printHeaderStats() {
         notify("Determined Columns:");
@@ -1667,6 +1743,15 @@ public abstract class AbstractLoader {
         return resultMsg == SWT.YES;
     }
 
+    /**
+     * get gisProperties by gis name
+     * 
+     * @param name gis name
+     * @return GisProperties
+     */
+    protected GisProperties getGisProperties(String name) {
+        return gisNodes.get(name);
+    }
     protected class HeaderMaps {
         protected HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
         protected ArrayList<Pattern> headerFilters = new ArrayList<Pattern>();
@@ -1718,6 +1803,7 @@ public abstract class AbstractLoader {
             return typedProperties.get(klass);
         }
 
+
         private void makeTypedProperties() {
             this.typedProperties = new HashMap<Class< ? extends Object>, List<String>>();
             for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
@@ -1736,4 +1822,68 @@ public abstract class AbstractLoader {
         }
     }
 
+    protected static class GisProperties {
+        private Node gis;
+        private CRS crs;
+        private double[] bbox;
+        private long savedData;
+
+        protected GisProperties(Node gis) {
+            this.gis = gis;
+            bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, null);
+            savedData = (Long)gis.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
+        }
+
+        /**
+         *inc saved;
+         */
+        public void incSaved() {
+            savedData++;
+        }
+
+        protected final void checkCRS(float lat, float lon, String hint) {
+            if (crs == null) {
+                // TODO move CRS class and update CRS in amanzi.neo.core
+                crs = CRS.fromLocation(lat, lon, hint);
+                gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
+                gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
+            }
+        }
+
+        protected final void updateBBox(double lat, double lon) {
+            if (bbox == null) {
+                bbox = new double[] {lon, lon, lat, lat};
+            } else {
+                if (bbox[0] > lon)
+                    bbox[0] = lon;
+                if (bbox[1] < lon)
+                    bbox[1] = lon;
+                if (bbox[2] > lat)
+                    bbox[2] = lat;
+                if (bbox[3] < lat)
+                    bbox[3] = lat;
+            }
+        }
+        /**
+         * @return Returns the gis.
+         */
+        public Node getGis() {
+            return gis;
+        }
+
+        /**
+         * @return Returns the gisCrs.
+         */
+        public CRS getCrs() {
+            return crs;
+        }
+
+        /**
+         * @return Returns the bbox.
+         */
+        public double[] getBbox() {
+            return bbox;
+        }
+
+    }
 }

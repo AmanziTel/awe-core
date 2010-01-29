@@ -132,8 +132,9 @@ public class OldNemoVersionLoader extends NemoLoader {
             mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());
-            updateBBox(lat, lon);
-            checkCRS((float)lat, (float)lon, null);
+            GisProperties gisProperties = getGisProperties(dataset);
+            gisProperties.updateBBox(lat, lon);
+            gisProperties.checkCRS((float)lat, (float)lon, null);
             // debug("Added measurement point: " + propertiesString(mp));
             index(mp);
             transaction.success();

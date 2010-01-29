@@ -246,9 +246,10 @@ public class RomesLoader extends DriveLoader {
                 if (haveEvents) {
                     index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, dataset);
                 }
-                incSaved();
-                updateBBox(currentLatitude, currentLongitude);
-                checkCRS(currentLatitude, currentLongitude, null);
+                GisProperties gisProperties = getGisProperties(dataset);
+                gisProperties.updateBBox(currentLatitude, currentLongitude);
+                gisProperties.checkCRS(currentLatitude, currentLongitude, null);
+                gisProperties.incSaved();
                 transaction.success();
             } finally {
                 transaction.finish();
@@ -295,6 +296,6 @@ public class RomesLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return gisNodes.get(dataset);
+        return gisNodes.get(dataset).getGis();
     }
 }

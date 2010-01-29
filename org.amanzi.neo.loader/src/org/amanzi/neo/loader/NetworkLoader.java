@@ -455,8 +455,9 @@ public class NetworkLoader extends AbstractLoader {
                 siteNumber++;
                 Float latitude = networkHeader.getLat();
                 Float longitude = networkHeader.getLon();
-                updateBBox(latitude, longitude);
-                checkCRS(latitude, longitude, networkHeader.getCrsHint());
+                GisProperties gisProperties = getGisProperties(basename);
+                gisProperties.updateBBox(latitude, longitude);
+                gisProperties.checkCRS(latitude, longitude, networkHeader.getCrsHint());
                 site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
                 site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
                 index(site);
@@ -470,7 +471,7 @@ public class NetworkLoader extends AbstractLoader {
             for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
                 sector.setProperty(entry.getKey(), entry.getValue());
             }
-            incSaved();
+            getGisProperties(basename).incSaved();
             transaction.success();
             // return true;
         } catch (Exception e) {
@@ -569,7 +570,7 @@ public class NetworkLoader extends AbstractLoader {
     @Override
     protected Node getStoringNode(Integer key) {
         //TODO: Lagutko: need to be refactored
-        return gisNodes.values().iterator().next();
+        return gisNodes.values().iterator().next().getGis();
     }
 
     @Override

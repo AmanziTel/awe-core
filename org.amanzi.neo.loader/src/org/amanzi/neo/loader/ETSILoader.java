@@ -961,9 +961,9 @@ public class ETSILoader extends DriveLoader {
     protected Node getStoringNode(Integer key) {
     	switch (key) {
     	case REAL_DATASET_HEADER_INDEX:
-    		return gisNodes.get(dataset);
+            return gisNodes.get(dataset).getGis();
     	case CALL_DATASET_HEADER_INDEX:
-    		return gisNodes.get(DriveTypes.AMS_CALLS.getFullDatasetName(dataset));
+            return gisNodes.get(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)).getGis();
     	default:
     		return null;    			
     	}
