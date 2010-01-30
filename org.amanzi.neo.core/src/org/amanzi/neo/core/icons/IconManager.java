@@ -213,6 +213,14 @@ public class IconManager implements IPropertyChangeListener {
 	    return NeoIcons.COMMIT_ENABLED.image();
 	}
 
+    /**
+     * Returns Image for Commit Button
+     * 
+     * @return commit image
+     */
+    public Image getNeoImage(String neoName) {
+        return NeoIcons.valueOf(neoName).image();
+    }
 	/**
 	 * Converts name of Type to name that provides by NeoIcons
 	 * 

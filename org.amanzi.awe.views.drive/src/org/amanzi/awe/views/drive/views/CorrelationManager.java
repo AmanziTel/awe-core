@@ -14,7 +14,9 @@
 package org.amanzi.awe.views.drive.views;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -29,6 +31,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -80,6 +83,7 @@ import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 
+
 /**
  * <p>
  * Correlation Manager between Drive and Network
@@ -94,6 +98,11 @@ public class CorrelationManager extends ViewPart {
      */
     public static final String ID = "org.amanzi.awe.views.drive.views.CorrelationManager";
     private static final String REMOVE_CORRELATION = "Remove correlation between '%s' and '%s'.";
+    private static final int DEL_IND = 4;
+    /** int DEF_SIZE field */
+    protected static final int DEF_SIZE = 150;
+    public static final String LBL_DELETE = "delete";
+    public static final String NO_TIME = "---";
     private Combo cDrive;
     private Combo cNetwork;
     private Button bCorrelate;
@@ -148,7 +157,6 @@ public class CorrelationManager extends ViewPart {
         labelProvider.createTableColumn();
         provider = new TableContentProvider();
         table.setContentProvider(provider);
-
         addListeners();
         hookContextMenu();
         updateGisNode();
@@ -179,12 +187,29 @@ public class CorrelationManager extends ViewPart {
             @Override
             public void mouseDown(MouseEvent e) {
                 point = new Point(e.x, e.y);
+                if (e.button == 1) {
+                    deleteRow(e);
+                }
             }
 
             @Override
             public void mouseDoubleClick(MouseEvent e) {
             }
         });
+    }
+
+    /**
+     * @param e
+     */
+    protected void deleteRow(MouseEvent e) {
+        Point p = new Point(e.x, e.y);
+        TableItem item = table.getTable().getItem(p);
+        if (item != null) {
+            if (item.getBounds(DEL_IND).contains(p)) {
+                removeCorrelation((RowWrapper)item.getData());
+            }
+        }
+
     }
 
     /**
@@ -203,6 +228,7 @@ public class CorrelationManager extends ViewPart {
         table.getControl().setMenu(menu);
         getSite().registerContextMenu(menuMgr, table);
     }
+
 
     /**
      * fills context menu
@@ -316,6 +342,8 @@ public class CorrelationManager extends ViewPart {
      */
     protected void setNetworkDriveCorrelation(IProgressMonitor monitor, Node networkGis, Node driveGis) {
         Transaction tx = service.beginTx();
+        Long startTime = null;
+        Long endTime = null;
         int perc = 0;
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setNetworkDriveCorrelation");
         Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(driveGis, null);
@@ -328,7 +356,7 @@ public class CorrelationManager extends ViewPart {
                     return;
                 }
             }
-            networkGis.createRelationshipTo(driveGis, NetworkRelationshipTypes.LINKED_NETWORK_DRIVE);
+            Relationship storeRelation = networkGis.createRelationshipTo(driveGis, NetworkRelationshipTypes.LINKED_NETWORK_DRIVE);
             Traverser traverse = driveGis.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
                 
                 @Override
@@ -336,6 +364,7 @@ public class CorrelationManager extends ViewPart {
                     if (currentPos.isStartNode()) {
                         return false;
                     }
+                    // TODO refactor if necessary after change database structure
                     Relationship rel = currentPos.lastRelationshipTraversed();
                     if (NetworkRelationshipTypes.CHILD.name().equals(rel.getType().name())) {
                         return !NeoUtils.isDriveMNode(currentPos.currentNode());
@@ -351,6 +380,7 @@ public class CorrelationManager extends ViewPart {
                 }
             }, NetworkRelationshipTypes.CHILD, Direction.BOTH, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(driveGis, service, false);
+            int count = 0;
             for (Node node : traverse) {
                 Node sectorDrive = NeoUtils.findOrCreateSectorDrive(NeoUtils.getSimpleNodeName(driveGis, null), sectorDriveRoot,
                         node, service, false);
@@ -358,10 +388,24 @@ public class CorrelationManager extends ViewPart {
                     NeoUtils.linkWithSector(networkGis, sectorDrive, null);
                 }
                 Long time = NeoUtils.getNodeTime(node);
+                startTime = startTime == null ? time : Math.min(startTime, time);
+                endTime = endTime == null ? time : Math.max(endTime, time);
+                count++;
                 perc = (int)((time - minMax.getLeft()) * 100 / totalTime);
                 if (perc > prevPerc) {
                     monitor.worked(perc - prevPerc);
                     prevPerc = perc;
+                }
+                storeRelation.setProperty(INeoConstants.COUNT_TYPE_NAME, count);
+                if (startTime == null) {
+                    storeRelation.removeProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE);
+                } else {
+                    storeRelation.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, startTime);
+                }
+                if (endTime == null) {
+                    storeRelation.removeProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE);
+                } else {
+                    storeRelation.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, endTime);
                 }
             }
             tx.success();
@@ -460,10 +504,9 @@ public class CorrelationManager extends ViewPart {
      * @since 1.0.0
      */
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
-
+        private Image delete = IconManager.getIconManager().getNeoImage("DELETE_ENABLED");
         private ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
-        /** int DEF_SIZE field */
-        protected static final int DEF_SIZE = 200;
+
 
         /**
          *create column table
@@ -487,6 +530,27 @@ public class CorrelationManager extends ViewPart {
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
 
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("Count");
+                columns.add(col);
+                col.setWidth(75);
+                col.setResizable(true);
+
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("Time");
+                columns.add(col);
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("Delete");
+                columns.add(col);
+                col.setWidth(100);
+                col.setResizable(true);
+
                 // TODO implement other column if necessary
 
             }
@@ -500,17 +564,24 @@ public class CorrelationManager extends ViewPart {
         public String getColumnText(Object element, int columnIndex) {
             RowWrapper wrapper = (RowWrapper)element;
             String result = "";
-            if (columnIndex == 0) {
+            if (columnIndex == DEL_IND) {
+                return LBL_DELETE;
+            } else if (columnIndex == 0) {
                 return wrapper.getNetworkName();
             } else if (columnIndex == 1) {
                 return wrapper.getDriveName();
+            } else if (columnIndex == 2) {
+                return String.valueOf(wrapper.getCount());
+            } else if (columnIndex == 3) {
+                return wrapper.getFormatTime();
             }
             return result;
         }
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
-            return null;
+           
+            return columnIndex == DEL_IND ? delete : null;
         }
 
     }
@@ -568,6 +639,13 @@ public class CorrelationManager extends ViewPart {
         private String driveName;
         private final Relationship relation;
         private final Node networkNode;
+        private Long startTime;
+        private Long endTime;
+        private int count;
+        private SimpleDateFormat sf;
+        private SimpleDateFormat sf2;
+        private SimpleDateFormat sfMulDay1;
+        private SimpleDateFormat sfMulDay2;
 
         /**
          * Constructor
@@ -583,6 +661,9 @@ public class CorrelationManager extends ViewPart {
                 networkName = NeoUtils.getSimpleNodeName(node, "");
                 driveNode = relation.getOtherNode(node);
                 driveName = NeoUtils.getSimpleNodeName(driveNode, "");
+                startTime = (Long)relation.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, null);
+                endTime = (Long)relation.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, null);
+                count = (Integer)relation.getProperty(INeoConstants.COUNT_TYPE_NAME, 0);
 
             } finally {
                 tx.finish();
@@ -624,6 +705,31 @@ public class CorrelationManager extends ViewPart {
             return networkNode;
         }
 
+        /**
+         * @return Returns the count.
+         */
+        public int getCount() {
+            return count;
+        }
+        
+        public String getFormatTime() {
+            if (startTime == null || endTime == null) {
+                return NO_TIME;
+            }
+            StringBuilder sb = new StringBuilder();
+            if (endTime - startTime <= 24 * 60 * 60 * 1000) {
+                sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                sf2 = new SimpleDateFormat("hh:mm:ss");
+                sb.append(sf.format(new Date(startTime)));
+                sb.append("-").append(sf2.format(endTime));
+            } else {
+                sfMulDay1 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                sfMulDay2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                sb.append(sfMulDay1.format(new Date(startTime)));
+                sb.append(" to ").append(sfMulDay2.format(endTime));
+            }
+            return sb.toString();
+        }
     }
 
     /**
