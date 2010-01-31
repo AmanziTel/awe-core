@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Call Analyser
-Bundle-SymbolicName: org.amanzi.awe.views.call;singleton:=true
+Bundle-SymbolicName: org.amanzi.awe.views.calls;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: org.amanzi.awe.views.call.CallAnalyserPlugin
+Bundle-Activator: org.amanzi.awe.views.calls.CallAnalyserPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.amanzi.neo.core;bundle-version="1.0.0",

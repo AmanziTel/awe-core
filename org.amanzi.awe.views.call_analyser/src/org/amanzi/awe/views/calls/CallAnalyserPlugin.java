@@ -1,4 +1,4 @@
-package org.amanzi.awe.views.call;
+package org.amanzi.awe.views.calls;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;

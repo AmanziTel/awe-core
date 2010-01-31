@@ -1,4 +1,4 @@
-package org.amanzi.awe.views.call.views;
+package org.amanzi.awe.views.calls.views;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -9,9 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.views.call.AggregateCall;
-import org.amanzi.awe.views.call.CallHandler;
-import org.amanzi.awe.views.call.CallTimePeriods;
+import org.amanzi.awe.views.calls.AggregateCall;
+import org.amanzi.awe.views.calls.CallHandler;
+import org.amanzi.awe.views.calls.CallTimePeriods;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
