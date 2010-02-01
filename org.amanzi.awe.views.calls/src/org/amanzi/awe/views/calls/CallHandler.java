@@ -28,6 +28,9 @@ import org.neo4j.api.core.Node;
  * @since 1.0.0
  */
 public class CallHandler {
+	
+	private static final double ROUND_CONSTANT = 1000;
+	
     private final CallProperties aProperties;
     private int count;
     private Double sum;
@@ -97,16 +100,16 @@ public class CallHandler {
         Double result;
         switch (aggregateType) {
         case AVERAGE:
-            result = !isNumber() || count == 0 ? Double.NaN : sum / count;
+            result = !isNumber() || count == 0 ? Double.NaN : round(sum / count);
             break;
         case COUNT:
             result = Double.valueOf(count);
             break;
         case MAX:
-            result = !isNumber() || max == null ? Double.NaN : max;
+            result = !isNumber() || max == null ? Double.NaN : round(max);
             break;
         case MIN:
-            result = !isNumber() || min == null ? Double.NaN : min;
+            result = !isNumber() || min == null ? Double.NaN : round(min);
             break;
         case SUM:
             result = !isNumber() ? Double.NaN : sum;
@@ -116,6 +119,10 @@ public class CallHandler {
             break;
         }
         return result;
+    }
+    
+    private Double round(double aValue){
+    	return ((int)(aValue*ROUND_CONSTANT+0.5))/ROUND_CONSTANT;
     }
 
     /**

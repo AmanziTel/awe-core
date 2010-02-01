@@ -64,9 +64,9 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 	 * @param pageName
 	 */
 	public SplashNewSpreadsheetWizardPage(ISelection selection) {
-		super("wizardPage");
-		setTitle("Amanzi Splash Spreadsheet Wizard");
-		setDescription("This wizard creates Amanzi Splash Spreadsheet file");
+		super(Messages.SpreadsheetNew_wizardPage_name);
+		setTitle(Messages.SpreadsheetNew_wizardPage_title);
+		setDescription(Messages.SpreadsheetNew_wizardPage_descr);
 		this.selection = selection;
 	}
 	private int rowCount = 30, columnCount = 30;
@@ -81,7 +81,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		layout.numColumns = 3;
 		layout.verticalSpacing = 9;
 		Label label = new Label(container, SWT.NULL);
-		label.setText("&Container:");
+		label.setText(Messages.SpreadsheetNew_wizardPage_container);
 
 		containerText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -93,7 +93,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		});
 		
 		Button button = new Button(container, SWT.PUSH);
-		button.setText("Browse...");
+		button.setText(Messages.SpreadsheetNew_wizardPage_browse);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				handleBrowse();
@@ -101,7 +101,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		});
 		
 		label = new Label(container, SWT.NULL);
-		label.setText("&Spreadsheet name:");
+		label.setText(Messages.SpreadsheetNew_wizardPage_sheet_name);
 
 		fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -113,7 +113,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		});
 		
 		Button button1 = new Button(container, SWT.PUSH);
-		button1.setText("New Ruby Project...");
+		button1.setText(Messages.SpreadsheetNew_wizardPage_new_project);
 		button1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				OpenNewRubyProjectWizardAction rubyAction = new OpenNewRubyProjectWizardAction();
@@ -209,7 +209,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		NeoSplashUtil.logn("ResourcesPlugin.getWorkspace().getRoot(): " + ResourcesPlugin.getWorkspace().getRoot().toString());
 		ContainerSelectionDialog dialog = new ContainerSelectionDialog(
 				getShell(), ResourcesPlugin.getWorkspace().getRoot(), true,
-				"Select new file container");
+				Messages.SpreadsheetNew_wizardPage_new_container);
 		
 		if (dialog.open() == ContainerSelectionDialog.OK) {
 			Object[] result = dialog.getResult();
@@ -232,18 +232,18 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
 		NeoSplashUtil.logn(Platform.getLocation() + "/" + getContainerName() + "/" + fileName);
 
 		if (getContainerName().length() == 0) {
-			updateStatus("File container must be specified");
+			updateStatus(Messages.SpreadsheetNew_wizardPage_error_container_spec);
 			return;
 		}
 				
 		if (container == null
 				|| (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
-			updateStatus("File container must exist");
+			updateStatus(Messages.SpreadsheetNew_wizardPage_error_container_exist);
 			return;
 		}
 		
 		if (!container.isAccessible()) {
-			updateStatus("Project must be writable");
+			updateStatus(Messages.SpreadsheetNew_wizardPage_error_project);
 			return;
 		}
         if (!container.getName().equals(getContainerName())) {
@@ -266,7 +266,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
             
         });
         if (isExist) {
-            updateStatus("Spreadsheet already exists");
+            updateStatus(Messages.SpreadsheetNew_wizardPage_error_sheet);
             return;
         }
 		

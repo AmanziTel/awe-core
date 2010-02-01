@@ -47,6 +47,18 @@ public class Messages extends NLS {
     public static String Import_Job; 
     
     public static String Default_SpreadsheetName;
+    public static String SpreadsheetNew_wizardPage_name;
+    public static String SpreadsheetNew_wizardPage_title;
+    public static String SpreadsheetNew_wizardPage_descr;
+    public static String SpreadsheetNew_wizardPage_container;
+    public static String SpreadsheetNew_wizardPage_browse;
+    public static String SpreadsheetNew_wizardPage_sheet_name;
+    public static String SpreadsheetNew_wizardPage_new_project;
+    public static String SpreadsheetNew_wizardPage_new_container;
+    public static String SpreadsheetNew_wizardPage_error_container_spec;
+    public static String SpreadsheetNew_wizardPage_error_container_exist;
+    public static String SpreadsheetNew_wizardPage_error_project;
+    public static String SpreadsheetNew_wizardPage_error_sheet;
     
     private Messages() {
     }
