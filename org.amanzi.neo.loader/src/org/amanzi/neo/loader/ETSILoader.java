@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -31,6 +32,7 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.core.enums.CallProperties.CallDirection;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
@@ -43,6 +45,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
@@ -286,7 +289,8 @@ public class ETSILoader extends DriveLoader {
 	
 	private Node currentProbeCalls;
 	
-	private Node lastCallInProbe;
+
+    // private Node lastCallInProbe;
 
     private Node callDataset;
 	
@@ -385,7 +389,7 @@ public class ETSILoader extends DriveLoader {
 			
 			String probeName = initializeProbeNodes(logFile);
 			filename = logFile.getAbsolutePath();
-			currentDirectoryNode = findOrCreateDirectoryNode(null, logFile.getParentFile());
+            currentDirectoryNode = findOrCreateDirectoryNode(logFile.getParentFile());
 			
 			newFile = true;
             getHeaderMap(REAL_DATASET_HEADER_INDEX).typedProperties = null;
@@ -406,17 +410,18 @@ public class ETSILoader extends DriveLoader {
 	}
 	
 	private void updateProbeCache(String probeName) {
-		Transaction tx = neo.beginTx();
-		try {
-			if (lastCallInProbe != null) {
-				currentProbeCalls.setProperty(INeoConstants.LAST_CALL_NODE_ID_PROPERTY_NAME, lastCallInProbe.getId());
-			}
-			tx.success();
-		}
-		finally {
-			tx.finish();
-		}
-		probesCache.put(probeName, new Pair<Node, Node>(currentProbeCalls, lastCallInProbe));
+        // Transaction tx = neo.beginTx();
+        // try {
+        // if (lastCallInProbe != null) {
+        // currentProbeCalls.setProperty(INeoConstants.LAST_CALL_NODE_ID_PROPERTY_NAME,
+        // lastCallInProbe.getId());
+        // }
+        // tx.success();
+        // }
+        // finally {
+        // tx.finish();
+        // }
+        probesCache.put(probeName, new Pair<Node, Node>(currentProbeCalls, null));
 	}
 	
 	private String initializeProbeNodes(File logFile) {
@@ -431,12 +436,12 @@ public class ETSILoader extends DriveLoader {
 		if (probeNodes == null) {
 			Node probeNode = NeoUtils.findOrCreateProbeNode(networkNode, probeName, neo);
 			currentProbeCalls = NeoUtils.getCallsNode(callDataset, probeName, probeNode, neo);
-			lastCallInProbe = NeoUtils.getLastCallFromProbeCalls(currentProbeCalls, neo);
+            // lastCallInProbe = NeoUtils.getLastCallFromProbeCalls(currentProbeCalls, neo);
 			getProbeCallsIndex(NeoUtils.getNodeName(currentProbeCalls));
 		}
 		else {
 			currentProbeCalls = probeNodes.getLeft();
-			lastCallInProbe = probeNodes.getRight();
+            // lastCallInProbe = probeNodes.getRight();
 		}
 		
 		return probeName;
@@ -449,61 +454,59 @@ public class ETSILoader extends DriveLoader {
 	 * @param directoryFile file of Directory
 	 * @return founded directory node
 	 */
-	private Node findOrCreateDirectoryNode(Node parentDirectoryNode, File directoryFile) {
+    private Node findOrCreateDirectoryNode(File directoryFile) {
 		Transaction tx = neo.beginTx();
+        Exception ex = null;
 		try {			
-			final String directoryName = directoryFile.getName();
 			String directoryPath = directoryFile.getPath();
-			
-			if (!directoryPath.equals(this.directoryName)) {
-				parentDirectoryNode = findOrCreateDirectoryNode(parentDirectoryNode, directoryFile.getParentFile());
-			}
-		
-			if (parentDirectoryNode == null) {
-				parentDirectoryNode = getDatasetNode();
-				if (parentDirectoryNode == null) {
-					parentDirectoryNode = datasetNode;
-				}
-			}
-		
-			Iterator<Node> directoryIterator = parentDirectoryNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-			
-				@Override
-				public boolean isReturnableNode(TraversalPosition currentPos) {
-					return currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME) &&
-						   currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.DIRECTORY_TYPE_NAME) &&
-						   currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_NAME_NAME) &&
-						   currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(directoryName);
-				}
-			}, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-		
-			if (directoryIterator.hasNext()) {
-				tx.success();
-				return directoryIterator.next();
-			}
-			else {
-				Node directoryNode = neo.createNode();
-				directoryNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DIRECTORY_TYPE_NAME);
-				directoryNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, directoryName);
-				directoryNode.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, directoryPath);
-				
-				parentDirectoryNode.createRelationshipTo(directoryNode, GeoNeoRelationshipTypes.NEXT);
-				
-				tx.success();
-				return directoryNode;
-			}
+            int ind = directoryPath.lastIndexOf(directoryName) + directoryName.length();
+            // ind = directoryPath.indexOf(File.separator, ind);
+            String createPath = directoryPath.substring(ind + 1);
+            StringTokenizer st = new StringTokenizer(createPath, File.separator);
+            LinkedList<String> childs = new LinkedList<String>();
+            while (st.hasMoreTokens()) {
+                String child = st.nextToken();
+                childs.add(child);
+            }
+            return createDirPath(getDatasetNode(), childs);
 		}
 		catch (Exception e) {
+            e.printStackTrace();
+            ex = e;
 			NeoLoaderPlugin.exception(e);
 			tx.failure();
 			return null;
 		}
 		finally {
+            if (ex == null) {
+                tx.success();
+            }
 			tx.finish();
 		}		
 	}
-	
-	@Override
+
+    /**
+     * Create path
+     * 
+     * @param parentNode - parent node
+     * @param createPath - list of chield (path(2) is child of path(1))
+     * @return last subnode
+     */
+    private Node createDirPath(Node parentNode, LinkedList<String> path) {
+        if (path.isEmpty()) {
+            return parentNode;
+        }
+        String child = path.removeFirst();
+        Pair<Boolean, Node> subDir = NeoUtils.findOrCreateChildNode(neo, parentNode, child);
+        if (subDir.getLeft()) {
+            Node directoryNode = subDir.getRight();
+            directoryNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DIRECTORY_TYPE_NAME);
+            directoryNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, child);
+        }
+        return createDirPath(subDir.getRight(), path);
+    }
+
+    @Override
 	protected final void findOrCreateFileNode(Node mp) {
 		int startIndex = filename.lastIndexOf(File.separator);
 		if (startIndex < 0) {
@@ -527,28 +530,8 @@ public class ETSILoader extends DriveLoader {
 		}
 		
 		if (file == null) {
-			Iterator<Node> files = currentDirectoryNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-				
-				@Override
-				public boolean isReturnableNode(TraversalPosition currentPos) {
-					return currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME) &&
-						   currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.FILE_TYPE_NAME) &&
-						   currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_NAME_NAME) &&
-						   currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(basename);
-				}
-			}, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-			
-			if (files.hasNext()) {
-				file = files.next();
-			}
-			else {
-				file = neo.createNode();
-				file.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
-				file.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-				file.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-				currentDirectoryNode.createRelationshipTo(file, GeoNeoRelationshipTypes.NEXT);
-			}
-			file.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
+            file = NeoUtils.findOrCreateFileNode(neo, currentDirectoryNode, basename, filename).getRight();
+            file.createRelationshipTo(mp, GeoNeoRelationshipTypes.CHILD);
 		}		
 	}
 	
@@ -902,7 +885,9 @@ public class ETSILoader extends DriveLoader {
                 callNode.setProperty(CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
                 setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
 			}
-			
+            RelationshipType relation = call.getCallDirection() == CallDirection.OUTGOING ? ProbeCallRelationshipType.CALLER
+                    : ProbeCallRelationshipType.CALLEE;
+            callNode.createRelationshipTo(currentProbeCalls, relation);
 			call = null;
 		}
 	}
@@ -926,19 +911,10 @@ public class ETSILoader extends DriveLoader {
 				result.createRelationshipTo(mNode, ProbeCallRelationshipType.CALL_M);
 			}
 			
-			//create relationship to Probe Calls
-			if (lastCallInProbe != null) {
-				lastCallInProbe.createRelationshipTo(result, ProbeCallRelationshipType.NEXT_CALL);
-			}
-			else {
-				//create relationshiop to Probe Calls node
-				currentProbeCalls.createRelationshipTo(result, ProbeCallRelationshipType.NEXT_CALL);				
-			}
-			lastCallInProbe = result;
-			
+
 			//create relationship to Dataset Calls
 			if (lastCallInDataset == null) {
-				callDataset.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
+                callDataset.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
 			}
 			else {
 				lastCallInDataset.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);

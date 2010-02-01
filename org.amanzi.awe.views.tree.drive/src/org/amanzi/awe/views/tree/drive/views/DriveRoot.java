@@ -14,25 +14,15 @@ package org.amanzi.awe.views.tree.drive.views;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
 
 /**
  * Proxy class that provides access for Neo-database
@@ -61,29 +51,36 @@ public class DriveRoot extends Root {
 
         Transaction transaction = service.beginTx();
         try {
-            Node reference = service.getReferenceNode();
-            Traverser rootDriveTraverse = reference.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
-
-                @Override
-                public boolean isStopNode(TraversalPosition currentPos) {
-                    return currentPos.depth() >= 3;
-                }
-            }, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Relationship lastRelationshipTraversed = currentPos.lastRelationshipTraversed();
-                    return currentPos.depth() > 1
-                            && (NeoUtils.getNodeType(lastRelationshipTraversed.getStartNode(), "").equals(INeoConstants.AWE_PROJECT_NODE_TYPE) ||
-                                (NeoUtils.getNodeType(lastRelationshipTraversed.getStartNode(), "").equals(INeoConstants.DATASET_TYPE_NAME)))
-                            && (lastRelationshipTraversed.getEndNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
-                                    INeoConstants.DATASET_TYPE_NAME) || (lastRelationshipTraversed.getEndNode().getProperty(
-                                    INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.FILE_TYPE_NAME)));
-                }
-            }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, 
-               NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
-               GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
-            for (Node node : rootDriveTraverse) {
+            LinkedHashMap<String, Node> datasets = NeoUtils.getAllDatasetNodes(service);
+            // Node reference = service.getReferenceNode();
+            // Traverser rootDriveTraverse = reference.traverse(Order.DEPTH_FIRST, new
+            // StopEvaluator() {
+            //
+            // @Override
+            // public boolean isStopNode(TraversalPosition currentPos) {
+            // return currentPos.depth() >= 3;
+            // }
+            // }, new ReturnableEvaluator() {
+            //
+            // @Override
+            // public boolean isReturnableNode(TraversalPosition currentPos) {
+            // Relationship lastRelationshipTraversed = currentPos.lastRelationshipTraversed();
+            // return currentPos.depth() > 1
+            // && (NeoUtils.getNodeType(lastRelationshipTraversed.getStartNode(),
+            // "").equals(INeoConstants.AWE_PROJECT_NODE_TYPE) ||
+            // (NeoUtils.getNodeType(lastRelationshipTraversed.getStartNode(),
+            // "").equals(INeoConstants.DATASET_TYPE_NAME)))
+            // &&
+            // (lastRelationshipTraversed.getEndNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,
+            // "").equals(
+            // INeoConstants.DATASET_TYPE_NAME) ||
+            // (lastRelationshipTraversed.getEndNode().getProperty(
+            // INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.FILE_TYPE_NAME)));
+            // }
+            // }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING,
+            // NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+            // GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
+            for (Node node : datasets.values()) {
                 driveNodes.add(new DriveNeoNode(node));
             }
 

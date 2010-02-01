@@ -1345,4 +1345,35 @@ public class NeoUtils {
             }
         }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
     }
+
+    /**
+     * get parent of current node
+     * 
+     * @param service NeoService if null then new transaction created
+     * @param childNode child node
+     * @return parent node or null
+     */
+    public static Node getParent(NeoService service, Node childNode) {
+        Transaction tx = beginTx(service);
+        try {
+            Iterator<Node> parentIterator = childNode.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+
+                @Override
+                public boolean isStopNode(TraversalPosition currentPos) {
+                    return currentPos.lastRelationshipTraversed() != null
+                            && currentPos.lastRelationshipTraversed().isType(GeoNeoRelationshipTypes.CHILD);
+                }
+            }, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return currentPos.lastRelationshipTraversed() != null
+                            && currentPos.lastRelationshipTraversed().isType(GeoNeoRelationshipTypes.CHILD);
+                }
+            }, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
+            return parentIterator.hasNext() ? parentIterator.next() : null;
+        } finally {
+            finishTx(tx);
+        }
+    }
 }

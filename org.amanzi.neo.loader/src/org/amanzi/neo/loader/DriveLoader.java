@@ -373,7 +373,7 @@ public abstract class DriveLoader extends AbstractLoader {
 	}
 	
 	public Node getDatasetNode() {
-    	return datasetNode == null ? file : datasetNode;
+        return datasetNode;
     }
 	
 	/**

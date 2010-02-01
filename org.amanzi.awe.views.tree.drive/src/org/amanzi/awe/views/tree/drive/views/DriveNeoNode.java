@@ -21,11 +21,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
 
 /**
  * <p>
@@ -52,26 +48,28 @@ public class DriveNeoNode extends NeoNode {
     public NeoNode[] getChildren() {
         ArrayList<NeoNode> children = new ArrayList<NeoNode>();
         Traverser traverse;
-        if (isFileNode() || NeoUtils.isVirtualDataset(node)) {
-            traverse = node.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
-
-                @Override
-                public boolean isStopNode(TraversalPosition currentPos) {
-                    return !currentPos.isStartNode() && NeoUtils.isFileNode(currentPos.currentNode());
-                }
-            }, ReturnableEvaluator.ALL_BUT_START_NODE,
-                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-        } else if (isDatasetNode() || isDirectoryNode()) {        	
-            traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
-                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-        } else {
-            traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
-                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
-        }
+        traverse = NeoUtils.getChildTraverser(node);
+        // if (isFileNode() || NeoUtils.isVirtualDataset(node)) {
+        // traverse = node.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
+        //
+        // @Override
+        // public boolean isStopNode(TraversalPosition currentPos) {
+        // return !currentPos.isStartNode() && NeoUtils.isFileNode(currentPos.currentNode());
+        // }
+        // }, ReturnableEvaluator.ALL_BUT_START_NODE,
+        // GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        // } else if (isDatasetNode() || isDirectoryNode()) {
+        // traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+        // ReturnableEvaluator.ALL_BUT_START_NODE,
+        // GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        // } else {
+        // traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
+        // ReturnableEvaluator.ALL_BUT_START_NODE,
+        // NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+        // }
         int i = 0;
         for (Node node : traverse) {
-            // todo now aggregation works only for nodes with type=m
-            if (++i <= TRUNCATE_NODE || !isFileNode()) {
+            if (++i <= TRUNCATE_NODE) {
                 children.add(new DriveNeoNode(node));
             } else {
                 children.add(new AggregatesNode(node));
