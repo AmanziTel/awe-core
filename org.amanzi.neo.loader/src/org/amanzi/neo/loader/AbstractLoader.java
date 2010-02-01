@@ -1191,7 +1191,7 @@ public abstract class AbstractLoader {
                         deleteOldGisNodes(gisName, gisType, gis);
                     }
                     boolean hasRelationship = false;
-                    for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                    for (Relationship relation : gis.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
                         if (relation.getEndNode().equals(mainNode)) {
                             hasRelationship = true;
                         }

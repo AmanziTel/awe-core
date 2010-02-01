@@ -15,6 +15,7 @@ package org.amanzi.neo.loader;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,11 +26,10 @@ import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.apache.xerces.impl.xpath.regex.ParseException;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
@@ -43,6 +43,8 @@ import org.neo4j.api.core.Transaction;
  * @since 1.0.0
  */
 public class NemoLoader extends DriveLoader {
+    protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
+
     /** String EVENT_ID field */
     protected static final String EVENT_ID = INeoConstants.EVENT_ID;
     /** String TIME_FORMAT field */
@@ -88,8 +90,8 @@ public class NemoLoader extends DriveLoader {
 
     @Override
     protected void parseLine(String line) {
-    	if (parser == null) {
-        	determineFieldSepRegex(line);
+        if (parser == null) {
+            determineFieldSepRegex(line);
         }
 
         List<String> parsedLine = splitLine(line);
@@ -106,7 +108,7 @@ public class NemoLoader extends DriveLoader {
         }
 
         String eventId = event.eventId;
-        createMsNode(event);
+        createMNode(event);
         if ("GPS".equalsIgnoreCase(eventId)) {
             createPointNode(event);
             return;
@@ -152,7 +154,7 @@ public class NemoLoader extends DriveLoader {
      * 
      * @param event - event
      */
-    protected void createMsNode(Event event) {
+    protected void createMNode(Event event) {
         Transaction transaction = neo.beginTx();
         try {
             String id = event.eventId;// getEventId(event);
@@ -176,7 +178,7 @@ public class NemoLoader extends DriveLoader {
                 parentMnode.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
             }
             if (pointNode != null) {
-                pointNode.createRelationshipTo(ms, NetworkRelationshipTypes.CHILD);
+                pointNode.createRelationshipTo(ms, GeoNeoRelationshipTypes.LOCATION);
                 if (timestamp != 0) {
                     pointNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
                 }
@@ -235,9 +237,10 @@ public class NemoLoader extends DriveLoader {
      * @since 1.0.0
      */
     public class Event {
+        /** SimpleDateFormat EVENT_DATE_FORMAT field */
         protected String eventId;
         protected String time;
-        protected List<String> contextId;
+        protected List<Integer> contextId = new ArrayList<Integer>();
         protected List<String> parameters;
         protected Map<String, Object> parsedParameters;
         protected NemoEvents event;
@@ -260,12 +263,23 @@ public class NemoLoader extends DriveLoader {
             event = NemoEvents.getEventById(eventId);
             time = parcedLine.get(1);
             String numberContextId = parcedLine.get(2);
-            contextId = new ArrayList<String>();
+            contextId.clear();
             Integer firstParamsId = 3;
             if (!numberContextId.isEmpty()) {
                 int numContext = Integer.parseInt(numberContextId);
                 for (int i = 1; i <= numContext; i++) {
-                    contextId.add(parcedLine.get(firstParamsId++));
+                    int value = 0;
+                    String field = parcedLine.get(firstParamsId++);
+                    if (!field.isEmpty()) {
+                        try {
+                            value = Integer.parseInt(field);
+                        } catch (NumberFormatException e) {
+                            // TODO Handle NumberFormatException
+                            NeoLoaderPlugin.error("Wrong context id:" + field);
+                            value = 0;
+                        }
+                    }
+                    contextId.add(value);
                 }
             }
             parameters = new ArrayList<String>();
@@ -285,16 +299,33 @@ public class NemoLoader extends DriveLoader {
             if (event == null) {
                 return;
             }
-            Map<String, Object> parParam = event.fill(getVersion(), parameters);
+            Map<String, Object> parParam;
+            try {
+                parParam = event.fill(getVersion(), parameters);
+            } catch (Exception e1) {
+                System.out.println(eventId);
+                System.out.println(parameters.toString());
+                // TODO Handle Exception
+                throw (RuntimeException) new RuntimeException( ).initCause( e1 );
+            }
             if (parParam.isEmpty()) {
                 return;
+            }
+            // add context field
+            if (parParam.containsKey(NemoEvents.FIRST_CONTEXT_NAME)) {
+                List<String> contextName = (List<String>)parParam.get(NemoEvents.FIRST_CONTEXT_NAME);
+                parParam.remove(NemoEvents.FIRST_CONTEXT_NAME);
+                for (int i = 0; i < contextId.size() && i < contextName.size(); i++) {
+                    if (contextId.get(i) != 0) {
+                        parParam.put(contextName.get(i), contextId.get(i));
+                    }
+                }
             }
             if (_workDate == null && event == NemoEvents.START) {
                 _workDate = new GregorianCalendar();
                 Date date;
                 try {
-                	//TODO: Lagutko, 12.01.2010 move SimleDateFormat to constants
-                    date = new SimpleDateFormat("dd.MM.yyyy").parse((String)parParam.get("Date"));
+                    date = EVENT_DATE_FORMAT.parse((String)parParam.get("Date"));
 
                 } catch (Exception e) {
                     NeoLoaderPlugin.error("Wrong time format" + e.getLocalizedMessage());
@@ -345,7 +376,7 @@ public class NemoLoader extends DriveLoader {
         public void store(Node msNode, Map<String, Header> statisticHeaders) {
             storeProperties(msNode, EVENT_ID, eventId, statisticHeaders);
             storeProperties(msNode, INeoConstants.PROPERTY_TIME_NAME, time, statisticHeaders);
-            storeProperties(msNode, INeoConstants.EVENT_CONTEXT_ID, contextId.toArray(new String[0]), null);
+            storeProperties(msNode, INeoConstants.EVENT_CONTEXT_ID, contextId.toArray(new Integer[0]), null);
             for (String key : parsedParameters.keySet()) {
                 storeProperties(msNode, key, parsedParameters.get(key), statisticHeaders);
             }

@@ -784,6 +784,61 @@ public class NeoUtils {
     }
 
     /**
+     * Finds or create if not exist child node. Assumes existence of transaction.
+     * 
+     * @param parentNode parent node
+     * @return Pair<is node was created?,child node>
+     */
+    public static Pair<Boolean, Node> findOrCreateChildNode(NeoService service, Node parentNode, final String nodeName) {
+        Transaction tx = beginTx(service);
+        try {
+            Traverser fileNodeTraverser = NeoUtils.getChildTraverser(parentNode);
+            Node lastChild = null;
+            for (Node node : fileNodeTraverser) {
+                if (getNodeName(node).equals(nodeName)) {
+                    return new Pair<Boolean, Node>(false, node);
+                }
+                lastChild = node;
+            }
+
+            Node result = service.createNode();
+            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, nodeName);
+            if (lastChild == null) {
+                parentNode.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
+            } else {
+                lastChild.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
+            }
+            successTx(tx);
+            return new Pair<Boolean, Node>(true, result);
+        } finally {
+            finishTx(tx);
+        }
+    }
+
+    /**
+     * Finds or create if not exist child node. Assumes existence of transaction.
+     * 
+     * @param parentNode parent node
+     * @return Pair<is node was created?,child node>
+     */
+    public static Pair<Boolean, Node> findOrCreateFileNode(NeoService service, Node parentNode, final String nodeName,
+            final String fileName) {
+        Transaction tx = beginTx(service);
+        try {
+            Pair<Boolean, Node> result = findOrCreateChildNode(service, parentNode, nodeName);
+            if (result.getLeft()) {
+                Node node = result.getRight();
+                node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
+                node.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, fileName);
+            }
+            successTx(tx);
+            return result;
+        } finally {
+            finishTx(tx);
+        }
+    }
+
+    /**
      * get all network gis nodes which linked with drive nodes
      * 
      * @param service NeoService
@@ -1250,5 +1305,44 @@ public class NeoUtils {
         } finally {
             finishTx(tx);
         }
+    }
+
+    /**
+     * Get traverser by child of node (one child )
+     * 
+     * @param rootNode - root node;
+     * @return Traverser
+     */
+    public static Traverser getChildTraverser(Node rootNode) {
+        Iterator<Relationship> relations = rootNode.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+        // TODO add check on single relations?
+        if (relations.hasNext()) {
+            return relations.next().getOtherNode(rootNode).traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    ReturnableEvaluator.ALL, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        } else {
+            return emptyTraverser(rootNode);
+        }
+    }
+
+    /**
+     * return empty traverser
+     * 
+     * @param rootNode - root node
+     * @return empty traverser
+     */
+    public static Traverser emptyTraverser(Node rootNode) {
+        return rootNode.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+
+            @Override
+            public boolean isStopNode(TraversalPosition currentPos) {
+                return true;
+            }
+        }, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return false;
+            }
+        }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
     }
 }

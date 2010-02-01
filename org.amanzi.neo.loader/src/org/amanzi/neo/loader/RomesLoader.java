@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
@@ -230,8 +229,7 @@ public class RomesLoader extends DriveLoader {
                             haveEvents = haveEvents || INeoConstants.PROPERTY_TYPE_EVENT.equals(entry.getKey());
                         }
                     }
-                    // debug("\tAdded measurement: " + propertiesString(ms));
-                    mp.createRelationshipTo(ms, MeasurementRelationshipTypes.CHILD);
+                    mp.createRelationshipTo(ms, GeoNeoRelationshipTypes.LOCATION);
                     if (mNode != null) {
                         mNode.createRelationshipTo(ms, GeoNeoRelationshipTypes.NEXT);
                     }

@@ -104,7 +104,7 @@ public class OldNemoVersionLoader extends NemoLoader {
                 NeoLoaderPlugin.error("Not parsed: " + line);
                 return;
             }
-            createMsNode(event);
+            createMNode(event);
             if (latLong == null || !latLong.equals(latLon)) {
                 latLong = latLon;
                 createPointNode(event);

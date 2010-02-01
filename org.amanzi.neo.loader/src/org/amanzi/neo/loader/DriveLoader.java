@@ -24,7 +24,6 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -33,12 +32,8 @@ import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
 import org.neo4j.util.index.LuceneIndexService;
 
 public abstract class DriveLoader extends AbstractLoader {
@@ -104,21 +99,20 @@ public abstract class DriveLoader extends AbstractLoader {
      * 
      * @param measurement point to add as first point to file node if created
      */
-    protected void findOrCreateVirtualFileNode(Node mp) {
+    protected void findOrCreateVirtualFileNode(Node firstChildNode) {
         if (virtualFile == null) {
             Transaction tx = neo.beginTx();
             try {
                 Node virtualDatasetNode = getVirtualDataset(DriveTypes.MS);
-                Node reference = neo.getReferenceNode();
-                virtualFile = findOrCreateFileNode(reference, virtualDatasetNode);
-
-                virtualFile.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
+                Pair<Boolean, Node> pair = NeoUtils.findOrCreateFileNode(neo, virtualDatasetNode, basename, filename);
+                virtualFile = pair.getRight();
+                virtualFile.createRelationshipTo(firstChildNode, GeoNeoRelationshipTypes.CHILD);
 
                 Object time = null;
-                if (mp.hasProperty(INeoConstants.PROPERTY_TIME_NAME)) {
-                    time = mp.getProperty(INeoConstants.PROPERTY_TIME_NAME);
-                } else if (mp.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
-                    time = mp.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
+                if (firstChildNode.hasProperty(INeoConstants.PROPERTY_TIME_NAME)) {
+                    time = firstChildNode.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+                } else if (firstChildNode.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
+                    time = firstChildNode.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
                 }
                 debug("Added '" + time + "' as first measurement of '" + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
                 tx.success();
@@ -134,24 +128,25 @@ public abstract class DriveLoader extends AbstractLoader {
      * 
      * @param measurement point to add as first point to file node if created
      */
-    protected void findOrCreateFileNode(Node mp) {
+    protected void findOrCreateFileNode(Node firstChild) {
         if (file == null) {
             Transaction tx = neo.beginTx();
             try {
                 Node reference = neo.getReferenceNode();
                 datasetNode = findOrCreateDatasetNode(reference, dataset);
-                file = findOrCreateFileNode(reference, datasetNode);
+                Pair<Boolean, Node> pair = NeoUtils.findOrCreateFileNode(neo, datasetNode,basename,filename);
+                file=pair.getRight();
 
                 Node mainFileNode = datasetNode == null ? file : datasetNode;
-                file.createRelationshipTo(mp, GeoNeoRelationshipTypes.NEXT);
+                file.createRelationshipTo(firstChild, GeoNeoRelationshipTypes.CHILD);
                 findOrCreateGISNode(mainFileNode, GisTypes.DRIVE.getHeader());
 
                 Object time = null;
-                if (mp.hasProperty(INeoConstants.PROPERTY_TIME_NAME)) {
-                	time = mp.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+                if (firstChild.hasProperty(INeoConstants.PROPERTY_TIME_NAME)) {
+                	time = firstChild.getProperty(INeoConstants.PROPERTY_TIME_NAME);
                 }
-                else if (mp.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
-                	time = mp.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
+                else if (firstChild.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
+                	time = firstChild.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
                 }
                 debug("Added '" + time + "' as first measurement of '"
                         + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
@@ -162,43 +157,6 @@ public abstract class DriveLoader extends AbstractLoader {
         }
     }
 
-    /**
-     * Finds or create if not exist necessary file node. Assumes existence of transaction.
-     * 
-     * @param root root node
-     * @param datasetNode dataset node
-     * @return file node created
-     */
-    private Node findOrCreateFileNode(Node root, Node datasetNode) {
-        ReturnableEvaluator fileReturnableEvaluator=new ReturnableEvaluator() {
-            
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                final Node currentNode = currentPos.currentNode();
-                return NeoUtils.isFileNode(currentNode) && basename.equals(NeoUtils.getNodeName(currentNode));
-            }
-        };
-        Traverser fileNodeTraverser;
-        if (datasetNode!=null){
-            fileNodeTraverser=datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, fileReturnableEvaluator, GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING);
-        }else{
-            fileNodeTraverser = root.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(2), fileReturnableEvaluator,
-                    GeoNeoRelationshipTypes.NEXT,
-                    Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
-        }
-        final Iterator<Node> iterator = fileNodeTraverser.iterator();
-        if (iterator.hasNext()) {
-            return iterator.next();
-        }
-        Node result = neo.createNode();
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.FILE_TYPE_NAME);
-        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-        result.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-        if (datasetNode != null) {
-            datasetNode.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
-        }
-        return result;
-    }
 
     /**
      * Finds or create if not exist necessary dataset node. Assumes existance of transaction.

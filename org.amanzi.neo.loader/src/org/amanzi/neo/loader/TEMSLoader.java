@@ -31,7 +31,6 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Direction;
@@ -323,7 +322,7 @@ public class TEMSLoader extends DriveLoader {
                             }
                         }
                         // debug("\tAdded measurement: " + propertiesString(ms));
-                        mp.createRelationshipTo(m, MeasurementRelationshipTypes.CHILD);
+                        mp.createRelationshipTo(m, GeoNeoRelationshipTypes.LOCATION);
                         if (mNode != null) {
                             mNode.createRelationshipTo(m, GeoNeoRelationshipTypes.NEXT);
                         }
@@ -409,7 +408,7 @@ public class TEMSLoader extends DriveLoader {
                         }
 
                         virtualMnode = ms;
-                        mp.createRelationshipTo(ms, GeoNeoRelationshipTypes.CHILD);
+                        mp.createRelationshipTo(ms, GeoNeoRelationshipTypes.LOCATION);
                     }
                     GisProperties gisProperties = getGisProperties(getVirtualDatasetName());
                     gisProperties.updateBBox(currentLatitude, currentLongitude);

@@ -390,7 +390,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Call context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Call type";
@@ -434,7 +436,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Call context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Call type";
@@ -462,7 +466,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Call context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Call type";
@@ -489,7 +495,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Call context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Call type";
@@ -517,7 +525,10 @@ public enum NemoEvents {
             final Integer system = getIntegerValue(parameters);
             parsedParameters.put(key, system);
             if (system == 2) {
-                parsedParameters.put("Call context ID", getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                key = "Call context ID";
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 parsedParameters.put("PTT state", getIntegerValue(parameters));
                 parsedParameters.put("PTT comm. type", getIntegerValue(parameters));
                 parsedParameters.put("PTT user identity", getStringValue(parameters));
@@ -533,11 +544,13 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Data connection context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(3);
+                contextName.add(key);
                 key = "Packet session context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                contextName.add(key);
                 key = "Call context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "Application protocol";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Host address";
@@ -564,7 +577,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Data connection context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "Application protocol";
                 parsedParameters.put(key, getIntegerValue(parameters));
             } else if ("1.86".equals(version)) {
@@ -585,7 +600,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Data connection context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "Application protocol";
                 final Integer protocol = getIntegerValue(parameters);
                 parsedParameters.put(key, protocol);
@@ -640,7 +657,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Data connection context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "Application protocol";
                 Integer protocol = getIntegerValue(parameters);
                 parsedParameters.put(key, protocol);
@@ -692,10 +711,12 @@ public enum NemoEvents {
             Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
+                List<String> contextName = new ArrayList<String>(2);
                 String key = "Data transfer context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                contextName.add(key);
                 key = "Data connection context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "Application protocol";
                 final Integer protocol = getIntegerValue(parameters);
                 parsedParameters.put(key, protocol);
@@ -785,7 +806,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Data transfer context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "Application protocol";
                 final Integer protocol = getIntegerValue(parameters);
                 parsedParameters.put(key, protocol);
@@ -865,7 +888,9 @@ public enum NemoEvents {
             Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             String key = "Data transfer context ID";
-            parsedParameters.put(key, getStringValue(parameters));
+            List<String> contextName = new ArrayList<String>(1);
+            contextName.add(key);
+            parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
             key = "Application protocol";
             parsedParameters.put(key, getIntegerValue(parameters));
             key = "App. rate UL";
@@ -886,7 +911,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Data transfer context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "Application protocol";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "PER UL";
@@ -960,7 +987,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Data transfer context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "Application protocol";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 parsedParameters.put("Ping size", getIntegerValue(parameters));
@@ -977,7 +1006,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Data transfer context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "Application protocol";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 parsedParameters.put("Jitter UL", getIntegerValue(parameters));
@@ -994,7 +1025,10 @@ public enum NemoEvents {
             if ("2.01".equals(version)) {
                 String key = "Application protocol";
                 parsedParameters.put(key, getIntegerValue(parameters));
-                parsedParameters.put("Data transfer context ID", getStringValue(parameters));
+                key = "Data transfer context ID";
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 parsedParameters.put("Stream state", getIntegerValue(parameters));
                 parsedParameters.put("Stream bandwidth", getIntegerValue(parameters));
 
@@ -1254,14 +1288,19 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Application protocol";
-                parsedParameters.put(key, getIntegerValue(parameters));
-                // if WAP
-                parsedParameters.put("Data transfer context ID", getStringValue(parameters));
-                parsedParameters.put("Number of content elements", getIntegerValue(parameters));
-                parsedParameters.put("Number of parameters per content", getIntegerValue(parameters));
-                parsedParameters.put("Content URL", getStringValue(parameters));
-                parsedParameters.put("Content type", getIntegerValue(parameters));
-                parsedParameters.put("Content size", getIntegerValue(parameters));
+                Integer apPr = getIntegerValue(parameters);
+                parsedParameters.put(key, apPr);
+                if (apPr == 8 || apPr == 10) {
+                    key = "Data transfer context ID";
+                    List<String> contextName = new ArrayList<String>(1);
+                    contextName.add(key);
+                    parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
+                    parsedParameters.put("Number of content elements", getIntegerValue(parameters));
+                    parsedParameters.put("Number of parameters per content", getIntegerValue(parameters));
+                    parsedParameters.put("Content URL", getStringValue(parameters));
+                    parsedParameters.put("Content type", getIntegerValue(parameters));
+                    parsedParameters.put("Content size", getIntegerValue(parameters));
+                }
 
             }
             return parsedParameters;
@@ -3712,7 +3751,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Handover context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "#Header params";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "HOA type";
@@ -3779,7 +3820,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Handover context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
             }
             return parsedParameters;
         }
@@ -3817,7 +3860,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Handover context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "Old system";
                 Integer system = getIntegerValue(parameters);
                 parsedParameters.put(key, system);
@@ -3986,7 +4031,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Location area update context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "LAU type";
@@ -4005,7 +4052,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Location area update context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Old LAC";
@@ -4037,7 +4086,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Location area update context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 final Integer system = getIntegerValue(parameters);
                 parsedParameters.put(key, system);
@@ -5086,7 +5137,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "RRC context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 parsedParameters.put("RRC est. cause", getIntegerValue(parameters));
@@ -5106,7 +5159,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "RRC context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 parsedParameters.put("#RRC att.", getIntegerValue(parameters));
@@ -5127,7 +5182,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "RRC context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 parsedParameters.put("#RRC att. abort", getIntegerValue(parameters));
@@ -5151,7 +5208,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "RRC context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 parsedParameters.put("RRC rel. status", getIntegerValue(parameters));
@@ -5746,7 +5805,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Packet session context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 final Integer system = getIntegerValue(parameters);
                 parsedParameters.put(key, system);
@@ -5781,7 +5842,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Packet session context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Fail status";
@@ -5804,7 +5867,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Packet session context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Packet act. state";
@@ -5827,7 +5892,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Packet session context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Deact. status";
@@ -5853,9 +5920,10 @@ public enum NemoEvents {
             Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
-
                 String key = "Packet session context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Avg. TPut class";
@@ -5973,7 +6041,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Packet session context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Avg. TPut class";
@@ -6060,7 +6130,10 @@ public enum NemoEvents {
             Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
-                parsedParameters.put("Attach context ID", getStringValue(parameters));
+                String key = "Attach context ID";
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 parsedParameters.put("System", getIntegerValue(parameters));
             }
             return parsedParameters;
@@ -6202,7 +6275,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Attach context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Attach fail";
@@ -6224,7 +6299,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Attach context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
             } else if ("1.86".equals(version)) {
@@ -6241,7 +6318,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Attach context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Detach status";
@@ -6405,7 +6484,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Routing area update context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "RAU type";
@@ -6424,7 +6505,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Routing area update context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Old RAC";
@@ -6453,7 +6536,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Routing area update context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Att. RAC";
@@ -6859,7 +6944,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Data transfer context ID";
-                parsedParameters.put(key, getStringValue(parameters));
+                List<String> contextName = new ArrayList<String>(1);
+                contextName.add(key);
+                parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "VQ type";
                 final Integer vqType = getIntegerValue(parameters);
                 parsedParameters.put(key, vqType);
@@ -7411,6 +7498,9 @@ public enum NemoEvents {
                 parsedParameters.put("#Locks", getIntegerValue(parameters));
                 final Integer lockType = getIntegerValue(parameters);
                 parsedParameters.put("Lock type", lockType);
+                if (lockType == null) {
+                    return parsedParameters;
+                }
                 if (lockType == 1) {
                     parsedParameters.put("#parameters", getIntegerValue(parameters));
                     parsedParameters.put("Ch. lock channel", getIntegerValue(parameters));
@@ -7435,6 +7525,7 @@ public enum NemoEvents {
             return parsedParameters;
         }
     };
+    public static String FIRST_CONTEXT_NAME = "FIRST_CONTEXT_NAMEFIRST_CONTEXT_NAME";
     private static HashMap<String, NemoEvents> eventsList = new HashMap<String, NemoEvents>();
     static {
         for (NemoEvents event : NemoEvents.values()) {
