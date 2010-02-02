@@ -40,7 +40,6 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
 
     @Override
     public Object getParent(Object element) {
-        // TODO optimize
         Transaction tx = neoServiceProvider.getService().beginTx();
         try {
             if (element instanceof NeoNode) {
@@ -48,7 +47,7 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
                 if (NeoUtils.isDatasetNode(node)) {
                     return getRoot();
                 } else {
-                    return new DriveNeoNode(NeoUtils.getParent(null, node));
+                    return findParent(new DriveNeoNode(NeoUtils.getParent(null, node)), node);
                 }
             } else {
                 return super.getParent(element);

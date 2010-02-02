@@ -1376,4 +1376,38 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
+
+    /**
+     *Return type of gis
+     * 
+     * @param gisNode GIS node
+     * @param service neoservice if null then transaction do not created
+     * @return GisTypes or null
+     */
+    public static GisTypes getGisType(Node gisNode, NeoService service) {
+        Transaction tx = beginTx(service);
+        try {
+            String typeId = (String)gisNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "");
+            return GisTypes.findGisTypeByHeader(typeId);
+        } finally {
+            finishTx(tx);
+        }
+    }
+
+    /**
+     * Return location node of current drive node
+     * 
+     * @param node - drive node
+     * @param service neoservice if null then transaction do not created
+     * @return location node or null
+     */
+    public static Node getLocationNode(Node node, NeoService service) {
+        Transaction tx = beginTx(service);
+        try {
+            return node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING) ? node.getSingleRelationship(
+                    GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING).getOtherNode(node) : null;
+        } finally {
+            finishTx(tx);
+        }
+    }
 }

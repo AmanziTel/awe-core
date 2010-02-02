@@ -178,7 +178,7 @@ public class NemoLoader extends DriveLoader {
                 parentMnode.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
             }
             if (pointNode != null) {
-                pointNode.createRelationshipTo(ms, GeoNeoRelationshipTypes.LOCATION);
+                ms.createRelationshipTo(pointNode, GeoNeoRelationshipTypes.LOCATION);
                 if (timestamp != 0) {
                     pointNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
                 }

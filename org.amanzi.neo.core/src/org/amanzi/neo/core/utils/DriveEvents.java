@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.icons.IconManager.EventIcons;
@@ -281,7 +282,7 @@ public enum DriveEvents {
                     Node node = currentPos.currentNode();
                     return node.hasProperty(INeoConstants.PROPERTY_TYPE_EVENT);
                 }
-            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+            }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
             boolean haveEvents = false;
             MSNODE: for (Node node : traverser) {
                 haveEvents=true;

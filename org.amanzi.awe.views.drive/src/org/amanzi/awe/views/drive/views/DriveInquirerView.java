@@ -44,6 +44,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.eclipse.core.resources.IFile;
@@ -952,7 +953,7 @@ public class DriveInquirerView extends ViewPart {
             return;
         }
         setTimeFromField();
-        Node gis = getDatasetNode();
+        Node gis = getGisDriveNode();
 
         if (gis == null) {
             return;
@@ -1057,7 +1058,7 @@ public class DriveInquirerView extends ViewPart {
      *update chart
      */
     private void updateChart() {
-        Node gis = getDatasetNode();
+        Node gis = getGisDriveNode();
         String event = cEvent.getText();
         String property1 = cProperty1.getText();
         String property2 = cProperty1.getText();
@@ -1086,7 +1087,7 @@ public class DriveInquirerView extends ViewPart {
      */
     private void fireEventUpdateChart() {
         IMap activeMap = ApplicationGIS.getActiveMap();
-        Node gis = getDatasetNode();
+        Node gis = getGisDriveNode();
         if (activeMap != ApplicationGIS.NO_MAP) {
             try {
                 for (ILayer layer : activeMap.getMapLayers()) {
@@ -1130,7 +1131,7 @@ public class DriveInquirerView extends ViewPart {
      * @param geo
      */
     private void setProperty(GeoNeo geo) {
-        Node gisNode = getDatasetNode();
+        Node gisNode = getGisDriveNode();
         if (!geo.getMainGisNode().equals(gisNode)) {
             return;
         }
@@ -1235,11 +1236,9 @@ public class DriveInquirerView extends ViewPart {
     private void formPropertyLists() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            Node dataset = getDatasetNode();
-//            dataset = new ArrayList<Node>();
-//            dataset.addAll(NeoUtils.getAllFileNodes(gis).getAllNodes());
+            Node gis = getGisDriveNode();
             currentIndex = cDrive.getSelectionIndex();
-            PropertyHeader propertyHeader = new PropertyHeader(dataset);
+            PropertyHeader propertyHeader = new PropertyHeader(gis);
             Collection<String> events = propertyHeader.getEvents();
             eventList = new ArrayList<String>();
             eventList.add(ALL_EVENTS);
@@ -1256,11 +1255,9 @@ public class DriveInquirerView extends ViewPart {
                 cProperty2.select(0);
             }
             initializeIndex(cDrive.getText());
-//            Node root = dataset.get(currentIndex);
-//            Node mp = getFirstMpNode(root);
-//            Long time = NeoUtils.getNodeTime(mp);
-            beginGisTime = (Long)dataset.getProperty(INeoConstants.MIN_TIMESTAMP, null);
-            endGisTime = (Long)dataset.getProperty(INeoConstants.MAX_TIMESTAMP, null);
+            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis, null);
+            beginGisTime = minMax.getLeft();
+            endGisTime = minMax.getRight();
             setBeginTime(beginGisTime);
 
         } finally {
@@ -1274,7 +1271,7 @@ public class DriveInquirerView extends ViewPart {
      * 
      * @return node
      */
-    private Node getDatasetNode() {
+    private Node getGisDriveNode() {
         return gisDriveNodes == null ? null : gisDriveNodes.get(cDrive.getText());
     }
 

@@ -357,28 +357,16 @@ public class CorrelationManager extends ViewPart {
                 }
             }
             Relationship storeRelation = networkGis.createRelationshipTo(driveGis, NetworkRelationshipTypes.LINKED_NETWORK_DRIVE);
-            Traverser traverse = driveGis.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
-                
-                @Override
-                public boolean isStopNode(TraversalPosition currentPos) {
-                    if (currentPos.isStartNode()) {
-                        return false;
-                    }
-                    // TODO refactor if necessary after change database structure
-                    Relationship rel = currentPos.lastRelationshipTraversed();
-                    if (NetworkRelationshipTypes.CHILD.name().equals(rel.getType().name())) {
-                        return !NeoUtils.isDriveMNode(currentPos.currentNode());
-                    }
-                    return false;
-                }
-            }, new ReturnableEvaluator() {
+            Traverser traverse = driveGis
+                    .traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node = currentPos.currentNode();
                     return node.hasProperty(INeoConstants.SECTOR_ID_PROPERTIES)&&NeoUtils.isDrivePointNode(node);
                 }
-            }, NetworkRelationshipTypes.CHILD, Direction.BOTH, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.LOCATION,
+                            Direction.OUTGOING);
             Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(driveGis, service, false);
             int count = 0;
             for (Node node : traverse) {

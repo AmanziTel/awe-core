@@ -322,7 +322,7 @@ public class TEMSLoader extends DriveLoader {
                             }
                         }
                         // debug("\tAdded measurement: " + propertiesString(ms));
-                        mp.createRelationshipTo(m, GeoNeoRelationshipTypes.LOCATION);
+                        m.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
                         if (mNode != null) {
                             mNode.createRelationshipTo(m, GeoNeoRelationshipTypes.NEXT);
                         }
@@ -408,7 +408,7 @@ public class TEMSLoader extends DriveLoader {
                         }
 
                         virtualMnode = ms;
-                        mp.createRelationshipTo(ms, GeoNeoRelationshipTypes.LOCATION);
+                        ms.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
                     }
                     GisProperties gisProperties = getGisProperties(getVirtualDatasetName());
                     gisProperties.updateBBox(currentLatitude, currentLongitude);

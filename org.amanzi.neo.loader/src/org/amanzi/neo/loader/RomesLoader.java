@@ -67,6 +67,9 @@ public class RomesLoader extends DriveLoader {
      *initialize start date
      */
     private void initData() {
+        if (_workDate != null) {
+            return;
+        }
         Pattern p = Pattern.compile(".*_(\\d{6})_.*");
         Matcher m = p.matcher(filename);
         Date date;
@@ -229,17 +232,13 @@ public class RomesLoader extends DriveLoader {
                             haveEvents = haveEvents || INeoConstants.PROPERTY_TYPE_EVENT.equals(entry.getKey());
                         }
                     }
-                    mp.createRelationshipTo(ms, GeoNeoRelationshipTypes.LOCATION);
+                    ms.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
                     if (mNode != null) {
                         mNode.createRelationshipTo(ms, GeoNeoRelationshipTypes.NEXT);
                     }
                     ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, getMNodeName(dataLine));
                     mNode = ms;
-                    // if (prev_ms != null) {
-                    // prev_ms.createRelationshipTo(ms, MeasurementRelationshipTypes.NEXT);
-                    // }
                     index(ms);
-                    // prev_ms = ms;
                 }
                 if (haveEvents) {
                     index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, dataset);

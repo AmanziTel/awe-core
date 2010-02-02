@@ -22,6 +22,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -122,12 +123,12 @@ public class ETSICorrellator {
 	        Node originalMpNode = getMpNode(orignalMNode);
 	        
 	        Node newMpNode = copyMPNode(originalMpNode);
-	        newMpNode.createRelationshipTo(mNode, GeoNeoRelationshipTypes.CHILD);
+            mNode.createRelationshipTo(newMpNode, GeoNeoRelationshipTypes.LOCATION);
 	        realDatasetLocationIndex.add(newMpNode);
 	        
 	        if (callNode != null) {
 	            newMpNode = copyMPNode(originalMpNode);
-	            newMpNode.createRelationshipTo(callNode, GeoNeoRelationshipTypes.VIRTUAL_CHILD);
+                callNode.createRelationshipTo(newMpNode, GeoNeoRelationshipTypes.LOCATION);
 	            callDatasetLocationIndex.add(newMpNode);
 	        }
 	    }
@@ -271,7 +272,7 @@ public class ETSICorrellator {
             public boolean isReturnableNode(TraversalPosition currentPos) { 
                 return (currentPos.depth() == 1) && (NeoUtils.isCallNode(currentPos.currentNode()));
             }
-        }, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator();
+        }, ProbeCallRelationshipType.CALL_M, Direction.INCOMING).iterator();
 	    
 	    if (mNodesIterator.hasNext()) {
 	        Node callNode = mNodesIterator.next();
@@ -283,7 +284,7 @@ public class ETSICorrellator {
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return (currentPos.depth() == 1) && (NeoUtils.isDrivePointNode(currentPos.currentNode()));
                 }
-            }, GeoNeoRelationshipTypes.VIRTUAL_CHILD, Direction.OUTGOING).iterator();
+            }, GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING).iterator();
 	        
 	        if (mpNodesIterator.hasNext()) {
 	            return null;

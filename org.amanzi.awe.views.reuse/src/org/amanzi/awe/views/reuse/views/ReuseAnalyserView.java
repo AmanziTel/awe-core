@@ -221,7 +221,6 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String ERROR_MSG_NULL = "It is not found numerical values of the selected property";
     // error messages for statistic calculation
     private String errorMsg = UNKNOWN_ERROR;
-    private GeoNeoRelationshipTypes childRelation;
 
     public void createPartControl(Composite parent) {
         aggregatedProperties.clear();
@@ -1433,8 +1432,6 @@ public class ReuseAnalyserView extends ViewPart {
         final GisTypes typeOfGis = geoNode.getGisType();
         if (typeOfGis == GisTypes.DRIVE) {
             Node gisDataset = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(gisNode);
-            childRelation = NeoUtils.isVirtualDataset(gisDataset) ? GeoNeoRelationshipTypes.VIRTUAL_CHILD
-                    : GeoNeoRelationshipTypes.NEXT;
         }
         int totalWork = (int)geoNode.getCount() * 2;
         System.out.println("Starting to compute statistics for "+propertyName+" with estimated work size of "+totalWork);
@@ -1465,11 +1462,11 @@ public class ReuseAnalyserView extends ViewPart {
                 Number valueNum = (Number)propertyValue;
                 if (typeOfGis == GisTypes.DRIVE && select != Select.EXISTS) {
                     //Lagutko, 27.01.2010, m node can have no relationships to mp
-                    Relationship relationshipToMp = node.getSingleRelationship(childRelation, Direction.INCOMING);
+                    Relationship relationshipToMp = node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
                     if (relationshipToMp == null) {
                         continue;
                     }
-                    Node mpNode = relationshipToMp.getStartNode();
+                    Node mpNode = relationshipToMp.getOtherNode(node);
                     Number oldValue = mpMap.get(mpNode);
                     if (oldValue == null) {
                         if (select == Select.FIRST) {
@@ -1619,7 +1616,7 @@ public class ReuseAnalyserView extends ViewPart {
                     for (Column column : keySet) {
                         if (column.containsValue(value)) {
                             Integer count = result.get(column);
-                            column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
+                            column.getNode().createRelationshipTo(getNodeToLink(node, typeOfGis), NetworkRelationshipTypes.AGGREGATE);
                             result.put(column, 1 + (count == null ? 0 : count));
                             break;
                         }
@@ -1680,6 +1677,7 @@ public class ReuseAnalyserView extends ViewPart {
             IProgressMonitor monitor) {
         Transaction tx = NeoUtils.beginTransaction();
         try {
+            GisTypes gisTypes = NeoUtils.getGisType(gisNode, null);
             Node propertyNode = new PropertyHeader(gisNode).getPropertyNode(propertyName);
             if (propertyNode == null) {
                 return false;
@@ -1705,7 +1703,7 @@ public class ReuseAnalyserView extends ViewPart {
                     String propertyVal = node.getProperty(propertyName).toString();
                     for (Column column : columns) {
                         if (propertyVal.equals(column.propertyValue)) {
-                            column.getNode().createRelationshipTo(getNodeToLink(node), NetworkRelationshipTypes.AGGREGATE);
+                            column.getNode().createRelationshipTo(getNodeToLink(node, gisTypes), NetworkRelationshipTypes.AGGREGATE);
                             break;
                         }
                     }
@@ -1720,13 +1718,15 @@ public class ReuseAnalyserView extends ViewPart {
 
     /**
      * @param node
+     * @param gisTypes
      * @return
      */
-    private Node getNodeToLink(Node node) {
-        if (NeoUtils.getNodeType(node, "").equals(INeoConstants.HEADER_M)) {
-            return node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(node);
+    private Node getNodeToLink(Node node, GisTypes gisTypes) {
+        if (gisTypes == GisTypes.NETWORK) {
+            return node;
+        } else {
+            return NeoUtils.getLocationNode(node, null);
         }
-        return node;
     }
 
     /**
@@ -1744,7 +1744,7 @@ public class ReuseAnalyserView extends ViewPart {
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 return !currentPos.isStartNode() && currentPos.currentNode().hasProperty(propertyName);
             }
-        }, childRelation, Direction.OUTGOING);
+        }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
         Node minNode = null;
         for (Node node : traverse) {
             minNode = minNode == null || minNode.getId() > node.getId() ? node : minNode;
@@ -2264,7 +2264,7 @@ public class ReuseAnalyserView extends ViewPart {
     private Number calculateAverageValueOfMpNode(Node mpNode, String properties) {
         Double result = new Double(0);
         int count = 0;
-        for (Relationship relation : mpNode.getRelationships(childRelation, Direction.OUTGOING)) {
+        for (Relationship relation : mpNode.getRelationships(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING)) {
             Node node = relation.getEndNode();
                 result = result + ((Number)node.getProperty(properties, new Double(0))).doubleValue();
                 count++;
