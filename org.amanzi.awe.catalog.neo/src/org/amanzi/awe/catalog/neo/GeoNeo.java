@@ -23,6 +23,7 @@ import java.util.Set;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
@@ -37,7 +38,6 @@ import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -145,16 +145,6 @@ public class GeoNeo {
 
         private static double[] getCoords(Node next) {
             double[] result = getCoordsFromNode(next);
-
-            // Lagutko, 3.01.2010, if we didn't find coordinates from current node
-            // than we should try to find them from correlated node
-            if (result == null) {
-                Node correlatedNode = getCorrelatedNode(next);
-                if (correlatedNode != null) {
-                    result = getCoordsFromNode(correlatedNode);
-                }
-            }
-
             return result;
         }
 
@@ -174,33 +164,6 @@ public class GeoNeo {
             return null;
         }
 
-        /**
-         * Searches for the correlated node for current node
-         * 
-         * @param next current node
-         * @return correlated node
-         * @author Lagutko_N
-         */
-        private static Node getCorrelatedNode(Node next) {
-            Iterator<Node> correlationNode = next.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,
-                    ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CORRELATE_RIGHT, Direction.OUTGOING).iterator();
-
-            if (correlationNode.hasNext()) {
-                Node currentNode = correlationNode.next();
-                Iterator<Node> correlatedNodes = currentNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,
-                        ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CORRELATE_LEFT, Direction.INCOMING)
-                        .iterator();
-
-                while (correlatedNodes.hasNext()) {
-                    Node correlatedNode = correlatedNodes.next();
-                    if (!correlatedNode.equals(currentNode)) {
-                        return correlatedNode;
-                    }
-                }
-            }
-
-            return null;
-        }
     }
 
     /**
@@ -278,22 +241,34 @@ public class GeoNeo {
             MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(neo, NeoUtils.getLocationIndexName(name),
                     new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
                     new MultiDoubleConverter(0.001));
-            return index.searchTraverser(new Double[] {searchBounds.getMinY(), searchBounds.getMinX()}, new Double[] {
-                    searchBounds.getMaxY(), searchBounds.getMaxX()});
+             return index.searchTraverser(new Double[] {searchBounds.getMinY(),
+             searchBounds.getMinX()}, new Double[] {
+             searchBounds.getMaxY(), searchBounds.getMaxX()});
 
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("GeoNeo: Failed to search location index, doing exhaustive search: " + e);
             if (searchBounds == null) {
-                return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                        ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return NeoUtils.isDrivePointNode(currentPos.currentNode());
+                    }
+                }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.LOCATION,
+                        Direction.OUTGOING);
             } else {
                 return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
+                        if (!NeoUtils.isDrivePointNode(currentPos.currentNode())) {
+                            return false;
+                        }
                         double[] c = GeoNode.getCoords(currentPos.currentNode());
                         return c != null && searchBounds.contains(c[0], c[1]);
                     }
-                }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                }, GeoNeoRelationshipTypes.NEXT, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING,
+                        GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
             }
         }
     }
@@ -346,6 +321,7 @@ public class GeoNeo {
                     bbox_e.printStackTrace(System.err);
                 } finally {
                     tx.finish();
+                    NeoServiceProvider.getProvider().commit();
                 }
             }
             // System.out.println("Determined bounding box for " + this.name + ": " + this.bounds);
