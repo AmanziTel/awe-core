@@ -12,10 +12,15 @@
  */
 package org.amanzi.neo.loader.dialogs;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -29,7 +34,11 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.NemoLoader;
@@ -43,6 +52,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -64,6 +75,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Traverser;
 
@@ -107,7 +119,9 @@ public class DriveDialog {
     /*
      * Layout for One column and Fixed Width
      */
-    private final static GridLayout layoutOneColumnNotFixedWidth = new GridLayout(1, false); 
+    private final static GridLayout layoutOneColumnNotFixedWidth = new GridLayout(1, false);
+
+    private static final int MAX_NEMO_LINE_READ = 20;
 	
 	/*
 	 * Shell of this Dialog
@@ -148,7 +162,11 @@ public class DriveDialog {
 	 * Load button
 	 */
 	private Button loadButton;
-	
+    /**
+     * file data
+     */
+    private Calendar workData = null;
+    private boolean applyToAll = false;
 	/*
 	 * Maps for storing name of file and path to file
 	 */
@@ -690,15 +708,7 @@ public class DriveDialog {
 	 * 
 	 */
 	
-	private void loadDriveData(Display display, IProgressMonitor monitor) {
-		
-
-        // display.asyncExec(new Runnable() {
-        // public void run() {
-        // dialogShell.close();
-        // }
-        // });
-		
+    private void loadDriveData(Display display, IProgressMonitor monitor) {
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();
 		}
@@ -709,15 +719,19 @@ public class DriveDialog {
         for (String fileName : loadedFiles.keySet()) {
             String filePath = loadedFiles.get(fileName);
 			try {
+                Calendar time = getDate(filePath);
+                if (time == null) {
+                    continue;
+                }
                 String extension = getFileExt(filePath);
                 if (extension.toLowerCase().equals("fmt")) {
-                    driveLoader = new TEMSLoader(getDate(filePath), filePath, display, datasetName);
+                    driveLoader = new TEMSLoader(time, filePath, display, datasetName);
 			    } else if(extension.toLowerCase().equals("asc")) {
-                    driveLoader = new RomesLoader(filePath, display, datasetName);
+                    driveLoader = new RomesLoader(time, filePath, display, datasetName);
                 } else if (extension.toLowerCase().equals("nmf")) {
-                    driveLoader = new NemoLoader(filePath, display, datasetName);
+                    driveLoader = new NemoLoader(time, filePath, display, datasetName);
                 } else if (extension.toLowerCase().equals("dt1")) {
-                    driveLoader = new OldNemoVersionLoader(filePath, display, datasetName);
+                    driveLoader = new OldNemoVersionLoader(time, filePath, display, datasetName);
                 } else {
 			        NeoLoaderPlugin.error("Unsupported file extension: "+extension);
 			    }			    
@@ -769,35 +783,142 @@ public class DriveDialog {
      * @param filePath file path
      * @return data
      */
-    private Calendar getDate(String filePath) {
-        // TODO implement in feature 913
-        // ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
-        // int result;
-        //
-        // @Override
-        // public void run() {
-        //
-        // MessageDialogWithToggle dialog = new DateTimeDialogWithToggle(PlatformUI.getWorkbench()
-        // .getActiveWorkbenchWindow().getShell(),
-        // "ssss", null, // accept the default window icon
-        // "ssss", MessageDialogWithToggle.QUESTION, new String[] { IDialogConstants.YES_LABEL,
-        // IDialogConstants.NO_LABEL}, 0, "sss", true, 10, 10, 10);
-        // dialog.open();
-        // result = dialog.getReturnCode();
-        // }
-        //
-        // @Override
-        // public Integer getValue() {
-        // return result;
-        // }
-        // });
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTimeInMillis(new File(filePath).lastModified());
-        calendar.set(Calendar.HOUR, 0);
+    private Calendar getDate(final String filePath) {
+        final Pair<Boolean, Calendar> timePair = getTimeOfFile(filePath);
+        if (!timePair.getLeft()) {
+            if (workData != null && applyToAll) {
+                return workData;
+            }
+            Calendar result = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Calendar>() {
+                Calendar result;
+                private DateTimeDialogWithToggle dialog;
+
+                @Override
+                public void run() {
+                    Calendar prefDate = timePair.getRight();
+                    dialog = new DateTimeDialogWithToggle(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Date of file", null, String.format(
+                            "File '%s' has no date information.", new File(filePath).getName()), "Please specify the date on which this data was collected:",
+                            MessageDialogWithToggle.QUESTION, new String[] {IDialogConstants.CANCEL_LABEL, IDialogConstants.OK_LABEL}, 0,
+                            "apply this date to all files in this load ", applyToAll, prefDate.get(Calendar.YEAR), prefDate.get(Calendar.MONTH), prefDate
+                                    .get(Calendar.DAY_OF_MONTH));
+                    dialog.open();
+                    if (dialog.getReturnCode() == IDialogConstants.OK_ID) {
+                        result = dialog.getCallendar();
+                        applyToAll = dialog.getToggleState();
+                    } else {
+                        result = null;
+                    }
+                }
+
+                @Override
+                public Calendar getValue() {
+                    return result;
+                }
+            });
+            if (result == null) {
+                return null;
+            } else {
+                workData = result;
+                return result;
+            }
+
+        } else {
+            return timePair.getRight();
+        }
+    }
+
+    /**
+     * Get time of drive file
+     * 
+     * @param filePath - full file name
+     * @return Pair<is time correct?, time of drive file>
+     */
+    private Pair<Boolean, Calendar> getTimeOfFile(String filePath) {
+        String extension = getFileExt(filePath).toLowerCase();
+        File file = new File(filePath);
+        boolean correctTime = false;
+        Calendar calendar = new GregorianCalendar();
+        // roms data
+        if (extension.equals("asc")) {
+            CharSequence filename = file.getName();
+            Pattern p = Pattern.compile(".*_(\\d{6})_.*");
+            Matcher m = p.matcher(filename);
+            if (m.matches()) {
+                String dateText = m.group(1);
+                try {
+                    calendar.setTimeInMillis(new SimpleDateFormat("yyMMdd").parse(dateText).getTime());
+                    correctTime = true;
+                } catch (ParseException e) {
+                    NeoLoaderPlugin.error("Wrong filename format: " + filename);
+                    correctTime = false;
+                    calendar.setTimeInMillis(file.lastModified());
+                }
+            } else {
+                NeoLoaderPlugin.error("Wrong filename format: " + filename);
+                calendar.setTimeInMillis(file.lastModified());
+                correctTime = false;
+            }
+
+        }// TEMS
+        else if (extension.equals("fmt")) {
+            correctTime=false;
+            calendar.setTimeInMillis(file.lastModified());
+        }// NEMO 1.86
+        else if (extension.equals("dt1")) {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+                String line = reader.readLine();
+                reader.close();
+                calendar.setTimeInMillis(new SimpleDateFormat("dd.MM.yyyy").parse(line.split("     ")[2]).getTime());
+                correctTime=true;
+            } catch (Exception e) {
+                NeoLoaderPlugin.exception(e);
+                correctTime=false;
+                calendar.setTimeInMillis(file.lastModified());
+            } 
+        }//NEMO2.1
+        else if (extension.equals("nmf")) {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+                String line;
+                boolean found=false;
+                int c=0;
+                while ((line = reader.readLine()) != null&&++c<MAX_NEMO_LINE_READ) {
+                    if (line.startsWith("#START")){
+                        found = true;
+                        break;
+                    }
+                }
+                reader.close();
+                if (found) {
+                    CSVParser parser = new CSVParser(',');
+                    String data = parser.parse(line).get(3);
+                    calendar.setTimeInMillis(new SimpleDateFormat("dd.MM.yyyy").parse(data).getTime());
+                    correctTime = true;
+                } else {
+                    correctTime = false;
+                    calendar.setTimeInMillis(file.lastModified());
+                }
+            } catch (Exception e) {
+                NeoLoaderPlugin.exception(e);
+                correctTime=false;
+                calendar.setTimeInMillis(file.lastModified());
+            } 
+        }       
+        roundTime(calendar);
+        return new Pair<Boolean, Calendar>(correctTime, calendar);
+    }
+
+    /**
+     * Round time in calendar to start of day
+     * 
+     * @param calendar - calendar
+     */
+    private void roundTime(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        return calendar;
     }
 
     /**

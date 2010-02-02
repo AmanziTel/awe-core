@@ -281,8 +281,10 @@ public abstract class DriveLoader extends AbstractLoader {
     }
 
     public static void printTimesStats() {
+        if (times != null && times[0] != 0) {
         System.err.println("Finished " + times[0] + " loads in " + times[1] / 60000.0 + " minutes (average "
                 + (times[1] / times[0]) / 1000.0 + " seconds per load)");
+        }
     }
 
     protected int incValidMessage() {

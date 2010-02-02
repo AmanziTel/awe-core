@@ -1701,10 +1701,14 @@ public class ReuseAnalyserView extends ViewPart {
             for (Node node : travers) {
                 if (node.hasProperty(propertyName)) {
                     String propertyVal = node.getProperty(propertyName).toString();
+                    Node nodeToLink = getNodeToLink(node, gisTypes);
+                    if (nodeToLink == null) {
+                        continue;
+                    }
                     for (Column column : columns) {
                         if (propertyVal.equals(column.propertyValue)) {
-                            column.getNode().createRelationshipTo(getNodeToLink(node, gisTypes), NetworkRelationshipTypes.AGGREGATE);
-                            break;
+                                column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
+                                break;
                         }
                     }
                 }

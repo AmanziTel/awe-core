@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
@@ -64,7 +65,8 @@ public class NemoLoader extends DriveLoader {
      * @param display for opening message dialogs
      * @param dataset to add data to
      */
-    public NemoLoader(String filename, Display display, String dataset) {
+    public NemoLoader(Calendar time, String filename, Display display, String dataset) {
+        _workDate = time;
         driveType = DriveTypes.NEMO2;
         initialize("Nemo", null, filename, display, dataset);
         headers = getHeaderMap(1).headers;

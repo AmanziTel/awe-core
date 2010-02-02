@@ -16,6 +16,7 @@ package org.amanzi.neo.loader;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -52,12 +53,13 @@ public class OldNemoVersionLoader extends NemoLoader {
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
      * 
+     * @param time - file time
      * @param filename of file to load
      * @param display for opening message dialogs
      * @param dataset to add data to
      */
-    public OldNemoVersionLoader(String filename, Display display, String dataset) {
-        super(filename, display, dataset);
+    public OldNemoVersionLoader(Calendar time, String filename, Display display, String dataset) {
+        super(time, filename, display, dataset);
         driveType = DriveTypes.NEMO1;
         possibleFieldSepRegexes = new String[] {" ", "\t", ",", ";"};
     }
