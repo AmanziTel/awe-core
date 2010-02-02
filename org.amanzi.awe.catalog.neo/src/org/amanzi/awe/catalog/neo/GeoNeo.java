@@ -246,7 +246,6 @@ public class GeoNeo {
              searchBounds.getMaxY(), searchBounds.getMaxX()});
 
         } catch (Exception e) {
-            e.printStackTrace();
             System.out.println("GeoNeo: Failed to search location index, doing exhaustive search: " + e);
             if (searchBounds == null) {
                 return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
