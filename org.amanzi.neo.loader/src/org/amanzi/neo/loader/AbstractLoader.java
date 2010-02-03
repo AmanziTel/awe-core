@@ -1822,13 +1822,13 @@ public abstract class AbstractLoader {
         }
     }
 
-    protected static class GisProperties {
+    public static class GisProperties {
         private Node gis;
         private CRS crs;
         private double[] bbox;
         private long savedData;
 
-        protected GisProperties(Node gis) {
+        public GisProperties(Node gis) {
             this.gis = gis;
             bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, null);
             savedData = (Long)gis.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
@@ -1845,12 +1845,25 @@ public abstract class AbstractLoader {
             if (crs == null) {
                 // TODO move CRS class and update CRS in amanzi.neo.core
                 crs = CRS.fromLocation(lat, lon, hint);
-                gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
-                gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
+                saveCRS();
             }
         }
 
-        protected final void updateBBox(double lat, double lon) {
+        /**
+         * initCRS
+         */
+        public void initCRS() {
+            if (gis.hasProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME) && gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
+                crs = CRS.fromCRS((String)gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME), (String)gis.getProperty(INeoConstants.PROPERTY_CRS_NAME));
+            }
+        }
+        /**
+         * ubdate bbox
+         * 
+         * @param lat - latitude
+         * @param lon - longitude
+         */
+        public final void updateBBox(double lat, double lon) {
             if (bbox == null) {
                 bbox = new double[] {lon, lon, lat, lat};
             } else {
@@ -1872,17 +1885,43 @@ public abstract class AbstractLoader {
         }
 
         /**
-         * @return Returns the gisCrs.
+         * @return Returns the bbox.
+         */
+        public double[] getBbox() {
+            return bbox;
+        }
+
+        /**
+         * @param crs The crs to set.
+         */
+        public void setCrs(CRS crs) {
+            this.crs = crs;
+        }
+
+        /**
+         * @return
          */
         public CRS getCrs() {
             return crs;
         }
 
         /**
-         * @return Returns the bbox.
+         *save bbox to gis node
          */
-        public double[] getBbox() {
-            return bbox;
+        public void saveBBox() {
+            if (getBbox() != null) {
+                gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, getBbox());
+            }
+        }
+
+        /**
+         *save CRS to gis node
+         */
+        public void saveCRS() {
+            if (getCrs() != null) {
+                gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
+                gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
+            }
         }
 
     }

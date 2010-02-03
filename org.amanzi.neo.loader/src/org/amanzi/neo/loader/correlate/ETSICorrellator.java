@@ -15,7 +15,6 @@ package org.amanzi.neo.loader.correlate;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -26,7 +25,9 @@ import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.loader.AbstractLoader.GisProperties;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
@@ -64,6 +65,12 @@ public class ETSICorrellator {
 	}
 	
 	private MultiPropertyIndex<Double> realDatasetLocationIndex, callDatasetLocationIndex;
+
+    private GisProperties gisProperFrom;
+
+    private GisProperties gisProperTo;
+
+    private GisProperties gisProperToCall;
 	
 	/**
 	 * Starts correlating
@@ -76,12 +83,22 @@ public class ETSICorrellator {
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "correlate");
 		try {
 			initializeIndex(secondDataset);
-			
+            Node gisFrom = NeoUtils.findGisNode(secondDataset);
+            Node disTo = NeoUtils.findGisNode(firstDataset);
+            gisProperFrom = new GisProperties(gisFrom);
+            gisProperTo = new GisProperties(disTo);
+            gisProperFrom.initCRS();
+            gisProperTo.setCrs(gisProperFrom.getCrs());
+            gisProperTo.saveCRS();
 			Node realDatasetNode = getDatasetNode(firstDataset);
 			String callDatasetName = getCallDatasetName(realDatasetNode, firstDataset);
+            Node gisToCall = NeoUtils.findGisNode(callDatasetName);
+            gisProperToCall = new GisProperties(gisToCall);
+            gisProperToCall.setCrs(gisProperFrom.getCrs());
+            gisProperToCall.saveCRS();
 			createNewIndexes(firstDataset, callDatasetName);
 		
-			MNodeIterator mIterator = getMNodeIterator(realDatasetNode);
+            Iterator<Node> mIterator = getMNodeIterator(realDatasetNode);
 		
 			while (mIterator.hasNext()) {
 				Node firstM = mIterator.next();
@@ -92,7 +109,8 @@ public class ETSICorrellator {
 								
 				correlateNodes(firstM, callNode, mpNode);
 			}
-			
+            gisProperTo.saveBBox();
+            gisProperToCall.saveBBox();
 			realDatasetLocationIndex.finishUp();
 			callDatasetLocationIndex.finishUp();
 			
@@ -121,13 +139,19 @@ public class ETSICorrellator {
 	    try {
 	        //add a real child to m node
 	        Node originalMpNode = getMpNode(orignalMNode);
-	        
+            if (originalMpNode == null) {
+                return;
+            }
 	        Node newMpNode = copyMPNode(originalMpNode);
+            Pair<Double, Double> locationPair = NeoUtils.getLocationPair(newMpNode, null);
+            gisProperTo.updateBBox(locationPair.getLeft(), locationPair.getRight());
             mNode.createRelationshipTo(newMpNode, GeoNeoRelationshipTypes.LOCATION);
 	        realDatasetLocationIndex.add(newMpNode);
 	        
 	        if (callNode != null) {
 	            newMpNode = copyMPNode(originalMpNode);
+                locationPair = NeoUtils.getLocationPair(newMpNode, null);
+                gisProperToCall.updateBBox(locationPair.getLeft(), locationPair.getRight());
                 callNode.createRelationshipTo(newMpNode, GeoNeoRelationshipTypes.LOCATION);
 	            callDatasetLocationIndex.add(newMpNode);
 	        }
@@ -147,11 +171,7 @@ public class ETSICorrellator {
 	}
 	
 	private Node getMpNode(Node mNode) {
-        Iterator<Node> mpNodes = mNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator();
-        if (mpNodes.hasNext()) {
-            return mpNodes.next();
-        }
-        return null;
+        return NeoUtils.getLocationNode(mNode, null);
     }
 	
 	/**
@@ -217,11 +237,14 @@ public class ETSICorrellator {
 	 * @param datasetName dataset node
 	 * @return iterator
 	 */
-	private MNodeIterator getMNodeIterator(Node datasetNode) {
-		if (datasetNode != null) {
-			return new MNodeIterator(datasetNode);
-		}
-		return null;
+    private Iterator<Node> getMNodeIterator(Node datasetNode) {
+        return datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return NeoUtils.isDriveMNode(currentPos.currentNode());
+            }
+        }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
 	}
 	
 	/**
@@ -296,85 +319,6 @@ public class ETSICorrellator {
 	    else {
 	        return null;
 	    }
-	}
-	
-	/**
-	 * Class that provides iteration through all m nodes of dataset
-	 * 
-	 * @author Lagutko_N
-	 * @since 1.0.0
-	 */
-	private class MNodeIterator implements Iterator<Node> {
-		
-		/*
-		 * Iterator for file nodes
-		 */
-		Iterator<Node> fileIterator;
-		/*
-		 * Iterator for mp nodes
-		 */
-		Iterator<Node> mIterator;
-		
-		/**
-		 * Constructor
-		 * 
-		 * @param datasetNode name of dataset
-		 */
-		public MNodeIterator(Node datasetNode) {
-			fileIterator = datasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-				
-				@Override
-				public boolean isReturnableNode(TraversalPosition currentPos) {
-					if (currentPos.depth() > 0) {
-						return NeoUtils.isFileNode(currentPos.currentNode());
-					}
-					return false;
-				}
-			}, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-			
-			if (fileIterator.hasNext()) {
-				Node fileNode = fileIterator.next();
-				updateMIterator(fileNode);
-			}
-		}
-		
-		/**
-		 * Update iterator of mp nodes with new file node
-		 *
-		 * @param fileNode
-		 */
-		private void updateMIterator(Node fileNode) {
-			mIterator = fileNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-		}
-
-		@Override
-		public boolean hasNext() {
-			boolean hasNext = false;
-			
-			if (mIterator != null) {
-				hasNext = mIterator.hasNext();
-			}		
-			if (!hasNext) {
-				if (fileIterator.hasNext()) {
-					updateMIterator(fileIterator.next());
-					return mIterator.hasNext();
-				}
-			}
-			return hasNext;
-		}
-
-		@Override
-		public Node next() {
-			if (hasNext()) {
-				return mIterator.next();
-			}
-			throw new NoSuchElementException();
-		}
-
-		@Override
-		public void remove() {
-		}
-		
 	}
 
 }

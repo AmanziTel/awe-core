@@ -1410,4 +1410,23 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
+
+    /**
+     *Get location pair
+     * 
+     * @param locationNode - location node
+     * @param service neoservice if null then transaction do not created
+     * @return Pair<LATITUDE,LONGITUDE>
+     */
+    public static Pair<Double, Double> getLocationPair(Node locationNode, NeoService service) {
+        Transaction tx = beginTx(service);
+        try {
+            Double lat = (Double)locationNode.getProperty(INeoConstants.PROPERTY_LAT_NAME, null);
+            Double lon = (Double)locationNode.getProperty(INeoConstants.PROPERTY_LON_NAME, null);
+            Pair<Double, Double> result = new Pair<Double, Double>(lat, lon);
+            return result;
+        } finally {
+            finishTx(tx);
+        }
+    }
 }
