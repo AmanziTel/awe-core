@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.views.calls.statistics;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -23,12 +24,10 @@ import java.util.Map.Entry;
 
 import org.amanzi.awe.views.calls.CallTimePeriods;
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
@@ -82,7 +81,7 @@ public class CallStatistics {
      * @author Lagutko_N
      * @since 1.0.0
      */
-    enum StatisticsHeaders {
+    public enum StatisticsHeaders {
         CALL_ATTEMPT_COUNT("SL-SRV-SC-1_CALL_ATTEMPT_COUNT", 0, StatisticsType.COUNT),
         SUCC_SETUP_COUNT("SL-SRV-SC-1_SUCC_SETUP_COUNT", 1, StatisticsType.COUNT),
         SETUP_TM_Z1_P1("SL-SRV-SC-2_SETUP_TM_Z1_P1", 2, StatisticsType.COUNT),
@@ -97,7 +96,24 @@ public class CallStatistics {
         SETUP_TIME_MAX("SL-SRV-SC-2_SETUP_TIME_MAX", 11, StatisticsType.MAX),
         SETUP_TOTAL_DUR("SL-SRV-SC-2_SETUP_TOTAL_DUR", 12, StatisticsType.SUM);
         
-        
+        /**
+         * Finds enum by id
+         * 
+         * @param periodId type id
+         * @return enum or null
+         */
+        public static StatisticsHeaders findById(String periodId) {
+            if (periodId == null) {
+                return null;
+            }
+            for (StatisticsHeaders period : StatisticsHeaders.values()) {
+                if (period.getTitle().equals(periodId)) {
+                    return period;
+                }
+            }
+            return null;
+        }
+
         private static class StatisticsHeaderComaprator implements Comparator<StatisticsHeaders> {
 
             @Override
@@ -159,22 +175,52 @@ public class CallStatistics {
     private HashMap<CallTimePeriods, Node> previousSCellNodes = new HashMap<CallTimePeriods, Node>();
     
     private HashMap<CallTimePeriods, Node> previousSRowNodes = new HashMap<CallTimePeriods, Node>();
+
+    private Node datasetNode;
+
+    private Node statisticNode = null;
+
+    private CallTimePeriods highPeriod;
     
-    public CallStatistics(String amsDatasetName) {
-        neoService = NeoServiceProvider.getProvider().getService();
-        
-        this.amsDatasetName = amsDatasetName; 
+// public CallStatistics(String amsDatasetName) {
+    // neoService = NeoServiceProvider.getProvider().getService();
+    //        
+    // this.amsDatasetName = amsDatasetName;
+    // }
+
+    /**
+     * @param drive
+     * @throws IOException
+     */
+    public CallStatistics(Node drive, NeoService service) throws IOException {
+        assert drive != null;
+        datasetNode = drive;
+        neoService = service;
+        Transaction tx = neoService.beginTx();
+        try {
+            statisticNode = createStatistics();
+            Pair<Long, Long> minMax = getTimeBounds(datasetNode);
+            long minTime = minMax.getLeft();
+            long maxTime = minMax.getRight();
+            highPeriod = getHighestPeriod(minTime, maxTime);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
     }
-    
-    public void createStatistics() throws Exception {
-        Node datasetNode = NeoUtils.getAllDatasetNodes(neoService).get(amsDatasetName);
-        
+
+    private Node createStatistics() throws IOException {
+        if (datasetNode == null) {
+            datasetNode = NeoUtils.getAllDatasetNodes(neoService).get(amsDatasetName);
+        }
+        if (datasetNode.hasRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING)) {
+            return datasetNode.getSingleRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING).getOtherNode(datasetNode);
+        }
         Pair<Long, Long> minMax = getTimeBounds(datasetNode);
         long minTime = minMax.getLeft();
         long maxTime = minMax.getRight();
         
         CallTimePeriods period = getHighestPeriod(minTime, maxTime);
-        
         Node parentNode = createRootStatisticsNode(datasetNode);
         
         for (Node probe : NeoUtils.getAllProbesOfDataset(datasetNode)) {
@@ -183,9 +229,10 @@ public class CallStatistics {
             String callProbeName = (String)probeCallsNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
             
             MultiPropertyIndex<Long> timeIndex = NeoUtils.getTimeIndexProperty(callProbeName);
-            
+            timeIndex.initialize(neoService, null);
             createStatistics(parentNode, null, null, probe, timeIndex, period, minTime, maxTime);
         }
+        return parentNode;
     }
     
     private Node createRootStatisticsNode(Node datasetNode) {
@@ -215,31 +262,14 @@ public class CallStatistics {
         return CallTimePeriods.HOURLY;
     }
     
-    private Pair<Long, Long> getTimeBounds(Node dataset) throws Exception {
+    private Pair<Long, Long> getTimeBounds(Node dataset) {
         Transaction transaction = neoService.beginTx();
-        
-        Pair<Long, Long> minMax = null;
-        
         try {
             Node gisNode = NeoUtils.findGisNodeByChild(dataset);
-            
-            Long minTime = (Long)gisNode.getProperty(INeoConstants.MIN_TIMESTAMP);
-            Long maxTime = (Long)gisNode.getProperty(INeoConstants.MAX_TIMESTAMP);
-            
-            minMax = new Pair<Long, Long>(minTime, maxTime);
-            
-            transaction.success();
-        }
-        catch (Exception e) {
-            transaction.failure();
-            NeoCorePlugin.error(null, e);
-            throw e;
-        }
-        finally {
+            return NeoUtils.getMinMaxTimeOfDataset(gisNode, null);
+        } finally {
             transaction.finish();
         }
-        
-        return minMax;
     }
     
     private Long getSCellTime(Node sCell) {
@@ -474,6 +504,34 @@ public class CallStatistics {
                 statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TM_Z1_L4, 1, callNode);
             }
         }
+    }
+
+    /**
+     * @return Returns the statisticNode.
+     */
+    public Node getStatisticNode() {
+        return statisticNode;
+    }
+
+    /**
+     * @return Returns the highPeriod.
+     */
+    public CallTimePeriods getHighPeriod() {
+        return highPeriod;
+    }
+
+    /**
+     * @param periods
+     */
+    public Node getPeriodNode(final CallTimePeriods periods) {
+        Iterator<Node> iterator = statisticNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return periods.getId().equalsIgnoreCase(NeoUtils.getNodeName(currentPos.currentNode()));
+            }
+        }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
 }

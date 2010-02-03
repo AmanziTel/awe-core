@@ -1315,11 +1315,31 @@ public class NeoUtils {
      * @return Traverser
      */
     public static Traverser getChildTraverser(Node rootNode) {
+        return getChildTraverser(rootNode, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL);
+    }
+
+    public static Traverser getChildTraverser(Node rootNode, final StopEvaluator stopEvaluator) {
+        return getChildTraverser(rootNode, stopEvaluator, ReturnableEvaluator.ALL);
+    }
+
+    public static Traverser getChildTraverser(Node rootNode, final ReturnableEvaluator returnableEvaluator) {
+        return getChildTraverser(rootNode, StopEvaluator.END_OF_GRAPH, returnableEvaluator);
+    }
+
+
+
+    /**
+     * Get traverser by child of node (one child )
+     * 
+     * @param rootNode - root node;
+     * @return Traverser
+     */
+    public static Traverser getChildTraverser(Node rootNode, final StopEvaluator stopEvaluator, final ReturnableEvaluator returnableEvaluator) {
         Iterator<Relationship> relations = rootNode.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         // TODO add check on single relations?
         if (relations.hasNext()) {
-            return relations.next().getOtherNode(rootNode).traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                    ReturnableEvaluator.ALL, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            return relations.next().getOtherNode(rootNode).traverse(Order.DEPTH_FIRST, stopEvaluator, returnableEvaluator, GeoNeoRelationshipTypes.NEXT,
+                    Direction.OUTGOING);
         } else {
             return emptyTraverser(rootNode);
         }
@@ -1447,4 +1467,5 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
+
 }

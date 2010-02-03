@@ -1,25 +1,22 @@
 package org.amanzi.awe.views.calls.views;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.views.calls.AggregateCall;
-import org.amanzi.awe.views.calls.CallHandler;
 import org.amanzi.awe.views.calls.CallTimePeriods;
-import org.amanzi.neo.core.enums.CallProperties;
+import org.amanzi.awe.views.calls.statistics.CallStatistics;
+import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.index.MultiPropertyIndex;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -28,10 +25,6 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -42,7 +35,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -50,9 +42,12 @@ import org.eclipse.ui.part.ViewPart;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * <p>
@@ -63,7 +58,8 @@ import org.neo4j.api.core.Traverser;
  * @since 1.0.0
  */
 public class CallAnalyserView extends ViewPart {
-
+    /** String ERROR_VALUE field */
+    private static final String ERROR_VALUE = "ERROR";
     // row labels
     private static final String LBL_DRIVE = "Drive:";
     private static final String LBL_PROBE = "Probe";
@@ -89,7 +85,7 @@ public class CallAnalyserView extends ViewPart {
      */
     public static final String ID = "org.amanzi.awe.views.call.views.CallAnalyserView";
 
-    private static final int MIN_FIELD_WIDTH = 50;
+    private static final int MIN_FIELD_WIDTH = 150;
     public static final int DEF_SIZE = 100;
     private static final String KEY_ALL = "ALL";
     public static final int MAX_TABLE_LEN = 500;
@@ -101,15 +97,13 @@ public class CallAnalyserView extends ViewPart {
 
     private TableViewer tableViewer;
     private Combo cProbe;
-    private DateTime dateStart;
+    // private DateTime dateStart;
     private ViewContentProvider provider;
     private ViewLabelProvider labelProvider;
     private Combo cPeriod;
-    private DateTime dateEnd;
-    private Long beginDriveTime;
-    private Long endDriveTime;
-    private Long startTime;
-    private Long endTime;
+
+    // private DateTime dateEnd;
+
 
     /*
      * The content provider class is responsible for providing objects to the view. It can wrap
@@ -133,19 +127,9 @@ public class CallAnalyserView extends ViewPart {
             NeoService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
-                String indexPart = inputWr.getIndexName();
-                if (inputWr.probe != null) {
-                    elements.add(new PeriodWrapper(inputWr.beginTime, inputWr.endTime, indexPart));
-                } else {
-                    long timeEnd;
-                    CallTimePeriods period = inputWr.periods;
-                    Long beginTime;
-                    timeEnd = period.getFirstTime(beginDriveTime);
-                    do {
-                        beginTime = timeEnd;
-                        timeEnd = Math.min(inputWr.endTime, period.addPeriod(timeEnd));
-                        elements.add(new PeriodWrapper(beginTime, timeEnd - 1, indexPart));
-                    } while (timeEnd < inputWr.endTime && elements.size() < MAX_TABLE_LEN);
+                for (Node sRow : inputWr.getSrowTraverser(service)) {
+                    elements.add(new PeriodWrapper(sRow));
+
                 }
             } finally {
                 tx.finish();
@@ -174,13 +158,7 @@ public class CallAnalyserView extends ViewPart {
         public String getColumnText(Object obj, int index) {
             if (obj instanceof PeriodWrapper) {
                 PeriodWrapper period = (PeriodWrapper)obj;
-                period.calculate();
-                if (index == 0) {
-                    return getTimePeriod(period);
-                } else {
-                    return columnHeaders.get(index).getValue(period);
-                }
-
+                return columnHeaders.get(index).getValue(period);
             } else {
                 return getText(obj);
             }
@@ -202,84 +180,17 @@ public class CallAnalyserView extends ViewPart {
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText(COL_PERIOD);
-                columnHeaders.add(new ColumnHeaders(col, null, null));
+                columnHeaders.add(new ColumnHeaders(col, null));
                 col.setWidth(DEF_SIZE);
                 // TODO move creation of group of single property in one method
                 //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_SUCCESS_COUNT);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.CALL_TYPE, CallProperties.CallType.SUCCESS.toString()));
-                col.setWidth(DEF_SIZE);
-                //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_FAILURE_COUNT);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.CALL_TYPE, CallProperties.CallType.FAILURE.toString()));
-                col.setWidth(DEF_SIZE);
-                //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_DIRECTION_INCOMING);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.CALL_DIRECTION, CallProperties.CallDirection.INCOMING
-                        .toString()));
-                col.setWidth(DEF_SIZE);
-                //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_DIRECTION_OUTGOING);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.CALL_DIRECTION, CallProperties.CallDirection.OUTGOING
-                        .toString()));
-                col.setWidth(DEF_SIZE);
-                //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_SETUP_FULL);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.SETUP_DURATION, AggregateCall.SUM));
-                col.setWidth(DEF_SIZE);
-                //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_SETUP_AVG);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.SETUP_DURATION, AggregateCall.AVERAGE));
-                col.setWidth(DEF_SIZE);
-                //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_SETUP_MIN);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.SETUP_DURATION, AggregateCall.MIN));
-                col.setWidth(DEF_SIZE);
-                //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_SETUP_MAX);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.SETUP_DURATION, AggregateCall.MAX));
-                col.setWidth(DEF_SIZE);
-                //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_TERMINATE_FULL);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.TERMINATION_DURATION, AggregateCall.SUM));
-                col.setWidth(DEF_SIZE);
-                //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_TERMINATE_AVG);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.TERMINATION_DURATION, AggregateCall.AVERAGE));
-                col.setWidth(DEF_SIZE);
-                //
-
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_TERMINATE_MIN);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.TERMINATION_DURATION, AggregateCall.MIN));
-                col.setWidth(DEF_SIZE);
-                //
-                column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                col = column.getColumn();
-                col.setText(COL_TERMINATE_MAX);
-                columnHeaders.add(new ColumnHeaders(col, CallProperties.TERMINATION_DURATION, AggregateCall.MAX));
-                col.setWidth(DEF_SIZE);
+                for (StatisticsHeaders columnHeader : StatisticsHeaders.values()) {
+                    column = new TableViewerColumn(tableViewer, SWT.LEFT);
+                    col = column.getColumn();
+                    col.setText(columnHeader.getTitle());
+                    columnHeaders.add(new ColumnHeaders(col, columnHeader));
+                    col.setWidth(DEF_SIZE);                   
+                }
             }
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
@@ -288,44 +199,38 @@ public class CallAnalyserView extends ViewPart {
         }
     }
 
-    /**
-     * Gets format string of time period
-     * 
-     * @param period - period
-     * @return String
-     */
-    public String getTimePeriod(PeriodWrapper period) {
-        Long begin = period.beginTime;
-        GregorianCalendar clBegin = new GregorianCalendar();
-        clBegin.setTimeInMillis(begin);
-        Long end = period.endTime;
-        GregorianCalendar clEnd = new GregorianCalendar();
-        clEnd.setTimeInMillis(end);
-        Long len = end - begin;
-        if (startTime.equals(begin) && endTime.equals(end)) {
-            return "Selected time";
-        }
-        if (len <= 1 * 60 * 1000) {
-            return String.format("%s-%s-%s:%s:%s", clBegin.get(Calendar.YEAR), clBegin.get(Calendar.MONTH), clBegin
-                    .get(Calendar.DAY_OF_MONTH), clBegin.get(Calendar.HOUR_OF_DAY), clBegin.get(Calendar.MINUTE)/*
-                                                                                                                 * ,
-                                                                                                                 * clEnd
-                                                                                                                 * .
-                                                                                                                 * get
-                                                                                                                 * (
-                                                                                                                 * Calendar
-                                                                                                                 * .
-                                                                                                                 * MINUTE
-                                                                                                                 * )
-                                                                                                                 */);
-        } else if (len <= 1 * 60 * 60 * 1000) {
-            return String.format("%s-%s-%s:%s", clBegin.get(Calendar.YEAR), clBegin.get(Calendar.MONTH), clBegin
-                    .get(Calendar.DAY_OF_MONTH), clBegin.get(Calendar.HOUR_OF_DAY));
-        } else {
-            return String.format("%s-%s-%s", clBegin.get(Calendar.YEAR), clBegin.get(Calendar.MONTH), clBegin
-                    .get(Calendar.DAY_OF_MONTH));
-        }
-    }
+    // /**
+    // * Gets format string of time period
+    // *
+    // * @param period - period
+    // * @return String
+    // */
+    // public String getTimePeriod(PeriodWrapper period) {
+    // Long begin = period.beginTime;
+    // GregorianCalendar clBegin = new GregorianCalendar();
+    // clBegin.setTimeInMillis(begin);
+    // Long end = period.endTime;
+    // GregorianCalendar clEnd = new GregorianCalendar();
+    // clEnd.setTimeInMillis(end);
+    // Long len = end - begin;
+    // if (startTime.equals(begin) && endTime.equals(end)) {
+    // return "Selected time";
+    // }
+    // if (len <= 1 * 60 * 1000) {
+    // return String.format("%s-%s-%s:%s:%s", clBegin.get(Calendar.YEAR),
+    // clBegin.get(Calendar.MONTH), clBegin
+    // .get(Calendar.DAY_OF_MONTH), clBegin
+    // .get(Calendar.HOUR_OF_DAY), clBegin.get(Calendar.MINUTE));
+    // } else if (len <= 1 * 60 * 60 * 1000) {
+    // return String.format("%s-%s-%s:%s", clBegin.get(Calendar.YEAR), clBegin.get(Calendar.MONTH),
+    // clBegin
+    // .get(Calendar.DAY_OF_MONTH), clBegin.get(Calendar.HOUR_OF_DAY));
+    // } else {
+    // return String.format("%s-%s-%s", clBegin.get(Calendar.YEAR), clBegin.get(Calendar.MONTH),
+    // clBegin
+    // .get(Calendar.DAY_OF_MONTH));
+    // }
+    // }
 
     /**
      * This is a callback that will allow us to create the viewer and initialize it.
@@ -344,7 +249,7 @@ public class CallAnalyserView extends ViewPart {
         fData.left = new FormAttachment(0, 2);
         fData.right = new FormAttachment(100, -2);
         rowComposite.setLayoutData(fData);
-        GridLayout layout = new GridLayout(10, false);
+        GridLayout layout = new GridLayout(6, false);
         rowComposite.setLayout(layout);
         // ------ fill row
         // drive
@@ -363,23 +268,23 @@ public class CallAnalyserView extends ViewPart {
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cProbe.setLayoutData(layoutData);
-        // Start time
-        label = new Label(rowComposite, SWT.FLAT);
-        label.setText(LBL_START_TIME);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        dateStart = new DateTime(rowComposite, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
-        GridData dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        dateStartlayoutData.minimumWidth = 75;
-        dateStart.setLayoutData(dateStartlayoutData);
-
-        // end time
-        label = new Label(rowComposite, SWT.FLAT);
-        label.setText(LBL_END_TIME);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        dateEnd = new DateTime(rowComposite, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
-        dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        dateStartlayoutData.minimumWidth = 75;
-        dateEnd.setLayoutData(dateStartlayoutData);
+        // // Start time
+        // label = new Label(rowComposite, SWT.FLAT);
+        // label.setText(LBL_START_TIME);
+        // label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        // dateStart = new DateTime(rowComposite, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
+        // GridData dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        // dateStartlayoutData.minimumWidth = 75;
+        // dateStart.setLayoutData(dateStartlayoutData);
+        //
+        // // end time
+        // label = new Label(rowComposite, SWT.FLAT);
+        // label.setText(LBL_END_TIME);
+        // label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        // dateEnd = new DateTime(rowComposite, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
+        // dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        // dateStartlayoutData.minimumWidth = 75;
+        // dateEnd.setLayoutData(dateStartlayoutData);
 
         // Period
         label = new Label(rowComposite, SWT.FLAT);
@@ -411,17 +316,24 @@ public class CallAnalyserView extends ViewPart {
         provider = new ViewContentProvider();
         tableViewer.setContentProvider(provider);
         tableViewer.setInput(0);
-        formPeriods();
+        // formPeriods();
         formCallDataset();
     }
 
     /**
      *forms period list
+     * 
+     * @param statistics
      */
-    private void formPeriods() {
-        cPeriod.setItems(new String[] {CallTimePeriods.HOURLY.getId(), CallTimePeriods.DAILY.getId(),
-                CallTimePeriods.WEEKLY.getId(), CallTimePeriods.MONTHLY.getId()});
-        cPeriod.select(0);
+    private void formPeriods(CallStatistics statistics) {
+        List<String> periods=new ArrayList<String>();
+        if (statistics!=null){
+            CallTimePeriods[] allPeriods = CallTimePeriods.values();
+            for (int i = 0; i <= statistics.getHighPeriod().ordinal(); i++) {
+                periods.add(allPeriods[i].getId());
+            }
+        }
+        cPeriod.setItems(periods.toArray(new String[0]));
     }
 
     /**
@@ -474,54 +386,54 @@ public class CallAnalyserView extends ViewPart {
                 widgetSelected(e);
             }
         });
-        dateStart.addFocusListener(new FocusListener() {
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                changeDate();
-            }
-
-            @Override
-            public void focusGained(FocusEvent e) {
-            }
-        });
-        dateStart.addKeyListener(new KeyListener() {
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
-                    changeDate();
-                }
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-            }
-        });
-        dateStart.addFocusListener(new FocusListener() {
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                changeDate();
-            }
-
-            @Override
-            public void focusGained(FocusEvent e) {
-            }
-        });
-        dateEnd.addKeyListener(new KeyListener() {
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
-                    changeDate();
-                }
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-            }
-        });
+        // dateStart.addFocusListener(new FocusListener() {
+        //
+        // @Override
+        // public void focusLost(FocusEvent e) {
+        // changeDate();
+        // }
+        //
+        // @Override
+        // public void focusGained(FocusEvent e) {
+        // }
+        // });
+        // dateStart.addKeyListener(new KeyListener() {
+        //
+        // @Override
+        // public void keyReleased(KeyEvent e) {
+        // if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
+        // changeDate();
+        // }
+        // }
+        //
+        // @Override
+        // public void keyPressed(KeyEvent e) {
+        // }
+        // });
+        // dateStart.addFocusListener(new FocusListener() {
+        //
+        // @Override
+        // public void focusLost(FocusEvent e) {
+        // changeDate();
+        // }
+        //
+        // @Override
+        // public void focusGained(FocusEvent e) {
+        // }
+        // });
+        // dateEnd.addKeyListener(new KeyListener() {
+        //
+        // @Override
+        // public void keyReleased(KeyEvent e) {
+        // if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
+        // changeDate();
+        // }
+        // }
+        //
+        // @Override
+        // public void keyPressed(KeyEvent e) {
+        // }
+        // });
     }
 
     /**
@@ -543,7 +455,6 @@ public class CallAnalyserView extends ViewPart {
      */
     protected void changeProbe() {
         Node probe = probeCallDataset.get(cProbe.getText());
-        cPeriod.setEnabled(probe == null);
         updateTable();
     }
 
@@ -563,7 +474,7 @@ public class CallAnalyserView extends ViewPart {
      * @return InputWrapper
      */
     private InputWrapper createInputWrapper() {
-        return new InputWrapper(startTime, endTime, probeCallDataset.get(cProbe.getText()), callDataset.get(cDrive.getText()),
+        return new InputWrapper(probeCallDataset.get(cProbe.getText()), callDataset.get(cDrive.getText()),
                 CallTimePeriods.findById(cPeriod.getText()));
     }
 
@@ -572,7 +483,17 @@ public class CallAnalyserView extends ViewPart {
      */
     protected void formPropertyList() {
         Node drive = callDataset.get(cDrive.getText());
-        formProbeCall(drive);
+        if (drive == null) {
+            return;
+        }
+        try {
+            CallStatistics statistics = new CallStatistics(drive, NeoServiceProvider.getProvider().getService());
+            formProbeCall(drive);
+            formPeriods(statistics);
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
 
     }
 
@@ -584,54 +505,20 @@ public class CallAnalyserView extends ViewPart {
     private void formProbeCall(Node drive) {
         probeCallDataset.clear();
         if (drive != null) {
-            probeCallDataset.put(KEY_ALL, null);
-            Pair<Long, Long> minMax;
             NeoService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
-                for (Relationship relation : drive.getRelationships(ProbeCallRelationshipType.PROBE_DATASET, Direction.OUTGOING)) {
-                    Node probeCall = relation.getOtherNode(drive);
-                    probeCallDataset.put(NeoUtils.getNodeName(probeCall), probeCall);
+                Collection<Node> allProbesOfDataset = NeoUtils.getAllProbesOfDataset(drive);
+                for (Node probe : allProbesOfDataset) {
+                    probeCallDataset.put(NeoUtils.getNodeName(probe), probe);
                 }
-                minMax = NeoUtils.getMinMaxTimeOfDataset(drive.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
-                        Direction.INCOMING).getOtherNode(drive), service);
             } finally {
                 tx.finish();
             }
-            beginDriveTime = minMax.getLeft();
-            endDriveTime = minMax.getRight();
-            setStartTime(beginDriveTime);
-            setEndTime(endDriveTime);
-
         }
         cProbe.setItems(probeCallDataset.keySet().toArray(new String[0]));
     }
 
-    /**
-     * Sets end time
-     * 
-     * @param end - end time
-     */
-    private void setEndTime(Long end) {
-        endTime = Math.min(endDriveTime, end);
-        Date date = new Date(endTime);
-        dateEnd.setHours(date.getHours());
-        dateEnd.setMinutes(date.getMinutes());
-        dateEnd.setSeconds(date.getSeconds());
-    }
-
-    /**
-     * Sets start time
-     * 
-     * @param start - start time
-     */
-    private void setStartTime(Long start) {
-        startTime = Math.max(beginDriveTime, start);
-        Date date = new Date(startTime);
-        dateStart.setHours(date.getHours());
-        dateStart.setMinutes(date.getMinutes());
-        dateStart.setSeconds(date.getSeconds());
-    }
 
     // TODO implement if necessary
     private void hookContextMenu() {
@@ -667,40 +554,20 @@ public class CallAnalyserView extends ViewPart {
      * @since 1.0.0
      */
     private class ColumnHeaders {
-        private final AggregateCall aggregateType;
-        private final CallProperties property;
-        private TableColumn column;
-        private Object countProperties;
 
-        /**
-         * constructor
-         * 
-         * @param column - TableColumn
-         * @param property - handled property
-         * @param aggregateType aggregation type
-         */
-        public ColumnHeaders(TableColumn column, CallProperties property, AggregateCall aggregateType) {
-            this.column = column;
-            this.property = property;
-            this.aggregateType = aggregateType;
-            countProperties = null;
-        }
+        private TableColumn column;
+        private final StatisticsHeaders header;
+
 
         /**
          * constructor - only for string properties property.needMappedCount() must be true
          * 
          * @param column TableColumn
-         * @param property handled property
          * @param properties - property value
          */
-        public ColumnHeaders(TableColumn column, CallProperties property, Object properties) {
-            this(column, property, AggregateCall.COUNT);
-            this.countProperties = properties;
-            if (!property.needMappedCount()) {
-                // TODO add description
-                throw new IllegalArgumentException();
-            }
-
+        public ColumnHeaders(TableColumn column, StatisticsHeaders header) {
+            this.column = column;
+            this.header = header;
         }
 
         /**
@@ -710,18 +577,10 @@ public class CallAnalyserView extends ViewPart {
          * @return statistic value
          */
         public String getValue(PeriodWrapper wr) {
-            if (property == null || aggregateType == null) {
-                return getTimePeriod(wr);
+            if (header == null) {
+                return NeoUtils.getNodeName(wr.sRow);
             } else {
-                CallHandler handler = wr.getHandler(property);
-                if (handler != null) {
-                    if (countProperties != null) {
-                        return String.valueOf(handler.getMappedCount(countProperties));
-                    } else {
-                        return String.valueOf(handler.getAggregateValue(aggregateType));
-                    }
-                }
-                return "";
+                return wr.getValue(header);
             }
         }
     }
@@ -735,12 +594,8 @@ public class CallAnalyserView extends ViewPart {
      * @since 1.0.0
      */
     private static class PeriodWrapper {
-        private final Object monitor = new Object();
-        private boolean calculated = false;
-        private long beginTime;
-        private long endTime;
-        private Map<CallProperties, CallHandler> handlers = new HashMap<CallProperties, CallHandler>();
-        private final String indexPartName;
+        private final Node sRow;
+        private Map<StatisticsHeaders, String> mappedValue = new HashMap<StatisticsHeaders, String>();
 
         /**
          * Constructor
@@ -749,65 +604,28 @@ public class CallAnalyserView extends ViewPart {
          * @param endTime - end time
          * @param indexPartName - index name
          */
-        public PeriodWrapper(long beginTime, long endTime, String indexPartName) {
+        public PeriodWrapper(Node sRow) {
             super();
-            this.beginTime = beginTime;
-            this.endTime = endTime;
-            this.indexPartName = indexPartName;
-            initHandlers();
-        }
-
-        /**
-         * initialize handlers
-         */
-        private void initHandlers() {
-            handlers.clear();
-            for (CallProperties properties : CallProperties.values()) {
-                if (properties.isAnalysed()) {
-                    CallHandler handler = new CallHandler(properties);
-                    handlers.put(properties, handler);
+            this.sRow = sRow;
+            mappedValue.clear();
+            for (Node node : NeoUtils.getChildTraverser(sRow)) {
+                String name = NeoUtils.getNodeName(node);
+                StatisticsHeaders header = StatisticsHeaders.findById(name);
+                if (header != null) {
+                    mappedValue.put(header, node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, ERROR_VALUE).toString());
                 }
             }
         }
 
         /**
-         *calculate statistic
-         */
-        public void calculate() {
-            if (!calculated) {
-                synchronized (monitor) {
-                    if (!calculated) {
-                        NeoService service = NeoServiceProvider.getProvider().getService();
-                        Transaction tx = service.beginTx();
-                        try {
-                            MultiPropertyIndex<Long> index = NeoUtils.getTimeIndexProperty(indexPartName);
-                            index.initialize(service, null);
-                            Traverser traverser = index.searchTraverser(new Long[] {beginTime}, new Long[] {endTime});
-                            for (Node node : traverser) {
-                                for (CallHandler handler : handlers.values()) {
-                                    handler.analyseNode(node);
-                                }
-                            }
-                        } catch (Exception e) {
-                            throw (RuntimeException)new RuntimeException().initCause(e);
-                        } finally {
-                            tx.finish();
-                        }
-                        calculated = true;
-                    }
-                }
-            }
-        }
-
-        /**
-         * get CallHandler
-         * 
-         * @param property - property
+         * @param header
          * @return
          */
-        public CallHandler getHandler(CallProperties property) {
-            return handlers.get(property);
+        public String getValue(StatisticsHeaders header) {
+            String string = mappedValue.get(header);
+            return string == null ? ERROR_VALUE : string;
         }
+
     }
 
     /**
@@ -819,8 +637,6 @@ public class CallAnalyserView extends ViewPart {
      * @since 1.0.0
      */
     public static class InputWrapper {
-        private long beginTime;
-        private long endTime;
         private Node probe;
         private Node drive;
         private CallTimePeriods periods;
@@ -828,19 +644,45 @@ public class CallAnalyserView extends ViewPart {
         /**
          * constructor
          * 
-         * @param beginTime - start time
-         * @param endTime - end time
          * @param probe - probe call node
          * @param drive - call dataset node
          * @param periods - periods
          */
-        public InputWrapper(long beginTime, long endTime, Node probe, Node drive, CallTimePeriods periods) {
+        public InputWrapper(Node probe, Node drive, CallTimePeriods periods) {
             super();
-            this.beginTime = beginTime;
-            this.endTime = endTime;
             this.probe = probe;
             this.drive = drive;
             this.periods = periods;
+        }
+
+        /**
+         * @return
+         */
+        public Traverser getSrowTraverser(NeoService service) {
+             
+            try {
+                CallStatistics statistic = new CallStatistics(drive, service);
+                Node periodNode = statistic.getPeriodNode(periods);
+                if (periodNode==null){
+                    return NeoUtils.emptyTraverser(probe);
+                }
+                return NeoUtils.getChildTraverser(periodNode, new ReturnableEvaluator() {
+                    
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return currentPos.currentNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                            @Override
+                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                return currentPos.currentNode().equals(probe);
+                            }
+                        }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().hasNext();
+                    }
+                });
+            } catch (IOException e) {
+                NeoCorePlugin.error(e.getLocalizedMessage(), e);
+                return NeoUtils.emptyTraverser(probe);
+            } 
         }
 
         /**
@@ -858,7 +700,7 @@ public class CallAnalyserView extends ViewPart {
          * @return true if InputWrapper contains correct information
          */
         public boolean isCorrectInput() {
-            return beginTime <= endTime && drive != null && (probe != null || periods != null);
+            return drive != null && probe != null && periods != null;
         }
 
     }
