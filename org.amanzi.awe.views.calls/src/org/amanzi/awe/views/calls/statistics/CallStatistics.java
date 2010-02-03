@@ -14,9 +14,7 @@
 package org.amanzi.awe.views.calls.statistics;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,6 +22,7 @@ import java.util.Map.Entry;
 
 import org.amanzi.awe.views.calls.CallTimePeriods;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
@@ -82,20 +81,19 @@ public class CallStatistics {
      * @since 1.0.0
      */
     public enum StatisticsHeaders {
-        CALL_ATTEMPT_COUNT("SL-SRV-SC-1_CALL_ATTEMPT_COUNT", 0, StatisticsType.COUNT),
-        SUCC_SETUP_COUNT("SL-SRV-SC-1_SUCC_SETUP_COUNT", 1, StatisticsType.COUNT),
-        SETUP_TM_Z1_P1("SL-SRV-SC-2_SETUP_TM_Z1_P1", 2, StatisticsType.COUNT),
-        SETUP_TM_Z1_P2("SL-SRV-SC-2_SETUP_TM_Z1_P2", 3, StatisticsType.COUNT),
-        SETUP_TM_Z1_P3("SL-SRV-SC-2_SETUP_TM_Z1_P3", 4, StatisticsType.COUNT),
-        SETUP_TM_Z1_P4("SL-SRV-SC-2_SETUP_TM_Z1_P4", 5, StatisticsType.COUNT),
-        SETUP_TM_Z1_L1("SL-SRV-SC-2_SETUP_TM_Z1_L1", 6, StatisticsType.COUNT),
-        SETUP_TM_Z1_L2("SL-SRV-SC-2_SETUP_TM_Z1_L2", 7, StatisticsType.COUNT),
-        SETUP_TM_Z1_L3("SL-SRV-SC-2_SETUP_TM_Z1_L3", 8, StatisticsType.COUNT),
-        SETUP_TM_Z1_L4("SL-SRV-SC-2_SETUP_TM_Z1_L4", 9, StatisticsType.COUNT),
-        SETUP_TIME_MIN("SL-SRV-SC-2_SETUP_TIME_MIN", 10, StatisticsType.MIN),
-        SETUP_TIME_MAX("SL-SRV-SC-2_SETUP_TIME_MAX", 11, StatisticsType.MAX),
-        SETUP_TOTAL_DUR("SL-SRV-SC-2_SETUP_TOTAL_DUR", 12, StatisticsType.SUM);
-        
+        CALL_ATTEMPT_COUNT("SL-SRV-SC-1_CALL_ATTEMPT_COUNT", StatisticsType.COUNT),
+        SUCC_SETUP_COUNT("SL-SRV-SC-1_SUCC_SETUP_COUNT", StatisticsType.COUNT),
+        SETUP_TM_Z1_P1("SL-SRV-SC-2_SETUP_TM_Z1_P1", StatisticsType.COUNT),
+        SETUP_TM_Z1_P2("SL-SRV-SC-2_SETUP_TM_Z1_P2", StatisticsType.COUNT),
+        SETUP_TM_Z1_P3("SL-SRV-SC-2_SETUP_TM_Z1_P3", StatisticsType.COUNT),
+        SETUP_TM_Z1_P4("SL-SRV-SC-2_SETUP_TM_Z1_P4", StatisticsType.COUNT),
+        SETUP_TM_Z1_L1("SL-SRV-SC-2_SETUP_TM_Z1_L1", StatisticsType.COUNT),
+        SETUP_TM_Z1_L2("SL-SRV-SC-2_SETUP_TM_Z1_L2", StatisticsType.COUNT),
+        SETUP_TM_Z1_L3("SL-SRV-SC-2_SETUP_TM_Z1_L3", StatisticsType.COUNT),
+        SETUP_TM_Z1_L4("SL-SRV-SC-2_SETUP_TM_Z1_L4", StatisticsType.COUNT),
+        SETUP_TIME_MIN("SL-SRV-SC-2_SETUP_TIME_MIN", StatisticsType.MIN),
+        SETUP_TIME_MAX("SL-SRV-SC-2_SETUP_TIME_MAX", StatisticsType.MAX),
+        SETUP_TOTAL_DUR("SL-SRV-SC-2_SETUP_TOTAL_DUR", StatisticsType.SUM);
         /**
          * Finds enum by id
          * 
@@ -114,40 +112,45 @@ public class CallStatistics {
             return null;
         }
 
-        private static class StatisticsHeaderComaprator implements Comparator<StatisticsHeaders> {
-
-            @Override
-            public int compare(StatisticsHeaders o1, StatisticsHeaders o2) {
-                return o2.getIndex() - o1.getIndex();
-            }
-            
-        }
-        
+        /**
+         * Title of this Statistics Header
+         */
         private String headerTitle;
         
-        private int headerIndex;
-        
+        /**
+         * Type of Calculation
+         */
         private StatisticsType type;
         
-        private StatisticsHeaders(String headerTitle, int headerIndex, StatisticsType type) {
-            this.headerTitle = headerTitle;            
-            this.headerIndex = headerIndex;
+        private StatisticsHeaders(String headerTitle, StatisticsType type) {
+            this.headerTitle = headerTitle;           
             this.type = type;
         }
         
-        @Override
-        public String toString() {
-            return headerTitle;
-        }
-        
+        /**
+         * Returns Title of Header
+         *
+         * @return title of Header
+         */
         public String getTitle() {
             return headerTitle;
         }
         
-        public int getIndex() {
-            return headerIndex;
+        /**
+         * Returns type of Calculation for Statistics
+         *
+         * @return type of calculation
+         */
+        public StatisticsType getType() {
+            return type;
         }
         
+        /**
+         * Returns a Statistics header by it's title
+         *
+         * @param title title of Header
+         * @return Statistics Header
+         */
         public static StatisticsHeaders getHeaderByTitle(String title) {
             for (StatisticsHeaders header : values()) {
                 if (header.getTitle().equals(title)) {
@@ -156,24 +159,26 @@ public class CallStatistics {
             }
             return null;
         }
-        
-        public static StatisticsHeaders[] getOrderedHeaders() {
-            StatisticsHeaders[] headers = values();
-            Arrays.sort(headers, 0, headers.length - 1, new StatisticsHeaderComaprator());
-            return headers;
-        }
-        
-        public StatisticsType getType() {
-            return type;
-        }
     }
     
+    /*
+     * Name of AMS dataset
+     */
     private String amsDatasetName;
     
+    /*
+     * Neo Service 
+     */
     private NeoService neoService;
     
+    /*
+     * Map of previous s_cell nodes for each period
+     */
     private HashMap<CallTimePeriods, Node> previousSCellNodes = new HashMap<CallTimePeriods, Node>();
     
+    /*
+     * Map of previous s_row nodes for each period
+     */
     private HashMap<CallTimePeriods, Node> previousSRowNodes = new HashMap<CallTimePeriods, Node>();
 
     private Node datasetNode;
@@ -208,29 +213,43 @@ public class CallStatistics {
             tx.finish();
         }
     }
-
+    
     private Node createStatistics() throws IOException {
-        if (datasetNode == null) {
-            datasetNode = NeoUtils.getAllDatasetNodes(neoService).get(amsDatasetName);
-        }
-        if (datasetNode.hasRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING)) {
-            return datasetNode.getSingleRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING).getOtherNode(datasetNode);
-        }
-        Pair<Long, Long> minMax = getTimeBounds(datasetNode);
-        long minTime = minMax.getLeft();
-        long maxTime = minMax.getRight();
+        Transaction tx = neoService.beginTx();
+        Node parentNode = null;
         
-        CallTimePeriods period = getHighestPeriod(minTime, maxTime);
-        Node parentNode = createRootStatisticsNode(datasetNode);
+        try {
+            if (datasetNode == null) {
+                datasetNode = NeoUtils.getAllDatasetNodes(neoService).get(amsDatasetName);
+            }
+            if (datasetNode.hasRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING)) {
+                return datasetNode.getSingleRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING).getOtherNode(datasetNode);
+            }
+            Pair<Long, Long> minMax = getTimeBounds(datasetNode);
+            long minTime = minMax.getLeft();
+            long maxTime = minMax.getRight();
         
-        for (Node probe : NeoUtils.getAllProbesOfDataset(datasetNode)) {
-            String probeName = (String)probe.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-            Node probeCallsNode = NeoUtils.getCallsNode(datasetNode, probeName, probe, neoService);
-            String callProbeName = (String)probeCallsNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+            CallTimePeriods period = getHighestPeriod(minTime, maxTime);
+            parentNode = createRootStatisticsNode(datasetNode);
+        
+            for (Node probe : NeoUtils.getAllProbesOfDataset(datasetNode)) {
+                String probeName = (String)probe.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                Node probeCallsNode = NeoUtils.getCallsNode(datasetNode, probeName, probe, neoService);
+                String callProbeName = (String)probeCallsNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
             
-            MultiPropertyIndex<Long> timeIndex = NeoUtils.getTimeIndexProperty(callProbeName);
+                MultiPropertyIndex<Long> timeIndex = NeoUtils.getTimeIndexProperty(callProbeName);
+                timeIndex.initialize(neoService, null);
             timeIndex.initialize(neoService, null);
-            createStatistics(parentNode, null, null, probe, timeIndex, period, minTime, maxTime);
+                createStatistics(parentNode, null, null, probe, timeIndex, period, minTime, maxTime);
+            }
+            tx.success();
+        }
+        catch (Exception e) {
+            tx.failure();
+            NeoCorePlugin.error(null, e);
+        }
+        finally {
+            tx.finish();
         }
         return parentNode;
     }
@@ -240,6 +259,7 @@ public class CallStatistics {
         
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
+        result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(datasetNode));        
         
         datasetNode.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYZIS);
         
@@ -337,9 +357,10 @@ public class CallStatistics {
                 }
             }
             
-            for (StatisticsHeaders header : StatisticsHeaders.getOrderedHeaders()) {
-                createSCellNode(sRow, periodStatitics, header, period);
-            }
+            for (StatisticsHeaders header : StatisticsHeaders.values()) {
+                createSCellNode(sRow, periodStatitics, header, period);                
+            }            
+            previousSCellNodes.put(period, null);
             
             updateStatistics(statistics, periodStatitics);
             
@@ -347,8 +368,6 @@ public class CallStatistics {
             nextStartDate = period.addPeriod(startDate);
         }
         while (nextStartDate < endDate);
-        
-        
         
         return statistics;
     }

@@ -18,10 +18,14 @@ import java.util.LinkedHashMap;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
+import org.amanzi.neo.core.enums.DriveTypes;
+import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
 
 /**
@@ -82,6 +86,15 @@ public class DriveRoot extends Root {
             // GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
             for (Node node : datasets.values()) {
                 driveNodes.add(new DriveNeoNode(node));
+                
+                //Lagutko, 3.02.2010, if we have a AMS Call Dataset than we should add Analyzis to tree
+                if (NeoUtils.getDatasetType(node, service) == DriveTypes.AMS_CALLS) {
+                    Relationship analyzis = node.getSingleRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING);
+                    
+                    if (analyzis != null) {
+                        driveNodes.add(new CallAnalyzisNeoNode(analyzis.getEndNode()));
+                    }
+                }
             }
 
             transaction.success();
