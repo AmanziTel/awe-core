@@ -44,6 +44,7 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -219,6 +220,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final RGB DEFAULT_MIDDLE = new RGB(127, 127, 0);
 	private static final String THIRD_BLEND = "third color";
     private static final String ERROR_MSG_NULL = "It is not found numerical values of the selected property";
+    private static final String ERROR_CHART = "Error Chart";
     // error messages for statistic calculation
     private String errorMsg = UNKNOWN_ERROR;
 
@@ -927,21 +929,10 @@ public class ReuseAnalyserView extends ViewPart {
      * @param aggrNode - new node
      */
     protected void chartUpdate(final Node aggrNode) {
-
-        Job dbJob = new Job("dbWork") {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoUtils.beginTransaction();
-                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "dbWork");
-                try {
-
-                    return Status.OK_STATUS;
-                } finally {
-                    tx.finish();
-                }
-            }
-        };
-        chart.setTitle(ActionUtil.runJobWithResult(new RunnableWithResult<String>() {
+        if (aggrNode == null) {
+            return;
+        }
+        String chartTitle = ActionUtil.runJobWithResult(new RunnableWithResult<String>() {
             String title;
 
             @Override
@@ -954,13 +945,23 @@ public class ReuseAnalyserView extends ViewPart {
                 Transaction tx = NeoUtils.beginTransaction();
                 NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setTitle");
                 try {
+                    if ((Boolean)aggrNode.getProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, false)) {
+                        title = null;
+                        return;
+                    }
                     title = aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
                 } finally {
                     tx.finish();
                 }
             }
 
-        }));
+        });
+        if (chartTitle == null) {
+            chart.setTitle(ERROR_CHART);
+            chart.fireChartChanged();
+            return;
+        }
+        chart.setTitle(chartTitle);
         // dbJob.schedule();
         currentPalette = getPalette(aggrNode);
         colorLeft.setColorValue(getColorLeft(aggrNode));
@@ -993,6 +994,7 @@ public class ReuseAnalyserView extends ViewPart {
 
         setSelection(null);
         setVisibleForChart(true);
+        chart.fireChartChanged();
     }
 
     /**
@@ -1277,27 +1279,34 @@ public class ReuseAnalyserView extends ViewPart {
                 try {
                     node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select, monitor);
                     tx.success();
+                    ActionUtil.getInstance().runTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            Transaction tx = NeoUtils.beginTransaction();
+                            try {
+                                chartUpdate(node);
+                            } finally {
+                                tx.finish();
+                            }
+                        }
+                    }, true);
                 } finally {
                     tx.finish();
                 }
+            } finally {
                 ActionUtil.getInstance().runTask(new Runnable() {
                     @Override
                     public void run() {
                         Transaction tx = NeoUtils.beginTransaction();
                         try {
                             mainView.setEnabled(true);
-                            chartUpdate(node);
                         } finally {
                             tx.finish();
                         }
                     }
                 }, true);
-                return Status.OK_STATUS;
-            } catch (Exception e) {
-                e.printStackTrace();
-                // TODO Handle Exception
-                throw (RuntimeException)new RuntimeException().initCause(e);
             }
+            return Status.OK_STATUS;
         }
 
         /**
@@ -1318,7 +1327,7 @@ public class ReuseAnalyserView extends ViewPart {
      */
     protected Node findOrCreateAggregateNode(Node gisNode, final String propertyName, final String distribute, final String select, IProgressMonitor monitor) {
         NeoService service = NeoServiceProvider.getProvider().getService();
-        //final GisTypes typeOfGis = new GeoNeo(service, gisNode).getGisType();
+        // final GisTypes typeOfGis = new GeoNeo(service, gisNode).getGisType();
         final Runnable setAutoDistribute = new Runnable() {
             @Override
             public void run() {
@@ -1363,16 +1372,46 @@ public class ReuseAnalyserView extends ViewPart {
             }
 
             Node result = service.createNode();
-            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, propertyName);
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.AGGREGATION_TYPE_NAME);
-            result.setProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, distribute);
-            result.setProperty(INeoConstants.PROPERTY_SELECT_NAME, select);
-            gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
+            try {
+                result.setProperty(INeoConstants.PROPERTY_NAME_NAME, propertyName);
+                result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.AGGREGATION_TYPE_NAME);
+                result.setProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, distribute);
+                result.setProperty(INeoConstants.PROPERTY_SELECT_NAME, select);
+                gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
 
-            errorMsg = UNKNOWN_ERROR;
-            boolean noError = computeStatistics(gisNode, result, propertyName, distributeColumn, Select
-                    .findSelectByValue(select), monitor);
-            if (!noError && !errorMsg.equals(ERROR_MSG)) {
+                errorMsg = UNKNOWN_ERROR;
+                boolean noError = computeStatistics(gisNode, result, propertyName, distributeColumn, Select.findSelectByValue(select), monitor);
+                if (!noError && !errorMsg.equals(ERROR_MSG)) {
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, errorMsg);
+                        }
+                    }, false);
+
+                    result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
+                    ActionUtil.getInstance().runTask(setAutoDistribute, true);
+                    tx.success();
+                    return result;
+                }
+                if (!noError && distributeColumn != Distribute.AUTO) {
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, errorMsg);
+                        }
+                    }, false);
+
+                    result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
+                    ActionUtil.getInstance().runTask(setAutoDistribute, true);
+                    return findOrCreateAggregateNode(gisNode, propertyName, Distribute.AUTO.toString(), select, monitor);
+                }
+            } catch (Exception e) {
+                NeoCorePlugin.error(e.getLocalizedMessage(), e);
+                result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
+                errorMsg = e.getLocalizedMessage();
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
@@ -1380,24 +1419,6 @@ public class ReuseAnalyserView extends ViewPart {
                         MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, errorMsg);
                     }
                 }, false);
-
-                result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
-                ActionUtil.getInstance().runTask(setAutoDistribute, true);
-                tx.success();
-                return result;
-            }
-            if (!noError && distributeColumn != Distribute.AUTO) {
-                ActionUtil.getInstance().runTask(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_TITLE, errorMsg);
-                    }
-                }, false);
-
-                result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
-                ActionUtil.getInstance().runTask(setAutoDistribute, true);
-                return findOrCreateAggregateNode(gisNode, propertyName, Distribute.AUTO.toString(), select, monitor);
             }
             tx.success();
             return result;
@@ -1616,7 +1637,10 @@ public class ReuseAnalyserView extends ViewPart {
                     for (Column column : keySet) {
                         if (column.containsValue(value)) {
                             Integer count = result.get(column);
-                            column.getNode().createRelationshipTo(getNodeToLink(node, typeOfGis), NetworkRelationshipTypes.AGGREGATE);
+                            Node nodeToLink = getNodeToLink(node, typeOfGis);
+                            if (nodeToLink != null) {
+                                column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
+                            }
                             result.put(column, 1 + (count == null ? 0 : count));
                             break;
                         }

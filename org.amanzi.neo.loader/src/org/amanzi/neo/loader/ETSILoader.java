@@ -518,6 +518,7 @@ public class ETSILoader extends DriveLoader {
             currentDirectoryNode = findOrCreateDirectoryNode(logFile.getParentFile());
 			
 			newFile = true;
+            headersMap.clear();
             getHeaderMap(REAL_DATASET_HEADER_INDEX).typedProperties = null;
             getHeaderMap(CALL_DATASET_HEADER_INDEX).typedProperties = null;
 
