@@ -89,6 +89,13 @@ public class NetworkLoader extends AbstractLoader {
             }
             return crs;
         }
+
+        public static CRS fromCRS(String crsType, String crsName) {
+            CRS crs = new CRS();
+            crs.type = crsType;
+            crs.epsg = crsName;
+            return crs;
+        }
     }
 
     private static Pattern channelPattern = Pattern.compile("(^BCCH$)|(^TRX\\d+$)|(^TCH\\d+$)");
