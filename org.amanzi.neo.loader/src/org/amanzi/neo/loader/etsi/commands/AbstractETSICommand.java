@@ -62,12 +62,44 @@ public abstract class AbstractETSICommand {
 	public abstract String getName();
 	
 	/**
+	 * Returns a delimiter for Parameter
+	 *
+	 * @return
+	 */
+	protected String getParamterDelimiter() {
+	    return PARAMETER_DELIMITER;
+	}
+	
+	/**
+	 * Returns a delimiter for Results 
+	 *
+	 * @return result delimiter
+	 */
+	protected String getResultDelimiter() {
+	    return RESULT_DELIMITER;
+	}
+	
+	/**
 	 * Parses String and returns map of parameters
 	 *
 	 * @param tokenizer tokenizer of string to parse
 	 * @return map that contains name of parameter and it's value
 	 */
-	protected abstract HashMap<String, Object> parseResults(StringTokenizer tokenizer);
+	protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
+	    HashMap<String, Object> result = new HashMap<String, Object>();
+        
+        StringTokenizer parametersTokenizer = new StringTokenizer(tokenizer.nextToken(getResultDelimiter()), getParamterDelimiter());
+        
+        for (ETSICommandParameter singleParameter : parameters) {
+            if (!parametersTokenizer.hasMoreTokens()) {
+                break;
+            }
+            result.put(singleParameter.getName(), singleParameter.parseString(parametersTokenizer.nextToken().trim()));
+        }
+        
+        return result;
+	}
+	
 	
 	/**
 	 * Returns map with results of command

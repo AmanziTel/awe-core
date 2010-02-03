@@ -43,6 +43,7 @@ public class ETSICommandPackage {
 		registerCommand(new CTCR());
 		registerCommand(new CTCC());
 		registerCommand(new CME());
+		registerCommand(new PESQ());
 	}
 	
 	/**
@@ -106,6 +107,10 @@ public class ETSICommandPackage {
 		if (index < 0) {
 			//if it's set syntax than command name should contain =
 			index = commandName.indexOf("=");
+		}
+		if (index < 0) {
+		    //try PESQ.run
+		    index = commandName.indexOf(".run");
 		}
 		if (index > 0) {
 			return commandName.substring(0, index);

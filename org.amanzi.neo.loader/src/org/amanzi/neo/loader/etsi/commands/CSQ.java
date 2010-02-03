@@ -13,9 +13,6 @@
 
 package org.amanzi.neo.loader.etsi.commands;
 
-import java.util.HashMap;
-import java.util.StringTokenizer;
-
 import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
 
 /**
@@ -40,22 +37,6 @@ class CSQ extends AbstractETSICommand {
 	protected void initializeParameters() {
 		parameters.add(new ETSICommandParameter("RSSI", ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("BER", ParamterType.FLOAT));		
-	}
-
-	@Override
-	protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
-		HashMap<String, Object> result = new HashMap<String, Object>();
-		
-		StringTokenizer parametersTokenizer = new StringTokenizer(tokenizer.nextToken(RESULT_DELIMITER), PARAMETER_DELIMITER);
-		
-		for (ETSICommandParameter singleParameter : parameters) {
-			if (!parametersTokenizer.hasMoreTokens()) {
-				break;
-			}
-			result.put(singleParameter.getName(), singleParameter.parseString(parametersTokenizer.nextToken().trim()));
-		}
-		
-		return result;
 	}
 
 	@Override

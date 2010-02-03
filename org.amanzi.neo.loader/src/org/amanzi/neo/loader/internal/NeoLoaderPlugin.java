@@ -29,7 +29,7 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 
 /**
- * Activator class for org.amanzi.net.loader plugin
+ * Activator class for org.amanzi.neo.loader plugin
  * 
  * @author Lagutko_N
  */

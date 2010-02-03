@@ -13,9 +13,6 @@
 
 package org.amanzi.neo.loader.etsi.commands;
 
-import java.util.HashMap;
-import java.util.StringTokenizer;
-
 import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
 
 /**
@@ -47,22 +44,6 @@ class CCI extends AbstractETSICommand {
 		parameters.add(new ETSICommandParameter("BNC_LA", ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("BNC_C2", ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("BNC_RSSI", ParamterType.INTEGER));
-	}
-
-	@Override
-	protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
-		HashMap<String, Object> result = new HashMap<String, Object>();
-		
-		StringTokenizer parametersTokenizer = new StringTokenizer(tokenizer.nextToken(RESULT_DELIMITER), PARAMETER_DELIMITER);
-		
-		for (ETSICommandParameter singleParameter : parameters) {
-			if (!parametersTokenizer.hasMoreTokens()) {
-				break;
-			}
-			result.put(singleParameter.getName(), singleParameter.parseString(parametersTokenizer.nextToken().trim()));
-		}
-		
-		return result;
 	}
 
 	@Override

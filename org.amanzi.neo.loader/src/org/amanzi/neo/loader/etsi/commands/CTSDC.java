@@ -13,9 +13,6 @@
 
 package org.amanzi.neo.loader.etsi.commands;
 
-import java.util.HashMap;
-import java.util.StringTokenizer;
-
 import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
 
 
@@ -50,22 +47,6 @@ class CTSDC extends AbstractETSICommand {
 		parameters.add(new ETSICommandParameter("RqTx", ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("priority", ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("CLIR control", ParamterType.INTEGER));
-	}
-
-	@Override
-	protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
-		HashMap<String, Object> result = new HashMap<String, Object>();
-		
-		StringTokenizer parametersTokenizer = new StringTokenizer(tokenizer.nextToken(RESULT_DELIMITER), PARAMETER_DELIMITER);
-		
-		for (ETSICommandParameter singleParameter : parameters) {
-			if (!parametersTokenizer.hasMoreTokens()) {
-				break;
-			}
-			result.put(singleParameter.getName(), singleParameter.parseString(parametersTokenizer.nextToken().trim()));
-		}
-		
-		return result;
 	}
 
 	@Override

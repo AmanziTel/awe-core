@@ -35,7 +35,10 @@ public enum CallProperties {
             return true;
         }
     },
-    TERMINATION_DURATION("termination_duration");
+    TERMINATION_DURATION("termination_duration"),
+    CALL_DURATION("call_duration"),
+    LQ("Listening quality"),
+    DELAY("Audio delay");
 
     private final String id;
 
