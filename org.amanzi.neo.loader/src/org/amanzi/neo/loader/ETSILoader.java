@@ -831,13 +831,14 @@ public class ETSILoader extends DriveLoader {
 			
 			if (mmNode == null) {
 				mmNode = neo.createNode();
-				mmNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "mm");	
-				
-				msNode.createRelationshipTo(mmNode, GeoNeoRelationshipTypes.CHILD);
+				mmNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "mm");
 			}
 			
 			if (previousMmNode != null) {
 				previousMmNode.createRelationshipTo(mmNode, GeoNeoRelationshipTypes.NEXT);
+			}
+			else {
+			    msNode.createRelationshipTo(mmNode, GeoNeoRelationshipTypes.CHILD);
 			}
 			previousMmNode = mmNode;				
 			

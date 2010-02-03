@@ -19,6 +19,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1112,7 +1113,7 @@ public class NeoUtils {
 				public boolean isReturnableNode(TraversalPosition currentPos) {
 					return datasetName.equals(currentPos.currentNode().getProperty(INeoConstants.DATASET_TYPE_NAME, ""));
 				}
-			}, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, 
+			}, ProbeCallRelationshipType.CALLS, Direction.OUTGOING, 
 			   GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
     		
     		if (callsIterator.hasNext()) {
@@ -1124,7 +1125,7 @@ public class NeoUtils {
     			callsNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, probesName + " - " + datasetName);
     			callsNode.setProperty(INeoConstants.DATASET_TYPE_NAME, datasetName);
     			
-    			probesNode.createRelationshipTo(callsNode, GeoNeoRelationshipTypes.CHILD);
+    			probesNode.createRelationshipTo(callsNode, ProbeCallRelationshipType.CALLS);
     			datasetNode.createRelationshipTo(callsNode, ProbeCallRelationshipType.PROBE_DATASET);
     		}
     		
@@ -1409,6 +1410,23 @@ public class NeoUtils {
         } finally {
             finishTx(tx);
         }
+    }
+    
+    /**
+     * Returns all Probe Nodes related to Dataset
+     *
+     * @param datasetNode Dataset Node
+     * @return all Probe Nodes
+     */
+    public static Collection<Node> getAllProbesOfDataset(Node datasetNode) {
+        return datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return NeoUtils.getNodeType(currentPos.currentNode()).equals(INeoConstants.PROBE_TYPE_NAME);
+            }
+        }, ProbeCallRelationshipType.PROBE_DATASET, Direction.OUTGOING,
+           ProbeCallRelationshipType.CALLS, Direction.INCOMING).getAllNodes();
     }
 
     /**

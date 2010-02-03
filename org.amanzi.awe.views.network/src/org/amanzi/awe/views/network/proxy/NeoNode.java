@@ -97,7 +97,12 @@ public class NeoNode {
             Iterator<Node> childrens = null;
             if (NeoUtils.isProbeCallsNode(node)) {
             	childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
-						  				  ProbeCallRelationshipType.NEXT_CALL,Direction.OUTGOING).iterator();
+						  				  ProbeCallRelationshipType.CALLEE, Direction.INCOMING,
+						  				  ProbeCallRelationshipType.CALLER, Direction.INCOMING).iterator();
+            }
+            else if (NeoUtils.getNodeType(node).equals(INeoConstants.PROBE_TYPE_NAME)) {
+                childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
+                                          ProbeCallRelationshipType.CALLS, Direction.OUTGOING).iterator();
             }
             else {
             	childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,

@@ -30,6 +30,7 @@ public enum ProbeCallRelationshipType implements RelationshipType {
 	PROBE_DATASET,
 	DRIVE_CALL,
 	PROBE_CALL,
-	NEXT_CALL;
+	CALLS, 
+	CALL_ANALYZIS;
 
 }

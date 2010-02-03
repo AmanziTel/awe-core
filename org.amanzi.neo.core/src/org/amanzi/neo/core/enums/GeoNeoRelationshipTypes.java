@@ -21,5 +21,5 @@ import org.neo4j.api.core.RelationshipType;
  * @since 1.0.0
  */
 public enum GeoNeoRelationshipTypes implements RelationshipType {
-    NEXT, PROPERTIES, CHILD, VIRTUAL_DATASET, LOCATION, SOURCE;
+    NEXT, PROPERTIES, CHILD, VIRTUAL_DATASET, LOCATION, SOURCE, CALLS;
 }

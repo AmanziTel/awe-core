@@ -151,4 +151,9 @@ public class INeoConstants {
     public static final String MAX_TIMESTAMP = "max timestamp";
     
     public static final String COMMAND_PROPERTY_NAME = "command";
+    
+    public static final String CALL_ANALYZIS_ROOT = "call analyzis root";
+    public static final String S_CELL = "s_cell";
+    public static final String S_ROW = "s_row";
+    public static final String CALL_ANALYZIS = "call analyzis";
 }

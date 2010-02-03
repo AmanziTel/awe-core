@@ -25,20 +25,25 @@ import java.util.GregorianCalendar;
  * @since 1.0.0
  */
 public enum CallTimePeriods {
-    // all time
-    ALL("ALL") {
+    // 1 hour
+    HOURLY("hourly", null) {
         @Override
-        public Long getFirstTime(Long time) {
-            return time;
+        public Long addPeriod(Long time) {
+            return addOnePeriod(time, Calendar.HOUR_OF_DAY);
         }
 
         @Override
-        public Long addPeriod(Long time) {
-            return Long.MAX_VALUE;
+        public Long getFirstTime(Long time) {
+            GregorianCalendar cl = new GregorianCalendar();
+            cl.setTimeInMillis(time);
+            cl.set(Calendar.MINUTE, 0);
+            cl.set(Calendar.SECOND, 0);
+            cl.set(Calendar.MILLISECOND, 0);
+            return cl.getTimeInMillis();
         }
     },
     // 1 day
-    ONE_DAY("1 day") {
+    DAILY("daily", HOURLY) {
         @Override
         public Long addPeriod(Long time) {
             return addOnePeriod(time, Calendar.DAY_OF_MONTH);
@@ -55,44 +60,51 @@ public enum CallTimePeriods {
             return cl.getTimeInMillis();
         }
     },
-    // 1 hour
-    ONE_HOUR("1 hour") {
+    // 1 week
+    WEEKLY("weekly", DAILY) {
         @Override
         public Long addPeriod(Long time) {
-            return addOnePeriod(time, Calendar.HOUR_OF_DAY);
+            return addOnePeriod(time, Calendar.WEEK_OF_YEAR);
         }
 
         @Override
         public Long getFirstTime(Long time) {
             GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
+            cl.set(Calendar.DAY_OF_WEEK, 0);
+            cl.set(Calendar.HOUR_OF_DAY, 0);
             cl.set(Calendar.MINUTE, 0);
             cl.set(Calendar.SECOND, 0);
             cl.set(Calendar.MILLISECOND, 0);
             return cl.getTimeInMillis();
         }
     },
-    // 1 minute
-    ONE_MINUTES("1 minutes") {
+    // 1 month
+    MONTHLY("montly", DAILY) {
         @Override
         public Long addPeriod(Long time) {
-            return addOnePeriod(time, Calendar.MINUTE);
+            return addOnePeriod(time, Calendar.MONTH);
         }
 
         @Override
         public Long getFirstTime(Long time) {
             GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
+            cl.set(Calendar.DAY_OF_MONTH, 0);
+            cl.set(Calendar.HOUR_OF_DAY, 0);
+            cl.set(Calendar.MINUTE, 0);
             cl.set(Calendar.SECOND, 0);
             cl.set(Calendar.MILLISECOND, 0);
             return cl.getTimeInMillis();
         }
     };
     private final String id;
+    
+    private CallTimePeriods underlyingPeriod;
 
-    CallTimePeriods(String id) {
+    CallTimePeriods(String id, CallTimePeriods underlyingPeriod) {
         this.id = id;
-
+        this.underlyingPeriod = underlyingPeriod;
     }
 
     /**
@@ -100,6 +112,10 @@ public enum CallTimePeriods {
      */
     public String getId() {
         return id;
+    }
+    
+    public CallTimePeriods getUnderlyingPeriod() {
+        return underlyingPeriod;
     }
 
     /**

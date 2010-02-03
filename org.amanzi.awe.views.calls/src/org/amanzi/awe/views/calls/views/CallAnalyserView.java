@@ -419,8 +419,8 @@ public class CallAnalyserView extends ViewPart {
      *forms period list
      */
     private void formPeriods() {
-        cPeriod.setItems(new String[] {CallTimePeriods.ALL.getId(), CallTimePeriods.ONE_DAY.getId(),
-                CallTimePeriods.ONE_HOUR.getId(), CallTimePeriods.ONE_MINUTES.getId()});
+        cPeriod.setItems(new String[] {CallTimePeriods.HOURLY.getId(), CallTimePeriods.DAILY.getId(),
+                CallTimePeriods.WEEKLY.getId(), CallTimePeriods.MONTHLY.getId()});
         cPeriod.select(0);
     }
 
