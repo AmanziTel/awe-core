@@ -266,7 +266,7 @@ public class GeoNeo {
                         double[] c = GeoNode.getCoords(currentPos.currentNode());
                         return c != null && searchBounds.contains(c[0], c[1]);
                     }
-                }, GeoNeoRelationshipTypes.NEXT, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING,
+                }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING,
                         GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
             }
         }
