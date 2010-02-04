@@ -586,6 +586,9 @@ public class ETSILoader extends DriveLoader {
 			String directoryPath = directoryFile.getPath();
             int ind = directoryPath.lastIndexOf(directoryName) + directoryName.length();
             // ind = directoryPath.indexOf(File.separator, ind);
+            if (ind == directoryPath.length()) {
+                return getDatasetNode();
+            }
             String createPath = directoryPath.substring(ind + 1);
             StringTokenizer st = new StringTokenizer(createPath, File.separator);
             LinkedList<String> childs = new LinkedList<String>();
