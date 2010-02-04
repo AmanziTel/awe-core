@@ -1468,4 +1468,10 @@ public class NeoUtils {
         }
     }
 
+    public static void checkTransactionOnThread(NeoService service, String description) {
+        service = service == null ? NeoServiceProvider.getProvider().getService() : service;
+        Transaction tx = beginTx(service);
+        addTransactionLog(tx, Thread.currentThread(), description);
+        tx.finish();
+    }
 }

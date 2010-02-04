@@ -18,6 +18,8 @@ import java.io.IOException;
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.NetworkFileType;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -101,12 +103,21 @@ public class LoadNetwork extends AbstractActionTool {
                 protected IStatus run(IProgressMonitor monitor) {
                     NetworkLoader networkLoader;
                     try {
+                        NeoUtils.checkTransactionOnThread(null, "load1");
+                        if (NetworkFileType.SECTOR == NetworkFileType.getType(new File(filename))) {
                         networkLoader = new NetworkLoader(filename, dlg.getParent().getDisplay());
                         networkLoader.setup();
                         SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
                         networkLoader.run(monitor2);
                         networkLoader.printStats(false);
                         networkLoader.addLayersToMap();
+                        } else {
+                            NeoUtils.checkTransactionOnThread(null, "load2");
+                            ProbeLoader loader = new ProbeLoader(filename, display);
+                            NeoUtils.checkTransactionOnThread(null, "load3");
+                            loader.run(monitor);
+                            // TODO add to layer after changing NetworkRenderer
+                        }
                     } catch (IOException e) {
                         NeoCorePlugin.error("Error loading Network file", e);
                     }

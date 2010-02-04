@@ -1904,7 +1904,7 @@ public abstract class AbstractLoader {
         public CRS getCrs() {
             return crs;
         }
-
+        
         /**
          *save bbox to gis node
          */
@@ -1918,7 +1918,7 @@ public abstract class AbstractLoader {
          *save CRS to gis node
          */
         public void saveCRS() {
-            if (getCrs() != null) {
+            if (getCrs()!= null) {
                 gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
                 gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
             }
