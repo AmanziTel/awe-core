@@ -91,13 +91,17 @@ public class SpreadsheetService {
 	 * Initializes NeoService and create a Root Element
 	 */
 	public SpreadsheetService() {
-		provider = NeoServiceProvider.getProvider();
-		neoService = provider.getService();
 
-		projectService = NeoCorePlugin.getDefault().getProjectService();
-
-		defaultSFNode = new SplashFormatNode(neoService.createNode());
-		setSplashFormat(defaultSFNode, new CellFormat());
+        provider = NeoServiceProvider.getProvider();
+        neoService = provider.getService();
+        Transaction tx = neoService.beginTx();
+        try {
+            projectService = NeoCorePlugin.getDefault().getProjectService();
+            defaultSFNode = new SplashFormatNode(neoService.createNode());
+            setSplashFormat(defaultSFNode, new CellFormat());
+        } finally {
+            tx.finish();
+        }
 		
 	}
 

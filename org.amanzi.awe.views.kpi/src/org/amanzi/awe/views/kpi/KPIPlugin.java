@@ -17,6 +17,7 @@ import java.io.PrintStream;
 import java.net.URL;
 
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.FileLocator;
@@ -30,6 +31,7 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
+import org.neo4j.api.core.Transaction;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -65,6 +67,7 @@ public class KPIPlugin extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+        NeoServiceProvider.getProvider().getService();
 	}
 
     /**
@@ -73,6 +76,7 @@ public class KPIPlugin extends AbstractUIPlugin {
      */
     private void initializeRuby() throws IOException, InterruptedException {
         RubyInstanceConfig config = new RubyInstanceConfig();
+        config.setJRubyHome(ScriptUtils.getJRubyHome());
         config.setLoader(this.getClass().getClassLoader());
         config.setError(getErrorOutputStream());
         config.setOutput(getOutputStream());
@@ -83,13 +87,18 @@ public class KPIPlugin extends AbstractUIPlugin {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 URL scriptURL;
-                NeoServiceProvider.getProvider().getService();
+                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "1111");
+                tx.finish();
                 try {
                     scriptURL = FileLocator.toFileURL(KPIPlugin.getDefault().getBundle().getEntry("initKpi.rb"));
                 } catch (IOException e) {
                     scriptURL = null;
                 }
                 String script = NeoSplashUtil.getScriptContent(scriptURL.getPath());
+                tx = NeoServiceProvider.getProvider().getService().beginTx();
+                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "2222");
+                tx.finish();
                 try {
                     runtime.evalScriptlet(script);
                     System.out.println("INIT OK!");

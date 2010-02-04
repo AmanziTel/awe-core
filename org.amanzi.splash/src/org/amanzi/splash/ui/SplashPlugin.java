@@ -31,9 +31,9 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.neo4j.api.core.Transaction;
 import org.osgi.framework.BundleContext;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyProject;
@@ -62,7 +62,6 @@ public class SplashPlugin extends AbstractUIPlugin {
 	 */
 	private SpreadsheetOpenListener openListener;
 
-    private Transaction transaction;
 
     private ReportService reportService;
 	
@@ -83,7 +82,6 @@ public class SplashPlugin extends AbstractUIPlugin {
 		//Lagutko, 29.07.2009, initialize SpreadsheetService
 		spreadsheetService = new SpreadsheetService();
 		reportService = new ReportService();
-        transaction = NeoServiceProvider.getProvider().getService().beginTx();
 
         try {
             registerOpenSplashListenerInRDT();
@@ -95,16 +93,19 @@ public class SplashPlugin extends AbstractUIPlugin {
 
     private void registerOpenSplashListenerInRDT() {
         //Lagutko: 11.08.2009, listener for RubyExplorer activation
-		if (getWorkbench().getActiveWorkbenchWindow() != null) {
-	        rubyExplorerListener = new RubyExplorerListener();
-		    getWorkbench().getActiveWorkbenchWindow().getPartService().addPartListener(rubyExplorerListener);
-		}
-        // registers listener on open view;
-        IWorkbenchPage activePage = getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        if (activePage != null) {
-            IViewPart rubyView = activePage.findView(RubyUI.ID_RUBY_EXPLORER);
-            if (rubyView != null) {
-                registerOpenListener(rubyView);
+        // TODO fixed listener
+        IWorkbenchWindow activeWorkbenchWindow = getWorkbench().getActiveWorkbenchWindow();
+        if (activeWorkbenchWindow != null) {
+            rubyExplorerListener = new RubyExplorerListener();
+            activeWorkbenchWindow.getPartService().addPartListener(rubyExplorerListener);
+
+            // registers listener on open view;
+            IWorkbenchPage activePage = activeWorkbenchWindow.getActivePage();
+            if (activePage != null) {
+                IViewPart rubyView = activePage.findView(RubyUI.ID_RUBY_EXPLORER);
+                if (rubyView != null) {
+                    registerOpenListener(rubyView);
+                }
             }
         }
     }
@@ -116,7 +117,6 @@ public class SplashPlugin extends AbstractUIPlugin {
 	public void stop(BundleContext context) throws Exception {
 	    unregisterOpenSplashListenerInRDT();
         NeoServiceProvider.getProvider().stopNeo();
-        transaction.finish();
 		super.stop(context);
 	}
 
