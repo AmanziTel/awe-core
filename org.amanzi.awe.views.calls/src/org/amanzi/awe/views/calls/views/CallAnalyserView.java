@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Map;
 import org.amanzi.awe.views.calls.CallTimePeriods;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
+import org.amanzi.awe.views.tree.drive.views.DriveTreeView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
@@ -18,13 +20,18 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TableCursor;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -38,6 +45,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
@@ -48,6 +58,7 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
 /**
  * <p>
@@ -101,6 +112,7 @@ public class CallAnalyserView extends ViewPart {
     private ViewContentProvider provider;
     private ViewLabelProvider labelProvider;
     private Combo cPeriod;
+    private TableCursor cursor;
 
     // private DateTime dateEnd;
 
@@ -302,9 +314,90 @@ public class CallAnalyserView extends ViewPart {
         fData.top = new FormAttachment(rowComposite, 2);
         fData.bottom = new FormAttachment(100, -2);
         tableViewer.getControl().setLayoutData(fData);
+        cursor = new TableCursor(tableViewer.getTable(), SWT.DefaultSelection);
+        tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                if (event.getSelection() instanceof IStructuredSelection) {
+                    IStructuredSelection selections = (IStructuredSelection)event.getSelection();
+                    Object selRow = selections.getFirstElement();
+                    if (selRow != null && selRow instanceof PeriodWrapper) {
+                        PeriodWrapper wr = (PeriodWrapper)selRow;
+                        int columnId = cursor.getColumn();
+                        if (columnId == 0) {
+                            select(wr.sRow);
+                            return;
+                        }
+                        ColumnHeaders header = columnHeaders.get(columnId);
+                        final String nodeName = header.header.getTitle();
+                        Node cellNode = null;
+                        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                        try {
+                            Iterator<Node> iterator = NeoUtils.getChildTraverser(wr.sRow, new ReturnableEvaluator() {
+
+                                @Override
+                                public boolean isReturnableNode(TraversalPosition currentPos) {
+                                    return NeoUtils.getNodeName(currentPos.currentNode()).equals(nodeName);
+                                }
+                            }).iterator();
+                            cellNode = iterator.hasNext() ? iterator.next() : null;
+                        } finally {
+                            tx.finish();
+                        }
+                        if (cellNode != null) {
+                            select(cellNode);
+                        }
+                    }
+                }
+            }
+        });
         hookContextMenu();
         addListeners();
         initialize();
+    }
+
+    /**
+     * @param sRow
+     */
+    protected void select(Node node) {
+        //TODO refactor
+        IViewPart viewNetwork;
+        try {
+            viewNetwork = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(DriveTreeView.ID);
+        } catch (PartInitException e) {
+            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+            viewNetwork = null;
+        }
+        try {
+            if (viewNetwork != null) {
+                DriveTreeView networkView = (DriveTreeView)viewNetwork;
+                networkView.selectNode(node);
+                // viewNetwork.setFocus();
+            }
+        } catch (Exception e1) {
+            // TODO Handle Exception
+            e1.printStackTrace();
+        }
+        try {
+            IViewPart viewNeoGraph;
+            try {
+                viewNeoGraph = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NeoGraphViewPart.ID);
+            } catch (Exception e) {
+                NeoCorePlugin.error(e.getLocalizedMessage(), e);
+                viewNeoGraph = null;
+            }
+            if (viewNeoGraph != null) {
+                NeoGraphViewPart view = (NeoGraphViewPart)viewNeoGraph;
+                view.showNode(node);
+                final StructuredSelection selection = new StructuredSelection(new Object[] {node});
+                view.setFocus();
+                view.getViewSite().getSelectionProvider().setSelection(selection);
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

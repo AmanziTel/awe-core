@@ -7,6 +7,10 @@ Bundle-Activator: org.amanzi.awe.views.calls.CallAnalyserPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.amanzi.neo.core;bundle-version="1.0.0",
- org.neo4j;bundle-version="1.0.0"
+ org.neo4j;bundle-version="1.0.0",
+ org.amanzi.gef;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: org.amanzi.awe.views.network.view,
+ org.amanzi.awe.views.tree.drive.views,
+ org.neo4j.neoclipse.view
