@@ -397,9 +397,9 @@ public class CallStatistics {
     
     private Node createSRowNode(Node parent, Date startDate, Node probeNode, Node highLevelSRow, CallTimePeriods period) {
         Node result = neoService.createNode();
-        
+        String name = NeoUtils.getFormatDateString(startDate.getTime(), period.addPeriod(startDate.getTime()), "HH:mm");
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.S_ROW);
-        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, startDate.toString());
+        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
         result.setProperty(INeoConstants.PROPERTY_TIME_NAME, startDate.getTime());
         
         result.createRelationshipTo(probeNode, GeoNeoRelationshipTypes.SOURCE);

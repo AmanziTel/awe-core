@@ -1474,4 +1474,31 @@ public class NeoUtils {
         addTransactionLog(tx, Thread.currentThread(), description);
         tx.finish();
     }
+
+    /**
+     * get format date string
+     * 
+     * @param startTime - begin timestamp
+     * @param endTime end timestamp
+     * @return
+     */
+    public static String getFormatDateString(Long startTime, Long endTime, String dayFormat) {
+        if (startTime == null || endTime == null) {
+            return "No time";
+        }
+        StringBuilder sb = new StringBuilder();
+        String pattern = "yyyy-MM-dd " + dayFormat;
+        if (endTime - startTime <= 24 * 60 * 60 * 1000 && new Date(startTime).getDay() == new Date(endTime).getDay()) {
+            SimpleDateFormat sf = new SimpleDateFormat(pattern);
+            SimpleDateFormat sf2 = new SimpleDateFormat(dayFormat);
+            sb.append(sf.format(new Date(startTime)));
+            sb.append("-").append(sf2.format(endTime));
+        } else {
+            SimpleDateFormat sfMulDay1 = new SimpleDateFormat(pattern);
+            SimpleDateFormat sfMulDay2 = new SimpleDateFormat(pattern);
+            sb.append(sfMulDay1.format(new Date(startTime)));
+            sb.append(" to ").append(sfMulDay2.format(endTime));
+        }
+        return sb.toString();
+    }
 }
