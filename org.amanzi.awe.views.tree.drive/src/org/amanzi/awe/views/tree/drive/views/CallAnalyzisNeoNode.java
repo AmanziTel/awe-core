@@ -127,7 +127,13 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         if (type.equals(INeoConstants.PROBE_TYPE_NAME)) {
             return new CallAnalyzisNeoNode(statisticsNode, statisticsNode);
         } else if (type.equals(INeoConstants.S_ROW)) {
-            return new CallAnalyzisNeoNode(node.getSingleRelationship(GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).getOtherNode(node), statisticsNode);
+            return new CallAnalyzisNeoNode(node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return NeoUtils.isProbeNode(currentPos.currentNode());
+                }
+            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next(), statisticsNode);
         } else {
             return new CallAnalyzisNeoNode(NeoUtils.getParent(null, node), statisticsNode);
         }
