@@ -22,9 +22,11 @@ import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.CallProperties.CallDirection;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -94,6 +96,7 @@ public class CallAnalyserView extends ViewPart {
     private static final String LBL_START_TIME = "Start time";
     private static final String LBL_END_TIME = "End time";
     private static final String LBL_PERIOD = "Period";
+    private static final String LBL_DIRECTION = "Direction";
     // column name
     private static final String COL_PERIOD = "Period";
     private static final String COL_SETUP_FULL = "Setup Full time";
@@ -129,6 +132,7 @@ public class CallAnalyserView extends ViewPart {
     private ViewContentProvider provider;
     private ViewLabelProvider labelProvider;
     private Combo cPeriod;
+    private Combo cDirection;
     private TableCursor cursor;
 
     // private DateTime dateEnd;
@@ -158,7 +162,6 @@ public class CallAnalyserView extends ViewPart {
             try {
                 for (Node sRow : inputWr.getSrowTraverser(service)) {
                     elements.add(new PeriodWrapper(sRow));
-
                 }
             } finally {
                 tx.finish();
@@ -246,7 +249,7 @@ public class CallAnalyserView extends ViewPart {
         fData.left = new FormAttachment(0, 2);
         fData.right = new FormAttachment(100, -2);
         rowComposite.setLayoutData(fData);
-        GridLayout layout = new GridLayout(6, false);
+        GridLayout layout = new GridLayout(8, false);
         rowComposite.setLayout(layout);
         // ------ fill row
         // drive
@@ -291,6 +294,16 @@ public class CallAnalyserView extends ViewPart {
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cPeriod.setLayoutData(layoutData);
+        
+        //Direction
+        label = new Label(rowComposite, SWT.FLAT);
+        label.setText(LBL_DIRECTION);
+        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        cDirection = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
+        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        layoutData.minimumWidth = MIN_FIELD_WIDTH;
+        cDirection.setLayoutData(layoutData);
+        
         // ------- table
         tableViewer = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
         fData = new FormData();
@@ -375,8 +388,8 @@ public class CallAnalyserView extends ViewPart {
                 NeoCorePlugin.error(e.getLocalizedMessage(), e);
                 viewNeoGraph = null;
             }
-            if (viewNeoGraph != null) {
-                NeoGraphViewPart view = (NeoGraphViewPart)viewNeoGraph;
+            if ((viewNeoGraph != null) && PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().isPartVisible(viewNeoGraph)) {
+                NeoGraphViewPart view = (NeoGraphViewPart)viewNeoGraph;                
                 view.showNode(node);
                 view.setFocus();
                 view.getViewSite().getSelectionProvider().setSelection(selection);
@@ -501,6 +514,19 @@ public class CallAnalyserView extends ViewPart {
         }
         cPeriod.setItems(periods.toArray(new String[0]));
     }
+    
+    /**
+     *forms direction list
+     * 
+     * @param statistics
+     */
+    private void formDirections() {
+        List<String> directions=new ArrayList<String>();
+        for (CallDirection direction : CallDirection.values()) {
+            directions.add(direction.toString());
+        }
+        cDirection.setItems(directions.toArray(new String[0]));
+    }
 
     /**
      *form call dataset list
@@ -547,6 +573,19 @@ public class CallAnalyserView extends ViewPart {
                 changePeriod();
             }
 
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        
+        cDirection.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeDirection();
+            }
+            
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
@@ -615,6 +654,13 @@ public class CallAnalyserView extends ViewPart {
     protected void changePeriod() {
         updateTable();
     }
+    
+    /**
+     *change period
+     */
+    protected void changeDirection() {
+        updateTable();
+    }
 
     /**
      *change probe
@@ -641,7 +687,7 @@ public class CallAnalyserView extends ViewPart {
      */
     private InputWrapper createInputWrapper() {
         return new InputWrapper(probeCallDataset.get(cProbe.getText()), callDataset.get(cDrive.getText()),
-                CallTimePeriods.findById(cPeriod.getText()));
+                CallTimePeriods.findById(cPeriod.getText()), cDirection.getText());
     }
 
     /**
@@ -656,6 +702,7 @@ public class CallAnalyserView extends ViewPart {
             CallStatistics statistics = new CallStatistics(drive, NeoServiceProvider.getProvider().getService());
             formProbeCall(drive);
             formPeriods(statistics);
+            formDirections();
         } catch (IOException e) {
             // TODO Handle IOException
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -806,6 +853,7 @@ public class CallAnalyserView extends ViewPart {
         private Node probe;
         private Node drive;
         private CallTimePeriods periods;
+        private CallDirection direction;
         private Node periodNode;
 
         /**
@@ -815,11 +863,17 @@ public class CallAnalyserView extends ViewPart {
          * @param drive - call dataset node
          * @param periods - periods
          */
-        public InputWrapper(Node probe, Node drive, CallTimePeriods periods) {
+        public InputWrapper(Node probe, Node drive, CallTimePeriods periods, String direction) {
             super();
             this.probe = probe;
             this.drive = drive;
             this.periods = periods;
+            if (direction.isEmpty()) {
+                this.direction = null;
+            }
+            else {
+                this.direction = CallDirection.valueOf(direction);
+            }
         }
 
         /**
@@ -837,10 +891,11 @@ public class CallAnalyserView extends ViewPart {
                     
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return currentPos.currentNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                        return currentPos.currentNode().getProperty(CallProperties.CALL_DIRECTION.getId()).equals(direction.toString()) && 
+                            currentPos.currentNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                             @Override
-                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                            public boolean isReturnableNode(TraversalPosition currentPos) {                                
                                 return currentPos.currentNode().equals(probe);
                             }
                         }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().hasNext();
@@ -867,7 +922,7 @@ public class CallAnalyserView extends ViewPart {
          * @return true if InputWrapper contains correct information
          */
         public boolean isCorrectInput() {
-            return drive != null && probe != null && periods != null;
+            return drive != null && probe != null && periods != null && direction != null;
         }
 
     }
