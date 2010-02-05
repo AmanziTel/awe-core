@@ -210,6 +210,9 @@ public class CallStatistics {
             long maxTime = minMax.getRight();
             highPeriod = getHighestPeriod(minTime, maxTime);
             tx.success();
+        }
+        catch (Exception e) {
+            tx.failure();
         } finally {
             tx.finish();
         }
@@ -293,19 +296,31 @@ public class CallStatistics {
         }
     }
     
-    private Long getSCellTime(Node sCell) {
+    private Long getSCellTime(Node sCell, Node probeNode) {
         Node sRow = NeoUtils.getParent(neoService, sCell);
-        return (Long)sRow.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+        
+        if (sRow.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return NeoUtils.isProbeNode(currentPos.currentNode());
+            }
+        }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next().equals(probeNode)) {        
+            return (Long)sRow.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+        }
+        else {
+            return null;
+        }
     }
     
-    private HashMap<CallDirection, Statistics> getStatisticsFromDatabase(Node statisticsNode, final long minDate, final long maxDate) {
+    private HashMap<CallDirection, Statistics> getStatisticsFromDatabase(Node statisticsNode, final long minDate, final long maxDate, final Node probeNode) {
         Iterator<Node> statisticsNodes = statisticsNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
             
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 if (NeoUtils.getNodeType(currentPos.currentNode()).equals(INeoConstants.S_CELL)) {
-                    Long sCellTime = getSCellTime(currentPos.currentNode());
-                    if ((sCellTime >= minDate) && (sCellTime < maxDate)) {
+                    Long sCellTime = getSCellTime(currentPos.currentNode(), probeNode);
+                    if ((sCellTime != null) && (sCellTime >= minDate) && (sCellTime < maxDate)) {
                         return true;
                     }
                 }
@@ -377,7 +392,7 @@ public class CallStatistics {
                 periodStatitics = getStatisticsByHour(timeIndex, startDate);
             }
             else {
-                periodStatitics = getStatisticsFromDatabase(statisticsNode, startDate, nextStartDate);
+                periodStatitics = getStatisticsFromDatabase(statisticsNode, startDate, nextStartDate, probeNode);
                 if (periodStatitics == null) {
                     periodStatitics = createStatistics(parentNode, statisticsNode, sRows, probeNode, timeIndex, period.getUnderlyingPeriod(), startDate, nextStartDate);
                 }

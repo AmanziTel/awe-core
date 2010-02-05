@@ -87,7 +87,13 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
                 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node probe = currentPos.currentNode().getSingleRelationship(GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).getEndNode();
+                    Node probe = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            return NeoUtils.isProbeNode(currentPos.currentNode());
+                        }
+                    }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next();
                     
                     return probe.equals(node);
                 }
