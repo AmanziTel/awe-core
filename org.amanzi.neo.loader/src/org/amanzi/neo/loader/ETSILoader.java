@@ -37,9 +37,9 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand;
+import org.amanzi.neo.loader.etsi.commands.CCI;
 import org.amanzi.neo.loader.etsi.commands.CommandSyntax;
 import org.amanzi.neo.loader.etsi.commands.ETSICommandPackage;
-import org.amanzi.neo.loader.etsi.commands.PESQ;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -428,6 +428,8 @@ public class ETSILoader extends DriveLoader {
 	private String prevCommandTimestamp;
 	
 	private String prevCommandName;
+
+    private Node probeNode;
 	
 	/**
 	 * Creates a loader
@@ -573,7 +575,7 @@ public class ETSILoader extends DriveLoader {
 		
 		Pair<Node, Node> probeNodes = probesCache.get(probeName);
 		if (probeNodes == null) {
-			Node probeNode = NeoUtils.findOrCreateProbeNode(networkNode, probeName, neo);
+            probeNode = NeoUtils.findOrCreateProbeNode(networkNode, probeName, neo);
 			currentProbeCalls = NeoUtils.getCallsNode(callDataset, probeName, probeNode, neo);            
 			getProbeCallsIndex(NeoUtils.getNodeName(currentProbeCalls));
 		}
@@ -1000,11 +1002,22 @@ public class ETSILoader extends DriveLoader {
 			error(e.getMessage());
 			return false;
 		}
-		
+
 		boolean isCallCommand = command.isCallCommand();
 		
 		HashMap<String, Object> result = command.getResults(syntax, tokenizer);
-		
+        if (command.getName().equals(new CCI().getName())) {
+            // TODO ckeck on existing
+            Object value = result.get(INeoConstants.PROBE_LA);
+            if (value != null) {
+                probeNode.setProperty(INeoConstants.PROBE_LA, value);
+            }
+            value = result.get("F");
+            if (value != null) {
+                probeNode.setProperty(INeoConstants.PROBE_F, value);
+            }
+
+        }
 		Node mNode = createMNode(timestampValue);
 		
 		if (isCallCommand) {

@@ -156,4 +156,6 @@ public class INeoConstants {
     public static final String S_CELL = "s_cell";
     public static final String S_ROW = "s_row";
     public static final String CALL_ANALYZIS = "call analyzis";
+    public static final String PROBE_LA = "LA";
+    public static final String PROBE_F = "Frequency";
 }

@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.SafeRunner;
  * @author Cinkel_A
  * 
  */
+// TODO create extension point?
 public class UpdateDatabaseManager {
 
 	private ListenerList listeners = new ListenerList();

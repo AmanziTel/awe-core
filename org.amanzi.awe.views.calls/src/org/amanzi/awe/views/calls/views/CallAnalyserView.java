@@ -22,8 +22,8 @@ import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
+import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.CallProperties.CallDirection;
@@ -114,9 +114,9 @@ public class CallAnalyserView extends ViewPart {
     /**
      * The ID of the view as specified by the extension.
      */
-    public static final String ID = "org.amanzi.awe.views.call.views.CallAnalyserView";
+    public static final String ID = "org.amanzi.awe.views.calls.views.CallAnalyserView";
 
-    private static final int MIN_FIELD_WIDTH = 150;
+    private static final int MIN_FIELD_WIDTH = 100;
     public static final int DEF_SIZE = 100;
     private static final String KEY_ALL = "ALL";
     public static final int MAX_TABLE_LEN = 500;
@@ -134,6 +134,8 @@ public class CallAnalyserView extends ViewPart {
     private Combo cPeriod;
     private Combo cDirection;
     private TableCursor cursor;
+    private String probeF = "";
+    private String probeLA = "";
 
     // private DateTime dateEnd;
 
@@ -190,7 +192,7 @@ public class CallAnalyserView extends ViewPart {
         public String getColumnText(Object obj, int index) {
             if (obj instanceof PeriodWrapper) {
                 PeriodWrapper period = (PeriodWrapper)obj;
-                return columnHeaders.get(index).getValue(period);
+                return columnHeaders.get(index).getValue(period, index);
             } else {
                 return getText(obj);
             }
@@ -212,6 +214,18 @@ public class CallAnalyserView extends ViewPart {
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText(COL_PERIOD);
+                columnHeaders.add(new ColumnHeaders(col, null));
+                col.setWidth(DEF_SIZE);
+
+                column = new TableViewerColumn(tableViewer, SWT.LEFT);
+                col = column.getColumn();
+                col.setText(INeoConstants.PROBE_LA);
+                columnHeaders.add(new ColumnHeaders(col, null));
+
+                col.setWidth(DEF_SIZE);
+                column = new TableViewerColumn(tableViewer, SWT.LEFT);
+                col = column.getColumn();
+                col.setText(INeoConstants.PROBE_F);
                 columnHeaders.add(new ColumnHeaders(col, null));
                 col.setWidth(DEF_SIZE);
                 // TODO move creation of group of single property in one method
@@ -325,6 +339,10 @@ public class CallAnalyserView extends ViewPart {
                         int columnId = cursor.getColumn();
                         if (columnId == 0) {
                             select(wr.sRow);
+                            return;
+                        }
+                        if (columnId == 1 || columnId == 2) {
+                            select(probeCallDataset.get(cProbe.getText()));
                             return;
                         }
                         ColumnHeaders header = columnHeaders.get(columnId);
@@ -667,6 +685,15 @@ public class CallAnalyserView extends ViewPart {
      */
     protected void changeProbe() {
         Node probe = probeCallDataset.get(cProbe.getText());
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
+            Number f = (Number)probe.getProperty(INeoConstants.PROBE_F, null);
+            Number la = (Number)probe.getProperty(INeoConstants.PROBE_LA, null);
+            probeF = f == null ? "" : f.toString();
+            probeLA = la == null ? "" : la.toString();
+        } finally {
+            tx.finish();
+        }
         updateTable();
     }
 
@@ -787,11 +814,18 @@ public class CallAnalyserView extends ViewPart {
          * get value depends PeriodWrapper
          * 
          * @param wr - PeriodWrapper
+         * @param index
          * @return statistic value
          */
-        public String getValue(PeriodWrapper wr) {
+        public String getValue(PeriodWrapper wr, int index) {
             if (header == null) {
+                if (index==0){
                 return NeoUtils.getNodeName(wr.sRow);
+                }else if (index==1){
+                    return probeLA;
+                } else {
+                    return probeF;
+                }
             } else {
                 return wr.getValue(header);
             }
@@ -925,6 +959,15 @@ public class CallAnalyserView extends ViewPart {
             return drive != null && probe != null && periods != null && direction != null;
         }
 
+    }
+
+    /**
+     *update view
+     */
+    public void updateView() {
+        formCallDataset();
+        formProbeCall(null);
+        tableViewer.setInput(createInputWrapper());
     }
 
 }

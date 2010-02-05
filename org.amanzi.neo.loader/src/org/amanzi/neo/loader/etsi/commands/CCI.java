@@ -21,12 +21,12 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
  * @author Lagutko_N
  * @since 1.0.0
  */
-class CCI extends AbstractETSICommand {
+public class CCI extends AbstractETSICommand {
 	
 	/*
 	 * Command name 
 	 */
-	private static final String COMMAND_NAME = "CCI";
+    public static final String COMMAND_NAME = "CCI";
 	
 	@Override
 	public String getName() {
