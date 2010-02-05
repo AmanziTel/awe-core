@@ -26,6 +26,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.core.enums.CallProperties.CallDirection;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -239,8 +240,7 @@ public class CallStatistics {
             
                 MultiPropertyIndex<Long> timeIndex = NeoUtils.getTimeIndexProperty(callProbeName);
                 timeIndex.initialize(neoService, null);
-            timeIndex.initialize(neoService, null);
-                createStatistics(parentNode, null, null, probe, timeIndex, period, minTime, maxTime);
+                createStatistics(parentNode, null, new HashMap<CallDirection, Node>(), probe, timeIndex, period, minTime, maxTime);
             }
             tx.success();
         }
@@ -267,15 +267,16 @@ public class CallStatistics {
     }
     
     private CallTimePeriods getHighestPeriod(long minTime, long maxTime) {
-        long delta = maxTime - minTime;
-        
-        if (delta > MONTH) {
+        long delta = CallTimePeriods.MONTHLY.getFirstTime(maxTime) - CallTimePeriods.MONTHLY.getFirstTime(minTime);
+        if (delta >= MONTH) {
             return CallTimePeriods.MONTHLY;
         }
-        if (delta > WEEK) {
+        delta = CallTimePeriods.WEEKLY.getFirstTime(maxTime) - CallTimePeriods.WEEKLY.getFirstTime(minTime);
+        if (delta >= WEEK) {
             return CallTimePeriods.WEEKLY;
         }
-        if (delta > DAY) {
+        delta = CallTimePeriods.DAILY.getFirstTime(maxTime) - CallTimePeriods.DAILY.getFirstTime(minTime);
+        if (delta >= DAY) {
             return CallTimePeriods.DAILY;
         }
         
@@ -293,10 +294,11 @@ public class CallStatistics {
     }
     
     private Long getSCellTime(Node sCell) {
-        return (Long)sCell.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+        Node sRow = NeoUtils.getParent(neoService, sCell);
+        return (Long)sRow.getProperty(INeoConstants.PROPERTY_TIME_NAME);
     }
     
-    private Statistics getStatisticsFromDatabase(Node statisticsNode, final long minDate, final long maxDate) {
+    private HashMap<CallDirection, Statistics> getStatisticsFromDatabase(Node statisticsNode, final long minDate, final long maxDate) {
         Iterator<Node> statisticsNodes = statisticsNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
             
             @Override
@@ -312,17 +314,29 @@ public class CallStatistics {
         }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
         
         boolean hasInDb = false;
-        Statistics statistics = new Statistics();
+        HashMap<CallDirection, Statistics> statistics = new HashMap<CallDirection, Statistics>();
+        Statistics incoming = new Statistics();
+        Statistics outgoing = new Statistics();
         while (statisticsNodes.hasNext()) {
             hasInDb = true;
             Node sCell = statisticsNodes.next();
             
             String headerName = (String)sCell.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-            Object value = (String)sCell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
+            Object value = sCell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
             StatisticsHeaders header = StatisticsHeaders.getHeaderByTitle(headerName);
             
-            statistics.updateHeaderWithCall(header, value, sCell);
+            switch (getStatisticsDirection(sCell)) {
+            case INCOMING:
+                incoming.updateHeaderWithCall(header, value, sCell);
+                break;
+            case OUTGOING:
+                outgoing.updateHeaderWithCall(header, value, sCell);
+                break;
+            }
         }
+        
+        statistics.put(CallDirection.INCOMING, incoming);
+        statistics.put(CallDirection.OUTGOING, outgoing);
         
         if (hasInDb) {
             return statistics;
@@ -332,8 +346,15 @@ public class CallStatistics {
         }
     }
     
-    private Statistics createStatistics(Node parentNode, Node highStatisticsNode, Node highLevelSRow, Node probeNode, MultiPropertyIndex<Long> timeIndex, CallTimePeriods period, long startDate, long endDate) {
-        Statistics statistics = new Statistics();
+    private CallDirection getStatisticsDirection(Node sCell) {
+        Node sRow = NeoUtils.getParent(neoService, sCell);
+        return CallDirection.valueOf((String)sRow.getProperty(CallProperties.CALL_DIRECTION.getId()));
+    }
+    
+    private HashMap<CallDirection, Statistics> createStatistics(Node parentNode, Node highStatisticsNode, HashMap<CallDirection, Node> highLevelSRow, Node probeNode, MultiPropertyIndex<Long> timeIndex, CallTimePeriods period, long startDate, long endDate) {
+        HashMap<CallDirection, Statistics> statistics = new HashMap<CallDirection, Statistics>();
+        statistics.put(CallDirection.INCOMING, new Statistics());
+        statistics.put(CallDirection.OUTGOING, new Statistics());
         
         startDate = period.getFirstTime(startDate);
         long nextStartDate = period.addPeriod(startDate);
@@ -344,30 +365,40 @@ public class CallStatistics {
         }
         
         do {
-            Node sRow = createSRowNode(statisticsNode, new Date(startDate), probeNode, highLevelSRow, period);
+            Node incoming = createSRowNode(statisticsNode, new Date(startDate), probeNode, highLevelSRow.get(CallDirection.INCOMING), period, CallDirection.INCOMING);
+            Node outcoing = createSRowNode(statisticsNode, new Date(startDate), probeNode, highLevelSRow.get(CallDirection.OUTGOING), period, CallDirection.OUTGOING);
             
-            Statistics periodStatitics;
+            HashMap<CallDirection, Node> sRows = new HashMap<CallDirection, Node>();
+            sRows.put(CallDirection.INCOMING, incoming);
+            sRows.put(CallDirection.OUTGOING, outcoing);
+            
+            HashMap<CallDirection, Statistics> periodStatitics;
             if (period == CallTimePeriods.HOURLY) {
                 periodStatitics = getStatisticsByHour(timeIndex, startDate);
             }
             else {
                 periodStatitics = getStatisticsFromDatabase(statisticsNode, startDate, nextStartDate);
                 if (periodStatitics == null) {
-                    periodStatitics = createStatistics(parentNode, statisticsNode, sRow, probeNode, timeIndex, period.getUnderlyingPeriod(), startDate, nextStartDate);
+                    periodStatitics = createStatistics(parentNode, statisticsNode, sRows, probeNode, timeIndex, period.getUnderlyingPeriod(), startDate, nextStartDate);
                 }
             }
             
-            for (StatisticsHeaders header : StatisticsHeaders.values()) {
-                createSCellNode(sRow, periodStatitics, header, period);                
-            }            
-            previousSCellNodes.put(period, null);
+            for (CallDirection direction : periodStatitics.keySet()) {
+                for (StatisticsHeaders header : StatisticsHeaders.values()) {                
+                    createSCellNode(sRows.get(direction), periodStatitics.get(direction), header, period);
+                }
+                previousSCellNodes.put(period, null);
+            }           
             
-            updateStatistics(statistics, periodStatitics);
+            
+            for (CallDirection direction : CallDirection.values()) {
+                updateStatistics(statistics.get(direction), periodStatitics.get(direction));
+            }
             
             startDate = nextStartDate;
             nextStartDate = period.addPeriod(startDate);
         }
-        while (nextStartDate < endDate);
+        while (startDate < endDate);
         
         return statistics;
     }
@@ -395,12 +426,13 @@ public class CallStatistics {
         }
     }
     
-    private Node createSRowNode(Node parent, Date startDate, Node probeNode, Node highLevelSRow, CallTimePeriods period) {
+    private Node createSRowNode(Node parent, Date startDate, Node probeNode, Node highLevelSRow, CallTimePeriods period, CallDirection direction) {
         Node result = neoService.createNode();
         String name = NeoUtils.getFormatDateString(startDate.getTime(), period.addPeriod(startDate.getTime()), "HH:mm");
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.S_ROW);
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
         result.setProperty(INeoConstants.PROPERTY_TIME_NAME, startDate.getTime());
+        result.setProperty(CallProperties.CALL_DIRECTION.getId(), direction.toString());
         
         result.createRelationshipTo(probeNode, GeoNeoRelationshipTypes.SOURCE);
         
@@ -427,7 +459,14 @@ public class CallStatistics {
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, header.getTitle());
         Object value = statistics.get(header);
         if (value == null) {
-            value = 0;            
+            switch (header.getType()) {
+            case COUNT:
+                value = new Integer(0);
+                break;
+            default:
+                value = new Float(0);
+                break;
+            }                        
         }
         else {        
             for (Node callNode : statistics.getAllAffectedCalls(header)) {
@@ -460,16 +499,26 @@ public class CallStatistics {
             
     }
     
-    private Statistics getStatisticsByHour(MultiPropertyIndex<Long> timeIndex, long startTime) {
-        Statistics statistics = new Statistics();
+    private HashMap<CallDirection, Statistics> getStatisticsByHour(MultiPropertyIndex<Long> timeIndex, long startTime) {
+        Statistics incoming = new Statistics();
+        Statistics outgoing = new Statistics();
+        HashMap<CallDirection, Statistics> statistics = new HashMap<CallDirection, Statistics>();
         
         long endTime = startTime + HOUR;
         
         Collection<Node> callNodes = timeIndex.find(new Long[] {startTime}, new Long[] {endTime});
         
         for (Node singleNode : callNodes) {
-            updateCallStatistics(singleNode, statistics);
+            if (singleNode.getProperty(CallProperties.CALL_DIRECTION.getId()).equals(CallDirection.INCOMING.toString())) {
+                updateCallStatistics(singleNode, incoming);
+            }
+            else if (singleNode.getProperty(CallProperties.CALL_DIRECTION.getId()).equals(CallDirection.OUTGOING.toString())) {
+                updateCallStatistics(singleNode, outgoing);
+            }
         }
+        
+        statistics.put(CallDirection.INCOMING, incoming);
+        statistics.put(CallDirection.OUTGOING, outgoing);
         
         return statistics;
     }

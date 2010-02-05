@@ -51,7 +51,7 @@ class CTSDC extends AbstractETSICommand {
 
 	@Override
 	public boolean isCallCommand() {
-		return false;
+		return true;
 	}
 
 }

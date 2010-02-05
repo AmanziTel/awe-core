@@ -286,14 +286,15 @@ public class ETSILoader extends DriveLoader {
 	 * @since 1.0.0
 	 */
 	private enum CallEvents {
-		OUTGOING_CALL_SETUP_BEGIN("atd"),
-		OUTGOING_CALL_SETUP_END("CTOCP"),
+	    OUTGOING_CALL_SETUP_BEGIN("AT+CTSDC"),		
 		OUTGOING_CALL_TERMINATION_BEGIN("ATH"),
 		TERMINATION_END("CTCR"),
 		INCOMING_CALL_SETUP_BEGIN("ATA"),
-		INCOMING_CALL_SETUP_END("CTCC"),
+		CALL_SETUP_END("CTCC"),
 		ERROR("CME ERROR"),
-		PESQ("PESQ");
+		PESQ("PESQ"),
+		OUTGOING_CALL("atd"),
+		INCOMING_CALL("CTICN");
 		
 		/*
 		 * Name of Command that causes this Event
@@ -387,11 +388,6 @@ public class ETSILoader extends DriveLoader {
 	private Node currentDirectoryNode;
 	
 	/*
-	 * Call that should be created by log information
-	 */
-	private Call call;
-	
-	/*
 	 * Cache of probes
 	 */
 	private HashMap<String, Pair<Node, Node>> probesCache = new HashMap<String, Pair<Node, Node>>();
@@ -400,6 +396,8 @@ public class ETSILoader extends DriveLoader {
 	 * Currently processed ProbeCalls Node
 	 */
 	private Node currentProbeCalls;
+	
+	private HashMap<CallProperties.CallDirection, Node> probeCalls = new HashMap<CallDirection, Node>();
 	
 
     // private Node lastCallInProbe;
@@ -420,6 +418,16 @@ public class ETSILoader extends DriveLoader {
 	 * Timestamp Index for Calls
 	 */
 	private HashMap<String, MultiPropertyIndex<Long>> callTimestampIndexes = new HashMap<String, MultiPropertyIndex<Long>>();
+	
+	private boolean newDirectory;
+	
+	private HashMap<CallDirection, Call> calls = new HashMap<CallDirection, Call>();
+	
+	private CallDirection currentlyProcessedDirection;
+	
+	private String prevCommandTimestamp;
+	
+	private String prevCommandName;
 	
 	/**
 	 * Creates a loader
@@ -528,6 +536,10 @@ public class ETSILoader extends DriveLoader {
 			
 			updateProbeCache(probeName);
 		}
+		for (CallProperties.CallDirection direction : calls.keySet()) {
+            saveCall(calls.get(direction), direction);              
+        }
+		
 		
 		cleanupGisNode();
 		finishUpGis(getDatasetNode());
@@ -630,6 +642,10 @@ public class ETSILoader extends DriveLoader {
             Node directoryNode = subDir.getRight();
             directoryNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DIRECTORY_TYPE_NAME);
             directoryNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, child);
+            newDirectory = true;
+        }
+        else {
+            newDirectory = false;
         }
         return createDirPath(subDir.getRight(), path);
     }
@@ -665,6 +681,15 @@ public class ETSILoader extends DriveLoader {
 	
 	@Override
 	protected void parseLine(String line) {
+	    if (newDirectory) {
+	        for (CallProperties.CallDirection direction : calls.keySet()) {
+	            saveCall(calls.get(direction), direction);	            
+	        }
+	        newDirectory = false;
+	        calls.clear();
+	        probeCalls.clear();
+	    }
+	    
 		StringTokenizer tokenizer = new StringTokenizer(line, "|");
 		if (!tokenizer.hasMoreTokens()) {
 			return;
@@ -691,6 +716,18 @@ public class ETSILoader extends DriveLoader {
 
 		//get a name of command
 		String commandName = tokenizer.nextToken();
+		if (maybePESQ.startsWith("Port.write")) {
+		    prevCommandName = commandName;
+		    prevCommandTimestamp = timestamp;
+		}
+		else if (maybePESQ.startsWith("Port.read")) {
+            if ((prevCommandName != null) && commandName.equals(prevCommandName)) {
+                timestamp = prevCommandTimestamp;
+            }
+        }
+		else {
+		    prevCommandName = null;
+		}
 		
 		if (!tokenizer.hasMoreTokens()) {
 			//if last token is command name than it's Port.write command, do not proccess it
@@ -977,7 +1014,7 @@ public class ETSILoader extends DriveLoader {
 			
 			boolean processEvent = (event == CallEvents.ERROR) ? callCommandResult : true;
 			//do not proccess event if it's error for not Call Command result
-			if (processEvent) {
+			if (processEvent) {			    
 				processCallEvent(mNode, event, timestampValue);
 			}
 		}
@@ -997,91 +1034,79 @@ public class ETSILoader extends DriveLoader {
 	 * @param timestamp timestamp of event
 	 */
 	private void processCallEvent(Node relatedNode, CallEvents event, long timestamp) {
-		switch (event) {
-		case OUTGOING_CALL_SETUP_BEGIN:
-			call = new Call();
-            call.setCallDirection(CallProperties.CallDirection.OUTGOING);
-			call.setCallSetupBeginTime(timestamp);			
-			break;
-		case OUTGOING_CALL_SETUP_END:
-			if (call != null) {
-				call.setCallSetupEndTime(timestamp);
-			}
-			break;
-		case OUTGOING_CALL_TERMINATION_BEGIN:
-			if (call != null) {
-				call.setCallTerminationBegin(timestamp);				
-			}
-			break;
-		case TERMINATION_END:
-			if (call != null) {
-				call.setCallTerminationEnd(timestamp);
-                call.setCallType(CallProperties.CallType.SUCCESS);
-				call.addRelatedNode(relatedNode);
-				saveCall();
-			}
-			break;
-		case INCOMING_CALL_SETUP_BEGIN:
-			call = new Call();
-			call.setCallSetupBeginTime(timestamp);
-            call.setCallDirection(CallProperties.CallDirection.INCOMING);
-			break;
-		case INCOMING_CALL_SETUP_END:
-			if (call != null) {
-				call.setCallSetupEndTime(timestamp);
-			}
-			break;
-		case ERROR:
-			if (call != null) {
-				call.error(timestamp);
-                call.setCallType(CallProperties.CallType.FAILURE);
-				call.setCallTerminationEnd(timestamp);
-				call.addRelatedNode(relatedNode);
-				saveCall();
-			}
-		case PESQ:
-		    if (call != null) {
-		        float lq = (Float)relatedNode.getProperty(PESQ.PESQ_LISTENING_QUALITIY);
-		        call.setLq(lq);
-		        
-		        float delay = (Float)relatedNode.getProperty(PESQ.ESTIMATED_DELAY);
-		        call.setDelay(delay);
-		    }
-		default:
-			return;
-		}
-		if (call != null) {
-			call.addRelatedNode(relatedNode);
-		}
+	    switch (event) {
+	    case INCOMING_CALL:
+	        Call incoming = new Call();
+            incoming.setCallDirection(CallProperties.CallDirection.INCOMING);
+            incoming.setCallType(CallProperties.CallType.SUCCESS);
+            incoming.setCallSetupBeginTime(timestamp);
+            
+            calls.put(CallProperties.CallDirection.INCOMING, incoming);
+	        currentlyProcessedDirection = CallProperties.CallDirection.INCOMING;
+	        probeCalls.put(CallProperties.CallDirection.INCOMING, currentProbeCalls);
+	        break;
+	    case OUTGOING_CALL_SETUP_BEGIN:
+	        Call outgoing = new Call();
+	        outgoing.setCallDirection(CallProperties.CallDirection.OUTGOING);
+	        outgoing.setCallType(CallProperties.CallType.SUCCESS);
+	        outgoing.setCallSetupBeginTime(timestamp);
+	        
+	        calls.put(CallProperties.CallDirection.OUTGOING, outgoing);	        
+	        currentlyProcessedDirection = CallProperties.CallDirection.OUTGOING;
+	        probeCalls.put(CallProperties.CallDirection.OUTGOING, currentProbeCalls);
+	        
+            break;
+	    case CALL_SETUP_END:
+	        for (Call call : calls.values()) {
+	            call.setCallSetupEndTime(timestamp);
+	        }
+	        break;
+	    }
+	    
+	    if (!calls.isEmpty()) {
+	        calls.get(currentlyProcessedDirection).addRelatedNode(relatedNode);
+	    }
 	}
 	
 	/**
 	 * Creates a Call node and sets properties
 	 */
-	private void saveCall() {
-		if (call != null) {
-			Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes());
+	private void saveCall(Call call, CallProperties.CallDirection direction) {
+	    if (call != null) {
+	        Transaction tx = neo.beginTx();
+	        try {
+	            Node probeCallNode = probeCalls.get(direction);
+	            Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
 			
-			long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
-			long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
-			long callDuration = call.getCallTerminationEnd() - call.getCallSetupBegin();
+	            long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
+	            long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
+	            long callDuration = call.getCallTerminationEnd() - call.getCallSetupBegin();
 			
-			LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
+	            LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 			
-            setProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), setupDuration);
-			setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
-			setProperty(headers, callNode, CallProperties.CALL_DIRECTION.getId(), call.getCallDirection().toString());
-            setProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), callDuration);
-            setProperty(headers, callNode, CallProperties.LQ.getId(), call.getLq());
-            setProperty(headers, callNode, CallProperties.DELAY.getId(), call.getDelay());
+	            setProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), setupDuration);
+	            setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
+	            setProperty(headers, callNode, CallProperties.CALL_DIRECTION.getId(), call.getCallDirection().toString());
+	            setProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), callDuration);
+	            setProperty(headers, callNode, CallProperties.LQ.getId(), call.getLq());
+                setProperty(headers, callNode, CallProperties.DELAY.getId(), call.getDelay());
 			
-            if (call.getCallDirection() == CallProperties.CallDirection.OUTGOING) {
-                setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
-			}
+                if (call.getCallDirection() == CallProperties.CallDirection.OUTGOING) {
+                    setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
+                }
             
-            RelationshipType relation = call.getCallDirection() == CallDirection.OUTGOING ? ProbeCallRelationshipType.CALLER : ProbeCallRelationshipType.CALLEE;
-            callNode.createRelationshipTo(currentProbeCalls, relation);
-			call = null;
+                RelationshipType relation = call.getCallDirection() == CallDirection.OUTGOING ? ProbeCallRelationshipType.CALLER : ProbeCallRelationshipType.CALLEE;
+                callNode.createRelationshipTo(probeCallNode, relation);
+                call = null;
+                tx.success();
+	        }
+	        catch (Exception e) {
+	            tx.failure();
+	            NeoCorePlugin.error(null, e);
+	        }
+	        finally {
+	            tx.finish();
+	        }
 		}
 	}
 
@@ -1092,7 +1117,7 @@ public class ETSILoader extends DriveLoader {
 	 * @param relatedNodes list of M node that creates this call
 	 * @return created Node
 	 */
-	private Node createCallNode(long timestamp, ArrayList<Node> relatedNodes) {
+	private Node createCallNode(long timestamp, ArrayList<Node> relatedNodes, Node probeCalls) {
 		Transaction transaction = neo.beginTx();
 		Node result = null;
 		try {
@@ -1103,7 +1128,7 @@ public class ETSILoader extends DriveLoader {
 			index(result);
 			
 			//index for Probe Calls
-			MultiPropertyIndex<Long> callIndex = getProbeCallsIndex(NeoUtils.getNodeName(currentProbeCalls));
+			MultiPropertyIndex<Long> callIndex = getProbeCallsIndex(NeoUtils.getNodeName(probeCalls));
 			callIndex.add(result);
 			
 			//create relationship to M node

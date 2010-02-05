@@ -44,6 +44,7 @@ public class ETSICommandPackage {
 		registerCommand(new CTCC());
 		registerCommand(new CME());
 		registerCommand(new PESQ());
+		registerCommand(new CTICN());
 	}
 	
 	/**
