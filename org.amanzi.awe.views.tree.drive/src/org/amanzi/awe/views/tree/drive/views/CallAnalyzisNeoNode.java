@@ -26,7 +26,6 @@ import org.neo4j.api.core.Node;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 
 /**
@@ -105,12 +104,13 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         int i = 0;
         while (iterator.hasNext()) {
             Node child = iterator.next();
-            if (++i <= TRUNCATE_NODE) {
-                children.add(new CallAnalyzisNeoNode(child, node));
-            } else {
-                children.add(new AggregatesNode(child));
-                break;
-            }
+            // TODO refactoring
+            children.add(new CallAnalyzisNeoNode(child, node));
+            // if (++i <= TRUNCATE_NODE) {
+            // } else {
+            // children.add(new AggregatesNode(child));
+            // break;
+            // }
         }        
         return children.toArray(NO_NODES);
     }
@@ -120,4 +120,16 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         return node.hasRelationship(Direction.OUTGOING);
     }
 
+    /**
+     * @return
+     */
+    public NeoNode getParent() {
+        if (type.equals(INeoConstants.PROBE_TYPE_NAME)) {
+            return new CallAnalyzisNeoNode(statisticsNode, statisticsNode);
+        } else if (type.equals(INeoConstants.S_ROW)) {
+            return new CallAnalyzisNeoNode(node.getSingleRelationship(GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).getOtherNode(node), statisticsNode);
+        } else {
+            return new CallAnalyzisNeoNode(NeoUtils.getParent(null, node), statisticsNode);
+        }
+    }
 }

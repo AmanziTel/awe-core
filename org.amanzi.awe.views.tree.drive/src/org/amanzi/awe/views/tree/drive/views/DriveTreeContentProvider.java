@@ -17,6 +17,8 @@ import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
+import org.eclipse.core.runtime.IAdaptable;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
 
@@ -42,13 +44,29 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
     public Object getParent(Object element) {
         Transaction tx = neoServiceProvider.getService().beginTx();
         try {
+            if (element instanceof Node) {
+                element = new DriveNeoNode((Node)element);
+            }
+            if (element instanceof IAdaptable) {
+                IAdaptable adapter = (IAdaptable)element;
+                Pair pair = (Pair)adapter.getAdapter(Pair.class);
+                if (pair.getLeft() instanceof Node && pair.getRight() instanceof Node) {
+                    CallAnalyzisNeoNode elem = new CallAnalyzisNeoNode((Node)pair.getLeft(), (Node)pair.getRight());
+                    return elem.getParent();
+                }
+            }
+
             if (element instanceof NeoNode) {
                 Node node = ((NeoNode)element).getNode();
-                if (NeoUtils.isDatasetNode(node)) {
-                    return getRoot();
-                } else {
-                    return findParent(new DriveNeoNode(NeoUtils.getParent(null, node)), node);
+                for (NeoNode child : getRoot().getChildren()) {
+                    if (child.getNode().equals(node)) {
+                        return getRoot();
+                    }
                 }
+                if (element instanceof CallAnalyzisNeoNode) {
+                    return ((CallAnalyzisNeoNode)element).getParent();
+                }
+                    return findParent(new DriveNeoNode(NeoUtils.getParent(null, node)), node);
             } else {
                 return super.getParent(element);
             }

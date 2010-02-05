@@ -11,6 +11,4 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.gef;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Import-Package: org.amanzi.awe.views.network.view,
- org.amanzi.awe.views.tree.drive.views,
- org.neo4j.neoclipse.view
+Import-Package: org.neo4j.neoclipse.view

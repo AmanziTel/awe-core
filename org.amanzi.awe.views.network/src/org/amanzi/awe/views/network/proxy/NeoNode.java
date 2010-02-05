@@ -22,6 +22,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.eclipse.core.runtime.IAdaptable;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
@@ -176,6 +177,18 @@ public class NeoNode {
             return true;
         if (obj == null)
             return false;
+        if (obj instanceof IAdaptable) {
+            Node node2 = (Node)((IAdaptable)obj).getAdapter(Node.class);
+            if (node2 != null) {
+                return node2.equals(node);
+            }
+        }
+        if (obj instanceof Node) {
+            if (node == null) {
+                return false;
+            }
+            return node.equals((Node)obj);
+        }
         if (!(obj instanceof NeoNode))
             return false;
         NeoNode other = (NeoNode)obj;
@@ -197,7 +210,6 @@ public class NeoNode {
         try {
             value = value == null ? "" : value.trim();
             if (node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) {
-
                 Object oldName = node.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                 if (oldName.equals(value)) {
                     return;

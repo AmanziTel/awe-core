@@ -12,9 +12,9 @@ import java.util.Map;
 import org.amanzi.awe.views.calls.CallTimePeriods;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
-import org.amanzi.awe.views.tree.drive.views.DriveTreeView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -69,6 +69,10 @@ import org.neo4j.neoclipse.view.NeoGraphViewPart;
  * @since 1.0.0
  */
 public class CallAnalyserView extends ViewPart {
+    /** String NEOGRAPH_ID field */
+    private static final String NEOGRAPH_ID = "org.neo4j.neoclipse.view.NeoGraphViewPart";
+    /** String DRIVE_ID field */
+    private static final String DRIVE_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
     /** String ERROR_VALUE field */
     private static final String ERROR_VALUE = "ERROR";
     // row labels
@@ -211,38 +215,6 @@ public class CallAnalyserView extends ViewPart {
         }
     }
 
-    // /**
-    // * Gets format string of time period
-    // *
-    // * @param period - period
-    // * @return String
-    // */
-    // public String getTimePeriod(PeriodWrapper period) {
-    // Long begin = period.beginTime;
-    // GregorianCalendar clBegin = new GregorianCalendar();
-    // clBegin.setTimeInMillis(begin);
-    // Long end = period.endTime;
-    // GregorianCalendar clEnd = new GregorianCalendar();
-    // clEnd.setTimeInMillis(end);
-    // Long len = end - begin;
-    // if (startTime.equals(begin) && endTime.equals(end)) {
-    // return "Selected time";
-    // }
-    // if (len <= 1 * 60 * 1000) {
-    // return String.format("%s-%s-%s:%s:%s", clBegin.get(Calendar.YEAR),
-    // clBegin.get(Calendar.MONTH), clBegin
-    // .get(Calendar.DAY_OF_MONTH), clBegin
-    // .get(Calendar.HOUR_OF_DAY), clBegin.get(Calendar.MINUTE));
-    // } else if (len <= 1 * 60 * 60 * 1000) {
-    // return String.format("%s-%s-%s:%s", clBegin.get(Calendar.YEAR), clBegin.get(Calendar.MONTH),
-    // clBegin
-    // .get(Calendar.DAY_OF_MONTH), clBegin.get(Calendar.HOUR_OF_DAY));
-    // } else {
-    // return String.format("%s-%s-%s", clBegin.get(Calendar.YEAR), clBegin.get(Calendar.MONTH),
-    // clBegin
-    // .get(Calendar.DAY_OF_MONTH));
-    // }
-    // }
 
     /**
      * This is a callback that will allow us to create the viewer and initialize it.
@@ -363,26 +335,29 @@ public class CallAnalyserView extends ViewPart {
     protected void select(Node node) {
         //TODO refactor
         IViewPart viewNetwork;
+        InputWrapper wr = (InputWrapper)tableViewer.getInput();
+        StructuredSelection selection = new StructuredSelection(new Object[] {new StatisticSelectionNode(node, wr.periodNode)});
         try {
-            viewNetwork = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(DriveTreeView.ID);
+            viewNetwork = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(DRIVE_ID);
         } catch (PartInitException e) {
             NeoCorePlugin.error(e.getLocalizedMessage(), e);
             viewNetwork = null;
         }
         try {
             if (viewNetwork != null) {
-                DriveTreeView networkView = (DriveTreeView)viewNetwork;
-                networkView.selectNode(node);
+                Viewer networkView = (Viewer)viewNetwork.getSite().getSelectionProvider();
+                networkView.setSelection(selection, true);
                 // viewNetwork.setFocus();
             }
         } catch (Exception e1) {
             // TODO Handle Exception
             e1.printStackTrace();
         }
+         selection = new StructuredSelection(new Object[] {node});
         try {
             IViewPart viewNeoGraph;
             try {
-                viewNeoGraph = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NeoGraphViewPart.ID);
+                viewNeoGraph = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NEOGRAPH_ID);
             } catch (Exception e) {
                 NeoCorePlugin.error(e.getLocalizedMessage(), e);
                 viewNeoGraph = null;
@@ -390,10 +365,8 @@ public class CallAnalyserView extends ViewPart {
             if (viewNeoGraph != null) {
                 NeoGraphViewPart view = (NeoGraphViewPart)viewNeoGraph;
                 view.showNode(node);
-                final StructuredSelection selection = new StructuredSelection(new Object[] {node});
                 view.setFocus();
                 view.getViewSite().getSelectionProvider().setSelection(selection);
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -733,6 +706,7 @@ public class CallAnalyserView extends ViewPart {
         private Node probe;
         private Node drive;
         private CallTimePeriods periods;
+        private Node periodNode;
 
         /**
          * constructor
@@ -755,7 +729,7 @@ public class CallAnalyserView extends ViewPart {
              
             try {
                 CallStatistics statistic = new CallStatistics(drive, service);
-                Node periodNode = statistic.getPeriodNode(periods);
+                periodNode = statistic.getPeriodNode(periods);
                 if (periodNode==null){
                     return NeoUtils.emptyTraverser(probe);
                 }
