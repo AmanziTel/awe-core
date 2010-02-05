@@ -48,6 +48,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableCursor;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -214,7 +215,7 @@ public class CallAnalyserView extends ViewPart {
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText(COL_PERIOD);
-                columnHeaders.add(new ColumnHeaders(col, null));
+                columnHeaders.add(new ColumnHeaders(col, null));                
                 col.setWidth(DEF_SIZE);
 
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
@@ -232,10 +233,13 @@ public class CallAnalyserView extends ViewPart {
                 //
                 for (StatisticsHeaders columnHeader : StatisticsHeaders.values()) {
                     column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                    col = column.getColumn();
+                    col = column.getColumn();             
+                    String title = columnHeader.getTitle();
+                    GC gc = new GC(col.getParent());
                     col.setText(columnHeader.getTitle());
                     columnHeaders.add(new ColumnHeaders(col, columnHeader));
-                    col.setWidth(DEF_SIZE);                   
+                    col.setWidth(gc.textExtent(title).x + 20);
+                    gc.dispose();
                 }
             }
             tabl.setHeaderVisible(true);
