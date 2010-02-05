@@ -18,6 +18,7 @@ import java.util.Iterator;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -53,8 +54,11 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         if (type.equals(INeoConstants.CALL_ANALYZIS_ROOT)) {
             name = "Call Analysis: " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
         }        
-        if (type.equals(INeoConstants.S_CELL)) {
+        else if (type.equals(INeoConstants.S_CELL)) {
             name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
+        }
+        else if (type.equals(INeoConstants.S_ROW)) {
+            name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(CallProperties.CALL_DIRECTION.getId());
         }
     }
     
