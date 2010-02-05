@@ -8,7 +8,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.neo4j;bundle-version="1.0.0",
- org.amanzi.gef;bundle-version="1.0.0"
+ org.amanzi.gef;bundle-version="1.0.0",
+ net.refractions.udig.project.ui;bundle-version="1.1.1",
+ org.amanzi.awe.catalog.neo;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.neo4j.neoclipse.view

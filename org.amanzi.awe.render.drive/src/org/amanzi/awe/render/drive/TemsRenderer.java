@@ -398,7 +398,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         public boolean isReturnableNode(TraversalPosition currentPos) {
                             return NeoUtils.isDrivePointNode(currentPos.currentNode());
                         }
-                    }, NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
+                    }, GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING)) {
                         selectedPoints.add(rnode);
                         break;
                     }

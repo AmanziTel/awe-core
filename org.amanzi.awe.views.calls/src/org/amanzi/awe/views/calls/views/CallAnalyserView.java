@@ -4,11 +4,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.project.ILayer;
+import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.ui.ApplicationGIS;
+
+import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.calls.CallTimePeriods;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
@@ -19,6 +27,10 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -52,6 +64,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
@@ -332,7 +345,7 @@ public class CallAnalyserView extends ViewPart {
     /**
      * @param sRow
      */
-    protected void select(Node node) {
+    protected void select(final Node node) {
         //TODO refactor
         IViewPart viewNetwork;
         InputWrapper wr = (InputWrapper)tableViewer.getInput();
@@ -370,6 +383,93 @@ public class CallAnalyserView extends ViewPart {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        final Node drive = callDataset.get(cDrive.getText());
+        Job job = new Job("SelectOnMap") {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                try {
+                    Traverser traverse = node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+
+                        @Override
+                        public boolean isStopNode(TraversalPosition currentPos) {
+                            if (currentPos.isStartNode()) {
+                                return false;
+                            }
+                            Node node = currentPos.currentNode();
+                            String type = NeoUtils.getNodeType(node, "");
+                            if (type.equals(INeoConstants.CALL_TYPE_NAME)) {
+                                return true;
+                            }
+                            Relationship relation = currentPos.lastRelationshipTraversed();
+                            if (relation.isType(GeoNeoRelationshipTypes.NEXT)) {
+                                return !type.equals(INeoConstants.S_CELL);
+                            }
+                            return false;
+                        }
+                    }, new ReturnableEvaluator() {
+
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            Node node = currentPos.currentNode();
+                            return NeoUtils.isCallNode(node) && node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
+                        }
+                    }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.SOURCE,
+                            Direction.OUTGOING);
+                    Collection<Node> nodes = traverse.getAllNodes();
+                    if (!nodes.isEmpty()) {
+                        selectNodesOnMap(drive, nodes);
+                    }
+                    return Status.OK_STATUS;
+                } finally {
+                    tx.finish();
+                }
+            }
+        };
+        job.schedule();
+    }
+
+    /**
+     * select nodes on map
+     * 
+     * @param drive
+     * @param nodes nodes to select
+     */
+    // TODO use selection mechanism!
+    private void selectNodesOnMap(Node drive, Collection<Node> nodes) {
+
+        if (drive == null) {
+            return;
+        }
+        Node gis = NeoUtils.findGisNodeByChild(drive);
+        IMap activeMap = ApplicationGIS.getActiveMap();
+        if (activeMap != ApplicationGIS.NO_MAP) {
+            try {
+                for (ILayer layer : activeMap.getMapLayers()) {
+                    IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
+                    if (resourse != null) {
+                        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
+                        if (gis != null && geo.getMainGisNode().equals(gis)) {
+                            Set<Node> prevSel = geo.getSelectedNodes();
+                            if (!prevSel.equals(nodes)) {
+                                geo.setSelectedNodes(new HashSet<Node>(nodes));
+                                layer.refresh(null);
+                            }
+                        } else {
+                            Set<Node> prevSel = geo.getSelectedNodes();
+                            if (prevSel != null && !prevSel.isEmpty()) {
+                                geo.setSelectedNodes(new HashSet<Node>());
+                                layer.refresh(null);
+                            }
+                        }
+
+                    }
+                }
+            } catch (IOException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
         }
     }
 
