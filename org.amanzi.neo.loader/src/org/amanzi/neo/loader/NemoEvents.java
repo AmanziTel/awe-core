@@ -1350,29 +1350,55 @@ public enum NemoEvents {
                     parsedParameters.put("CC", getFloatValue(parameters));
                 } else if (5 == system) {
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Chs", getIntegerValue(parameters));
-                    parsedParameters.put("#params/channel", getIntegerValue(parameters));
-                    parsedParameters.put("Ch", getIntegerValue(parameters));
-                    parsedParameters.put("RSSI", getFloatValue(parameters));
-                    parsedParameters.put("#Cells", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Cell type", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("Ch_2", getIntegerValue(parameters));
-                    parsedParameters.put("Scr.", getIntegerValue(parameters));
-                    parsedParameters.put("Ec/N0", getFloatValue(parameters));
-                    parsedParameters.put("STTD", getIntegerValue(parameters));
-                    parsedParameters.put("RSCP", getFloatValue(parameters));
-                    parsedParameters.put("Secondary scr.", getIntegerValue(parameters));
-                    parsedParameters.put("Squal", getFloatValue(parameters));
-                    parsedParameters.put("Srxlev", getFloatValue(parameters));
-                    parsedParameters.put("Hqual", getFloatValue(parameters));
-                    parsedParameters.put("Hrxlev", getFloatValue(parameters));
-                    parsedParameters.put("Rqual", getFloatValue(parameters));
-                    parsedParameters.put("Rrxlev", getFloatValue(parameters));
-                    parsedParameters.put("OFF", getIntegerValue(parameters));
-                    parsedParameters.put("Tm", getFloatValue(parameters));
-                    parsedParameters.put("Pathloss", getFloatValue(parameters));
+                    final Integer group = getIntegerValue(parameters);
+                    // parsedParameters.put("#Chs", group);
+                    final Integer groupLen = getIntegerValue(parameters);
+                    // parsedParameters.put("#params/channel", groupLen);
+                    String[] ch = new String[group];
+                    String[] rssi = new String[group];
+                    for (int i = 0; i < group; i++) {
+                        ch[i] = getStringValue(parameters);
+                        rssi[i] = getStringValue(parameters);
+                        if (ch[i] == null) {
+                            ch[i] = "";
+                        }
+                        if (rssi[i] == null) {
+                            rssi[i] = "";
+                        }
+                    }
+                    parsedParameters.put("Ch_arr", ch);
+                    parsedParameters.put("RSSI_arr", rssi);
+                    final Integer cells = getIntegerValue(parameters);
+                    // parsedParameters.put("#Cells", cells);
+                    final Integer cellLen = getIntegerValue(parameters);
+                    // parsedParameters.put("#params/cell", cellLen);
+                    for (int i = 0; i < cells; i++) {
+                        String[] param = new String[cellLen];
+                        for (int j = 0; j < cellLen; j++) {
+                            param[j] = getStringValue(parameters);
+                            if (param[j] == null) {
+                                param[j] = "";
+                            }
+                        }
+                        parsedParameters.put("Cell_" + i, param);
+                    }
+                    // parsedParameters.put("Cell type", getIntegerValue(parameters));
+                    // parsedParameters.put("Band", getIntegerValue(parameters));
+                    // parsedParameters.put("Ch_2", getIntegerValue(parameters));
+                    // parsedParameters.put("Scr.", getIntegerValue(parameters));
+                    // parsedParameters.put("Ec/N0", getFloatValue(parameters));
+                    // parsedParameters.put("STTD", getIntegerValue(parameters));
+                    // parsedParameters.put("RSCP", getFloatValue(parameters));
+                    // parsedParameters.put("Secondary scr.", getIntegerValue(parameters));
+                    // parsedParameters.put("Squal", getFloatValue(parameters));
+                    // parsedParameters.put("Srxlev", getFloatValue(parameters));
+                    // parsedParameters.put("Hqual", getFloatValue(parameters));
+                    // parsedParameters.put("Hrxlev", getFloatValue(parameters));
+                    // parsedParameters.put("Rqual", getFloatValue(parameters));
+                    // parsedParameters.put("Rrxlev", getFloatValue(parameters));
+                    // parsedParameters.put("OFF", getIntegerValue(parameters));
+                    // parsedParameters.put("Tm", getFloatValue(parameters));
+                    // parsedParameters.put("Pathloss", getFloatValue(parameters));
                 } else if (6 == system) {
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     parsedParameters.put("#Chs", getIntegerValue(parameters));

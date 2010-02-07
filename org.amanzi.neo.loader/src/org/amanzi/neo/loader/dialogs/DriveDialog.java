@@ -121,7 +121,7 @@ public class DriveDialog {
      */
     private final static GridLayout layoutOneColumnNotFixedWidth = new GridLayout(1, false);
 
-    private static final int MAX_NEMO_LINE_READ = 20;
+    private static final int MAX_NEMO_LINE_READ = 50;
 	
 	/*
 	 * Shell of this Dialog
