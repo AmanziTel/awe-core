@@ -30,6 +30,7 @@ import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 
 /**
  * Proxy class that provides access for Node, it's children and properties
@@ -65,7 +66,8 @@ public class NeoNode {
 
     public NeoNode(Node node) {
         this.node = node;
-        this.name = NeoUtils.getSimpleNodeName(node, "");
+        //this.name = NeoUtils.getSimpleNodeName(node, "");
+        this.name = NeoUtils.getFormatedNodeName(node, NeoUtils.getSimpleNodeName(node, ""));
     }
     
     /**

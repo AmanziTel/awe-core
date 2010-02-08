@@ -287,7 +287,7 @@ public class NetworkTreeView extends ViewPart {
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 String type = NeoUtils.getNodeType(currentPos.currentNode(), "");
                 return !(type.equals(INeoConstants.AWE_PROJECT_NODE_TYPE) || type.equals(INeoConstants.GIS_TYPE_NAME))
-                        && NeoUtils.getNodeName(currentPos.currentNode()).toLowerCase().contains(text);
+                        && NeoUtils.getFormatedNodeName(currentPos.currentNode(),"").toLowerCase().contains(text);
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         // TODO needs sort by name

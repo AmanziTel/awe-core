@@ -42,6 +42,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
+import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
@@ -54,6 +55,8 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
+import org.neo4j.neoclipse.property.PropertyTransform;
 
 /**
  * <p>
@@ -1468,6 +1471,7 @@ public class NeoUtils {
         }
     }
 
+
     public static void checkTransactionOnThread(NeoService service, String description) {
         service = service == null ? NeoServiceProvider.getProvider().getService() : service;
         Transaction tx = beginTx(service);
@@ -1501,4 +1505,34 @@ public class NeoUtils {
         }
         return sb.toString();
     }
+    
+    /**
+     * gets formated node name
+     * 
+     * @param node node
+     * @param defValue default value
+     * @return node name or defValue
+     */
+    public static String getFormatedNodeName(Node node, String defName) {
+        Transaction tx = beginTransaction();
+        try {
+            String prefStore = org.neo4j.neoclipse.Activator.getDefault().getPreferenceStore().getString(NeoDecoratorPreferences.NODE_PROPERTY_NAMES);
+            StringBuilder values = new StringBuilder();
+            for (String name : prefStore.split(",")) {
+                name = name.trim();
+                if ("".equals(name)) {
+                    continue;
+                }
+                Object propertyValue = node.getProperty(name, null);
+                if (propertyValue == null) {
+                    continue;
+                }
+                values.append(", ").append(propertyValue.toString());
+            }
+            return values.length() == 0 ? defName : values.substring(2);
+        } finally {
+            tx.finish();
+        }
+    }
+
 }
