@@ -12,9 +12,11 @@
  */
 package org.amanzi.awe.views.kpi;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -22,9 +24,14 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.splash.utilities.NeoSplashUtil;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
@@ -40,6 +47,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -54,6 +62,8 @@ import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
+import org.rubypeople.rdt.core.IRubyProject;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 
 
@@ -122,6 +132,14 @@ public class KpiView extends ViewPart {
     private Button bSave;
 
     private Button bInit;
+
+	private String INIT_SCRIPT="init.rb";
+	
+	private String fileName="";
+	
+	private String formulaName="";
+	
+	private String parameters="";
 
 	/**
 	 * The constructor.
@@ -246,7 +264,7 @@ public class KpiView extends ViewPart {
         propertyList = new List(right, SWT.BORDER | SWT.V_SCROLL);
         propertyList.setLayoutData(layoutDataPr);
         // TODO implement save function
-        bSave.setVisible(false);
+        bSave.setVisible(true);
         fillList();
         addListeners();
 
@@ -351,15 +369,25 @@ public class KpiView extends ViewPart {
         final String filename = dlg.open();
         if (filename != null) {
             String script = NeoSplashUtil.getScriptContent(filename);
-            Pair<Boolean, Exception> parseResult = testScript(script);
-            if (parseResult.getLeft()) {
-                KPIPlugin.getDefault().getRubyRuntime().evalScriptlet(script);
-                fillFormulas();
-            } else {
-                testError(parseResult.getRight().getLocalizedMessage());
-            }
+            testInitScriptAndRun(script);
         }
     }
+
+	private void testInitScriptAndRun(String script) {
+		try {
+			Pair<Boolean, Exception> parseResult = testScript(script);
+			if (parseResult.getLeft()) {
+			    KPIPlugin.getDefault().getRubyRuntime().evalScriptlet(script);
+			    fillFormulas();
+			    System.out.println("fillFormulas");
+			} else {
+			    testError(parseResult.getRight().getLocalizedMessage());
+			}
+		} catch (RuntimeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 
     /**
@@ -461,6 +489,108 @@ public class KpiView extends ViewPart {
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
+        });
+        bSave.addSelectionListener(new SelectionAdapter(){
+
+			private static final String KPI_FOLDER = "kpi";
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+                try {
+                    String scriptText = getScriptText();
+                    if (scriptText != null && scriptText.length() != 0) {
+                        Shell shell = getSite().getWorkbenchWindow().getShell();
+
+                        SaveFormulaDialog dialog = new SaveFormulaDialog(shell, "Save formula");
+                        dialog.setFormulaText(scriptText);
+                        dialog.setFileName(fileName);
+                        dialog.setFormulaName(formulaName);
+                        dialog.setParameters(parameters);
+                        if (dialog.open() != null) {
+                            fileName = dialog.getFileName();
+                            formulaName = dialog.getFormulaName();
+                            parameters = dialog.getParameters();
+                            System.out.println(fileName);
+                            System.out.println(formulaName);
+                            System.out.println(parameters);
+
+                            String aweProjectName = AWEProjectManager.getActiveProjectName();
+                            IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+
+                            IPath rubyProjectPath = rubyProject.getProject().getFullPath();
+                            String location = rubyProject.getResource().getLocation().toOSString();
+                            System.out.println("[DEBUG] rubyProjectPath " + rubyProjectPath);
+                            System.out.println("[DEBUG] location " + location);
+
+                            IFolder folder = rubyProject.getProject().getFolder(new Path(KPI_FOLDER));
+                            System.out.println("[DEBUG] folder.exists()? " + folder.exists());
+
+                            if (!folder.exists()) {
+                                folder.create(false, true, null);
+                            }
+                            // update or insert formula to file specified
+                            String methodText = KPIUtils.generateRubyMethod(formulaName, parameters, scriptText, "  ");
+                            IFile formulaScript = folder.getFile(fileName);
+                            StringBuffer sb = new StringBuffer();
+                            if (!formulaScript.exists()) {
+                                sb.append("module KpiBuilder\nend");
+                                ByteArrayInputStream is = createOrUpdateFormulaScript(sb, methodText);
+                                formulaScript.create(is, true, null);
+                                is.close();
+                                System.out.println("Formula script was created");
+                            } else {
+                                KPIUtils.readContentToStringBuffer(formulaScript.getContents(), sb);
+                                ByteArrayInputStream is = createOrUpdateFormulaScript(sb, methodText);
+                                formulaScript.setContents(is, IFile.FORCE, null);
+                            }
+                            //update init script
+                            IFile initScript = folder.getFile(INIT_SCRIPT);
+                            sb = new StringBuffer();
+                            if (!initScript.exists()) {
+                                ByteArrayInputStream is = createOrUpdateInitScript(formulaScript.getLocation().toOSString(), sb);
+                                initScript.create(is, true, null);
+                                is.close();
+                                testInitScriptAndRun(sb.toString());
+                                System.out.println("Init script was created");
+                            } else {
+                                KPIUtils.readContentToStringBuffer(initScript.getContents(), sb);
+                                ByteArrayInputStream is = createOrUpdateInitScript(formulaScript.getLocation().toOSString(), sb);
+                                initScript.setContents(is, IFile.FORCE, null);
+                                testInitScriptAndRun(sb.toString());
+
+                            }
+                        } else {
+                            System.out.println("saving was cancelled");
+                        }
+                    }
+                } catch (Exception e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+
+            }
+
+			private ByteArrayInputStream createOrUpdateFormulaScript(
+					StringBuffer sb, String methodText) {
+				String newScript = KPIUtils.insertOrUpdateRubyMethod(sb.toString(), methodText);
+				ByteArrayInputStream is = new ByteArrayInputStream(newScript.getBytes());
+				return is;
+			}
+
+			private ByteArrayInputStream createOrUpdateInitScript(String fileName,
+					StringBuffer sb) {
+				appendLoadDirective(fileName, sb);
+				ByteArrayInputStream is = new ByteArrayInputStream(sb.toString().getBytes());
+				return is;
+			}
+
+			private void appendLoadDirective(String fileName, StringBuffer sb) {
+				String loadLine = new StringBuffer("load '").append(fileName).append("'\n").toString();
+				if (sb.indexOf(loadLine)<0){
+					sb.append(loadLine);
+				}
+			}
+        	
         });
     }
 
