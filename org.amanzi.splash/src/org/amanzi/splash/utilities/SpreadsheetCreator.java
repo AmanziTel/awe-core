@@ -185,7 +185,7 @@ public class SpreadsheetCreator {
      *
      * @param cell cell to save
      */
-    protected CellNode saveCell(Cell cell) {
+    public CellNode saveCell(Cell cell) {
         //import Cell to database in given Row and Column
         return importCell(cell, cell.getRow() + 1, cell.getColumn() + 1);        
     }

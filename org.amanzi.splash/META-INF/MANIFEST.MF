@@ -36,4 +36,6 @@ Export-Package: com.eteks.openjeks,
  org.amanzi.splash.report.model,
  org.amanzi.splash.swing,
  org.amanzi.splash.ui,
+ org.amanzi.splash.ui.importWizards,
+ org.amanzi.splash.ui.wizards,
  org.amanzi.splash.utilities

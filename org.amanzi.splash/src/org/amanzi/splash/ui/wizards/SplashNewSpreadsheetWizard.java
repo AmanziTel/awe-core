@@ -12,23 +12,30 @@
  */
 package org.amanzi.splash.ui.wizards;
 
-import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.splash.ui.SplashPlugin;
-import org.amanzi.splash.utilities.NeoSplashUtil;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.INewWizard;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.core.runtime.*;
-import org.eclipse.jface.operation.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.core.resources.*;
+import org.amanzi.integrator.awe.AWEProjectManager;
+import org.amanzi.splash.ui.SplashPlugin;
+import org.amanzi.splash.utilities.NeoSplashUtil;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-
-import org.eclipse.ui.*;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.INewWizard;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWizard;
+import org.eclipse.ui.PlatformUI;
 import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
@@ -106,7 +113,7 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 	 * the editor on the newly created file.
 	 */
 
-	private void doFinish(
+    protected void doFinish(
 		String containerName,
 		final String fileName,
 		final IProgressMonitor monitor)
@@ -147,7 +154,7 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 		monitor.worked(1);
 	}
 	
-	private void throwCoreException(String message) throws CoreException {
+    protected void throwCoreException(String message) throws CoreException {
 		IStatus status =
 			new Status(IStatus.ERROR, "org.amanzi.splash", IStatus.OK, message, null);
 		throw new CoreException(status);

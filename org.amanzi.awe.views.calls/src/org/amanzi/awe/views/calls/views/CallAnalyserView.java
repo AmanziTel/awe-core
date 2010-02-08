@@ -18,6 +18,7 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.calls.CallTimePeriods;
+import org.amanzi.awe.views.calls.ExportSpreadsheetWizard;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
 import org.amanzi.neo.core.INeoConstants;
@@ -44,23 +45,26 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableCursor;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -121,6 +125,7 @@ public class CallAnalyserView extends ViewPart {
     public static final int DEF_SIZE = 100;
     private static final String KEY_ALL = "ALL";
     public static final int MAX_TABLE_LEN = 500;
+    private static final String LB_EXPORT = "Export";
     private List<ColumnHeaders> columnHeaders = new ArrayList<ColumnHeaders>();
     private LinkedHashMap<String, Node> callDataset = new LinkedHashMap<String, Node>();
     private LinkedHashMap<String, Node> probeCallDataset = new LinkedHashMap<String, Node>();
@@ -137,6 +142,7 @@ public class CallAnalyserView extends ViewPart {
     private TableCursor cursor;
     private String probeF = "";
     private String probeLA = "";
+    private Button bExport;
 
     // private DateTime dateEnd;
 
@@ -215,7 +221,7 @@ public class CallAnalyserView extends ViewPart {
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText(COL_PERIOD);
-                columnHeaders.add(new ColumnHeaders(col, null));                
+                columnHeaders.add(new ColumnHeaders(col, null));
                 col.setWidth(DEF_SIZE);
 
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
@@ -233,13 +239,10 @@ public class CallAnalyserView extends ViewPart {
                 //
                 for (StatisticsHeaders columnHeader : StatisticsHeaders.values()) {
                     column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                    col = column.getColumn();             
-                    String title = columnHeader.getTitle();
-                    GC gc = new GC(col.getParent());
+                    col = column.getColumn();
                     col.setText(columnHeader.getTitle());
                     columnHeaders.add(new ColumnHeaders(col, columnHeader));
-                    col.setWidth(gc.textExtent(title).x + 20);
-                    gc.dispose();
+                    col.setWidth(DEF_SIZE);                   
                 }
             }
             tabl.setHeaderVisible(true);
@@ -267,7 +270,7 @@ public class CallAnalyserView extends ViewPart {
         fData.left = new FormAttachment(0, 2);
         fData.right = new FormAttachment(100, -2);
         rowComposite.setLayoutData(fData);
-        GridLayout layout = new GridLayout(8, false);
+        GridLayout layout = new GridLayout(9, false);
         rowComposite.setLayout(layout);
         // ------ fill row
         // drive
@@ -321,6 +324,8 @@ public class CallAnalyserView extends ViewPart {
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cDirection.setLayoutData(layoutData);
+        bExport = new Button(rowComposite, SWT.PUSH);
+        bExport.setText(LB_EXPORT);
         
         // ------- table
         tableViewer = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
@@ -331,47 +336,7 @@ public class CallAnalyserView extends ViewPart {
         fData.bottom = new FormAttachment(100, -2);
         tableViewer.getControl().setLayoutData(fData);
         cursor = new TableCursor(tableViewer.getTable(), SWT.DefaultSelection);
-        tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                if (event.getSelection() instanceof IStructuredSelection) {
-                    IStructuredSelection selections = (IStructuredSelection)event.getSelection();
-                    Object selRow = selections.getFirstElement();
-                    if (selRow != null && selRow instanceof PeriodWrapper) {
-                        PeriodWrapper wr = (PeriodWrapper)selRow;
-                        int columnId = cursor.getColumn();
-                        if (columnId == 0) {
-                            select(wr.sRow);
-                            return;
-                        }
-                        if (columnId == 1 || columnId == 2) {
-                            select(probeCallDataset.get(cProbe.getText()));
-                            return;
-                        }
-                        ColumnHeaders header = columnHeaders.get(columnId);
-                        final String nodeName = header.header.getTitle();
-                        Node cellNode = null;
-                        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-                        try {
-                            Iterator<Node> iterator = NeoUtils.getChildTraverser(wr.sRow, new ReturnableEvaluator() {
-
-                                @Override
-                                public boolean isReturnableNode(TraversalPosition currentPos) {
-                                    return NeoUtils.getNodeName(currentPos.currentNode()).equals(nodeName);
-                                }
-                            }).iterator();
-                            cellNode = iterator.hasNext() ? iterator.next() : null;
-                        } finally {
-                            tx.finish();
-                        }
-                        if (cellNode != null) {
-                            select(cellNode);
-                        }
-                    }
-                }
-            }
-        });
         hookContextMenu();
         addListeners();
         initialize();
@@ -564,6 +529,48 @@ public class CallAnalyserView extends ViewPart {
      *add listeners
      */
     private void addListeners() {
+        tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                if (event.getSelection() instanceof IStructuredSelection) {
+                    IStructuredSelection selections = (IStructuredSelection)event.getSelection();
+                    Object selRow = selections.getFirstElement();
+                    if (selRow != null && selRow instanceof PeriodWrapper) {
+                        PeriodWrapper wr = (PeriodWrapper)selRow;
+                        int columnId = cursor.getColumn();
+                        if (columnId == 0) {
+                            select(wr.sRow);
+                            return;
+                        }
+                        if (columnId == 1 || columnId == 2) {
+                            select(probeCallDataset.get(cProbe.getText()));
+                            return;
+                        }
+                        ColumnHeaders header = columnHeaders.get(columnId);
+                        final String nodeName = header.header.getTitle();
+                        Node cellNode = null;
+                        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                        try {
+                            Iterator<Node> iterator = NeoUtils.getChildTraverser(wr.sRow, new ReturnableEvaluator() {
+
+                                @Override
+                                public boolean isReturnableNode(TraversalPosition currentPos) {
+                                    return NeoUtils.getNodeName(currentPos.currentNode()).equals(nodeName);
+                                }
+                            }).iterator();
+                            cellNode = iterator.hasNext() ? iterator.next() : null;
+                        } finally {
+                            tx.finish();
+                        }
+                        if (cellNode != null) {
+                            select(cellNode);
+                        }
+                    }
+                }
+            }
+        });
+
         cDrive.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -608,6 +615,18 @@ public class CallAnalyserView extends ViewPart {
                 changeDirection();
             }
             
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        bExport.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                startExport();
+            }
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
@@ -661,6 +680,23 @@ public class CallAnalyserView extends ViewPart {
         // public void keyPressed(KeyEvent e) {
         // }
         // });
+    }
+
+    /**
+     *start export job
+     */
+    protected void startExport() {
+        final IWorkbenchWindow window = getSite().getWorkbenchWindow();
+        final List<PeriodWrapper> elements = new ArrayList<PeriodWrapper>(provider.elements);
+        if (!elements.isEmpty()) {
+            ExportSpreadsheetWizard wizard = new ExportSpreadsheetWizard(elements, columnHeaders);
+            wizard.init(window.getWorkbench(), null);
+            Shell parent = window.getShell();
+            WizardDialog dialog = new WizardDialog(parent, wizard);
+            dialog.create();
+            dialog.open();
+        }
+
     }
 
     /**
@@ -797,10 +833,11 @@ public class CallAnalyserView extends ViewPart {
      * @author Cinkel_A
      * @since 1.0.0
      */
-    private class ColumnHeaders {
+    public class ColumnHeaders {
 
         private TableColumn column;
         private final StatisticsHeaders header;
+        private String name;
 
 
         /**
@@ -812,6 +849,7 @@ public class CallAnalyserView extends ViewPart {
         public ColumnHeaders(TableColumn column, StatisticsHeaders header) {
             this.column = column;
             this.header = header;
+            name = column.getText();
         }
 
         /**
@@ -834,6 +872,13 @@ public class CallAnalyserView extends ViewPart {
                 return wr.getValue(header);
             }
         }
+
+        /**
+         * @return Returns the name.
+         */
+        public String getName() {
+            return name;
+        }
     }
 
     /**
@@ -844,7 +889,7 @@ public class CallAnalyserView extends ViewPart {
      * @author Cinkel_A
      * @since 1.0.0
      */
-    private static class PeriodWrapper {
+    public static class PeriodWrapper {
         private final Node sRow;
         private Map<StatisticsHeaders, String> mappedValue = new HashMap<StatisticsHeaders, String>();
 

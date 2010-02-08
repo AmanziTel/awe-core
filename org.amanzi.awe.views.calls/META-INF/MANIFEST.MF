@@ -10,7 +10,11 @@ Require-Bundle: org.eclipse.ui,
  org.neo4j;bundle-version="1.0.0",
  org.amanzi.gef;bundle-version="1.0.0",
  net.refractions.udig.project.ui;bundle-version="1.1.1",
- org.amanzi.awe.catalog.neo;bundle-version="1.0.0"
+ org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
+ org.amanzi.splash;bundle-version="1.0.0",
+ org.rubypeople.rdt.ui;bundle-version="0.9.1",
+ org.rubypeople.rdt.core;bundle-version="0.9.1",
+ org.eclipse.core.resources;bundle-version="3.3.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.neo4j.neoclipse.view
