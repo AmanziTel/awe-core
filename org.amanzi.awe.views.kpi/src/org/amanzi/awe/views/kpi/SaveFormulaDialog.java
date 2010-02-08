@@ -17,6 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -46,6 +48,8 @@ public class SaveFormulaDialog extends Dialog {
     private String formulaName;
     private String parameters;
     protected String status;
+    private Text txtFileName;
+    private Text txtFormulaName;
 
     protected SaveFormulaDialog(Shell parentShell, String text) {
         super(parentShell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
@@ -90,6 +94,21 @@ public class SaveFormulaDialog extends Dialog {
         gdLblFormulaText.horizontalAlignment = GridData.CENTER;
         lblFormulaText.setLayoutData(gdLblFormulaText);
 
+       // Formula name
+        Label lblFormulaName = new Label(shell, SWT.NONE);
+        lblFormulaName.setText("Formula name:");
+        GridData gdLblFormulaName = new GridData(GridData.FILL);
+        gdLblFormulaName.minimumWidth = 50;
+        lblFormulaName.setLayoutData(gdLblFormulaName);
+
+        txtFormulaName = new Text(shell, SWT.SINGLE);
+        GridData gdTxtFormulaName = new GridData(GridData.GRAB_HORIZONTAL | GridData.FILL_HORIZONTAL);
+        gdTxtFormulaName.widthHint = 200;
+        txtFormulaName.setLayoutData(gdTxtFormulaName);
+        txtFormulaName.setText(getFormulaName());
+        
+        
+       
         // Formula file
         Label lblFileName = new Label(shell, SWT.NONE);
         lblFileName.setText("Formula file:");
@@ -97,25 +116,21 @@ public class SaveFormulaDialog extends Dialog {
         gdLblFileName.minimumWidth = 50;
         lblFileName.setLayoutData(gdLblFileName);
 
-        final Text txtFileName = new Text(shell, SWT.SINGLE);
+        txtFileName = new Text(shell, SWT.SINGLE);
         GridData gdTxtFileName = new GridData(GridData.GRAB_HORIZONTAL | GridData.FILL_HORIZONTAL);
         gdLblFileName.widthHint = 200;
         txtFileName.setLayoutData(gdTxtFileName);
         txtFileName.setText(getFileName().replaceAll("\\.\\w+", ""));
 
-        // Formula name
-        Label lblFormulaName = new Label(shell, SWT.NONE);
-        lblFormulaName.setText("Formula name:");
-        GridData gdLblFormulaName = new GridData(GridData.FILL);
-        gdLblFormulaName.minimumWidth = 50;
-        lblFormulaName.setLayoutData(gdLblFormulaName);
+        //use formula name as default value for file name
+        txtFormulaName.addModifyListener(new ModifyListener(){
 
-        final Text txtFormulaName = new Text(shell, SWT.SINGLE);
-        GridData gdTxtFormulaName = new GridData(GridData.GRAB_HORIZONTAL | GridData.FILL_HORIZONTAL);
-        gdTxtFormulaName.widthHint = 200;
-        txtFormulaName.setLayoutData(gdTxtFormulaName);
-        txtFormulaName.setText(getFormulaName());
-
+            @Override
+            public void modifyText(ModifyEvent e) {
+               txtFileName.setText(txtFormulaName.getText());
+            }
+            
+        });
         // Parameters
         final Label lblParameters = new Label(shell, SWT.NONE);
         lblParameters.setText("Parameters:");
