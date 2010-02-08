@@ -66,8 +66,7 @@ public class NeoNode {
 
     public NeoNode(Node node) {
         this.node = node;
-        //this.name = NeoUtils.getSimpleNodeName(node, "");
-        this.name = NeoUtils.getFormatedNodeName(node, NeoUtils.getSimpleNodeName(node, ""));
+        this.name = NeoUtils.getFormatedNodeName(node, "");
     }
     
     /**
