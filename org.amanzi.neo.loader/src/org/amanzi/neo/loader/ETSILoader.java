@@ -1007,7 +1007,6 @@ public class ETSILoader extends DriveLoader {
 		
 		HashMap<String, Object> result = command.getResults(syntax, tokenizer);
         if (command.getName().equals(new CCI().getName())) {
-            // TODO ckeck on existing
             Object value = result.get(INeoConstants.PROBE_LA);
             if (value != null) {
                 probeNode.setProperty(INeoConstants.PROBE_LA, value);

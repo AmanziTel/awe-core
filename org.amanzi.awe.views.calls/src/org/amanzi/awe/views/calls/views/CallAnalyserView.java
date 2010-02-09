@@ -104,18 +104,8 @@ public class CallAnalyserView extends ViewPart {
     private static final String LBL_DIRECTION = "Direction";
     // column name
     private static final String COL_PERIOD = "Period";
-    private static final String COL_SETUP_FULL = "Setup Full time";
-    private static final String COL_FAILURE_COUNT = "Failure count";
-    private static final String COL_SUCCESS_COUNT = "Success count";
-    private static final String COL_DIRECTION_INCOMING = "Incoming call (count)";
-    private static final String COL_DIRECTION_OUTGOING = "Outgoing call (count)";
-    private static final String COL_SETUP_MIN = "Setup Min time";
-    private static final String COL_SETUP_MAX = "Setup Max time";
-    private static final String COL_TERMINATE_FULL = "Terminate Full time";
-    private static final String COL_TERMINATE_MIN = "Terminate Min time";
-    private static final String COL_TERMINATE_MAX = "Terminate Max time";
-    public static final String COL_SETUP_AVG = "Setup Average time";
-    public static final String COL_TERMINATE_AVG = "Terminate Average time";
+    private static final String COL_HOST = "Host";
+
     /**
      * The ID of the view as specified by the extension.
      */
@@ -140,8 +130,6 @@ public class CallAnalyserView extends ViewPart {
     private Combo cPeriod;
     private Combo cDirection;
     private TableCursor cursor;
-    private String probeF = "";
-    private String probeLA = "";
     private Button bExport;
 
     // private DateTime dateEnd;
@@ -196,6 +184,7 @@ public class CallAnalyserView extends ViewPart {
      */
     class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
 
+
         public String getColumnText(Object obj, int index) {
             if (obj instanceof PeriodWrapper) {
                 PeriodWrapper period = (PeriodWrapper)obj;
@@ -221,6 +210,12 @@ public class CallAnalyserView extends ViewPart {
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText(COL_PERIOD);
+                columnHeaders.add(new ColumnHeaders(col, null));
+                col.setWidth(DEF_SIZE);
+
+                column = new TableViewerColumn(tableViewer, SWT.LEFT);
+                col = column.getColumn();
+                col.setText(COL_HOST);
                 columnHeaders.add(new ColumnHeaders(col, null));
                 col.setWidth(DEF_SIZE);
 
@@ -391,6 +386,7 @@ public class CallAnalyserView extends ViewPart {
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
                 try {
+                    System.out.println(node);
                     Traverser traverse = node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
 
                         @Override
@@ -422,6 +418,9 @@ public class CallAnalyserView extends ViewPart {
                     if (!nodes.isEmpty()) {
                         selectNodesOnMap(drive, nodes);
                     }
+                    return Status.OK_STATUS;
+                } catch (Exception e) {
+                    e.printStackTrace();
                     return Status.OK_STATUS;
                 } finally {
                     tx.finish();
@@ -543,8 +542,8 @@ public class CallAnalyserView extends ViewPart {
                             select(wr.sRow);
                             return;
                         }
-                        if (columnId == 1 || columnId == 2) {
-                            select(probeCallDataset.get(cProbe.getText()));
+                        if (columnId == 1 || columnId == 2 || columnId == 3) {
+                            select(wr.getProbeNode());
                             return;
                         }
                         ColumnHeaders header = columnHeaders.get(columnId);
@@ -724,16 +723,6 @@ public class CallAnalyserView extends ViewPart {
      *change probe
      */
     protected void changeProbe() {
-        Node probe = probeCallDataset.get(cProbe.getText());
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-        try {
-            Number f = (Number)probe.getProperty(INeoConstants.PROBE_F, null);
-            Number la = (Number)probe.getProperty(INeoConstants.PROBE_LA, null);
-            probeF = f == null ? "" : f.toString();
-            probeLA = la == null ? "" : la.toString();
-        } finally {
-            tx.finish();
-        }
         updateTable();
     }
 
@@ -784,6 +773,7 @@ public class CallAnalyserView extends ViewPart {
      */
     private void formProbeCall(Node drive) {
         probeCallDataset.clear();
+        probeCallDataset.put(KEY_ALL, null);
         if (drive != null) {
             NeoService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
@@ -835,7 +825,7 @@ public class CallAnalyserView extends ViewPart {
      */
     public class ColumnHeaders {
 
-        private TableColumn column;
+        final private TableColumn column;
         private final StatisticsHeaders header;
         private String name;
 
@@ -864,9 +854,11 @@ public class CallAnalyserView extends ViewPart {
                 if (index==0){
                 return NeoUtils.getNodeName(wr.sRow);
                 }else if (index==1){
-                    return probeLA;
+                    return wr.getHost();
+                } else if (index == 2) {
+                    return wr.getProbeLA();
                 } else {
-                    return probeF;
+                    return wr.getProbeF();
                 }
             } else {
                 return wr.getValue(header);
@@ -892,7 +884,10 @@ public class CallAnalyserView extends ViewPart {
     public static class PeriodWrapper {
         private final Node sRow;
         private Map<StatisticsHeaders, String> mappedValue = new HashMap<StatisticsHeaders, String>();
-
+        private String host;
+        private String probeF = "";
+        private String probeLA = "";
+        private Node probeNode;
         /**
          * Constructor
          * 
@@ -911,6 +906,18 @@ public class CallAnalyserView extends ViewPart {
                     mappedValue.put(header, node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, ERROR_VALUE).toString());
                 }
             }
+            probeNode = sRow.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return NeoUtils.isProbeNode(currentPos.currentNode());
+                }
+            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next();
+            host = NeoUtils.getNodeName(probeNode);
+            Number f = (Number)probeNode.getProperty(INeoConstants.PROBE_F, null);
+            Number la = (Number)probeNode.getProperty(INeoConstants.PROBE_LA, null);
+            probeF = f == null ? "" : f.toString();
+            probeLA = la == null ? "" : la.toString();
         }
 
         /**
@@ -920,6 +927,34 @@ public class CallAnalyserView extends ViewPart {
         public String getValue(StatisticsHeaders header) {
             String string = mappedValue.get(header);
             return string == null ? ERROR_VALUE : string;
+        }
+
+        /**
+         * @return Returns the host.
+         */
+        public String getHost() {
+            return host;
+        }
+
+        /**
+         * @return Returns the probeF.
+         */
+        public String getProbeF() {
+            return probeF;
+        }
+
+        /**
+         * @return Returns the probeLA.
+         */
+        public String getProbeLA() {
+            return probeLA;
+        }
+
+        /**
+         * @return Returns the probeNode.
+         */
+        public Node getProbeNode() {
+            return probeNode;
         }
 
     }
@@ -963,31 +998,31 @@ public class CallAnalyserView extends ViewPart {
          * @return
          */
         public Traverser getSrowTraverser(NeoService service) {
-             
+
             try {
                 CallStatistics statistic = new CallStatistics(drive, service);
                 periodNode = statistic.getPeriodNode(periods);
-                if (periodNode==null){
+                if (periodNode == null) {
                     return NeoUtils.emptyTraverser(probe);
                 }
                 return NeoUtils.getChildTraverser(periodNode, new ReturnableEvaluator() {
-                    
+
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return currentPos.currentNode().getProperty(CallProperties.CALL_DIRECTION.getId()).equals(direction.toString()) && 
-                            currentPos.currentNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                        return currentPos.currentNode().getProperty(CallProperties.CALL_DIRECTION.getId()).equals(direction.toString())
+                                && (probe == null || currentPos.currentNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-                            @Override
-                            public boolean isReturnableNode(TraversalPosition currentPos) {                                
-                                return currentPos.currentNode().equals(probe);
-                            }
-                        }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().hasNext();
+                                    @Override
+                                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                                        return currentPos.currentNode().equals(probe);
+                                    }
+                                }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().hasNext());
                     }
                 });
             } catch (IOException e) {
                 NeoCorePlugin.error(e.getLocalizedMessage(), e);
                 return NeoUtils.emptyTraverser(probe);
-            } 
+            }
         }
 
         /**
@@ -1005,7 +1040,7 @@ public class CallAnalyserView extends ViewPart {
          * @return true if InputWrapper contains correct information
          */
         public boolean isCorrectInput() {
-            return drive != null && probe != null && periods != null && direction != null;
+            return drive != null /* && probe != null */&& periods != null && direction != null;
         }
 
     }
