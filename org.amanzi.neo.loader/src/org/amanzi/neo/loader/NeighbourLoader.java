@@ -30,7 +30,6 @@ import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -154,8 +153,10 @@ public class NeighbourLoader {
             NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
                     new UpdateDatabaseEvent(UpdateDatabaseEventType.NEIGHBOUR));
             tx.finish();
-            header.finish();
-            NeoServiceProvider.getProvider().commit();
+            //8.02.2010 Shcharbatsevich A. - check header for null.
+            if (header!=null) {
+				header.finish();
+			}
         }
         
     }
@@ -168,7 +169,7 @@ public class NeighbourLoader {
      * @return neighbour node
      */
     private Node getNeighbour(Node network, String fileName) {
-        Node result = NeoUtils.findNeighbour(network, fileName);
+        Node result = NeoUtils.findNeighbour(network, fileName, neo);
         if (result != null) {
             return result;
         }

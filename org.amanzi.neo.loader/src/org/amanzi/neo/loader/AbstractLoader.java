@@ -97,7 +97,7 @@ public abstract class AbstractLoader {
     protected String basename = null;
     private Display display;
     private String fieldSepRegex;
-    protected String[] possibleFieldSepRegexes = new String[] {"\t", "\\,", "\\;", ",", ";"};
+    protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     protected int lineNumber = 0;
     private int limit = 0;
     private long savedData = 0;
@@ -1173,7 +1173,7 @@ public abstract class AbstractLoader {
      * @return gis node for mainNode
      */
     protected final Node findOrCreateGISNode(Node mainNode, String gisType) {
-        String gisName = NeoUtils.getNodeName(mainNode);
+        String gisName = NeoUtils.getNodeName(mainNode, neo);
         GisProperties gisProperties = gisNodes.get(gisName);
         
         if (gisProperties == null) {
@@ -1181,7 +1181,7 @@ public abstract class AbstractLoader {
             try {
                 Node reference = neo.getReferenceNode();
                 
-                Node gis = NeoUtils.findGisNode(gisName);
+                Node gis = NeoUtils.findGisNode(gisName, neo);
                 if (gis == null) {
                     gis = findMatchingGisNode(gisName, gisType);
                     // TODO analyse this code on bugs
@@ -1283,8 +1283,8 @@ public abstract class AbstractLoader {
                             Direction.OUTGOING);
                     if (propRel == null) {
                         propNode = neo.createNode();
-                        propNode.setProperty("name", NeoUtils.getNodeName(storingRootNode));
-                        propNode.setProperty("type", "gis_properties");
+                        propNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, NeoUtils.getNodeName(storingRootNode, neo));
+                        propNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "gis_properties");
                         storingRootNode.createRelationshipTo(propNode, GeoNeoRelationshipTypes.PROPERTIES);
                     } else {
                         propNode = propRel.getEndNode();

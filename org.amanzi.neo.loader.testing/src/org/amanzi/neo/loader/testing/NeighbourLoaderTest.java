@@ -16,15 +16,18 @@ package org.amanzi.neo.loader.testing;
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
@@ -39,12 +42,8 @@ import org.neo4j.api.core.Traverser.Order;
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class NeighbourLoaderTest {
+public class NeighbourLoaderTest extends AbstractLoaderTest{
 
-    protected static String filename = "Net1.csv";
-    protected static String filenameNeighbour = "NetNbr.csv";
-    protected static String networkTestFiles = "files/neighbour/";
-    protected static EmbeddedNeo neo;
     private static Node gis;
 
     /**
@@ -54,18 +53,73 @@ public class NeighbourLoaderTest {
      */
     @BeforeClass
     public static void init() throws IOException {
-        neo = new EmbeddedNeo(NeoTestPlugin.getDefault().getDatabaseLocation());
-        NetworkLoader networkLoader = new NetworkLoader(neo, networkTestFiles + filename);
+    	clearDbDirectory();
+    }    
+    
+    /**
+     * Tests load empty data base.
+     */
+    @Test
+    public void testEmptyLoading()throws IOException{
+    	NeighbourLoader loader = initDataBase(BUNDLE_KEY_EMPTY);
+    	assertLoader(loader);        
+    }
+    
+    /**
+     * Tests load correct data base.
+     */
+    @Test
+    public void testCorrectLoading()throws IOException{
+    	NeighbourLoader loader = initDataBase(BUNDLE_KEY_CORRECT);
+    	assertLoader(loader);
+    }
+    
+    /**
+     * Tests load incorrect data bases.
+     */
+    @Ignore("Unknown reaction, need to be rewrited.")
+    @Test
+    public void testIncorrectLoading()throws IOException{
+    	initDataBase(BUNDLE_KEY_WRONG);
+    }
+    
+    /**
+     * Execute after even test. 
+     * Clear data base.
+     */
+    @After
+    public void finishOne(){
+    	doFinish();
+    }  
+    
+    /**
+     *finish 
+     */
+    @AfterClass
+    public static void finish() {
+        doFinish();
+    }
+
+    /**
+     * Initialize loader.
+     * @param aTestKey String (key for test)
+     * @throws IOException (loading problem)
+     */
+	private NeighbourLoader initDataBase(String aTestKey) throws IOException {
+		initProjectService();
+		String fileDirectory = getFileDirectory();
+		String filename = getProperty("test_loader.common.net_file");
+		NetworkLoader networkLoader = new NetworkLoader(getNeo(), fileDirectory + filename);
         networkLoader.setup();
         networkLoader.setLimit(1000);
         networkLoader.setCommitSize(1000);
         networkLoader.run(null);
         gis = findGisNode(filename);
-        NeighbourLoader loader = new NeighbourLoader(gis, filenameNeighbour, neo);
+        NeighbourLoader loader = new NeighbourLoader(gis, fileDirectory + getDbName(aTestKey), getNeo());
         IProgressMonitor monitor = new NullProgressMonitor();
         loader.run(monitor);
-    }
-
+		return loader;
+	}
 
     /**
      * finds gis node by name
@@ -74,18 +128,19 @@ public class NeighbourLoaderTest {
      * @return gis node or null
      */
     public static Node findGisNode(final String gisName) {
-        Transaction tx = neo.beginTx();
+        Transaction tx = getNeo().beginTx();
         try {
             if (gisName == null || gisName.isEmpty()) {
                 return null;
             }
-            Node root = NeoServiceProvider.getProvider().getService().getReferenceNode();
+            Node root = getNeo().getReferenceNode();
             Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node = currentPos.currentNode();
-                    return "gis".equals(node.getProperty("type", "")) && gisName.equals(node.getProperty("name", "").toString());
+                    return "gis".equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "")) 
+                    				&& gisName.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString());
                 }
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
             return gisIterator.hasNext() ? gisIterator.next() : null;

@@ -23,11 +23,13 @@ import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.database.services.UpdateDatabaseManager;
 import org.amanzi.neo.core.preferences.NeoPreferencesInitializer;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
+import org.neo4j.api.core.NeoService;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -114,6 +116,15 @@ public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
 			aweProjectService = new AweProjectService();
 		}
 		return aweProjectService;
+	}
+	
+	/**
+	 * Initialize project service for tests.
+	 * @param aNeo NeoService
+	 * @author Shcharbatsevich_A
+	 */
+	public void initProjectService(NeoService aNeo){
+		aweProjectService = new AweProjectService(aNeo);
 	}
 
 	/**

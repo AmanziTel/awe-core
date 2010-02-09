@@ -47,6 +47,13 @@ public class NeoTestPlugin extends AbstractUIPlugin {
     public String getDatabaseLocation() {
         return location;
     }
+    
+    public String getDatabaseLocationWithCheck() {
+    	String databaseName = "neo_test";
+    	location = checkDirs(new String[] {System.getProperty("user.home"), ".amanzi", databaseName}).getPath();;
+        return location;
+    }
+    
 	/**
 	 * Returns the shared instance
 	 *

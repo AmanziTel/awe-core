@@ -69,6 +69,9 @@ import org.neo4j.neoclipse.property.PropertyTransform;
 public class NeoUtils {
     private static final String TIMESTAMP_INDEX_NAME = "Index-timestamp-";
     private static final String LOCATION_INDEX_NAME = "Index-location-";
+    
+    protected static NeoService neoService;
+    
     private NeoUtils() {
 
     }
@@ -113,6 +116,24 @@ public class NeoUtils {
         // }
         return getSimpleNodeName(node, "");
     }
+    
+    /**
+     * Gets node name
+     * 
+     * @param node node
+     * @return node name or empty string
+     */
+    public static String getNodeName(Node node, NeoService service) {
+        // String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
+        // if (type.equals(INeoConstants.MP_TYPE_NAME)) {
+        // return node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
+        //        
+        // } else if (type.equals(INeoConstants.HEADER_M)) {
+        // return node.getProperty(INeoConstants.PROPERTY_CODE_NAME, "").toString();
+        //        
+        // }
+        return getSimpleNodeName(node, "", service);
+    }
 
     /**
      * Gets node name
@@ -123,6 +144,24 @@ public class NeoUtils {
      */
     public static String getSimpleNodeName(PropertyContainer node, String defValue) {
         Transaction tx = beginTransaction();
+        try {
+            return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
+        }
+        finally {
+            tx.success();
+            tx.finish();
+        }
+    }
+    
+    /**
+     * Gets node name
+     * 
+     * @param node node
+     * @param defValue default value
+     * @return node name or empty string
+     */
+    public static String getSimpleNodeName(PropertyContainer node, String defValue, NeoService service) {
+        Transaction tx = beginTx(service);
         try {
             return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
         }
@@ -237,6 +276,34 @@ public class NeoUtils {
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         return gisIterator.hasNext() ? gisIterator.next() : null;
+    }
+    
+    /**
+     * finds gis node by name
+     * 
+     * @param gisName name of gis node
+     * @return gis node or null
+     */
+    public static Node findGisNode(final String gisName, NeoService service) {
+        if (gisName == null || gisName.isEmpty()) {
+            return null;
+        }
+        try{
+	        Node root = service.getReferenceNode();
+	        neoService = service;
+	        Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+	
+	            @Override
+	            public boolean isReturnableNode(TraversalPosition currentPos) {
+	                Node node = currentPos.currentNode();
+	                return isGisNode(node) && getNodeName(node, neoService).equals(gisName);
+	            }
+	        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+	        return gisIterator.hasNext() ? gisIterator.next() : null;
+        }
+        finally{
+        	neoService = null;
+        }
     }
 
     /**
@@ -799,7 +866,7 @@ public class NeoUtils {
             Traverser fileNodeTraverser = NeoUtils.getChildTraverser(parentNode);
             Node lastChild = null;
             for (Node node : fileNodeTraverser) {
-                if (getNodeName(node).equals(nodeName)) {
+                if (getNodeName(node, service).equals(nodeName)) {
                     return new Pair<Boolean, Node>(false, node);
                 }
                 lastChild = node;
@@ -1223,15 +1290,16 @@ public class NeoUtils {
     
     public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, DriveTypes driveType, NeoService neo) {
         Node virtualDataset = null;
-        String realDatasetName = NeoUtils.getNodeName(realDatasetNode);
+        String realDatasetName = NeoUtils.getNodeName(realDatasetNode,neo);
         final String virtualDatasetName = driveType.getFullDatasetName(realDatasetName);
-        Transaction tx = neo.beginTx();        
+        Transaction tx = neo.beginTx(); 
+        neoService = neo;
         try {
             Iterator<Node> virtualDatasetsIterator = realDatasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
             
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return virtualDatasetName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
+                    return virtualDatasetName.equals(NeoUtils.getNodeName(currentPos.currentNode(),neoService));
                 }
             }, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
         
@@ -1253,6 +1321,7 @@ public class NeoUtils {
             NeoCorePlugin.error(null, e);
         }
         finally {
+        	neoService = null;
             tx.finish();
         }
         

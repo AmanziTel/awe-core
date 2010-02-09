@@ -32,6 +32,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.loader.AbstractLoader.GisProperties;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
@@ -42,6 +43,7 @@ import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.util.index.LuceneIndexService;
 
 public class TEMSLoader extends DriveLoader {
     private static final String TIMESTAMP_DATE_FORMAT = "HH:mm:ss.S";
@@ -97,6 +99,30 @@ public class TEMSLoader extends DriveLoader {
         initialize("TEMS", neo, filename, null, null);
         initializeLuceneIndex();
         initializeKnownHeaders();
+        addDriveIndexes();
+    }
+    
+    /**
+     * Constructor for loading data in test mode, with no display and NeoService passed
+     * 
+     * @param neo database to load data into
+     * @param filename of file to load
+     * @param display
+     */
+    public TEMSLoader(NeoService neo, String filename, String datasetName, LuceneIndexService anIndex) {
+        driveType = DriveTypes.TEMS;
+        virtualMnode = null;
+        mNode = null;
+        _workDate = new GregorianCalendar();
+        _workDate.setTimeInMillis(new File(filename).lastModified());
+        initialize("TEMS", neo, filename, null, datasetName);
+        if (anIndex==null) {
+			initializeLuceneIndex();
+		}
+        else{
+        	index = anIndex;
+        }
+		initializeKnownHeaders();
         addDriveIndexes();
     }
 
@@ -483,7 +509,8 @@ public class TEMSLoader extends DriveLoader {
             datasetName = getVirtualDatasetName();
         }
         
-        return gisNodes.get(datasetName).getGis();
+        GisProperties gisProperties = gisNodes.get(datasetName);
+		return gisProperties==null?null:gisProperties.getGis();
     }
     
     @Override

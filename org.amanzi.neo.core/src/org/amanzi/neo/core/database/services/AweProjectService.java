@@ -76,6 +76,16 @@ public class AweProjectService {
 		provider = NeoServiceProvider.getProvider();
 		neoService = provider.getService();
 	}
+	
+	/**
+	 * Constructor of Service.
+	 * 
+	 * Initializes NeoService and create a Root Element
+	 */
+	public AweProjectService(NeoService aNeo) {	    
+		provider = NeoServiceProvider.getProvider();
+		neoService = aNeo;
+	}
 
 	/**
 	 * Returns RootNode for projects

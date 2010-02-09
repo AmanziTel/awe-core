@@ -13,32 +13,26 @@
 
 package org.amanzi.neo.loader.testing;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 
 import org.amanzi.neo.loader.RomesLoader;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.neo4j.api.core.EmbeddedNeo;
 
 /**
  * <p>
- * Roames loader test
+ * Romes loader test
  * </p>
  * 
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class RomesLoaderTest {
-
-    private static final long MAX_LOAD_TIME = 5 * 1000;
-    protected static String filesDir = "files/romes/";
-    protected static EmbeddedNeo neo;
-    private static String filename = "G_YA004_090723_W09_Test.ASC";
-    private static long loadTime;
-
+public class RomesLoaderTest extends AbstractLoaderTest{
+	
+	private static long loadTime;
 
     /**
      * initialize test
@@ -47,27 +41,79 @@ public class RomesLoaderTest {
      */
     @BeforeClass
     public static void init() throws IOException {
-        neo = new EmbeddedNeo(NeoTestPlugin.getDefault().getDatabaseLocation());
-        loadTime = System.currentTimeMillis();
-        RomesLoader driveLoader = new RomesLoader(neo, filesDir + filename);
-        driveLoader.setLimit(5000);
-        driveLoader.run(null);
-        loadTime = System.currentTimeMillis() - loadTime;
-
+    	clearDbDirectory();
     }
 
+    
+    
+    /**
+     * Tests load empty data base.
+     */
     @Test
-    public void testLoadTime() {
-        String message = String.format("Load time(ms) = %d, max time(ms) = %d", loadTime, MAX_LOAD_TIME);
-        assertTrue(message, loadTime <= MAX_LOAD_TIME);
+    public void testEmptyLoading()throws IOException{
+    	RomesLoader loader = initDataBase(BUNDLE_KEY_EMPTY);
+    	assertLoader(loader);
+        
     }
+    
+    /**
+     * Tests load correct data base.
+     */
+    @Test
+    public void testCorrectLoading()throws IOException{
+    	RomesLoader loader = initDataBase(BUNDLE_KEY_CORRECT);
+    	assertLoader(loader);
+    }
+    
+    /**
+     * Tests time of load correct data base.
+     */
+    @Test
+    public void testTimeLoading()throws IOException{
+    	initDataBase(BUNDLE_KEY_TIME);
+    	assertLoadTime(loadTime,BUNDLE_KEY_TIME);
+    }
+    
+    /**
+     * Tests load incorrect data bases.
+     */
+    @Ignore("Unknown reaction, need to be rewrited.")
+    @Test
+    public void testIncorrectLoading()throws IOException{
+    	initDataBase("wrong");
+    	assertLoadTime(loadTime,BUNDLE_KEY_WRONG);
+    }
+
+    /**
+     * Initialize loader.
+     * @param aTestKey String (key for test)
+     * @throws IOException (loading problem)
+     */
+	private RomesLoader initDataBase(String aTestKey) throws IOException {
+		initProjectService();
+		loadTime = System.currentTimeMillis();
+		RomesLoader driveLoader = new RomesLoader(getNeo(), getFileDirectory() + getDbName(aTestKey),"test",initIndex());
+		driveLoader.setLimit(5000);
+		driveLoader.run(null);
+		loadTime = System.currentTimeMillis() - loadTime;
+		return driveLoader;
+	}
+    
+    /**
+     * Execute after even test. 
+     * Clear data base.
+     */
+    @After
+    public void finishOne(){
+    	doFinish();
+    }    
 
     /**
      *finish 
      */
     @AfterClass
     public static void finish() {
-        neo.shutdown();
+        doFinish();
     }
 
 }

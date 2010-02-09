@@ -51,6 +51,7 @@ public class NeighbourImportWizard extends Wizard implements IImportWizard {
                         .getProvider().getService());
                 try {
                     neighbourLoader.run(monitor);
+                    NeoServiceProvider.getProvider().commit();
                 } catch (IOException e) {
                     NeoLoaderPlugin.error(e.getLocalizedMessage());
                     return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());

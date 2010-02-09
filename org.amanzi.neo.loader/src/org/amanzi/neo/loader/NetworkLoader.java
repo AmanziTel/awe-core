@@ -227,6 +227,15 @@ public class NetworkLoader extends AbstractLoader {
             return false;
         }
     }
+    
+    /**
+     * Returns created Network Node
+     * 
+     * @return network Node
+     */
+    public Node getNetworkNode() {
+    	return network;
+    }
 	
     /**
      * After all lines have been parsed, this method is called, allowing the implementing class the
@@ -240,8 +249,10 @@ public class NetworkLoader extends AbstractLoader {
         printWarnings(lineErrors, "uncaught errors", 10, lineNumber);
         Transaction transaction = neo.beginTx();
         try {
-            networkHeader.saveStatistic(network);
-            network.setProperty("site_count", siteNumber);
+            if (networkHeader!=null) {
+				networkHeader.saveStatistic(network);
+			}
+			network.setProperty("site_count", siteNumber);
             network.setProperty("sector_count", sectorNumber);
             network.setProperty("bsc_count", bsc_s.size());
             network.setProperty("city_count", city_s.size());
@@ -249,15 +260,11 @@ public class NetworkLoader extends AbstractLoader {
         } finally {
             transaction.finish();
         }
-        try {
-            // add network to project and gis node to catalog
-        	super.cleanupGisNode();
-            super.finishUpGis(network);
-            if (!isTest()) {
-                showNetworkTree();
-            }
-        } catch (MalformedURLException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
+        // add network to project and gis node to catalog
+        super.cleanupGisNode();
+            
+        if (!isTest()) {
+        	showNetworkTree();
         }
     }
 

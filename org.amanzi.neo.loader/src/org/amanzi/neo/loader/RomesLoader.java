@@ -30,12 +30,14 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.loader.AbstractLoader.GisProperties;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.util.index.LuceneIndexService;
 
 public class RomesLoader extends DriveLoader {
     private Node mNode = null;
@@ -100,10 +102,16 @@ public class RomesLoader extends DriveLoader {
      * @param filename of file to load
      * @param display
      */
-    public RomesLoader(NeoService neo, String filename) {
-        initialize("Romes", neo, filename, null, null);
+    public RomesLoader(NeoService neo, String filename, String datasetName,LuceneIndexService anIndex) {
+        initialize("Romes", neo, filename, null, datasetName);
+        driveType = DriveTypes.ROMES;
         initData();
-        initializeLuceneIndex();
+        if(anIndex == null){
+        	initializeLuceneIndex();
+        }
+        else{
+        	index = anIndex;
+        }
         initializeKnownHeaders();
         addDriveIndexes();
     }
@@ -279,7 +287,7 @@ public class RomesLoader extends DriveLoader {
         EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
         try {
             for (String filename : args) {
-                RomesLoader driveLoader = new RomesLoader(neo, filename);
+                RomesLoader driveLoader = new RomesLoader(neo, filename,null, null);
                 driveLoader.setLimit(5000);
                 driveLoader.run(null);
                 driveLoader.printStats(true); // stats for this load
@@ -295,6 +303,7 @@ public class RomesLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return gisNodes.get(dataset).getGis();
+        GisProperties gisProperties = gisNodes.get(dataset);
+		return gisProperties==null?null:gisProperties.getGis();
     }
 }

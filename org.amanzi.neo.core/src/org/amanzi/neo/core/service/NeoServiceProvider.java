@@ -203,8 +203,8 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      */
     public void commit() {
         //Lagutko, 12.10.2009, also check is Workbech closing?
-        boolean currentThread = PlatformUI.getWorkbench().isClosing() || 
-                                (display == null) || 
+        boolean currentThread = (display == null) ||
+        						PlatformUI.getWorkbench().isClosing() ||                                 
                                 Thread.currentThread().equals(display.getThread());
         if (currentThread) {
             neoManager.commit();
