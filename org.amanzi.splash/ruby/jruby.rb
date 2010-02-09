@@ -28,15 +28,19 @@ def find_cell(cell_id)
 end
 
 def update(currentCellId, formula)      
-  #idArray contains IDs of referenced Cells
-  $idArray = []
-  $cell = find_cell(currentCellId)
-  if formula[0] == '='[0]    
-    formula = formula[1..formula.length]
-    display = ERB.new("<%= #{formula} %>").result  
-  else        
-    display = ERB.new(formula).result
-  end
+  begin
+    #idArray contains IDs of referenced Cells
+    $idArray = []
+    $cell = find_cell(currentCellId)
+    if formula[0] == '='[0]
+      formula = formula[1..formula.length]
+      display = ERB.new("<%= #{formula} %>").result  
+    else        
+      display = ERB.new(formula).result
+    end
+  rescue Exception => e
+    display = e.message
+  end 
   
   #if the formula was interpreted than update References of Cell
   $tableModel.updateCellReferences(currentCellId.to_s, $idArray)
