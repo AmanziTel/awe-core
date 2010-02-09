@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ public class ProbeLoader extends AbstractLoader{
     private boolean needParceHeader;
     private Node network;
     private Node gisNode;
+    private GisProperties gisProperties;
 
     public ProbeLoader(String filename, Display display) {
         needParceHeader=true;
@@ -90,22 +92,12 @@ public class ProbeLoader extends AbstractLoader{
         addKnownHeader(1, "probe_type", "type");
     }
 
-    public void setup() {
-        // TODO refactor
-        Transaction tx = neo.beginTx();
-        NeoUtils.addTransactionLog(tx, Thread.currentThread(), "Probe setup");
-        try {
-        network = findOrCreateNetworkNode(network, false);
-        gisNode = findOrCreateGISNode(network, GisTypes.NETWORK.getHeader());
-        } finally {
-            tx.finish();
-        }
-    }
     @Override
     protected void parseLine(String line) {
         if (network == null) {
             network = findOrCreateNetworkNode(network, false);
             gisNode = findOrCreateGISNode(network, GisTypes.NETWORK.getHeader());
+            gisProperties = new GisProperties(gisNode);
         }
         List<String> fields = splitLine(line);
         if (fields.size() < 2)
@@ -141,7 +133,7 @@ public class ProbeLoader extends AbstractLoader{
             Double currentLatitude = (Double)probeNode.getProperty(INeoConstants.PROPERTY_LAT_NAME, null);
             Double currentLongitude = (Double)probeNode.getProperty(INeoConstants.PROPERTY_LON_NAME, null);
             if (currentLatitude != null && currentLongitude != null) {
-                GisProperties gisProperties = new GisProperties(gisNode);
+
                 gisProperties.updateBBox(currentLatitude, currentLongitude);
                 gisProperties.checkCRS(currentLatitude.floatValue(), currentLongitude.floatValue(), null);
                 gisProperties.incSaved();
@@ -185,4 +177,16 @@ public class ProbeLoader extends AbstractLoader{
 
     }
 
+    @Override
+    protected void finishUp() {
+        super.finishUp();
+        gisProperties.saveBBox();
+        gisProperties.saveCRS();
+        try {
+            super.finishUpGis(gisNode);
+        } catch (MalformedURLException e) {
+            NeoLoaderPlugin.exception(e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
 }

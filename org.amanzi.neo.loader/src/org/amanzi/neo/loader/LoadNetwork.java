@@ -116,7 +116,7 @@ public class LoadNetwork extends AbstractActionTool {
                             ProbeLoader loader = new ProbeLoader(filename, display);
                             NeoUtils.checkTransactionOnThread(null, "load3");
                             loader.run(monitor);
-                            // TODO add to layer after changing NetworkRenderer
+                            loader.addLayersToMap();
                         }
                     } catch (IOException e) {
                         NeoCorePlugin.error("Error loading Network file", e);
