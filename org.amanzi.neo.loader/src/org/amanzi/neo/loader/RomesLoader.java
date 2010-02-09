@@ -46,7 +46,6 @@ public class RomesLoader extends DriveLoader {
     private String time = null;
     // private long timestamp = 0L;
     private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-    private Calendar _workDate;
 
 
     /**
@@ -57,7 +56,7 @@ public class RomesLoader extends DriveLoader {
      * @param dataset to add data to
      */
     public RomesLoader(Calendar workTime, String filename, Display display, String dataset) {
-        this._workDate = workTime;
+        _workDate = workTime;
         driveType = DriveTypes.ROMES;
         initialize("Romes", null, filename, display, dataset);
         initData();
