@@ -182,21 +182,26 @@ public class CallStatistics {
      */
     private HashMap<CallTimePeriods, Node> previousSRowNodes = new HashMap<CallTimePeriods, Node>();
 
+    /*
+     * Dataset Node for calculating statistics
+     */
     private Node datasetNode;
 
+    /*
+     * Root statistics Node
+     */
     private Node statisticNode = null;
 
+    /*
+     * Highest period 
+     */
     private CallTimePeriods highPeriod;
     
-// public CallStatistics(String amsDatasetName) {
-    // neoService = NeoServiceProvider.getProvider().getService();
-    //        
-    // this.amsDatasetName = amsDatasetName;
-    // }
-
     /**
-     * @param drive
-     * @throws IOException
+     * Creates Calculator of Call Statistics
+     * 
+     * @param drive Dataset Node
+     * @throws IOException if was problem in initializing of indexes
      */
     public CallStatistics(Node drive, NeoService service) throws IOException {
         assert drive != null;
@@ -218,6 +223,12 @@ public class CallStatistics {
         }
     }
     
+    /**
+     * Creates Statistics Node and calculates Call Statistics
+     * 
+     * @return Root statistics Node
+     * @throws IOException 
+     */
     private Node createStatistics() throws IOException {
         Transaction tx = neoService.beginTx();
         Node parentNode = null;
@@ -371,8 +382,12 @@ public class CallStatistics {
         statistics.put(CallDirection.INCOMING, new Statistics());
         statistics.put(CallDirection.OUTGOING, new Statistics());
         
-        startDate = period.getFirstTime(startDate);
-        long nextStartDate = period.addPeriod(startDate);
+        long currentStartDate = period.getFirstTime(startDate);
+        long nextStartDate = period.addPeriod(currentStartDate);
+        
+        if (startDate > currentStartDate) {
+            currentStartDate = startDate;
+        }
         
         Node statisticsNode = getStatisticsNode(parentNode, period);
         if (highStatisticsNode != null) {
@@ -380,8 +395,8 @@ public class CallStatistics {
         }
         
         do {
-            Node incoming = createSRowNode(statisticsNode, new Date(startDate), probeNode, highLevelSRow.get(CallDirection.INCOMING), period, CallDirection.INCOMING);
-            Node outcoing = createSRowNode(statisticsNode, new Date(startDate), probeNode, highLevelSRow.get(CallDirection.OUTGOING), period, CallDirection.OUTGOING);
+            Node incoming = createSRowNode(statisticsNode, new Date(currentStartDate), probeNode, highLevelSRow.get(CallDirection.INCOMING), period, CallDirection.INCOMING);
+            Node outcoing = createSRowNode(statisticsNode, new Date(currentStartDate), probeNode, highLevelSRow.get(CallDirection.OUTGOING), period, CallDirection.OUTGOING);
             
             HashMap<CallDirection, Node> sRows = new HashMap<CallDirection, Node>();
             sRows.put(CallDirection.INCOMING, incoming);
@@ -389,12 +404,12 @@ public class CallStatistics {
             
             HashMap<CallDirection, Statistics> periodStatitics;
             if (period == CallTimePeriods.HOURLY) {
-                periodStatitics = getStatisticsByHour(timeIndex, startDate);
+                periodStatitics = getStatisticsByHour(timeIndex, currentStartDate);
             }
             else {
-                periodStatitics = getStatisticsFromDatabase(statisticsNode, startDate, nextStartDate, probeNode);
+                periodStatitics = getStatisticsFromDatabase(statisticsNode, currentStartDate, nextStartDate, probeNode);
                 if (periodStatitics == null) {
-                    periodStatitics = createStatistics(parentNode, statisticsNode, sRows, probeNode, timeIndex, period.getUnderlyingPeriod(), startDate, nextStartDate);
+                    periodStatitics = createStatistics(parentNode, statisticsNode, sRows, probeNode, timeIndex, period.getUnderlyingPeriod(), currentStartDate, nextStartDate);
                 }
             }
             
@@ -410,10 +425,10 @@ public class CallStatistics {
                 updateStatistics(statistics.get(direction), periodStatitics.get(direction));
             }
             
-            startDate = nextStartDate;
-            nextStartDate = period.addPeriod(startDate);
+            currentStartDate = nextStartDate;
+            nextStartDate = period.addPeriod(currentStartDate);
         }
-        while (startDate < endDate);
+        while (currentStartDate < endDate);
         
         return statistics;
     }
