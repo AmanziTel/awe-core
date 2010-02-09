@@ -1279,6 +1279,9 @@ public class ReuseAnalyserView extends ViewPart {
                 try {
                     node = findOrCreateAggregateNode(gisNode, propertyName, distribute, select, monitor);
                     tx.success();
+                } finally {
+                    tx.finish();
+                }
                     ActionUtil.getInstance().runTask(new Runnable() {
                         @Override
                         public void run() {
@@ -1290,9 +1293,7 @@ public class ReuseAnalyserView extends ViewPart {
                             }
                         }
                     }, true);
-                } finally {
-                    tx.finish();
-                }
+
             } finally {
                 ActionUtil.getInstance().runTask(new Runnable() {
                     @Override
