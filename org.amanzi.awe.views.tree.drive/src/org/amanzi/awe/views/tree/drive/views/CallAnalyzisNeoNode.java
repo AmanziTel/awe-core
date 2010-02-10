@@ -87,7 +87,8 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
                 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node probe = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                    Node node2 = currentPos.currentNode();
+                    Node probe = node2.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                         @Override
                         public boolean isReturnableNode(TraversalPosition currentPos) {
