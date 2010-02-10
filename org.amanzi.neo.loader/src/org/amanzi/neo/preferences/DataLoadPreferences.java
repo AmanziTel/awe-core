@@ -36,6 +36,9 @@ public class DataLoadPreferences {
     public static final String NH_LONGITUDE = "NH_LONGITUDE";
     public static final String DEFAULT_CHARSET = "DEFAULT_CHARSET";
 
+    public static final String COMMON_CRS_LIST = "COMMON_CRS_LIST";
+    public static final String CRS_DELIMETERS = "--DELIMETER--";
+
     private DataLoadPreferences() {
 
     }

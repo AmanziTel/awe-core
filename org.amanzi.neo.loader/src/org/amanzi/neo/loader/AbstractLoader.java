@@ -1513,9 +1513,9 @@ public abstract class AbstractLoader {
      */
     protected ArrayList<Node> getGisNodes() {
         ArrayList<Node> result = new ArrayList<Node>();
-        
-        result.add(getStoringNode(0));
-        
+        for (GisProperties gisPr : gisNodes.values()) {
+            result.add(gisPr.getGis());
+        }
         return result;
     }
 
