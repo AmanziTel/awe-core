@@ -535,6 +535,9 @@ public class MultiPropertyIndex<E extends Object> {
         private int countResults = 0;
 
         private SearchEvaluator(final E[] min, final E[] max, Integer resolution) throws IOException {
+            if (origin == null) {
+                throw new IllegalArgumentException("No indexed data");
+            }
             if (min.length < origin.length || max.length < origin.length) {
                 throw new IllegalArgumentException("Can only search for data with bounds of same dimension as original data");
             }

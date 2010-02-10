@@ -31,22 +31,24 @@ import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
-import org.amanzi.neo.core.enums.CallProperties.CallDirection;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand;
 import org.amanzi.neo.loader.etsi.commands.CCI;
+import org.amanzi.neo.loader.etsi.commands.CTSDC;
 import org.amanzi.neo.loader.etsi.commands.CommandSyntax;
 import org.amanzi.neo.loader.etsi.commands.ETSICommandPackage;
+import org.amanzi.neo.loader.etsi.commands.PESQ;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
-import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
@@ -104,27 +106,28 @@ public class ETSILoader extends DriveLoader {
 		/*
 		 * Type of Call
 		 */
-		private CallProperties.CallType callType;
+		private CallProperties.CallResult callResult;
         
-		/*
-		 * Direction of Call
-		 */
-        private CallProperties.CallDirection callDirection;
+		private CallType callType;
 		
         /*
          * List of Nodes that creates this call
          */
 		private ArrayList<Node> relatedNodes = new ArrayList<Node>();
 		
+		private Node callerProbe;
+		
+		private ArrayList<Node> calleeProbes = new ArrayList<Node>();
+		
 		/*
 		 * Listening quality
 		 */
-		private float lq;
+		private ArrayList<Float> lq = new ArrayList<Float>();
 		
 		/*
 		 * Audio delay
 		 */
-		private float delay;
+		private ArrayList<Float> delay = new ArrayList<Float>();
 		
 		/**
 		 * Default constructor
@@ -177,31 +180,17 @@ public class ETSILoader extends DriveLoader {
 		}
 
 		/**
-		 * @return Returns the callType.
+		 * @return Returns the callResult.
 		 */
-        public CallProperties.CallType getCallType() {
-			return callType;
+        public CallProperties.CallResult getCallResult() {
+			return callResult;
 		}
 
 		/**
-		 * @param callType The callType to set.
+		 * @param callResult The callResult to set.
 		 */
-        public void setCallType(CallProperties.CallType callType) {
-			this.callType = callType;
-		}
-
-		/**
-		 * @return Returns the callDirection.
-		 */
-        public CallProperties.CallDirection getCallDirection() {
-			return callDirection;
-		}
-
-		/**
-		 * @param callDirection The callDirection to set.
-		 */
-        public void setCallDirection(CallProperties.CallDirection callDirection) {
-			this.callDirection = callDirection;
+        public void setCallResult(CallProperties.CallResult callResult) {
+			this.callResult = callResult;
 		}
 
 		/**
@@ -231,6 +220,11 @@ public class ETSILoader extends DriveLoader {
 		 */
 		public void setCallTerminationEnd(long callTerminationEnd) {
 			callParameters.set(this.callTerminationEnd, callTerminationEnd);
+			
+			if (getCallSetupEnd() == 0) {
+			    setCallSetupEndTime(callTerminationEnd);
+			}
+			
 			lastProccessedParameter = this.callTerminationEnd;
 		}
 		
@@ -252,29 +246,70 @@ public class ETSILoader extends DriveLoader {
         /**
          * @return Returns the lq.
          */
-        public float getLq() {
+        public ArrayList<Float> getLq() {
             return lq;
         }
 
         /**
          * @param lq The lq to set.
          */
-        public void setLq(float lq) {
-            this.lq = lq;
+        public void addLq(float lq) {
+            this.lq.add(lq);
         }
 
         /**
          * @return Returns the delay.
          */
-        public float getDelay() {
+        public ArrayList<Float> getDelay() {
             return delay;
         }
 
         /**
          * @param delay The delay to set.
          */
-        public void setDelay(float delay) {
-            this.delay = delay;
+        public void addDelay(float delay) {
+            this.delay.add(delay);
+        }
+
+        /**
+         * @return Returns the callerProbe.
+         */
+        public Node getCallerProbe() {
+            return callerProbe;
+        }
+
+        /**
+         * @param callerProbe The callerProbe to set.
+         */
+        public void setCallerProbe(Node callerProbe) {
+            this.callerProbe = callerProbe;
+        }
+
+        /**
+         * @return Returns the calleeProbes.
+         */
+        public ArrayList<Node> getCalleeProbes() {
+            return calleeProbes;
+        }
+        
+        public void addCalleeProbe(Node calleeProbe) {
+            if (!calleeProbe.equals(callerProbe) && !calleeProbes.contains(calleeProbe)) {
+                calleeProbes.add(calleeProbe);
+            }
+        }
+
+        /**
+         * @return Returns the callType.
+         */
+        public CallType getCallType() {
+            return callType;
+        }
+
+        /**
+         * @param callType The callType to set.
+         */
+        public void setCallType(CallType callType) {
+            this.callType = callType;
         }
 		
 	}
@@ -286,7 +321,7 @@ public class ETSILoader extends DriveLoader {
 	 * @since 1.0.0
 	 */
 	private enum CallEvents {
-	    OUTGOING_CALL_SETUP_BEGIN("AT+CTSDC"),		
+	    CALL_SETUP_BEGIN("AT+CTSDC"),		
 		OUTGOING_CALL_TERMINATION_BEGIN("ATH"),
 		TERMINATION_END("CTCR"),
 		INCOMING_CALL_SETUP_BEGIN("ATA"),
@@ -397,10 +432,9 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private Node currentProbeCalls;
 	
-	private HashMap<CallProperties.CallDirection, Node> probeCalls = new HashMap<CallDirection, Node>();
+	private Node callerProbeCalls;
 	
-
-    // private Node lastCallInProbe;
+	// private Node lastCallInProbe;
 
     private Node callDataset;
 	
@@ -421,9 +455,7 @@ public class ETSILoader extends DriveLoader {
 	
 	private boolean newDirectory;
 	
-	private HashMap<CallDirection, Call> calls = new HashMap<CallDirection, Call>();
-	
-	private CallDirection currentlyProcessedDirection;
+	private Call call;
 	
 	private String prevCommandTimestamp;
 	
@@ -538,10 +570,7 @@ public class ETSILoader extends DriveLoader {
 			
 			updateProbeCache(probeName);
 		}
-		for (CallProperties.CallDirection direction : calls.keySet()) {
-            saveCall(calls.get(direction), direction);              
-        }
-		
+		saveCall(call);
 		
 		cleanupGisNode();
 		finishUpGis(getDatasetNode());
@@ -556,7 +585,7 @@ public class ETSILoader extends DriveLoader {
 	 * @param probeName
 	 */
 	private void updateProbeCache(String probeName) {        
-        probesCache.put(probeName, new Pair<Node, Node>(currentProbeCalls, null));
+        probesCache.put(probeName, new Pair<Node, Node>(currentProbeCalls, probeNode));
 	}
 	
 	/**
@@ -573,13 +602,13 @@ public class ETSILoader extends DriveLoader {
 			probeName = probeName.substring(0, index);
 		}
 		
-		Pair<Node, Node> probeNodes = probesCache.get(probeName);
-		if (probeNodes == null) {
-            probeNode = NeoUtils.findOrCreateProbeNode(networkNode, probeName, neo);
-			currentProbeCalls = NeoUtils.getCallsNode(callDataset, probeName, probeNode, neo);            
-			getProbeCallsIndex(NeoUtils.getNodeName(currentProbeCalls));
+		Pair<Node, Node> probeNodes = probesCache.get(probeName);		
+		if (probeNodes == null) {            
+		    probeNode = NeoUtils.findOrCreateProbeNode(networkNode, probeName, neo);
+			currentProbeCalls = NeoUtils.getCallsNode(callDataset, probeName, probeNode, neo);
 		}
 		else {
+		    probeNode = probeNodes.getRight();
 			currentProbeCalls = probeNodes.getLeft();
 		}
 		
@@ -684,12 +713,9 @@ public class ETSILoader extends DriveLoader {
 	@Override
 	protected void parseLine(String line) {
 	    if (newDirectory) {
-	        for (CallProperties.CallDirection direction : calls.keySet()) {
-	            saveCall(calls.get(direction), direction);	            
-	        }
+	        saveCall(call);
 	        newDirectory = false;
-	        calls.clear();
-	        probeCalls.clear();
+	        call = null;
 	    }
 	    
 		StringTokenizer tokenizer = new StringTokenizer(line, "|");
@@ -771,7 +797,7 @@ public class ETSILoader extends DriveLoader {
 						command = ETSICommandPackage.getCommand(commandName, syntax);
 					
 						if (command != null) {
-							//should be a result of command
+							//should be a result of command						    
 							processCommand(timestamp, command, syntax, paramTokenizer, isCallCommand);
 							if (command != null) {
 								commandName = command.getName();
@@ -873,7 +899,7 @@ public class ETSILoader extends DriveLoader {
 			
 			if (mmNode == null) {
 				mmNode = neo.createNode();
-				mmNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, org.amanzi.neo.core.enums.NodeTypes.MM.getId());
+				mmNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MM.getId());
 			}
 			
 			if (previousMmNode != null) {
@@ -1008,7 +1034,7 @@ public class ETSILoader extends DriveLoader {
 		HashMap<String, Object> result = command.getResults(syntax, tokenizer);
         if (command.getName().equals(new CCI().getName())) {
             Object value = result.get(INeoConstants.PROBE_LA);
-            if (value != null) {
+            if (value != null) {                
                 probeNode.setProperty(INeoConstants.PROBE_LA, value);
             }
             value = result.get("F");
@@ -1027,7 +1053,7 @@ public class ETSILoader extends DriveLoader {
 			boolean processEvent = (event == CallEvents.ERROR) ? callCommandResult : true;
 			//do not proccess event if it's error for not Call Command result
 			if (processEvent) {			    
-				processCallEvent(mNode, event, timestampValue);
+				processCallEvent(mNode, event, timestampValue, result);
 			}
 		}
 		
@@ -1045,49 +1071,65 @@ public class ETSILoader extends DriveLoader {
 	 * @param event type of event
 	 * @param timestamp timestamp of event
 	 */
-	private void processCallEvent(Node relatedNode, CallEvents event, long timestamp) {
-	    switch (event) {
-	    case INCOMING_CALL:
-	        Call incoming = new Call();
-            incoming.setCallDirection(CallProperties.CallDirection.INCOMING);
-            incoming.setCallType(CallProperties.CallType.SUCCESS);
-            incoming.setCallSetupBeginTime(timestamp);
-            
-            calls.put(CallProperties.CallDirection.INCOMING, incoming);
-	        currentlyProcessedDirection = CallProperties.CallDirection.INCOMING;
-	        probeCalls.put(CallProperties.CallDirection.INCOMING, currentProbeCalls);
-	        break;
-	    case OUTGOING_CALL_SETUP_BEGIN:
-	        Call outgoing = new Call();
-	        outgoing.setCallDirection(CallProperties.CallDirection.OUTGOING);
-	        outgoing.setCallType(CallProperties.CallType.SUCCESS);
-	        outgoing.setCallSetupBeginTime(timestamp);
+	private void processCallEvent(Node relatedNode, CallEvents event, long timestamp, HashMap<String, Object> properties) {
+	    switch (event) {	   
+	    case CALL_SETUP_BEGIN:
+	        call = new Call();
+	        call.setCallResult(CallProperties.CallResult.SUCCESS);
+	        call.setCallSetupBeginTime(timestamp);
 	        
-	        calls.put(CallProperties.CallDirection.OUTGOING, outgoing);	        
-	        currentlyProcessedDirection = CallProperties.CallDirection.OUTGOING;
-	        probeCalls.put(CallProperties.CallDirection.OUTGOING, currentProbeCalls);
+	        call.setCallerProbe(currentProbeCalls);
+	        
+	        if (isGroupCall(properties)) {
+	            call.setCallType(CallType.GROUP);
+	        }
+	        else {
+	            call.setCallType(CallType.INDIVIDUAL);
+	        }
+	        
+	        callerProbeCalls = currentProbeCalls;
 	        
             break;
 	    case CALL_SETUP_END:
-	        for (Call call : calls.values()) {
-	            call.setCallSetupEndTime(timestamp);
+	        if (call == null) {
+	            break;
+	        }
+	        if (((call.getCallType() == CallType.GROUP) &&
+	            (currentProbeCalls.equals(callerProbeCalls))) ||
+	            ((call.getCallType() == CallType.INDIVIDUAL) &&
+                (!currentProbeCalls.equals(callerProbeCalls)))) {
+	            if (call.getCallSetupEnd() == 0) {
+	                call.setCallSetupEndTime(timestamp);
+	            }
+	        }
+	        break;
+	    case PESQ:
+	        if (call != null) {
+	            call.addLq((Float)properties.get(PESQ.PESQ_LISTENING_QUALITIY));
+	            call.addDelay((Float)properties.get(PESQ.ESTIMATED_DELAY));
+	        }
+	        break;
+	    case TERMINATION_END:
+	        if (call != null) {
+	            call.setCallTerminationEnd(timestamp);
 	        }
 	        break;
 	    }
 	    
-	    if (!calls.isEmpty()) {
-	        calls.get(currentlyProcessedDirection).addRelatedNode(relatedNode);
+	    if (call != null) {
+	        call.addRelatedNode(relatedNode);
+	        call.addCalleeProbe(currentProbeCalls);
 	    }
 	}
 	
 	/**
 	 * Creates a Call node and sets properties
 	 */
-	private void saveCall(Call call, CallProperties.CallDirection direction) {
+	private void saveCall(Call call) {
 	    if (call != null) {
 	        Transaction tx = neo.beginTx();
 	        try {
-	            Node probeCallNode = probeCalls.get(direction);
+	            Node probeCallNode = call.getCallerProbe();
 	            Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
 			
 	            long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
@@ -1098,18 +1140,28 @@ public class ETSILoader extends DriveLoader {
 			
 	            setProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), setupDuration);
 	            setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
-	            setProperty(headers, callNode, CallProperties.CALL_DIRECTION.getId(), call.getCallDirection().toString());
+	            setProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
 	            setProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), callDuration);
-	            setProperty(headers, callNode, CallProperties.LQ.getId(), call.getLq());
-                setProperty(headers, callNode, CallProperties.DELAY.getId(), call.getDelay());
-			
-                if (call.getCallDirection() == CallProperties.CallDirection.OUTGOING) {
-                    setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
+	            setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
+	            
+	            callNode.setProperty(CallProperties.LQ.getId(), call.getLq().toArray(new Float[] {}));
+                callNode.setProperty(CallProperties.DELAY.getId(), call.getDelay().toArray(new Float[] {}));
+                
+                callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
+                
+                for (Node calleeProbe : call.getCalleeProbes()) {
+                    callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
                 }
-            
-                RelationshipType relation = call.getCallDirection() == CallDirection.OUTGOING ? ProbeCallRelationshipType.CALLER : ProbeCallRelationshipType.CALLEE;
-                callNode.createRelationshipTo(probeCallNode, relation);
-                call = null;
+                
+                switch (call.getCallType()) {
+                case GROUP:
+                    probeCallNode.setProperty("has_group_calls", true);
+                    break;
+                case INDIVIDUAL:
+                    probeCallNode.setProperty("has_individual_calls", true);
+                    break;
+                }
+                
                 tx.success();
 	        }
 	        catch (Exception e) {
@@ -1212,5 +1264,13 @@ public class ETSILoader extends DriveLoader {
         }
         
         return result;
+    }
+    
+    private boolean isGroupCall(HashMap<String, Object> parameters) {
+        Integer trueValue = new Integer(1);
+        return (parameters.get(CTSDC.COMMS_TYPE).equals(trueValue) &&
+                parameters.get(CTSDC.HOOK).equals(trueValue) &&
+                parameters.get(CTSDC.SIMPLEX).equals(trueValue) &&
+                parameters.get(CTSDC.SLOTS).equals(trueValue));
     }
 }

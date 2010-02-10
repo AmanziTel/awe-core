@@ -22,8 +22,13 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
  * @author Lagutko_N
  * @since 1.0.0
  */
-class CTSDC extends AbstractETSICommand {
+public class CTSDC extends AbstractETSICommand {
 	
+    public static final String SIMPLEX = "simplex";
+    public static final String HOOK = "hook";
+    public static final String COMMS_TYPE = "comms_type";
+    public static final String SLOTS = "slots/codec";
+    
 	/*
 	 * Command name
 	 */
@@ -39,11 +44,11 @@ class CTSDC extends AbstractETSICommand {
 		parameters.add(new ETSICommandParameter("AI Service", ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("called party ident type", ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("area", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("hook", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("simplex", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter(HOOK, ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter(SIMPLEX, ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("end-to-end encryption", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("comms_type", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("slots/codec", ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter(COMMS_TYPE, ParamterType.INTEGER));
+		parameters.add(new ETSICommandParameter(SLOTS, ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("RqTx", ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("priority", ParamterType.INTEGER));
 		parameters.add(new ETSICommandParameter("CLIR control", ParamterType.INTEGER));

@@ -38,11 +38,12 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
-import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
@@ -56,7 +57,6 @@ import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
-import org.neo4j.neoclipse.property.PropertyTransform;
 
 /**
  * <p>
@@ -1504,21 +1504,62 @@ public class NeoUtils {
         }
     }
     
+    public static boolean hasCallsOfType(Node datasetNode, CallType type, final String probeName) {
+        String propertyName = null;
+        switch (type) {
+        case INDIVIDUAL:
+            propertyName = "has_individual_calls";
+            break;
+        case GROUP:
+            propertyName = "has_group_calls";
+            break;
+        }
+        final String finalName = propertyName;
+        
+        Iterator<Node> probeCalls = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return (Boolean)currentPos.currentNode().getProperty(finalName, false) &&
+                        probeName.equals(getNodeName(currentPos.currentNode().getSingleRelationship(ProbeCallRelationshipType.CALLS, Direction.INCOMING).getStartNode()));
+            }
+        }, ProbeCallRelationshipType.PROBE_DATASET, Direction.OUTGOING).iterator();
+        
+        return probeCalls.hasNext();
+    }
+    
     /**
      * Returns all Probe Nodes related to Dataset
      *
      * @param datasetNode Dataset Node
      * @return all Probe Nodes
      */
-    public static Collection<Node> getAllProbesOfDataset(Node datasetNode) {
-        return datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+    public static Collection<Node> getAllProbesOfDataset(Node datasetNode, CallType type) {
+        String propertyName = null;
+        switch (type) {
+        case INDIVIDUAL:
+            propertyName = "has_individual_calls";
+            break;
+        case GROUP:
+            propertyName = "has_group_calls";
+            break;
+        }
+        final String finalName = propertyName;
+        
+        ArrayList<Node> nodes = new ArrayList<Node>();
+        Iterator<Node> probeCalls = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
             
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                return NeoUtils.getNodeType(currentPos.currentNode()).equals(INeoConstants.PROBE_TYPE_NAME);
+                return (Boolean)currentPos.currentNode().getProperty(finalName, false);
             }
-        }, ProbeCallRelationshipType.PROBE_DATASET, Direction.OUTGOING,
-           ProbeCallRelationshipType.CALLS, Direction.INCOMING).getAllNodes();
+        }, ProbeCallRelationshipType.PROBE_DATASET, Direction.OUTGOING).iterator();
+        
+        while (probeCalls.hasNext()) {
+            nodes.add(probeCalls.next().getSingleRelationship(ProbeCallRelationshipType.CALLS, Direction.INCOMING).getStartNode());
+        }
+            
+        return nodes;
     }
 
     /**
@@ -1601,6 +1642,25 @@ public class NeoUtils {
             return values.length() == 0 ? defName : values.substring(2);
         } finally {
             tx.finish();
+        }
+    }
+    
+    public static Node findMultiPropertyIndex(final String indexName, NeoService neoService) {
+        Iterator<Node> indexNodes = neoService.getReferenceNode().traverse(Order.BREADTH_FIRST,         
+                StopEvaluator.DEPTH_ONE,
+                new ReturnableEvaluator() {
+                 
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return indexName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
+                    }
+                 }, PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING).iterator();
+        
+        if (indexNodes.hasNext()) {
+            return indexNodes.next();
+        }
+        else {
+            return null;
         }
     }
 

@@ -14,6 +14,7 @@ package org.amanzi.awe.views.tree.drive.views;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
@@ -89,10 +90,10 @@ public class DriveRoot extends Root {
                 
                 //Lagutko, 3.02.2010, if we have a AMS Call Dataset than we should add Analyzis to tree
                 if (NeoUtils.getDatasetType(node, service) == DriveTypes.AMS_CALLS) {
-                    Relationship analyzis = node.getSingleRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING);
+                    Iterator<Relationship> analyzis = node.getRelationships(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING).iterator();
                     
-                    if (analyzis != null) {
-                        driveNodes.add(new CallAnalyzisNeoNode(analyzis.getEndNode()));
+                    while (analyzis.hasNext()) {
+                        driveNodes.add(new CallAnalyzisNeoNode(analyzis.next().getEndNode()));
                     }
                 }
             }

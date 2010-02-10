@@ -88,7 +88,7 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateDatab
             public void run() {
                 IViewPart reuseView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(CallAnalyserView.ID);
                 if (reuseView != null) {
-                    ((CallAnalyserView)reuseView).updateView();
+                    ((CallAnalyserView)reuseView).updateView(false);
                 }
             }
         }, true);

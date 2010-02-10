@@ -21,6 +21,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
@@ -52,14 +53,11 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         type = NeoUtils.getNodeType(node);
         
         if (type.equals(INeoConstants.CALL_ANALYZIS_ROOT)) {
-            name = "Call Analysis: " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
+            name = "Call Analysis: " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME) + " (" + node.getProperty(CallProperties.CALL_TYPE.getId()) + ")";
         }        
         else if (type.equals(INeoConstants.S_CELL)) {
             name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
-        }
-        else if (type.equals(INeoConstants.S_ROW)) {
-            name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(CallProperties.CALL_DIRECTION.getId());
-        }
+        }        
     }
     
     protected CallAnalyzisNeoNode(Node probeNode, Node statisticsNode) {
@@ -78,9 +76,10 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
                                      GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         }
         else if (type.equals(INeoConstants.CALL_ANALYZIS)) {
+            CallType type = CallType.valueOf((String)getParent().getNode().getProperty(CallProperties.CALL_TYPE.getId()));          
             Node root = node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
             Node dataset = root.getSingleRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.INCOMING).getStartNode();
-            iterator = NeoUtils.getAllProbesOfDataset(dataset).iterator();
+            iterator = NeoUtils.getAllProbesOfDataset(dataset, type).iterator();
         }
         else if (type.equals(INeoConstants.PROBE_TYPE_NAME)) {
             iterator = NeoUtils.getChildTraverser(statisticsNode, new ReturnableEvaluator() {

@@ -29,7 +29,7 @@ import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.CallProperties.CallDirection;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -53,6 +53,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableCursor;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
@@ -106,7 +107,7 @@ public class CallAnalyserView extends ViewPart {
     private static final String LBL_START_TIME = "Start time";
     private static final String LBL_END_TIME = "End time";
     private static final String LBL_PERIOD = "Period";
-    private static final String LBL_DIRECTION = "Direction";
+    private static final String LBL_CALL_TYPE = "Call Type";
     // column name
     private static final String COL_PERIOD = "Period";
     private static final String COL_HOST = "Host";
@@ -133,7 +134,7 @@ public class CallAnalyserView extends ViewPart {
     private ViewContentProvider provider;
     private ViewLabelProvider labelProvider;
     private Combo cPeriod;
-    private Combo cDirection;
+    private Combo cCallType;
     private TableCursor cursor;
     private Button bExport;
     private Color color1;
@@ -165,8 +166,11 @@ public class CallAnalyserView extends ViewPart {
             NeoService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
-                for (Node sRow : inputWr.getSrowTraverser(service)) {
-                    elements.add(new PeriodWrapper(sRow));
+                Traverser sRowTraverser = inputWr.getSrowTraverser(service);
+                if (sRowTraverser != null) {
+                    for (Node sRow : inputWr.getSrowTraverser(service)) {
+                        elements.add(new PeriodWrapper(sRow));
+                    }
                 }
             } finally {
                 tx.finish();
@@ -277,10 +281,13 @@ public class CallAnalyserView extends ViewPart {
                 //
                 for (StatisticsHeaders columnHeader : StatisticsHeaders.values()) {
                     column = new TableViewerColumn(tableViewer, SWT.LEFT);
-                    col = column.getColumn();
+                    col = column.getColumn();             
+                    String title = columnHeader.getTitle();
+                    GC gc = new GC(col.getParent());
                     col.setText(columnHeader.getTitle());
                     columnHeaders.add(new ColumnHeaders(col, columnHeader));
-                    col.setWidth(DEF_SIZE);                   
+                    col.setWidth(gc.textExtent(title).x + 20);
+                    gc.dispose();
                 }
             }
             for (int i=0;i<columnHeaders.size();i++) {
@@ -372,6 +379,16 @@ public class CallAnalyserView extends ViewPart {
         GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cDrive.setLayoutData(layoutData);
+        
+        //call type
+        label = new Label(rowComposite, SWT.FLAT);
+        label.setText(LBL_CALL_TYPE);
+        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        cCallType = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
+        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        layoutData.minimumWidth = MIN_FIELD_WIDTH;
+        cCallType.setLayoutData(layoutData);
+        
         // probe
         label = new Label(rowComposite, SWT.FLAT);
         label.setText(LBL_PROBE);
@@ -407,14 +424,6 @@ public class CallAnalyserView extends ViewPart {
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cPeriod.setLayoutData(layoutData);
         
-        //Direction
-        label = new Label(rowComposite, SWT.FLAT);
-        label.setText(LBL_DIRECTION);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        cDirection = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
-        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        layoutData.minimumWidth = MIN_FIELD_WIDTH;
-        cDirection.setLayoutData(layoutData);
         bExport = new Button(rowComposite, SWT.PUSH);
         bExport.setText(LB_EXPORT);
         
@@ -482,7 +491,6 @@ public class CallAnalyserView extends ViewPart {
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
                 try {
-                    System.out.println(node);
                     Traverser traverse = node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
 
                         @Override
@@ -600,14 +608,22 @@ public class CallAnalyserView extends ViewPart {
     /**
      *forms direction list
      * 
-     * @param statistics
+     * @param callTypes
      */
-    private void formDirections() {
-        List<String> directions=new ArrayList<String>();
-        for (CallDirection direction : CallDirection.values()) {
-            directions.add(direction.toString());
+    private void formCallType(Set<CallType> callTypesSet) {
+        List<String> callTypes=new ArrayList<String>();
+        for (CallType callType : callTypesSet) {
+            callTypes.add(callType.toString());
         }
-        cDirection.setItems(directions.toArray(new String[0]));
+        cCallType.setItems(callTypes.toArray(new String[0]));
+    }
+    
+    private void formCallType(CallType callType) {
+        List<String> callTypes=new ArrayList<String>();
+        callTypes.add(callType.toString());
+        
+        cCallType.setItems(callTypes.toArray(new String[0]));
+        cCallType.setText(callType.toString());
     }
 
     /**
@@ -703,11 +719,11 @@ public class CallAnalyserView extends ViewPart {
             }
         });
         
-        cDirection.addSelectionListener(new SelectionListener() {
+        cCallType.addSelectionListener(new SelectionListener() {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                changeDirection();
+                changeCallType();                
             }
             
             @Override
@@ -798,35 +814,51 @@ public class CallAnalyserView extends ViewPart {
      *change start or end time
      */
     protected void changeDate() {
-        updateTable();
+        updateTable(false);
     }
 
     /**
      *change period
      */
     protected void changePeriod() {
-        updateTable();
+        updateTable(false);
     }
     
     /**
      *change period
      */
-    protected void changeDirection() {
-        updateTable();
+    protected void changeCallType() {
+        CallType callType = CallType.valueOf(cCallType.getText());
+        Node drive = callDataset.get(cDrive.getText());
+        if (cProbe.getText().isEmpty()) {
+            formProbeCall(drive, callType);
+        }
+        else {
+            String probeName = cProbe.getText();
+            formProbeCall(drive, callType);
+            if ((probeName.equals("ALL")) ||(!probeName.isEmpty() &&
+                NeoUtils.hasCallsOfType(drive, callType, probeName))) {                
+                cProbe.setText(probeName);
+                updateTable(false);
+            }            
+            else {
+                updateTable(true);
+            }
+        }
     }
 
     /**
      *change probe
      */
     protected void changeProbe() {
-        updateTable();
+        updateTable(false);
     }
 
     /**
      *update table if has correct InputWrapper
      */
-    private void updateTable() {
-        InputWrapper wrapper = createInputWrapper();
+    private void updateTable(boolean showEmpty) {
+        InputWrapper wrapper = createInputWrapper(showEmpty);
         if (wrapper.isCorrectInput()) {
             tableViewer.setInput(wrapper);
         }
@@ -837,9 +869,9 @@ public class CallAnalyserView extends ViewPart {
      * 
      * @return InputWrapper
      */
-    private InputWrapper createInputWrapper() {
+    private InputWrapper createInputWrapper(boolean showEmpty) {
         return new InputWrapper(probeCallDataset.get(cProbe.getText()), callDataset.get(cDrive.getText()),
-                CallTimePeriods.findById(cPeriod.getText()), cDirection.getText());
+                CallTimePeriods.findById(cPeriod.getText()), cCallType.getText(), showEmpty);
     }
 
     /**
@@ -850,11 +882,19 @@ public class CallAnalyserView extends ViewPart {
         if (drive == null) {
             return;
         }
+        
         try {
             CallStatistics statistics = new CallStatistics(drive, NeoServiceProvider.getProvider().getService());
-            formProbeCall(drive);
-            formPeriods(statistics);
-            formDirections();
+            Set<CallType> callTypes = statistics.getStatisticNode().keySet();
+            if (callTypes.size() == 1) {
+                CallType type = callTypes.iterator().next();
+                formCallType(type);
+                formProbeCall(drive, type);
+            }
+            else {
+                formCallType(callTypes);
+            }
+            formPeriods(statistics);            
         } catch (IOException e) {
             // TODO Handle IOException
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -867,14 +907,14 @@ public class CallAnalyserView extends ViewPart {
      * 
      * @param drive - drive dataset
      */
-    private void formProbeCall(Node drive) {
+    private void formProbeCall(Node drive, CallType callType) {
         probeCallDataset.clear();
         probeCallDataset.put(KEY_ALL, null);
-        if (drive != null) {
+        if ((drive != null) && (callType != null)) {
             NeoService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
-                Collection<Node> allProbesOfDataset = NeoUtils.getAllProbesOfDataset(drive);
+                Collection<Node> allProbesOfDataset = NeoUtils.getAllProbesOfDataset(drive, callType);
                 for (Node probe : allProbesOfDataset) {
                     probeCallDataset.put(NeoUtils.getNodeName(probe), probe);
                 }
@@ -1089,8 +1129,10 @@ public class CallAnalyserView extends ViewPart {
         private Node probe;
         private Node drive;
         private CallTimePeriods periods;
-        private CallDirection direction;
+        private CallType callType;
         private Node periodNode;
+        
+        private boolean showEmpty;
 
         /**
          * constructor
@@ -1099,16 +1141,17 @@ public class CallAnalyserView extends ViewPart {
          * @param drive - call dataset node
          * @param periods - periods
          */
-        public InputWrapper(Node probe, Node drive, CallTimePeriods periods, String direction) {
+        public InputWrapper(Node probe, Node drive, CallTimePeriods periods, String callType, boolean showEmpty) {
             super();
             this.probe = probe;
             this.drive = drive;
             this.periods = periods;
-            if (direction.isEmpty()) {
-                this.direction = null;
+            this.showEmpty = showEmpty;
+            if (callType.isEmpty()) {
+                this.callType = null;
             }
             else {
-                this.direction = CallDirection.valueOf(direction);
+                this.callType = CallType.valueOf(callType);
             }
         }
 
@@ -1119,7 +1162,12 @@ public class CallAnalyserView extends ViewPart {
 
             try {
                 CallStatistics statistic = new CallStatistics(drive, service);
-                periodNode = statistic.getPeriodNode(periods);
+                periodNode = statistic.getPeriodNode(periods, callType);
+                
+                if (showEmpty) {
+                    return null;
+                }
+                
                 if (periodNode == null) {
                     return NeoUtils.emptyTraverser(probe);
                 }
@@ -1127,8 +1175,7 @@ public class CallAnalyserView extends ViewPart {
 
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return currentPos.currentNode().getProperty(CallProperties.CALL_DIRECTION.getId()).equals(direction.toString())
-                                && (probe == null || currentPos.currentNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                        return (probe == null || currentPos.currentNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                                     @Override
                                     public boolean isReturnableNode(TraversalPosition currentPos) {
@@ -1158,7 +1205,7 @@ public class CallAnalyserView extends ViewPart {
          * @return true if InputWrapper contains correct information
          */
         public boolean isCorrectInput() {
-            return drive != null /* && probe != null */&& periods != null && direction != null;
+            return drive != null /* && probe != null */&& periods != null && callType != null;
         }
 
     }
@@ -1166,10 +1213,10 @@ public class CallAnalyserView extends ViewPart {
     /**
      *update view
      */
-    public void updateView() {
+    public void updateView(boolean showEmpty) {
         formCallDataset();
-        formProbeCall(null);
-        tableViewer.setInput(createInputWrapper());
+        formProbeCall(null, null);
+        tableViewer.setInput(createInputWrapper(showEmpty));
     }
 
 }

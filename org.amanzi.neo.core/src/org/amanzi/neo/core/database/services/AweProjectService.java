@@ -1032,17 +1032,9 @@ public class AweProjectService {
     public void deleteMultiPropertyIndex(final String indexName) {
         Transaction transaction = neoService.beginTx();
         try {
-            Iterator<Node> indexNodes = neoService.getReferenceNode().traverse(Order.BREADTH_FIRST,         
-                                                                               StopEvaluator.DEPTH_ONE,
-                                                                               new ReturnableEvaluator() {
-                                                                                
-                                                                                   @Override
-                                                                                   public boolean isReturnableNode(TraversalPosition currentPos) {
-                                                                                       return indexName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
-                                                                                   }
-                                                                                }, PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING).iterator();
-            if (indexNodes.hasNext()) {                
-                deleteNode(indexNodes.next());
+            Node nodeToDelete = NeoUtils.findMultiPropertyIndex(indexName, neoService);
+            if (nodeToDelete != null) {                
+                deleteNode(nodeToDelete);
             }
         }
         catch (Exception e) {
