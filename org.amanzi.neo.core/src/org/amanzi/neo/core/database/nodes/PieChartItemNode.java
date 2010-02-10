@@ -13,12 +13,13 @@
 package org.amanzi.neo.core.database.nodes;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.neo4j.api.core.Node;
 
 public class PieChartItemNode extends AbstractNode {
 
 	public static final String PIE_CHART_ITEM_NAME = "pie_chart_item_name";
-	private static final String PIE_CHART_ITEM_NODE_TYPE = "spreadsheet_pie_chart_item";
+	private static final String PIE_CHART_ITEM_NODE_TYPE = NodeTypes.PIE_CHART_ITEM_NODE_TYPE.getId();//TODO: node types usages (Leave constant!)
 	private static final String PIE_CHART_ITEM_NODE_NAME = "Spreadsheet Pie Chart Item";
 	
 	private static final String PIE_CHART_ITEM_NODE_CATEGORY = "Spreadsheet Pie Chart Category";

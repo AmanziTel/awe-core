@@ -14,6 +14,7 @@
 package org.amanzi.neo.core.database.nodes;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Node;
 
@@ -27,7 +28,7 @@ public class ReportNode extends AbstractNode {
     public static final String REPORT_NAME = "Report name";
     public static final String REPORT_DATE = "Report date";
     public static final String REPORT_AUTHOR = "Report author";
-    private static final String REPORT_TYPE = "report";
+    private static final String REPORT_TYPE = NodeTypes.REPORT_TYPE.getId();//TODO: node types usages
 
     public ReportNode(Node node) {
         super(node);

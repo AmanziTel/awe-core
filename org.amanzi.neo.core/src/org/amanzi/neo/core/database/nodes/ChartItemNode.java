@@ -13,6 +13,7 @@
 package org.amanzi.neo.core.database.nodes;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
@@ -23,7 +24,7 @@ public class ChartItemNode extends AbstractNode implements Comparable<ChartItemN
     private static final String DEFAULT_CHART_ITEM_VALUE = "0";
     
     public static final String CHART_ITEM_NAME = "chart_item_name";
-	private static final String CHART_ITEM_NODE_TYPE = "spreadsheet_chart_item";
+	private static final String CHART_ITEM_NODE_TYPE = NodeTypes.CHART_ITEM_NODE_TYPE.getId();//TODO: node types usages
 	private static final String CHART_ITEM_NODE_NAME = "Spreadsheet Chart Item";
 	
 	private static final String CHART_ITEM_NODE_CATEGORY = "Spreadsheet Chart Category";

@@ -25,6 +25,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.CallProperties.CallDirection;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
@@ -271,7 +272,7 @@ public class CallStatistics {
     private Node createRootStatisticsNode(Node datasetNode) {
         Node result = neoService.createNode();
         
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYZIS_ROOT.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
         result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(datasetNode));        
         

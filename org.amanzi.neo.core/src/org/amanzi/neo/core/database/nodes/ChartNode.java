@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.database.exception.SplashDatabaseException;
 import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
@@ -30,7 +31,7 @@ import org.neo4j.api.core.Traverser;
 public class ChartNode extends AbstractNode {
 
 	public static final String CHART_NAME = "chart_name";
-	private static final String CHART_NODE_TYPE = "spreadsheet_chart";
+	private static final String CHART_NODE_TYPE = NodeTypes.CHART_NODE_TYPE.getId();//TODO: node types usages (Leave constant!)
 	private static final String CHART_NODE_NAME = "Spreadsheet Chart";
 	public static final String CHART_INDEX = "chart_index";
 
@@ -56,7 +57,7 @@ public class ChartNode extends AbstractNode {
      */    
     public void setChartType(String chartType) {
         setParameter(CHART_NODE_TYPE, chartType);
-        setParameter(INeoConstants.PROPERTY_TYPE_NAME, CHART_NODE_TYPE+"_"+chartType.toLowerCase());
+        setParameter(INeoConstants.PROPERTY_TYPE_NAME, CHART_NODE_TYPE);
     }
     /**
      * Getter for chart type

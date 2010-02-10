@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -199,7 +200,7 @@ public class NetworkLoaderTest1 extends AbstractLoaderTest{
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                            && "network".equals(currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME))
+                            && NodeTypes.NETWORK.getId().equals(currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME))
                             && currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_NAME_NAME)
                             && filename.equals(currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME));
                 }
@@ -211,7 +212,7 @@ public class NetworkLoaderTest1 extends AbstractLoaderTest{
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return currentPos.currentNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                            && "sector".equals(currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME));
+                            && NodeTypes.SECTOR.getId().equals(currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME));
                 }
             }, childRel, Direction.OUTGOING, nextRel, Direction.OUTGOING);
             int size = 0;

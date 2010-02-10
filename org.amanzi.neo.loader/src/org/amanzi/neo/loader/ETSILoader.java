@@ -873,7 +873,7 @@ public class ETSILoader extends DriveLoader {
 			
 			if (mmNode == null) {
 				mmNode = neo.createNode();
-				mmNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "mm");
+				mmNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, org.amanzi.neo.core.enums.NodeTypes.MM.getId());
 			}
 			
 			if (previousMmNode != null) {

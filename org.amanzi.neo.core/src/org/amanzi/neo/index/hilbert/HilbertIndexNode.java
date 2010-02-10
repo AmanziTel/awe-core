@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.PropertyIndex;
@@ -39,7 +40,7 @@ public class HilbertIndexNode {
 	/*
 	 * Type of Node
 	 */
-    public static final String HILBERT_INDEX_TYPE = "hilbert_index";
+    public static final String HILBERT_INDEX_TYPE = NodeTypes.HILBERT_INDEX_TYPE.getId();//TODO: node types usages
     
     /*
      * Name of 'Level' property

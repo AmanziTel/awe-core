@@ -17,6 +17,7 @@ import java.util.Iterator;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.exception.SplashDatabaseException;
 import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 
 import org.neo4j.api.core.Direction;
@@ -29,7 +30,7 @@ import org.neo4j.api.core.Traverser;
 public class PieChartNode extends AbstractNode {
 
 	public static final String PIE_CHART_NAME = "chart_name";
-	private static final String PIE_CHART_NODE_TYPE = "spreadsheet_chart";
+	private static final String PIE_CHART_NODE_TYPE = NodeTypes.AGGREGATION_TYPE_NAME.getId();//TODO: node types usages
 	private static final String PIE_CHART_NODE_NAME = "Spreadsheet Chart";
 	public static final String PIE_CHART_INDEX = "chart_index";
 

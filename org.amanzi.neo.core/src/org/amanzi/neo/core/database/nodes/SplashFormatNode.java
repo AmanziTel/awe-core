@@ -21,6 +21,7 @@ import java.text.Format;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Node;
 
@@ -37,7 +38,7 @@ public class SplashFormatNode extends AbstractNode {
     /*
 	 * Type of this Node
 	 */
-	private static final String SPLASH_FORMAT_NODE_TYPE = "splash_format";
+	private static final String SPLASH_FORMAT_NODE_TYPE = NodeTypes.SPLASH_FORMAT_NODE_TYPE.getId();//TODO: node types usages
 	/*
 	 * Background Color property. Blue component.
 	 */    

@@ -49,6 +49,7 @@ import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
@@ -1284,7 +1285,7 @@ public abstract class AbstractLoader {
                     if (propRel == null) {
                         propNode = neo.createNode();
                         propNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, NeoUtils.getNodeName(storingRootNode, neo));
-                        propNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "gis_properties");
+                        propNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS_PROPERTIES.getId());
                         storingRootNode.createRelationshipTo(propNode, GeoNeoRelationshipTypes.PROPERTIES);
                     } else {
                         propNode = propRel.getEndNode();
@@ -1302,7 +1303,7 @@ public abstract class AbstractLoader {
                             if (propTypeNode == null) {
                                 propTypeNode = neo.createNode();
                                 propTypeNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, typeName);
-                                propTypeNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "gis_property_type");
+                                propTypeNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS_PROPERTY_TYPE.getId());
                                 savePropertiesToNode(entryHeader.getValue(), propTypeNode, properties);
                                 propNode.createRelationshipTo(propTypeNode, GeoNeoRelationshipTypes.CHILD);
                             } else {
@@ -1677,7 +1678,7 @@ public abstract class AbstractLoader {
                             @Override
                             public boolean isReturnableNode(TraversalPosition currentPos) {
                                 return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
-                                        NetworkElementTypes.NETWORK.toString());
+                                        NodeTypes.NETWORK.getId());
                             }
                         }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD,
                         Direction.OUTGOING,

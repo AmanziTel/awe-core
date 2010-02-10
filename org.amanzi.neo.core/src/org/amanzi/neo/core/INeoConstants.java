@@ -12,6 +12,8 @@
  */
 package org.amanzi.neo.core;
 
+import org.amanzi.neo.core.enums.NodeTypes;
+
 /**
  * Constans for AWE specific Neo-Database properties
  * 
@@ -32,11 +34,11 @@ public class INeoConstants {
     public static final String PROPERTY_TYPE_NAME = "type";
     public static final String PROPERTY_LON_NAME = "lon";
     public static final String PROPERTY_LAT_NAME = "lat";
-    public static final String FILE_TYPE_NAME = "file";
-    public static final String DIRECTORY_TYPE_NAME = "directory";
-    public static final String DATASET_TYPE_NAME = "dataset";
+    public static final String FILE_TYPE_NAME = NodeTypes.FILE_TYPE_NAME.getId();//TODO: node types usages
+    public static final String DIRECTORY_TYPE_NAME = NodeTypes.DIRECTORY_TYPE_NAME.getId();//TODO: node types usages
+    public static final String DATASET_TYPE_NAME = NodeTypes.DATASET_TYPE_NAME.getId();//TODO: node types usages
     public static final String PROPERTY_FILENAME_NAME = "filename";
-    public static final String MP_TYPE_NAME = "mp";
+    public static final String MP_TYPE_NAME = NodeTypes.MP_TYPE_NAME.getId();//TODO: node types usages
     public static final String PROPERTY_MW_NAME = "mw";
     public static final String PROPERTY_DBM_NAME = "dbm";
     public static final String PROPERTY_CODE_NAME = "code";
@@ -46,9 +48,9 @@ public class INeoConstants {
     public static final String PROPERTY_TIME_NAME = "time";
     public static final String PROPERTY_TIMESTAMP_NAME = "timestamp";
     public static final String PROPERTY_PARAMS_NAME = "event_parameters";
-    public static final String HEADER_M = "m";
+    public static final String HEADER_M = NodeTypes.HEADER_M.getId();//TODO: node types usages
     public static final String HEADER_MS = "ms";
-    public static final String GIS_TYPE_NAME = "gis";
+    public static final String GIS_TYPE_NAME = NodeTypes.GIS.getId();//TODO: node types usages 
     public static final String PROPERTY_BBOX_NAME = "bbox";
     public static final String PROPERTY_CRS_NAME = "crs";
     public static final String PROPERTY_CRS_HREF_NAME = "crs_href";
@@ -59,9 +61,9 @@ public class INeoConstants {
     public static final String PROPERTY_STATS = "stats_properties";
     public static final String EVENT_ID = "event_id";
     public static final String EVENT_CONTEXT_ID = "context_id";
-    public static final String CALL_TYPE_NAME = "call";
-    public static final String PROBE_TYPE_NAME = "probe";
-    public static final String CALLS_TYPE_NAME = "calls";
+    public static final String CALL_TYPE_NAME = NodeTypes.CALL_TYPE_NAME.getId();//TODO: node types usages
+    public static final String PROBE_TYPE_NAME = NodeTypes.PROBE_TYPE_NAME.getId();//TODO: node types usages
+    public static final String CALLS_TYPE_NAME = NodeTypes.CALLS_TYPE_NAME.getId();//TODO: node types usages
     public static final String LAST_CALL_NODE_ID_PROPERTY_NAME = "last_call_node_id";    
     // dataset property
     public static final String DRIVE_TYPE = "drive_type";
@@ -78,8 +80,8 @@ public class INeoConstants {
     public static final String PROPERTY_VALUE_NAME = "value";
     public static final String PROPERTY_DISTRIBUTE_NAME = "distribute";
     public static final String PROPERTY_SELECT_NAME = "select";
-    public static final String AGGREGATION_TYPE_NAME = "aggregation";
-    public static final String COUNT_TYPE_NAME = "count";
+    public static final String AGGREGATION_TYPE_NAME = NodeTypes.AGGREGATION_TYPE_NAME.getId();//TODO: node types usages (Leave constant!)
+    public static final String COUNT_TYPE_NAME = NodeTypes.COUNT_TYPE_NAME.getId();//TODO: node types usages (Check if node type)
     /*
      * Which is the current or most recent selected aggregation for a gis node.
      * Used by the reuse analyser for saving state, and by the star analysis for
@@ -90,7 +92,7 @@ public class INeoConstants {
     /**
      * Name of awe_ project property
      */
-    public static final String AWE_PROJECT_NODE_TYPE = "awe_project";
+    public static final String AWE_PROJECT_NODE_TYPE = NodeTypes.AWE_PROJECT_NODE_TYPE.getId();//TODO: node types usages
     /**
      * Name of min property
      */
@@ -108,8 +110,8 @@ public class INeoConstants {
     /** INeoConstants PROPERTY_OLD_NAME field */
     public static final String PROPERTY_OLD_NAME = "old_name";
     /** INeoConstants NEIGHBOUR_TYPE_NAME field */
-    public static final String NEIGHBOUR_TYPE_NAME = "neighbours";
-    public static final String TRANSMISSION_TYPE_NAME = "transmission";
+    public static final String NEIGHBOUR_TYPE_NAME = NodeTypes.NEIGHBOUR_TYPE_NAME.getId();//TODO: node types usages
+    public static final String TRANSMISSION_TYPE_NAME = NodeTypes.TRANSMISSION_TYPE_NAME.getId();//TODO: node types usages
     public static final String NEIGHBOUR_NAME = "neighbours_list";
     /** INeoConstants LIST_NUMERIC_PROPERTIES field */
     public static final String LIST_NUMERIC_PROPERTIES = "list_numeric_field";
@@ -139,7 +141,7 @@ public class INeoConstants {
     public static final String COLOR_RIGHT = "color right";
     public static final String COLOR_MIDDLE = "color middle";
     public static final String MIDDLE_RANGE = "MIDDLE_RANGE";
-    public static final String ROOT_SECTOR_DRIVE = "root_sector_site";
+    public static final String ROOT_SECTOR_DRIVE = NodeTypes.ROOT_SECTOR_DRIVE.getId();//TODO: node types usages
     public static final String PROPERTY_TYPE_EVENT = "event_type";
     
     public static final String EVENTS_LUCENE_INDEX_NAME = "events";
@@ -152,10 +154,10 @@ public class INeoConstants {
     
     public static final String COMMAND_PROPERTY_NAME = "command";
     
-    public static final String CALL_ANALYZIS_ROOT = "call analyzis root";
-    public static final String S_CELL = "s_cell";
-    public static final String S_ROW = "s_row";
-    public static final String CALL_ANALYZIS = "call analyzis";
+    public static final String CALL_ANALYZIS_ROOT = NodeTypes.CALL_ANALYZIS_ROOT.getId();//TODO: node types usages (Leave constant!)
+    public static final String S_CELL = NodeTypes.S_CELL.getId();//TODO: node types usages
+    public static final String S_ROW = NodeTypes.S_ROW.getId();//TODO: node types usages
+    public static final String CALL_ANALYZIS = NodeTypes.CALL_ANALYZIS.getId();//TODO: node types usages
     public static final String PROBE_LA = "LA";
     public static final String PROBE_F = "Frequency";
 }

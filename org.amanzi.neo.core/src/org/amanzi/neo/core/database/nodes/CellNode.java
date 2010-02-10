@@ -23,6 +23,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.exception.LoopInCellReferencesException;
 import org.amanzi.neo.core.enums.CellRelationTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
@@ -67,7 +68,7 @@ public class CellNode extends AbstractNode {
     /*
      * Type of this Node
      */
-    private static final String CELL_NODE_TYPE = "spreadsheet_cell";
+    private static final String CELL_NODE_TYPE = NodeTypes.CELL_NODE_TYPE.getId();//TODO: node types usages
     
     /*
      * Name of Cyclic Dependencies property

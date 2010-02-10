@@ -18,6 +18,7 @@ import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -139,7 +140,7 @@ public class NeighbourLoaderTest extends AbstractLoaderTest{
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node = currentPos.currentNode();
-                    return "gis".equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "")) 
+                    return NodeTypes.GIS.getId().equals(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "")) 
                     				&& gisName.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString());
                 }
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();

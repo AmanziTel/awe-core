@@ -30,6 +30,7 @@ import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -285,7 +286,7 @@ public class NeighbourLoader {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals("sector");
+                    return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.SECTOR.getId());
                 }
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
             while (iterator.hasNext()) {

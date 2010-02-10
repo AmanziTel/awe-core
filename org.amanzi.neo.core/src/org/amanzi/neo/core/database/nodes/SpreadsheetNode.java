@@ -18,6 +18,7 @@ import java.util.Iterator;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.exception.SplashDatabaseException;
 import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.index.hilbert.HilbertIndex;
@@ -43,7 +44,7 @@ public class SpreadsheetNode extends AbstractNode {
 	/*
 	 * Type of this Node
 	 */
-	private static final String SPREADSHEET_NODE_TYPE = "spreadsheet";
+	private static final String SPREADSHEET_NODE_TYPE = NodeTypes.SPREADSHEET_NODE_TYPE.getId();//TODO: node types usages
 	
 	/*
 	 * Name of Index for cells

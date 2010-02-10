@@ -31,11 +31,9 @@ import org.neo4j.api.core.Traverser;
  */
 public class AweProjectNode extends AbstractNode {
 
-    private static final String AWE_PROJECT_NODE_TYPE = INeoConstants.AWE_PROJECT_NODE_TYPE;
-
 	public AweProjectNode(Node node, String projectName) {
 		super(node);
-		setParameter(INeoConstants.PROPERTY_TYPE_NAME, AWE_PROJECT_NODE_TYPE);
+		setParameter(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.AWE_PROJECT_NODE_TYPE);
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, projectName);
 	}
 
@@ -46,7 +44,7 @@ public class AweProjectNode extends AbstractNode {
      */
     private AweProjectNode(Node node) {
         super(node);
-        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(AWE_PROJECT_NODE_TYPE)) throw new RuntimeException("Expected existing AweProject Node, but got "+node.toString());
+        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(INeoConstants.AWE_PROJECT_NODE_TYPE)) throw new RuntimeException("Expected existing AweProject Node, but got "+node.toString());
     }
     
     /**

@@ -30,6 +30,7 @@ import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -320,7 +321,7 @@ public class TransmissionLoader {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals("site");
+                    return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.SITE.getId());
                 }
             }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
             while (iterator.hasNext()) {
@@ -474,7 +475,7 @@ public class TransmissionLoader {
                     lastNode = findNetworkLastSite();
                 }
                 Node result = neo.createNode();
-                result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "site");
+                result.setProperty(INeoConstants.PROPERTY_TYPE_NAME,NodeTypes.SITE.getId());
 
                 String id1 = nodeName.getId1();
                 if (id1 != null) {

@@ -15,6 +15,7 @@ package org.amanzi.neo.core.database.nodes;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
@@ -30,7 +31,7 @@ import org.neo4j.api.core.Traverser;
 
 public class RubyProjectNode extends AbstractNode {
 
-	private static final Object RUBY_PROJECT_NODE_TYPE = "ruby_project";
+	private static final Object RUBY_PROJECT_NODE_TYPE = NodeTypes.RUBY_PROJECT_NODE_TYPE.getId();//TODO: node types usages
 
 	/**
 	 * Constructor. Wraps a Node that will be parent node for Spreadsheets

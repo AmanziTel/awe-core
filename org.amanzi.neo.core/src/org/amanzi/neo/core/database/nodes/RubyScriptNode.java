@@ -13,6 +13,7 @@
 package org.amanzi.neo.core.database.nodes;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Node;
 
@@ -25,7 +26,7 @@ import org.neo4j.api.core.Node;
 public class RubyScriptNode extends AbstractNode {
 	private static final String ATTR_NAME = "ATTR_NAME";
 
-	private static final String SCRIPT_TYPE = "ruby_script";
+	private static final String SCRIPT_TYPE = NodeTypes.SCRIPT_TYPE.getId();//TODO: node types usages
 
 	/**
 	 * Constructor for creating a new node in the database representing this script.
