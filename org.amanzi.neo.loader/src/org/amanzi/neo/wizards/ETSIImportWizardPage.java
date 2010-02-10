@@ -22,6 +22,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.dialogs.DriveDialog;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -117,7 +118,7 @@ public class ETSIImportWizardPage extends WizardPage {
         main = new Group(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
         Label label = new Label(main, SWT.LEFT);
-        label.setText("Dataset:");
+        label.setText(NeoLoaderPluginMessages.ETSIImport_dataset);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         dataset = new Combo(main, SWT.DROP_DOWN);
         dataset.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
@@ -128,13 +129,14 @@ public class ETSIImportWizardPage extends WizardPage {
 			public void modifyText(ModifyEvent e) {
                 datasetName = dataset.getText();
                 setPageComplete(isValidPage());
-			}
+            }
 		});
         dataset.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                datasetName = dataset.getSelectionIndex() < 0 ? null : datasetMembers.get(dataset.getSelectionIndex());
+                boolean selected = dataset.getSelectionIndex() < 0;
+				datasetName = selected ? null : datasetMembers.get(dataset.getSelectionIndex());
                 setPageComplete(isValidPage());
             }
 
@@ -145,7 +147,7 @@ public class ETSIImportWizardPage extends WizardPage {
         });        
         
         Label networkLabel = new Label(main, SWT.LEFT);
-        networkLabel.setText("Network:");
+        networkLabel.setText(NeoLoaderPluginMessages.ETSIImport_network);
         networkLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 2));
         network = new Combo(main, SWT.DROP_DOWN);
         network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 2));
@@ -161,7 +163,8 @@ public class ETSIImportWizardPage extends WizardPage {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				networkName = network.getSelectionIndex() < 0 ? null : networkMembers.get(network.getSelectionIndex());
+				boolean selected = network.getSelectionIndex() < 0;
+				networkName = selected ? null : networkMembers.get(network.getSelectionIndex());
 			}
 			
 			@Override
@@ -170,23 +173,43 @@ public class ETSIImportWizardPage extends WizardPage {
 			}
 		});
         
-        editor = new DirectoryEditor("fileSelectESTI", "Directory: ", main); // NON-NLS-1
+        editor = new DirectoryEditor(NeoLoaderPluginMessages.ETSIImport_dir_editor_title, 
+        		NeoLoaderPluginMessages.ETSIImport_directory, main); // NON-NLS-1
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
+            	String oldFileName = fileName;
                 setFileName(editor.getStringValue());
-                if (dataset.getText().isEmpty()) {
-                    dataset.setText(getDatasetDefaultName());
+                if (needToGenerateDatasetName(oldFileName)) {
+                    dataset.setText(getDatasetDefaultName(fileName));
                 }
-                if (network.getText().isEmpty()) {
-                    network.setText(getNetworkDefaultName());
+                if (needToGenerateNetworkName(oldFileName)) {
+                    network.setText(getNetworkDefaultName(fileName));
                 }
             }
         });
         setControl(main);
     }
     
-    private String getDatasetDefaultName() {
-    	String result = editor.getStringValue();
+    private boolean needToGenerateDatasetName(String aFileName) {
+		String text = dataset.getText();
+		if (text.isEmpty()){
+			return true;
+		}
+		String defName = getDatasetDefaultName(aFileName);
+		return text.equals(defName);
+	}
+    
+    private boolean needToGenerateNetworkName(String aFileName) {
+		String text = network.getText();
+		if (text.isEmpty()){
+			return true;
+		}
+		String defName = getNetworkDefaultName(aFileName);
+		return text.equals(defName);
+	}
+    
+    private String getDatasetDefaultName(String aFileName) {
+    	String result = aFileName;
     	int index = result.lastIndexOf(File.separator);
     	if (index > 0) {
     		return result.substring(index + 1);
@@ -194,8 +217,8 @@ public class ETSIImportWizardPage extends WizardPage {
     	return result;    	
     }
     
-    private String getNetworkDefaultName() {
-    	String result = editor.getStringValue();
+    private String getNetworkDefaultName(String aFileName) {
+    	String result = aFileName;
     	int index = result.lastIndexOf(File.separator);
     	if (index > 0) {
     		result = result.substring(index + 1);

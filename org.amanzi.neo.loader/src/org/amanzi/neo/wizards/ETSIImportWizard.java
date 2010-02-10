@@ -17,6 +17,7 @@ import java.io.IOException;
 
 import org.amanzi.neo.loader.ETSILoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -36,8 +37,6 @@ import org.eclipse.ui.IWorkbench;
  */
 public class ETSIImportWizard extends Wizard implements IImportWizard {
 
-    private static final String PAGE_TITLE = "Import ETSI";
-    private static final String PAGE_DESCR = "Import a ETSI log files";
     private ETSIImportWizardPage mainPage;
 
     @Override
@@ -62,7 +61,7 @@ public class ETSIImportWizard extends Wizard implements IImportWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        mainPage = new ETSIImportWizardPage(PAGE_TITLE, PAGE_DESCR);
+        mainPage = new ETSIImportWizardPage(NeoLoaderPluginMessages.ETSIImport_page_title, NeoLoaderPluginMessages.ETSIImport_page_descr);
     }
 
     @Override
