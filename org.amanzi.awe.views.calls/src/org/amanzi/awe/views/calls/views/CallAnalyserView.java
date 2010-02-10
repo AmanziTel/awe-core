@@ -3,6 +3,8 @@ package org.amanzi.awe.views.calls.views;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,6 +40,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -50,6 +53,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableCursor;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -59,6 +63,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
@@ -131,7 +136,10 @@ public class CallAnalyserView extends ViewPart {
     private Combo cDirection;
     private TableCursor cursor;
     private Button bExport;
-
+    private Color color1;
+    private Color color2;
+    private Comparator<PeriodWrapper> comparator;
+    private int sortOrder = 0;
     // private DateTime dateEnd;
 
 
@@ -163,6 +171,7 @@ public class CallAnalyserView extends ViewPart {
             } finally {
                 tx.finish();
             }
+            sort();
 
         }
 
@@ -171,6 +180,24 @@ public class CallAnalyserView extends ViewPart {
 
         public Object[] getElements(Object parent) {
             return elements.toArray(new PeriodWrapper[0]);
+        }
+
+        /**
+         *sort rows
+         */
+        public void sort() {
+            Collections.sort(elements, comparator);
+            if (elements.isEmpty()) {
+                return;
+            }
+            Color color = color1;
+            elements.get(0).setColor(color);
+            for (int i = 1; i < elements.size(); i++) {
+                if (comparator.compare(elements.get(i - 1), elements.get(i)) != 0) {
+                    color = color == color1 ? color2 : color1;
+                }
+                elements.get(i).setColor(color);
+            }
         }
     }
 
@@ -182,7 +209,7 @@ public class CallAnalyserView extends ViewPart {
      * @author Cinkel_A
      * @since 1.0.0
      */
-    class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
+    class ViewLabelProvider extends LabelProvider implements ITableLabelProvider, ITableColorProvider {
 
 
         public String getColumnText(Object obj, int index) {
@@ -212,7 +239,23 @@ public class CallAnalyserView extends ViewPart {
                 col.setText(COL_PERIOD);
                 columnHeaders.add(new ColumnHeaders(col, null));
                 col.setWidth(DEF_SIZE);
+                col.addSelectionListener(new SelectionListener() {
 
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        sortOrder = 0;
+                        if (provider != null) {
+                            provider.sort();
+                        }
+                        tableViewer.refresh();
+                        tableViewer.getTable().showSelection();
+                    }
+
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {
+                        widgetSelected(e);
+                    }
+                });
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText(COL_HOST);
@@ -240,10 +283,40 @@ public class CallAnalyserView extends ViewPart {
                     col.setWidth(DEF_SIZE);                   
                 }
             }
+            for (int i=0;i<columnHeaders.size();i++) {
+                final int ind = i;
+                columnHeaders.get(i).getColumn().addSelectionListener(new SelectionListener() {
+                    
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        sortOrder = ind;
+                        if (provider != null) {
+                            provider.sort();
+                        }
+                        tableViewer.refresh();
+                        tableViewer.getTable().showSelection();
+                    }
+                    
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {
+                        widgetSelected(e);
+                    }
+                });
+            }
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
             tableViewer.setLabelProvider(this);
             tableViewer.refresh();
+        }
+
+        @Override
+        public Color getBackground(Object element, int columnIndex) {
+            return element instanceof PeriodWrapper ? ((PeriodWrapper)element).getColor() : null;
+        }
+
+        @Override
+        public Color getForeground(Object element, int columnIndex) {
+            return null;
         }
     }
 
@@ -252,6 +325,29 @@ public class CallAnalyserView extends ViewPart {
      * This is a callback that will allow us to create the viewer and initialize it.
      */
     public void createPartControl(Composite parent) {
+        color1 = new Color(Display.getCurrent(), 240, 240, 240);
+        color2 = new Color(Display.getCurrent(), 255, 255, 255);
+        sortOrder = 0;
+        comparator = new Comparator<PeriodWrapper>() {
+
+            @Override
+            public int compare(PeriodWrapper o1, PeriodWrapper o2) {
+                ColumnHeaders header = columnHeaders.get(sortOrder);
+                if (header == null) {
+                    return 0;
+                }
+                String value1 = header.getValue(o1, sortOrder);
+                if (value1 == null) {
+                    value1 = "";
+                }
+                String value2 = header.getValue(o2, sortOrder);
+                if (value2 == null) {
+                    value2 = "";
+                }
+                return value1.compareTo(value2);
+
+            }
+        };
         Composite frame = new Composite(parent, SWT.FILL);
         FormLayout formLayout = new FormLayout();
         formLayout.marginHeight = 0;
@@ -871,6 +967,13 @@ public class CallAnalyserView extends ViewPart {
         public String getName() {
             return name;
         }
+
+        /**
+         * @return Returns the column.
+         */
+        public TableColumn getColumn() {
+            return column;
+        }
     }
 
     /**
@@ -888,6 +991,7 @@ public class CallAnalyserView extends ViewPart {
         private String probeF = "";
         private String probeLA = "";
         private Node probeNode;
+        private Color color;
         /**
          * Constructor
          * 
@@ -918,6 +1022,13 @@ public class CallAnalyserView extends ViewPart {
             Number la = (Number)probeNode.getProperty(INeoConstants.PROBE_LA, null);
             probeF = f == null ? "" : f.toString();
             probeLA = la == null ? "" : la.toString();
+        }
+
+        /**
+         * @return
+         */
+        public Color getColor() {
+            return color;
         }
 
         /**
@@ -955,6 +1066,13 @@ public class CallAnalyserView extends ViewPart {
          */
         public Node getProbeNode() {
             return probeNode;
+        }
+
+        /**
+         * @param color The color to set.
+         */
+        public void setColor(Color color) {
+            this.color = color;
         }
 
     }
