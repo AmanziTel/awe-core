@@ -43,6 +43,8 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String TOGLE_MESSAGE;
     public static String CorrelateDialog_DialogTitle;
     public static String CorrelateDialog_CorrelateButtonText;
+    public static String CorrelateDialog_select_probe_data;
+    public static String CorrelateDialog_select_drive_data;
     
     private NeoLoaderPluginMessages() {
     }

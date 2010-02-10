@@ -97,7 +97,7 @@ public class CorrelateDialog {
 		
 		dialogShell.setMinimumSize(MINIMUM_WIDTH, MINIMUM_HEIGHT);
 		
-		dialogShell.setText(NeoLoaderPluginMessages.DriveDialog_DialogTitle);
+		dialogShell.setText(NeoLoaderPluginMessages.CorrelateDialog_DialogTitle);
 		
 		createControl(dialogShell);
 		createActions(dialogShell);
@@ -222,14 +222,14 @@ public class CorrelateDialog {
 		parent.setLayoutData(new GridData(SWT.FILL));
 		
 		Label firstComboLabel = new Label(parent, SWT.NONE);
-		firstComboLabel.setText("Select first dataset to correlate");
+		firstComboLabel.setText(NeoLoaderPluginMessages.CorrelateDialog_select_probe_data);
 		
 		firstCombo = new Combo(parent, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 		firstCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		firstCombo.setItems(getAMSDatasets());
 		
 		Label secondComboLabel = new Label(parent, SWT.NONE);
-		secondComboLabel.setText("Select second dataset to correlate");
+		secondComboLabel.setText(NeoLoaderPluginMessages.CorrelateDialog_select_drive_data);
 		
 		secondCombo = new Combo(parent, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 		secondCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
