@@ -45,7 +45,7 @@ public class SWTGraphics implements ViewportGraphics {
 	/** The <code>TRANSPARENT</code> color */
 	public final static int TRANSPARENT = 0x220000 | 0x2200 | 0x22;
 
-    private static final AffineTransform AFFINE_TRANSFORM = new AffineTransform();
+    static final AffineTransform AFFINE_TRANSFORM = new AffineTransform();
 
     private Transform swtTransform;
 

@@ -151,4 +151,9 @@ public class ChartTemplate extends AbstractTemplate {
                 );
     }
 
+    @Override
+    public String getAbbreviation() {
+        return "Test";
+    }
+
 }

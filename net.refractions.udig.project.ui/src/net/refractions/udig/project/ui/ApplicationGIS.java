@@ -604,13 +604,15 @@ public class ApplicationGIS {
 	 * @see ApplicationGIS#drawMap(net.refractions.udig.project.ui.ApplicationGIS.DrawMapParameter)
 	 */
     public static class DrawMapParameter {
-    	final BoundsStrategy boundsStrategy;
+        final BoundsStrategy boundsStrategy;
         final Graphics2D graphics;
         final Dimension destinationSize;
         final IMap toDraw;
         final IProgressMonitor monitor;
         final SelectionStyle selectionStyle;
         final int dpi;
+        final boolean transparent;
+        final boolean doBufferedImageForGrids;
 
         /**
          * New instance
@@ -625,14 +627,45 @@ public class ApplicationGIS {
          */
         public DrawMapParameter(Graphics2D graphics, Dimension destinationSize,
                 IMap toDraw, BoundsStrategy boundsStrategy, int dpi, SelectionStyle selectionStyle,
-                IProgressMonitor monitor) {
+                IProgressMonitor monitor, boolean transparent, boolean doBufferedImageForGrids) {
             this.graphics = graphics;
             this.destinationSize = destinationSize;
             this.toDraw = toDraw;
             this.dpi = dpi;
-            this.boundsStrategy = boundsStrategy;
+            this.doBufferedImageForGrids = doBufferedImageForGrids;
+            if (boundsStrategy == null) {
+                this.boundsStrategy = new BoundsStrategy(toDraw.getViewportModel().getScaleDenominator());
+            }
+            else {
+                this.boundsStrategy = boundsStrategy;
+            }
             this.monitor = monitor;
             this.selectionStyle=selectionStyle;
+            this.transparent = transparent;
+        }
+        
+        /**
+         * New instance
+         * 
+         * @param graphics The graphics to draw to
+         * @param destinationSize the size of the area to draw to
+         * @param toDraw the map to draw.
+         * @param boundsStrategy An object for determining how to set the bounds on the map.  Feel free to extend the current implementation
+         * @param dpi the dpi of the map.  The standard PDF is 72, the standard according to the OGC is 90
+         * @param selectionStyle how to handle the selection (getFilter()) on a lyaer
+         * @param monitor a progress monitor
+         */
+        public DrawMapParameter(Graphics2D graphics, Dimension destinationSize,
+                IMap toDraw, BoundsStrategy boundsStrategy, int dpi, SelectionStyle selectionStyle,
+                IProgressMonitor monitor) {
+            this(graphics, 
+                    destinationSize, 
+                    toDraw, 
+                    boundsStrategy, 
+                    dpi, 
+                    selectionStyle, 
+                    monitor, 
+                    false, false);
         }
 
         /**
@@ -645,20 +678,54 @@ public class ApplicationGIS {
          */
         public DrawMapParameter(Graphics2D graphics, Dimension destinationSize,
                 IMap toDraw, IProgressMonitor monitor) {
-            this(graphics, destinationSize, toDraw, new BoundsStrategy(toDraw.getViewportModel().getScaleDenominator()), 90, SelectionStyle.OVERLAY, monitor);
+            this(graphics, destinationSize, toDraw, new BoundsStrategy(toDraw.getViewportModel().getScaleDenominator()), 90, SelectionStyle.OVERLAY, monitor);            
+        }
+        
+        /**
+         * Create a new instance with the given DPI
+         * 
+         * @param graphics the graphics to draw on.
+         * @param destinationSize the destination size.
+         * @param toDraw the map to draw
+         * @param dpi the output DPI
+         * @param monitor the progress monitor
+         */
+        public DrawMapParameter(Graphics2D graphics, Dimension destinationSize,
+                IMap toDraw, int dpi, IProgressMonitor monitor) {
+            this(graphics, 
+                    destinationSize, 
+                    toDraw, 
+                    new BoundsStrategy(toDraw.getViewportModel().getScaleDenominator()), 
+                    dpi, 
+                    SelectionStyle.OVERLAY, 
+                    monitor);            
+        }
+        
+        /**
+         * Create a new instance with a DPI of 90 (OGC default).
+         * 
+         * @param graphics the graphics to draw on.
+         * @param destinationSize the destination size.
+         * @param toDraw the map to draw
+         * @param monitor the progress monitor
+         * @param transparent is the background transparent?
+         */
+        public DrawMapParameter(Graphics2D graphics, Dimension destinationSize,
+                IMap toDraw, IProgressMonitor monitor, boolean transparent) {
+            this(graphics, destinationSize, toDraw, new BoundsStrategy(toDraw.getViewportModel().getScaleDenominator()), 90, SelectionStyle.OVERLAY, monitor, transparent, false);            
         }
 
         /**
          * Copies the parameters as well as the graphics and destinationSize objects.  DOES NOT COPY map ToDraw
          * @param params2 the parameters to copy
          */
-		public DrawMapParameter(DrawMapParameter params2) {
-			this((Graphics2D) params2.graphics.create(), new Dimension(
-					params2.destinationSize), params2.toDraw,
-					params2.boundsStrategy, params2.dpi,  params2.selectionStyle,
-					params2.monitor);
-		}
-		
+        public DrawMapParameter(DrawMapParameter params2) {
+            this((Graphics2D) params2.graphics.create(), new Dimension(
+                    params2.destinationSize), params2.toDraw,
+                    params2.boundsStrategy, params2.dpi,  params2.selectionStyle,
+                    params2.monitor,params2.transparent, params2.doBufferedImageForGrids);
+        }
+        		
     }
     
     /**

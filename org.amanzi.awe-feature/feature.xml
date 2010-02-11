@@ -276,4 +276,31 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
          version="1.0.0.qualifier"
          unpack="false"/>
 
+   <plugin
+         id="com.lowagie.itext"
+         download-size="0"
+         install-size="0"
+         version="1.2.0"/>
+
+   <plugin
+         id="net.refractions.udig.printing.model"
+         download-size="0"
+         install-size="0"
+         version="1.2.0"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.printing.model.edit"
+         download-size="0"
+         install-size="0"
+         version="1.2.0"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.printing.ui"
+         download-size="0"
+         install-size="0"
+         version="1.2.0"
+         unpack="false"/>
+
 </feature>
