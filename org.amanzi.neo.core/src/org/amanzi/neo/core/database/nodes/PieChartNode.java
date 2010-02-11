@@ -30,7 +30,6 @@ import org.neo4j.api.core.Traverser;
 public class PieChartNode extends AbstractNode {
 
 	public static final String PIE_CHART_NAME = "chart_name";
-	private static final String PIE_CHART_NODE_TYPE = NodeTypes.AGGREGATION_TYPE_NAME.getId();//TODO: node types usages
 	private static final String PIE_CHART_NODE_NAME = "Spreadsheet Chart";
 	public static final String PIE_CHART_INDEX = "chart_index";
 
@@ -38,7 +37,7 @@ public class PieChartNode extends AbstractNode {
 		super(node);
 		// TODO Auto-generated constructor stub
 
-		setParameter(INeoConstants.PROPERTY_TYPE_NAME, PIE_CHART_NODE_TYPE);
+		setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PIE_CHART_NODE_TYPE.getId());
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, PIE_CHART_NODE_NAME);
 	}
 

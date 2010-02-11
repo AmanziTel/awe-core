@@ -26,14 +26,12 @@ import org.neo4j.api.core.Node;
 public class RubyScriptNode extends AbstractNode {
 	private static final String ATTR_NAME = "ATTR_NAME";
 
-	private static final String SCRIPT_TYPE = NodeTypes.SCRIPT_TYPE.getId();//TODO: node types usages
-
 	/**
 	 * Constructor for creating a new node in the database representing this script.
 	 * @param wrapped node
 	 */
 	public RubyScriptNode(Node node, String name) {
-		super(node, name, SCRIPT_TYPE);
+		super(node, name, NodeTypes.SCRIPT_TYPE.getId());
 	}
 
    /**
@@ -43,7 +41,7 @@ public class RubyScriptNode extends AbstractNode {
      */
     private RubyScriptNode(Node node) {
         super(node);
-        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(SCRIPT_TYPE)) throw new RuntimeException("Expected existing Ruby Script Node, but got "+node.toString());
+        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(NodeTypes.SCRIPT_TYPE.getId())) throw new RuntimeException("Expected existing Ruby Script Node, but got "+node.toString());
     }
     
     /**

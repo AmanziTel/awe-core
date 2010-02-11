@@ -66,11 +66,6 @@ public class CellNode extends AbstractNode {
     private static final String SCRIPT_URI = "script_uri";
     
     /*
-     * Type of this Node
-     */
-    private static final String CELL_NODE_TYPE = NodeTypes.CELL_NODE_TYPE.getId();//TODO: node types usages
-    
-    /*
      * Name of Cyclic Dependencies property
      */
     private static final String CELL_CYCLIC = "Cell cyclic dependencies";
@@ -97,7 +92,7 @@ public class CellNode extends AbstractNode {
      */
     public CellNode(Node node) {
         super(node);        
-        setParameter(INeoConstants.PROPERTY_TYPE_NAME, CELL_NODE_TYPE);
+        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CELL_NODE_TYPE.getId());
     }
     
     public void addSplashFormat(SplashFormatNode sfNode){

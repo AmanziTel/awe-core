@@ -28,11 +28,10 @@ public class ReportNode extends AbstractNode {
     public static final String REPORT_NAME = "Report name";
     public static final String REPORT_DATE = "Report date";
     public static final String REPORT_AUTHOR = "Report author";
-    private static final String REPORT_TYPE = NodeTypes.REPORT_TYPE.getId();//TODO: node types usages
 
     public ReportNode(Node node) {
         super(node);
-        setParameter(INeoConstants.PROPERTY_TYPE_NAME, REPORT_TYPE);
+        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.REPORT_TYPE.getId());
     }
 
     public static ReportNode fromNode(Node node) {

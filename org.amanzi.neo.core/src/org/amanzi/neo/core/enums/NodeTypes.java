@@ -14,9 +14,8 @@
 package org.amanzi.neo.core.enums;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Contains all existed node types 
  * </p>
  * @author Saelenchits_N
  * @since 1.0.0

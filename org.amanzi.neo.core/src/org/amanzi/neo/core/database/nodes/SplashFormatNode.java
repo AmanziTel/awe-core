@@ -35,10 +35,6 @@ public class SplashFormatNode extends AbstractNode {
 
 	/** String CELL_FORMAT_TYPE field */
     private static final String CELL_FORMAT_TYPE = "format";
-    /*
-	 * Type of this Node
-	 */
-	private static final String SPLASH_FORMAT_NODE_TYPE = NodeTypes.SPLASH_FORMAT_NODE_TYPE.getId();//TODO: node types usages
 	/*
 	 * Background Color property. Blue component.
 	 */    
@@ -101,7 +97,7 @@ public class SplashFormatNode extends AbstractNode {
      */
     public SplashFormatNode(Node node) {
         super(node);
-        setParameter(INeoConstants.PROPERTY_TYPE_NAME, SPLASH_FORMAT_NODE_TYPE);
+        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SPLASH_FORMAT_NODE_TYPE.getId());
     }
     
     /**

@@ -179,7 +179,7 @@ public class NeoUtils {
      * @return true if node is file node
      */
     public static boolean isFileNode(Node node) {
-        return node != null && NodeTypes.FILE_TYPE_NAME.equals(getNodeType(node, ""));
+        return node != null && NodeTypes.FILE_TYPE_NAME.getId().equals(getNodeType(node, ""));
     }
 
     /**
@@ -900,7 +900,7 @@ public class NeoUtils {
             Pair<Boolean, Node> result = findOrCreateChildNode(service, parentNode, nodeName);
             if (result.getLeft()) {
                 Node node = result.getRight();
-                node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.FILE_TYPE_NAME);
+                node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.FILE_TYPE_NAME.getId());
                 node.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, fileName);
             }
             successTx(tx);

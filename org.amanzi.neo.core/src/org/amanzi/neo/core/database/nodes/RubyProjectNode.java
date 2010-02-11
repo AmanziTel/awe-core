@@ -31,8 +31,6 @@ import org.neo4j.api.core.Traverser;
 
 public class RubyProjectNode extends AbstractNode {
 
-	private static final Object RUBY_PROJECT_NODE_TYPE = NodeTypes.RUBY_PROJECT_NODE_TYPE.getId();//TODO: node types usages
-
 	/**
 	 * Constructor. Wraps a Node that will be parent node for Spreadsheets
 	 * 
@@ -40,7 +38,7 @@ public class RubyProjectNode extends AbstractNode {
 	 */
 	public RubyProjectNode(Node node, String projectName) {
 		super(node);
-		setParameter(INeoConstants.PROPERTY_TYPE_NAME, RUBY_PROJECT_NODE_TYPE);
+		setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.RUBY_PROJECT_NODE_TYPE.getId());
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, projectName);
 	}
 
@@ -51,7 +49,7 @@ public class RubyProjectNode extends AbstractNode {
 	 */
 	private RubyProjectNode(Node node) {
 	    super(node);
-	    if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(RUBY_PROJECT_NODE_TYPE)) throw new RuntimeException("Expected existing RubyProject Node, but got "+node.toString());
+	    if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(NodeTypes.RUBY_PROJECT_NODE_TYPE.getId())) throw new RuntimeException("Expected existing RubyProject Node, but got "+node.toString());
 	}
 	
 	/**

@@ -19,7 +19,6 @@ import org.neo4j.api.core.Node;
 public class PieChartItemNode extends AbstractNode {
 
 	public static final String PIE_CHART_ITEM_NAME = "pie_chart_item_name";
-	private static final String PIE_CHART_ITEM_NODE_TYPE = NodeTypes.PIE_CHART_ITEM_NODE_TYPE.getId();//TODO: node types usages (Leave constant!)
 	private static final String PIE_CHART_ITEM_NODE_NAME = "Spreadsheet Pie Chart Item";
 	
 	private static final String PIE_CHART_ITEM_NODE_CATEGORY = "Spreadsheet Pie Chart Category";
@@ -31,7 +30,7 @@ public class PieChartItemNode extends AbstractNode {
 		super(node);
 		// TODO Auto-generated constructor stub
 		
-		 setParameter(INeoConstants.PROPERTY_TYPE_NAME, PIE_CHART_ITEM_NODE_TYPE);
+		 setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PIE_CHART_ITEM_NODE_TYPE.getId());
 	     setParameter(INeoConstants.PROPERTY_NAME_NAME, PIE_CHART_ITEM_NODE_NAME);
 	}
 	
