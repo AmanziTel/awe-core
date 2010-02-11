@@ -157,7 +157,7 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
     }
 
     /**
-     *
+     *remove CRS from list
      */
     protected void removeCRSFromList() {
         int id = commonCrs.getSelectionIndex();
@@ -236,7 +236,9 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
     }
 
     /**
-     * @param decode
+     * set CRS
+     * 
+     * @param decode selected CRS
      */
     public void setSelectedCRS(CoordinateReferenceSystem decode) {
         selectedCRS = decode;
