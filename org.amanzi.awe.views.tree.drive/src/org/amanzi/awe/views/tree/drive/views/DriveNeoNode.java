@@ -18,6 +18,7 @@ import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.api.core.Direction;
@@ -77,7 +78,7 @@ public class DriveNeoNode extends NeoNode {
      * @return
      */
     private boolean isDatasetNode() {
-        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.DATASET_TYPE_NAME);
+        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.DATASET_TYPE_NAME.getId());
 
     }
 
@@ -95,10 +96,10 @@ public class DriveNeoNode extends NeoNode {
      * @return
      */
     private boolean isFileNode() {
-        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.FILE_TYPE_NAME);
+        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.FILE_TYPE_NAME);
     }
     
     private boolean isDirectoryNode() {
-    	return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.DIRECTORY_TYPE_NAME);
+    	return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.DIRECTORY_TYPE_NAME);
     }
 }

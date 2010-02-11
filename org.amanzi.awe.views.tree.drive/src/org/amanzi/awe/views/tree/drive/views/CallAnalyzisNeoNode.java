@@ -20,6 +20,7 @@ import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -52,10 +53,10 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         
         type = NeoUtils.getNodeType(node);
         
-        if (type.equals(INeoConstants.CALL_ANALYZIS_ROOT)) {
+        if (type.equals(NodeTypes.CALL_ANALYZIS_ROOT.getId())) {
             name = "Call Analysis: " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME) + " (" + node.getProperty(CallProperties.CALL_TYPE.getId()) + ")";
         }        
-        else if (type.equals(INeoConstants.S_CELL)) {
+        else if (type.equals(NodeTypes.S_CELL.getId())) {
             name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
         }        
     }
@@ -71,17 +72,17 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         ArrayList<NeoNode> children = new ArrayList<NeoNode>();
         
         Iterator<Node> iterator;
-        if (type.equals(INeoConstants.CALL_ANALYZIS_ROOT)) {
+        if (type.equals(NodeTypes.CALL_ANALYZIS_ROOT.getId())) {
             iterator = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
                                      GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         }
-        else if (type.equals(INeoConstants.CALL_ANALYZIS)) {
+        else if (type.equals(NodeTypes.CALL_ANALYZIS.getId())) {
             CallType type = CallType.valueOf((String)getParent().getNode().getProperty(CallProperties.CALL_TYPE.getId()));          
             Node root = node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
             Node dataset = root.getSingleRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.INCOMING).getStartNode();
             iterator = NeoUtils.getAllProbesOfDataset(dataset, type).iterator();
         }
-        else if (type.equals(INeoConstants.PROBE_TYPE_NAME)) {
+        else if (type.equals(NodeTypes.PROBE_TYPE_NAME.getId())) {
             iterator = NeoUtils.getChildTraverser(statisticsNode, new ReturnableEvaluator() {
                 
                 @Override
@@ -99,7 +100,7 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
                 }
             }).iterator();
         }
-        else if (type.equals(INeoConstants.S_CELL)) {
+        else if (type.equals(NodeTypes.S_CELL.getId())) {
             iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
                 
                 @Override
@@ -134,9 +135,9 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
      * @return
      */
     public NeoNode getParent() {
-        if (type.equals(INeoConstants.PROBE_TYPE_NAME)) {
+        if (type.equals(NodeTypes.PROBE_TYPE_NAME.getId())) {
             return new CallAnalyzisNeoNode(statisticsNode, statisticsNode);
-        } else if (type.equals(INeoConstants.S_ROW)) {
+        } else if (type.equals(NodeTypes.S_ROW.getId())) {
             return new CallAnalyzisNeoNode(node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                 @Override

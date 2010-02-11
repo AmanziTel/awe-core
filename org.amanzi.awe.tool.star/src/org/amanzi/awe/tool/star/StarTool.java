@@ -42,6 +42,7 @@ import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -197,7 +198,7 @@ public class StarTool extends AbstractModalTool {
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     String property = currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
-                    return INeoConstants.GIS_TYPE_NAME.equals(property);
+                    return NodeTypes.GIS.getId().equals(property);
                 }
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
             while (gisIterator.hasNext()) {

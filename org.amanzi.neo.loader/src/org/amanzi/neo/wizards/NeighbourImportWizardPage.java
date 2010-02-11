@@ -16,6 +16,7 @@ import java.util.HashMap;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.LoadNetwork;
@@ -143,7 +144,7 @@ public class NeighbourImportWizardPage extends WizardPage {
                 if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
                         && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
                         && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(
-                                INeoConstants.GIS_TYPE_NAME)
+                                NodeTypes.GIS.getId())
                         && header.equals(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, ""))) {
                     String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                     members.put(id, node);

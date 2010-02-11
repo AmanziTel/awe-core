@@ -1226,7 +1226,7 @@ public abstract class AbstractLoader {
 
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.GIS_TYPE_NAME)
+                        return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.GIS.getId())
                                 && currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(name)
                                 && currentPos.currentNode().getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").equals(gisType);
                     }

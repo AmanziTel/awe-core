@@ -19,6 +19,7 @@ import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -102,7 +103,7 @@ public class NeoNode {
 						  				  ProbeCallRelationshipType.CALLEE, Direction.INCOMING,
 						  				  ProbeCallRelationshipType.CALLER, Direction.INCOMING).iterator();
             }
-            else if (NeoUtils.getNodeType(node).equals(INeoConstants.PROBE_TYPE_NAME)) {
+            else if (NeoUtils.getNodeType(node).equals(NodeTypes.PROBE_TYPE_NAME.getId())) {
                 childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
                                           ProbeCallRelationshipType.CALLS, Direction.OUTGOING).iterator();
             }

@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
@@ -130,7 +131,7 @@ public class OldNemoVersionLoader extends NemoLoader {
                 return;
             }
             Node mp = neo.createNode();
-            mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+            mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP_TYPE_NAME.getId());
             mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());

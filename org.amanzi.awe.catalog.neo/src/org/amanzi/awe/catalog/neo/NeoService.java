@@ -22,6 +22,7 @@ import java.util.Map;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.api.core.Direction;
@@ -109,7 +110,7 @@ public class NeoService extends IService {
                         members = new ArrayList<NeoGeoResource>();
                         for(Relationship relationship:neo.getReferenceNode().getRelationships(Direction.OUTGOING)){
                             Node node = relationship.getEndNode();
-                            if(node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(INeoConstants.GIS_TYPE_NAME)){
+                            if(node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(NodeTypes.GIS.getId())){
                                 members.add(new NeoGeoResource(this,neo,node));
                             }
                         }

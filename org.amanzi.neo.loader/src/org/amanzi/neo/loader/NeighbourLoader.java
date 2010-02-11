@@ -177,7 +177,7 @@ public class NeighbourLoader {
         Transaction tx = neo.beginTx();
         try {
             result = neo.createNode();
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.NEIGHBOUR_TYPE_NAME);
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NEIGHBOUR_TYPE_NAME.getId());
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, fileName);
             network.createRelationshipTo(result, NetworkRelationshipTypes.NEIGHBOUR_DATA);
             tx.success();

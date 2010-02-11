@@ -16,6 +16,7 @@ import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
@@ -33,7 +34,7 @@ public class AweProjectNode extends AbstractNode {
 
 	public AweProjectNode(Node node, String projectName) {
 		super(node);
-		setParameter(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.AWE_PROJECT_NODE_TYPE);
+		setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.AWE_PROJECT_NODE_TYPE.getId());
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, projectName);
 	}
 
@@ -44,7 +45,7 @@ public class AweProjectNode extends AbstractNode {
      */
     private AweProjectNode(Node node) {
         super(node);
-        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(INeoConstants.AWE_PROJECT_NODE_TYPE)) throw new RuntimeException("Expected existing AweProject Node, but got "+node.toString());
+        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(NodeTypes.AWE_PROJECT_NODE_TYPE.getId())) throw new RuntimeException("Expected existing AweProject Node, but got "+node.toString());
     }
     
     /**

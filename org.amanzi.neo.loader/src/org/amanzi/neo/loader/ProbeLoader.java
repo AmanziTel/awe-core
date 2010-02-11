@@ -22,6 +22,7 @@ import java.util.Map;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
@@ -61,7 +62,7 @@ public class ProbeLoader extends AbstractLoader{
     private void addNetworkIndexes() {
         // TODO check - use same index like sectors or new?
         try {
-            addIndex(INeoConstants.PROBE_TYPE_NAME, NeoUtils.getLocationIndexProperty(basename));
+            addIndex(NodeTypes.PROBE_TYPE_NAME.getId(), NeoUtils.getLocationIndexProperty(basename));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -166,7 +167,7 @@ public class ProbeLoader extends AbstractLoader{
                 return iterator.next();
             }
             Node result = neo.createNode();
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.PROBE_TYPE_NAME);
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PROBE_TYPE_NAME.getId());
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, probeName);
             network.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
             tx.success();

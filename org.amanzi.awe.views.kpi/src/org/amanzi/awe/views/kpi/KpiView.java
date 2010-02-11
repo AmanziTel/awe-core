@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -302,7 +303,7 @@ public class KpiView extends ViewPart {
                 if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
                         && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
                         && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(
-                                INeoConstants.GIS_TYPE_NAME) && GisTypes.DRIVE.getHeader().equals(type)) {
+                                NodeTypes.GIS.getId()) && GisTypes.DRIVE.getHeader().equals(type)) {
                     String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                     drives.put(id, node);
                 }
@@ -328,7 +329,7 @@ public class KpiView extends ViewPart {
                 if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
                         && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
                         && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(
-                                INeoConstants.GIS_TYPE_NAME) && GisTypes.NETWORK.getHeader().equals(type)) {
+                                NodeTypes.GIS.getId()) && GisTypes.NETWORK.getHeader().equals(type)) {
                     String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                     networks.put(id, node);
                 }

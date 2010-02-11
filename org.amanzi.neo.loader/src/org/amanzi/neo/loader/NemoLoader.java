@@ -29,6 +29,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
@@ -132,7 +133,7 @@ public class NemoLoader extends DriveLoader {
                 return;
             }
             Node mp = neo.createNode();
-            mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+            mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP_TYPE_NAME.getId());
             mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
 
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
@@ -171,7 +172,7 @@ public class NemoLoader extends DriveLoader {
             }
             Node ms = neo.createNode();
             findOrCreateFileNode(ms);
-            ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
+            ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.HEADER_M.getId());
             event.store(ms, headers);
             if (timestamp != 0) {
                 ms.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
@@ -223,8 +224,8 @@ public class NemoLoader extends DriveLoader {
      */
     private void addDriveIndexes() {
         try {
-            addIndex(INeoConstants.HEADER_M, NeoUtils.getTimeIndexProperty(dataset));
-            addIndex(INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(dataset));
+            addIndex(NodeTypes.HEADER_M.getId(), NeoUtils.getTimeIndexProperty(dataset));
+            addIndex(NodeTypes.MP_TYPE_NAME.getId(), NeoUtils.getLocationIndexProperty(dataset));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }

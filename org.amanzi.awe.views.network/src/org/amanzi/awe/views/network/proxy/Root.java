@@ -22,6 +22,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
@@ -104,7 +105,7 @@ public class Root extends NeoNode {
             for (Relationship relationship : reference.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
                 Node gisNode = null;
-                if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.GIS_TYPE_NAME.toString())) {
+                if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.GIS.getId())) {
                     gisNode = node;
                 }
                 if (gisNode != null) {

@@ -52,6 +52,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.ActionUtil;
@@ -286,7 +287,7 @@ public class NetworkTreeView extends ViewPart {
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 String type = NeoUtils.getNodeType(currentPos.currentNode(), "");
-                return !(type.equals(INeoConstants.AWE_PROJECT_NODE_TYPE) || type.equals(INeoConstants.GIS_TYPE_NAME))
+                return !(type.equals(NodeTypes.AWE_PROJECT_NODE_TYPE.getId()) || type.equals(NodeTypes.GIS.getId()))
                         && NeoUtils.getFormatedNodeName(currentPos.currentNode(),"").toLowerCase().contains(text);
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
@@ -305,7 +306,7 @@ public class NetworkTreeView extends ViewPart {
             @Override
             public boolean isStopNode(TraversalPosition currentPos) {
                 String nodeType = NeoUtils.getNodeType(currentPos.currentNode(), "");
-                boolean result = (nodeType.equals(INeoConstants.FILE_TYPE_NAME) || nodeType.equals(INeoConstants.DATASET_TYPE_NAME));
+                boolean result = (nodeType.equals(NodeTypes.FILE_TYPE_NAME.getId()) || nodeType.equals(NodeTypes.DATASET_TYPE_NAME.getId()));
                 return result;
             }
         };
@@ -552,7 +553,7 @@ public class NetworkTreeView extends ViewPart {
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
-                        INeoConstants.GIS_TYPE_NAME);
+                        NodeTypes.GIS.getId());
             }
         }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
         return traverse.iterator().hasNext() ? traverse.iterator().next() : null;
@@ -700,10 +701,10 @@ public class NetworkTreeView extends ViewPart {
                         || NetworkElementTypes.BSC.toString().equals(nodeType) || "delta_network".equals(nodeType)
                         || "delta_site".equals(nodeType) || "delta_sector".equals(nodeType) || "missing_sites".equals(nodeType)
                         || "missing_sectors".equals(nodeType) || "missing_site".equals(nodeType)
-                        || "missing_sector".equals(nodeType) || INeoConstants.HEADER_M.toString().equalsIgnoreCase(nodeType)
-                        || INeoConstants.MP_TYPE_NAME.toString().equalsIgnoreCase(nodeType)
-                        || INeoConstants.FILE_TYPE_NAME.toString().equalsIgnoreCase(nodeType)
-                        || INeoConstants.DATASET_TYPE_NAME.toString().equalsIgnoreCase(nodeType)) {
+                        || "missing_sector".equals(nodeType) || NodeTypes.HEADER_M.getId().equalsIgnoreCase(nodeType)
+                        || NodeTypes.MP_TYPE_NAME.getId().equalsIgnoreCase(nodeType)
+                        || NodeTypes.FILE_TYPE_NAME.getId().equalsIgnoreCase(nodeType)
+                        || NodeTypes.DATASET_TYPE_NAME.getId().equalsIgnoreCase(nodeType)) {
                     for (ILayer singleLayer : layers) {
                         GeoNeo resource = singleLayer.findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
                         if (containsGisNode(resource, selectedNode)) {

@@ -48,6 +48,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -1375,7 +1376,7 @@ public class ReuseAnalyserView extends ViewPart {
             Node result = service.createNode();
             try {
                 result.setProperty(INeoConstants.PROPERTY_NAME_NAME, propertyName);
-                result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.AGGREGATION_TYPE_NAME);
+                result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.AGGREGATION_TYPE_NAME.getId());
                 result.setProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, distribute);
                 result.setProperty(INeoConstants.PROPERTY_SELECT_NAME, select);
                 gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
@@ -2384,7 +2385,7 @@ public class ReuseAnalyserView extends ViewPart {
             this.distribute = distribute;
             this.propertyValue = propertyValue;
             node = NeoServiceProvider.getProvider().getService().createNode();
-            node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.COUNT_TYPE_NAME);
+            node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.COUNT_TYPE_NAME.getId());
             node.setProperty(INeoConstants.PROPERTY_NAME_NAME, getColumnName());
             node.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, minValue);
             node.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, minValue + range);
@@ -2543,7 +2544,7 @@ public class ReuseAnalyserView extends ViewPart {
             Node node = relationship.getEndNode();
             Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "");
             if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-                    && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(INeoConstants.GIS_TYPE_NAME)) {
+                    && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(NodeTypes.GIS.getId())) {
                 String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                 members.put(id, node);
                 if (GisTypes.NETWORK.getHeader().equals(type)) {
@@ -2752,7 +2753,7 @@ public class ReuseAnalyserView extends ViewPart {
             //TODO: Lagutko: use from constants
             // TODO optimize
             return type != null
-                    && (INeoConstants.HEADER_M.equals(type) || "sector".equals(type) || INeoConstants.HEADER_MS.equals(type) || INeoConstants.CALL_TYPE_NAME
+                    && (NodeTypes.HEADER_M.getId().equals(type) || "sector".equals(type) || INeoConstants.HEADER_MS.equals(type) || NodeTypes.CALL_TYPE_NAME.getId()
                             .equals(type));
             }
         }

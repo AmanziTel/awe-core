@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.AbstractLoader.GisProperties;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -141,8 +142,8 @@ public class RomesLoader extends DriveLoader {
 
     private void addDriveIndexes() {
         try {
-            addIndex(INeoConstants.HEADER_M, NeoUtils.getTimeIndexProperty(dataset));
-            addIndex(INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(dataset));
+            addIndex(NodeTypes.HEADER_M.getId(), NeoUtils.getTimeIndexProperty(dataset));
+            addIndex(NodeTypes.MP_TYPE_NAME.getId(), NeoUtils.getLocationIndexProperty(dataset));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -211,7 +212,7 @@ public class RomesLoader extends DriveLoader {
             Transaction transaction = neo.beginTx();
             try {
                 Node mp = neo.createNode();
-                mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+                mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP_TYPE_NAME.getId());
                 mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);                
@@ -226,7 +227,7 @@ public class RomesLoader extends DriveLoader {
                 for (Map<String, Object> dataLine : data) {
                     Node ms = neo.createNode();
                     findOrCreateFileNode(ms);
-                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
+                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.HEADER_M.getId());
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
                             mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());

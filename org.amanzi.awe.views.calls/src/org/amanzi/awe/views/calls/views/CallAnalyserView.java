@@ -29,6 +29,7 @@ import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -500,12 +501,12 @@ public class CallAnalyserView extends ViewPart {
                             }
                             Node node = currentPos.currentNode();
                             String type = NeoUtils.getNodeType(node, "");
-                            if (type.equals(INeoConstants.CALL_TYPE_NAME)) {
+                            if (type.equals(NodeTypes.CALL_TYPE_NAME.getId())) {
                                 return true;
                             }
                             Relationship relation = currentPos.lastRelationshipTraversed();
                             if (relation.isType(GeoNeoRelationshipTypes.NEXT)) {
-                                return !type.equals(INeoConstants.S_CELL);
+                                return !type.equals(NodeTypes.S_CELL.getId());
                             }
                             return false;
                         }

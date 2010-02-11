@@ -352,7 +352,7 @@ public class CallStatistics {
             
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                if (NeoUtils.getNodeType(currentPos.currentNode()).equals(INeoConstants.S_CELL)) {
+                if (NeoUtils.getNodeType(currentPos.currentNode()).equals(NodeTypes.S_CELL.getId())) {
                     Long sCellTime = getSCellTime(currentPos.currentNode(), probeNode);
                     if ((sCellTime != null) && (sCellTime >= minDate) && (sCellTime < maxDate)) {
                         return true;
@@ -444,7 +444,7 @@ public class CallStatistics {
             Node result = neoService.createNode();
         
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, period.getId());
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.CALL_ANALYZIS);
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYZIS.getId());
             parent.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
             
             return result;
@@ -454,7 +454,7 @@ public class CallStatistics {
     private Node createSRowNode(Node parent, Date startDate, Node probeNode, Node highLevelSRow, CallTimePeriods period) {
         Node result = neoService.createNode();
         String name = NeoUtils.getFormatDateString(startDate.getTime(), period.addPeriod(startDate.getTime()), "HH:mm");
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.S_ROW);
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_ROW.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
         result.setProperty(INeoConstants.PROPERTY_TIME_NAME, startDate.getTime());
         
@@ -479,7 +479,7 @@ public class CallStatistics {
     private Node createSCellNode(Node parent, Statistics statistics, StatisticsHeaders header, CallTimePeriods period) {
         Node result = neoService.createNode();
         
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.S_CELL);
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, header.getTitle());
         Object value = statistics.get(header);
         if (value == null) {

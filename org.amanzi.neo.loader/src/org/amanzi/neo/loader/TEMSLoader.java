@@ -31,6 +31,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.AbstractLoader.GisProperties;
 import org.eclipse.swt.widgets.Display;
@@ -173,10 +174,10 @@ public class TEMSLoader extends DriveLoader {
         try {
             String virtualDatasetName = DriveTypes.MS.getFullDatasetName(dataset);
             
-            addIndex(INeoConstants.HEADER_M, NeoUtils.getTimeIndexProperty(dataset));
+            addIndex(NodeTypes.HEADER_M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(INeoConstants.HEADER_MS, NeoUtils.getTimeIndexProperty(virtualDatasetName));
-            addIndex(INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(dataset));
-            addMappedIndex(MS_KEY, INeoConstants.MP_TYPE_NAME, NeoUtils.getLocationIndexProperty(virtualDatasetName));
+            addIndex(NodeTypes.MP_TYPE_NAME.getId(), NeoUtils.getLocationIndexProperty(dataset));
+            addMappedIndex(MS_KEY, NodeTypes.MP_TYPE_NAME.getId(), NeoUtils.getLocationIndexProperty(virtualDatasetName));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -324,13 +325,13 @@ public class TEMSLoader extends DriveLoader {
                     mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                     mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
                     mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
-                    mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+                    mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP_TYPE_NAME.getId());
                     index(mp);
                     boolean haveEvents = false;
                     for (Map<String, Object> dataLine : data) {
                         Node m = neo.createNode();
                         findOrCreateFileNode(m);
-                        m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_M);
+                        m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.HEADER_M.getId());
                         for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                             if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
                                 mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
@@ -374,7 +375,7 @@ public class TEMSLoader extends DriveLoader {
                     mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                     mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
                     mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
-                    mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.MP_TYPE_NAME);
+                    mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP_TYPE_NAME.getId());
                     index(MS_KEY, mp);
 
                     LinkedHashMap<String, Header> statisticHeader = getHeaderMap(2).headers;

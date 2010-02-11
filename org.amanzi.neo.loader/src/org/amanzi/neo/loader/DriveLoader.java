@@ -24,6 +24,7 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -177,7 +178,7 @@ public abstract class DriveLoader extends AbstractLoader {
             }
         }
         Node result = neo.createNode();
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.DATASET_TYPE_NAME);
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DATASET_TYPE_NAME.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, datasetName);
         result.setProperty(INeoConstants.DRIVE_TYPE, driveType.getId());
         return result;
