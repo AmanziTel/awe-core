@@ -18,6 +18,7 @@ import java.util.Iterator;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -26,6 +27,7 @@ import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.TraversalPosition;
@@ -148,5 +150,27 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         } else {
             return new CallAnalyzisNeoNode(NeoUtils.getParent(null, node), statisticsNode);
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = super.equals(obj);
+        if (result) {
+            if (obj instanceof CallAnalyzisNeoNode && NeoUtils.getNodeType(node, "").equals(NodeTypes.PROBE_TYPE_NAME.getId())) {
+                return statisticsNode.equals(((CallAnalyzisNeoNode)obj).statisticsNode);
+            }
+            if (obj instanceof StatisticSelectionNode && statisticsNode != null && NeoUtils.getNodeType(node, "").equals(NodeTypes.PROBE_TYPE_NAME.getId())) {
+                StatisticSelectionNode statNode = (StatisticSelectionNode)obj;
+                Node clNode = statNode.getClarifyingNode();
+                if (statisticsNode.equals(clNode)) {
+                    return true;
+                }
+                Relationship rel = clNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
+                if (rel != null) {
+                    return statisticsNode.equals(rel.getOtherNode(clNode));
+                }
+            }
+        }
+        return result;
     }
 }

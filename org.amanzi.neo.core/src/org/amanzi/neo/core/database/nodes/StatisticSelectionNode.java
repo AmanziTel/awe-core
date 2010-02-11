@@ -51,4 +51,18 @@ public class StatisticSelectionNode implements IAdaptable {
         this.clarifyingNode = clarifyingNode;
     }
 
+    /**
+     * @return Returns the mainNode.
+     */
+    public Node getMainNode() {
+        return mainNode;
+    }
+
+    /**
+     * @return Returns the clarifyingNode.
+     */
+    public Node getClarifyingNode() {
+        return clarifyingNode;
+    }
+
 }
