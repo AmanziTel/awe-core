@@ -45,7 +45,6 @@ import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
@@ -564,7 +563,8 @@ public class NetworkLoader extends AbstractLoader {
                 mgr.addToRoot(node);
                 Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
                 PreferenceDialog pdialog = new PreferenceDialog(shell, mgr);;
-                if (pdialog.open() == SWT.OK) {
+                if (pdialog.open() == PreferenceDialog.OK) {
+                    page.performOk();
                     result = page.getCRS();
                 }
 
