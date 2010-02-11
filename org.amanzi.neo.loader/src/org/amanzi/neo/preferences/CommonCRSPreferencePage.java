@@ -22,13 +22,13 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -37,10 +37,10 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Preference page: Common CRS
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
@@ -49,22 +49,52 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
     private Composite mainFrame;
     private List commonCrs;
     private LinkedHashMap<String, CoordinateReferenceSystem> crsList = new LinkedHashMap<String, CoordinateReferenceSystem>();
+    private String subtitle = null;
+    private CoordinateReferenceSystem selectedCRS = null;
+
     @Override
     protected Control createContents(Composite parent) {
-        mainFrame = new Composite(parent, SWT.FILL);
-        Layout mainLayout = new GridLayout(2, true);
+        mainFrame = new Composite(parent, SWT.NONE);
+
+        GridLayout mainLayout = new GridLayout(2, false);
+
         mainFrame.setLayout(mainLayout);
+        if (subtitle != null) {
+            Label label = new Label(mainFrame, SWT.NONE);
+            GridData gridData = new GridData();
+            gridData.horizontalSpan = 2;
+            label.setLayoutData(gridData);
+            label.setText(subtitle);
+        }
         Label label = new Label(mainFrame, SWT.NONE);
         GridData gridData = new GridData();
         gridData.horizontalSpan = 2;
         label.setText("Common CRS:");
         commonCrs = new List(mainFrame, SWT.DEFAULT);
-        commonCrs.setItems(crsList.keySet().toArray(new String[0]));
-        gridData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);
+        String[] arrayCRS = crsList.keySet().toArray(new String[0]);
+        commonCrs.setItems(arrayCRS);
+        selectCRS();
+        gridData = new GridData(GridData.FILL_VERTICAL | GridData.FILL_HORIZONTAL);
         gridData.horizontalSpan = 2;
         gridData.verticalSpan = 10;
         commonCrs.setLayoutData(gridData);
+        commonCrs.addSelectionListener(new SelectionListener() {
 
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                int selInd = commonCrs.getSelectionIndex();
+                if (selInd < 0) {
+                    selectedCRS = null;
+                } else {
+                    selectedCRS = crsList.get(commonCrs.getItem(selInd));
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         Button btnAdd = new Button(mainFrame, SWT.PUSH);
         btnAdd.setText("Add");
         GridData gdBtnSave = new GridData();
@@ -83,7 +113,7 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
             }
         });
 
-         Button btnDelete = new Button(mainFrame, SWT.PUSH);
+        Button btnDelete = new Button(mainFrame, SWT.PUSH);
         btnDelete.setText("Delete");
         GridData gdBtnCancel = new GridData();
         gdBtnCancel.horizontalAlignment = GridData.CENTER;
@@ -100,8 +130,30 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
                 widgetSelected(e);
             }
         });
-
         return mainFrame;
+    }
+
+    /**
+     */
+    private void selectCRS() {
+        if (getCRS() != null) {
+            int id = -1;
+            String[] arrayCRS = commonCrs.getItems();
+            for (int i = 0; i < arrayCRS.length; i++) {
+                if (getCRS().equals(crsList.get(arrayCRS[i]))) {
+                    id = i;
+                    break;
+                }
+            }
+            if (id >= 0) {
+                commonCrs.select(id);
+            }
+        }
+    }
+
+    @Override
+    protected Point doComputeSize() {
+        return new Point(200, 300);
     }
 
     /**
@@ -119,13 +171,15 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
      *
      */
     protected void addCRSToList() {
-        CRSdialog dlg = new CRSdialog(mainFrame.getShell(),getCRS());
+        CRSdialog dlg = new CRSdialog(mainFrame.getShell(), getCRS());
         if (dlg.open() == SWT.OK || true) {
             CoordinateReferenceSystem crs = dlg.getCRS();
             if (crs != null) {
+                setSelectedCRS(crs);
                 if (!crsList.values().contains(crs)) {
                     crsList.put(crs.getName().toString(), crs);
                     commonCrs.setItems(crsList.keySet().toArray(new String[0]));
+                    selectCRS();
                 }
             }
 
@@ -136,8 +190,8 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
     /**
      * @return
      */
-    private CoordinateReferenceSystem getCRS() {
-        return null;
+    public CoordinateReferenceSystem getCRS() {
+        return selectedCRS;
     }
 
     @Override
@@ -159,7 +213,6 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
 
     }
 
-
     @Override
     public boolean performOk() {
         StringBuilder sb = new StringBuilder();
@@ -169,9 +222,24 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
         getPreferenceStore().setValue(DataLoadPreferences.COMMON_CRS_LIST, sb.length() > 0 ? sb.substring(DataLoadPreferences.CRS_DELIMETERS.length()) : "");
         return super.performOk();
     }
+
     @Override
     public IPreferenceStore getPreferenceStore() {
         return NeoLoaderPlugin.getDefault().getPreferenceStore();
+    }
+
+    /**
+     * @param string
+     */
+    public void setSubTitle(String subTitle) {
+        subtitle = subTitle;
+    }
+
+    /**
+     * @param decode
+     */
+    public void setSelectedCRS(CoordinateReferenceSystem decode) {
+        selectedCRS = decode;
     }
 
 }

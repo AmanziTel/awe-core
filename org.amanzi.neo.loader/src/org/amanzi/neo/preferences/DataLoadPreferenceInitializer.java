@@ -17,6 +17,7 @@ import java.nio.charset.Charset;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.geotools.referencing.CRS;
 
 /**
  * <p>
@@ -51,6 +52,15 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_LONGITUDE, "long.*, x_wert.*, easting");
 
         pref.setDefault(DataLoadPreferences.DEFAULT_CHARSET, Charset.defaultCharset().name());
+        StringBuilder def;
+        try {
+            def = new StringBuilder(CRS.decode("EPSG:4326").toWKT()).append(DataLoadPreferences.CRS_DELIMETERS).append(CRS.decode("EPSG:31467").toWKT()).append(
+                    DataLoadPreferences.CRS_DELIMETERS).append(CRS.decode("EPSG:3021").toWKT());
+        } catch (Exception e) {
+            NeoLoaderPlugin.exception(e);
+            def = null;
+        }
+        pref.setDefault(DataLoadPreferences.COMMON_CRS_LIST, def.toString());
     }
 
 }

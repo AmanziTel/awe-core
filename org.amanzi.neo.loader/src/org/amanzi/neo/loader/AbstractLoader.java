@@ -81,6 +81,7 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public abstract class AbstractLoader {
     /** AbstractLoader DEFAULT_DIRRECTORY_LOADER field */
@@ -1920,10 +1921,20 @@ public abstract class AbstractLoader {
          */
         public void saveCRS() {
             if (getCrs()!= null) {
-                gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());
+                gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());// TODO remove?
+                                                                                     // - not used
+                                                                                     // in GeoNeo
                 gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
             }
         }
 
+        /**
+         *save CRS
+         * 
+         * @param crs -CoordinateReferenceSystem
+         */
+        public void setCrs(CoordinateReferenceSystem crs) {
+            setCrs(CRS.fromCRS(crs));
+        }
     }
 }

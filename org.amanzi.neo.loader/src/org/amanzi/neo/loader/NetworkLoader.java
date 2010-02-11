@@ -13,7 +13,6 @@
 package org.amanzi.neo.loader;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,9 +37,17 @@ import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.preferences.CommonCRSPreferencePage;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.jface.preference.PreferenceNode;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Direction;
@@ -49,6 +56,8 @@ import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * This class was written to handle CSV (tab delimited) network data from ice.net in Sweden.
@@ -95,6 +104,16 @@ public class NetworkLoader extends AbstractLoader {
             crs.type = crsType;
             crs.epsg = crsName;
             return crs;
+        }
+
+        /**
+         * @param crs
+         */
+        public static CRS fromCRS(CoordinateReferenceSystem crs) {
+            CRS result = new CRS();
+            result.type = "geographic";
+            result.epsg = crs.getIdentifiers().iterator().next().toString();
+            return result;
         }
     }
 
@@ -471,7 +490,16 @@ public class NetworkLoader extends AbstractLoader {
                 Float longitude = networkHeader.getLon();
                 GisProperties gisProperties = getGisProperties(basename);
                 gisProperties.updateBBox(latitude, longitude);
-                gisProperties.checkCRS(latitude, longitude, networkHeader.getCrsHint());
+                if (gisProperties.getCrs() == null) {
+                    gisProperties.checkCRS(latitude, longitude, networkHeader.getCrsHint());
+                    if (gisProperties.getCrs() != null) {
+                        CoordinateReferenceSystem crs = askCRSChoise(gisProperties);
+                        if (crs != null) {
+                            gisProperties.setCrs(crs);
+                            gisProperties.saveCRS();
+                        }
+                    }
+                }
                 site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
                 site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
                 index(site);
@@ -503,12 +531,56 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     /**
-	 * This code expects you to create a transaction around it, so don't forget to do that.
-	 * @param parent
-	 * @param type
-	 * @param name
-	 * @return
-	 */
+     * @param gisProperties
+     * @return
+     */
+    private CoordinateReferenceSystem askCRSChoise(final GisProperties gisProperties) {
+        CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<CoordinateReferenceSystem>() {
+
+            private CoordinateReferenceSystem result;
+
+            @Override
+            public CoordinateReferenceSystem getValue() {
+                return result;
+            }
+
+            @Override
+            public void run() {
+                result = null;
+                CommonCRSPreferencePage page = new CommonCRSPreferencePage();
+                try {
+                    System.out.println(gisProperties.getCrs().epsg);
+                    page.setSelectedCRS(org.geotools.referencing.CRS.decode(gisProperties.getCrs().epsg));
+                } catch (NoSuchAuthorityCodeException e) {
+                    NeoLoaderPlugin.exception(e);
+                    result = null;
+                    return;
+                }
+                page.setTitle("Select Coordinate Reference System");
+                page.setSubTitle("Select the coordinate reference system from the list of commonly used CRS's, or add a new one with the Add button");
+                page.init(PlatformUI.getWorkbench());
+                PreferenceManager mgr = new PreferenceManager();
+                IPreferenceNode node = new PreferenceNode("1", page); //$NON-NLS-1$
+                mgr.addToRoot(node);
+                Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+                PreferenceDialog pdialog = new PreferenceDialog(shell, mgr);;
+                if (pdialog.open() == SWT.OK) {
+                    result = page.getCRS();
+                }
+
+            }
+        });
+        return result;
+    }
+
+    /**
+     * This code expects you to create a transaction around it, so don't forget to do that.
+     * 
+     * @param parent
+     * @param type
+     * @param name
+     * @return
+     */
 	private Node addChild(Node parent, String type, String name) {
 		Node child = null;
 		child = neo.createNode();
