@@ -671,7 +671,7 @@ public class ETSILoader extends DriveLoader {
         Pair<Boolean, Node> subDir = NeoUtils.findOrCreateChildNode(neo, parentNode, child);
         if (subDir.getLeft()) {
             Node directoryNode = subDir.getRight();
-            directoryNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DIRECTORY_TYPE_NAME);
+            directoryNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DIRECTORY_TYPE_NAME.getId());
             directoryNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, child);
             newDirectory = true;
         }
