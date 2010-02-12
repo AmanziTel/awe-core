@@ -2,10 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %printing.ui.plugin.name
 Bundle-SymbolicName: net.refractions.udig.printing.ui; singleton:=true
-Bundle-Version: 1.2.0
+Bundle-Version: 1.1.0
 Bundle-Activator: net.refractions.udig.printing.ui.internal.PrintingPlugin
 Bundle-Vendor: udig.refractions.net
 Bundle-Localization: plugin
+Eclipse-BuddyPolicy: ext
 Export-Package: net.refractions.udig.printing.ui,
  net.refractions.udig.printing.ui.actions,
  net.refractions.udig.printing.ui.internal,
