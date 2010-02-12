@@ -210,6 +210,9 @@ public class ETSIImportWizardPage extends WizardPage {
 	}
     
     private String getDatasetDefaultName(String aFileName) {
+    	if(aFileName == null){
+    		return "";
+    	}
     	String result = aFileName;
     	int index = result.lastIndexOf(File.separator);
     	if (index > 0) {
@@ -219,6 +222,9 @@ public class ETSIImportWizardPage extends WizardPage {
     }
     
     private String getNetworkDefaultName(String aFileName) {
+    	if(aFileName == null){
+    		return "";
+    	}
     	String result = aFileName;
     	int index = result.lastIndexOf(File.separator);
     	if (index > 0) {
