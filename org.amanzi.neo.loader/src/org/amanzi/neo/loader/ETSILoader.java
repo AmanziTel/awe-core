@@ -221,8 +221,9 @@ public class ETSILoader extends DriveLoader {
 		public void setCallTerminationEnd(long callTerminationEnd) {
 			callParameters.set(this.callTerminationEnd, callTerminationEnd);
 			
-			if (getCallSetupEnd() == 0) {
-			    setCallSetupEndTime(callTerminationEnd);
+			if ((call.getCallTerminationBegin() == 0) &&
+			    (call.getCallSetupEnd() == 0)) {
+			    call.setCallSetupEndTime(callTerminationEnd);
 			}
 			
 			lastProccessedParameter = this.callTerminationEnd;
@@ -322,7 +323,7 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private enum CallEvents {
 	    CALL_SETUP_BEGIN("AT+CTSDC"),		
-		OUTGOING_CALL_TERMINATION_BEGIN("ATH"),
+		CALL_TERMINATION_BEGIN("ATH"),
 		TERMINATION_END("CTCR"),
 		INCOMING_CALL_SETUP_BEGIN("ATA"),
 		CALL_SETUP_END("CTCC"),
@@ -570,10 +571,20 @@ public class ETSILoader extends DriveLoader {
 			
 			updateProbeCache(probeName);
 		}
-		saveCall(call);
+		Transaction tx = neo.beginTx();
+		try {
+		    saveCall(call);
+		    saveProperties();
+		    finishUpIndexes();
+		    finishUp();
 		
-		cleanupGisNode();
-		finishUpGis(getDatasetNode());
+		    cleanupGisNode();
+		    finishUpGis(getDatasetNode());
+		}
+		finally {
+		    tx.success();
+		    tx.finish();
+		}
 		
 		basename = dataset;
 		printStats(false);
@@ -749,7 +760,7 @@ public class ETSILoader extends DriveLoader {
 		    prevCommandTimestamp = timestamp;
 		}
 		else if (maybePESQ.startsWith("Port.read")) {
-            if ((prevCommandName != null) && commandName.equals(prevCommandName)) {
+            if ((prevCommandName != null) && commandName.equals(prevCommandName) && (commandName.contains(CTSDC.COMMAND_NAME))) {
                 timestamp = prevCommandTimestamp;
             }
         }
@@ -1074,11 +1085,14 @@ public class ETSILoader extends DriveLoader {
 	private void processCallEvent(Node relatedNode, CallEvents event, long timestamp, HashMap<String, Object> properties) {
 	    switch (event) {	   
 	    case CALL_SETUP_BEGIN:
-	        call = new Call();
-	        call.setCallResult(CallProperties.CallResult.SUCCESS);
-	        call.setCallSetupBeginTime(timestamp);
+	        if (call == null) {
+	            call = new Call();
+	            call.setCallResult(CallProperties.CallResult.SUCCESS);
+	        }
 	        
 	        call.setCallerProbe(currentProbeCalls);
+            callerProbeCalls = currentProbeCalls;
+	        call.setCallSetupBeginTime(timestamp);
 	        
 	        if (isGroupCall(properties)) {
 	            call.setCallType(CallType.GROUP);
@@ -1087,18 +1101,18 @@ public class ETSILoader extends DriveLoader {
 	            call.setCallType(CallType.INDIVIDUAL);
 	        }
 	        
-	        callerProbeCalls = currentProbeCalls;
-	        
             break;
 	    case CALL_SETUP_END:
 	        if (call == null) {
-	            break;
+	            call = new Call();
+	            call.setCallResult(CallProperties.CallResult.SUCCESS);
+	            call.setCallSetupEndTime(timestamp);
 	        }
-	        if (((call.getCallType() == CallType.GROUP) &&
+	        else if (((call.getCallType() == CallType.GROUP) &&
 	            (currentProbeCalls.equals(callerProbeCalls))) ||
 	            ((call.getCallType() == CallType.INDIVIDUAL) &&
                 (!currentProbeCalls.equals(callerProbeCalls)))) {
-	            if (call.getCallSetupEnd() == 0) {
+	            if ((call.getCallSetupEnd() == 0) && (call.getCallSetupBegin() < timestamp)) {
 	                call.setCallSetupEndTime(timestamp);
 	            }
 	        }
@@ -1107,6 +1121,11 @@ public class ETSILoader extends DriveLoader {
 	        if (call != null) {
 	            call.addLq((Float)properties.get(PESQ.PESQ_LISTENING_QUALITIY));
 	            call.addDelay((Float)properties.get(PESQ.ESTIMATED_DELAY));
+	        }
+	        break;
+	    case CALL_TERMINATION_BEGIN:
+	        if (call != null) {
+	            call.setCallTerminationBegin(timestamp);
 	        }
 	        break;
 	    case TERMINATION_END:
@@ -1126,7 +1145,7 @@ public class ETSILoader extends DriveLoader {
 	 * Creates a Call node and sets properties
 	 */
 	private void saveCall(Call call) {
-	    if (call != null) {
+	    if ((call != null) && (call.getCallType() != null)) {
 	        Transaction tx = neo.beginTx();
 	        try {
 	            Node probeCallNode = call.getCallerProbe();

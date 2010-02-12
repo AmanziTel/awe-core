@@ -83,19 +83,19 @@ public class CallStatistics {
      * @since 1.0.0
      */
     public enum StatisticsHeaders {
-        CALL_ATTEMPT_COUNT("SL-SRV-SC-1_CALL_ATTEMPT_COUNT", StatisticsType.COUNT),
-        SUCC_SETUP_COUNT("SL-SRV-SC-1_SUCC_SETUP_COUNT", StatisticsType.COUNT),
-        SETUP_TM_Z1_P1("SL-SRV-SC-2_SETUP_TM_Z1_P1", StatisticsType.COUNT),
-        SETUP_TM_Z1_P2("SL-SRV-SC-2_SETUP_TM_Z1_P2", StatisticsType.COUNT),
-        SETUP_TM_Z1_P3("SL-SRV-SC-2_SETUP_TM_Z1_P3", StatisticsType.COUNT),
-        SETUP_TM_Z1_P4("SL-SRV-SC-2_SETUP_TM_Z1_P4", StatisticsType.COUNT),
-        SETUP_TM_Z1_L1("SL-SRV-SC-2_SETUP_TM_Z1_L1", StatisticsType.COUNT),
-        SETUP_TM_Z1_L2("SL-SRV-SC-2_SETUP_TM_Z1_L2", StatisticsType.COUNT),
-        SETUP_TM_Z1_L3("SL-SRV-SC-2_SETUP_TM_Z1_L3", StatisticsType.COUNT),
-        SETUP_TM_Z1_L4("SL-SRV-SC-2_SETUP_TM_Z1_L4", StatisticsType.COUNT),
-        SETUP_TIME_MIN("SL-SRV-SC-2_SETUP_TIME_MIN", StatisticsType.MIN),
-        SETUP_TIME_MAX("SL-SRV-SC-2_SETUP_TIME_MAX", StatisticsType.MAX),
-        SETUP_TOTAL_DUR("SL-SRV-SC-2_SETUP_TOTAL_DUR", StatisticsType.SUM);
+        CALL_ATTEMPT_COUNT("CALL_ATTEMPT_COUNT", StatisticsType.COUNT),
+        SUCC_SETUP_COUNT("SUCC_SETUP_COUNT", StatisticsType.COUNT),
+        SETUP_TM_Z1_P1("SETUP_TM_Z1_P1", StatisticsType.COUNT),
+        SETUP_TM_Z1_P2("SETUP_TM_Z1_P2", StatisticsType.COUNT),
+        SETUP_TM_Z1_P3("SETUP_TM_Z1_P3", StatisticsType.COUNT),
+        SETUP_TM_Z1_P4("SETUP_TM_Z1_P4", StatisticsType.COUNT),
+        SETUP_TM_Z1_L1("SETUP_TM_Z1_L1", StatisticsType.COUNT),
+        SETUP_TM_Z1_L2("SETUP_TM_Z1_L2", StatisticsType.COUNT),
+        SETUP_TM_Z1_L3("SETUP_TM_Z1_L3", StatisticsType.COUNT),
+        SETUP_TM_Z1_L4("SETUP_TM_Z1_L4", StatisticsType.COUNT),
+        SETUP_TIME_MIN("SETUP_TIME_MIN", StatisticsType.MIN),
+        SETUP_TIME_MAX("SETUP_TIME_MAX", StatisticsType.MAX),
+        SETUP_TOTAL_DUR("SETUP_TOTAL_DUR", StatisticsType.SUM);
         /**
          * Finds enum by id
          * 
@@ -198,6 +198,8 @@ public class CallStatistics {
      */
     private CallTimePeriods highPeriod;
     
+    private HashMap<CallType, IStatisticsConstants> statisticsConstants = new HashMap<CallType, IStatisticsConstants>();
+    
    /**
      * Creates Calculator of Call Statistics
      * 
@@ -208,6 +210,10 @@ public class CallStatistics {
         assert drive != null;
         datasetNode = drive;
         neoService = service;
+        
+        statisticsConstants.put(CallType.INDIVIDUAL, new IndividualCallConstants());
+        statisticsConstants.put(CallType.GROUP, new GroupCallConstants());
+        
         Transaction tx = neoService.beginTx();
         try {
             statisticNode = createStatistics();
@@ -530,27 +536,27 @@ public class CallStatistics {
         
         for (Node singleNode : callNodes) {
             if (singleNode.getProperty(CallProperties.CALL_TYPE.getId()).equals(callType.toString())) {
-                updateCallStatistics(singleNode, statistics);
+                updateCallStatistics(singleNode, statistics, callType);
             }
         }
         
         return statistics;
     }
     
-    private void updateCallStatistics(Node callNode, Statistics statistics) {
+    private void updateCallStatistics(Node callNode, Statistics statistics, CallType callType) {
         statistics.updateHeaderWithCall(StatisticsHeaders.CALL_ATTEMPT_COUNT, 1, callNode);
         
         CallResult callResult = CallResult.valueOf((String)callNode.getProperty(CallProperties.CALL_RESULT.getId()));
         if (callResult == CallResult.SUCCESS) {
             long connectionTime = (Long)callNode.getProperty(CallProperties.SETUP_DURATION.getId());
-            processConnectionTime(connectionTime, statistics, callNode);
+            processConnectionTime(connectionTime, statistics, callNode, statisticsConstants.get(callType));
         }
     }
     
-    private void processConnectionTime(long connectionTime, Statistics statistics, Node callNode) {
-        float connTimeSec = (float)connectionTime / StatisticsConstants.MILLISECONDS_FACTOR;
+    private void processConnectionTime(long connectionTime, Statistics statistics, Node callNode, IStatisticsConstants constants) {
+        float connTimeSec = (float)connectionTime / IStatisticsConstants.MILLISECONDS_FACTOR;
         
-        if (connTimeSec < StatisticsConstants.INDIV_CALL_CONN_TIME_LIMIT) {        
+        if (connTimeSec < constants.getCallConnTimeLimit()) {        
             statistics.updateHeaderWithCall(StatisticsHeaders.SUCC_SETUP_COUNT, 1, callNode);
             statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TIME_MAX, connTimeSec, callNode);
             statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TIME_MIN, connTimeSec, callNode);
@@ -560,29 +566,29 @@ public class CallStatistics {
             return;
         }
         
-        if (connTimeSec > StatisticsConstants.INDIV_CALL_CONN_TIME_P1) {
-            if (connTimeSec < StatisticsConstants.INDIV_CALL_CONN_TIME_P2) {
+        if (connTimeSec > constants.getCallConnTimeP1()) {
+            if (connTimeSec < constants.getCallConnTimeP2()) {
                 statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TM_Z1_P1, 1, callNode);
             }
-            else if (connTimeSec < StatisticsConstants.INDIV_CALL_CONN_TIME_P3) {
+            else if (connTimeSec < constants.getCallConnTimeP3()) {
                 statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TM_Z1_P2, 1, callNode);
             }
-            else if (connTimeSec < StatisticsConstants.INDIV_CALL_CONN_TIME_P4) {
+            else if (connTimeSec < constants.getCallConnTimeP4()) {
                 statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TM_Z1_P3, 1, callNode);
             }
-            else if (connTimeSec < StatisticsConstants.INDIV_CALL_CONN_TIME_L1) {
+            else if (connTimeSec < constants.getCallConnTimeL1()) {
                 statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TM_Z1_P4, 1, callNode);
             }
-            else if (connTimeSec < StatisticsConstants.INDIV_CALL_CONN_TIME_L2) {
+            else if (connTimeSec < constants.getCallConnTimeL2()) {
                 statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TM_Z1_L1, 1, callNode);
             }
-            else if (connTimeSec < StatisticsConstants.INDIV_CALL_CONN_TIME_L3) {
+            else if (connTimeSec < constants.getCallConnTimeL3()) {
                 statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TM_Z1_L2, 1, callNode);
             }
-            else if (connTimeSec < StatisticsConstants.INDIV_CALL_CONN_TIME_L4) {
+            else if (connTimeSec < constants.getCallConnTimeL4()) {
                 statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TM_Z1_L3, 1, callNode);
             }
-            else if (connTimeSec < StatisticsConstants.INDIV_CALL_CONN_TIME_LIMIT) {
+            else if (connTimeSec < constants.getCallConnTimeLimit()) {
                 statistics.updateHeaderWithCall(StatisticsHeaders.SETUP_TM_Z1_L4, 1, callNode);
             }
         }

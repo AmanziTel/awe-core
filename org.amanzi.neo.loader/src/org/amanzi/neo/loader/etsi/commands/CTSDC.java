@@ -32,7 +32,7 @@ public class CTSDC extends AbstractETSICommand {
 	/*
 	 * Command name
 	 */
-	private static final String COMMAND_NAME = "CTSDC";
+	public static final String COMMAND_NAME = "CTSDC";
 
 	@Override
 	public String getName() {
