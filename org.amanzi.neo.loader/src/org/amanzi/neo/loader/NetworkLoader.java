@@ -204,23 +204,6 @@ public class NetworkLoader extends AbstractLoader {
         addKnownHeader(1, "beamwidth", new String[] {".*beamwidth.*", "beam", "hbw"});
         addKnownHeader(1, "azimuth", new String[] {".*azimuth.*"});
     }
-
-    /**
-     * @param key -key of value from preference store
-     * @return array of possible headers
-     */
-    private String[] getPossibleHeaders(String key) {
-        String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(key);
-        String[] array = text.split(",");
-        List<String> result = new ArrayList<String>();
-        for (String string : array) {
-            String value = string.trim();
-            if (!value.isEmpty()) {
-                result.add(value);
-            }
-        }
-        return result.toArray(new String[0]);
-    }
     
     /**
      * Add a known header entry as well as mark it as a main header. All other fields will be

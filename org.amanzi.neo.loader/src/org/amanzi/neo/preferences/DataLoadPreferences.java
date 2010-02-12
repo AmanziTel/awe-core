@@ -35,7 +35,26 @@ public class DataLoadPreferences {
     public static final String NH_LATITUDE = "NH_LATITUDE";
     public static final String NH_LONGITUDE = "NH_LONGITUDE";
     public static final String DEFAULT_CHARSET = "DEFAULT_CHARSET";
-
+    
+    // probe loader headers
+    public static final String PR_NAME = "PR_NAME";
+    public static final String PR_TYPE = "PR_TYPE";
+    public static final String PR_LATITUDE = "PR_LATITUDE";
+    public static final String PR_LONGITUDE = "PR_LONGITUDE";
+    
+	// network site loader headers
+    public static final String NS_BEAMWIDTH = "NS_BEAMWIDTH";
+    public static final String NS_AZIMUTH = "NS_AZIMUTH";
+    
+    // neighbour loader headers
+    public static final String NE_CI = "NE_CI";
+    public static final String NE_LAC = "NE_LAC";
+    public static final String NE_BTS = "NE_BTS";
+    
+    public static final String NE_ADJ_CI = "NE_ADJ_CI";
+    public static final String NE_ADJ_LAC = "NE_ADJ_LAC";
+    public static final String NE_ADJ_BTS = "NE_ADJ_BTS";
+    
     public static final String COMMON_CRS_LIST = "COMMON_CRS_LIST";
     public static final String CRS_DELIMETERS = "--DELIMETER--";
 

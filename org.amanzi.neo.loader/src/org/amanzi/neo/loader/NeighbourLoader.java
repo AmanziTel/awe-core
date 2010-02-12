@@ -17,10 +17,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,8 +36,10 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
@@ -57,6 +61,14 @@ import org.neo4j.util.index.LuceneIndexService;
  * @since 1.0.0
  */
 public class NeighbourLoader {
+	
+	private static final String CI_HEADER = "CI";
+	private static final String LAC_HEADER = "LAC";
+	private static final String BTS_HEADER = "BTS_NAME";
+	private static final String ADJ_CI_HEADER = "ADJ_CI";
+	private static final String ADJ_LAC_HEADER = "ADJ_LAC";
+	private static final String ADJ_BTS_HEADER = "ADJ_BTS_NAME";
+	
     // private static String directory = null;
     private static final int COMMIT_MAX = 1000;
     private Node network;
@@ -220,8 +232,15 @@ public class NeighbourLoader {
         public Header(String line, NeoService neo) {
             this.neo = neo;
             headers = line.split("\\t");
-            serverNodeName = new NodeName("CI", "LAC", "BTS_NAME");
-            neighbourNodeName = new NodeName("ADJ_CI", "ADJ_LAC", "ADJ_BTS_NAME");
+            IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
+			String ciString = CI_HEADER+", "+preferenceStore.getString(DataLoadPreferences.NE_CI);
+            String lacString = LAC_HEADER+", "+preferenceStore.getString(DataLoadPreferences.NE_LAC);
+            String btsString = BTS_HEADER+", "+preferenceStore.getString(DataLoadPreferences.NE_BTS);
+            serverNodeName = new NodeName(ciString, lacString, btsString);
+            ciString = ADJ_CI_HEADER+", "+preferenceStore.getString(DataLoadPreferences.NE_ADJ_CI);
+            lacString = ADJ_LAC_HEADER+", "+preferenceStore.getString(DataLoadPreferences.NE_ADJ_LAC);
+            btsString = ADJ_BTS_HEADER+", "+preferenceStore.getString(DataLoadPreferences.NE_ADJ_BTS);
+            neighbourNodeName = new NodeName(ciString, lacString, btsString);
             for (int i = 0; i < headers.length; i++) {
                 String fieldHeader = headers[i];
                 if (serverNodeName.setFieldIndex(fieldHeader, i)) {
@@ -511,7 +530,7 @@ public class NeighbourLoader {
      * @since 1.0.0
      */
     private static class NodeName {
-        Map<String, String> nameMap = new HashMap<String, String>();
+		Map<String, String> nameMap = new HashMap<String, String>();
         Map<String, Integer> indexMap = new HashMap<String, Integer>();
         Map<String, String> valuesMap = new HashMap<String, String>();
 
@@ -522,12 +541,32 @@ public class NeighbourLoader {
          * @param lac name of "LAC" properties
          * @param btsName name of "BTS_NAME" properties
          */
-        public NodeName(String ci, String lac, String btsName) {
-
-            nameMap.put(ci, "CI");
-            nameMap.put(lac, "LAC");
-            nameMap.put(btsName, "BTS_NAME");
-
+        public NodeName(String ciString, String lacString, String btsNameString) {
+        	for(String ci : getPossibleHeaders(ciString)){
+        		nameMap.put(ci, CI_HEADER);
+        	}
+        	for(String lac : getPossibleHeaders(lacString)){
+        		nameMap.put(lac, LAC_HEADER);
+        	}
+        	for(String btsName : getPossibleHeaders(btsNameString)){
+        		nameMap.put(btsName, BTS_HEADER);
+        	}
+        }
+        
+        /**
+         * @param key -key of value from preference store
+         * @return array of possible headers
+         */
+        protected List<String> getPossibleHeaders(String text) {
+            String[] array = text.split(",");
+            List<String> result = new ArrayList<String>();
+            for (String string : array) {
+                String value = string.trim();
+                if (!value.isEmpty()) {
+                    result.add(value);
+                }
+            }
+            return result;
         }
 
         /**
@@ -536,11 +575,11 @@ public class NeighbourLoader {
          * @return id
          */
         public String getId1() {
-            String ci = valuesMap.get("CI");
+            String ci = valuesMap.get(CI_HEADER);
             if (ci == null || ci.isEmpty()) {
                 return null;
             }
-            String lac = valuesMap.get("LAC");
+            String lac = valuesMap.get(LAC_HEADER);
             if (lac == null || lac.isEmpty()) {
                 return null;
             }
@@ -554,7 +593,7 @@ public class NeighbourLoader {
          */
         public String getId2() {
 
-            String bts = valuesMap.get("BTS_NAME");
+            String bts = valuesMap.get(BTS_HEADER);
             if (bts == null || bts.isEmpty()) {
                 return null;
             }
@@ -568,11 +607,11 @@ public class NeighbourLoader {
          * @return id
          */
         public static String getId1(Node node) {
-            Object ci = node.getProperty("CI", null);
+            Object ci = node.getProperty(CI_HEADER, null);
             if (ci == null) {
                 return null;
             }
-            Object lac = node.getProperty("LAC", null);
+            Object lac = node.getProperty(LAC_HEADER, null);
             if (lac == null) {
                 return null;
             }

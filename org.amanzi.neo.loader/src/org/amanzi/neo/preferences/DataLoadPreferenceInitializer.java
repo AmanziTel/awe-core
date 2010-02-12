@@ -50,7 +50,23 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_SECTOR, "Sector, Cell, BTS_Name, CELL_NAME, GSM Sector ID");
         pref.setDefault(DataLoadPreferences.NH_LATITUDE, "lat.*, y_wert.*, northing");
         pref.setDefault(DataLoadPreferences.NH_LONGITUDE, "long.*, x_wert.*, easting");
-
+        
+        pref.setDefault(DataLoadPreferences.PR_NAME, "probe");
+        pref.setDefault(DataLoadPreferences.PR_TYPE, "type");
+        pref.setDefault(DataLoadPreferences.PR_LATITUDE, "lat.*, .*latitude.*");
+        pref.setDefault(DataLoadPreferences.PR_LONGITUDE, "long.*, .*longitude.*");
+        
+        pref.setDefault(DataLoadPreferences.NS_AZIMUTH, ".*azimuth.*");
+        pref.setDefault(DataLoadPreferences.NS_BEAMWIDTH, ".*beamwidth.*, beam, hbw");
+        
+        pref.setDefault(DataLoadPreferences.NE_CI, "CI");
+        pref.setDefault(DataLoadPreferences.NE_BTS, "BTS_NAME");
+        pref.setDefault(DataLoadPreferences.NE_LAC, "LAC");
+        
+        pref.setDefault(DataLoadPreferences.NE_ADJ_CI, "ADJ_CI");
+        pref.setDefault(DataLoadPreferences.NE_ADJ_BTS, "ADJ_BTS_NAME");
+        pref.setDefault(DataLoadPreferences.NE_ADJ_LAC, "ADJ_LAG");
+        
         pref.setDefault(DataLoadPreferences.DEFAULT_CHARSET, Charset.defaultCharset().name());
         StringBuilder def;
         try {

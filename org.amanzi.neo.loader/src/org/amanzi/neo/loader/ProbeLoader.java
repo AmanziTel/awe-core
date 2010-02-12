@@ -25,6 +25,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
@@ -87,10 +88,10 @@ public class ProbeLoader extends AbstractLoader{
      */
     private void initializeKnownHeaders() {
         needParceHeader = true;
-        addKnownHeader(1, INeoConstants.PROPERTY_LAT_NAME, ".*latitude.*");
-        addKnownHeader(1, "name", "probe");
-        addKnownHeader(1, INeoConstants.PROPERTY_LON_NAME, ".*longitude.*");
-        addKnownHeader(1, "probe_type", "type");
+        addKnownHeader(1, INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.PR_LATITUDE));
+        addKnownHeader(1, "name", getPossibleHeaders(DataLoadPreferences.PR_NAME));
+        addKnownHeader(1, INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.PR_LONGITUDE));
+        addKnownHeader(1, "probe_type", getPossibleHeaders(DataLoadPreferences.PR_TYPE));
     }
 
     @Override

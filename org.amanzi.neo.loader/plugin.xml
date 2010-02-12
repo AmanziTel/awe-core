@@ -223,10 +223,28 @@
             name="Network data"
             category="org.amanzi.neo.preferences.DataLoadPreferencePage">
       </page>
-       <page
+      <page
             class="org.amanzi.neo.preferences.CommonCRSPreferencePage"
             id="org.amanzi.neo.preferences.CommonCRSPreferencePage"
             name="Common Coordinate Reference Systems"
+            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
+      </page>
+	  <page
+            class="org.amanzi.neo.preferences.NeighbourLoaderPreferencePage"
+            id="org.amanzi.neo.preferences.NeighbourLoaderPreferencePage"
+            name="Neighbour data"
+            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
+      </page>
+      <page
+            class="org.amanzi.neo.preferences.ProbeLoaderPreferencePage"
+            id="org.amanzi.neo.preferences.ProbeLoaderPreferencePage"
+            name="Probe data"
+            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
+      </page>
+      <page
+            class="org.amanzi.neo.preferences.SiteLoaderPreferencePage"
+            id="org.amanzi.neo.preferences.SiteLoaderPreferencePage"
+            name="Network Site data"
             category="org.amanzi.neo.preferences.DataLoadPreferencePage">
       </page>
    </extension>

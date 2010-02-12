@@ -52,6 +52,35 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String ETSIImport_directory;
     public static String ETSIImport_dir_editor_title;
     
+    public static String PrefNetwork_title;
+    public static String PrefNetwork_field_city;
+    public static String PrefNetwork_field_msc;
+    public static String PrefNetwork_field_bsc;
+    public static String PrefNetwork_field_site;
+    public static String PrefNetwork_field_sector;
+    public static String PrefNetwork_field_latitude;
+    public static String PrefNetwork_field_longitude;
+    
+    public static String PrefSite_title;
+    public static String PrefSite_field_beamwidth;
+    public static String PrefSite_field_azimuth;
+
+    public static String PrefProbe_title;
+    public static String PrefProbe_field_name;
+    public static String PrefProbe_field_probe_type;
+    public static String PrefProbe_field_latitude;
+    public static String PrefProbe_field_longitude;
+
+    public static String PrefNeighbour_title;
+    public static String PrefNeighbour_title_server;
+    public static String PrefNeighbour_title_neighbour;
+    public static String PrefNeighbour_field_ci;
+    public static String PrefNeighbour_field_bts;
+    public static String PrefNeighbour_field_lac;
+    public static String PrefNeighbour_field_adj_ci;
+    public static String PrefNeighbour_field_adj_bts;
+    public static String PrefNeighbour_field_adj_lac;
+    
     private NeoLoaderPluginMessages() {
     }
 

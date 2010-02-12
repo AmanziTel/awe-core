@@ -1937,4 +1937,21 @@ public abstract class AbstractLoader {
             setCrs(CRS.fromCRS(crs));
         }
     }
+    
+    /**
+     * @param key -key of value from preference store
+     * @return array of possible headers
+     */
+    protected String[] getPossibleHeaders(String key) {
+        String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(key);
+        String[] array = text.split(",");
+        List<String> result = new ArrayList<String>();
+        for (String string : array) {
+            String value = string.trim();
+            if (!value.isEmpty()) {
+                result.add(value);
+            }
+        }
+        return result.toArray(new String[0]);
+    }
 }
