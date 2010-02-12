@@ -343,10 +343,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     MultiPropertyIndex<Long> timestampIndex = NeoUtils.getTimeIndexProperty(geoNeo.getName());
                     timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
                     for (Node node : timestampIndex.searchTraverser(new Long[] {beginTime}, new Long[] {endTime})) {
-                        if (!node.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
+                        if (!node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING)) {
                             continue;
                         }
-                        Node mpNode = node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(
+                        Node mpNode = node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING).getOtherNode(
                                 node);
                         selectedNodes.add(mpNode);
                     }
