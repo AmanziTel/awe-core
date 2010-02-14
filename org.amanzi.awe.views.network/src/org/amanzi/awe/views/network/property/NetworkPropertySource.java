@@ -25,6 +25,7 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -79,7 +80,11 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
                 }
                 descs.add(new PropertyDescriptor(key, name, category, c));
             } else {
-                descs.add(new PropertyDescriptor(key, key, PROPERTIES_CATEGORY, c));
+                NodeTypes nt = NodeTypes.getNodeType(container,null);
+                if(nt == null || !nt.getNonEditableProperties().contains(key))
+                    descs.add(new PropertyDescriptor(key, key, PROPERTIES_CATEGORY, c));
+                else
+                    descs.add(new PropertyDescriptor(key, key, NODE_CATEGORY));
             }
         }
         return descs.toArray(new IPropertyDescriptor[descs.size()]);

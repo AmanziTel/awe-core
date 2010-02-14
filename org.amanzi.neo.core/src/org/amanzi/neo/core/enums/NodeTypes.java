@@ -13,6 +13,17 @@
 
 package org.amanzi.neo.core.enums;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.utils.NeoUtils;
+import org.neo4j.api.core.NeoService;
+import org.neo4j.api.core.PropertyContainer;
+import org.neo4j.api.core.Transaction;
+
 /**
  * <p>
  * Contains all existed node types 
@@ -54,14 +65,33 @@ public enum NodeTypes {
     COUNT("count"),
     CALL_ANALYZIS("call analyzis"),
     S_ROW("s_row"),
-    GIS("gis"),
+    GIS("gis",INeoConstants.PROPERTY_NAME_NAME),
     CALL_ANALYZIS_ROOT("call analyzis root"),
-    S_CELL("s_cell");
+    S_CELL("s_cell"),
+    BSC("bsc");
     
     private final String id;
-
-    private NodeTypes(String id) {
+    private Set<String> result;
+    
+    /**
+     * 
+     * @param id node type ID
+     * @param nonEditableProperties list of not editable properties
+     */
+    private NodeTypes(String id,String... nonEditableProperties) {
         this.id = id;
+        HashSet<String> pr = new HashSet<String>();
+
+        //Geeral not editable properties for all node types
+        pr.add(INeoConstants.PROPERTY_TYPE_NAME);
+        //end
+
+        if(nonEditableProperties != null){
+            for(String property : nonEditableProperties){
+                pr.add(property);
+            }
+        }
+        result=Collections.unmodifiableSet(pr);
     }
     
     /**
@@ -70,18 +100,37 @@ public enum NodeTypes {
     public String getId() {
         return id;
     }
-//    public boolean isEqualsRule(){
-//        return true;
-//    }
+
     public static NodeTypes getEnumById(String enumId) {
         if (enumId == null) {
             return null;
         }
         for (NodeTypes call : NodeTypes.values()) {
-            if (/*call.isEqualsRule()?*/call.getId().equals(enumId)/*:enumId.startsWith(call.getId())*/) {
+            if (call.getId().equals(enumId)) {
                 return call;
             }
         }
         return null;
     }
+
+    public static NodeTypes getNodeType(PropertyContainer container,NeoService service) {
+        Transaction tx = service==null?null:service.beginTx();
+        try{
+            return getEnumById((String)container.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null));
+        }finally{
+            if (service!=null){
+                tx.finish();
+            }
+        }
+    }
+/**
+ * Returns list of not editable properties
+ *
+ * @return Collection<String> of not editable properties
+ */
+    public Collection<String> getNonEditableProperties() {
+        return result;
+    }
+    
+
 }
