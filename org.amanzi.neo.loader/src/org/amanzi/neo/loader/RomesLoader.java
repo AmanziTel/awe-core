@@ -143,7 +143,7 @@ public class RomesLoader extends DriveLoader {
     private void addDriveIndexes() {
         try {
             addIndex(NodeTypes.HEADER_M.getId(), NeoUtils.getTimeIndexProperty(dataset));
-            addIndex(NodeTypes.MP_TYPE_NAME.getId(), NeoUtils.getLocationIndexProperty(dataset));
+            addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -212,7 +212,7 @@ public class RomesLoader extends DriveLoader {
             Transaction transaction = neo.beginTx();
             try {
                 Node mp = neo.createNode();
-                mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP_TYPE_NAME.getId());
+                mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP.getId());
                 mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);                

@@ -30,7 +30,7 @@ public class PieChartItemNode extends AbstractNode {
 		super(node);
 		// TODO Auto-generated constructor stub
 		
-		 setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PIE_CHART_ITEM_NODE_TYPE.getId());
+		 setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PIE_CHART_ITEM.getId());
 	     setParameter(INeoConstants.PROPERTY_NAME_NAME, PIE_CHART_ITEM_NODE_NAME);
 	}
 	

@@ -34,7 +34,7 @@ public class INeoConstants {
     public static final String PROPERTY_TYPE_NAME = "type";
     public static final String PROPERTY_LON_NAME = "lon";
     public static final String PROPERTY_LAT_NAME = "lat";
-    public static final String DATASET_TYPE_NAME = NodeTypes.DATASET_TYPE_NAME.getId();//Constant used not only as a node type.
+    public static final String DATASET_TYPE_NAME = NodeTypes.DATASET.getId();//Constant used not only as a node type.
     public static final String PROPERTY_FILENAME_NAME = "filename";
     public static final String PROPERTY_MW_NAME = "mw";
     public static final String PROPERTY_DBM_NAME = "dbm";
@@ -72,7 +72,7 @@ public class INeoConstants {
     public static final String PROPERTY_VALUE_NAME = "value";
     public static final String PROPERTY_DISTRIBUTE_NAME = "distribute";
     public static final String PROPERTY_SELECT_NAME = "select";
-    public static final String COUNT_TYPE_NAME = NodeTypes.COUNT_TYPE_NAME.getId();//Constant used not only as a node type.
+    public static final String COUNT_TYPE_NAME = NodeTypes.COUNT.getId();//Constant used not only as a node type.
     /*
      * Which is the current or most recent selected aggregation for a gis node.
      * Used by the reuse analyser for saving state, and by the star analysis for

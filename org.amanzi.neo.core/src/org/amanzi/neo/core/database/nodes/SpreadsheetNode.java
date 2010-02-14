@@ -69,7 +69,7 @@ public class SpreadsheetNode extends AbstractNode {
 	 */
 	public SpreadsheetNode(Node node, String name) {
 		super(node);
-		setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SPREADSHEET_NODE_TYPE.getId());
+		setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SPREADSHEET.getId());
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, name);
 		
 		index = new HilbertIndex(CELL_INDEX, 3, CellNode.CELL_COLUMN, CellNode.CELL_ROW);
@@ -83,7 +83,7 @@ public class SpreadsheetNode extends AbstractNode {
      */
     protected SpreadsheetNode(Node node) {
         super(node);
-        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(NodeTypes.SPREADSHEET_NODE_TYPE.getId())) throw new RuntimeException("Expected existing Spreadsheet Node, but got "+node.toString());
+        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(NodeTypes.SPREADSHEET.getId())) throw new RuntimeException("Expected existing Spreadsheet Node, but got "+node.toString());
         
         index = new HilbertIndex(CELL_INDEX, 3, CellNode.CELL_COLUMN, CellNode.CELL_ROW);
         index.initialize(node);

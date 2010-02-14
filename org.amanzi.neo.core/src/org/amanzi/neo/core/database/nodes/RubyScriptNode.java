@@ -31,7 +31,7 @@ public class RubyScriptNode extends AbstractNode {
 	 * @param wrapped node
 	 */
 	public RubyScriptNode(Node node, String name) {
-		super(node, name, NodeTypes.SCRIPT_TYPE.getId());
+		super(node, name, NodeTypes.SCRIPT.getId());
 	}
 
    /**
@@ -41,7 +41,7 @@ public class RubyScriptNode extends AbstractNode {
      */
     private RubyScriptNode(Node node) {
         super(node);
-        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(NodeTypes.SCRIPT_TYPE.getId())) throw new RuntimeException("Expected existing Ruby Script Node, but got "+node.toString());
+        if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(NodeTypes.SCRIPT.getId())) throw new RuntimeException("Expected existing Ruby Script Node, but got "+node.toString());
     }
     
     /**

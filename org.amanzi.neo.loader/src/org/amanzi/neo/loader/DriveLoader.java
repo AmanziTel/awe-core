@@ -178,7 +178,7 @@ public abstract class DriveLoader extends AbstractLoader {
             }
         }
         Node result = neo.createNode();
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DATASET_TYPE_NAME.getId());
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DATASET.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, datasetName);
         result.setProperty(INeoConstants.DRIVE_TYPE, driveType.getId());
         return result;

@@ -131,7 +131,7 @@ public class OldNemoVersionLoader extends NemoLoader {
                 return;
             }
             Node mp = neo.createNode();
-            mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP_TYPE_NAME.getId());
+            mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP.getId());
             mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat.doubleValue());
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());

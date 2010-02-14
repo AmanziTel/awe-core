@@ -38,7 +38,7 @@ public class RubyProjectNode extends AbstractNode {
 	 */
 	public RubyProjectNode(Node node, String projectName) {
 		super(node);
-		setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.RUBY_PROJECT_NODE_TYPE.getId());
+		setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.RUBY_PROJECT.getId());
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, projectName);
 	}
 
@@ -49,7 +49,7 @@ public class RubyProjectNode extends AbstractNode {
 	 */
 	private RubyProjectNode(Node node) {
 	    super(node);
-	    if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(NodeTypes.RUBY_PROJECT_NODE_TYPE.getId())) throw new RuntimeException("Expected existing RubyProject Node, but got "+node.toString());
+	    if(!getParameter(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(NodeTypes.RUBY_PROJECT.getId())) throw new RuntimeException("Expected existing RubyProject Node, but got "+node.toString());
 	}
 	
 	/**

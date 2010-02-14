@@ -105,7 +105,7 @@ public class HilbertIndexNode {
      */
     private void createIndexNode(boolean isLastIndex) {
     	indexNode = neoService.createNode();
-        indexNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.HILBERT_INDEX_TYPE.getId());
+        indexNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.HILBERT_INDEX.getId());
         indexNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, indexName);
         indexNode.setProperty(HILBERT_INDEX_LEVEL, level);
         indexNode.setProperty(HILBERT_INDEX_ORDER, order);
@@ -212,7 +212,7 @@ public class HilbertIndexNode {
         for (Relationship relationship : referencedNode.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)) {
             Node indexNode = relationship.getEndNode();
             
-            if (indexNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.HILBERT_INDEX_TYPE.getId()) &&
+            if (indexNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.HILBERT_INDEX.getId()) &&
                 indexNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(indexName)) {
                 return new HilbertIndexNode(indexNode);
             }

@@ -40,7 +40,7 @@ public class ChartItemNode extends AbstractNode implements Comparable<ChartItemN
 		super(node);
 		// TODO Auto-generated constructor stub
 		
-		 setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CHART_ITEM_NODE_TYPE.getId());
+		 setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CHART_ITEM.getId());
 	     setParameter(INeoConstants.PROPERTY_NAME_NAME, CHART_ITEM_NODE_NAME);
 	}
 	

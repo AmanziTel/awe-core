@@ -84,7 +84,7 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             Node dataset = root.getSingleRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.INCOMING).getStartNode();
             iterator = NeoUtils.getAllProbesOfDataset(dataset, type).iterator();
         }
-        else if (type.equals(NodeTypes.PROBE_TYPE_NAME.getId())) {
+        else if (type.equals(NodeTypes.PROBE.getId())) {
             iterator = NeoUtils.getChildTraverser(statisticsNode, new ReturnableEvaluator() {
                 
                 @Override
@@ -137,7 +137,7 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
      * @return
      */
     public NeoNode getParent() {
-        if (type.equals(NodeTypes.PROBE_TYPE_NAME.getId())) {
+        if (type.equals(NodeTypes.PROBE.getId())) {
             return new CallAnalyzisNeoNode(statisticsNode, statisticsNode);
         } else if (type.equals(NodeTypes.S_ROW.getId())) {
             return new CallAnalyzisNeoNode(node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -156,10 +156,10 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
     public boolean equals(Object obj) {
         boolean result = super.equals(obj);
         if (result) {
-            if (obj instanceof CallAnalyzisNeoNode && NeoUtils.getNodeType(node, "").equals(NodeTypes.PROBE_TYPE_NAME.getId())) {
+            if (obj instanceof CallAnalyzisNeoNode && NeoUtils.getNodeType(node, "").equals(NodeTypes.PROBE.getId())) {
                 return statisticsNode.equals(((CallAnalyzisNeoNode)obj).statisticsNode);
             }
-            if (obj instanceof StatisticSelectionNode && statisticsNode != null && NeoUtils.getNodeType(node, "").equals(NodeTypes.PROBE_TYPE_NAME.getId())) {
+            if (obj instanceof StatisticSelectionNode && statisticsNode != null && NeoUtils.getNodeType(node, "").equals(NodeTypes.PROBE.getId())) {
                 StatisticSelectionNode statNode = (StatisticSelectionNode)obj;
                 Node clNode = statNode.getClarifyingNode();
                 if (statisticsNode.equals(clNode)) {

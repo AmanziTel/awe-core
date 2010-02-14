@@ -31,7 +31,7 @@ public class ReportNode extends AbstractNode {
 
     public ReportNode(Node node) {
         super(node);
-        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.REPORT_TYPE.getId());
+        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.REPORT.getId());
     }
 
     public static ReportNode fromNode(Node node) {

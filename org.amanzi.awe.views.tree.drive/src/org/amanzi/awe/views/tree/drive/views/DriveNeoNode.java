@@ -78,7 +78,7 @@ public class DriveNeoNode extends NeoNode {
      * @return
      */
     private boolean isDatasetNode() {
-        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.DATASET_TYPE_NAME.getId());
+        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.DATASET.getId());
 
     }
 
@@ -96,10 +96,10 @@ public class DriveNeoNode extends NeoNode {
      * @return
      */
     private boolean isFileNode() {
-        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.FILE_TYPE_NAME.getId());
+        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.FILE.getId());
     }
     
     private boolean isDirectoryNode() {
-    	return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.DIRECTORY_TYPE_NAME.getId());
+    	return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.DIRECTORY.getId());
     }
 }

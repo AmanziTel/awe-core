@@ -187,7 +187,7 @@ public class TransmissionLoader {
         Transaction tx = neo.beginTx();
         try {
             result = neo.createNode();
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.TRANSMISSION_TYPE_NAME.getId());
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.TRANSMISSION.getId());
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, fileName);
             network.createRelationshipTo(result, NetworkRelationshipTypes.TRANSMISSION_DATA);
             tx.success();

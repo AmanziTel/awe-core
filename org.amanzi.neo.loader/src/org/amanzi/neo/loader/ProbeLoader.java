@@ -63,7 +63,7 @@ public class ProbeLoader extends AbstractLoader{
     private void addNetworkIndexes() {
         // TODO check - use same index like sectors or new?
         try {
-            addIndex(NodeTypes.PROBE_TYPE_NAME.getId(), NeoUtils.getLocationIndexProperty(basename));
+            addIndex(NodeTypes.PROBE.getId(), NeoUtils.getLocationIndexProperty(basename));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -168,7 +168,7 @@ public class ProbeLoader extends AbstractLoader{
                 return iterator.next();
             }
             Node result = neo.createNode();
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PROBE_TYPE_NAME.getId());
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PROBE.getId());
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, probeName);
             network.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
             tx.success();

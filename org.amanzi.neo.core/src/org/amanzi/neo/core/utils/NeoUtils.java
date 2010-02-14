@@ -179,7 +179,7 @@ public class NeoUtils {
      * @return true if node is file node
      */
     public static boolean isFileNode(Node node) {
-        return node != null && NodeTypes.FILE_TYPE_NAME.getId().equals(getNodeType(node, ""));
+        return node != null && NodeTypes.FILE.getId().equals(getNodeType(node, ""));
     }
 
     /**
@@ -189,7 +189,7 @@ public class NeoUtils {
      * @return true if node is file node
      */
     public static boolean isDrivePointNode(Node node) {
-        return node != null && NodeTypes.MP_TYPE_NAME.getId().equals(getNodeType(node, ""));
+        return node != null && NodeTypes.MP.getId().equals(getNodeType(node, ""));
     }
 
     /**
@@ -199,7 +199,7 @@ public class NeoUtils {
      * @return true if node is file node
      */
     public static boolean isDatasetNode(Node node) {
-        return node != null && NodeTypes.DATASET_TYPE_NAME.getId().equals(getNodeType(node, ""));
+        return node != null && NodeTypes.DATASET.getId().equals(getNodeType(node, ""));
     }
 
     /**
@@ -219,7 +219,7 @@ public class NeoUtils {
      * @return is this node a Probe node
      */
     public static boolean isProbeNode(Node node) {
-    	return node != null && NodeTypes.PROBE_TYPE_NAME.getId().equals(getNodeType(node, ""));
+    	return node != null && NodeTypes.PROBE.getId().equals(getNodeType(node, ""));
     }
     
     /**
@@ -229,7 +229,7 @@ public class NeoUtils {
      * @return is this node a Probe Calls node
      */
     public static boolean isProbeCallsNode(Node node) {
-    	return node != null && NodeTypes.CALLS_TYPE_NAME.getId().equals(getNodeType(node, ""));
+    	return node != null && NodeTypes.CALLS.getId().equals(getNodeType(node, ""));
     }
     
     /**
@@ -239,7 +239,7 @@ public class NeoUtils {
      * @return is this node a Call node
      */
     public static boolean isCallNode(Node node) {
-    	return node != null && NodeTypes.CALL_TYPE_NAME.getId().equals(getNodeType(node, ""));
+    	return node != null && NodeTypes.CALL.getId().equals(getNodeType(node, ""));
     }
 
     /**
@@ -324,7 +324,7 @@ public class NeoUtils {
      * @return true if node is gis node
      */
     public static boolean isNeighbourNode(Node node) {
-        return node != null && NodeTypes.NEIGHBOUR_TYPE_NAME.getId().equals(getNodeType(node, ""));
+        return node != null && NodeTypes.NEIGHBOUR.getId().equals(getNodeType(node, ""));
     }
 
     /**
@@ -334,7 +334,7 @@ public class NeoUtils {
      * @return true if node is gis node
      */
     public static boolean isTransmission(Node node) {
-        return node != null && NodeTypes.TRANSMISSION_TYPE_NAME.getId().equals(getNodeType(node, ""));
+        return node != null && NodeTypes.TRANSMISSION.getId().equals(getNodeType(node, ""));
     }
 
     /**
@@ -900,7 +900,7 @@ public class NeoUtils {
             Pair<Boolean, Node> result = findOrCreateChildNode(service, parentNode, nodeName);
             if (result.getLeft()) {
                 Node node = result.getRight();
-                node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.FILE_TYPE_NAME.getId());
+                node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.FILE.getId());
                 node.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, fileName);
             }
             successTx(tx);
@@ -1146,7 +1146,7 @@ public class NeoUtils {
 			}
 			else {
 				result = service.createNode();
-				result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PROBE_TYPE_NAME.getId());
+				result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PROBE.getId());
 				result.setProperty(INeoConstants.PROPERTY_NAME_NAME, probeName);
 			
 				networkNode.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
@@ -1192,9 +1192,9 @@ public class NeoUtils {
     		}
     		else {
     			callsNode = service.createNode();
-    			callsNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALLS_TYPE_NAME.getId());
+    			callsNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALLS.getId());
     			callsNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, probesName + " - " + datasetName);
-    			callsNode.setProperty(NodeTypes.DATASET_TYPE_NAME.getId(), datasetName);
+    			callsNode.setProperty(NodeTypes.DATASET.getId(), datasetName);
     			
     			probesNode.createRelationshipTo(callsNode, ProbeCallRelationshipType.CALLS);
     			datasetNode.createRelationshipTo(callsNode, ProbeCallRelationshipType.PROBE_DATASET);
@@ -1257,7 +1257,7 @@ public class NeoUtils {
     }
     
     public static boolean isVirtualDataset(Node datasetNode) {
-    	return getNodeType(datasetNode, "").equals(NodeTypes.DATASET_TYPE_NAME.getId()) &&
+    	return getNodeType(datasetNode, "").equals(NodeTypes.DATASET.getId()) &&
     		   datasetNode.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING);
     }
 
@@ -1309,7 +1309,7 @@ public class NeoUtils {
             }
             else {
                 virtualDataset = neo.createNode();
-                virtualDataset.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DATASET_TYPE_NAME.getId());
+                virtualDataset.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DATASET.getId());
                 virtualDataset.setProperty(INeoConstants.PROPERTY_NAME_NAME, virtualDatasetName);
                 virtualDataset.setProperty(INeoConstants.DRIVE_TYPE, driveType.getId());              
                 

@@ -103,7 +103,7 @@ public class NeoNode {
 						  				  ProbeCallRelationshipType.CALLEE, Direction.INCOMING,
 						  				  ProbeCallRelationshipType.CALLER, Direction.INCOMING).iterator();
             }
-            else if (NeoUtils.getNodeType(node).equals(NodeTypes.PROBE_TYPE_NAME.getId())) {
+            else if (NeoUtils.getNodeType(node).equals(NodeTypes.PROBE.getId())) {
                 childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
                                           ProbeCallRelationshipType.CALLS, Direction.OUTGOING).iterator();
             }

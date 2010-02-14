@@ -31,7 +31,7 @@ import org.neo4j.api.core.Traverser;
 public class ChartNode extends AbstractNode {
 
 	public static final String CHART_NAME = "chart_name";
-	private static final String CHART_NODE_TYPE = NodeTypes.CHART_NODE_TYPE.getId();//Constant used not only as node type
+	private static final String CHART_NODE_TYPE = NodeTypes.CHART.getId();//Constant used not only as node type
 	private static final String CHART_NODE_NAME = "Spreadsheet Chart";
 	public static final String CHART_INDEX = "chart_index";
 
@@ -57,7 +57,7 @@ public class ChartNode extends AbstractNode {
      */    
     public void setChartType(String chartType) {
         setParameter(CHART_NODE_TYPE, chartType);
-        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CHART_NODE_TYPE.getId());
+        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CHART.getId());
     }
     /**
      * Getter for chart type
@@ -65,7 +65,7 @@ public class ChartNode extends AbstractNode {
      * @return chart type
      */
     public String getChartType() {
-        return (String)getParameter(NodeTypes.CHART_NODE_TYPE.getId());
+        return (String)getParameter(NodeTypes.CHART.getId());
     }
 	/**
 	 * Adds a Cell to Column

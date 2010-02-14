@@ -97,7 +97,7 @@ public class SplashFormatNode extends AbstractNode {
      */
     public SplashFormatNode(Node node) {
         super(node);
-        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SPLASH_FORMAT_NODE_TYPE.getId());
+        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SPLASH_FORMAT.getId());
     }
     
     /**

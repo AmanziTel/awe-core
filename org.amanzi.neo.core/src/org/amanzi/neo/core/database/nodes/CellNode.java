@@ -92,7 +92,7 @@ public class CellNode extends AbstractNode {
      */
     public CellNode(Node node) {
         super(node);        
-        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CELL_NODE_TYPE.getId());
+        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CELL.getId());
     }
     
     public void addSplashFormat(SplashFormatNode sfNode){

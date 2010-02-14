@@ -287,7 +287,7 @@ public class NetworkTreeView extends ViewPart {
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 String type = NeoUtils.getNodeType(currentPos.currentNode(), "");
-                return !(type.equals(NodeTypes.AWE_PROJECT_NODE_TYPE.getId()) || type.equals(NodeTypes.GIS.getId()))
+                return !(type.equals(NodeTypes.AWE_PROJECT.getId()) || type.equals(NodeTypes.GIS.getId()))
                         && NeoUtils.getFormatedNodeName(currentPos.currentNode(),"").toLowerCase().contains(text);
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
@@ -306,7 +306,7 @@ public class NetworkTreeView extends ViewPart {
             @Override
             public boolean isStopNode(TraversalPosition currentPos) {
                 String nodeType = NeoUtils.getNodeType(currentPos.currentNode(), "");
-                boolean result = (nodeType.equals(NodeTypes.FILE_TYPE_NAME.getId()) || nodeType.equals(NodeTypes.DATASET_TYPE_NAME.getId()));
+                boolean result = (nodeType.equals(NodeTypes.FILE.getId()) || nodeType.equals(NodeTypes.DATASET.getId()));
                 return result;
             }
         };
@@ -702,9 +702,9 @@ public class NetworkTreeView extends ViewPart {
                         || "delta_site".equals(nodeType) || "delta_sector".equals(nodeType) || "missing_sites".equals(nodeType)
                         || "missing_sectors".equals(nodeType) || "missing_site".equals(nodeType)
                         || "missing_sector".equals(nodeType) || NodeTypes.HEADER_M.getId().equalsIgnoreCase(nodeType)
-                        || NodeTypes.MP_TYPE_NAME.getId().equalsIgnoreCase(nodeType)
-                        || NodeTypes.FILE_TYPE_NAME.getId().equalsIgnoreCase(nodeType)
-                        || NodeTypes.DATASET_TYPE_NAME.getId().equalsIgnoreCase(nodeType)) {
+                        || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
+                        || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType)
+                        || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType)) {
                     for (ILayer singleLayer : layers) {
                         GeoNeo resource = singleLayer.findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
                         if (containsGisNode(resource, selectedNode)) {

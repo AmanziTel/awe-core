@@ -176,8 +176,8 @@ public class TEMSLoader extends DriveLoader {
             
             addIndex(NodeTypes.HEADER_M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(INeoConstants.HEADER_MS, NeoUtils.getTimeIndexProperty(virtualDatasetName));
-            addIndex(NodeTypes.MP_TYPE_NAME.getId(), NeoUtils.getLocationIndexProperty(dataset));
-            addMappedIndex(MS_KEY, NodeTypes.MP_TYPE_NAME.getId(), NeoUtils.getLocationIndexProperty(virtualDatasetName));
+            addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
+            addMappedIndex(MS_KEY, NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(virtualDatasetName));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -325,7 +325,7 @@ public class TEMSLoader extends DriveLoader {
                     mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                     mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
                     mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
-                    mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP_TYPE_NAME.getId());
+                    mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP.getId());
                     index(mp);
                     boolean haveEvents = false;
                     for (Map<String, Object> dataLine : data) {
@@ -375,7 +375,7 @@ public class TEMSLoader extends DriveLoader {
                     mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                     mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
                     mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
-                    mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP_TYPE_NAME.getId());
+                    mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP.getId());
                     index(MS_KEY, mp);
 
                     LinkedHashMap<String, Header> statisticHeader = getHeaderMap(2).headers;

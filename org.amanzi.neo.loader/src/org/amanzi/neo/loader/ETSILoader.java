@@ -682,7 +682,7 @@ public class ETSILoader extends DriveLoader {
         Pair<Boolean, Node> subDir = NeoUtils.findOrCreateChildNode(neo, parentNode, child);
         if (subDir.getLeft()) {
             Node directoryNode = subDir.getRight();
-            directoryNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DIRECTORY_TYPE_NAME.getId());
+            directoryNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DIRECTORY.getId());
             directoryNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, child);
             newDirectory = true;
         }
@@ -984,7 +984,7 @@ public class ETSILoader extends DriveLoader {
 	private void addDriveIndexes() {
         try {
             addIndex(NodeTypes.HEADER_M.getId(), NeoUtils.getTimeIndexProperty(dataset));
-            addIndex(NodeTypes.CALL_TYPE_NAME.getId(), NeoUtils.getTimeIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
+            addIndex(NodeTypes.CALL.getId(), NeoUtils.getTimeIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -1205,7 +1205,7 @@ public class ETSILoader extends DriveLoader {
 		Node result = null;
 		try {
 			result = neo.createNode();
-			result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_TYPE_NAME.getId());
+			result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL.getId());
 			result.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             updateTimestampMinMax(CALL_DATASET_HEADER_INDEX, timestamp);
 			index(result);

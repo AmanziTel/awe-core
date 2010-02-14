@@ -220,7 +220,7 @@ public class ETSICorrellator {
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node node = currentPos.currentNode();
                 return node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET_TYPE_NAME.getId()) &&
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId()) &&
                        node.hasProperty(INeoConstants.PROPERTY_NAME_NAME) &&
                        node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(datasetName);
             }

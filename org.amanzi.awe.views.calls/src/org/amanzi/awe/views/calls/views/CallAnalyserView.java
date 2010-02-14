@@ -500,7 +500,7 @@ public class CallAnalyserView extends ViewPart {
                             }
                             Node node = currentPos.currentNode();
                             String type = NeoUtils.getNodeType(node, "");
-                            if (type.equals(NodeTypes.CALL_TYPE_NAME.getId())) {
+                            if (type.equals(NodeTypes.CALL.getId())) {
                                 return true;
                             }
                             Relationship relation = currentPos.lastRelationshipTraversed();
