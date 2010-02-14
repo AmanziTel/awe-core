@@ -100,7 +100,12 @@ public enum NodeTypes {
     public String getId() {
         return id;
     }
-
+/**
+ * Returns NodeTypes by its ID
+ *
+ * @param enumId id of Node Type
+ * @return NodeTypes or null
+ */
     public static NodeTypes getEnumById(String enumId) {
         if (enumId == null) {
             return null;
@@ -112,7 +117,13 @@ public enum NodeTypes {
         }
         return null;
     }
-
+/**
+ * returns type of node
+ *
+ * @param container PropertyContainer
+ * @param service NeoService
+ * @return type of node 
+ */
     public static NodeTypes getNodeType(PropertyContainer container,NeoService service) {
         Transaction tx = service==null?null:service.beginTx();
         try{
