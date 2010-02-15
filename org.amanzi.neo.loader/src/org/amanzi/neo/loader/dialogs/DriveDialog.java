@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -650,7 +651,12 @@ public class DriveDialog {
     protected String[] getFilterExtensions() {
         Node datasetNode = dataset.get(cDataset.getText());
         if (datasetNode == null) {
-            return DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.NEMO1, DriveTypes.NEMO2);
+            String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.NEMO1, DriveTypes.NEMO2);
+            ArrayList<String> fel = new ArrayList<String>(fileExtensions.length + 1);
+            fel.add("*.FMT;*.fmt;*.ASC;*.asc;*.dt1;*.DT1;*.NMF;*.nmf");
+            fel.addAll(Arrays.asList(fileExtensions));
+            String[] result = fel.toArray(new String[0]);
+            return result;
         } else {
             return DriveTypes.getFileExtensions(NeoUtils.getDatasetType(datasetNode, null));
         }
@@ -664,7 +670,12 @@ public class DriveDialog {
     protected String[] getFilerNames() {
         Node datasetNode = dataset.get(cDataset.getText());
         if (datasetNode == null) {
-            return DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.NEMO1, DriveTypes.NEMO2);
+            String[] fileDescriptions = DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.NEMO1, DriveTypes.NEMO2);
+            ArrayList<String> fdl = new ArrayList<String>(fileDescriptions.length + 1);
+            fdl.add("All Files (*.*)");
+            fdl.addAll(Arrays.asList(fileDescriptions));
+            String[] result = fdl.toArray(new String[0]);
+            return result;
         } else {
             return DriveTypes.getFileDescriptions(NeoUtils.getDatasetType(datasetNode, null));
         }
