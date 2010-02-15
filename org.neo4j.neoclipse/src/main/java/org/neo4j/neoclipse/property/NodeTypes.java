@@ -11,14 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.core.enums;
-
+package org.neo4j.neoclipse.property;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.PropertyContainer;
 import org.neo4j.api.core.Transaction;
@@ -31,9 +29,9 @@ import org.neo4j.api.core.Transaction;
  * @since 1.0.0
  */
 public enum NodeTypes {
-    // TODO: Enum has a cop: org.neo4j.neoclipse.property.NodeTypes
-    // TODO: Copy needed for fully implementation of Feature #962
-    // TODO: All changes must be reflected in copy
+//    TODO:   Copy of org.amanzi.neo.core.enums.NodeTypes
+//    TODO:   needed for fully implementation of Feature #962
+//    TODO:   All changes must be reflected in original enum
     GIS_PROPERTY("gis_property_type"),
     SITE("site"),
     TRANSMISSION("transmission"),
@@ -67,7 +65,7 @@ public enum NodeTypes {
     COUNT("count"),
     CALL_ANALYZIS("call analyzis"),
     S_ROW("s_row"),
-    GIS("gis",INeoConstants.PROPERTY_NAME_NAME),
+    GIS("gis","name"),
     CALL_ANALYZIS_ROOT("call analyzis root"),
     S_CELL("s_cell"),
     BSC("bsc");
@@ -85,7 +83,7 @@ public enum NodeTypes {
         HashSet<String> pr = new HashSet<String>();
 
         //Geeral not editable properties for all node types
-        pr.add(INeoConstants.PROPERTY_TYPE_NAME);
+        pr.add("type");
         //end
 
         if(nonEditableProperties != null){
@@ -129,7 +127,7 @@ public enum NodeTypes {
     public static NodeTypes getNodeType(PropertyContainer container,NeoService service) {
         Transaction tx = service==null?null:service.beginTx();
         try{
-            return getEnumById((String)container.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null));
+            return getEnumById((String)container.getProperty("type", null));
         }finally{
             if (service!=null){
                 tx.finish();
