@@ -43,6 +43,7 @@ public class DataLoadPreferences {
     public static final String PR_LONGITUDE = "PR_LONGITUDE";
     
 	// network site loader headers
+    public static final String NS_SITE = "NS_SITE";
     public static final String NS_BEAMWIDTH = "NS_BEAMWIDTH";
     public static final String NS_AZIMUTH = "NS_AZIMUTH";
     

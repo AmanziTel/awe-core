@@ -56,6 +56,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.PR_LATITUDE, "lat.*, .*latitude.*");
         pref.setDefault(DataLoadPreferences.PR_LONGITUDE, "long.*, .*longitude.*");
         
+        pref.setDefault(DataLoadPreferences.NS_SITE, "SITE_ID");
         pref.setDefault(DataLoadPreferences.NS_AZIMUTH, ".*azimuth.*");
         pref.setDefault(DataLoadPreferences.NS_BEAMWIDTH, ".*beamwidth.*, beam, hbw");
         

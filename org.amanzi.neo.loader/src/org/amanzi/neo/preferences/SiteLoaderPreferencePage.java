@@ -31,7 +31,8 @@ public class SiteLoaderPreferencePage extends FieldEditorPreferencePage implemen
         marginPanel.setLayout(layout);
 
         int width = 53;
-		addField(new StringFieldEditor(DataLoadPreferences.NS_BEAMWIDTH, NeoLoaderPluginMessages.PrefSite_field_beamwidth, width,marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NS_SITE, NeoLoaderPluginMessages.PrefSite_field_site, width,marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NS_BEAMWIDTH, NeoLoaderPluginMessages.PrefSite_field_beamwidth, width,marginPanel));
         addField(new StringFieldEditor(DataLoadPreferences.NS_AZIMUTH, NeoLoaderPluginMessages.PrefSite_field_azimuth,width, marginPanel));
     }
 

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.Node;
@@ -149,7 +150,7 @@ public class NetworkSiteLoader extends AbstractLoader {
     private void initializeKnownHeaders() {
         needParceHeader = true;
         // Known headers that are not sector data properties
-        addMainHeader(SITE_ID_KEY, new String[] {"SITE_ID"});
+        addMainHeader(SITE_ID_KEY, getPossibleHeaders(DataLoadPreferences.NS_SITE));
         // addMainHeader("type", new String[] {"TYPE"});
         // Stop statistics collection for properties we will not save to the sector
         addNonDataHeaders(1, mainHeaders);
@@ -158,8 +159,8 @@ public class NetworkSiteLoader extends AbstractLoader {
         useMapper(1, SITE_ID_KEY, new StringMapper());
 
         // Known headers that are sector data properties
-        addKnownHeader(1, "beamwidth", new String[] {".*beamwidth.*", "beam", "hbw"});
-        addKnownHeader(1, "azimuth", new String[] {".*azimuth.*"});
+        addKnownHeader(1, "beamwidth", getPossibleHeaders(DataLoadPreferences.NS_BEAMWIDTH));
+        addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NS_AZIMUTH));
     }
 
     private class NetworkHeader {
