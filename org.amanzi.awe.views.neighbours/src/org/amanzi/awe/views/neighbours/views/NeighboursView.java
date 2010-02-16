@@ -35,8 +35,8 @@ import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.RelationWrapper;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
@@ -180,7 +180,7 @@ public class NeighboursView extends ViewPart {
                     network = null;
                 } else {
                     network = input.iterator().hasNext() ? NeoUtils.findNodeByChild(input.iterator().next(),
-                            NetworkElementTypes.NETWORK.toString()) : null;
+                            NodeTypes.NETWORK.getId()) : null;
                     if (network == null) {
                         input = new ArrayList<Node>(0);
                     } else {
@@ -215,7 +215,7 @@ public class NeighboursView extends ViewPart {
             Iterator<Relationship> iterator = new InputIterator(input, neighbour);
             int count = 0;
             while (iterator.hasNext() && ++count < MAX_FIELD) {
-                Relationship relation = (Relationship)iterator.next();
+                Relationship relation = iterator.next();
                 results.add(new RelationWrapper(relation));
             }
             return results.toArray(emptyArray);
@@ -233,8 +233,8 @@ public class NeighboursView extends ViewPart {
          */
         public class InputIterator implements Iterator<Relationship> {
 
-            private String name;
-            private Iterator<Node> iterator1;
+            private final String name;
+            private final Iterator<Node> iterator1;
             private Iterator<Node> nodeIterator;
             private Iterator<Relationship> iterator2;
 
@@ -337,7 +337,7 @@ public class NeighboursView extends ViewPart {
     class ViewLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider, ITableColorProvider {
         /** int DEF_SIZE field */
         protected static final int DEF_SIZE = 100;
-        private ArrayList<String> columns = new ArrayList<String>();
+        private final ArrayList<String> columns = new ArrayList<String>();
 
         public String getColumnText(Object obj, int index) {
             // Transaction tx = NeoUtils.beginTransaction();
@@ -544,7 +544,8 @@ public class NeighboursView extends ViewPart {
     /**
      * This is a callback that will allow us to create the viewer and initialize it.
      */
-	public void createPartControl(Composite parent) {
+	@Override
+    public void createPartControl(Composite parent) {
         color1 = new Color(Display.getCurrent(), 240, 240, 240);
         color2 = new Color(Display.getCurrent(), 255, 255, 255);
         sortOrder = 0;
@@ -776,7 +777,8 @@ public class NeighboursView extends ViewPart {
     /**
 	 * Passing the focus request to the viewer's control.
 	 */
-	public void setFocus() {
+	@Override
+    public void setFocus() {
 		viewer.getControl().setFocus();
 	}
 
@@ -812,9 +814,9 @@ public class NeighboursView extends ViewPart {
      */
     public class NeighbourEditableSupport extends EditingSupport {
 
-        private String name;
-        private Class valueClass;
-        private CellEditor editor;
+        private final String name;
+        private final Class valueClass;
+        private final CellEditor editor;
         private String value;
 
         /**
