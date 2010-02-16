@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -159,7 +160,7 @@ public class ReuseAnalyserView extends ViewPart {
 
     /** Maximum bars in chart */
     private static final int MAXIMUM_BARS = 1500;
-    private Map<String, String[]> aggregatedProperties = new HashMap<String, String[]>();
+    private final Map<String, String[]> aggregatedProperties = new HashMap<String, String[]>();
     private Label gisSelected;
     private Combo gisCombo;
     private Label propertySelected;
@@ -225,6 +226,7 @@ public class ReuseAnalyserView extends ViewPart {
     // error messages for statistic calculation
     private String errorMsg = UNKNOWN_ERROR;
 
+    @Override
     public void createPartControl(Composite parent) {
         aggregatedProperties.clear();
         mainView = parent;
@@ -1257,8 +1259,8 @@ public class ReuseAnalyserView extends ViewPart {
 
     private class ComputeStatisticsJob extends Job {
 
-        private Node gisNode;
-        private String propertyName;
+        private final Node gisNode;
+        private final String propertyName;
         private Node node;
         private final String distribute;
         private final String select;
@@ -1432,7 +1434,7 @@ public class ReuseAnalyserView extends ViewPart {
     /**
      * Collect statistics on the selected property.
      * 
-     * @param gisNode GIS node
+     * @param gisNode GIS node (or network for site)
      * @param aggrNode
      * @param propertyName name of property
      * @param monitor
@@ -1451,7 +1453,8 @@ public class ReuseAnalyserView extends ViewPart {
         boolean isAggregatedProperty = isAggregatedProperty(propertyName);
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
         //List<Number> aggregatedValues = new ArrayList<Number>();
-        GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
+        gisNode= NeoUtils.findGisNodeByChild(gisNode);
+        GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(),gisNode);
         final GisTypes typeOfGis = geoNode.getGisType();
         if (typeOfGis == GisTypes.DRIVE) {
             Node gisDataset = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(gisNode);
@@ -1585,7 +1588,7 @@ public class ReuseAnalyserView extends ViewPart {
         default:
             break;
         }
-        if (distribute != Distribute.AUTO && range > 0 && (double)(max - min) / (double)range > MAXIMUM_BARS) {
+        if (distribute != Distribute.AUTO && range > 0 && (max - min) / range > MAXIMUM_BARS) {
             errorMsg = ERROR_MSG;
             return false;
         }
@@ -1874,7 +1877,7 @@ public class ReuseAnalyserView extends ViewPart {
         default:
             break;
         }
-        if (distribute != Distribute.AUTO && range > 0 && (double)(max - min) / (double)range > MAXIMUM_BARS) {
+        if (distribute != Distribute.AUTO && range > 0 && (max - min) / range > MAXIMUM_BARS) {
             return false;
         }
         ArrayList<Column> keySet = new ArrayList<Column>();
@@ -2022,7 +2025,7 @@ public class ReuseAnalyserView extends ViewPart {
         default:
             break;
         }
-        if (distribute != Distribute.AUTO && range > 0 && (double)(max - min) / (double)range > MAXIMUM_BARS) {
+        if (distribute != Distribute.AUTO && range > 0 && (max - min) / range > MAXIMUM_BARS) {
             return false;
         }
         ArrayList<Column> keySet = new ArrayList<Column>();
@@ -2153,7 +2156,7 @@ public class ReuseAnalyserView extends ViewPart {
             Double max = null;
             Double first = null;
             int count = 0;
-            double sum = (double)0;
+            double sum = 0;
             for (String singleProperties : aggregatedProperties.get(propertyName)) {
                 if (node.hasProperty(singleProperties)) {
                     propertyValue = node.getProperty(singleProperties);
@@ -2169,7 +2172,7 @@ public class ReuseAnalyserView extends ViewPart {
             }
             switch (select) {
             case AVERAGE:
-                return count == 0 ? null : sum / (double)count;
+                return count == 0 ? null : sum / count;
             case MAX:
                 return max;
             case MIN:
@@ -2197,7 +2200,7 @@ public class ReuseAnalyserView extends ViewPart {
         Double max = null;
         Double first = null;
         int count = 0;
-        double sum = (double)0;
+        double sum = 0;
         for (Relationship relation : NeoUtils.getTransmissionRelations(node, neighbourName)) {
 
             if (relation.hasProperty(propertyName)) {
@@ -2214,7 +2217,7 @@ public class ReuseAnalyserView extends ViewPart {
         }
         switch (select) {
         case AVERAGE:
-            return count == 0 ? null : sum / (double)count;
+            return count == 0 ? null : sum / count;
         case MAX:
             return max;
         case MIN:
@@ -2240,7 +2243,7 @@ public class ReuseAnalyserView extends ViewPart {
         Double max = null;
         Double first = null;
         int count = 0;
-        double sum = (double)0;
+        double sum = 0;
         for (Relationship relation : NeoUtils.getNeighbourRelations(node, neighbourName)) {
 
             if (relation.hasProperty(propertyName)) {
@@ -2257,7 +2260,7 @@ public class ReuseAnalyserView extends ViewPart {
         }
         switch (select) {
         case AVERAGE:
-            return count == 0 ? null : sum / (double)count;
+            return count == 0 ? null : sum / count;
         case MAX:
             return max;
         case MIN:
@@ -2556,6 +2559,10 @@ public class ReuseAnalyserView extends ViewPart {
                         Node neigh = ret.getOtherNode(node);
                         members.put(id + "-> " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
                     }
+                    Node networkNode = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node);
+                    if (networkNode.hasRelationship(GeoNeoRelationshipTypes.PROPERTIES,Direction.OUTGOING)){
+                        members.put(id + "(site data)", networkNode);
+                    }
                 }
             }
         }
@@ -2744,17 +2751,27 @@ public class ReuseAnalyserView extends ViewPart {
      * @since 1.0.0
      */
     private static final class PropertyReturnableEvalvator implements ReturnableEvaluator {
-
-
+        private final HashSet<String> propertyList;
+        public PropertyReturnableEvalvator(){
+            super();
+            propertyList=new HashSet<String>();
+            propertyList.add(NodeTypes.HEADER_M.getId());
+            propertyList.add(NodeTypes.SECTOR.getId());
+            propertyList.add(NodeTypes.HEADER_MS.getId());
+            propertyList.add(NodeTypes.PROBE.getId());
+            propertyList.add(NodeTypes.CALL.getId());
+            
+        }
+        public PropertyReturnableEvalvator(NodeTypes propertyType){
+            super();
+            propertyList=new HashSet<String>();
+            propertyList.add(propertyType.getId());
+        }       
         @Override
         public boolean isReturnableNode(TraversalPosition traversalposition) {
             Node curNode = traversalposition.currentNode();
             Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-            //TODO: Lagutko: use from constants
-            // TODO optimize
-            return type != null
-                    && (NodeTypes.HEADER_M.getId().equals(type) || "sector".equals(type) || INeoConstants.HEADER_MS.equals(type) || NodeTypes.CALL.getId()
-                            .equals(type));
+            return type != null&&propertyList.contains(type);
             }
         }
 
@@ -2773,7 +2790,7 @@ public class ReuseAnalyserView extends ViewPart {
 
         private Node aggrNode;
         private List<String> rowList = new ArrayList<String>();
-        private List<ChartNode> nodeList = Collections.synchronizedList(new LinkedList<ChartNode>());
+        private final List<ChartNode> nodeList = Collections.synchronizedList(new LinkedList<ChartNode>());
 
         /**
          * @return Returns the nodeList.
@@ -2853,7 +2870,7 @@ public class ReuseAnalyserView extends ViewPart {
                                 .iterator();
                         nodeList.clear();
                         while (iteratorChild.hasNext()) {
-                            Node node = (Node)iteratorChild.next();
+                            Node node = iteratorChild.next();
                             nodeList.add(new ChartNode(node));
                         }
                         return Status.OK_STATUS;
@@ -2945,9 +2962,9 @@ public class ReuseAnalyserView extends ViewPart {
      * @since 1.0.0
      */
     private static class ChartNode implements Comparable<ChartNode> {
-        private Node node;
-        private Double nodeKey;
-        private String columnValue;
+        private final Node node;
+        private final Double nodeKey;
+        private final String columnValue;
         private Color color;
 
         ChartNode(Node aggrNode) {
@@ -3042,6 +3059,7 @@ public class ReuseAnalyserView extends ViewPart {
          * @param column the category.
          * @return The item color.
          */
+        @Override
         public Paint getItemPaint(final int row, final int column) {
             ChartNode col = dataset.getNodeList().get(column);
             return col == null || col.getColor() == null ? DEFAULT_COLOR : col.getColor();
@@ -3115,8 +3133,8 @@ public class ReuseAnalyserView extends ViewPart {
         if(factor<0.0) factor = 0F;
         if(factor>1.0) factor = 1F;
         float complement = 1.0F - factor;
-        return new RGB((int)(complement * (float)bg.red + factor * (float)fg.red), (int)(complement * (float)bg.green + factor
-                * (float)fg.green), (int)(complement * (float)bg.blue + factor * (float)fg.blue));
+        return new RGB((int)(complement * bg.red + factor * fg.red), (int)(complement * bg.green + factor
+                * fg.green), (int)(complement * bg.blue + factor * fg.blue));
     }
     /**
      * Generates report based on selected values
