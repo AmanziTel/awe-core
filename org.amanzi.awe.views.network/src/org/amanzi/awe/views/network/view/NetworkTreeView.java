@@ -50,7 +50,6 @@ import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -173,6 +172,7 @@ public class NetworkTreeView extends ViewPart {
     /**
      * This is a callback that will allow us to create the viewer and initialize it.
      */
+    @Override
     public void createPartControl(Composite parent) {
 
         tSearch = new Text(parent, SWT.BORDER);
@@ -416,6 +416,7 @@ public class NetworkTreeView extends ViewPart {
     private void fillContextMenu(IMenuManager manager) {
         // TODO remove all disabled part of menu??
         manager.add(new Action("Properties") {
+            @Override
             public void run() {
                 try {
                     PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
@@ -431,6 +432,7 @@ public class NetworkTreeView extends ViewPart {
             manager.add(revertAction);
         }
         manager.add(new Action("Refresh") {
+            @Override
             public void run() {
                 viewer.refresh(((IStructuredSelection)viewer.getSelection()).getFirstElement());
             }
@@ -438,6 +440,7 @@ public class NetworkTreeView extends ViewPart {
         manager.add(new DeltaReportAction());
         manager.add(new GenerateReportFileAction());
         manager.add(new Action("Show in database graph") {
+            @Override
             public void run() {
                 IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
                 showSelection((NeoNode)selection.getFirstElement());
@@ -449,6 +452,7 @@ public class NetworkTreeView extends ViewPart {
             }
         });
         manager.add(new Action("Show in active map") {
+            @Override
             public void run() {
                 IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
                 showSelectionOnMap((NeoNode)selection.getFirstElement());
@@ -590,6 +594,7 @@ public class NetworkTreeView extends ViewPart {
 
     }
 
+    @Override
     public void dispose() {
         if (propertySheetPage != null) {
             propertySheetPage.dispose();
@@ -604,6 +609,7 @@ public class NetworkTreeView extends ViewPart {
     /**
      * Passing the focus request to the viewer's control.
      */
+    @Override
     public void setFocus() {
         viewer.getControl().setFocus();
     }
@@ -696,12 +702,12 @@ public class NetworkTreeView extends ViewPart {
                     return;
                 }
                 String nodeType = selectedNode.getType();
-                if (NetworkElementTypes.SITE.toString().equals(nodeType) || NetworkElementTypes.SECTOR.toString().equals(nodeType)
-                        || NetworkElementTypes.CITY.toString().equals(nodeType)
-                        || NetworkElementTypes.BSC.toString().equals(nodeType) || "delta_network".equals(nodeType)
-                        || "delta_site".equals(nodeType) || "delta_sector".equals(nodeType) || "missing_sites".equals(nodeType)
-                        || "missing_sectors".equals(nodeType) || "missing_site".equals(nodeType)
-                        || "missing_sector".equals(nodeType) || NodeTypes.HEADER_M.getId().equalsIgnoreCase(nodeType)
+                if (NodeTypes.SITE.getId().equals(nodeType) || NodeTypes.SECTOR.getId().equals(nodeType)
+                        || NodeTypes.CITY.getId().equals(nodeType)
+                        || NodeTypes.BSC.getId().equals(nodeType) || NodeTypes.DELTA_NETWORK.getId().equals(nodeType)
+                        || NodeTypes.DELTA_SITE.getId().equals(nodeType) || NodeTypes.DELTA_SECTOR.getId().equals(nodeType) || NodeTypes.MISSING_SITES.getId().equals(nodeType)
+                        || NodeTypes.MISSING_SECTORS.getId().equals(nodeType) || NodeTypes.MISSING_SITE.getId().equals(nodeType)
+                        || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.HEADER_M.getId().equalsIgnoreCase(nodeType)
                         || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
                         || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType)
                         || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType)) {
@@ -766,6 +772,7 @@ public class NetworkTreeView extends ViewPart {
 
     private class NeoServiceEventListener extends NeoServiceProviderEventAdapter {
 
+        @Override
         public void onNeoStop(Object source) {
             neoServiceProvider.shutdown();
         }
@@ -773,6 +780,7 @@ public class NetworkTreeView extends ViewPart {
         /**
          * If some data was committed to database than we must refresh content of TreeView
          */
+        @Override
         public void onNeoCommit(Object source) {
             // TODO: Only modify part of tree specific to data modified
             viewer.getControl().getDisplay().syncExec(new Runnable() {
@@ -859,7 +867,7 @@ public class NetworkTreeView extends ViewPart {
     private class RenameAction extends Action {
 
         private boolean enabled;
-        private String text;
+        private final String text;
         private Node node = null;
         private NeoNode neoNode;
 
@@ -1072,7 +1080,7 @@ public class NetworkTreeView extends ViewPart {
      * @since 1.0.0
      */
     private class DeleteAction extends Action {
-        private List<NeoNode> nodesToDelete;
+        private final List<NeoNode> nodesToDelete;
         private String text = null;
         private boolean interactive = false;
 
@@ -1804,9 +1812,9 @@ public class NetworkTreeView extends ViewPart {
     }
 
     private static class DeltaSite {
-        private String name;
-        private HashMap<String, Node> nodes = new HashMap<String, Node>();
-        private HashMap<String, HashMap<String, Pair>> deltas = new HashMap<String, HashMap<String, Pair>>();
+        private final String name;
+        private final HashMap<String, Node> nodes = new HashMap<String, Node>();
+        private final HashMap<String, HashMap<String, Pair>> deltas = new HashMap<String, HashMap<String, Pair>>();
 
         public DeltaSite(String name, String network, Node node) {
             this.name = name;
@@ -1817,6 +1825,7 @@ public class NetworkTreeView extends ViewPart {
             return name;
         }
 
+        @Override
         public String toString() {
             return name;
         }
@@ -1897,6 +1906,7 @@ public class NetworkTreeView extends ViewPart {
                 return left == right || left != null && left.equals(right);
             }
 
+            @Override
             public String toString() {
                 return left.toString() + " <=> " + right + typeChanged();
             }

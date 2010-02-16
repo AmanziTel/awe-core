@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -92,6 +91,7 @@ public class Root extends NeoNode {
      * Returns all Network Nodes of database
      */
     
+    @Override
     public NeoNode[] getChildren() {
         ArrayList<NeoNode> networkNodes = new ArrayList<NeoNode>();
         HashMap<String,NeoNode> deltaNodes = new HashMap<String,NeoNode>();
@@ -111,7 +111,7 @@ public class Root extends NeoNode {
                 if (gisNode != null) {
                     for (Relationship gisRelationship : gisNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
                         node = gisRelationship.getEndNode();
-                        if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NetworkElementTypes.NETWORK.toString())) {
+                        if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.NETWORK.getId())) {
                             networkNodes.add(new NeoNode(node));
                             for (Relationship deltaRelationship : node.getRelationships(NetworkRelationshipTypes.DELTA_REPORT, Direction.INCOMING)) {
                                 Node deltaNode = deltaRelationship.getStartNode();
@@ -146,6 +146,7 @@ public class Root extends NeoNode {
      * String representation of Root
      */
     
+    @Override
     public String toString() {
         return serviceProvider.getDefaultDatabaseLocation();        
     }
@@ -160,6 +161,7 @@ public class Root extends NeoNode {
         return serviceProvider.getDefaultDatabaseLocation();
     }
     
+    @Override
     public boolean hasChildren() {
         return true;
     }
