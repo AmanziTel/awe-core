@@ -45,7 +45,7 @@ public class LoaderUtils {
      * @return milliwatts
      */
     public static final double dbm2mw(int dbm) {
-        return Math.pow(10.0, (((float)dbm) / 10.0));
+        return Math.pow(10.0, ((dbm) / 10.0));
     }
 
     /**
@@ -106,6 +106,12 @@ public class LoaderUtils {
             for (String header : getPossibleHeaders(DataLoadPreferences.NH_SECTOR)) {
                 if (headers.contains(header)) {
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.RADIO_SECTOR, null);
+                }
+            }
+            //TODO use preference page
+            for (String header : new String[]{"Near end Name","Near End Site No","Far end Name","Far End Site No"}) {
+                if (headers.contains(header)) {
+                    return new Pair<NetworkFileType, Exception>(NetworkFileType.TRANSMISSION, null);
                 }
             }
             return new Pair<NetworkFileType, Exception>(null, null);
