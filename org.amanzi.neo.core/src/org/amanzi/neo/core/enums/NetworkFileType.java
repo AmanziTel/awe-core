@@ -13,12 +13,6 @@
 
 package org.amanzi.neo.core.enums;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-
-import org.amanzi.neo.core.NeoCorePlugin;
 
 /**
  * TODO Purpose of 
@@ -29,24 +23,42 @@ import org.amanzi.neo.core.NeoCorePlugin;
  * @since 1.0.0
  */
 public enum NetworkFileType {
-    SITE, SECTOR, PROBE, NEIGHBOUR, TRANSMISSION;
+    RADIO_SITE("radio network sites"), RADIO_SECTOR("radio network sectors"), TRANSMISSION("transmission"), NEIGHBOUR("neighbour"), PROBE("probe");
 
-    public static NetworkFileType getType(File networkFile) {
-        // TODO implement!
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(networkFile)));
-            String line = reader.readLine();
-            reader.close();
-            if (line.toLowerCase().contains("probe")) {
-                return PROBE;
-            } else {
-                return SECTOR;
-            }
-        } catch (Exception e) {
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
-            return null;
-        }
+    private String id;
 
+    /**
+     * constructor
+     * 
+     * @param id node type ID
+     * @param nonEditableProperties list of not editable properties
+     */
+    private NetworkFileType(String id) {
+        this.id = id;
     }
 
+    /**
+     * @return Returns the id.
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Returns NetworkTypes by its ID
+     * 
+     * @param enumId id of Node Type
+     * @return NodeTypes or null
+     */
+    public static NetworkFileType getEnumById(String enumId) {
+        if (enumId == null) {
+            return null;
+        }
+        for (NetworkFileType enumElem : NetworkFileType.values()) {
+            if (enumElem.getId().equals(enumId)) {
+                return enumElem;
+            }
+        }
+        return null;
+    }
 }
