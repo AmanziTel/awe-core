@@ -13,7 +13,7 @@
 package org.amanzi.awe.views.tree.drive.views;
 
 import org.amanzi.awe.views.network.view.NetworkTreeView;
-import org.amanzi.neo.core.enums.NetworkElementTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.ui.PlatformUI;
@@ -58,7 +58,7 @@ public class DriveTreeView extends NetworkTreeView {
             @Override
             public boolean isStopNode(TraversalPosition currentPos) {
                 String nodeType = NeoUtils.getNodeType(currentPos.currentNode(), "");
-                boolean result = nodeType.equals(NetworkElementTypes.NETWORK.toString());
+                boolean result = nodeType.equals(NodeTypes.NETWORK.getId());
                 return result;
             }
         };
