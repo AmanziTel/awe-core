@@ -47,10 +47,9 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.CSVParser;
@@ -78,8 +77,6 @@ import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -107,8 +104,8 @@ public abstract class AbstractLoader {
     private boolean headerWasParced;
     // private ArrayList<MultiPropertyIndex<?>> indexes = new
     // ArrayList<MultiPropertyIndex<?>>();
-    private LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>> indexes = new LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>>();
-    private LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>> mappedIndexes = new LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>>();
+    private final LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>> indexes = new LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>>();
+    private final LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>> mappedIndexes = new LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>>();
 
     @SuppressWarnings("unchecked")
     public static final Class[] NUMERIC_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class};
@@ -268,6 +265,7 @@ public abstract class AbstractLoader {
             super(old);
         }
 
+        @Override
         Integer parse(String field) {
             if (invalid(field))
                 return null;
@@ -275,10 +273,12 @@ public abstract class AbstractLoader {
             return (Integer)incValue(Integer.parseInt(field));
         }
 
+        @Override
         boolean shouldConvert() {
             return false;
         }
 
+        @Override
         Class<Integer> knownType() {
             return Integer.class;
         }
@@ -289,6 +289,7 @@ public abstract class AbstractLoader {
             super(old);
         }
 
+        @Override
         Long parse(String field) {
             if (invalid(field))
                 return null;
@@ -296,10 +297,12 @@ public abstract class AbstractLoader {
             return (Long)incValue(Long.parseLong(field));
         }
 
+        @Override
         boolean shouldConvert() {
             return false;
         }
 
+        @Override
         Class<Long> knownType() {
             return Long.class;
         }
@@ -310,6 +313,7 @@ public abstract class AbstractLoader {
             super(old);
         }
 
+        @Override
         Float parse(String field) {
             if (invalid(field))
                 return null;
@@ -317,10 +321,12 @@ public abstract class AbstractLoader {
             return (Float)incValue(Float.parseFloat(field));
         }
 
+        @Override
         boolean shouldConvert() {
             return false;
         }
 
+        @Override
         Class<Float> knownType() {
             return Float.class;
         }
@@ -331,6 +337,7 @@ public abstract class AbstractLoader {
             super(old);
         }
 
+        @Override
         String parse(String field) {
             if (invalid(field))
                 return null;
@@ -338,10 +345,12 @@ public abstract class AbstractLoader {
             return (String)incValue(field);
         }
 
+        @Override
         boolean shouldConvert() {
             return false;
         }
 
+        @Override
         Class<String> knownType() {
             return String.class;
         }
@@ -352,9 +361,9 @@ public abstract class AbstractLoader {
     }
 
     protected class MappedHeaderRule {
-        private String name;
+        private final String name;
         protected String key;
-        private PropertyMapper mapper;
+        private final PropertyMapper mapper;
 
         MappedHeaderRule(String name, String key, PropertyMapper mapper) {
             this.key = key;
@@ -392,6 +401,7 @@ public abstract class AbstractLoader {
             // the original
         }
 
+        @Override
         Object parse(String field) {
             if (invalid(field))
                 return null;
@@ -404,10 +414,12 @@ public abstract class AbstractLoader {
             return incValue(result);
         }
 
+        @Override
         boolean shouldConvert() {
             return false;
         }
 
+        @Override
         Class< ? extends Object> knownType() {
             return knownClass;
         }
@@ -1165,6 +1177,8 @@ public abstract class AbstractLoader {
 
 
 
+
+
     /**
      * Search the database for the 'gis' node for this dataset. If none found it created an
      * appropriate node. The search is done for 'gis' nodes that reference the specified main node.
@@ -1174,33 +1188,24 @@ public abstract class AbstractLoader {
      * @param mainNode main network or drive data node
      * @return gis node for mainNode
      */
-    protected final Node findOrCreateGISNode(Node mainNode, String gisType) {
-        String gisName = NeoUtils.getNodeName(mainNode, neo);
+    protected final Node findOrCreateGISNode(String gisName, String gisType, NetworkTypes fileType) {
         GisProperties gisProperties = gisNodes.get(gisName);
-        
+
         if (gisProperties == null) {
             Transaction transaction = neo.beginTx();
             try {
                 Node reference = neo.getReferenceNode();
-                
+
                 Node gis = NeoUtils.findGisNode(gisName, neo);
                 if (gis == null) {
-                    gis = findMatchingGisNode(gisName, gisType);
-                    // TODO analyse this code on bugs
-                    if (gis == null) {
-                        gis = NeoUtils.createGISNode(reference, gisName, gisType, neo);
-                    } else {
-                        deleteOldGisNodes(gisName, gisType, gis);
+                    gis = neo.createNode();
+                    gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS.getId());
+                    gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, gisName);
+                    gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
+                    if (fileType != null) {
+                        gis.setProperty(NetworkTypes.PROPERTY_NAME, fileType.getId());
                     }
-                    boolean hasRelationship = false;
-                    for (Relationship relation : gis.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
-                        if (relation.getEndNode().equals(mainNode)) {
-                            hasRelationship = true;
-                        }
-                    }
-                    if (!hasRelationship) {
-                        gis.createRelationshipTo(mainNode, GeoNeoRelationshipTypes.NEXT);
-                    }
+                    reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
                 }
                 gisProperties = new GisProperties(gis);
                 gisNodes.put(gisName, gisProperties);
@@ -1209,50 +1214,11 @@ public abstract class AbstractLoader {
                 transaction.finish();
             }
         }
+        // TODO add check on correct type!
         return gisProperties.getGis();
     }
 
-    private Traverser makeGisTraverser(final String name, final String gisType) {
-        Traverser tr = neo.getReferenceNode().traverse(
-                Order.BREADTH_FIRST,
-                new StopEvaluator() {
 
-                    @Override
-                    public boolean isStopNode(TraversalPosition currentPos) {
-                        return currentPos.depth() > 3;
-                    }
-                },
-                new ReturnableEvaluator() {
-
-                    @Override
-                    public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.GIS.getId())
-                                && currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(name)
-                                && currentPos.currentNode().getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").equals(gisType);
-                    }
-                }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
-                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-        return tr;
-    }
-
-    private Node findMatchingGisNode(String name, String gisType) {
-        java.util.Iterator<Node> it = makeGisTraverser(name, gisType).iterator();
-        return it.hasNext() ? it.next() : null;
-    }
-
-    private final void deleteOldGisNodes(String name, String gisType, Node gisNode) {
-        for (Node node : makeGisTraverser(name, gisType)) {
-            debug("Testing possible Network node " + node + ": " + node.getProperty("name", "").toString());
-            if (!node.equals(gisNode)) {
-                // remove all incoming relationships
-                for (Relationship relationshipIn : node.getRelationships(Direction.INCOMING)) {
-                    relationshipIn.delete();
-                }
-                deleteTree(node);
-                deleteNode(node);
-            }
-        }
-    }
 
     protected void deleteTree(Node root) {
         if (root != null) {
@@ -1448,7 +1414,7 @@ public abstract class AbstractLoader {
      * 
      * @throws MalformedURLException
      */
-    protected static void addDataToCatalog() throws MalformedURLException {
+    public static void addDataToCatalog() throws MalformedURLException {
         // TODO: Lagutko, 17.12.2009, can be run as a Job
         NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
         if (neoProvider != null) {
@@ -1465,6 +1431,7 @@ public abstract class AbstractLoader {
                     catalog.add(service);
                 }
             }
+            neoProvider.commit();
         }
     }
     
@@ -1661,66 +1628,22 @@ public abstract class AbstractLoader {
      * 
      * @param gis gis node
      */
-    protected Node findOrCreateNetworkNode(Node network, boolean returnFounded) {
-        if (network == null) {
-            Transaction tx = neo.beginTx();
-            try {
-                for (Node node : neo.getReferenceNode().traverse(
-                        Order.BREADTH_FIRST,
-                        new StopEvaluator() {
-
-                            @Override
-                            public boolean isStopNode(TraversalPosition currentPos) {
-                                return currentPos.depth() > 3;
-                            }
-                        },
-                        new ReturnableEvaluator() {
-
-                            @Override
-                            public boolean isReturnableNode(TraversalPosition currentPos) {
-                                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
-                                        NodeTypes.NETWORK.getId());
-                            }
-                        }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD,
-                        Direction.OUTGOING,
-                        GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
-                    debug("Testing possible Network node " + node + ": " + node.getProperty("name", "").toString());
-                    if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(basename)) {
-                        debug("Found matching Network node " + node + ": " + node.getProperty("name", "").toString());
-                        try {
-                            if (returnFounded) {
-                                return node;
-                            }
-                            // remove all incoming relationships
-                            for (Relationship relationshipIn : node.getRelationships(Direction.INCOMING)) {
-                                relationshipIn.delete();
-                            }
-                            if (isTest())
-                                throw new Exception("Test mode");
-                            PlatformUI.getWorkbench();
-                            if (!askIfOverwrite()) {
-                                return null;
-                            }
-                            NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
-                        } catch (Exception e) {
-                            // we are in test mode, automatically agree to
-                            // overwrite network
-                            deleteTree(node);
-                            deleteNode(node);
-                        }
-                        break;
-                    }
-                }
-                network = neo.createNode();
-                network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementTypes.NETWORK.toString());
-                network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-                network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-                tx.success();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                tx.finish();
+    protected Node findOrCreateNetworkNode(Node gisNode) {
+        Node network;
+        Transaction tx = neo.beginTx();
+        try {
+            Relationship relation = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            if (relation != null) {
+                return relation.getOtherNode(gisNode);
             }
+            network = neo.createNode();
+            network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NETWORK.getId());
+            network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
+            network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
+            gisNode.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
+            tx.success();
+        } finally {
+            tx.finish();
         }
         return network;
     }
@@ -1825,7 +1748,7 @@ public abstract class AbstractLoader {
     }
 
     public static class GisProperties {
-        private Node gis;
+        private final Node gis;
         private CRS crs;
         private double[] bbox;
         private long savedData;

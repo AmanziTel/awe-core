@@ -80,6 +80,48 @@ public abstract class DriveLoader extends AbstractLoader {
         }
     }
 
+    /**
+     * Search the database for the 'gis' node for this dataset. If none found it created an
+     * appropriate node. The search is done for 'gis' nodes that reference the specified main node.
+     * If a node needs to be created it is linked to the main node so future searches will return
+     * it.
+     * 
+     * @param mainNode main network or drive data node
+     * @return gis node for mainNode
+     */
+    protected final Node findOrCreateGISNode(Node mainNode, String gisType) {
+        String gisName = NeoUtils.getNodeName(mainNode, neo);
+        GisProperties gisProperties = gisNodes.get(gisName);
+
+        if (gisProperties == null) {
+            Transaction transaction = neo.beginTx();
+            try {
+                Node reference = neo.getReferenceNode();
+
+                Node gis = NeoUtils.findGisNode(gisName, neo);
+                if (gis == null) {
+                    if (gis == null) {
+                        gis = NeoUtils.createGISNode(reference, gisName, gisType, neo);
+                    }
+                    boolean hasRelationship = false;
+                    for (Relationship relation : gis.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                        if (relation.getEndNode().equals(mainNode)) {
+                            hasRelationship = true;
+                        }
+                    }
+                    if (!hasRelationship) {
+                        gis.createRelationshipTo(mainNode, GeoNeoRelationshipTypes.NEXT);
+                    }
+                }
+                gisProperties = new GisProperties(gis);
+                gisNodes.put(gisName, gisProperties);
+                transaction.success();
+            } finally {
+                transaction.finish();
+            }
+        }
+        return gisProperties.getGis();
+    }
     public void clearCaches() {
         super.clearCaches();
         this.stats.clear();

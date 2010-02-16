@@ -22,6 +22,8 @@ package org.amanzi.neo.wizards;
  * @author Cinkel_A
  * @since 1.0.0
  */
+@Deprecated
+//TODO remove candidate
 public class TransmissionImportWizardPage extends NeighbourImportWizardPage {
 
     /**

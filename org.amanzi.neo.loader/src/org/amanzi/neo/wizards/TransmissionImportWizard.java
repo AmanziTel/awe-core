@@ -36,6 +36,8 @@ import org.eclipse.ui.IWorkbench;
  * @author Cinkel_A
  * @since 1.0.0
  */
+@Deprecated
+//TODO remove candidate
 public class TransmissionImportWizard extends Wizard implements IImportWizard {
 
     private static final String PAGE_TITLE = "Import Transmission";

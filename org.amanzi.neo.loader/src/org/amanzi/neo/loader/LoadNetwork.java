@@ -104,8 +104,9 @@ public class LoadNetwork extends AbstractActionTool {
                     NetworkLoader networkLoader;
                     try {
                         NeoUtils.checkTransactionOnThread(null, "load1");
-                        if (NetworkFileType.SECTOR == NetworkFileType.getType(new File(filename))) {
-                            networkLoader = new NetworkLoader(filename, dlg.getParent().getDisplay());
+                        // TODO refactor
+                        if (NetworkFileType.RADIO_SECTOR == LoaderUtils.getFileType(filename).getLeft()) {
+                            networkLoader = new NetworkLoader(new File(filename).getName(),filename, dlg.getParent().getDisplay());
                             networkLoader.setup();
                             SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
                             networkLoader.run(monitor2);
@@ -115,7 +116,7 @@ public class LoadNetwork extends AbstractActionTool {
                         } 
                         else {
                             NeoUtils.checkTransactionOnThread(null, "load2");
-                            ProbeLoader loader = new ProbeLoader(filename, display);
+                            ProbeLoader loader = new ProbeLoader(new File(filename).getName(),filename, display);
                             NeoUtils.checkTransactionOnThread(null, "load3");
                             loader.run(monitor);
                             loader.addLayersToMap();

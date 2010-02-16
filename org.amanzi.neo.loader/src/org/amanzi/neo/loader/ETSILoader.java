@@ -76,27 +76,27 @@ public class ETSILoader extends DriveLoader {
 	    /*
 	     * List of Duration Parameters
 	     */
-		private ArrayList<Long> callParameters = new ArrayList<Long>();
+		private final ArrayList<Long> callParameters = new ArrayList<Long>();
 		
 		/*
 		 * Index of Call Setup Begin timestamp parameter 
 		 */
-		private int callSetupBegin = 0;
+		private final int callSetupBegin = 0;
 		
 		/*
 		 * Index of Call Setup End timestamp parameter
 		 */
-		private int callSetupEnd = 1;
+		private final int callSetupEnd = 1;
 		
 		/*
 		 * Index of Call Termination Begin timestamp parameter
 		 */
-        private int callTerminationBegin = 2;
+        private final int callTerminationBegin = 2;
 		
         /*
          * Index of Call Termination End timestamp parameter
          */
-		private int callTerminationEnd = 3;
+		private final int callTerminationEnd = 3;
 		
 		/*
 		 * Index of last processed parameter
@@ -113,21 +113,21 @@ public class ETSILoader extends DriveLoader {
         /*
          * List of Nodes that creates this call
          */
-		private ArrayList<Node> relatedNodes = new ArrayList<Node>();
+		private final ArrayList<Node> relatedNodes = new ArrayList<Node>();
 		
 		private Node callerProbe;
 		
-		private ArrayList<Node> calleeProbes = new ArrayList<Node>();
+		private final ArrayList<Node> calleeProbes = new ArrayList<Node>();
 		
 		/*
 		 * Listening quality
 		 */
-		private ArrayList<Float> lq = new ArrayList<Float>();
+		private final ArrayList<Float> lq = new ArrayList<Float>();
 		
 		/*
 		 * Audio delay
 		 */
-		private ArrayList<Float> delay = new ArrayList<Float>();
+		private final ArrayList<Float> delay = new ArrayList<Float>();
 		
 		/**
 		 * Default constructor
@@ -386,7 +386,7 @@ public class ETSILoader extends DriveLoader {
 	/*
 	 * Formatter for timestamp
 	 */
-	private SimpleDateFormat timestampFormat;
+	private final SimpleDateFormat timestampFormat;
 	
 	/*
 	 * Previous M Node
@@ -396,7 +396,7 @@ public class ETSILoader extends DriveLoader {
 	/*
 	 * List of mm nodes
 	 */
-	private ArrayList<Node> mmNodes = new ArrayList<Node>();
+	private final ArrayList<Node> mmNodes = new ArrayList<Node>();
 	
 	/*
 	 * Current name of file node
@@ -416,7 +416,7 @@ public class ETSILoader extends DriveLoader {
 	/*
 	 * Name of directory
 	 */
-	private String directoryName;
+	private final String directoryName;
 	
 	/*
 	 * Node for current directory
@@ -426,7 +426,7 @@ public class ETSILoader extends DriveLoader {
 	/*
 	 * Cache of probes
 	 */
-	private HashMap<String, Pair<Node, Node>> probesCache = new HashMap<String, Pair<Node, Node>>();
+	private final HashMap<String, Pair<Node, Node>> probesCache = new HashMap<String, Pair<Node, Node>>();
 	
 	/*
 	 * Currently processed ProbeCalls Node
@@ -447,12 +447,12 @@ public class ETSILoader extends DriveLoader {
 	/*
 	 * Name of Probes Network
 	 */
-	private String networkName;
+	private final String networkName;
 	
 	/*
 	 * Timestamp Index for Calls
 	 */
-	private HashMap<String, MultiPropertyIndex<Long>> callTimestampIndexes = new HashMap<String, MultiPropertyIndex<Long>>();
+	private final HashMap<String, MultiPropertyIndex<Long>> callTimestampIndexes = new HashMap<String, MultiPropertyIndex<Long>>();
 	
 	private boolean newDirectory;
 	
@@ -511,8 +511,8 @@ public class ETSILoader extends DriveLoader {
 		}
 		
 		basename = networkName;
-		this.networkNode = findOrCreateNetworkNode(null, true);			
-		findOrCreateGISNode(this.networkNode, GisTypes.NETWORK.getHeader());				
+		Node gis = findOrCreateGISNode(this.networkNode, GisTypes.NETWORK.getHeader());				
+		this.networkNode = findOrCreateNetworkNode(gis);			
 		basename = oldBasename;
 	}
 	

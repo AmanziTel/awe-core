@@ -31,6 +31,8 @@ import org.eclipse.swt.widgets.Composite;
  * @author Cinkel_A
  * @since 1.0.0
  */
+@Deprecated
+//TODO remove candidate
 public class NetworkImportWizardPage extends WizardPage {
     private FileFieldEditorExt editor;
     private String fileName = null;

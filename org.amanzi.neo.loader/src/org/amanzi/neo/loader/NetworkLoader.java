@@ -33,8 +33,10 @@ import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkElementTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
@@ -55,34 +57,44 @@ import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.util.index.LuceneIndexService;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * This class was written to handle CSV (tab delimited) network data from ice.net in Sweden.
- * It has been written in a partially generic way so as to be possible to change to various
- * other data sources, but some things are hard coded, like the names of key columns and the 
- * assumption of RT90 projection for non-angular coordinates.
- * 
- * It also assumes the data is structured as BSC->Site->Sector in a tree layout.
+ * This class was written to handle CSV (tab delimited) network data from ice.net in Sweden. It has
+ * been written in a partially generic way so as to be possible to change to various other data
+ * sources, but some things are hard coded, like the names of key columns and the assumption of RT90
+ * projection for non-angular coordinates. It also assumes the data is structured as
+ * BSC->Site->Sector in a tree layout.
  * 
  * @author craig
  */
 public class NetworkLoader extends AbstractLoader {
     /**
-	 * This class handles the CRS specification.
-	 * Currently it is hard coded to return WGS84 (EPSG:4326) for data that looks like lat/long
-     * and RT90 2.5 gon V (EPSG:3021) for data that looks like it is in meters and no hints are given.
-     * If the user passes a hint, the following are considered:
+     * This class handles the CRS specification. Currently it is hard coded to return WGS84
+     * (EPSG:4326) for data that looks like lat/long and RT90 2.5 gon V (EPSG:3021) for data that
+     * looks like it is in meters and no hints are given. If the user passes a hint, the following
+     * are considered:
      * 
-	 * @author craig
-	 */
-	public static class CRS {
+     * @author craig
+     */
+    public static class CRS {
         private String type = null;
         private String epsg = null;
-        private CRS() {}
-        public String getType() {return type;}
-        public String toString() {return epsg;}
+
+        private CRS() {
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        @Override
+        public String toString() {
+            return epsg;
+        }
+
         public static CRS fromLocation(float lat, float lon, String hint) {
             CRS crs = new CRS();
             crs.type = "geographic";
@@ -117,17 +129,17 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     private static Pattern channelPattern = Pattern.compile("(^BCCH$)|(^TRX\\d+$)|(^TCH\\d+$)");
-    //private Map<Integer, Integer> channalMap;
-	private String siteName = null;
+    // private Map<Integer, Integer> channalMap;
+    private String siteName = null;
     private String bscName = null;
     private String cityName = null;
-	private Node site = null;
-    private HashMap<String,Node> bsc_s = new HashMap<String,Node>();
-    private HashMap<String,Node> city_s = new HashMap<String,Node>();
+    private Node site = null;
+    private final HashMap<String, Node> bsc_s = new HashMap<String, Node>();
+    private final HashMap<String, Node> city_s = new HashMap<String, Node>();
     private Node bsc = null;
     private Node city = null;
     private Node network = null;
-    private ArrayList<String> mainHeaders = new ArrayList<String>();
+    private final ArrayList<String> mainHeaders = new ArrayList<String>();
     public ArrayList<String> shortLines = new ArrayList<String>();
     public ArrayList<String> emptyFields = new ArrayList<String>();
     public ArrayList<String> badFields = new ArrayList<String>();
@@ -137,6 +149,7 @@ public class NetworkLoader extends AbstractLoader {
     private boolean trimSectorName = true;
     private NetworkHeader networkHeader = null;
     private boolean needParceHeader;
+    private LuceneIndexService luceneInd;
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -145,9 +158,11 @@ public class NetworkLoader extends AbstractLoader {
      * @param display for opening message dialogs
      * @param dataset to add data to
      */
-    public NetworkLoader(String filename, Display display) {
+    public NetworkLoader(String gisName, String filename, Display display) {
         initialize("Network", null, filename, display);
+        basename = gisName;
         initializeKnownHeaders();
+        luceneInd = NeoServiceProvider.getProvider().getIndexService();
         addNetworkIndexes();
     }
 
@@ -169,7 +184,7 @@ public class NetworkLoader extends AbstractLoader {
      */
     private void addNetworkIndexes() {
         try {
-            addIndex(NetworkElementTypes.SITE.toString(), NeoUtils.getLocationIndexProperty(basename));
+            addIndex(NodeTypes.SITE.getId(), NeoUtils.getLocationIndexProperty(basename));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -182,10 +197,11 @@ public class NetworkLoader extends AbstractLoader {
      */
     private void initializeKnownHeaders() {
         needParceHeader = true;
-//        addHeaderFilters(new String[] {"time.*", "events", ".*latitude.*", ".*longitude.*", ".*server_report.*",
-//                ".*state_machine.*", ".*layer_3_message.*", ".*handover_analyzer.*"});
+        // addHeaderFilters(new String[] {"time.*", "events", ".*latitude.*", ".*longitude.*",
+        // ".*server_report.*",
+        // ".*state_machine.*", ".*layer_3_message.*", ".*handover_analyzer.*"});
 
-        //Known headers that are not sector data properties
+        // Known headers that are not sector data properties
         addMainHeader("city", getPossibleHeaders(DataLoadPreferences.NH_CITY));
         addMainHeader("msc", getPossibleHeaders(DataLoadPreferences.NH_MSC));
         addMainHeader("bsc", getPossibleHeaders(DataLoadPreferences.NH_BSC));
@@ -193,18 +209,18 @@ public class NetworkLoader extends AbstractLoader {
         addMainHeader("sector", getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
         addMainHeader("latitude", getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
         addMainHeader("longitude", getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
-        //Stop statistics collection for properties we will not save to the sector
+        // Stop statistics collection for properties we will not save to the sector
         addNonDataHeaders(1, mainHeaders);
 
-        //force String types on some risky headers (sometimes these look like integers)
+        // force String types on some risky headers (sometimes these look like integers)
         useMapper(1, "site", new StringMapper());
         useMapper(1, "sector", new StringMapper());
 
-        //Known headers that are sector data properties
+        // Known headers that are sector data properties
         addKnownHeader(1, "beamwidth", new String[] {".*beamwidth.*", "beam", "hbw"});
         addKnownHeader(1, "azimuth", new String[] {".*azimuth.*"});
     }
-    
+
     /**
      * Add a known header entry as well as mark it as a main header. All other fields will be
      * assumed to be sector properties.
@@ -216,33 +232,32 @@ public class NetworkLoader extends AbstractLoader {
         addKnownHeader(1, key, regexes);
         mainHeaders.add(key);
     }
-    
+
     public boolean setup() {
         try {
             trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
         } catch (Exception e) {
         }
-        if ((network = findOrCreateNetworkNode(network, false)) != null) {
-            return null != findOrCreateGISNode(network, GisTypes.NETWORK.getHeader());
-        } else {
-            return false;
-        }
+        Node node = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.RADIO);
+        network = findOrCreateNetworkNode(node);
+        return true;
     }
-    
+
     /**
      * Returns created Network Node
      * 
      * @return network Node
      */
     public Node getNetworkNode() {
-    	return network;
+        return network;
     }
-	
+
     /**
      * After all lines have been parsed, this method is called, allowing the implementing class the
      * opportunity to save any cached information, or write any final statistics. It is not abstract
      * because it is possible, or even probable, to write an importer that does not need it.
      */
+    @Override
     protected void finishUp() {
         printWarnings(emptyFields, "empty fields", 0, lineNumber);
         printWarnings(badFields, "field parsing warnings", 10, lineNumber);
@@ -250,10 +265,10 @@ public class NetworkLoader extends AbstractLoader {
         printWarnings(lineErrors, "uncaught errors", 10, lineNumber);
         Transaction transaction = neo.beginTx();
         try {
-            if (networkHeader!=null) {
-				networkHeader.saveStatistic(network);
-			}
-			network.setProperty("site_count", siteNumber);
+            if (networkHeader != null) {
+                networkHeader.saveStatistic(network);
+            }
+            network.setProperty("site_count", siteNumber);
             network.setProperty("sector_count", sectorNumber);
             network.setProperty("bsc_count", bsc_s.size());
             network.setProperty("city_count", city_s.size());
@@ -263,15 +278,15 @@ public class NetworkLoader extends AbstractLoader {
         }
         // add network to project and gis node to catalog
         super.cleanupGisNode();
-            
+
         if (!isTest()) {
-        	showNetworkTree();
+            showNetworkTree();
         }
     }
 
     private void printWarnings(ArrayList<String> warnings, String warning_type, int limit, long lineNumber) {
-        if(warnings.size()>0){
-            info("Had " + warnings.size() + " "+warning_type+" warnings in " + lineNumber + " lines parsed");
+        if (warnings.size() > 0) {
+            info("Had " + warnings.size() + " " + warning_type + " warnings in " + lineNumber + " lines parsed");
             if (limit > 0) {
                 int i = 0;
                 for (String warning : warnings) {
@@ -286,19 +301,16 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     private void showNetworkTree() {
-        //TODO: See if we need this event
-        NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
-                new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
+        // TODO: See if we need this event
+        NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
 
         // Lagutko, 21.07.2009, show NeworkTree
         ActionUtil.getInstance().runTask(new Runnable() {
             @Override
             public void run() {
                 try {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
-                            NetworkTreeView.NETWORK_TREE_VIEW_ID);
-                }
-                catch (PartInitException e) {
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NetworkTreeView.NETWORK_TREE_VIEW_ID);
+                } catch (PartInitException e) {
                     NeoCorePlugin.error(null, e);
                 }
             }
@@ -329,20 +341,20 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     private class NetworkHeader {
-        private Map<String,String> mainKeys = new HashMap<String,String>();
+        private final Map<String, String> mainKeys = new HashMap<String, String>();
         private String crsHint = null;
-        private ArrayList<String> sectorData = new ArrayList<String>();
-        private Map<String, Integer> channelMap = new HashMap<String, Integer>();
-        Map<String,Object> lineData = null;
+        private final ArrayList<String> sectorData = new ArrayList<String>();
+        private final Map<String, Integer> channelMap = new HashMap<String, Integer>();
+        Map<String, Object> lineData = null;
 
         private NetworkHeader(List<String> fields) {
             lineData = makeDataMap(fields);
             HeaderMaps headerMap = getHeaderMap(1);
             for (String header : lineData.keySet()) {
                 String name = headerMap.headerName(header);
-                if(mainHeaders.contains(header)) {
+                if (mainHeaders.contains(header)) {
                     mainKeys.put(header, name);
-                    if(name.toLowerCase().startsWith("wert",2) && (header.startsWith("lat") || header.startsWith("lon"))){
+                    if (name.toLowerCase().startsWith("wert", 2) && (header.startsWith("lat") || header.startsWith("lon"))) {
                         crsHint = "germany";
                     }
                 } else if (channelPattern.matcher(name).matches()) {
@@ -354,7 +366,7 @@ public class NetworkLoader extends AbstractLoader {
             }
         }
 
-        private void setData(List<String> fields){
+        private void setData(List<String> fields) {
             lineData = makeDataMap(fields);
         }
 
@@ -370,7 +382,7 @@ public class NetworkLoader extends AbstractLoader {
 
         private String getString(String key) {
             Object value = lineData.get(key);
-            if(value == null || value instanceof String) {
+            if (value == null || value instanceof String) {
                 return (String)value;
             } else {
                 return value.toString();
@@ -379,7 +391,7 @@ public class NetworkLoader extends AbstractLoader {
 
         private Float getFloat(String key) {
             Object value = lineData.get(key);
-            if(value instanceof Integer) {
+            if (value instanceof Integer) {
                 return ((Integer)value).floatValue();
             } else {
                 return (Float)value;
@@ -394,14 +406,14 @@ public class NetworkLoader extends AbstractLoader {
             return getFloat("longitude");
         }
 
-        private Map<String,Object> getSectorData() {
-            Map<String,Object> data = new LinkedHashMap<String,Object>();
-            for(String key: sectorData) {
-                if(lineData.containsKey(key)) {
-                    if(channelMap.containsKey(key)){
+        private Map<String, Object> getSectorData() {
+            Map<String, Object> data = new LinkedHashMap<String, Object>();
+            for (String key : sectorData) {
+                if (lineData.containsKey(key)) {
+                    if (channelMap.containsKey(key)) {
                         channelMap.put(key, channelMap.get(key) + 1);
                     }
-                    data.put(key,lineData.get(key));
+                    data.put(key, lineData.get(key));
                 }
             }
             return data;
@@ -412,7 +424,8 @@ public class NetworkLoader extends AbstractLoader {
         }
     }
 
-	protected void parseLine(String line) {
+    @Override
+    protected void parseLine(String line) {
         debug(line);
         List<String> fields = splitLine(line);
         if (fields.size() < 3)
@@ -430,13 +443,13 @@ public class NetworkLoader extends AbstractLoader {
             String cityField = networkHeader.getString("city");
             String siteField = networkHeader.getString("site");
             String sectorField = networkHeader.getString("sector");
-            if(sectorField==null) {
+            if (sectorField == null) {
                 lineErrors.add("Missing sector name on line " + lineNumber);
                 return;
             }
-            if(siteField==null) {
-                //lineErrors.add("Missing site name on line " + lineNumber);
-                //return;
+            if (siteField == null) {
+                // lineErrors.add("Missing site name on line " + lineNumber);
+                // return;
                 siteField = sectorField.substring(0, sectorField.length() - 1);
             }
             if (trimSectorName) {
@@ -446,8 +459,11 @@ public class NetworkLoader extends AbstractLoader {
                 cityName = cityField;
                 city = city_s.get(cityField);
                 if (city == null) {
-                    debug("New City: " + cityName);
-                    city = addChild(network, NetworkElementTypes.CITY.toString(), cityName);
+                    city = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY), cityName);
+                    if (city == null) {
+                        debug("New City: " + cityName);
+                        city = addChild(network, NodeTypes.CITY, cityName);
+                    }
                     city_s.put(cityField, city);
                 }
             }
@@ -455,8 +471,11 @@ public class NetworkLoader extends AbstractLoader {
                 bscName = bscField;
                 bsc = bsc_s.get(bscField);
                 if (bsc == null) {
-                    debug("New BSC: " + bscName);
-                    bsc = addChild(city == null ? network : city, NetworkElementTypes.BSC.toString(), bscName);
+                    bsc = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
+                    if (bsc == null) {
+                        debug("New BSC: " + bscName);
+                        bsc = addChild(city == null ? network : city, NodeTypes.BSC, bscName);
+                    }
                     bsc_s.put(bscField, bsc);
                 }
             }
@@ -464,7 +483,19 @@ public class NetworkLoader extends AbstractLoader {
                 siteName = siteField;
                 debug("New site: " + siteName);
                 Node siteRoot = bsc == null ? (city == null ? network : city) : bsc;
-                Node newSite = addChild(siteRoot, NetworkElementTypes.SITE.toString(), siteName);
+                Node newSite = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
+                if (newSite != null) {
+                    Relationship relation = newSite.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
+                    Node oldRoot = relation.getOtherNode(newSite);
+                    if (!oldRoot.equals(siteRoot)) {
+                        relation.delete();
+                        siteRoot.createRelationshipTo(newSite, GeoNeoRelationshipTypes.CHILD);
+                    }
+                } else {
+                    newSite = addChild(siteRoot, NodeTypes.SITE, siteName);
+                }
+                // TODO and maybe add create GeoNeoRelationshipTypes.NEXT between sites if
+                // necessary!
                 (site == null ? network : site).createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
                 site = newSite;
                 siteNumber++;
@@ -487,13 +518,23 @@ public class NetworkLoader extends AbstractLoader {
                 index(site);
             }
             debug("New Sector: " + sectorField);
-            Node sector = addChild(site, NetworkElementTypes.SECTOR.toString(), sectorField);
+            // TODO check by necessary sector
+            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorField);
+            if (sector != null) {
+                // TODO check
+            } else {
+                sector = addChild(site, NodeTypes.SECTOR, sectorField);
+            }
             // TODO: deprecated sectorNumber in favour of saved data
             sectorNumber++;
             // header.parseLine(sector, fields);
             Map<String, Object> sectorData = networkHeader.getSectorData();
             for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
-                sector.setProperty(entry.getKey(), entry.getValue());
+                String key = entry.getKey();
+                sector.setProperty(key, entry.getValue());
+                if (INeoConstants.PROPERTY_SECTOR_LAC.equals(key)||INeoConstants.PROPERTY_SECTOR_CI.equals(key)){
+                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), entry.getValue());
+                }
             }
             getGisProperties(basename).incSaved();
             transaction.success();
@@ -564,19 +605,21 @@ public class NetworkLoader extends AbstractLoader {
      * @param name
      * @return
      */
-	private Node addChild(Node parent, String type, String name) {
-		Node child = null;
-		child = neo.createNode();
-		child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, type);
-		child.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
-		if (parent != null) {
-			parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
-			debug("Added '" + name + "' as child of '" + parent.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-		}
-		return child;
-	}
-	
-	public void printStats(boolean verbose) {
+    private Node addChild(Node parent, NodeTypes type, String name) {
+        Node child = null;
+        child = neo.createNode();
+        child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, type.getId());
+        child.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+        luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, type), name);
+        if (parent != null) {
+            parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
+            debug("Added '" + name + "' as child of '" + parent.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+        }
+        return child;
+    }
+
+    @Override
+    public void printStats(boolean verbose) {
         if (network != null) {
             if (verbose) {
                 Transaction tx = neo.beginTx();
@@ -587,37 +630,42 @@ public class NetworkLoader extends AbstractLoader {
                     tx.finish();
                 }
             }
-            info("Finished loading "+siteNumber+" sites and "+sectorNumber+" sectors from "+lineNumber+" lines");
+            info("Finished loading " + siteNumber + " sites and " + sectorNumber + " sectors from " + lineNumber + " lines");
         } else {
             error("No network node found");
         }
     }
 
-	private void printChildren(Node node, int depth) {
-		if(node==null || depth > 4 || !node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) return;
-		StringBuffer tab = new StringBuffer();
-		for(int i=0;i<depth;i++) tab.append("    ");
-		StringBuffer properties = new StringBuffer();
-		for(String property:node.getPropertyKeys()) {
-			if(!property.equals(INeoConstants.PROPERTY_NAME_NAME)) properties.append(" - ").append(property).append(" => ").append(node.getProperty(property));
-		}
-		info(tab.toString()+node.getProperty(INeoConstants.PROPERTY_NAME_NAME)+properties);
-		for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.CHILD,Direction.OUTGOING)){
-			//debug(tab.toString()+"("+relationship.toString()+") - "+relationship.getStartNode().getProperty("name")+" -("+relationship.getType()+")-> "+relationship.getEndNode().getProperty("name"));
-			printChildren(relationship.getEndNode(),depth+1);
-		}
-	}
+    private void printChildren(Node node, int depth) {
+        if (node == null || depth > 4 || !node.hasProperty(INeoConstants.PROPERTY_NAME_NAME))
+            return;
+        StringBuffer tab = new StringBuffer();
+        for (int i = 0; i < depth; i++)
+            tab.append("    ");
+        StringBuffer properties = new StringBuffer();
+        for (String property : node.getPropertyKeys()) {
+            if (!property.equals(INeoConstants.PROPERTY_NAME_NAME))
+                properties.append(" - ").append(property).append(" => ").append(node.getProperty(property));
+        }
+        info(tab.toString() + node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + properties);
+        for (Relationship relationship : node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            // debug(tab.toString()+"("+relationship.toString()+") - "+relationship.getStartNode().getProperty("name")+" -("+relationship.getType()+")-> "+relationship.getEndNode().getProperty("name"));
+            printChildren(relationship.getEndNode(), depth + 1);
+        }
+    }
 
-	/**
-	 * A main method for useful quick-turn-around testing and debugging of data parsing on various sample files.
-	 * @param args
-	 */
-	public static void main(String[] args) {
-	    //NeoLoaderPlugin.debug = true;
+    /**
+     * A main method for useful quick-turn-around testing and debugging of data parsing on various
+     * sample files.
+     * 
+     * @param args
+     */
+    public static void main(String[] args) {
+        // NeoLoaderPlugin.debug = true;
         if (args.length < 1)
             args = new String[] {"amanzi/network.txt"};
-		EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
-		try{
+        EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
+        try {
             for (String filename : args) {
                 long startTime = System.currentTimeMillis();
                 NetworkLoader networkLoader = new NetworkLoader(neo, filename);
@@ -628,17 +676,17 @@ public class NetworkLoader extends AbstractLoader {
                 networkLoader.printStats(true);
                 networkLoader.info("Ran test in " + (System.currentTimeMillis() - startTime) / 1000.0 + "s");
             }
-		} catch (IOException e) {
-			System.err.println("Failed to load network: "+e);
-			e.printStackTrace(System.err);
-		}finally{
-			neo.shutdown();
-		}
-	}
+        } catch (IOException e) {
+            System.err.println("Failed to load network: " + e);
+            e.printStackTrace(System.err);
+        } finally {
+            neo.shutdown();
+        }
+    }
 
     @Override
     protected Node getStoringNode(Integer key) {
-        //TODO: Lagutko: need to be refactored
+        // TODO: Lagutko: need to be refactored
         return gisNodes.values().iterator().next().getGis();
     }
 

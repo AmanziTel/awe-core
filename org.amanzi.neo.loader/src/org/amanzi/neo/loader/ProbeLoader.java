@@ -22,6 +22,7 @@ import java.util.Map;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -49,10 +50,11 @@ public class ProbeLoader extends AbstractLoader{
     private Node gisNode;
     private GisProperties gisProperties;
 
-    public ProbeLoader(String filename, Display display) {
+    public ProbeLoader(String gisName, String filename, Display display) {
         needParceHeader=true;
         network = null;
         initialize("Probe", null, filename, display);
+        basename=gisName;
         initializeKnownHeaders();
         addNetworkIndexes();
     }
@@ -97,8 +99,8 @@ public class ProbeLoader extends AbstractLoader{
     @Override
     protected void parseLine(String line) {
         if (network == null) {
-            network = findOrCreateNetworkNode(network, false);
-            gisNode = findOrCreateGISNode(network, GisTypes.NETWORK.getHeader());
+            gisNode = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
+            network = findOrCreateNetworkNode(gisNode);
             gisProperties = new GisProperties(gisNode);
         }
         List<String> fields = splitLine(line);

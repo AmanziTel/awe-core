@@ -17,6 +17,7 @@ import java.io.IOException;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.NetworkFileType;
+import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.ProbeLoader;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -37,6 +38,8 @@ import org.eclipse.ui.IWorkbench;
  * @author Cinkel_A
  * @since 1.0.0
  */
+@Deprecated
+//TODO remove candidate
 public class NetworkImportWizard extends Wizard implements IImportWizard {
 
     /** String PAGE_TITLE field */
@@ -53,15 +56,16 @@ public class NetworkImportWizard extends Wizard implements IImportWizard {
             protected IStatus run(IProgressMonitor monitor) {
                 NetworkLoader networkLoader;
                 try {
-                    if (NetworkFileType.SECTOR == NetworkFileType.getType(new File(mainPage.getFileName()))) {
-                        networkLoader = new NetworkLoader(mainPage.getFileName(), display);
+                    // TODO refactor
+                    if (NetworkFileType.RADIO_SECTOR == LoaderUtils.getFileType(mainPage.getFileName()).getLeft()) {
+                        networkLoader = new NetworkLoader(new File(mainPage.getFileName()).getName(),mainPage.getFileName(), display);
                         networkLoader.setup();
                         networkLoader.run(monitor);
                         networkLoader.printStats(false);
                         NetworkLoader.finishUpGis(networkLoader.getNetworkNode());
                         networkLoader.addLayersToMap();
                     } else {
-                        ProbeLoader loader = new ProbeLoader(mainPage.getFileName(), display);
+                        ProbeLoader loader = new ProbeLoader(new File(mainPage.getFileName()).getName(),mainPage.getFileName(), display);
                         loader.run(monitor);
                         // TODO add to layer after changing NetworkRenderer
                     }

@@ -82,34 +82,16 @@
           <toolbar
                 id="org.amanzi.neo.loader.toolbar">
              <command
-                   commandId="org.amanzi.neo.loader.commands.LoadNetwork"
-            icon="icons/16/network.png"
-            id="org.amanzi.neo.loader.LoadNetwork"
-                   tooltip="Load Network Data">
-             </command>
-             <command
                    commandId="org.amanzi.neo.loader.commands.LoadNetworkSite"
             icon="icons/16/network_site.png"
             id="org.amanzi.neo.loader.LoadNetworkSite"
-                   tooltip="Add Site Data">
+                   tooltip="Load Network Data">
              </command>
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"
             icon="icons/16/drive.png"
             id="org.amanzi.neo.loader.LoadDrive"
                    tooltip="Load Drive Data">
-             </command>
-             <command 
-             		commandId="org.amanzi.neo.loader.commands.LoadNeighbour"
-            		icon="icons/16/neighbour.png"
-            		id="org.amanzi.neo.loader.LoadNeighbour"
-                   	tooltip="Load Neighbour Data">
-             </command>
-             <command 
-             		commandId="org.amanzi.neo.loader.commands.LoadTransmission"
-            		icon="icons/16/transmission.png"
-            		id="org.amanzi.neo.loader.LoadTransmission"
-                   	tooltip="Load Transmission Data">
              </command>
           </toolbar>
        </menuContribution>
@@ -138,16 +120,6 @@
     </extension>
    <extension
           point="org.eclipse.ui.importWizards">
-       <wizard
-             category="org.amanzi.load"
-             class="org.amanzi.neo.wizards.NetworkImportWizard"
-             icon="icons/16/network.png"
-             id="org.amanzi.neo.wizards.NetworkImportWizard"
-             name="Import Network data">
-          <description>
-             Import a network file from the local file system into the project
-          </description>
-       </wizard>
        <wizard  
              category="org.amanzi.load"
              class="org.amanzi.neo.wizards.NetworkSiteImportWizard"
@@ -168,27 +140,7 @@
  				Import a data file from the local file system into the project
           </description>
        </wizard>
-       <wizard  
-             category="org.amanzi.load"
-             class="org.amanzi.neo.wizards.NeighbourImportWizard"
-             icon="icons/16/neighbour.png"
-             id="org.amanzi.neo.wizards.NeighbourImportWizard"
-             name="Import Neighbour data">
-          <description>
- 				Import a data file from the local file system into the project
-          </description>
-       </wizard>               
-       <wizard  
-             category="org.amanzi.load"
-             class="org.amanzi.neo.wizards.TransmissionImportWizard"
-             icon="icons/16/transmission.png"
-             id="org.amanzi.neo.wizards.TransmissionImportWizard"
-             name="Import Transmission data">
-          <description>
- 				Import a data file from the local file system into the project
-          </description>
-       </wizard>  
-       <wizard  
+        <wizard  
              category="org.amanzi.load"
              class="org.amanzi.neo.wizards.ETSIImportWizard"
              icon="icons/16/neighbour.png"

@@ -47,6 +47,8 @@ import org.neo4j.api.core.Transaction;
  * @author Cinkel_A
  * @since 1.0.0
  */
+@Deprecated
+//TODO remove candidate
 public class NeighbourImportWizardPage extends WizardPage {
 
 
