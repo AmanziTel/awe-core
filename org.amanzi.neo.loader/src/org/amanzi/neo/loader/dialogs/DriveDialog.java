@@ -93,7 +93,8 @@ public class DriveDialog {
         "Drive Test Data (*.FMT; *.ASC; *.nmf; *.dt1)",
         "TEMS Drive Test Export (*.FMT)",
         "Romes drive test export (*.ASC)",
-        "Nemo drive test export (*.nmf)", "Nemo drive test export (*.dt1)",
+        "Nemo drive test export (*.nmf)",
+        "Nemo drive test export (*.dt1)",
         "All Files (*.*)"};
 
     /*
@@ -653,7 +654,7 @@ public class DriveDialog {
         if (datasetNode == null) {
             String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.NEMO1, DriveTypes.NEMO2);
             ArrayList<String> fel = new ArrayList<String>(fileExtensions.length + 1);
-            fel.add("*.FMT;*.fmt;*.ASC;*.asc;*.dt1;*.DT1;*.NMF;*.nmf");
+            fel.add(Drive_FILE_EXTENSIONS[0]);
             fel.addAll(Arrays.asList(fileExtensions));
             String[] result = fel.toArray(new String[0]);
             return result;
@@ -672,7 +673,7 @@ public class DriveDialog {
         if (datasetNode == null) {
             String[] fileDescriptions = DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.NEMO1, DriveTypes.NEMO2);
             ArrayList<String> fdl = new ArrayList<String>(fileDescriptions.length + 1);
-            fdl.add("All Files (*.*)");
+            fdl.add(Drive_FILE_NAMES[5]);
             fdl.addAll(Arrays.asList(fileDescriptions));
             String[] result = fdl.toArray(new String[0]);
             return result;
