@@ -29,11 +29,12 @@ import org.neo4j.api.core.Transaction;
  * @since 1.0.0
  */
 public enum NodeTypes {
-//    TODO:   Copy of org.amanzi.neo.core.enums.NodeTypes
-//    TODO:   needed for fully implementation of Feature #962
-//    TODO:   All changes must be reflected in original enum
+    // TODO: Enum has a cop: org.neo4j.neoclipse.property.NodeTypes
+    // TODO: Copy needed for fully implementation of Feature #962
+    // TODO: All changes must be reflected in copy
     GIS_PROPERTY("gis_property_type"),
     SITE("site"),
+ CITY("city"),
     TRANSMISSION("transmission"),
     MP("mp"),
     SECTOR("sector"),
@@ -61,6 +62,7 @@ public enum NodeTypes {
     DIRECTORY("directory"),
     DATASET("dataset"),
     HEADER_M("m"),
+    HEADER_MS("ms"),
     AGGREGATION("aggregation"),
     COUNT("count"),
     CALL_ANALYZIS("call analyzis"),
@@ -68,7 +70,14 @@ public enum NodeTypes {
     GIS("gis","name"),
     CALL_ANALYZIS_ROOT("call analyzis root"),
     S_CELL("s_cell"),
-    BSC("bsc");
+    BSC("bsc"),
+    DELTA_NETWORK("delta_network"),
+    DELTA_SITE("delta_site"), 
+    DELTA_SECTOR("delta_sector"), 
+    MISSING_SITES("missing_sites"),
+    MISSING_SECTORS("missing_sectors"), 
+    MISSING_SITE("missing_site"),
+    MISSING_SECTOR("missing_sector");
     
     private final String id;
     private Set<String> result;
