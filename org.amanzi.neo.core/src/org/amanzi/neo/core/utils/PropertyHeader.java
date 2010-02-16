@@ -47,9 +47,10 @@ public class PropertyHeader {
     /** String RELATION_PROPERTY field */
     private static final String RELATION_PROPERTY = "property";
     private final Node node;
-    private boolean isGis;
-    private boolean isDataset;
-    private GisTypes gisType;
+    private final boolean isGis;
+    private final boolean isDataset;
+    private final GisTypes gisType;
+    private final boolean havePropertyNode;
 
     /**
      * Constructor
@@ -61,6 +62,7 @@ public class PropertyHeader {
             gisType=isGis?GisTypes.findGisTypeByHeader((String)node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME,null)):null;
         isDataset = !isGis && NeoUtils.isDatasetNode(node);
         this.node = node;
+        havePropertyNode=node.hasRelationship(GeoNeoRelationshipTypes.PROPERTIES,Direction.OUTGOING);
     }
 
     /**
@@ -115,7 +117,7 @@ public class PropertyHeader {
      */
     public String[] getNumericFields() {
         
-        return isGis || isDataset ? getDefinedNumericFields() : NeoUtils.getNumericFields(node);
+        return havePropertyNode ? getDefinedNumericFields() : NeoUtils.getNumericFields(node);
     }
 
     /**
@@ -129,7 +131,7 @@ public class PropertyHeader {
     }
 
     public String[] getAllFields() {
-        return isGis ? getDefinedAllFields() : getNumericFields();// NeoUtils.getAllFields(node);
+        return havePropertyNode ? getDefinedAllFields() : getNumericFields();// NeoUtils.getAllFields(node);
     }
 
     /**

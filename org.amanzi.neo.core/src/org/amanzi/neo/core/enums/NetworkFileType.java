@@ -15,9 +15,8 @@ package org.amanzi.neo.core.enums;
 
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Enum of network file types
  * </p>
  * @author Cinkel_A
  * @since 1.0.0

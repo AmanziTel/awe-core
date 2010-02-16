@@ -29,6 +29,8 @@ public class INeoConstants {
      * and used by various elements in other plugins.
      */
 
+    public static final String PROPERTY_SECTOR_LAC = "lac";
+    public static final String PROPERTY_SECTOR_CI = "ci";
     public static final String PROPERTY_NAME_NAME = "name";
     public static final String PROPERTY_GIS_TYPE_NAME = "gis_type";
     public static final String PROPERTY_TYPE_NAME = "type";

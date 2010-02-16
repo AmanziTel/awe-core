@@ -1343,6 +1343,7 @@ public class NeoUtils {
             transaction.success();
         }
         catch (Exception e) {
+
             transaction.failure();
             NeoCorePlugin.error(null, e);
         }
@@ -1663,6 +1664,17 @@ public class NeoUtils {
         else {
             return null;
         }
+    }
+
+    /**
+     * gets name of index 
+     * @param basename - gis name
+     * @param propertyName - property name
+     * @param type - node type
+     * @return luciene key
+     */
+    public static String getLuceneIndexKeyByProperty(String basename,String propertyName, NodeTypes type) {
+        return new StringBuilder(basename).append("@").append(type.getId()).append("@").append(propertyName).toString();
     }
 
 }
