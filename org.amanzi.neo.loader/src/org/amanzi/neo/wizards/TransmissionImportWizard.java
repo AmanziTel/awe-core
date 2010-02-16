@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.TransmissionLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -50,7 +51,7 @@ public class TransmissionImportWizard extends Wizard implements IImportWizard {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 TransmissionLoader transmissionLoader;
-                transmissionLoader = new TransmissionLoader(mainPage.getNetworkNode(), mainPage.getFileName(), NeoServiceProvider
+                transmissionLoader = new TransmissionLoader(NeoUtils.getSimpleNodeName(mainPage.getNetworkNode(),""), mainPage.getFileName(), NeoServiceProvider
                         .getProvider().getService());
                 try {
                     transmissionLoader.run(monitor);

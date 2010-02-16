@@ -100,6 +100,9 @@ public class NetworkSiteLoader extends AbstractLoader {
                     key = "site_type";
                 }
                 siteNode.setProperty(key, entry.getValue());
+                if (key.equals(INeoConstants.PROPERTY_SITE_NO)){
+                    luceneInd.index(siteNode, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), entry.getValue().toString());
+                }
             }
 
             gisNodes.values().iterator().next().incSaved();

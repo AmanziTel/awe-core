@@ -94,7 +94,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
             return false;
         }
         if (networkNode==null){
-            if (type == NetworkFileType.NEIGHBOUR || type == NetworkFileType.TRANSMISSION ) {
+            if (type == NetworkFileType.NEIGHBOUR) {
                 return false;
             }
             return networkName != null && !networkName.isEmpty();

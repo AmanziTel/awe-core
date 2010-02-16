@@ -84,7 +84,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         break;
                     case TRANSMISSION:
                         TransmissionLoader transmissionLoader;
-                        transmissionLoader = new TransmissionLoader(mainPage.getNetworkNode(), mainPage.getFileName(), NeoServiceProvider.getProvider().getService());
+                        transmissionLoader = new TransmissionLoader(mainPage.getNetworkName(), mainPage.getFileName(), NeoServiceProvider.getProvider().getService());
                         transmissionLoader.run(monitor);
                         NeoServiceProvider.getProvider().commit();
                         break;

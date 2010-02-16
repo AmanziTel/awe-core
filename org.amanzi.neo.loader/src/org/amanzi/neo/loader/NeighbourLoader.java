@@ -210,9 +210,6 @@ public class NeighbourLoader {
         private static final String DOUBLE = "DOUBLE";
         /** String INTEGER field */
         private static final String INTEGER = "INTEGER";
-        private static final int CACH_SIZE = 10000;
-        private static final String KEY_ID = "name";
-        private static final String KEY_ID2 = "name2";
         private final Map<Integer, Pair<String, String>> indexMap = new LinkedHashMap<Integer, Pair<String, String>>();
         private final NodeName serverNodeName;
         private final NodeName neighbourNodeName;

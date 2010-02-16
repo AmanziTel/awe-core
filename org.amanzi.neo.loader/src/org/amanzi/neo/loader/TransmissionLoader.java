@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +28,9 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.CSVParser;
@@ -43,11 +44,7 @@ import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.PropertyContainer;
 import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser.Order;
 import org.neo4j.util.index.LuceneIndexService;
 
 /**
@@ -69,12 +66,14 @@ public class TransmissionLoader {
     /** String STRING field */
     // private static String directory = null;
     private static final int COMMIT_MAX = 1000;
-    private Node network;
-    private String fileName;
+    private final Node network;
+    private final String fileName;
     private Header header;
     private Node neighbour;
-    private String baseName;
+    private final String baseName;
     private final NeoService neo;
+    private final String gisName;
+    private final Node gis;
 
     /**
      * Constructor
@@ -82,11 +81,13 @@ public class TransmissionLoader {
      * @param networkNode network Node
      * @param fileName Neighbour file Name
      */
-    public TransmissionLoader(Node networkNode, String fileName, NeoService neo) {
-        network = networkNode;
-        this.fileName = fileName;
+    public TransmissionLoader(String gisName, String fileName, NeoService neo) {
+        this.gisName=gisName;
         this.neo = neo;
+        this.fileName = fileName;
         this.baseName = new File(fileName).getName();
+         gis = findOrCreateGISNode(gisName, GisTypes.NETWORK.getHeader(), NetworkTypes.RADIO);
+        network = findOrCreateNetworkNode(gis);
     }
 
     /**
@@ -135,8 +136,7 @@ public class TransmissionLoader {
                 return;
             }
             header = new Header(line, neo);
-            neighbour = getTransmission(network, baseName);
-            header.createSectorCache(network);
+            neighbour = getTransmission(gis, baseName);
             int commit = 0;
             while ((line = reader.readLine()) != null) {
                 header.parseLine(line, network, baseName);
@@ -212,21 +212,17 @@ public class TransmissionLoader {
         private static final String DOUBLE = "DOUBLE";
         /** String INTEGER field */
         private static final String INTEGER = "INTEGER";
-        private static final int CACH_SIZE = 10000;
-        private static final String KEY_ID = "name";
-        private static final String KEY_ID2 = "name2";
-        private Map<Integer, Pair<String, String>> indexMap = new LinkedHashMap<Integer, Pair<String, String>>();
-        private NodeName serverNodeName;
-        private NodeName neighbourNodeName;
-        private String[] headers;
+        private final Map<Integer, Pair<String, String>> indexMap = new LinkedHashMap<Integer, Pair<String, String>>();
+        private final NodeName serverNodeName;
+        private final NodeName neighbourNodeName;
+        private final String[] headers;
         // private Map<String, Pair<Node, Integer>> cach = new HashMap<String, Pair<Node,
         // Integer>>();
-        private LuceneIndexService index;
+        private final LuceneIndexService index;
         private final NeoService neo;
         private char fieldSepRegex;
-        private char[] possibleFieldSepRegexes = new char[] {'\t', ',', ';'};
+        private final char[] possibleFieldSepRegexes = new char[] {'\t', ',', ';'};
         private CSVParser parser;
-        private Node lastNode = null;
 
         /**
          * Constructor
@@ -235,7 +231,7 @@ public class TransmissionLoader {
          */
         public Header(String line, NeoService neo) {
             this.neo = neo;
-
+            index=NeoServiceProvider.getProvider().getIndexService();
             determineFieldSepRegex(line);
             headers = splitLine(line);
             serverNodeName = new NodeName(new String[] {ID1, "Near end Name"}, new String[] {ID2, "Near End Site No"},
@@ -284,59 +280,9 @@ public class TransmissionLoader {
          * finish work with header
          */
         public void finish() {
-            if (index != null) {
-                index.shutdown();
-            }
+
         }
 
-        /**
-         * create cache
-         * 
-         * @param network - network node
-         */
-        public void createSectorCache(Node network) {
-
-            Transaction tx = neo.beginTx();
-            try {
-                index = new LuceneIndexService(neo);
-                index.enableCache(KEY_ID, CACH_SIZE);
-                // it useful if neighbour file much bigger then network
-                indexesAllSectors(network, index);
-                tx.success();
-            } finally {
-                // if tx.finish() - finds work slow but memory do not using
-                tx.finish();
-            }
-        }
-
-        /**
-         * Indexes all sectors
-         * 
-         * @param network network node
-         * @param index LuceneIndexService
-         */
-        private void indexesAllSectors(Node network, LuceneIndexService index) {
-            long t1 = System.currentTimeMillis();
-            Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.SITE.getId());
-                }
-            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-            while (iterator.hasNext()) {
-                Node node = (Node)iterator.next();
-                String id1 = NodeName.getId1(node);
-                if (id1 != null) {
-                    index.index(node, KEY_ID, id1);
-                }
-                String id2 = NodeName.getId2(node);
-                if (id2 != null) {
-                    index.index(node, KEY_ID2, id2);
-                }
-            }
-            System.out.println("INDEXES=\t" + (System.currentTimeMillis() - t1));
-        }
 
         /**
          * Save list of Numeric properties in database
@@ -407,36 +353,15 @@ public class TransmissionLoader {
                 String servCounName = NeoUtils.getTransmissionPropertyName(fileName);
                 serverNodeName.setFieldValues(fields);
                 neighbourNodeName.setFieldValues(fields);
-                String servId = serverNodeName.getId1();
-                Node serverNode = null;
-                if (servId != null) {
-                    serverNode = index.getSingleNode(KEY_ID, servId);
-                    if (serverNode == null) {
-                        servId = serverNodeName.getId2();
-                        serverNode = index.getSingleNode(KEY_ID2, servId);
-                    }
-                }
-                Node neighbourNode = null;
-                String neighbourId = neighbourNodeName.getId1();
-                if (neighbourId != null) {
-                    neighbourNode = index.getSingleNode(KEY_ID, neighbourId);
-                    if (neighbourNode == null) {
-                        neighbourId = neighbourNodeName.getId2();
-                        neighbourNode = index.getSingleNode(KEY_ID2, neighbourId);
-                    }
-                }
+                Node serverNode = getSiteNodeById(serverNodeName);
+                Node neighbourNode = getSiteNodeById(neighbourNodeName);
                 if (serverNode == null) {
                     serverNode = createTransmissionSite(serverNodeName, fields);
-                    NeoLoaderPlugin.error("Not found site: " + servId);
+                    NeoLoaderPlugin.error("Not found site: " + serverNodeName.getId1());
                 }
                 if (neighbourNode == null) {
                     neighbourNode = createTransmissionSite(neighbourNodeName, fields);
-                    NeoLoaderPlugin.error("Not found site: " + neighbourId);
-                }
-                if (serverNode == null || neighbourNode == null) {
-
-                    NeoLoaderPlugin.error("Not found sites for line:\n" + line);
-                    return;
+                    NeoLoaderPlugin.error("Not found site: " + neighbourNodeName.getId1());
                 }
 
                 Relationship relation = serverNode.createRelationshipTo(neighbourNode, NetworkRelationshipTypes.TRANSMISSION);
@@ -455,6 +380,25 @@ public class TransmissionLoader {
                 tx.finish();
             }
 
+        }        /**
+         * find node by id
+         * 
+         * @param nodeName NodeName
+         * @return sector node or null
+         */
+        private Node getSiteNodeById(NodeName nodeName) {
+            Node result = null;
+            String idByName = nodeName.getId1();
+            if (idByName != null) {
+                result = index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(gisName, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), idByName);
+            }
+            if (result == null) {
+                String siteNo = nodeName.getId2();
+                if (siteNo != null) {
+                    result= index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(gisName, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE),siteNo);
+                }
+            }
+            return result;
         }
 
         /**
@@ -471,47 +415,25 @@ public class TransmissionLoader {
             //TODO create NetworkIndexes  if necessary.
             Transaction tx = neo.beginTx();
             try {
-                if (lastNode == null) {
-                    lastNode = findNetworkLastSite();
-                }
                 Node result = neo.createNode();
                 result.setProperty(INeoConstants.PROPERTY_TYPE_NAME,NodeTypes.SITE.getId());
 
                 String id1 = nodeName.getId1();
                 if (id1 != null) {
                     result.setProperty(INeoConstants.PROPERTY_NAME_NAME, id1);
-                    index.index(result, KEY_ID, id1);
+                    index.index(result, NeoUtils.getLuceneIndexKeyByProperty(gisName, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), id1);
                 }
                 String id2 = nodeName.getId2();
                 if (id2 != null) {
-                    result.setProperty("site_no", id2);
-                    index.index(result, KEY_ID2, id2);
+                    result.setProperty(INeoConstants.PROPERTY_SITE_NO, id2);
+                    index.index(result, NeoUtils.getLuceneIndexKeyByProperty(gisName, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), id2);
                 }
-                lastNode.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
                 tx.success();
-                lastNode = result;
+                network.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
                 return result;
             } finally {
                 tx.finish();
             }
-        }
-
-        /**
-         * Finds last site in network
-         * 
-         * @return last node;
-         */
-        private Node findNetworkLastSite() {
-            return network.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return NeoUtils.getNodeType(node, "").equals("site")
-                            && !node.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-                }
-            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator()
-                    .next();
         }
 
         /**
@@ -576,27 +498,6 @@ public class TransmissionLoader {
             container.setProperty(key, valueToSave);
             return true;
         }
-
-        // /**
-        // * finds necessary sector in network
-        // *
-        // * @param nodeName sector name
-        // * @param network network node
-        // * @param fields array of values
-        // * @return necessary sector or null
-        // */
-        // private Node findSectors(final NodeName nodeName, Node network) {
-        // Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
-        // new ReturnableEvaluator() {
-        //
-        // @Override
-        // public boolean isReturnableNode(TraversalPosition currentPos) {
-        // return nodeName.isNecessaryNode(currentPos.currentNode());
-        // }
-        // }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-        // return iterator.hasNext() ? iterator.next() : null;
-        // }
-
     }
 
     /**
@@ -607,7 +508,7 @@ public class TransmissionLoader {
      * @author Cinkel_A
      * @since 1.0.0
      */
-    private static class NodeName {
+    public static class NodeName {
         /** String BTS_NAME field "Site No", "Site ID", "Item Name" */
         private static final String SITE_NO = "site_no";
         /** String LAC field */
@@ -680,7 +581,7 @@ public class TransmissionLoader {
          * @return id
          */
         public static String getId2(Node node) {
-            Object property = node.getProperty("site_no", null);
+            Object property = node.getProperty(INeoConstants.PROPERTY_SITE_NO, null);
             return property == null ? null : property.toString();
         }
 
@@ -725,5 +626,61 @@ public class TransmissionLoader {
             indexMap.put(key, i);
             return true;
         }
+    }
+    /**
+     * Search the database for the 'gis' node for this dataset. If none found it created an
+     * appropriate node. The search is done for 'gis' nodes that reference the specified main node.
+     * If a node needs to be created it is linked to the main node so future searches will return
+     * it.
+     * 
+     * @param mainNode main network or drive data node
+     * @return gis node for mainNode
+     */
+    protected final Node findOrCreateGISNode(String gisName, String gisType, NetworkTypes fileType) {
+            Transaction transaction = neo.beginTx();
+            Node gis;
+            try {
+                Node reference = neo.getReferenceNode();
+                gis = NeoUtils.findGisNode(gisName, neo);
+                if (gis == null) {
+                    gis = neo.createNode();
+                    gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS.getId());
+                    gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, gisName);
+                    gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
+                    if (fileType != null) {
+                        gis.setProperty(NetworkTypes.PROPERTY_NAME, fileType.getId());
+                    }
+                    reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
+                }
+                transaction.success();
+            } finally {
+                transaction.finish();
+            }
+        return gis;
+    }
+    /**
+     * This code finds the specified network node in the database, creating its own transaction for
+     * that.
+     * 
+     * @param gis gis node
+     */
+    protected Node findOrCreateNetworkNode(Node gisNode) {
+        Node network;
+        Transaction tx = neo.beginTx();
+        try {
+            Relationship relation = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            if (relation != null) {
+                return relation.getOtherNode(gisNode);
+            }
+            network = neo.createNode();
+            network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NETWORK.getId());
+            network.setProperty(INeoConstants.PROPERTY_NAME_NAME, baseName);
+            network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, fileName);
+            gisNode.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        return network;
     }
 }

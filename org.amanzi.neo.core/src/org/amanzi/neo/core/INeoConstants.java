@@ -144,4 +144,5 @@ public class INeoConstants {
     public static final String CALL_ANALYZIS_ROOT = NodeTypes.CALL_ANALYZIS_ROOT.getId();//Constant used not only as a node type.
     public static final String PROBE_LA = "LA";
     public static final String PROBE_F = "Frequency";
+    public static final String PROPERTY_SITE_NO = "site_no";
 }
