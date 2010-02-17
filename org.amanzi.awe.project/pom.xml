@@ -10,11 +10,15 @@
   <artifactId>org.amanzi.awe.project</artifactId>
   <version>1.0.0.qualifier</version>
   <packaging>eclipse-application</packaging>
+  <properties>
+  	<generatedBuildProperties>root.properties</generatedBuildProperties>
+  </properties>
   <build>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.tycho</groupId>
+        <groupId>org.sonatype.tycho</groupId>
         <artifactId>maven-osgi-packaging-plugin</artifactId>
+        <version>0.7.0</version>
         <configuration>
           <environments>
             <environment>
@@ -33,6 +37,8 @@
               <arch>x86</arch>
             </environment>
           </environments>
+          <directoryName>awe</directoryName>
+          <includeJRE>true</includeJRE>
         </configuration>
       </plugin>
     </plugins>

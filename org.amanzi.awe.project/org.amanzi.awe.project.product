@@ -32,20 +32,21 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="/org.amanzi.awe/icons/awe_icon_16.gif" i32="/org.amanzi.awe/icons/awe_icon_32.gif" i48="/org.amanzi.awe/icons/awe_icon_48.gif" i64="/org.amanzi.awe/icons/awe_icon_64.gif" i128="/org.amanzi.awe/icons/awe_icon_128.gif"/>
+   <windowImages i16="/org.amanzi.awe.project/icons/awe_icon_16.gif" i32="/org.amanzi.awe.project/icons/awe_icon_32.gif" i48="/org.amanzi.awe.project/icons/awe_icon_48.gif" i64="/org.amanzi.awe.project/icons/awe_icon_64.gif" i128="/org.amanzi.awe.project/icons/awe_icon_128.gif"/>
 
    <splash
       startupProgressRect="0,312,500,18"
       startupMessageRect="7,230,445,16"
       startupForegroundColor="FFFFFF" />
    <launcher name="awe">
-      <linux icon="/org.amanzi.awe/icons/awe_icon_128.xpm"/>
+      <linux icon="/org.amanzi.awe.project/icons/awe_icon_128.xpm"/>
       <solaris/>
       <win useIco="true">
-         <ico path="/org.amanzi.awe/icons/awe.ico"/>
+         <ico path="D:/projects/AWE/org.amanzi.awe.project/icons/awe.ico"/>
          <bmp/>
       </win>
    </launcher>
+
 
    <vm>
       <linux>jre1.6.0_11_gdal</linux>

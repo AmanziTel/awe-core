@@ -6,9 +6,22 @@
   <version>0.0.1-SNAPSHOT</version>
   <groupId>AWE_build</groupId>
   <packaging>pom</packaging>
+  
+  <prerequisites>
+    <maven>3.0</maven>
+  </prerequisites>
+  
+  <properties>
+    <tycho-version>0.7.0</tycho-version>
+  </properties>
+  
   <modules>
     <module>org.amanzi.awe.project</module>
+    <module>com.lowagie.itext</module>
     <module>net.refractions.udig.catalog.mitab</module>
+    <module>net.refractions.udig.printing.model</module>
+    <module>net.refractions.udig.printing.model.edit</module>
+    <module>net.refractions.udig.printing.ui</module>
     <module>net.refractions.udig.project</module>
     <module>net.refractions.udig.project.edit</module>
     <module>net.refractions.udig.project.ui</module>
@@ -25,18 +38,19 @@
     <module>org.amanzi.awe.startup.splash</module>
     <module>org.amanzi.awe.tool.star</module>
     <module>org.amanzi.awe.ui.operation.shape_export</module>
+    <module>org.amanzi.awe.views.call</module>
     <module>org.amanzi.awe.views.drive</module>
     <module>org.amanzi.awe.views.kpi</module>
     <module>org.amanzi.awe.views.neighbours</module>
     <module>org.amanzi.awe.views.network</module>
     <module>org.amanzi.awe.views.reuse</module>
     <module>org.amanzi.awe.views.tree.drive</module>
+    <module>org.amanzi.printing</module>
     <module>org.amanzi.gef</module>
     <module>org.amanzi.integrator.awe</module>
     <module>org.amanzi.integrator.rdt</module>
     <module>org.amanzi.neo.core</module>
     <module>org.amanzi.neo.loader</module>
-    <module>org.amanzi.neo.loader.testing</module>
     <module>org.amanzi.rdt.launching</module>
     <module>org.amanzi.rdt.testing</module>
     <module>org.amanzi.scripting.jirb</module>
@@ -45,7 +59,6 @@
     <module>org.amanzi.splash</module>
     <module>org.amanzi.splash-feature</module>
     <module>org.amanzi.splash.extras-feature</module>
-    <module>org.amanzi.splash.testing</module>
     <module>org.epic.regexp</module>
     <module>org.jfree</module>
     <module>org.jruby</module>
@@ -65,9 +78,15 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.tycho</groupId>
+        <groupId>org.sonatype.tycho</groupId>
+        <artifactId>tycho-maven-plugin</artifactId>
+        <version>0.7.0</version>
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>        
+        <groupId>org.sonatype.tycho</groupId>
         <artifactId>maven-osgi-compiler-plugin</artifactId>
-        <version>0.4.0-DEV-3170</version>
+        <version>0.7.0</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
