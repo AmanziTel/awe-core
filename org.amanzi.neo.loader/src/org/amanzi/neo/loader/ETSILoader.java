@@ -31,6 +31,7 @@ import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
@@ -511,7 +512,7 @@ public class ETSILoader extends DriveLoader {
 		}
 		
 		basename = networkName;
-		Node gis = findOrCreateGISNode(this.networkNode, GisTypes.NETWORK.getHeader());				
+		Node gis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(),NetworkTypes.PROBE);				
 		this.networkNode = findOrCreateNetworkNode(gis);			
 		basename = oldBasename;
 	}
