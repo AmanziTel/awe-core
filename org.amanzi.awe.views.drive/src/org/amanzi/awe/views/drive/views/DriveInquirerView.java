@@ -28,6 +28,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
@@ -101,6 +102,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.Range;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -154,9 +156,10 @@ public class DriveInquirerView extends ViewPart {
     private static final String MEM_TIME_LENGTH = "MEM_TIME_LENGTH";
     private static final String MEM_LOGARITHM = "MEM_LOGARITHM";
     private static final String MEM_PALETTE = "MEM_PALETTE";
+    private static final long SLIDER_STEP = 1000;//1 sek
 
     private JFreeChart chart;
-    private ChartComposite chartFrame;
+    private ChartCompositeImpl chartFrame;
     private Combo cDrive;
     private Combo cEvent;
     private Combo cProperty1;
@@ -209,6 +212,7 @@ public class DriveInquirerView extends ViewPart {
     private String initLogarithm;
     private String initPalette;
 
+    @Override
     public void createPartControl(Composite parent) {
         Composite frame = new Composite(parent, SWT.FILL);
         FormLayout formLayout = new FormLayout();
@@ -277,11 +281,11 @@ public class DriveInquirerView extends ViewPart {
         sLength.setMaximum(1000);
         sLength.setSelection(5);
         GridData timeLenlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        timeLenlayoutData.minimumWidth = 35;
+        timeLenlayoutData.minimumWidth = 45;
         sLength.setLayoutData(timeLenlayoutData);
 
         chart = createChart();
-        chartFrame = new ChartComposite(frame, SWT.NONE, chart, true);
+        chartFrame = new ChartCompositeImpl(frame, SWT.NONE, chart, true);
         fData = new FormData();
         fData.top = new FormAttachment(child, 2);
         fData.left = new FormAttachment(0, 2);
@@ -291,7 +295,7 @@ public class DriveInquirerView extends ViewPart {
         chartFrame.setLayoutData(fData);
 
         slider = new Slider(frame, SWT.NONE);
-        slider.setValues(MIN_FIELD_WIDTH, 0, 100, 1, 1, 1);
+        slider.setValues(MIN_FIELD_WIDTH, 0, 300, 1, 1, 1);
         fData = new FormData();
         fData.left = new FormAttachment(0, 0);
         fData.right = new FormAttachment(100, 0);
@@ -662,6 +666,11 @@ public class DriveInquirerView extends ViewPart {
                 if (chartprogressevent.getType() != 2) {
                     return;
                 }
+                long domainCrosshairValue = (long)chart.getXYPlot().getDomainCrosshairValue();
+                if (domainCrosshairValue!=selectedTime){
+                    selectedTime=domainCrosshairValue;
+                    slider.setSelection((int)((selectedTime-beginGisTime)/SLIDER_STEP));
+                }
                 table.setInput(0);
                 table.refresh();
             }
@@ -817,13 +826,29 @@ public class DriveInquirerView extends ViewPart {
      *change slider position
      */
     protected void changeSlider() {
+        chartFrame.dropAnchor();
         int i = slider.getSelection();
         XYPlot xyplot = (XYPlot)chart.getPlot();
         ValueAxis valueaxis = xyplot.getDomainAxis();
         Range range = valueaxis.getRange();
-        Double d = valueaxis.getLowerBound() + ((double)i / 100D) * range.getLength();
+        Double d = beginGisTime+ (i / (double)(slider.getMaximum()-slider.getMinimum())) * (endGisTime-beginGisTime);
         selectedTime=d.longValue();
-        xyplot.setDomainCrosshairValue(d);
+        xyplot.setDomainCrosshairValue(selectedTime.doubleValue());       
+        double l = xyplot.getDomainCrosshairValue()-d;
+        Long beginTime = getBeginTime();
+        int timeWindowLen = getLength();
+        Long endTime=beginTime + timeWindowLen;
+        if (selectedTime<beginTime||selectedTime>endTime){
+//            selectedTime=Math.min(endGisTime, selectedTime);
+//            selectedTime=Math.max(beginGisTime, selectedTime);
+            Long windowStartTime=selectedTime<beginTime?Math.max(beginGisTime, beginTime-timeWindowLen):Math.min(endGisTime, beginTime+timeWindowLen);
+            if (selectedTime<windowStartTime||selectedTime>windowStartTime+timeWindowLen){
+                windowStartTime= selectedTime;
+            }
+           setBeginTime(windowStartTime);
+           updateChart();
+        }
+       chart.fireChartChanged();
     }
 
     /**
@@ -1074,7 +1099,6 @@ public class DriveInquirerView extends ViewPart {
         domainAxis.setMinimumDate(date);
         domainAxis.setMaximumDate(new Date(time + length * 1000 * 60));
 
-
         xydataset1.updateDataset(cProperty1.getText(), time, length, cProperty1.getText());
         xydataset2.updateDataset(cProperty2.getText(), time, length, cProperty2.getText());
         eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
@@ -1258,7 +1282,12 @@ public class DriveInquirerView extends ViewPart {
             Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis, null);
             beginGisTime = minMax.getLeft();
             endGisTime = minMax.getRight();
+            selectedTime=beginGisTime;
+            slider.setMaximum((int)((endGisTime-beginGisTime)/SLIDER_STEP));
+            slider.setSelection(0);
+            selectedTime=beginGisTime;
             setBeginTime(beginGisTime);
+            chart.getXYPlot().setDomainCrosshairValue(selectedTime);
 
         } finally {
             tx.finish();
@@ -1302,6 +1331,7 @@ public class DriveInquirerView extends ViewPart {
         }
     }
 
+    @Override
     public void setFocus() {
     }
 
@@ -1341,6 +1371,9 @@ public class DriveInquirerView extends ViewPart {
         xyplot.setDomainCrosshairVisible(true);
         xyplot.setDomainCrosshairLockedOnData(false);
         xyplot.setRangeCrosshairVisible(false);
+        
+ 
+        
         JFreeChart jfreechart = new JFreeChart(CHART_TITLE, JFreeChart.DEFAULT_TITLE_FONT, xyplot, true);
 
         ChartUtilities.applyCurrentTheme(jfreechart);
@@ -1462,7 +1495,7 @@ public class DriveInquirerView extends ViewPart {
                 series = new TimeSeries(name);
                 Iterator<Node> nodeIterator = getNodeIterator(beginTime, length).iterator();
                 while (nodeIterator.hasNext()) {
-                    Node node = (Node)nodeIterator.next();
+                    Node node = nodeIterator.next();
                     Long time = NeoUtils.getNodeTime(node);
                     node = getSubNode(node, propertyName);
                     if (node == null) {
@@ -1582,7 +1615,7 @@ public class DriveInquirerView extends ViewPart {
      * @author Cinkel_A
      * @since 1.0.0
      */
-    private class TimeDataset extends AbstractXYDataset {
+    private class TimeDataset extends AbstractXYDataset implements CategoryDataset {
 
         /** long serialVersionUID field */
         private static final long serialVersionUID = 1L;
@@ -1644,7 +1677,7 @@ public class DriveInquirerView extends ViewPart {
                 series = new TimeSeries(name);
                 Iterator<Node> nodeIterator = getNodeIterator(beginTime, length).iterator();
                 while (nodeIterator.hasNext()) {
-                    Node node = (Node)nodeIterator.next();
+                    Node node = nodeIterator.next();
                     Long time = NeoUtils.getNodeTime(node);
                     node = getSubNode(node, propertyName);
                     if (node == null) {
@@ -1706,6 +1739,56 @@ public class DriveInquirerView extends ViewPart {
                     .getProperty(propertyName);
         }
 
+        @Override
+        public int getColumnIndex(Comparable comparable) {
+            return 0;
+        }
+
+        @Override
+        public Comparable getColumnKey(int i) {
+            return null;
+        }
+
+        @Override
+        public List getColumnKeys() {
+            return null;
+        }
+
+        @Override
+        public int getRowIndex(Comparable comparable) {
+            return 0;
+        }
+
+        @Override
+        public Comparable getRowKey(int i) {
+            return null;
+        }
+
+        @Override
+        public List getRowKeys() {
+            return null;
+        }
+
+        @Override
+        public Number getValue(Comparable comparable, Comparable comparable1) {
+            return null;
+        }
+
+        @Override
+        public int getColumnCount() {
+            return 0;
+        }
+
+        @Override
+        public int getRowCount() {
+            return 0;
+        }
+
+        @Override
+        public Number getValue(int i, int j) {
+            return null;
+        }
+
     }
 
     /**
@@ -1735,7 +1818,7 @@ public class DriveInquirerView extends ViewPart {
 
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
 
-        private ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
+        private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
         /** int DEF_SIZE field */
         protected static final int DEF_SIZE = 150;
         @Override
@@ -1825,7 +1908,7 @@ public class DriveInquirerView extends ViewPart {
 
     private class TableContentProvider implements IStructuredContentProvider {
 
-        private NodeWrapper nodeWrapper = new NodeWrapper();
+        private final NodeWrapper nodeWrapper = new NodeWrapper();
 
         public TableContentProvider() {
         }
@@ -1925,30 +2008,6 @@ public class DriveInquirerView extends ViewPart {
      */
     private Iterable<Node> getNodeIterator(final Long beginTime, final Long length) {
         return timestampIndex.searchTraverser(new Long[] {beginTime}, new Long[] {beginTime + length + 1});
-        // return root.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
-        //
-        // @Override
-        // public boolean isStopNode(TraversalPosition currentPos) {
-        // Node node = currentPos.currentNode();
-        // if (!NeoUtils.getNodeType(node, "").equals(INeoConstants.MP_TYPE_NAME)) {
-        // return false;
-        // }
-        // Long nodeTime = NeoUtils.getNodeTime(node);
-        // return nodeTime == null ? true : (nodeTime - beginTime > length);
-        // }
-        // }, new ReturnableEvaluator() {
-        //
-        // @Override
-        // public boolean isReturnableNode(TraversalPosition currentPos) {
-        // Node node = currentPos.currentNode();
-        // if (!NeoUtils.getNodeType(node, "").equals(INeoConstants.MP_TYPE_NAME)) {
-        // return false;
-        // }
-        // Long nodeTime = NeoUtils.getNodeTime(node);
-        // return nodeTime == null ? false : (nodeTime - beginTime <= length);
-        // }
-        // }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT,
-        // Direction.OUTGOING);
     }
 
     /**
@@ -2046,5 +2105,26 @@ public class DriveInquirerView extends ViewPart {
         initLogarithm = memento.getString(MEM_LOGARITHM);
         initPalette = memento.getString(MEM_PALETTE);
     }
+    /**
+     * 
+     * <p>
+     * temporary class for avoid bug: if anchor is set - the crosshair do not change by slider changing 
+     *  remove if more correctly way will be found
+     * </p>
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
+public static class ChartCompositeImpl extends ChartComposite{
 
+    
+    public ChartCompositeImpl(Composite frame, int none, JFreeChart chart, boolean b) {
+        super(frame,none,chart,b);
+    }
+    /**
+     * drop anchor;
+     */
+    public void dropAnchor(){
+        setAnchor(null);
+    }
+}
 }
