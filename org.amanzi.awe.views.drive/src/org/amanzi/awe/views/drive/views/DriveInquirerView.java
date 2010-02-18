@@ -1059,7 +1059,7 @@ public class DriveInquirerView extends ViewPart {
     
     @SuppressWarnings("deprecation")
     private Long getBeginTime() {
-        Date date = new Date(beginGisTime);
+        Date date = new Date(dateStartTimestamp);
         date.setHours(dateStart.getHours());
         date.setMinutes(dateStart.getMinutes());
         date.setSeconds(dateStart.getSeconds());
