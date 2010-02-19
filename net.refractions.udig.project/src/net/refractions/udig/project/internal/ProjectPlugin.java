@@ -3,6 +3,7 @@
  */
 package net.refractions.udig.project.internal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -146,15 +147,31 @@ public final class ProjectPlugin extends EMFPlugin {
                     turnOffEvents();
                     List resources = getProjectRegistry().eResource().getResourceSet()
                             .getResources();
+                    ArrayList<RubyProject> projectsToClear = new ArrayList<RubyProject>();
+                    
+                    //Lagutko, 19.02.2010, correcting mechanism for clearing RubyProject
+                    
+                    //first collect projects that need to be cleared
+                    for (Iterator iter = resources.iterator(); iter.hasNext(); ) {
+                        //Lagutko, 2.12.2009, we should remove all RubyFile from RubyProject before storing
+                        Resource resource = (Resource)iter.next();
+                        Object next = resource.getAllContents().next();
+                        if (next instanceof RubyProject) {      
+                            projectsToClear.add((RubyProject)next);
+                        }
+                    }
+                    
+                    //second clear this projects
+                    for (RubyProject rubyProject : projectsToClear) {
+                        clearRubyProject(rubyProject);
+                    }
+                    
+                    //and only than save content 
                     for( Iterator iter = resources.iterator(); iter.hasNext(); ) {
                         Resource resource = (Resource) iter.next();
                         if (resource.getContents().isEmpty())
                             continue;
-                        Object next = resource.getAllContents().next();
-                        //Lagutko, 2.12.2009, we should remove all RubyFile from RubyProject before storing
-                        if (next instanceof RubyProject) {                            
-                            clearRubyProject((RubyProject)next);
-                        }
+                        Object next = resource.getAllContents().next();                        
                         if (resource.isModified() && next != null && !((EObject) next).eIsProxy()) {
                             try {
                                 resource.save(saveOptions);
