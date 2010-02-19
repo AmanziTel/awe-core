@@ -12,6 +12,7 @@
  */
 
 package org.neo4j.neoclipse.property;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,7 +35,7 @@ public enum NodeTypes {
     // TODO: All changes must be reflected in copy
     GIS_PROPERTY("gis_property_type"),
     SITE("site"),
- CITY("city"),
+    CITY("city"),
     TRANSMISSION("transmission"),
     MP("mp"),
     SECTOR("sector"),
@@ -43,7 +44,7 @@ public enum NodeTypes {
     CALL("call"),
     GIS_PROPERTIES("gis_properties"),
     NETWORK("network"),
-    HILBERT_INDEX("hilbert_index"),
+    HILBERT_INDEX("hilbert_index",false),
     CALLS("calls"),
     ROOT_SECTOR_DRIVE("root_sector_site"),
     PROBE("probe"),
@@ -80,41 +81,74 @@ public enum NodeTypes {
     MISSING_SECTOR("missing_sector");
     
     private final String id;
-    private Set<String> result;
+    private boolean nodeReadOnly;
+    private Set<String> notEditableProperties;
+    
+    /**
+     * Constructor with list of properties that can't be modified for current node type 
+     * @param id node type ID
+     * @param notEditableProperties list of not editable properties
+     */
+    private NodeTypes(String id, String... notEditableProperties) {
+        this.id = id;
+        Set<String> pr = new HashSet<String>();
+        applyGeneralNotEditablePropertis();
+        if(notEditableProperties != null){
+            pr.addAll(Arrays.asList(notEditableProperties));
+        }
+        updatePropertySet(pr);
+    }
     
     /**
      * 
      * @param id node type ID
-     * @param nonEditableProperties list of not editable properties
+     * @param isNodeReadOnly true if all properties of current node can not be edited.
      */
-    private NodeTypes(String id,String... nonEditableProperties) {
+    private NodeTypes(String id, boolean isNodeReadOnly) {
         this.id = id;
-        HashSet<String> pr = new HashSet<String>();
 
-        //Geeral not editable properties for all node types
-        pr.add("type");
-        //end
-
-        if(nonEditableProperties != null){
-            for(String property : nonEditableProperties){
-                pr.add(property);
-            }
+        if(isNodeReadOnly){
+            this.nodeReadOnly = isNodeReadOnly;
+        }else {
+            applyGeneralNotEditablePropertis();
         }
-        result=Collections.unmodifiableSet(pr);
     }
     
+    /**
+     * Apply list of not editable properties that actual for any nodeTypes
+     */
+    private void applyGeneralNotEditablePropertis() {
+        Set<String> properties = new HashSet<String>();
+        
+        //General not editable properties for all node types
+        properties.add("type");
+        //end
+        
+        updatePropertySet(properties);
+    }
+/**
+ * Update set of not editable properties with new values.
+ *
+ * @param update set with properties must be added
+ */
+    private void updatePropertySet(Set<String> update) {
+        if(notEditableProperties != null){
+            update.addAll(notEditableProperties);
+        }
+        notEditableProperties=Collections.unmodifiableSet(update);
+    }
     /**
      * @return Returns the id.
      */
     public String getId() {
         return id;
     }
-/**
- * Returns NodeTypes by its ID
- *
- * @param enumId id of Node Type
- * @return NodeTypes or null
- */
+    /**
+     * Returns NodeTypes by its ID
+     *
+     * @param enumId id of Node Type
+     * @return NodeTypes or null
+     */
     public static NodeTypes getEnumById(String enumId) {
         if (enumId == null) {
             return null;
@@ -143,14 +177,16 @@ public enum NodeTypes {
             }
         }
     }
-/**
- * Returns list of not editable properties
- *
- * @return Collection<String> of not editable properties
- */
-    public Collection<String> getNonEditableProperties() {
-        return result;
+    /**
+     * Check if property editable for current node
+     *
+     * @param property property to check
+     * @return true if property editable
+     */
+    public boolean isPropertyEditable(String property) {
+        if(nodeReadOnly)
+            return false;
+        return !notEditableProperties.contains(property);  
     }
-    
 
 }

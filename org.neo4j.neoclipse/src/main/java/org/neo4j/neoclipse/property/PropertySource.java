@@ -67,7 +67,7 @@ public class PropertySource implements IPropertySource
             Class<?> c = value.getClass();
 
             NodeTypes nt = NodeTypes.getNodeType(container, null);
-            if (nt == null || !nt.getNonEditableProperties().contains(key))
+            if(nt == null || nt.isPropertyEditable(key))
                 descs.add(new PropertyDescriptor(key, key, PROPERTIES_CATEGORY, c));
             else
                 descs.add(new PropertyDescriptor(key, key, "Node"));
