@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
@@ -193,6 +194,7 @@ public class MultiPropertyIndex<E extends Object> {
             if (indexNode == null) {
                 indexNode = neo.createNode();
                 indexNode.setProperty("index", indices);
+                indexNode.setProperty("type", NodeTypes.MULTY_INDEX.getId());
                 indexNode.setProperty("level", level);
                 indexNode.setProperty("min", converter.serialize(min));
                 indexNode.setProperty("max", converter.serialize(max));

@@ -2755,7 +2755,7 @@ public class ReuseAnalyserView extends ViewPart {
         public PropertyReturnableEvalvator(){
             super();
             propertyList=new HashSet<String>();
-            propertyList.add(NodeTypes.HEADER_M.getId());
+            propertyList.add(NodeTypes.M.getId());
             propertyList.add(NodeTypes.SECTOR.getId());
             propertyList.add(NodeTypes.HEADER_MS.getId());
             propertyList.add(NodeTypes.PROBE.getId());

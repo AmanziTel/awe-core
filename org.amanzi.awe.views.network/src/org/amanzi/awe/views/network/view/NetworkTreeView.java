@@ -707,7 +707,7 @@ public class NetworkTreeView extends ViewPart {
                         || NodeTypes.BSC.getId().equals(nodeType) || NodeTypes.DELTA_NETWORK.getId().equals(nodeType)
                         || NodeTypes.DELTA_SITE.getId().equals(nodeType) || NodeTypes.DELTA_SECTOR.getId().equals(nodeType) || NodeTypes.MISSING_SITES.getId().equals(nodeType)
                         || NodeTypes.MISSING_SECTORS.getId().equals(nodeType) || NodeTypes.MISSING_SITE.getId().equals(nodeType)
-                        || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.HEADER_M.getId().equalsIgnoreCase(nodeType)
+                        || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.M.getId().equalsIgnoreCase(nodeType)
                         || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
                         || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType)
                         || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType)) {

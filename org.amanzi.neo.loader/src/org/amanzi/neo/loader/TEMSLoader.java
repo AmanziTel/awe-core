@@ -174,7 +174,7 @@ public class TEMSLoader extends DriveLoader {
         try {
             String virtualDatasetName = DriveTypes.MS.getFullDatasetName(dataset);
             
-            addIndex(NodeTypes.HEADER_M.getId(), NeoUtils.getTimeIndexProperty(dataset));
+            addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(INeoConstants.HEADER_MS, NeoUtils.getTimeIndexProperty(virtualDatasetName));
             addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
             addMappedIndex(MS_KEY, NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(virtualDatasetName));
@@ -331,7 +331,7 @@ public class TEMSLoader extends DriveLoader {
                     for (Map<String, Object> dataLine : data) {
                         Node m = neo.createNode();
                         findOrCreateFileNode(m);
-                        m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.HEADER_M.getId());
+                        m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
                         for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                             if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
                                 mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());

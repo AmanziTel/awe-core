@@ -172,7 +172,7 @@ public class NemoLoader extends DriveLoader {
             }
             Node ms = neo.createNode();
             findOrCreateFileNode(ms);
-            ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.HEADER_M.getId());
+            ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
             event.store(ms, headers);
             if (timestamp != 0) {
                 ms.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
@@ -224,7 +224,7 @@ public class NemoLoader extends DriveLoader {
      */
     private void addDriveIndexes() {
         try {
-            addIndex(NodeTypes.HEADER_M.getId(), NeoUtils.getTimeIndexProperty(dataset));
+            addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);

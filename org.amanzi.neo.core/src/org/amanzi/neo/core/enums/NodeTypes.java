@@ -13,15 +13,22 @@
 
 package org.amanzi.neo.core.enums;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
+import org.neo4j.api.core.Node;
 import org.neo4j.api.core.PropertyContainer;
+import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.Transaction;
 
 /**
@@ -35,19 +42,169 @@ public enum NodeTypes {
     // TODO: Enum has a copy: org.neo4j.neoclipse.property.NodeTypes
     // TODO: Copy needed for fully implementation of Feature #962
     // TODO: All changes must be reflected in copy
-    GIS_PROPERTY("gis_property_type"),
+    GIS_PROPERTY("gis_property_type"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            boolean isLinkOut = isLinkOut(aNode, cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.PROPERTIES)){                
+                if (isLinkOut) {
+                    return NodeDeletableTypes.UNLINK;
+                }else{
+                    return NodeDeletableTypes.DELETE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                if (isLinkOut) {
+                    return NodeDeletableTypes.UNLINK;
+                }else{
+                    return NodeDeletableTypes.DELETE;
+                }
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            return false;
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    },
     SITE("site"),
     CITY("city"),
     TRANSMISSION("transmission"),
-    MP("mp"),
+    MP("mp"){
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            for(Relationship link : aNode.getRelationships(Direction.INCOMING)){
+                if(!link.equals(cameFrom)){
+                    RelationshipType type = link.getType();
+                    if(type.equals(GeoNeoRelationshipTypes.LOCATION)){
+                        return NodeDeletableTypes.UNLINK;
+                    }
+                }
+            }
+            return NodeDeletableTypes.DELETE;
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            return false;
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    },
     SECTOR("sector"),
     NEIGHBOUR("neighbours"),
     MM("mm"),
-    CALL("call"),
-    GIS_PROPERTIES("gis_properties"),
-    NETWORK("network"),
+    CALL("call"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            boolean isLinkOut = isLinkOut(aNode, cameFrom);
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                if(isLinkOut){
+                    return NodeDeletableTypes.UNLINK;
+                }
+                else {
+                    return NodeDeletableTypes.DELETE_LINE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+                return NodeDeletableTypes.RELINK;
+            }
+            if(linkType.equals(ProbeCallRelationshipType.CALLER)
+               ||linkType.equals(ProbeCallRelationshipType.CALLEE)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
+            res.add(DATASET);
+            return res;
+        }
+    },
+    GIS_PROPERTIES("gis_properties"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.PROPERTIES)){
+                boolean isLinkOut = isLinkOut(aNode, cameFrom);
+                if (isLinkOut) {
+                    return NodeDeletableTypes.UNLINK;
+                }else{
+                    return NodeDeletableTypes.DELETE;
+                }
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            return false;
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    },
+    NETWORK("network"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                boolean isLinkOut = isLinkOut(aNode, cameFrom);
+                if (isLinkOut) {
+                    return NodeDeletableTypes.RELINK;
+                }else{
+                    return NodeDeletableTypes.UNLINK;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+                return NodeDeletableTypes.DELETE;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            return false;
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    },
     HILBERT_INDEX("hilbert_index",false),
-    CALLS("calls"),
+    CALLS("calls"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(ProbeCallRelationshipType.PROBE_DATASET)){
+                return NodeDeletableTypes.DELETE;
+            }
+            if(linkType.equals(ProbeCallRelationshipType.CALLEE)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            if(linkType.equals(ProbeCallRelationshipType.CALLER)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            if(linkType.equals(ProbeCallRelationshipType.CALLS)){
+                return NodeDeletableTypes.DELETE;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            return false;
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    },
     ROOT_SECTOR_DRIVE("root_sector_site"),
     PROBE("probe"),
     SPREADSHEET("spreadsheet"),
@@ -60,17 +217,173 @@ public enum NodeTypes {
     CHART("spreadsheet_chart"),
     CHART_ITEM("spreadsheet_chart_item"),
     CELL("spreadsheet_cell"),
-    AWE_PROJECT("awe_project"),
-    FILE("file"),
-    DIRECTORY("directory"),
-    DATASET("dataset"),
-    HEADER_M("m"),
+    AWE_PROJECT("awe_project"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            if(linkType.equals(SplashRelationshipTypes.AWE_PROJECT)){
+                return NodeDeletableTypes.DELETE;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            return false;
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    },
+    FILE("file"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            boolean isLinkOut = cameFrom.getStartNode().equals(aNode);
+            DeletableRelationshipType linkType = (DeletableRelationshipType)cameFrom.getType();
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                if(isLinkOut){
+                    return NodeDeletableTypes.RELINK;
+                }
+                else {
+                    return NodeDeletableTypes.DELETE_LINE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+                return NodeDeletableTypes.RELINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
+            res.add(DATASET);
+            res.add(DIRECTORY);
+            return res;
+        }
+    },
+    DIRECTORY("directory"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            boolean isLinkOut = cameFrom.getStartNode().equals(aNode);
+            DeletableRelationshipType linkType = (DeletableRelationshipType)cameFrom.getType();
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                if(isLinkOut){
+                    return NodeDeletableTypes.RELINK;
+                }
+                else {
+                    return NodeDeletableTypes.DELETE_LINE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+                return NodeDeletableTypes.RELINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
+            res.add(DATASET);
+            return res;
+        }
+    },
+    DATASET("dataset"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+                Node other = cameFrom.getOtherNode(aNode);
+                if(getNodeType(other, null).equals(GIS)){
+                    return NodeDeletableTypes.DELETE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.VIRTUAL_DATASET)){
+                if(isLinkOut(aNode, cameFrom)){
+                    return NodeDeletableTypes.UNLINK;
+                }
+                else{
+                    return NodeDeletableTypes.DELETE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.VIRTUAL_DATASET)){
+                if(isLinkOut(aNode, cameFrom)){
+                    return NodeDeletableTypes.UNLINK;
+                }
+                else{
+                    return NodeDeletableTypes.DELETE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            return false;
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    },
+    M("m"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = (DeletableRelationshipType)cameFrom.getType();
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                Node other = cameFrom.getOtherNode(aNode);
+                if(getNodeType(other, null).equals(FILE)){
+                    return NodeDeletableTypes.DELETE_LINE; 
+                }
+                else {
+                    return NodeDeletableTypes.UNLINK; 
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+                return NodeDeletableTypes.RELINK;
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.LOCATION)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
+            res.add(FILE);
+            return res;
+        }
+    },
     HEADER_MS("ms"),
     AGGREGATION("aggregation"),
     COUNT("count"),
     CALL_ANALYZIS("call analyzis"),
     S_ROW("s_row"),
-    GIS("gis",INeoConstants.PROPERTY_NAME_NAME),
+    GIS("gis",INeoConstants.PROPERTY_NAME_NAME){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                return NodeDeletableTypes.DELETE;
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+                return NodeDeletableTypes.DELETE;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            return false;
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    },
     CALL_ANALYZIS_ROOT("call analyzis root"),
     S_CELL("s_cell"),
     BSC("bsc"),
@@ -80,7 +393,38 @@ public enum NodeTypes {
     MISSING_SITES("missing_sites"),
     MISSING_SECTORS("missing_sectors"), 
     MISSING_SITE("missing_site"),
-    MISSING_SECTOR("missing_sector");
+    MISSING_SECTOR("missing_sector"),
+    MULTY_INDEX("multy_index"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(NeoIndexRelationshipTypes.IND_CHILD)){
+                for(Relationship link : aNode.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)){
+                    if(!link.equals(cameFrom)){
+                        return NodeDeletableTypes.UNLINK;
+                    }
+                }
+                return NodeDeletableTypes.DELETE; 
+            }
+            if(linkType.equals(NeoIndexRelationshipTypes.INDEX)){
+                return NodeDeletableTypes.DELETE;
+            }
+            if(linkType.equals(NeoIndexRelationshipTypes.IND_NEXT)){
+                return NodeDeletableTypes.RELINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            RelationshipType linkType = link.getType();
+            return linkType.equals(NeoIndexRelationshipTypes.IND_NEXT)
+                    || linkType.equals(NeoIndexRelationshipTypes.INDEX);
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    };
     
     private final String id;
     private boolean nodeReadOnly;
@@ -162,13 +506,14 @@ public enum NodeTypes {
         }
         return null;
     }
-/**
- * returns type of node
- *
- * @param container PropertyContainer
- * @param service NeoService
- * @return type of node 
- */
+    
+    /**
+     * returns type of node
+     *
+     * @param container PropertyContainer
+     * @param service NeoService
+     * @return type of node 
+     */
     public static NodeTypes getNodeType(PropertyContainer container,NeoService service) {
         Transaction tx = service==null?null:service.beginTx();
         try{
@@ -179,6 +524,160 @@ public enum NodeTypes {
             }
         }
     }
+    
+    /**
+     * Returns Node deleting type.
+     *
+     * @param aNode Node for delete
+     * @param cameFrom Relationship by what the node need to be delete 
+     * @param service NeoService
+     * @return NodeDeletableTypes
+     */
+    public static NodeDeletableTypes getNodeDeletableType(Node aNode, Relationship cameFrom, NeoService service){
+        return getNodeType(aNode, service).getDeletableType(aNode, cameFrom, service);
+    }
+    
+    /**
+     * Is node can not be delete?
+     * @param aNode Node for check
+     * @param service NeoService
+     * @return boolean
+     */
+    public static boolean isNodeFixed(Node aNode, NeoService service){
+        return getNodeType(aNode, service).isFixedType();
+    }
+    
+    /**
+     * Get pair for relationship for create new one. 
+     *
+     * @param aNode Node
+     * @param cameFrom Relationship that need a Pair
+     * @param service NeoService
+     * @return Relationship
+     */
+    public static Relationship getSecondLinkForRelink(Node aNode, Relationship cameFrom, NeoService service){
+        return getNodeType(aNode, service).getSecondLinkForRelinkByType(aNode, cameFrom, service);
+    }
+    
+    /**
+     * Returns Node deleting type.
+     *
+     * @param aNode Node for delete
+     * @param cameFrom Relationship by what the node need to be delete 
+     * @param service NeoService
+     * @return NodeDeletableTypes
+     */
+    protected NodeDeletableTypes getDeletableType(Node aNode, Relationship cameFrom, NeoService service){
+        Transaction tx = service.beginTx();
+        try{
+            if(isFixedType()||hasFixedLinks(aNode)){
+                return NodeDeletableTypes.FIXED;
+            }
+            return checkDeletableByType(aNode, cameFrom);
+        }
+        finally{
+            tx.finish();
+        }
+    }
+    
+    /**
+     * Returns Node deleting type.
+     *
+     * @param aNode Node for delete
+     * @param cameFrom Relationship by what the node need to be delete 
+     * @return NodeDeletableTypes
+     */
+    protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+        throw new UnsupportedOperationException("Method should be overrided for even enumeration element! Problem type is "+id+".");
+    }
+    
+    /**
+     * Is node of this type can not be delete?
+     *
+     * @return boolean
+     */
+    protected boolean isFixedType(){
+        return false;
+    }
+    
+    /**
+     * Get pair for relationship for create new one. 
+     *
+     * @param aNode Node
+     * @param cameFrom Relationship that need a Pair
+     * @param service NeoService
+     * @return Relationship
+     */
+    protected Relationship getSecondLinkForRelinkByType(Node aNode, Relationship cameFrom, NeoService service){
+        Transaction tx = service.beginTx();
+        try{
+            boolean isLinkOut = cameFrom.getStartNode().equals(aNode);
+            Direction direction = isLinkOut?Direction.INCOMING:Direction.OUTGOING;
+            for(Relationship link : aNode.getRelationships(direction)){
+                if(isGoodLink(aNode, cameFrom, link)){
+                    return link;
+                }
+            }
+            return null;
+        }
+        finally{
+            tx.finish();
+        }
+    }
+    
+    /**
+     * Is relationship is a pair for 'cameFrom' relationship?
+     *
+     * @param aNode Node
+     * @param cameFrom Relationship that need a Pair.
+     * @param link Relationship for check
+     * @return boolean
+     */
+    protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+        RelationshipType linkType = link.getType();
+        if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+            return true;
+        }
+        if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+            Node other = link.getOtherNode(aNode);
+            NodeTypes nodeType = getNodeType(other, null);
+            if(getParentTypes().contains(nodeType)){
+                return true; 
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Returns list of NodeTypes, that can be parents for node.
+     *
+     * @return List<NodeTypes>
+     */
+    protected List<NodeTypes> getParentTypes() {
+        throw new UnsupportedOperationException("Method should be overrided for even enumeration element! Problem type is "+id+".");
+    }
+    
+    /**
+     * Is node has relationships with deleting type FIXED. 
+     *
+     * @param aNode Node
+     * @return boolean
+     */
+    protected boolean hasFixedLinks(Node aNode){
+        Direction[] directions = new Direction[] {Direction.OUTGOING, Direction.INCOMING};
+        //TODO: Lagutko: implement like this
+        for (Direction singleDirection : directions) {
+            for (Relationship link : aNode.getRelationships(singleDirection)) {
+                DeletableRelationshipType linkType = (DeletableRelationshipType)link.getType();
+                RelationDeletableTypes deletable = linkType.getDeletableType(singleDirection);
+                if(deletable.equals(RelationDeletableTypes.FIXED)){
+                    return true;
+                }
+            }            
+        }
+        return false;
+    }
+    
     /**
      * Check if property editable for current node
      *
@@ -190,5 +689,27 @@ public enum NodeTypes {
             return false;
         return !notEditableProperties.contains(property);  
     }
+    
+    /**
+     * Is relationship outgoing from node?
+     *
+     * @param aNode Node for check
+     * @param cameFrom  Relationship for check
+     * @return boolean
+     */
+    protected boolean isLinkOut(Node aNode, Relationship cameFrom) {
+        return cameFrom.getStartNode().equals(aNode);
+    }
+    
+    /**
+     * Returns relationship type
+     *
+     * @param cameFrom Relationship
+     * @return DeletableRelationshipType
+     */
+    protected DeletableRelationshipType getLinkType(Relationship cameFrom) {
+        return (DeletableRelationshipType)cameFrom.getType();
+    }
+    
 
 }

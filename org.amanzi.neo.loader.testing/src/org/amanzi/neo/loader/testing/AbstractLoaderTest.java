@@ -281,7 +281,6 @@ public abstract class AbstractLoaderTest {
 			}
 			checkedLinks.put(linkKey, before++);
 			if (!visitedNodes.contains(linked)) {
-				System.out.println(linked);
 				assertNode(linked);
 			}
     	}

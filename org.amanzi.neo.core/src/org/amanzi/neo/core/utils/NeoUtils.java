@@ -209,7 +209,7 @@ public class NeoUtils {
      * @return true if node is file node
      */
     public static boolean isDriveMNode(Node node) {
-        return node != null && NodeTypes.HEADER_M.getId().equals(getNodeType(node, ""));
+        return node != null && NodeTypes.M.getId().equals(getNodeType(node, ""));
     }
     
     /**
@@ -482,7 +482,7 @@ public class NeoUtils {
                             public boolean isReturnableNode(TraversalPosition traversalposition) {
                                 Node curNode = traversalposition.currentNode();
                                 Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-                                return type != null && (NodeTypes.HEADER_M.getId().equals(type.toString()));
+                                return type != null && (NodeTypes.M.getId().equals(type.toString()));
                             }
                         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
                         .iterator();
@@ -767,7 +767,7 @@ public class NeoUtils {
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node curNode = currentPos.currentNode();
-                return getNodeType(curNode, "").equals(NodeTypes.HEADER_M.getId()) && curNode.hasProperty(msName);
+                return getNodeType(curNode, "").equals(NodeTypes.M.getId()) && curNode.hasProperty(msName);
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
         for (Node nodeMs : traverse) {

@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.amanzi.neo.core.enums.RelationDeletableTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.EmbeddedNeo;
 import org.neo4j.api.core.NeoService;
@@ -291,8 +293,44 @@ public class PropertyIndex<E extends Comparable<E>> {
         }
     }
 
-    public enum NeoIndexRelationshipTypes implements RelationshipType {
-        IND_CHILD, IND_NEXT, INDEX;
+    public enum NeoIndexRelationshipTypes implements DeletableRelationshipType {
+        IND_CHILD(RelationDeletableTypes.DEETE_WITH_CHECK_LINKED,RelationDeletableTypes.DELETE_ONLY_LINK),
+        IND_NEXT(RelationDeletableTypes.DEETE_WITH_CHECK_LINKED,RelationDeletableTypes.DELETE_ONLY_LINK),//TODO ?
+        INDEX(RelationDeletableTypes.DEETE_WITH_CHECK_LINKED,RelationDeletableTypes.DELETE_ONLY_LINK);//TODO ?
+        private RelationDeletableTypes deletableOut;
+        private RelationDeletableTypes deletableIn;
+        
+        /**
+         * Constructor.
+         * @param aDeletableIn (if link is incoming)
+         * @param aDeletableOut (if link is outgoing)
+         */
+        private NeoIndexRelationshipTypes(RelationDeletableTypes aDeletableIn, RelationDeletableTypes aDeletableOut){
+            deletableIn = aDeletableIn;
+            deletableOut = aDeletableOut;
+        }
+
+        @Override
+        public RelationDeletableTypes getDeletableTypeIn() {
+            return deletableIn;
+        }
+
+        @Override
+        public RelationDeletableTypes getDeletableTypeOut() {
+            return deletableOut;
+        }
+        
+        @Override
+        public RelationDeletableTypes getDeletableType(Direction aDirection) {
+            switch (aDirection) {
+            case INCOMING:
+                return deletableIn;
+            case OUTGOING:
+                return deletableOut;
+            default:
+                throw new IllegalArgumentException("Unknown direction <"+aDirection+">.");
+            }
+        }
     }
 
     /**

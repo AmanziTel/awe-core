@@ -12,7 +12,8 @@
  */
 package org.amanzi.neo.core.enums;
 
-import org.neo4j.api.core.RelationshipType;
+import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.neo4j.api.core.Direction;
 
 /**
  * Enum for RelationshipTypes used in Splash
@@ -20,23 +21,58 @@ import org.neo4j.api.core.RelationshipType;
  * @author Lagutko_N
  * @since 1.0.0
  */
-public enum SplashRelationshipTypes implements RelationshipType {
-	SPREADSHEET, 
-	CHART_ITEM, 
-	CHART, 
-	RUBY_PROJECT, 
-	AWE_PROJECT, 
-	PIE_CHART_ITEM, 
-	PIE_CHART,
-	SCRIPT_CELL, 
-	SCRIPT, 
-	SPLASH_FORMAT, 
-	CHART_CATEGORY,
-	CHART_VALUE, 
-	REPORT, 
-	REPORT_TEXT,
-	NEXT_CELL_IN_ROW,
-	NEXT_CELL_IN_COLUMN,
-	CHILD_SPREADSHEET,
-	COMPARE_RESULTS;
+public enum SplashRelationshipTypes implements DeletableRelationshipType {
+	SPREADSHEET(null,null), 
+	CHART_ITEM(null,null), 
+	CHART(null,null), 
+	RUBY_PROJECT(null,null), 
+	AWE_PROJECT(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK), 
+	PIE_CHART_ITEM(null,null), 
+	PIE_CHART(null,null),
+	SCRIPT_CELL(null,null), 
+	SCRIPT(null,null), 
+	SPLASH_FORMAT(null,null), 
+	CHART_CATEGORY(null,null),
+	CHART_VALUE(null,null), 
+	REPORT(null,null), 
+	REPORT_TEXT(null,null),
+	NEXT_CELL_IN_ROW(null,null),
+	NEXT_CELL_IN_COLUMN(null,null),
+	CHILD_SPREADSHEET(null,null),
+	COMPARE_RESULTS(null,null);
+	
+	private RelationDeletableTypes deletableOut;
+    private RelationDeletableTypes deletableIn;
+    
+    /**
+     * Constructor.
+     * @param aDeletableIn (if link is incoming)
+     * @param aDeletableOut (if link is outgoing)
+     */
+    private SplashRelationshipTypes(RelationDeletableTypes aDeletableIn, RelationDeletableTypes aDeletableOut){
+        deletableIn = aDeletableIn;
+        deletableOut = aDeletableOut;
+    }
+
+    @Override
+    public RelationDeletableTypes getDeletableTypeIn() {
+        return deletableIn;
+    }
+
+    @Override
+    public RelationDeletableTypes getDeletableTypeOut() {
+        return deletableOut;
+    }
+    
+    @Override
+    public RelationDeletableTypes getDeletableType(Direction aDirection) {
+        switch (aDirection) {
+        case INCOMING:
+            return deletableIn;
+        case OUTGOING:
+            return deletableOut;
+        default:
+            throw new IllegalArgumentException("Unknown direction <"+aDirection+">.");
+        }
+    }
 }

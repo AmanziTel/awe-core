@@ -142,7 +142,7 @@ public class RomesLoader extends DriveLoader {
 
     private void addDriveIndexes() {
         try {
-            addIndex(NodeTypes.HEADER_M.getId(), NeoUtils.getTimeIndexProperty(dataset));
+            addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -227,7 +227,7 @@ public class RomesLoader extends DriveLoader {
                 for (Map<String, Object> dataLine : data) {
                     Node ms = neo.createNode();
                     findOrCreateFileNode(ms);
-                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.HEADER_M.getId());
+                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
                             mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());

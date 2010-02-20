@@ -12,7 +12,8 @@
  */
 package org.amanzi.neo.core.enums;
 
-import org.neo4j.api.core.RelationshipType;
+import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.neo4j.api.core.Direction;
 
 /**
  * RelationshipTypes for Network
@@ -21,13 +22,56 @@ import org.neo4j.api.core.RelationshipType;
  * @since 1.0.0
  */
 
-public enum NetworkRelationshipTypes implements RelationshipType {
-    AGGREGATION,
-    CHILD,
-    SIBLING,
-    INTERFERS,
-    DELTA_REPORT,
-    MISSING,
- NEIGHBOUR, TRANSMISSION,
- DIFFERENT, NEIGHBOUR_DATA, TRANSMISSION_DATA, AGGREGATE, SECTOR_DRIVE, LINKED_NETWORK_DRIVE, DRIVE, SECTOR;
+public enum NetworkRelationshipTypes implements DeletableRelationshipType {
+    AGGREGATION(null,null),
+    CHILD(RelationDeletableTypes.DELETE_WITH_LINKED,RelationDeletableTypes.DELETE_ONLY_LINK),
+    SIBLING(null,null),
+    INTERFERS(null,null),
+    DELTA_REPORT(null,null),
+    MISSING(null,null),
+    NEIGHBOUR(null,null), 
+    TRANSMISSION(null,null),
+    DIFFERENT(null,null), 
+    NEIGHBOUR_DATA(null,null), 
+    TRANSMISSION_DATA(null,null),
+    AGGREGATE(null,null),
+    SECTOR_DRIVE(null,null), 
+    LINKED_NETWORK_DRIVE(null,null), 
+    DRIVE(null,null), 
+    SECTOR(null,null);
+    
+    private RelationDeletableTypes deletableOut;
+    private RelationDeletableTypes deletableIn;
+    
+    /**
+     * Constructor.
+     * @param aDeletableIn (if link is incoming)
+     * @param aDeletableOut (if link is outgoing)
+     */
+    private NetworkRelationshipTypes(RelationDeletableTypes aDeletableIn, RelationDeletableTypes aDeletableOut){
+        deletableIn = aDeletableIn;
+        deletableOut = aDeletableOut;
+    }
+
+    @Override
+    public RelationDeletableTypes getDeletableTypeIn() {
+        return deletableIn;
+    }
+
+    @Override
+    public RelationDeletableTypes getDeletableTypeOut() {
+        return deletableOut;
+    }
+    
+    @Override
+    public RelationDeletableTypes getDeletableType(Direction aDirection) {
+        switch (aDirection) {
+        case INCOMING:
+            return deletableIn;
+        case OUTGOING:
+            return deletableOut;
+        default:
+            throw new IllegalArgumentException("Unknown direction <"+aDirection+">.");
+        }
+    }
 }

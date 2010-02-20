@@ -12,7 +12,8 @@
  */
 package org.amanzi.neo.core.enums;
 
-import org.neo4j.api.core.RelationshipType;
+import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.neo4j.api.core.Direction;
 
 /**
  * Relationship types defined by the GeoNeo specification for traversing
@@ -20,6 +21,49 @@ import org.neo4j.api.core.RelationshipType;
  * @author craig
  * @since 1.0.0
  */
-public enum GeoNeoRelationshipTypes implements RelationshipType {
-    NEXT, PROPERTIES, CHILD, VIRTUAL_DATASET, LOCATION, SOURCE, CALLS;
+public enum GeoNeoRelationshipTypes implements DeletableRelationshipType {
+    NEXT(RelationDeletableTypes.RELINK,RelationDeletableTypes.RELINK),
+    PROPERTIES(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED),
+    CHILD(RelationDeletableTypes.RELINK,RelationDeletableTypes.DELETE_WITH_LINKED),
+    VIRTUAL_DATASET(RelationDeletableTypes.DELETE_WITH_LINKED,RelationDeletableTypes.DELETE_ONLY_LINK),
+    LOCATION(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DEETE_WITH_CHECK_LINKED),
+    SOURCE(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK),//TODO ? 
+    CALLS(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK);//TODO ?
+    
+    private RelationDeletableTypes deletableOut;
+    private RelationDeletableTypes deletableIn;
+    
+    /**
+     * Constructor.
+     * @param aDeletableIn (if link is incoming)
+     * @param aDeletableOut (if link is outgoing)
+     */
+    private GeoNeoRelationshipTypes(RelationDeletableTypes aDeletableIn, RelationDeletableTypes aDeletableOut){
+        deletableIn = aDeletableIn;
+        deletableOut = aDeletableOut;
+    }
+
+    @Override
+    public RelationDeletableTypes getDeletableTypeIn() {
+        return deletableIn;
+    }
+
+    @Override
+    public RelationDeletableTypes getDeletableTypeOut() {
+        return deletableOut;
+    }
+
+    @Override
+    public RelationDeletableTypes getDeletableType(Direction aDirection) {
+        switch (aDirection) {
+        case INCOMING:
+            return deletableIn;
+        case OUTGOING:
+            return deletableOut;
+        default:
+            throw new IllegalArgumentException("Unknown direction <"+aDirection+">.");
+        }
+    }
+
+    
 }

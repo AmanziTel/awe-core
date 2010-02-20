@@ -938,7 +938,7 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private Node createMNode(long timestamp) {
 		Node mNode = neo.createNode();
-		mNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.HEADER_M.getId());
+		mNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
 		
         updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
 			
@@ -984,7 +984,7 @@ public class ETSILoader extends DriveLoader {
 	 */
 	private void addDriveIndexes() {
         try {
-            addIndex(NodeTypes.HEADER_M.getId(), NeoUtils.getTimeIndexProperty(dataset));
+            addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(NodeTypes.CALL.getId(), NeoUtils.getTimeIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);

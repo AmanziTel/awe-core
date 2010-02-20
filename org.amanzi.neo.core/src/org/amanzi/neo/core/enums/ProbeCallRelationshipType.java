@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.core.enums;
 
+import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.RelationshipType;
 
 /**
@@ -23,14 +25,49 @@ import org.neo4j.api.core.RelationshipType;
  * @author Lagutko_N
  * @since 1.0.0
  */
-public enum ProbeCallRelationshipType implements RelationshipType {
+public enum ProbeCallRelationshipType implements DeletableRelationshipType {
 
-    CALL_M,
- CALLEE, CALLER,
-	PROBE_DATASET,
-	DRIVE_CALL,
-	PROBE_CALL,
-	CALLS, 
-	CALL_ANALYZIS;
+    CALL_M(null,null),
+    CALLEE(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK),
+    CALLER(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK),
+	PROBE_DATASET(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED),
+	DRIVE_CALL(null,null),
+	PROBE_CALL(null,null),
+	CALLS(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED), 
+	CALL_ANALYZIS(null,null);
 
+    private RelationDeletableTypes deletableOut;
+    private RelationDeletableTypes deletableIn;
+    
+    /**
+     * Constructor.
+     * @param aDeletableIn (if link is incoming)
+     * @param aDeletableOut (if link is outgoing)
+     */
+    private ProbeCallRelationshipType(RelationDeletableTypes aDeletableIn, RelationDeletableTypes aDeletableOut){
+        deletableIn = aDeletableIn;
+        deletableOut = aDeletableOut;
+    }
+
+    @Override
+    public RelationDeletableTypes getDeletableTypeIn() {
+        return deletableIn;
+    }
+
+    @Override
+    public RelationDeletableTypes getDeletableTypeOut() {
+        return deletableOut;
+    }
+    
+    @Override
+    public RelationDeletableTypes getDeletableType(Direction aDirection) {
+        switch (aDirection) {
+        case INCOMING:
+            return deletableIn;
+        case OUTGOING:
+            return deletableOut;
+        default:
+            throw new IllegalArgumentException("Unknown direction <"+aDirection+">.");
+        }
+    }
 }
