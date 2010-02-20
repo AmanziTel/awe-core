@@ -15,17 +15,34 @@ package org.amanzi.neo.loader;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.catalog.IService;
+import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
+import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.NetworkFileType;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.ui.PlatformUI;
+import org.neo4j.api.core.Node;
 
 public class LoaderUtils {
     /**
@@ -138,5 +155,101 @@ public class LoaderUtils {
             }
         }
         return result.toArray(new String[0]);
+    }
+
+    /**
+     * Confirm load network on map
+     * 
+     * @param map map
+     * @param fileName name of loaded file
+     * @return true or false
+     */
+    public static boolean confirmAddToMap(final IMap map, final String fileName) {
+    
+        final IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
+        return (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
+            int result;
+    
+            @Override
+            public void run() {
+                boolean boolean1 = preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER);
+                String message = String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, fileName, map.getName());
+                if (map == ApplicationGIS.NO_MAP) {
+                    message = String.format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, fileName);
+                }
+                // MessageBox msg = new
+                // MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                // SWT.YES | SWT.NO);
+                // msg.setText(NeoLoaderPluginMessages.ADD_LAYER_TITLE);
+                // msg.setMessage(message);
+                MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                        NeoLoaderPluginMessages.ADD_LAYER_TITLE, message, NeoLoaderPluginMessages.TOGLE_MESSAGE, boolean1, preferenceStore,
+                        DataLoadPreferences.ZOOM_TO_LAYER);
+                result = dialog.getReturnCode();
+                if (result == IDialogConstants.YES_ID) {
+                    preferenceStore.putValue(DataLoadPreferences.ZOOM_TO_LAYER, String.valueOf(dialog.getToggleState()));
+                }
+            }
+    
+            @Override
+            public Integer getValue() {
+                return result;
+            }
+        }) == IDialogConstants.YES_ID;
+    }
+
+    /**
+     * @param firstDataset
+     */
+    public static void addGisNodeToMap(String dataName, Node... gisNodes) {
+        try {
+            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+            URL url = new URL("file://" + databaseLocation);
+            IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, url, null);
+            IMap map = ApplicationGIS.getActiveMap();
+            if (confirmAddToMap(map, dataName)) {
+                List<ILayer> layerList = new ArrayList<ILayer>();
+                List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
+                for (Node gis : gisNodes) {
+                map = ApplicationGIS.getActiveMap();
+                if (curService != null && NetworkLoader.findLayerByNode(map, gis) == null) {
+                    for (IGeoResource iGeoResource : curService.resources(null)) {
+                        if (iGeoResource.canResolve(Node.class)) {
+                            if (iGeoResource.resolve(Node.class, null).equals(gis)) {
+                                listGeoRes.add(iGeoResource);
+                                break;
+                            }
+                        }
+                    };
+                }
+                }
+                layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, 0));
+    
+                IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
+                if (preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER)) {
+                    LoaderUtils.zoomToLayer(layerList);
+                }
+            }
+        } catch (Exception e) {
+            NeoCorePlugin.error(null, e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    
+    }
+
+    /**
+     * Zoom To 1st layers in list
+     * 
+     * @param layers list of layers
+     */
+    public static void zoomToLayer(final List< ? extends ILayer> layers) {
+        ActionUtil.getInstance().runTask(new Runnable() {
+            @Override
+            public void run() {
+                ZoomToLayer zoomCommand = new ZoomToLayer();
+                zoomCommand.selectionChanged(null, new StructuredSelection(layers));
+                zoomCommand.runWithEvent(null, null);
+            }
+        }, true);
     }
 }

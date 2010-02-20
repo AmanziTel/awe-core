@@ -19,7 +19,9 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.correlate.ETSICorrellator;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -42,7 +44,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
-
 /**
  * Dialog for Correlation 
  * 
@@ -129,9 +130,9 @@ public class CorrelateDialog {
 					secondCombo.add(previous);
 				}
 				previous = item;
-				
+
 				if ((firstCombo.getText() != null) && (secondCombo.getText() != null) &&
-					(firstCombo.getText().length() > 0) && (secondCombo.getText().length() > 0)) {
+ (!firstCombo.getText().isEmpty()) && (!secondCombo.getText().isEmpty())) {
 					correlate.setEnabled(true);
 				}
 				else {
@@ -204,18 +205,25 @@ public class CorrelateDialog {
 			protected IStatus run(IProgressMonitor monitor) {
 				ETSICorrellator correlator = new ETSICorrellator();
 				correlator.correlate(firstDataset, secondDataset);
+                ActionUtil.getInstance().runTask(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        LoaderUtils.addGisNodeToMap(firstDataset, NeoUtils.findGisNode(firstDataset));
+                    }
+                }, true);
 				return Status.OK_STATUS;
 			}
 		};
 		
-		correlateJob.schedule(50);
+        correlateJob.schedule();
 	}
 
-	/**
-	 * Creates controls in parent Composite
-	 * 
-	 * @param parent parent Composite
-	 */
+    /**
+     * Creates controls in parent Composite
+     * 
+     * @param parent parent Composite
+     */
 	
 	private void createControl(Composite parent) {
 		parent.setLayout(new GridLayout(1, true));		
