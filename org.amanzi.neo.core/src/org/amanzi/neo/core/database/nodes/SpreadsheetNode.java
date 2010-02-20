@@ -21,6 +21,7 @@ import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.amanzi.neo.index.hilbert.HilbertIndex;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
@@ -659,4 +660,60 @@ public class SpreadsheetNode extends AbstractNode {
         }
 	    
 	}
+
+    /**
+     * @param columnIndex
+     * @return
+     */
+    public ColumnHeaderNode getColumnHeaderMoreEquals(int columnIndex) {
+        Node cellNode = getUnderlyingNode().getSingleRelationship(NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)
+                .getOtherNode(getUnderlyingNode());
+        Node zeroRowNode = cellNode.getSingleRelationship(new RelationshipType() {
+
+            @Override
+            public String name() {
+                return "0";
+            }
+        }, Direction.OUTGOING).getOtherNode(cellNode);
+        while (zeroRowNode.hasRelationship(SplashRelationshipTypes.NEXT_CELL_IN_ROW, Direction.OUTGOING)) {
+            zeroRowNode = zeroRowNode.getSingleRelationship(SplashRelationshipTypes.NEXT_CELL_IN_ROW, Direction.OUTGOING)
+                    .getOtherNode(zeroRowNode);
+            // TODO find constant for this property
+            if (zeroRowNode.hasProperty("column_index")) {
+                Integer cInd = (Integer)zeroRowNode.getProperty("column_index");
+                if (cInd >= columnIndex) {
+                    return new ColumnHeaderNode(zeroRowNode);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param rowIndex
+     * @return
+     */
+    public RowHeaderNode getRowHeaderMoreEquals(int rowIndex) {
+        Node cellNode = getUnderlyingNode().getSingleRelationship(NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)
+                .getOtherNode(getUnderlyingNode());
+        Node zeroRowNode = cellNode.getSingleRelationship(new RelationshipType() {
+
+            @Override
+            public String name() {
+                return "0";
+            }
+        }, Direction.OUTGOING).getOtherNode(cellNode);
+        while (zeroRowNode.hasRelationship(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, Direction.OUTGOING)) {
+            zeroRowNode = zeroRowNode.getSingleRelationship(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, Direction.OUTGOING)
+                    .getOtherNode(zeroRowNode);
+            // TODO find constant for this property
+            if (zeroRowNode.hasProperty("row_index")) {
+                Integer cInd = (Integer)zeroRowNode.getProperty("row_index");
+                if (cInd >= rowIndex) {
+                    return new RowHeaderNode(zeroRowNode);
+                }
+            }
+        }
+        return null;
+    }
 }

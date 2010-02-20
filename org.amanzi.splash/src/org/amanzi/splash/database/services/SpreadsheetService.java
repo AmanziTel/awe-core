@@ -715,49 +715,49 @@ public class SpreadsheetService {
 	 * @param rowIndex row index (begin index: 0)
 	 */
 	public void insertRow(SpreadsheetNode spreadsheet, int rowIndex) {
-		Transaction transaction = neoService.beginTx();
-		
-		try {
-			//update column index to use in HilbertIndexes
-			rowIndex = rowIndex + 1;
-			RowHeaderNode row = spreadsheet.getRowHeader(rowIndex);
-	    
-			for (CellNode cellInRow : row.getAllCellsFromThis(true)) {
-				for (CellNode cellInColumn : cellInRow.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, true)) {
-					cellInColumn.setCellRow(cellInColumn.getCellRow() + 1);
-					spreadsheet.updateCellIndex(cellInColumn);
-					
-					Iterator<CellNode> referencedNode = cellInColumn.getReferencedNodes();
-					String formula = cellInColumn.getDefinition();
-					
-					while (referencedNode.hasNext()) {
-						CellNode nodeToUpdate = referencedNode.next();
-						
-						int oldRow = nodeToUpdate.getCellRow();
-						int newRow = oldRow + 1;
-						int column = nodeToUpdate.getCellColumn();						
-												
-						formula = updatingFormula(formula, oldRow, column, newRow, column);
-					}
-					if (formula != null) {
-						cellInColumn.setDefinition(formula);
-					}
-				}
-				int columnIndex = cellInRow.getCellColumn();	        
-				spreadsheet.clearCellIndex(rowIndex, columnIndex);
-			}
-			transaction.success();
-		}
-		catch (Exception e) {
-			transaction.failure();
-			e.printStackTrace();
-		}
-		finally {
-			transaction.finish();
-			//commit changes to database
-			NeoServiceProvider.getProvider().commit();
-		}
-	}
+        Transaction transaction = neoService.beginTx();
+
+        try {
+            // update column index to use in HilbertIndexes
+            rowIndex = rowIndex + 1;
+            RowHeaderNode row = spreadsheet.getRowHeaderMoreEquals(rowIndex);
+            if (row != null) {
+                rowIndex = row.getCellRow();
+                for (CellNode cellInRow : row.getAllCellsFromThis(true)) {
+                    for (CellNode cellInColumn : cellInRow.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, true)) {
+                        cellInColumn.setCellRow(cellInColumn.getCellRow() + 1);
+                        spreadsheet.updateCellIndex(cellInColumn);
+
+                        Iterator<CellNode> referencedNode = cellInColumn.getReferencedNodes();
+                        String formula = cellInColumn.getDefinition();
+
+                        while (referencedNode.hasNext()) {
+                            CellNode nodeToUpdate = referencedNode.next();
+
+                            int oldRow = nodeToUpdate.getCellRow();
+                            int newRow = oldRow + 1;
+                            int column = nodeToUpdate.getCellColumn();
+
+                            formula = updatingFormula(formula, oldRow, column, newRow, column);
+                        }
+                        if (formula != null) {
+                            cellInColumn.setDefinition(formula);
+                        }
+                    }
+                    int columnIndex = cellInRow.getCellColumn();
+                    spreadsheet.clearCellIndex(rowIndex, columnIndex);
+                }
+            }
+            transaction.success();
+        } catch (Exception e) {
+            transaction.failure();
+            e.printStackTrace();
+        } finally {
+            transaction.finish();
+            // commit changes to database
+            NeoServiceProvider.getProvider().commit();
+        }
+    }
 
 	/**
 	 * Deleting row
@@ -766,29 +766,29 @@ public class SpreadsheetService {
 	 * @param index row index (begin index: 0)
 	 * @return true if all ok.
 	 */
-	public boolean deleteRow(SpreadsheetNode spreadsheet, int rowIndex) {
-		Transaction transaction = neoService.beginTx();
-		
-		try {
-			//update column index to use in HilbertIndexes
-			rowIndex = rowIndex + 1;
-			RowHeaderNode row = spreadsheet.getRowHeader(rowIndex);
-	    
-			for (CellNode cellInRow : row.getAllCellsFromThis(true)) {				
-				for (CellNode cellInColumn : cellInRow.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, false)) {
-					cellInColumn.setCellRow(cellInColumn.getCellRow() - 1);
-					spreadsheet.updateCellIndex(cellInColumn);
-				}
-				int columnIndex = cellInRow.getCellColumn();        
-				spreadsheet.clearCellIndex(rowIndex, columnIndex);
-			}
-			
-			spreadsheet.deleteRow(row);
-			
-			transaction.success();
-		}
-		catch (Exception e) {
-			transaction.failure();
+    public boolean deleteRow(SpreadsheetNode spreadsheet, int rowIndex) {
+        Transaction transaction = neoService.beginTx();
+
+        try {
+            // update column index to use in HilbertIndexes
+            rowIndex = rowIndex + 1;
+            RowHeaderNode row = spreadsheet.getRowHeaderMoreEquals(rowIndex);
+            if (row != null) {
+                rowIndex = row.getCellRow();
+                for (CellNode cellInRow : row.getAllCellsFromThis(true)) {
+                    for (CellNode cellInColumn : cellInRow.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, false)) {
+                        cellInColumn.setCellRow(cellInColumn.getCellRow() - 1);
+                        spreadsheet.updateCellIndex(cellInColumn);
+                    }
+                    int columnIndex = cellInRow.getCellColumn();
+                    spreadsheet.clearCellIndex(rowIndex, columnIndex);
+                }
+
+                spreadsheet.deleteRow(row);
+            }
+            transaction.success();
+        } catch (Exception e) {
+            transaction.failure();
 			SplashPlugin.error(null, e);
 			return false;
 		}
@@ -807,28 +807,29 @@ public class SpreadsheetService {
 	 * @param spreadsheet spreadsheet node
 	 * @param columnIndex row index (begin index: 0)
 	 */
-	public void insertColumn(SpreadsheetNode spreadsheet, int columnIndex) {
-		Transaction transaction = neoService.beginTx();
-		
-		try {
-			//update column index to use in HilbertIndexes
-			columnIndex = columnIndex + 1;
-			ColumnHeaderNode column = spreadsheet.getColumnHeader(columnIndex);
-	    
-			for (CellNode cellInColumn : column.getAllCellsFromThis(true)) {
-				for (CellNode cellInRow : cellInColumn.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_ROW, true)) {
-					cellInRow.setCellColumn(cellInRow.getCellColumn() + 1);
-					spreadsheet.updateCellIndex(cellInRow);
-				}
-				int rowIndex = cellInColumn.getCellRow();	        
-				spreadsheet.clearCellIndex(rowIndex, columnIndex);
-			}
-			transaction.success();
-		}
-		catch (Exception e) {
-			transaction.failure();
-		}
-		finally {
+    public void insertColumn(SpreadsheetNode spreadsheet, int columnIndex) {
+        Transaction transaction = neoService.beginTx();
+
+        try {
+            // update column index to use in HilbertIndexes
+            columnIndex = columnIndex + 1;
+            ColumnHeaderNode column = spreadsheet.getColumnHeaderMoreEquals(columnIndex);
+            if (column != null) {
+                columnIndex = column.getCellColumn();
+                for (CellNode cellInColumn : column.getAllCellsFromThis(true)) {
+                    int rowIndex = cellInColumn.getCellRow();
+                    for (CellNode cellInRow : cellInColumn.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_ROW, true)) {
+                        cellInRow.setCellColumn(cellInRow.getCellColumn() + 1);
+                        spreadsheet.updateCellIndex(cellInRow);
+                    }
+                    spreadsheet.clearCellIndex(rowIndex, columnIndex);
+                }
+            }
+            transaction.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            transaction.failure();
+        } finally {
 			transaction.finish();
 			//commit changes to database
 			NeoServiceProvider.getProvider().commit();
