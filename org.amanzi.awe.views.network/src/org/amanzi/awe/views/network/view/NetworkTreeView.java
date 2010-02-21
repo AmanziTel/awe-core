@@ -64,6 +64,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
+import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -115,6 +117,7 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -230,6 +233,7 @@ public class NetworkTreeView extends ViewPart {
             }
         });
         setLayout(parent);
+        Activator.getDefault().getPluginPreferences().addPropertyChangeListener(new PreferenceChangeHandler());
     }
 
     /**
@@ -1939,5 +1943,20 @@ public class NetworkTreeView extends ViewPart {
         if (result == Dialog.CANCEL)
             return oldName;
         return dialog.getValue();
+    }
+
+    /**
+     * Class that responds to changes in preferences.
+     */
+    private class PreferenceChangeHandler implements IPropertyChangeListener {
+        /**
+         * Forward event, then refresh view.
+         */
+        public void propertyChange(final PropertyChangeEvent event) {
+            // TODO use constant
+            if ("nodePropertyNames".equals(event.getProperty())) {
+                viewer.refresh();
+            }
+        }
     }
 }
