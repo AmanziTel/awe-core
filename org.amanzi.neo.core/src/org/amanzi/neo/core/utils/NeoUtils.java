@@ -167,8 +167,7 @@ public class NeoUtils {
             return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
         }
         finally {
-            tx.success();
-            tx.finish();
+            finishTx(tx);
         }
     }
 

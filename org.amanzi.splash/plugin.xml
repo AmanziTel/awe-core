@@ -207,4 +207,24 @@
              label="New Amanzi Report">
        </action>
     </extension>
+    
+    <extension
+          point="org.eclipse.ui.exportWizards">
+       <wizard  
+             category="org.amanzi.export"
+             class="org.amanzi.splash.ui.wizards.ExportSplashToCsvWizard"
+             icon="icons/splash_16.png"
+             id="org.amanzi.splash.ui.wizards.ExportSplashToCsvWizard"
+             name="Export Splash to CSV file">
+          <description>
+ 				Export a data file from the local file system into the project
+          </description>
+       </wizard>  
+           
+       <category
+             id="org.amanzi.export"
+             name="Amanzi Data">
+       </category>
+
+    </extension>
 </plugin>
