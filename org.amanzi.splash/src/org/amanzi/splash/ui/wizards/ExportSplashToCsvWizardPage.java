@@ -13,7 +13,6 @@
 
 package org.amanzi.splash.ui.wizards;
 
-import java.io.File;
 import java.util.HashMap;
 
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -46,10 +45,7 @@ import org.neo4j.api.core.Traverser;
 import org.neo4j.api.core.Traverser.Order;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
+ * Wizard page for exporting CSV
  * @author NiCK
  * @since 1.0.0
  */
@@ -61,7 +57,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
     private String fileName;
     private HashMap<String, Node> members;
     private TreeViewer viewer;
-    protected Node selectedNode;
+    private Node selectedNode;
 
     /**
      * @param pageName
@@ -70,6 +66,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
         // super(pageName);
         super(pageName, "Title", null);
         setDescription("Description");
+//        setMessage("Bugoga message!");
         setPageComplete(false);
     }
 
@@ -126,8 +123,10 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return NeoUtils.getNodeType(currentPos.currentNode(), "").equals(NodeTypes.SPREADSHEET.getId());
                 }
-            }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, SplashRelationshipTypes.RUBY_PROJECT, Direction.OUTGOING, SplashRelationshipTypes.SPREADSHEET,
-                    Direction.OUTGOING);
+            },
+            SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING,
+            SplashRelationshipTypes.RUBY_PROJECT, Direction.OUTGOING,
+            SplashRelationshipTypes.SPREADSHEET, Direction.OUTGOING);
 
             members = new HashMap<String, Node>();
             for (Node node : traverse) {
@@ -143,14 +142,20 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
      * @param fileName
      */
     protected void setFileName(String fileName) {
-        try {
-            new File(fileName);
-            this.fileName = fileName;
-        } catch (Exception e) {
-            this.fileName = null;
-        }
+        this.fileName = fileName;
         setPageComplete(isValidPage());
-
+    }
+    /**
+     * @return fileName
+     */
+    public String getFileName() {
+        return this.fileName;
+    }
+    /**
+     * @return selectedNode
+     */
+    public Node getSelectedNode() {
+        return this.selectedNode;
     }
 
     /**
@@ -159,5 +164,4 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
     protected boolean isValidPage() {
         return selectedNode != null && StringUtils.isNotEmpty(fileName);
     }
-
 }
