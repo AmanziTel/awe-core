@@ -1804,7 +1804,8 @@ public class NetworkTreeView extends ViewPart {
                 Object node = iterator.next();
                 if (node instanceof NeoNode) {
                     NeoNode neoNode = (NeoNode)node;
-                    if (neoNode.getType().equals("delta_report")) {
+                    String type = neoNode.getType();
+                    if (type!=null&&type.equals("delta_report")) {
                         reportNode = neoNode;
                         return true;
                     }
