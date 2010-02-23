@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 
+import org.amanzi.neo.core.utils.Pair;
+
 /**
  * <p>
  * Parser of GPEH data
@@ -42,6 +44,11 @@ public class GPEHParser {
             //normal behavior
         } finally {
             input.close();
+        }
+        for (org.amanzi.neo.loader.GPEHMainFile.Record record : result.records) {
+            for (Pair<String, String> pair : record.filters) {
+                System.out.println(pair.left() + "\t" + pair.right());
+            }
         }
         return result;
     }
@@ -220,6 +227,11 @@ public class GPEHParser {
             } finally {
                 input.close();
             }
+            for (org.amanzi.neo.loader.GPEHEvent.Event event:result.events){
+                System.out.println("ueContextId\t"+event.ueContextId+"\trncModuleId\t"+event.rncModuleId);
+                System.out.println("cellId1\t"+event.cellID1+"\tcellId2\t"+event.cellID2+"\tcellId3\t"+event.cellID3+"\tcellId4\t"+event.cellID4);
+                System.out.println("rncID1\t"+event.rncID1+"\trncID2\t"+event.rncID2+"\trncID3\t"+event.rncID3+"\trncID4\t"+event.rncID4);
+            }
             return result;
         }
 
@@ -265,7 +277,29 @@ public class GPEHParser {
         readBits= readBits(bits,input,11);
         event.id=Integer.valueOf(readBits, 2);  
         System.out.println(event.id);
-        int len = (recordLen-3)*8-5-6-6-22;
+        readBits= readBits(bits,input,16);
+        event.ueContextId=Integer.valueOf(readBits, 2);  
+        readBits= readBits(bits,input,7);
+        event.rncModuleId=Integer.valueOf(readBits, 2);  
+        
+        readBits= readBits(bits,input,17);
+        event.cellID1=Integer.valueOf(readBits, 2);  
+        readBits= readBits(bits,input,13);
+        event.rncID1=Integer.valueOf(readBits, 2);  
+        readBits= readBits(bits,input,17);
+        event.cellID2=Integer.valueOf(readBits, 2);  
+        readBits= readBits(bits,input,13);
+        event.rncID2=Integer.valueOf(readBits, 2);  
+        readBits= readBits(bits,input,17);
+        event.cellID3=Integer.valueOf(readBits, 2);  
+        readBits= readBits(bits,input,13);
+        event.rncID3=Integer.valueOf(readBits, 2);  
+        readBits= readBits(bits,input,17);
+        event.cellID4=Integer.valueOf(readBits, 2);  
+        readBits= readBits(bits,input,13);
+        event.rncID4=Integer.valueOf(readBits, 2);  
+        
+        int len = (recordLen-3)*8-5-6-6-22-16-7-17-13-17-13-17-13-17-13;
         System.out.println(len);
         event.notParsed=readBits(bits,input,len);
         System.out.println(bits.toString());

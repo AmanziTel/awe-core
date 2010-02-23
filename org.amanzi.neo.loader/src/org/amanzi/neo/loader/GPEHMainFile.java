@@ -30,9 +30,9 @@ import org.amanzi.neo.core.utils.Pair;
 public class GPEHMainFile implements IGPEHBlock{
     protected Header header;
     protected GPEHEnd endRecord;
-    private final ArrayList<Record> records;
-    private final ArrayList<Protocol> protocols;
-    private final ArrayList<Link> links;
+    protected  ArrayList<Record> records;
+    protected  ArrayList<Protocol> protocols;
+    protected  ArrayList<Link> links;
 
     /**
      * 

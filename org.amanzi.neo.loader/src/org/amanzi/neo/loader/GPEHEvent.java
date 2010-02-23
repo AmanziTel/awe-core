@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * @since 1.0.0
  */
 public class GPEHEvent implements IGPEHBlock{
-    ArrayList<Event> events;
+    protected ArrayList<Event> events;
     /**
      * 
      */
@@ -41,6 +41,16 @@ public static class Event{
     protected Integer millisecond;
     protected Integer id;
     protected String notParsed;
+    public Integer ueContextId;
+    public Integer rncModuleId;
+    public Integer cellID1;
+    public Integer rncID1;
+    public Integer cellID2;
+public Integer rncID2;
+public Integer cellID3;
+public Integer rncID3;
+public Integer cellID4;
+public Integer rncID4;
 }
 @Override
 public void setEndRecord(GPEHEnd end) {
