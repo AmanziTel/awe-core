@@ -384,22 +384,38 @@ public enum Parameters {
     EVENT_PARAM_URA_ID(17),
     EVENT_PARAM_E_DCH_AND_OR_HS_DSCH_CELL_SELECTION_RESULT(4),
     EVENT_PARAM_CN_ID(2);
-    
+
     private final int bits;
     private final Rules rule;
 
     /**
-     * 
+     * constructor
      */
     private Parameters(int bits) {
         this.bits = bits;
-        rule=Rules.INTEGER;
+        rule = Rules.INTEGER;
     }
-    private Parameters(int bits,Rules rule) {
+
+    /**
+     * constructor
+     * 
+     * @param bits length
+     * @param rule - interpretation rule
+     */
+    private Parameters(int bits, Rules rule) {
         this.bits = bits;
         this.rule = rule;
     }
-    private enum Rules{
-        INTEGER,STRING, LONG;
+
+    /**
+     * <p>
+     * interpretation rules
+     * </p>
+     * 
+     * @author TsAr
+     * @since 1.0.0
+     */
+    private enum Rules {
+        INTEGER, STRING, LONG;
     }
 }

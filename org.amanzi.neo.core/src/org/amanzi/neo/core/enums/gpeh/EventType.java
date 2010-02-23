@@ -14,22 +14,27 @@
 package org.amanzi.neo.core.enums.gpeh;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * GPEH Event type
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
 public enum EventType {
-RNC{
-    @Override
+    RNC {
+        @Override
+        public boolean isInternal() {
+            return true;
+        }
+    },
+    RRC, NBAP, RANAP, RNSAP;
+    /***
+     * is internal event
+     * 
+     * @return true/false
+     */
     public boolean isInternal() {
-        return true;
+        return false;
     }
-},RRC,NBAP,RANAP,RNSAP;
-
-public boolean isInternal(){
-    return false;
-}
 }

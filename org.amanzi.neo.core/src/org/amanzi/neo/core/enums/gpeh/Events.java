@@ -263,28 +263,34 @@ public enum Events {
     RNSAP_UPLINK_SIGNALLING_TRANSFER_INDICATION(540,EventType.RNSAP),
     RNSAP_DOWNLINK_SIGNALLING_TRANSFER_REQUEST(541,EventType.RNSAP);
 
-    //event id
+    // event id
     private final int id;
-    //event type
+    // event type
     private final EventType eventType;
     private final ArrayList<Parameters> additionalParameters;
 
     /**
      * constructor
      */
-    private Events(int id,EventType type,Parameters...additionalParameters) {
+    private Events(int id, EventType type, Parameters... additionalParameters) {
         this.id = id;
         this.eventType = type;
-        this.additionalParameters=new ArrayList<Parameters>();
-        if (additionalParameters!=null){
+        this.additionalParameters = new ArrayList<Parameters>();
+        if (additionalParameters != null) {
             for (Parameters parameters : additionalParameters) {
                 this.additionalParameters.add(parameters);
             }
         }
     }
- public List<Parameters> getAllParameters(){
-     List<Parameters>result=new LinkedList<Parameters>();
-     result.addAll(additionalParameters);
-     return result;
- }
+
+    /**
+     * get all parameters of event
+     * 
+     * @return
+     */
+    public List<Parameters> getAllParameters() {
+        List<Parameters> result = new LinkedList<Parameters>();
+        result.addAll(additionalParameters);
+        return result;
+    }
 }
