@@ -14,10 +14,10 @@
 package org.amanzi.neo.loader;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Error footer
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
