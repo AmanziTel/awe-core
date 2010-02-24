@@ -14,7 +14,7 @@
   	<generatedBuildProperties>root.properties</generatedBuildProperties>
   </properties>
   <build>
-  	<finalName>${project.artifactId}-${version}</finalName>  	
+  	<finalName>${parent.artifactId}-${version}</finalName>  	
     <plugins>
       <plugin>
         <groupId>org.sonatype.tycho</groupId>
