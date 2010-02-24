@@ -11,9 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader;
+package org.amanzi.neo.loader.gpeh;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.amanzi.neo.core.enums.gpeh.Parameters;
+import org.amanzi.neo.loader.IGPEHBlock;
 
 /**
  * <p>
@@ -37,23 +42,37 @@ public class GPEHEvent implements IGPEHBlock {
         events.add(event);
     }
 
+    /**
+     * <p>
+     * Event
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
     public static class Event {
-        public int hour;
-        public Integer minute;
+        protected int hour;
+        protected Integer minute;
         protected Integer second;
         protected Integer millisecond;
         protected Integer id;
         protected String notParsed;
-        public Integer ueContextId;
-        public Integer rncModuleId;
-        public Integer cellID1;
-        public Integer rncID1;
-        public Integer cellID2;
-        public Integer rncID2;
-        public Integer cellID3;
-        public Integer rncID3;
-        public Integer cellID4;
-        public Integer rncID4;
+        protected Map<Parameters, Object> properties;
+
+        /**
+         * 
+         */
+        public Event() {
+            properties=new HashMap<Parameters, Object>();
+        }
+
+        /**
+         * @param parameter
+         * @param bitSet
+         */
+        public void addProperty(Parameters parameter, String bitSet) {
+            properties.put(parameter, parameter.pareseBits(bitSet));
+        }
     }
 
     @Override

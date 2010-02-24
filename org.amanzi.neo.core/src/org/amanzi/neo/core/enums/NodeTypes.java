@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
@@ -76,6 +77,7 @@ public enum NodeTypes {
     CITY("city"),
     TRANSMISSION("transmission"),
     MP("mp"){
+        @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
             for(Relationship link : aNode.getRelationships(Direction.INCOMING)){
                 if(!link.equals(cameFrom)){
@@ -424,7 +426,10 @@ public enum NodeTypes {
         protected List<NodeTypes> getParentTypes() {
             return null;
         }
-    };
+    },
+    OSS("oss"), 
+    GPEH_EVENT("gpeh_event"), 
+    OSS_MAIN("oss_main");
     
     private final String id;
     private boolean nodeReadOnly;
@@ -709,6 +714,15 @@ public enum NodeTypes {
      */
     protected DeletableRelationshipType getLinkType(Relationship cameFrom) {
         return (DeletableRelationshipType)cameFrom.getType();
+    }
+
+    /**
+     * Check node by type
+     * @param currentNode - node
+     * @return true if node type
+     */
+    public boolean checkNode(Node currentNode) {
+        return getId().equals(NeoUtils.getNodeType(currentNode, ""));
     }
     
 

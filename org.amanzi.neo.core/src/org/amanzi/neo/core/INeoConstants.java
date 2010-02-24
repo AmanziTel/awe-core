@@ -145,4 +145,12 @@ public class INeoConstants {
     public static final String PROBE_LA = "LA";
     public static final String PROBE_F = "Frequency";
     public static final String PROPERTY_SITE_NO = "site_no";
+    public static final String GPEH_FILE_VER = "file ver.";
+    public static final String GPEH_DAY = "day";
+    public static final String GPEH_MONTH = "month";
+    public static final String GPEH_SECOND = "second";
+    public static final String GPEH_YEAR = "year";
+    public static final String GPEH_LOGIC_NAME = "logic_name";
+    public static final String GPEH_USER_LABEL = "label";
+    public static final String GPEH_MINUTE = "minute";
 }

@@ -298,7 +298,33 @@ public class NeoUtils {
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         return gisIterator.hasNext() ? gisIterator.next() : null;        
     }
-
+    /**
+     * finds root (child of reference node)node by name
+     * 
+     * @param nodeName name of gis node
+     * @return gis node or null
+     */
+    public static Node findRootNode(final NodeTypes type, final String nodeName,final  NeoService service) {
+        if (nodeName == null || nodeName.isEmpty()||type==null) {
+            return null;
+        }
+        Transaction tx = beginTx(service);
+        try{
+            Node root = service.getReferenceNode();
+            Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+    
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return type.checkNode(node) && getNodeName(node, service).equals(nodeName);
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+            return gisIterator.hasNext() ? gisIterator.next() : null;
+        }
+        finally{
+            finishTx(tx);
+        }
+    }
     /**
      * check node by type
      * 
@@ -1665,6 +1691,25 @@ public class NeoUtils {
      */
     public static String getLuceneIndexKeyByProperty(String basename,String propertyName, NodeTypes type) {
         return new StringBuilder(basename).append("@").append(type.getId()).append("@").append(propertyName).toString();
+    }
+
+    /**
+     *Gets all OSS nodes
+     * @param service-neoservice 
+     */
+    public static Collection<Node> getAllOss( NeoService service) {
+        Transaction tx = beginTx(service);
+        try{
+            return service.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return NodeTypes.OSS.checkNode(currentPos.currentNode());
+                }
+            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).getAllNodes();
+        }finally{
+            finishTx(tx);
+        }
     }
 
 }

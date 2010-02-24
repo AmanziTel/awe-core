@@ -11,18 +11,23 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader;
-
-import org.amanzi.neo.loader.gpeh.GPEHEnd;
+package org.amanzi.neo.loader.gpeh;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Error footer
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
-public interface IGPEHBlock {
-    void setEndRecord(GPEHEnd end);
+public class GPEHError implements GPEHEnd {
+
+    protected int hour;
+    protected int minute;
+    protected int second;
+    protected int millisecond;
+    //Value: 0 - File system error, 1 - Communication error (=restart), 2 - File size exceeded, 3 - Processor Overload, 4 -    Other
+    protected int errorType;
+
 }

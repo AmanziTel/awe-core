@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader;
+package org.amanzi.neo.loader.gpeh;
 
 /**
  * <p>

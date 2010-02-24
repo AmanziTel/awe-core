@@ -97,7 +97,7 @@ public enum Events {
     RRC_RADIO_BEARER_RECONFIGURATION(10,EventType.RRC),
     RRC_RADIO_BEARER_RECONFIGURATION_COMPLETE(11,EventType.RRC),
     RRC_RADIO_BEARER_RECONFIGURATION_FAILURE(12,EventType.RRC),
-    RRC_RADIO_BEARER_RELEASE(14,EventType.RRC),
+    RRC_RADIO_BEARER_RELEASE(13,EventType.RRC),
     RRC_RADIO_BEARER_RELEASE_COMPLETE(14,EventType.RRC),
     RRC_RADIO_BEARER_RELEASE_FAILURE(15,EventType.RRC),
     RRC_RADIO_BEARER_SETUP(16,EventType.RRC),
@@ -290,7 +290,40 @@ public enum Events {
      */
     public List<Parameters> getAllParameters() {
         List<Parameters> result = new LinkedList<Parameters>();
+        result.add(EVENT_PARAM_UE_CONTEXT);
+        result.add(EVENT_PARAM_RNC_MODULE_ID);
+        result.add(EVENT_PARAM_C_ID_1);
+        result.add(EVENT_PARAM_RNC_ID_1);
+        result.add(EVENT_PARAM_C_ID_2);
+        result.add(EVENT_PARAM_RNC_ID_2);
+        result.add(EVENT_PARAM_C_ID_3);
+        result.add(EVENT_PARAM_RNC_ID_3);
+        result.add(EVENT_PARAM_C_ID_4);
+        result.add(EVENT_PARAM_RNC_ID_4);
+        if (eventType!=EventType.RNC){
+            if (eventType==EventType.RRC){
+                result.add(EVENT_PARAM_PDU_TYPE);
+            }
+            result.add(EVENT_PARAM_PROTOCOL_ID);
+            result.add(EVENT_PARAM_MESSAGE_DIRECTION);
+            result.add(EVENT_PARAM_MESSAGE_LENGTH);
+//            result.add(EVENT_PARAM_MESSAGE_CONTENTS);
+        }
         result.addAll(additionalParameters);
         return result;
+    }
+
+    /**
+     * find enum by id
+     * @param id - event id
+     * @return event or null
+     */
+    public static Events findById(int id) {
+        for (Events event:Events.values()){
+            if (event.id==id){
+                return event;
+            }
+        }
+        return null;
     }
 }

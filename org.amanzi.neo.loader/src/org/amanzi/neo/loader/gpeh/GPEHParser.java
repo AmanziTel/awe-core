@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader;
+package org.amanzi.neo.loader.gpeh;
 
 import java.io.DataInputStream;
 import java.io.EOFException;
@@ -19,9 +19,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.amanzi.neo.core.enums.gpeh.Events;
+import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.IGPEHBlock;
 
 /**
  * <p>
@@ -33,8 +38,12 @@ import org.amanzi.neo.core.utils.Pair;
  */
 public class GPEHParser {
     public static GPEHMainFile parseMainFile(File mainFile) throws IOException {
-        GPEHMainFile result = new GPEHMainFile();
-        DataInputStream input = new DataInputStream(new GZIPInputStream(new FileInputStream(mainFile)));
+        GPEHMainFile result = new GPEHMainFile(mainFile);
+        InputStream in =new FileInputStream(mainFile);
+        if (Pattern.matches("^.+\\.gz$",mainFile.getName())){
+            in= new GZIPInputStream(in); 
+        }
+        DataInputStream input = new DataInputStream(in);
         try {
             while (true) {
                 parseData(input, result);
@@ -45,7 +54,7 @@ public class GPEHParser {
         } finally {
             input.close();
         }
-        for (org.amanzi.neo.loader.GPEHMainFile.Record record : result.records) {
+        for (org.amanzi.neo.loader.gpeh.GPEHMainFile.Record record : result.records) {
             for (Pair<String, String> pair : record.filters) {
                 System.out.println(pair.left() + "\t" + pair.right());
             }
@@ -217,7 +226,11 @@ public class GPEHParser {
      */
     public static GPEHEvent parseEventFile(File file) throws  IOException {
         GPEHEvent result = new GPEHEvent();
-            DataInputStream input = new DataInputStream(new GZIPInputStream(new FileInputStream(file)));
+        InputStream in =new FileInputStream(file);
+        if (Pattern.matches("^.+\\.gz$",file.getName())){
+            in= new GZIPInputStream(in); 
+        }
+        DataInputStream input = new DataInputStream(in);
             try {
                 while (true) {
                     parseSubFile(input, result);
@@ -227,21 +240,16 @@ public class GPEHParser {
             } finally {
                 input.close();
             }
-            for (org.amanzi.neo.loader.GPEHEvent.Event event:result.events){
-                System.out.println("ueContextId\t"+event.ueContextId+"\trncModuleId\t"+event.rncModuleId);
-                System.out.println("cellId1\t"+event.cellID1+"\tcellId2\t"+event.cellID2+"\tcellId3\t"+event.cellID3+"\tcellId4\t"+event.cellID4);
-                System.out.println("rncID1\t"+event.rncID1+"\trncID2\t"+event.rncID2+"\trncID3\t"+event.rncID3+"\trncID4\t"+event.rncID4);
-            }
             return result;
         }
 
     /**
-     *
-     * @param input
-     * @param result
+     * Parse sub file
+     * @param input input stream
+     * @param result GPEHEvent
      */
     private static void parseSubFile(DataInputStream input, GPEHEvent result) throws  IOException {
-        int recordLen = input.readUnsignedShort();
+        int recordLen = input.readUnsignedShort()-3;
         int recordType = input.readByte();
         if (recordType == 4) {
             parseEvent(input, result,recordLen);
@@ -256,10 +264,10 @@ public class GPEHParser {
     }
 
     /**
-     *
-     * @param input
-     * @param result
-     * @param recordLen 
+     *Parse event 
+     * @param input input stream
+     * @param result GPEHEvent
+     * @param recordLen length of event
      * @throws IOException 
      */
     private static void parseEvent(DataInputStream input, GPEHEvent result, int recordLen) throws IOException {
@@ -276,33 +284,53 @@ public class GPEHParser {
         event.millisecond=Integer.valueOf(readBits, 2);       
         readBits= readBits(bits,input,11);
         event.id=Integer.valueOf(readBits, 2);  
-        System.out.println(event.id);
-        readBits= readBits(bits,input,16);
-        event.ueContextId=Integer.valueOf(readBits, 2);  
-        readBits= readBits(bits,input,7);
-        event.rncModuleId=Integer.valueOf(readBits, 2);  
-        
-        readBits= readBits(bits,input,17);
-        event.cellID1=Integer.valueOf(readBits, 2);  
-        readBits= readBits(bits,input,13);
-        event.rncID1=Integer.valueOf(readBits, 2);  
-        readBits= readBits(bits,input,17);
-        event.cellID2=Integer.valueOf(readBits, 2);  
-        readBits= readBits(bits,input,13);
-        event.rncID2=Integer.valueOf(readBits, 2);  
-        readBits= readBits(bits,input,17);
-        event.cellID3=Integer.valueOf(readBits, 2);  
-        readBits= readBits(bits,input,13);
-        event.rncID3=Integer.valueOf(readBits, 2);  
-        readBits= readBits(bits,input,17);
-        event.cellID4=Integer.valueOf(readBits, 2);  
-        readBits= readBits(bits,input,13);
-        event.rncID4=Integer.valueOf(readBits, 2);  
-        
-        int len = (recordLen-3)*8-5-6-6-22-16-7-17-13-17-13-17-13-17-13;
-        System.out.println(len);
-        event.notParsed=readBits(bits,input,len);
-        System.out.println(bits.toString());
+        int len=5+6+6+11+11;
+        Events events=Events.findById(event.id);
+        if (events!=null){
+            //TODO debug
+            List<Parameters> allParameters = events.getAllParameters();
+            for (Parameters parameter: allParameters){
+                len+=parameter.getBitsLen();
+                String bitSet = readBits(bits,input,parameter.getBitsLen());
+                event.addProperty(parameter,bitSet);
+            }
+        }else{
+            System.out.println("Event not found\t"+event.id);
+        }
+        final int recLen = recordLen*8;
+        if (len<recLen){
+            event.notParsed=readBits(bits,input,recLen-len);          
+        }else if (len>recLen){
+            //TODO debug
+            throw new IllegalArgumentException();          
+        }
+//        System.out.println(event.id);
+//        readBits= readBits(bits,input,16);
+//        event.ueContextId=Integer.valueOf(readBits, 2);  
+//        readBits= readBits(bits,input,7);
+//        event.rncModuleId=Integer.valueOf(readBits, 2);  
+//        
+//        readBits= readBits(bits,input,17);
+//        event.cellID1=Integer.valueOf(readBits, 2);  
+//        readBits= readBits(bits,input,13);
+//        event.rncID1=Integer.valueOf(readBits, 2);  
+//        readBits= readBits(bits,input,17);
+//        event.cellID2=Integer.valueOf(readBits, 2);  
+//        readBits= readBits(bits,input,13);
+//        event.rncID2=Integer.valueOf(readBits, 2);  
+//        readBits= readBits(bits,input,17);
+//        event.cellID3=Integer.valueOf(readBits, 2);  
+//        readBits= readBits(bits,input,13);
+//        event.rncID3=Integer.valueOf(readBits, 2);  
+//        readBits= readBits(bits,input,17);
+//        event.cellID4=Integer.valueOf(readBits, 2);  
+//        readBits= readBits(bits,input,13);
+//        event.rncID4=Integer.valueOf(readBits, 2);  
+//        
+//        int len = (recordLen-3)*8-5-6-6-22-16-7-17-13-17-13-17-13-17-13;
+//        System.out.println(len);
+//        event.notParsed=readBits(bits,input,len);
+//        System.out.println(bits.toString());
 
     }
 

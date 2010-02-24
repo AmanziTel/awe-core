@@ -11,13 +11,15 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader;
+package org.amanzi.neo.loader.gpeh;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.IGPEHBlock;
 
 /**
  * <p>
@@ -33,11 +35,14 @@ public class GPEHMainFile implements IGPEHBlock {
     protected ArrayList<Record> records;
     protected ArrayList<Protocol> protocols;
     protected ArrayList<Link> links;
+    private final String name;
 
     /**
+     * @param mainFile 
      * 
      */
-    public GPEHMainFile() {
+    public GPEHMainFile(File mainFile) {
+        name=mainFile.getName();
         header = new Header();
         records = new ArrayList<Record>();
         protocols = new ArrayList<Protocol>();
@@ -88,6 +93,60 @@ public class GPEHMainFile implements IGPEHBlock {
         protected int second;
         protected String neUserLabel;
         protected String neLogicalName;
+        /**
+         * @return Returns the fileVer.
+         */
+        public String getFileVer() {
+            return fileVer;
+        }
+        /**
+         * @return Returns the month.
+         */
+        public int getMonth() {
+            return month;
+        }
+        /**
+         * @return Returns the year.
+         */
+        public int getYear() {
+            return year;
+        }
+        /**
+         * @return Returns the day.
+         */
+        public int getDay() {
+            return day;
+        }
+        /**
+         * @return Returns the hour.
+         */
+        public int getHour() {
+            return hour;
+        }
+        /**
+         * @return Returns the minute.
+         */
+        public int getMinute() {
+            return minute;
+        }
+        /**
+         * @return Returns the second.
+         */
+        public int getSecond() {
+            return second;
+        }
+        /**
+         * @return Returns the neUserLabel.
+         */
+        public String getNeUserLabel() {
+            return neUserLabel;
+        }
+        /**
+         * @return Returns the neLogicalName.
+         */
+        public String getNeLogicalName() {
+            return neLogicalName;
+        }
 
     }
 
@@ -152,6 +211,20 @@ public class GPEHMainFile implements IGPEHBlock {
 
         protected String filePath;
 
+    }
+
+    /**
+     * @return Returns the header.
+     */
+    public Header getHeader() {
+        return header;
+    }
+
+    /**
+     * @return Returns the name.
+     */
+    public String getName() {
+        return name;
     }
 
 }

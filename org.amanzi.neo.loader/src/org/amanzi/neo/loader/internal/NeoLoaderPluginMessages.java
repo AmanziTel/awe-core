@@ -82,6 +82,12 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String PrefNeighbour_field_adj_bts;
     public static String PrefNeighbour_field_adj_lac;
     
+    public static String GpehWindowTitle;
+    public static String GpehTitle;
+    public static String GpehDescr;
+    public static String GpehLbOSS;
+    public static String GpehImportDirEditorTitle;
+    
     private NeoLoaderPluginMessages() {
     }
 

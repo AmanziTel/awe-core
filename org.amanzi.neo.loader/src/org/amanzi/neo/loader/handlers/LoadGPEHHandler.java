@@ -11,24 +11,23 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader;
+package org.amanzi.neo.loader.handlers;
+
+import org.amanzi.neo.wizards.GPEHImportWizard;
+import org.eclipse.ui.IImportWizard;
 
 /**
  * <p>
- * GPEH Footer
+ *Open import GEH wizarg
  * </p>
- * 
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class GPEHFooter implements GPEHEnd {
+public class LoadGPEHHandler extends AbstractOpenWizardHandler {
 
-    protected int year;
-    protected int month;
-    protected int day;
-    protected int hour;
-    protected int minute;
-    protected int second;
-
+    @Override
+    protected IImportWizard getWizardInstance() {
+        return new GPEHImportWizard();
+    }
 
 }

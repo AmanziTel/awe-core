@@ -42,6 +42,11 @@
              id="org.amanzi.neo.loader.commands.LoadETSI"
              name="Load Probe Data">
        </command>   
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadGPEHHandler"
+             name="Load GPEH Data">
+       </command>   
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
@@ -52,6 +57,10 @@
        <handler
              class="org.amanzi.neo.loader.handlers.LoadNetworkSiteHandler"
              commandId="org.amanzi.neo.loader.commands.LoadNetworkSite">
+       </handler>
+       <handler
+             class="org.amanzi.neo.loader.handlers.LoadGPEHHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadGPEHHandler">
        </handler>
        <handler
              class="org.amanzi.neo.loader.handlers.LoadDriveHandler"
@@ -86,6 +95,12 @@
             icon="icons/16/network_site.png"
             id="org.amanzi.neo.loader.LoadNetworkSite"
                    tooltip="Load Network Data">
+             </command>
+             <command
+                   commandId="org.amanzi.neo.loader.commands.LoadGPEHHandler"
+            icon="icons/16/delta_network.png"
+            id="org.amanzi.neo.loader.LoadGPEH"
+                   tooltip="Load GPEH Data">
              </command>
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"
@@ -135,6 +150,16 @@
              class="org.amanzi.neo.wizards.TemsImportWizard"
              icon="icons/16/drive.png"
              id="org.amanzi.neo.wizards.TemsImportWizard"
+             name="Import Drive data">
+          <description>
+ 				Import a data file from the local file system into the project
+          </description>
+       </wizard>
+        <wizard
+             category="org.amanzi.load"
+             class="org.amanzi.neo.wizards.GPEHImportWizard"
+             icon="icons/16/delta_network.png"
+             id="org.amanzi.neo.wizards.GPEHImportWizard"
              name="Import Drive data">
           <description>
  				Import a data file from the local file system into the project
