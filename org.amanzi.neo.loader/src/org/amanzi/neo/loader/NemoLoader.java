@@ -129,7 +129,8 @@ public class NemoLoader extends DriveLoader {
             Float lon = (Float)event.parsedParameters.get("Lon.");
             Float lat = (Float)event.parsedParameters.get("Lat.");
             String time = event.time;
-            if (lon == null || lat == null) {
+            if ((lon == null || lat == null) ||
+                (lon == 0) && (lat == 0)) {
                 return;
             }
             Node mp = neo.createNode();

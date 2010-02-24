@@ -3537,7 +3537,7 @@ public enum NemoEvents {
             return parsedParameters;
         }
     },
-    TPROFSCAN("PPPRATE") {
+    TPROFSCAN("TPROFSCAN") {
         @Override
         public Map<String, Object> fill(String version, List<String> params) {
             Iterator<String> parameters = params.iterator();
@@ -5692,7 +5692,6 @@ public enum NemoEvents {
                     parsedParameters.put("RLC/MAC msg", getStringValue(parameters));
                     parsedParameters.put("Subchannel", getStringValue(parameters));
                     parsedParameters.put("Type", getIntegerValue(parameters));
-                    parsedParameters.put("RB", getIntegerValue(parameters));
                     parsedParameters.put("RLC/MAC data", getStringValue(parameters));
                 } else if (25 == system) {
                     parsedParameters.put("Direction", getIntegerValue(parameters));
