@@ -369,9 +369,10 @@ public class GPEHParser {
            if (byteSymb==0){
                break;
            }
+            result.append((char)byteSymb);
            count+=8;
         }
-        return null;
+        return result.toString();
     }
 
     /**
