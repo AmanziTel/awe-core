@@ -2,19 +2,19 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>AWE</artifactId>
+    <artifactId>awe</artifactId>
     <groupId>AWE_build</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>AWE_build</groupId>
   <artifactId>org.amanzi.awe.project</artifactId>
-  <version>1.0.0.qualifier</version>
+  <version>0.10.${BUILD_ID}</version>
   <packaging>eclipse-application</packaging>
   <properties>
   	<generatedBuildProperties>root.properties</generatedBuildProperties>
   </properties>
   <build>
-  	<finalName>awe</finalName>  	
+  	<finalName>${artifactId}-${version}</finalName>  	
     <plugins>
       <plugin>
         <groupId>org.sonatype.tycho</groupId>
