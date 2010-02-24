@@ -16,7 +16,7 @@ package org.amanzi.neo.wizards;
 import java.io.File;
 import java.io.IOException;
 
-import org.amanzi.neo.loader.GPHEHLoader;
+import org.amanzi.neo.loader.GPEHLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -46,7 +46,7 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
         Job job = new Job("Load GPEH '" + (new File(mainPage.getDirectory())).getName() + "'") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                GPHEHLoader loader = new GPHEHLoader(mainPage.getDirectory(),mainPage.getDatasetName(), display);
+                GPEHLoader loader = new GPEHLoader(mainPage.getDirectory(),mainPage.getDatasetName(), display);
                 
                 try {
                     loader.run(monitor);
