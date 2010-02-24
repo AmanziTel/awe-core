@@ -18,10 +18,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.splash.ui.SplashPlugin;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
+
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -42,14 +42,25 @@ public class ExportSplashToCsvWizard extends Wizard implements IExportWizard {
     ExportSplashToCsvWizardPage mainPage = null;
     @Override
     public boolean performFinish() {
+        
+        Node node = mainPage.getSelectedNode();
+        SpreadsheetNode sn = SpreadsheetNode.fromNode(node);
+        
+        String toFile;
+        try {
+            toFile = getCsvString(sn);
+        } catch (Exception e1) {
+            e1.printStackTrace();
+            throw (RuntimeException) new RuntimeException( ).initCause( e1 );
+        }
+        
         String fileName = mainPage.getFileName();
         File f = new File(fileName);
         BufferedWriter buf = null;
         try {
             buf = new BufferedWriter(new FileWriter(f));
-            Node node = mainPage.getSelectedNode();
-//            SplashPlugin.getDefault().getSpreadsheetService().getCell(new SpreadsheetNode(node, name), 1, 1).getValue().toString();
-            buf.write("testText");
+//            buf = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f),"UTF-8"));
+            buf.write(toFile);
             buf.close();
         } catch (IOException e) {
 //            e.printStackTrace();
@@ -67,6 +78,50 @@ public class ExportSplashToCsvWizard extends Wizard implements IExportWizard {
         return true;
     }
 
+    /**
+     *
+     * @param sn
+     */
+    private String getCsvString(SpreadsheetNode node) {
+        StringBuilder sb = new StringBuilder("");
+//        SpreadsheetService serv = SplashPlugin.getDefault().getSpreadsheetService();
+        CellNode startCell = node.getRowHeader(0);
+        CellNode rowHeader = startCell;
+        int yPosition = 1;
+        while(rowHeader != null){
+            int yCell = rowHeader.getCellRow();
+            while(yPosition < yCell){
+                sb.append("\n");
+                yPosition++;
+            }
+            Object v = rowHeader.getValue();
+            if(v != null){
+                sb.append("\"").append(rowHeader.getValue().toString()).append("\"");
+            }
+            int xLastPosition = 1;
+            CellNode colCell = rowHeader.getNextCellInRow();
+            while(colCell != null){
+                xLastPosition = addColData(colCell, sb, xLastPosition);
+                colCell = colCell.getNextCellInRow(); 
+            }
+            rowHeader = rowHeader.getNextCellInColumn();
+        }
+        return sb.toString();
+    }
+
+    private int addColData(CellNode cell, StringBuilder sb, int xLastPosition) {
+        int xCell = cell.getCellColumn();
+        if(cell.getValue() == null || StringUtils.isEmpty(cell.getValue().toString())){
+            return xLastPosition;
+        }
+        while(xLastPosition < xCell){
+            sb.append(";");
+            xLastPosition++;
+        }
+        sb.append("\"").append(cell.getValue().toString()).append("\"");
+        return xCell;
+    }
+    
     @Override
     public void addPages() {
         super.addPages();
