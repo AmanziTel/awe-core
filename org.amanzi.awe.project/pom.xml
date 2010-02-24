@@ -14,6 +14,7 @@
   	<generatedBuildProperties>root.properties</generatedBuildProperties>
   </properties>
   <build>
+  	<finalName>awe</finalName>  	
     <plugins>
       <plugin>
         <groupId>org.sonatype.tycho</groupId>
