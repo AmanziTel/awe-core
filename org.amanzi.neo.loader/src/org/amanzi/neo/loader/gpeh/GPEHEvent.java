@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.loader.IGPEHBlock;
 
@@ -32,12 +33,17 @@ public class GPEHEvent implements IGPEHBlock {
     protected ArrayList<Event> events;
 
     /**
-     * 
+     * constructor
      */
     public GPEHEvent() {
         events = new ArrayList<Event>();
     }
 
+    /**
+     * add event to event lists
+     * 
+     * @param event
+     */
     public void addEvent(Event event) {
         events.add(event);
     }
@@ -57,13 +63,15 @@ public class GPEHEvent implements IGPEHBlock {
         protected Integer millisecond;
         protected Integer id;
         protected String notParsed;
+        protected Events type;
+
         protected Map<Parameters, Object> properties;
 
         /**
          * 
          */
         public Event() {
-            properties=new HashMap<Parameters, Object>();
+            properties = new HashMap<Parameters, Object>();
         }
 
         /**
@@ -73,10 +81,90 @@ public class GPEHEvent implements IGPEHBlock {
         public void addProperty(Parameters parameter, String bitSet) {
             properties.put(parameter, parameter.pareseBits(bitSet));
         }
+
+        /**
+         * @return Returns the hour.
+         */
+        public int getHour() {
+            return hour;
+        }
+
+        /**
+         * @return Returns the minute.
+         */
+        public Integer getMinute() {
+            return minute;
+        }
+
+        /**
+         * @return Returns the second.
+         */
+        public Integer getSecond() {
+            return second;
+        }
+
+        /**
+         * @return Returns the millisecond.
+         */
+        public Integer getMillisecond() {
+            return millisecond;
+        }
+
+        /**
+         * @return Returns the id.
+         */
+        public Integer getId() {
+            return id;
+        }
+
+        /**
+         * @return Returns the notParsed.
+         */
+        public String getNotParsed() {
+            return notParsed;
+        }
+
+        /**
+         * @return Returns the properties.
+         */
+        public Map<Parameters, Object> getProperties() {
+            return properties;
+        }
+
+        /**
+         * @return Returns the type.
+         */
+        public Events getType() {
+            return type;
+        }
+
+        /**
+         * @param type The type to set.
+         */
+        public void setType(Events type) {
+            this.type = type;
+        }
+
+        /**
+         *get full time of event
+         * 
+         * @param timestampOfDay timestamp - begin of day
+         * @return full time
+         */
+        public Long getFullTime(long timestampOfDay) {
+            return timestampOfDay + (hour * 60 * 60 + minute * 60 + second) * 1000 + millisecond;
+        }
     }
 
     @Override
     public void setEndRecord(GPEHEnd end) {
+    }
+
+    /**
+     * @return Returns the events.
+     */
+    public ArrayList<Event> getEvents() {
+        return events;
     }
 
 }

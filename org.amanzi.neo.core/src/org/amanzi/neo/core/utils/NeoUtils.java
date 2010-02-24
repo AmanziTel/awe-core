@@ -70,8 +70,7 @@ import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 public class NeoUtils {
     private static final String TIMESTAMP_INDEX_NAME = "Index-timestamp-";
     private static final String LOCATION_INDEX_NAME = "Index-location-";
-    
-    
+
     private NeoUtils() {
 
     }
@@ -116,7 +115,7 @@ public class NeoUtils {
         // }
         return getSimpleNodeName(node, "");
     }
-    
+
     /**
      * Gets node name
      * 
@@ -146,13 +145,12 @@ public class NeoUtils {
         Transaction tx = beginTransaction();
         try {
             return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
-        }
-        finally {
+        } finally {
             tx.success();
             tx.finish();
         }
     }
-    
+
     /**
      * Gets node name
      * 
@@ -164,8 +162,7 @@ public class NeoUtils {
         Transaction tx = beginTx(service);
         try {
             return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
-        }
-        finally {
+        } finally {
             finishTx(tx);
         }
     }
@@ -209,35 +206,35 @@ public class NeoUtils {
     public static boolean isDriveMNode(Node node) {
         return node != null && NodeTypes.M.getId().equals(getNodeType(node, ""));
     }
-    
+
     /**
      * Is this node a Probe node
-     *
+     * 
      * @param node node to check
      * @return is this node a Probe node
      */
     public static boolean isProbeNode(Node node) {
-    	return node != null && NodeTypes.PROBE.getId().equals(getNodeType(node, ""));
+        return node != null && NodeTypes.PROBE.getId().equals(getNodeType(node, ""));
     }
-    
+
     /**
      * Is this node a Probe Calls node
-     *
+     * 
      * @param node node to check
      * @return is this node a Probe Calls node
      */
     public static boolean isProbeCallsNode(Node node) {
-    	return node != null && NodeTypes.CALLS.getId().equals(getNodeType(node, ""));
+        return node != null && NodeTypes.CALLS.getId().equals(getNodeType(node, ""));
     }
-    
+
     /**
      * Is this node a Call node
-     *
+     * 
      * @param node node to check
      * @return is this node a Call node
      */
     public static boolean isCallNode(Node node) {
-    	return node != null && NodeTypes.CALL.getId().equals(getNodeType(node, ""));
+        return node != null && NodeTypes.CALL.getId().equals(getNodeType(node, ""));
     }
 
     /**
@@ -276,7 +273,7 @@ public class NeoUtils {
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         return gisIterator.hasNext() ? gisIterator.next() : null;
     }
-    
+
     /**
      * finds gis node by name
      * 
@@ -296,23 +293,24 @@ public class NeoUtils {
                 return isGisNode(node) && getNodeName(node, service).equals(gisName);
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-        return gisIterator.hasNext() ? gisIterator.next() : null;        
+        return gisIterator.hasNext() ? gisIterator.next() : null;
     }
+
     /**
      * finds root (child of reference node)node by name
      * 
      * @param nodeName name of gis node
      * @return gis node or null
      */
-    public static Node findRootNode(final NodeTypes type, final String nodeName,final  NeoService service) {
-        if (nodeName == null || nodeName.isEmpty()||type==null) {
+    public static Node findRootNode(final NodeTypes type, final String nodeName, final NeoService service) {
+        if (nodeName == null || nodeName.isEmpty() || type == null) {
             return null;
         }
         Transaction tx = beginTx(service);
-        try{
+        try {
             Node root = service.getReferenceNode();
             Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-    
+
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node = currentPos.currentNode();
@@ -320,11 +318,11 @@ public class NeoUtils {
                 }
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
             return gisIterator.hasNext() ? gisIterator.next() : null;
-        }
-        finally{
+        } finally {
             finishTx(tx);
         }
     }
+
     /**
      * check node by type
      * 
@@ -388,16 +386,14 @@ public class NeoUtils {
     public static Node findGisNodeByChild(Node childNode) {
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         try {
-            Iterator<Node> gisIterator = childNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                    new ReturnableEvaluator() {
+            Iterator<Node> gisIterator = childNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                        @Override
-                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                            Node node = currentPos.currentNode();
-                            return isGisNode(node);
-                        }
-                    }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)
-                    .iterator();
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return isGisNode(node);
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
             tx.success();
             return gisIterator.hasNext() ? gisIterator.next() : null;
         } finally {
@@ -413,8 +409,7 @@ public class NeoUtils {
             // TODO gets service URL from static field
             String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-            List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(
-                    new URL("file://" + databaseLocation));
+            List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(new URL("file://" + databaseLocation));
             for (IService service : services) {
                 System.out.println("Found catalog service: " + service);
                 if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
@@ -493,17 +488,15 @@ public class NeoUtils {
             // TODO remove this after refactoring tems loader
             if (node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").equals(GisTypes.DRIVE.getHeader())) {
                 List<String> result = new ArrayList<String>();
-                Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                        new ReturnableEvaluator() {
+                Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                            @Override
-                            public boolean isReturnableNode(TraversalPosition traversalposition) {
-                                Node curNode = traversalposition.currentNode();
-                                Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-                                return type != null && (NodeTypes.M.getId().equals(type.toString()));
-                            }
-                        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
-                        .iterator();
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition traversalposition) {
+                        Node curNode = traversalposition.currentNode();
+                        Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
+                        return type != null && (NodeTypes.M.getId().equals(type.toString()));
+                    }
+                }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
                 if (iteratorProperties.hasNext()) {
                     Node propNode = iteratorProperties.next();
                     Iterator<String> iteratorProper = propNode.getPropertyKeys().iterator();
@@ -833,8 +826,7 @@ public class NeoUtils {
      * @param neo - neo service if null then transaction do not created
      * @return sector-drive node
      */
-    public static Node findOrCreateSectorDrive(String aDriveName, Node sectorDriveRoot, Node mpNode, NeoService service,
-            boolean isNewTransaction) {
+    public static Node findOrCreateSectorDrive(String aDriveName, Node sectorDriveRoot, Node mpNode, NeoService service, boolean isNewTransaction) {
         NeoService neo = isNewTransaction ? service : null;
         Transaction tx = beginTx(neo);
         try {
@@ -845,17 +837,16 @@ public class NeoUtils {
             if (mpNode.hasRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING)) {
                 return mpNode.getSingleRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING).getOtherNode(mpNode);
             }
-            Iterator<Node> iterator = sectorDriveRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,
-                    new ReturnableEvaluator() {
+            Iterator<Node> iterator = sectorDriveRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-                        @Override
-                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                            Node node = currentPos.currentNode();
-                            Object id = node.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    Object id = node.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
 
-                            return id != null && idProperty.equals(id);
-                        }
-                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+                    return id != null && idProperty.equals(id);
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
             Node result;
             if (iterator.hasNext()) {
                 result = iterator.next();
@@ -911,8 +902,7 @@ public class NeoUtils {
      * @param parentNode parent node
      * @return Pair<is node was created?,child node>
      */
-    public static Pair<Boolean, Node> findOrCreateFileNode(NeoService service, Node parentNode, final String nodeName,
-            final String fileName) {
+    public static Pair<Boolean, Node> findOrCreateFileNode(NeoService service, Node parentNode, final String nodeName, final String fileName) {
         Transaction tx = beginTx(service);
         try {
             Pair<Boolean, Node> result = findOrCreateChildNode(service, parentNode, nodeName);
@@ -1074,8 +1064,8 @@ public class NeoUtils {
         } else {
             out = System.err;
         }
-        out.println(new StringBuilder("Transaction:\t").append(thread.getId()).append("\t").append(thread.getName()).append("\t")
-                .append(simpleName).append("\t").append(description));
+        out.println(new StringBuilder("Transaction:\t").append(thread.getId()).append("\t").append(thread.getName()).append("\t").append(simpleName).append("\t").append(
+                description));
     }
 
     /**
@@ -1108,8 +1098,8 @@ public class NeoUtils {
     public static Pair<Long, Long> getMinMaxTimeOfDataset(Node driveGisNode, NeoService service) {
         Transaction tx = beginTx(service);
         try {
-            return new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null), (Long)driveGisNode
-                    .getProperty(INeoConstants.MAX_TIMESTAMP, null));
+            return new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null), (Long)driveGisNode.getProperty(INeoConstants.MAX_TIMESTAMP,
+                    null));
         } finally {
             finishTx(tx);
         }
@@ -1123,8 +1113,7 @@ public class NeoUtils {
      * @throws IOException
      */
     public static MultiPropertyIndex<Long> getTimeIndexProperty(String name) throws IOException {
-        return new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(name),
-                new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
+        return new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(name), new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new MultiTimeIndexConverter(), 10);
     }
 
     /**
@@ -1135,56 +1124,52 @@ public class NeoUtils {
      * @throws IOException
      */
     public static MultiPropertyIndex<Double> getLocationIndexProperty(String name) throws IOException {
-        return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(name), new String[] {
-                INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME}, new MultiDoubleConverter(0.001), 10);
+        return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(name), new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
+                new MultiDoubleConverter(0.001), 10);
     }
-    
+
     /**
      * Searches for the Probe node by it's name
-     *
+     * 
      * @param networkNode Network that should contain Probe
      * @param probeName name of Probe
      * @return Probe node
      */
     public static Node findOrCreateProbeNode(Node networkNode, final String probeName, NeoService service) {
-		Transaction tx = beginTx(service);
-		Node result = null;
-		try {
-			Iterator<Node> probeIterator = networkNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-			
-				@Override
-				public boolean isReturnableNode(TraversalPosition currentPos) {
-					return NeoUtils.isProbeNode(currentPos.currentNode()) && 
-						   probeName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
-				}
-			}, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-		
-			if (probeIterator.hasNext()) {
-				result = probeIterator.next();
-			}
-			else {
-				result = service.createNode();
-				result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PROBE.getId());
-				result.setProperty(INeoConstants.PROPERTY_NAME_NAME, probeName);
-			
-				networkNode.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
-			}
-			tx.success();
-		}
-		catch (Exception e) {
-			NeoCorePlugin.error(null, e);
-			tx.failure();
-		}
-		finally {
-			tx.finish();
-		}
-		
-		return result;
-	}
-    
+        Transaction tx = beginTx(service);
+        Node result = null;
+        try {
+            Iterator<Node> probeIterator = networkNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return NeoUtils.isProbeNode(currentPos.currentNode()) && probeName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
+                }
+            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+
+            if (probeIterator.hasNext()) {
+                result = probeIterator.next();
+            } else {
+                result = service.createNode();
+                result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PROBE.getId());
+                result.setProperty(INeoConstants.PROPERTY_NAME_NAME, probeName);
+
+                networkNode.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
+            }
+            tx.success();
+        } catch (Exception e) {
+            NeoCorePlugin.error(null, e);
+            tx.failure();
+        } finally {
+            tx.finish();
+        }
+
+        return result;
+    }
+
     /**
      * Returns a Probe Calls node for current dataset and network
-     *
+     * 
      * @param datasetName name of dataset
      * @param probesName name of probe
      * @param probesNode node for probe
@@ -1192,69 +1177,64 @@ public class NeoUtils {
      * @return a Probe Calls node for current dataset
      */
     public static Node getCallsNode(Node datasetNode, String probesName, Node probesNode, NeoService service) {
-    	Transaction tx = beginTx(service);
-    	Node callsNode = null;
-    	try {
-    		final String datasetName = NeoUtils.getNodeName(datasetNode);
-    		Iterator<Node> callsIterator = probesNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-				
-				@Override
-				public boolean isReturnableNode(TraversalPosition currentPos) {
-					return datasetName.equals(currentPos.currentNode().getProperty(INeoConstants.DATASET_TYPE_NAME, ""));
-				}
-			}, ProbeCallRelationshipType.CALLS, Direction.OUTGOING, 
-			   GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
-    		
-    		if (callsIterator.hasNext()) {
-    			callsNode = callsIterator.next();
-    		}
-    		else {
-    			callsNode = service.createNode();
-    			callsNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALLS.getId());
-    			callsNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, probesName + " - " + datasetName);
-    			callsNode.setProperty(NodeTypes.DATASET.getId(), datasetName);
-    			
-    			probesNode.createRelationshipTo(callsNode, ProbeCallRelationshipType.CALLS);
-    			datasetNode.createRelationshipTo(callsNode, ProbeCallRelationshipType.PROBE_DATASET);
-    		}
-    		
-    		tx.success();
-    	}
-    	catch (Exception e) {
-    		NeoCorePlugin.error(null, e);
-    		tx.failure();
-    	}
-    	finally {
-    		tx.finish();
-    	}
-    	
-    	return callsNode;
+        Transaction tx = beginTx(service);
+        Node callsNode = null;
+        try {
+            final String datasetName = NeoUtils.getNodeName(datasetNode);
+            Iterator<Node> callsIterator = probesNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return datasetName.equals(currentPos.currentNode().getProperty(INeoConstants.DATASET_TYPE_NAME, ""));
+                }
+            }, ProbeCallRelationshipType.CALLS, Direction.OUTGOING, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
+
+            if (callsIterator.hasNext()) {
+                callsNode = callsIterator.next();
+            } else {
+                callsNode = service.createNode();
+                callsNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALLS.getId());
+                callsNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, probesName + " - " + datasetName);
+                callsNode.setProperty(NodeTypes.DATASET.getId(), datasetName);
+
+                probesNode.createRelationshipTo(callsNode, ProbeCallRelationshipType.CALLS);
+                datasetNode.createRelationshipTo(callsNode, ProbeCallRelationshipType.PROBE_DATASET);
+            }
+
+            tx.success();
+        } catch (Exception e) {
+            NeoCorePlugin.error(null, e);
+            tx.failure();
+        } finally {
+            tx.finish();
+        }
+
+        return callsNode;
     }
-    
+
     /**
      * Returns last Call from Probe Calls queue
-     *
+     * 
      * @param probeCallsNode Probe Calls node
      * @param service Neo service
      * @return last Call node
      */
     public static Node getLastCallFromProbeCalls(Node probeCallsNode, NeoService service) {
-    	Transaction tx = beginTx(service);
-    	Node callNode = null;
-    	try {
-    		Long lastCallId = (Long)probeCallsNode.getProperty(INeoConstants.LAST_CALL_NODE_ID_PROPERTY_NAME, new Long(-1));
-    		
-    		if (lastCallId != -1) {
-    			callNode = service.getNodeById(lastCallId);
-    		}
-    		
-    		tx.success();
-    	}
-    	finally {
-    		tx.finish();
-    	}
-    	
-    	return callNode;
+        Transaction tx = beginTx(service);
+        Node callNode = null;
+        try {
+            Long lastCallId = (Long)probeCallsNode.getProperty(INeoConstants.LAST_CALL_NODE_ID_PROPERTY_NAME, new Long(-1));
+
+            if (lastCallId != -1) {
+                callNode = service.getNodeById(lastCallId);
+            }
+
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+
+        return callNode;
     }
 
     /**
@@ -1273,10 +1253,9 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
-    
+
     public static boolean isVirtualDataset(Node datasetNode) {
-    	return getNodeType(datasetNode, "").equals(NodeTypes.DATASET.getId()) &&
-    		   datasetNode.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING);
+        return getNodeType(datasetNode, "").equals(NodeTypes.DATASET.getId()) && datasetNode.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING);
     }
 
     /**
@@ -1287,17 +1266,17 @@ public class NeoUtils {
      */
     public static LinkedHashMap<String, Node> getAllDatasetNodes(NeoService service) {
         Transaction tx = beginTx(service);
-        LinkedHashMap<String, Node> result=new LinkedHashMap<String, Node>();
+        LinkedHashMap<String, Node> result = new LinkedHashMap<String, Node>();
         try {
-            Traverser traverser=service.getReferenceNode().traverse(Order.DEPTH_FIRST,getStopEvaluator(3), new ReturnableEvaluator() {
-                
+            Traverser traverser = service.getReferenceNode().traverse(Order.DEPTH_FIRST, getStopEvaluator(3), new ReturnableEvaluator() {
+
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                            Node node = currentPos.currentNode();
-                            return isDatasetNode(node);
+                    Node node = currentPos.currentNode();
+                    return isDatasetNode(node);
                 }
-                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING,
-                    GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.VIRTUAL_DATASET,
+                    Direction.OUTGOING);
             for (Node node : traverser) {
                 result.put(getNodeName(node), node);
             }
@@ -1306,48 +1285,45 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
-    
+
     public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, DriveTypes driveType, final NeoService neo) {
         Node virtualDataset = null;
-        String realDatasetName = NeoUtils.getNodeName(realDatasetNode,neo);
+        String realDatasetName = NeoUtils.getNodeName(realDatasetNode, neo);
         final String virtualDatasetName = driveType.getFullDatasetName(realDatasetName);
-        Transaction tx = neo.beginTx(); 
+        Transaction tx = neo.beginTx();
         try {
             Iterator<Node> virtualDatasetsIterator = realDatasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-            
+
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return virtualDatasetName.equals(NeoUtils.getNodeName(currentPos.currentNode(),neo));
+                    return virtualDatasetName.equals(NeoUtils.getNodeName(currentPos.currentNode(), neo));
                 }
             }, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
-        
+
             if (virtualDatasetsIterator.hasNext()) {
                 virtualDataset = virtualDatasetsIterator.next();
-            }
-            else {
+            } else {
                 virtualDataset = neo.createNode();
                 virtualDataset.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DATASET.getId());
                 virtualDataset.setProperty(INeoConstants.PROPERTY_NAME_NAME, virtualDatasetName);
-                virtualDataset.setProperty(INeoConstants.DRIVE_TYPE, driveType.getId());              
-                
+                virtualDataset.setProperty(INeoConstants.DRIVE_TYPE, driveType.getId());
+
                 realDatasetNode.createRelationshipTo(virtualDataset, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
             }
             tx.success();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             tx.failure();
             NeoCorePlugin.error(null, e);
+        } finally {
+            tx.finish();
         }
-        finally {
-        	tx.finish();
-        }
-        
+
         return virtualDataset;
     }
-    
+
     public static Node createGISNode(Node parent, String gisName, String gisType, NeoService neo) {
         Node gisNode = null;
-        
+
         Transaction transaction = beginTx(neo);
         try {
             gisNode = neo.createNode();
@@ -1355,18 +1331,16 @@ public class NeoUtils {
             gisNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, gisName);
             gisNode.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
             parent.createRelationshipTo(gisNode, NetworkRelationshipTypes.CHILD);
-            
+
             transaction.success();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 
             transaction.failure();
             NeoCorePlugin.error(null, e);
-        }
-        finally {
+        } finally {
             transaction.finish();
         }
-        
+
         return gisNode;
     }
 
@@ -1379,16 +1353,15 @@ public class NeoUtils {
         Transaction tx = beginTx(service);
         LinkedHashMap<String, Node> result = new LinkedHashMap<String, Node>();
         try {
-            Traverser traverser = service.getReferenceNode().traverse(Order.DEPTH_FIRST, getStopEvaluator(3),
-                    new ReturnableEvaluator() {
+            Traverser traverser = service.getReferenceNode().traverse(Order.DEPTH_FIRST, getStopEvaluator(3), new ReturnableEvaluator() {
 
-                        @Override
-                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                            Node node = currentPos.currentNode();
-                            return isDatasetNode(node) && getDatasetType(node, null) == datasetType;
-                        }
-                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING,
-                    GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return isDatasetNode(node) && getDatasetType(node, null) == datasetType;
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.VIRTUAL_DATASET,
+                    Direction.OUTGOING);
             for (Node node : traverser) {
                 result.put(getNodeName(node), node);
             }
@@ -1415,8 +1388,6 @@ public class NeoUtils {
     public static Traverser getChildTraverser(Node rootNode, final ReturnableEvaluator returnableEvaluator) {
         return getChildTraverser(rootNode, StopEvaluator.END_OF_GRAPH, returnableEvaluator);
     }
-
-
 
     /**
      * Get traverser by child of node (one child )
@@ -1471,15 +1442,13 @@ public class NeoUtils {
 
                 @Override
                 public boolean isStopNode(TraversalPosition currentPos) {
-                    return currentPos.lastRelationshipTraversed() != null
-                            && currentPos.lastRelationshipTraversed().isType(GeoNeoRelationshipTypes.CHILD);
+                    return currentPos.lastRelationshipTraversed() != null && currentPos.lastRelationshipTraversed().isType(GeoNeoRelationshipTypes.CHILD);
                 }
             }, new ReturnableEvaluator() {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return currentPos.lastRelationshipTraversed() != null
-                            && currentPos.lastRelationshipTraversed().isType(GeoNeoRelationshipTypes.CHILD);
+                    return currentPos.lastRelationshipTraversed() != null && currentPos.lastRelationshipTraversed().isType(GeoNeoRelationshipTypes.CHILD);
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
             return parentIterator.hasNext() ? parentIterator.next() : null;
@@ -1515,13 +1484,13 @@ public class NeoUtils {
     public static Node getLocationNode(Node node, NeoService service) {
         Transaction tx = beginTx(service);
         try {
-            return node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING) ? node.getSingleRelationship(
-                    GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING).getOtherNode(node) : null;
+            return node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING) ? node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION,
+                    Direction.OUTGOING).getOtherNode(node) : null;
         } finally {
             finishTx(tx);
         }
     }
-    
+
     public static boolean hasCallsOfType(Node datasetNode, CallType type, final String probeName) {
         String propertyName = null;
         switch (type) {
@@ -1533,22 +1502,23 @@ public class NeoUtils {
             break;
         }
         final String finalName = propertyName;
-        
+
         Iterator<Node> probeCalls = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-            
+
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                return (Boolean)currentPos.currentNode().getProperty(finalName, false) &&
-                        probeName.equals(getNodeName(currentPos.currentNode().getSingleRelationship(ProbeCallRelationshipType.CALLS, Direction.INCOMING).getStartNode()));
+                return (Boolean)currentPos.currentNode().getProperty(finalName, false)
+                        && probeName.equals(getNodeName(currentPos.currentNode().getSingleRelationship(ProbeCallRelationshipType.CALLS, Direction.INCOMING)
+                                .getStartNode()));
             }
         }, ProbeCallRelationshipType.PROBE_DATASET, Direction.OUTGOING).iterator();
-        
+
         return probeCalls.hasNext();
     }
-    
+
     /**
      * Returns all Probe Nodes related to Dataset
-     *
+     * 
      * @param datasetNode Dataset Node
      * @return all Probe Nodes
      */
@@ -1563,20 +1533,20 @@ public class NeoUtils {
             break;
         }
         final String finalName = propertyName;
-        
+
         ArrayList<Node> nodes = new ArrayList<Node>();
         Iterator<Node> probeCalls = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-            
+
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 return (Boolean)currentPos.currentNode().getProperty(finalName, false);
             }
         }, ProbeCallRelationshipType.PROBE_DATASET, Direction.OUTGOING).iterator();
-        
+
         while (probeCalls.hasNext()) {
             nodes.add(probeCalls.next().getSingleRelationship(ProbeCallRelationshipType.CALLS, Direction.INCOMING).getStartNode());
         }
-            
+
         return nodes;
     }
 
@@ -1598,7 +1568,6 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
-
 
     public static void checkTransactionOnThread(NeoService service, String description) {
         service = service == null ? NeoServiceProvider.getProvider().getService() : service;
@@ -1633,7 +1602,7 @@ public class NeoUtils {
         }
         return sb.toString();
     }
-    
+
     /**
      * gets formated node name
      * 
@@ -1662,52 +1631,100 @@ public class NeoUtils {
             tx.finish();
         }
     }
-    
+
     public static Node findMultiPropertyIndex(final String indexName, NeoService neoService) {
-        Iterator<Node> indexNodes = neoService.getReferenceNode().traverse(Order.BREADTH_FIRST,         
-                StopEvaluator.DEPTH_ONE,
-                new ReturnableEvaluator() {
-                 
-                    @Override
-                    public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return indexName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
-                    }
-                 }, PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING).iterator();
-        
+        Iterator<Node> indexNodes = neoService.getReferenceNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return indexName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
+            }
+        }, PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING).iterator();
+
         if (indexNodes.hasNext()) {
             return indexNodes.next();
-        }
-        else {
+        } else {
             return null;
         }
     }
 
     /**
-     * gets name of index 
+     * gets name of index
+     * 
      * @param basename - gis name
      * @param propertyName - property name
      * @param type - node type
      * @return luciene key
      */
-    public static String getLuceneIndexKeyByProperty(String basename,String propertyName, NodeTypes type) {
+    public static String getLuceneIndexKeyByProperty(String basename, String propertyName, NodeTypes type) {
         return new StringBuilder(basename).append("@").append(type.getId()).append("@").append(propertyName).toString();
     }
 
     /**
      *Gets all OSS nodes
-     * @param service-neoservice 
+     * 
+     * @param service-neoservice
      */
-    public static Collection<Node> getAllOss( NeoService service) {
+    public static Collection<Node> getAllOss(NeoService service) {
         Transaction tx = beginTx(service);
-        try{
+        try {
             return service.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-                
+
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return NodeTypes.OSS.checkNode(currentPos.currentNode());
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).getAllNodes();
-        }finally{
+        } finally {
+            finishTx(tx);
+        }
+    }
+
+    /**
+     * add child to node
+     * 
+     * @param mainNode root node
+     * @param subNode child node
+     * @param lastChild - last child node (in not known or mainNode do not have childs lastChild
+     *        should be= null)
+     * @param neo - neoservice
+     */
+    public static void addChild(Node mainNode, Node subNode, Node lastChild, NeoService neo) {
+        Transaction tx = beginTx(neo);
+        try {
+            if (lastChild == null) {
+                lastChild = findLastChild(mainNode, neo);
+            }
+            if (lastChild == null) {
+                mainNode.createRelationshipTo(subNode, GeoNeoRelationshipTypes.CHILD);
+            } else {
+                lastChild.createRelationshipTo(subNode, GeoNeoRelationshipTypes.NEXT);
+            }
+        } finally {
+            finishTx(tx);
+        }
+
+    }
+
+    /**
+     * return last child of node
+     * 
+     * @param mainNode root node
+     * @param neo service
+     * @return
+     */
+    private static Node findLastChild(Node mainNode, NeoService neo) {
+        Transaction tx = beginTx(neo);
+        try {
+            Iterator<Node> iterator = getChildTraverser(mainNode, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return !currentPos.currentNode().hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                }
+            }).iterator();
+            return iterator.hasNext() ? iterator.next() : null;
+        } finally {
             finishTx(tx);
         }
     }

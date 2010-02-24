@@ -18,6 +18,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,11 +28,13 @@ import java.util.regex.Pattern;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.gpeh.GPEHEvent;
 import org.amanzi.neo.loader.gpeh.GPEHMainFile;
 import org.amanzi.neo.loader.gpeh.GPEHParser;
+import org.amanzi.neo.loader.gpeh.GPEHEvent.Event;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -47,11 +50,12 @@ import org.neo4j.api.core.Transaction;
  * @since 1.0.0
  */
 public class GPEHLoader extends AbstractLoader {
-    private final static Pattern mainFilePattern=Pattern.compile("(^.*)(_Mp0\\.)(.*$)");
+    private final static Pattern mainFilePattern = Pattern.compile("(^.*)(_Mp0\\.)(.*$)");
     private Node ossRoot;
     private Pair<Boolean, Node> mainNode;
     private long timestampOfDay;
     private Node eventLastNode;
+    private final LinkedHashMap<String, Header> headers;
 
     /**
      * @param directory
@@ -61,6 +65,7 @@ public class GPEHLoader extends AbstractLoader {
     public GPEHLoader(String directory, String datasetName, Display display) {
         initialize("GPEH", null, directory, display);
         basename = datasetName;
+        headers = getHeaderMap(1).headers;
 
     }
 
@@ -80,24 +85,24 @@ public class GPEHLoader extends AbstractLoader {
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "GPEHLoader");
         try {
             initializeIndexes();
-            ossRoot=findOrCreateOSSNode();
+            ossRoot = findOrCreateOSSNode();
             int perc = 0;
             int prevPerc = 0;
             int prevLineNumber = 0;
-            for (Map.Entry<String, List<String>> entry:fileList.entrySet()){
+            for (Map.Entry<String, List<String>> entry : fileList.entrySet()) {
                 try {
-                    String mainFile=entry.getKey();
-                    String rootFile = filename+File.separator+mainFile;
-                    GPEHMainFile root=GPEHParser.parseMainFile(new File(rootFile));
+                    String mainFile = entry.getKey();
+                    String rootFile = filename + File.separator + mainFile;
+                    GPEHMainFile root = GPEHParser.parseMainFile(new File(rootFile));
                     saveRoot(root);
-                    eventLastNode=null;
-                    for (String subFile:entry.getValue()){
-                         GPEHEvent eventFile = GPEHParser.parseEventFile(new File(filename+File.separator+subFile)); 
-                         saveEvent(eventFile);
+                    eventLastNode = null;
+                    for (String subFile : entry.getValue()) {
+                        GPEHEvent eventFile = GPEHParser.parseEventFile(new File(filename + File.separator + subFile));
+                        saveEvent(eventFile);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    //TODO add more information
+                    // TODO add more information
                     NeoLoaderPlugin.error(e.getLocalizedMessage());
                 }
             }
@@ -111,10 +116,35 @@ public class GPEHLoader extends AbstractLoader {
     }
 
     /**
-     *
      * @param eventFile
      */
     private void saveEvent(GPEHEvent eventFile) {
+        for (Event event : eventFile.getEvents()) {
+            saveSingleEvent(event);
+        }
+    }
+
+    /**
+     * @param event
+     */
+    private void saveSingleEvent(Event event) {
+        Transaction tx = neo.beginTx();
+        try {
+            Node eventNode = neo.createNode();
+            eventNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GPEH_EVENT.getId());
+            setIndexProperty(headers, eventNode, INeoConstants.PROPERTY_NAME_NAME, event.getType().name());
+            for (Map.Entry<Parameters, Object> entry : event.getProperties().entrySet()) {
+                setIndexProperty(headers, eventNode, entry.getKey().name(), entry.getValue());
+            }
+            Long timestamp = event.getFullTime(timestampOfDay);
+            eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            NeoUtils.addChild(mainNode.getRight(), eventNode, eventLastNode, neo);
+            tx.success();
+            index(eventNode);
+            eventLastNode = eventNode;
+        } finally {
+            tx.finish();
+        }
     }
 
     /**
@@ -125,8 +155,8 @@ public class GPEHLoader extends AbstractLoader {
     private void saveRoot(GPEHMainFile root) {
         mainNode = NeoUtils.findOrCreateChildNode(neo, ossRoot, root.getName());
         GPEHMainFile.Header header = root.getHeader();
-        GregorianCalendar cl=new GregorianCalendar(header.getYear(), header.getMonth(),header.getDay());
-        timestampOfDay=cl.getTimeInMillis();
+        GregorianCalendar cl = new GregorianCalendar(header.getYear(), header.getMonth(), header.getDay());
+        timestampOfDay = cl.getTimeInMillis();
         if (mainNode.getLeft()) {
             Transaction tx = neo.beginTx();
             try {
@@ -162,6 +192,7 @@ public class GPEHLoader extends AbstractLoader {
 
     /**
      *find or create OSS node
+     * 
      * @return
      */
     private Node findOrCreateOSSNode() {
@@ -169,7 +200,7 @@ public class GPEHLoader extends AbstractLoader {
         Transaction tx = neo.beginTx();
         try {
             oss = NeoUtils.findRootNode(NodeTypes.OSS, basename, neo);
-            if (oss==null){
+            if (oss == null) {
                 oss = neo.createNode();
                 oss.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.OSS.getId());
                 oss.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
@@ -185,6 +216,7 @@ public class GPEHLoader extends AbstractLoader {
 
     /**
      * Gets map of gpeh files
+     * 
      * @param filename - directory
      * @return Map<main file, List of subfiles>
      */
@@ -204,7 +236,6 @@ public class GPEHLoader extends AbstractLoader {
             final String mainPart = matcher.group(1);
             List<String> subFiles = new LinkedList<String>();
             for (String file : dir.list(new FilenameFilter() {
-
                 @Override
                 public boolean accept(File dir, String name) {
                     return name.startsWith(mainPart) && !name.equals(mainFile);

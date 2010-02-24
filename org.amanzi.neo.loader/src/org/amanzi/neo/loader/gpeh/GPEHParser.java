@@ -272,7 +272,7 @@ public class GPEHParser {
      */
     private static void parseEvent(DataInputStream input, GPEHEvent result, int recordLen) throws IOException {
         GPEHEvent.Event event=new GPEHEvent.Event();
-        result.addEvent(event);
+
         StringBuilder bits=new StringBuilder("");
         String readBits= readBits(bits,input,5);
         event.hour=Integer.valueOf(readBits, 2);
@@ -286,23 +286,39 @@ public class GPEHParser {
         event.id=Integer.valueOf(readBits, 2);  
         int len=5+6+6+11+11;
         Events events=Events.findById(event.id);
-        if (events!=null){
-            //TODO debug
+        final int recLen = recordLen * 8;
+        boolean parseOk = false;
+        if (events != null) {
+            parseOk = true;
+            event.setType(events);
+            // TODO debug
             List<Parameters> allParameters = events.getAllParameters();
-            for (Parameters parameter: allParameters){
-                len+=parameter.getBitsLen();
-                String bitSet = readBits(bits,input,parameter.getBitsLen());
-                event.addProperty(parameter,bitSet);
+            for (Parameters parameter : allParameters) {
+                int bitsLen = parameter.getBitsLen();
+                if (bitsLen < 0) {
+                    String bitSet = readString(bits, input,  recLen - len);
+                    event.addProperty(parameter, bitSet);
+                    len += bitSet.length();
+                } else {
+                    if (len + bitsLen > recLen) {
+                        parseOk = false;
+                        System.err.println("Wrong event len!\t" + event.id + "\t" + events.name() + "\tcorrect len=\t" + recLen * 8);
+                        break;
+                    } else {
+                        len += bitsLen;
+                    }
+                    String bitSet = readBits(bits, input, bitsLen);
+                    event.addProperty(parameter, bitSet);
+                }
             }
-        }else{
-            System.out.println("Event not found\t"+event.id);
         }
-        final int recLen = recordLen*8;
+        if (parseOk){
+            result.addEvent(event);
+        }else{
+//            System.out.println("Event not parsed!\t"+event.id);          
+        }
         if (len<recLen){
             event.notParsed=readBits(bits,input,recLen-len);          
-        }else if (len>recLen){
-            //TODO debug
-            throw new IllegalArgumentException();          
         }
 //        System.out.println(event.id);
 //        readBits= readBits(bits,input,16);
@@ -332,6 +348,30 @@ public class GPEHParser {
 //        event.notParsed=readBits(bits,input,len);
 //        System.out.println(bits.toString());
 
+    }
+
+
+
+    /**
+     *
+     * @param bits
+     * @param input
+     * @param i
+     * @return
+     * @throws IOException 
+     * @throws NumberFormatException 
+     */
+    private static String readString(StringBuilder bits, DataInputStream input, int len) throws NumberFormatException, IOException {
+        int count=0;
+        StringBuilder result=new StringBuilder();
+        while(count+8<=len){
+           byte byteSymb=Byte.valueOf(readBits(bits, input, 8),2);
+           if (byteSymb==0){
+               break;
+           }
+           count+=8;
+        }
+        return null;
     }
 
     /**

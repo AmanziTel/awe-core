@@ -883,6 +883,27 @@ public abstract class AbstractLoader {
         return limit > 0 && savedData > limit;
     }
 
+    /**
+     * Sets index property 
+     * @param headers index header
+     * @param eventNode node
+     * @param key property key
+     * @param name property value
+     */
+    protected void setIndexProperty(LinkedHashMap<String, Header> headers, Node eventNode, String key, Object value) {
+       if (value==null){
+           return;
+       }
+       eventNode.setProperty(key, value);
+       Header header = headers.get(key);
+       if (header == null) {
+           header = new Header(key, key, 1);
+           
+           headers.put(key, header);
+       }
+       //TODO optimize!
+       header.parse(value.toString());
+   }
     private void incSaved() {
         savedData++;
     }
