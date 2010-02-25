@@ -206,7 +206,7 @@ public enum Parameters {
     EVENT_PARAM_HANDOVER_TYPE(3),
     EVENT_PARAM_PDU_TYPE(5),
     EVENT_PARAM_MESSAGE_DIRECTION(2),
-    EVENT_PARAM_MESSAGE_CONTENTS(-1/*16384*/,Rules.STRING),
+    EVENT_PARAM_MESSAGE_CONTENTS(16384,Rules.STRING),
     EVENT_PARAM_NO_OF_CM_USERS(8),
     EVENT_PARAM_REQUEST_TYPE(3),
     EVENT_PARAM_TRAFFIC_CLASS(3),
@@ -415,7 +415,7 @@ public enum Parameters {
      * @author Cinkel_A
      * @since 1.0.0
      */
-    private enum Rules {
+    public enum Rules {
         INTEGER, STRING, LONG;
     }
 
@@ -443,4 +443,12 @@ public enum Parameters {
             return null;
         }
     }
+
+    /**
+     * @return Returns the rule.
+     */
+    public Rules getRule() {
+        return rule;
+    }
+    
 }

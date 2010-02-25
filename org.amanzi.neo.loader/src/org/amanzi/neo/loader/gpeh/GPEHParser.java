@@ -25,6 +25,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
+import org.amanzi.neo.core.enums.gpeh.Parameters.Rules;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.IGPEHBlock;
 
@@ -274,6 +275,10 @@ public class GPEHParser {
         GPEHEvent.Event event=new GPEHEvent.Event();
 
         StringBuilder bits=new StringBuilder("");
+//        String buf= readBits(bits,input,recordLen*8);
+//        bits.insert(0, buf);
+//        System.out.println("--------");
+//        System.out.println(bits.toString());
         String readBits= readBits(bits,input,5);
         event.hour=Integer.valueOf(readBits, 2);
         readBits= readBits(bits,input,6);
@@ -295,14 +300,15 @@ public class GPEHParser {
             List<Parameters> allParameters = events.getAllParameters();
             for (Parameters parameter : allParameters) {
                 int bitsLen = parameter.getBitsLen();
-                if (bitsLen < 0) {
-                    String bitSet = readString(bits, input,  recLen - len);
+                if (parameter.getRule()==Rules.STRING) {
+                    Pair<String, Integer> pair = readString(bits, input, Math.min(bitsLen,recLen-len));
+                    String bitSet = pair.left();
                     event.addProperty(parameter, bitSet);
-                    len += bitSet.length();
+                    len += pair.right();
                 } else {
                     if (len + bitsLen > recLen) {
                         parseOk = false;
-                        System.err.println("Wrong event len!\t" + event.id + "\t" + events.name() + "\tcorrect len=\t" + recLen * 8);
+                        System.err.println("Wrong event len!\t" + event.id + "\t" + events.name() + "\tcorrect len=\t" + recLen);
                         break;
                     } else {
                         len += bitsLen;
@@ -318,7 +324,10 @@ public class GPEHParser {
 //            System.out.println("Event not parsed!\t"+event.id);          
         }
         if (len<recLen){
-            event.notParsed=readBits(bits,input,recLen-len);          
+            event.notParsed=readBits(bits,input,recLen-len);   
+            if (parseOk&&len+8<recLen){
+              System.out.println("Wrong parsing !\t"+event.id);                 
+            }
         }
 //        System.out.println(event.id);
 //        readBits= readBits(bits,input,16);
@@ -361,18 +370,18 @@ public class GPEHParser {
      * @throws IOException 
      * @throws NumberFormatException 
      */
-    private static String readString(StringBuilder bits, DataInputStream input, int len) throws NumberFormatException, IOException {
+    private static  Pair<String,Integer>readString(StringBuilder bits, DataInputStream input, int len) throws NumberFormatException, IOException {
         int count=0;
         StringBuilder result=new StringBuilder();
         while(count+8<=len){
-           byte byteSymb=Byte.valueOf(readBits(bits, input, 8),2);
+           int byteSymb=Integer.valueOf(readBits(bits, input, 8),2);
+           count+=8;
            if (byteSymb==0){
                break;
            }
             result.append((char)byteSymb);
-           count+=8;
         }
-        return result.toString();
+        return new Pair<String, Integer>(result.toString(),count);
     }
 
     /**

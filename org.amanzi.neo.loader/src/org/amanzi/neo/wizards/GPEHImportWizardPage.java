@@ -19,6 +19,7 @@ import java.util.Iterator;
 
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
@@ -38,6 +39,7 @@ import org.neo4j.api.core.Node;
 
 /**
  * <p>
+ * Import gpeh wizard page
  * </p>
  * 
  * @author Cinkel_A
@@ -52,6 +54,7 @@ public class GPEHImportWizardPage extends WizardPage {
     private String directory;
 
     /**
+     * Constructor
      * @param pageName
      */
     protected GPEHImportWizardPage(String pageName) {
@@ -84,7 +87,6 @@ public class GPEHImportWizardPage extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean selected = dataset.getSelectionIndex() < 0;
                 datasetName = dataset.getText();
                 validateFinish();
             }
@@ -95,9 +97,13 @@ public class GPEHImportWizardPage extends WizardPage {
             }
         });
 
-        editor = new DirectoryFieldEditor(NeoLoaderPluginMessages.GpehImportDirEditorTitle, NeoLoaderPluginMessages.ETSIImport_directory, main); // NON-NLS-1
+        editor = new DirectoryEditor(NeoLoaderPluginMessages.GpehImportDirEditorTitle, NeoLoaderPluginMessages.ETSIImport_directory, main); // NON-NLS-1
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
+                if (StringUtils.isEmpty(datasetName)){
+                    datasetName=ETSIImportWizardPage.getDatasetDefaultName(editor.getStringValue());
+                    dataset.setText(datasetName);
+                }
                 setFileName(editor.getStringValue());
             }
         });
@@ -106,10 +112,12 @@ public class GPEHImportWizardPage extends WizardPage {
     }
 
     /**
-     * @param stringValue
+     * set File name
+     * @param dirName - dir. name
      */
     protected void setFileName(String dirName) {
         directory = dirName;
+        DriveDialog.setDefaultDirectory(dirName);
         validateFinish();
 
     }

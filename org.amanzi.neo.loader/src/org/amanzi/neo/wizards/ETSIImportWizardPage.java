@@ -54,32 +54,6 @@ import org.neo4j.api.core.Traverser;
  */
 public class ETSIImportWizardPage extends WizardPage {
 	
-	private class DirectoryEditor extends DirectoryFieldEditor {
-		
-		/**
-	     * Creates a directory field editor.
-	     * 
-	     * @param name the name of the preference this field editor works on
-	     * @param labelText the label text of the field editor
-	     * @param parent the parent of the field editor's control
-	     */
-	    public DirectoryEditor(String name, String labelText, Composite parent) {
-	        super(name, labelText, parent);
-	    }
-		
-		/* (non-Javadoc)
-	     * Method declared on StringButtonFieldEditor.
-	     * Opens the directory chooser dialog and returns the selected directory.
-	     */
-	    protected String changePressed() {
-	    	getTextControl().setText(DriveDialog.getDefaultDirectory());
-	    	
-	    	return super.changePressed();
-	    }
-		
-	}
-
-
     private String fileName;
     private Composite main;
     private Combo dataset;
@@ -209,7 +183,7 @@ public class ETSIImportWizardPage extends WizardPage {
 		return text.equals(defName);
 	}
     
-    private String getDatasetDefaultName(String aFileName) {
+    public static String getDatasetDefaultName(String aFileName) {
     	if(aFileName == null){
     		return "";
     	}
