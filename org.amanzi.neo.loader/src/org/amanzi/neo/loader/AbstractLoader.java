@@ -49,6 +49,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.NetworkLoader.CRS;
@@ -91,6 +92,8 @@ public abstract class AbstractLoader {
     private long savedData = 0;
     private long started = System.currentTimeMillis();
     private boolean headerWasParced;
+    protected HashMap<Integer, Pair<Long, Long>> timeStamp = new HashMap<Integer, Pair<Long, Long>>();
+
     // private ArrayList<MultiPropertyIndex<?>> indexes = new
     // ArrayList<MultiPropertyIndex<?>>();
     private final LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>> indexes = new LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>>();
@@ -888,21 +891,22 @@ public abstract class AbstractLoader {
      * @param headers index header
      * @param eventNode node
      * @param key property key
-     * @param name property value
+     * @param parsedValue parsed value
      */
-    protected void setIndexProperty(LinkedHashMap<String, Header> headers, Node eventNode, String key, Object value) {
-       if (value==null){
+    protected void setIndexProperty(LinkedHashMap<String, Header> headers, Node eventNode, String key, Object parsedValue) {
+       if (parsedValue==null){
            return;
        }
-       eventNode.setProperty(key, value);
+       eventNode.setProperty(key, parsedValue);
        Header header = headers.get(key);
        if (header == null) {
            header = new Header(key, key, 1);
            
            headers.put(key, header);
        }
-       //TODO optimize!
-       header.parse(value.toString());
+       header.parseCount++;
+       header.incValue(parsedValue);
+       header.incType(parsedValue.getClass());
    }
     private void incSaved() {
         savedData++;
@@ -1798,5 +1802,21 @@ public abstract class AbstractLoader {
             }
         }
         return result.toArray(new String[0]);
+    }
+    /**
+     * Updates Min and Max timestamp values for this gis
+     *
+     * @param timestamp
+     */
+    protected void updateTimestampMinMax(Integer key, final long timestamp) {
+        Pair<Long, Long> pair = timeStamp.get(key);
+        if (pair == null) {
+            pair = new Pair<Long, Long>(null, null);
+            timeStamp.put(key, pair);
+        }
+        Long minTimeStamp = pair.getLeft() == null ? timestamp : Math.min(pair.getLeft(), timestamp);
+        Long maxTimeStamp = pair.getRight() == null ? timestamp : Math.max(pair.getRight(), timestamp);
+        pair.setLeft(minTimeStamp);
+        pair.setRight(maxTimeStamp);
     }
 }

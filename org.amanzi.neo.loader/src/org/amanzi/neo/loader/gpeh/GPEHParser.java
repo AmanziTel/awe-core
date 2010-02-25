@@ -325,7 +325,7 @@ public class GPEHParser {
         }
         if (len<recLen){
             event.notParsed=readBits(bits,input,recLen-len);   
-            if (parseOk&&len+8<recLen){
+            if (parseOk&&len+32<recLen){
               System.out.println("Wrong parsing !\t"+event.id);                 
             }
         }

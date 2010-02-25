@@ -80,7 +80,7 @@ public class GPEHMainFile implements IGPEHBlock {
      * Header record
      * </p>
      * 
-     * @author TsAr
+     * @author Tsinkel_A
      * @since 1.0.0
      */
     public static class Header {

@@ -50,6 +50,8 @@ import org.neo4j.api.core.Transaction;
  * @since 1.0.0
  */
 public class GPEHLoader extends AbstractLoader {
+    /** int KEY_EVENT field */
+    private static final int KEY_EVENT = 1;
     private final static Pattern mainFilePattern = Pattern.compile("(^.*)(_Mp0\\.)(.*$)");
     private Node ossRoot;
     private Pair<Boolean, Node> mainNode;
@@ -65,7 +67,7 @@ public class GPEHLoader extends AbstractLoader {
     public GPEHLoader(String directory, String datasetName, Display display) {
         initialize("GPEH", null, directory, display);
         basename = datasetName;
-        headers = getHeaderMap(1).headers;
+        headers = getHeaderMap(KEY_EVENT).headers;
 
     }
 
@@ -137,6 +139,7 @@ public class GPEHLoader extends AbstractLoader {
                 setIndexProperty(headers, eventNode, entry.getKey().name(), entry.getValue());
             }
             Long timestamp = event.getFullTime(timestampOfDay);
+            updateTimestampMinMax(KEY_EVENT, timestamp);
             eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             NeoUtils.addChild(mainNode.getRight(), eventNode, eventLastNode, neo);
             tx.success();
@@ -256,5 +259,25 @@ public class GPEHLoader extends AbstractLoader {
     @Override
     protected void parseLine(String line) {
     }
+    @Override
+    protected void finishUp() {
+        super.finishUp();
+        for (Map.Entry<Integer, Pair<Long, Long>> entry : timeStamp.entrySet()) {
+            Node storeNode = getStoringNode(entry.getKey());
+            if (storeNode != null) {
+                Long minTimeStamp = entry.getValue().getLeft();
+                if (minTimeStamp != null) {
+                    storeNode.setProperty(INeoConstants.MIN_TIMESTAMP, minTimeStamp);
+                }
+                Long maxTimeStamp = entry.getValue().getRight();
+                if (maxTimeStamp != null) {
+                    storeNode.setProperty(INeoConstants.MAX_TIMESTAMP, maxTimeStamp);
+                }
+            }
+        }
+
+        super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
+    }
+
 
 }

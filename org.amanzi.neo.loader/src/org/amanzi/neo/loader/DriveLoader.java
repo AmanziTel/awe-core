@@ -45,13 +45,12 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Node virtualFile = null;
     protected Node datasetNode = null;
     private static int[] times = new int[2];
-    private HashMap<Integer, int[]> stats = new HashMap<Integer, int[]>();
+    private final HashMap<Integer, int[]> stats = new HashMap<Integer, int[]>();
     private int countValidMessage = 0;
     private int countValidLocation = 0;
     private int countValidChanged = 0;
     protected Integer hours = null;
     protected Calendar _workDate = null;
-    protected HashMap<Integer, Pair<Long, Long>> timeStamp = new HashMap<Integer, Pair<Long, Long>>();
     private boolean needParceHeader = true;
     
     /** How many units of work for the progress monitor for each file */
@@ -60,7 +59,7 @@ public abstract class DriveLoader extends AbstractLoader {
     //TODO: Lagutko, 17.12.2009, maybe create this indexes on rendering but not on importing? 
     protected static LuceneIndexService index;
     
-    private HashMap<String, Node> virtualDatasets = new HashMap<String, Node>();
+    private final HashMap<String, Node> virtualDatasets = new HashMap<String, Node>();
 
     /**
      * Initialize Loader with a specified set of parameters 
@@ -122,6 +121,7 @@ public abstract class DriveLoader extends AbstractLoader {
         }
         return gisProperties.getGis();
     }
+    @Override
     public void clearCaches() {
         super.clearCaches();
         this.stats.clear();
@@ -239,6 +239,7 @@ public abstract class DriveLoader extends AbstractLoader {
         return properties.toString();
     }
 
+    @Override
     public void printStats(boolean verbose) {
         addTimes(timeTaken());
         super.printStats(verbose);
@@ -347,6 +348,7 @@ public abstract class DriveLoader extends AbstractLoader {
      * opportunity to save any cached information, or write any final statistics. It is not abstract
      * because it is possible, or even probable, to write an importer that does not need it.
      */
+    @Override
     protected void finishUp() {
         for (Map.Entry<Integer, Pair<Long, Long>> entry : timeStamp.entrySet()) {
             Node storeNode = getStoringNode(entry.getKey());
@@ -399,23 +401,6 @@ public abstract class DriveLoader extends AbstractLoader {
         updateTimestampMinMax(key, timestamp);
         return timestamp;
     }
-
-	/**
-	 * Updates Min and Max timestamp values for this gis
-	 *
-	 * @param timestamp
-	 */
-    protected void updateTimestampMinMax(Integer key, final long timestamp) {
-        Pair<Long, Long> pair = timeStamp.get(key);
-        if (pair == null) {
-            pair = new Pair<Long, Long>(null, null);
-            timeStamp.put(key, pair);
-        }
-        Long minTimeStamp = pair.getLeft() == null ? timestamp : Math.min(pair.getLeft(), timestamp);
-        Long maxTimeStamp = pair.getRight() == null ? timestamp : Math.max(pair.getRight(), timestamp);
-        pair.setLeft(minTimeStamp);
-        pair.setRight(maxTimeStamp);
-	}
 	
 	public Node getDatasetNode() {
         return datasetNode;
