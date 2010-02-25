@@ -43,6 +43,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -1319,7 +1320,7 @@ public class DriveInquirerView extends ViewPart {
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
                 Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
-                if (NeoUtils.isGisNode(node) && type.equals(GisTypes.DRIVE.getHeader())) {
+                if (NeoUtils.isGisNode(node) && type.equals(GisTypes.DRIVE.getHeader())||NodeTypes.OSS.checkNode(node)) {
                     String id = NeoUtils.getSimpleNodeName(node, null);
                     gisDriveNodes.put(id, node);
                 }

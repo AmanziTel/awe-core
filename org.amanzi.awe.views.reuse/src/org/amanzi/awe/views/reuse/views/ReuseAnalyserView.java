@@ -53,6 +53,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.splash.editors.ReportEditor;
@@ -1253,6 +1254,9 @@ public class ReuseAnalyserView extends ViewPart {
         // TODO restore focus after job execute or not necessary?
         mainView.setEnabled(false);
         String select = cSelect.getText();
+        if (!cSelect.isEnabled()){
+            select=Select.EXISTS.toString();
+        }
         ComputeStatisticsJob job = new ComputeStatisticsJob(gisNode, propertyName, cDistribute.getText(), select);
         job.schedule();
     }
@@ -1453,13 +1457,18 @@ public class ReuseAnalyserView extends ViewPart {
         boolean isAggregatedProperty = isAggregatedProperty(propertyName);
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
         //List<Number> aggregatedValues = new ArrayList<Number>();
-        gisNode= NeoUtils.findGisNodeByChild(gisNode);
-        GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(),gisNode);
-        final GisTypes typeOfGis = geoNode.getGisType();
-        if (typeOfGis == GisTypes.DRIVE) {
-            Node gisDataset = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(gisNode);
+        final GisTypes typeOfGis;
+        int totalWork;
+        if (NeoUtils.getNodeType(gisNode, "").equals(NodeTypes.OSS.getId())) {
+            typeOfGis = GisTypes.NETWORK;
+            select=Select.EXISTS;
+            totalWork = 1000;
+        } else {
+            gisNode = NeoUtils.findGisNodeByChild(gisNode);
+            GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
+            typeOfGis = geoNode.getGisType();
+            totalWork = (int)geoNode.getCount() * 2;
         }
-        int totalWork = (int)geoNode.getCount() * 2;
         System.out.println("Starting to compute statistics for "+propertyName+" with estimated work size of "+totalWork);
         monitor.beginTask("Calculating statistics for "+propertyName, totalWork);
         TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
@@ -1469,73 +1478,87 @@ public class ReuseAnalyserView extends ViewPart {
         Double min = null;
         Double max = null;
         propertyValue = null;
+        if (select == Select.EXISTS) {
+            PropertyHeader header = new PropertyHeader(gisNode);
+            PropertyHeader.PropertyStatistics statistics = header.getPropertyStatistic(propertyName);
+            if (statistics != null) {
+                Pair<Double, Double> pair = statistics.getMinMax();
+                min = pair.getLeft();
+                max = pair.getRight();
+                propertyValue = statistics.getWrappedValue(1);
+            }
+        }
         int missingPropertyCount = 0;
         // int colCount = 0;
         runGcIfBig(totalWork);
         monitor.subTask("Searching database");
         // Collection<Node> trav = travers.getAllNodes();
-        for (Node node : travers) {
-            if (isAggregatedProperty) {
-                Double minValue = getNodeValue(node, propertyName, select, false);
-                Double maxValue = select == Select.EXISTS ? getNodeValue(node, propertyName, select, true) : minValue;
-                if (minValue == null || maxValue == null) {
-                    continue;
-                }
-                min = min == null ? minValue : Math.min(minValue, min);
-                max = max == null ? maxValue : Math.max(maxValue, max);
-            } else if (node.hasProperty(propertyName)) {
-                propertyValue = node.getProperty(propertyName);
-                Number valueNum = (Number)propertyValue;
-                if (typeOfGis == GisTypes.DRIVE && select != Select.EXISTS) {
-                    //Lagutko, 27.01.2010, m node can have no relationships to mp
-                    Relationship relationshipToMp = node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
-                    if (relationshipToMp == null) {
+        if (min == null || max == null) {
+            for (Node node : travers) {
+                if (isAggregatedProperty) {
+                    Double minValue = getNodeValue(node, propertyName, select, false);
+                    Double maxValue = select == Select.EXISTS ? getNodeValue(node, propertyName, select, true) : minValue;
+                    if (minValue == null || maxValue == null) {
                         continue;
                     }
-                    Node mpNode = relationshipToMp.getOtherNode(node);
-                    Number oldValue = mpMap.get(mpNode);
-                    if (oldValue == null) {
-                        if (select == Select.FIRST) {
-                            valueNum = getFirstValueOfMpNode(mpNode, propertyName);
+                    min = min == null ? minValue : Math.min(minValue, min);
+                    max = max == null ? maxValue : Math.max(maxValue, max);
+                } else if (node.hasProperty(propertyName)) {
+                    propertyValue = node.getProperty(propertyName);
+                    Number valueNum = (Number)propertyValue;
+                    if (typeOfGis == GisTypes.DRIVE && select != Select.EXISTS) {
+                        // Lagutko, 27.01.2010, m node can have no relationships to mp
+                        Relationship relationshipToMp = node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
+                        if (relationshipToMp == null) {
+                            continue;
                         }
-                        if (select == Select.AVERAGE) {
-                            valueNum = calculateAverageValueOfMpNode(mpNode, propertyName);
-                        }
-                        mpMap.put(mpNode, valueNum);
-                        monitor.worked(1);
-                    } else {
-                        switch (select) {
-                        case MAX:
-                            if (oldValue.doubleValue() < valueNum.doubleValue()) {
-                                mpMap.put(mpNode, valueNum);
+                        Node mpNode = relationshipToMp.getOtherNode(node);
+                        Number oldValue = mpMap.get(mpNode);
+                        if (oldValue == null) {
+                            if (select == Select.FIRST) {
+                                valueNum = getFirstValueOfMpNode(mpNode, propertyName);
                             }
-                            break;
-                        case MIN:
-                            if (oldValue.doubleValue() > valueNum.doubleValue()) {
-                                mpMap.put(mpNode, valueNum);
+                            if (select == Select.AVERAGE) {
+                                valueNum = calculateAverageValueOfMpNode(mpNode, propertyName);
                             }
-                            break;
-                        case FIRST:
-                            break;
-                        default:
-                            break;
+                            mpMap.put(mpNode, valueNum);
+                            monitor.worked(1);
+                        } else {
+                            switch (select) {
+                            case MAX:
+                                if (oldValue.doubleValue() < valueNum.doubleValue()) {
+                                    mpMap.put(mpNode, valueNum);
+                                }
+                                break;
+                            case MIN:
+                                if (oldValue.doubleValue() > valueNum.doubleValue()) {
+                                    mpMap.put(mpNode, valueNum);
+                                }
+                                break;
+                            case FIRST:
+                                break;
+                            default:
+                                break;
+                            }
                         }
-                    }
 
+                    } else {
+                        // colCount++;
+                        min = min == null ? ((Number)propertyValue).doubleValue() : Math.min(((Number)propertyValue).doubleValue(), min);
+                        max = max == null ? ((Number)propertyValue).doubleValue() : Math.max(((Number)propertyValue).doubleValue(), max);
+                    }
+                    if (monitor.isCanceled())
+                        break;
                 } else {
-                    // colCount++;
-                    min = min == null ? ((Number)propertyValue).doubleValue() : Math
-                            .min(((Number)propertyValue).doubleValue(), min);
-                    max = max == null ? ((Number)propertyValue).doubleValue() : Math
-                            .max(((Number)propertyValue).doubleValue(), max);
+                    missingPropertyCount++;
+                    // System.out.println("No such property '" + propertyName + "' for node "
+                    // + (node.hasProperty("name") ? node.getProperty("name").toString() :
+                    // node.toString()));
                 }
-                if(monitor.isCanceled()) break;
-            } else {
-                missingPropertyCount ++;
-//                System.out.println("No such property '" + propertyName + "' for node "
-//                        + (node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
             }
         }
+        
+        
         if(missingPropertyCount>0) {
             System.out.println("Property '" + propertyName + "' not found for " + missingPropertyCount + " nodes");
         }
@@ -2564,6 +2587,8 @@ public class ReuseAnalyserView extends ViewPart {
                         members.put(id + "(site data)", networkNode);
                     }
                 }
+            }else if (NodeTypes.OSS.checkNode(node)){
+                members.put(NeoUtils.getSimpleNodeName(node, ""), node); 
             }
         }
         return members.keySet().toArray(new String[] {});
@@ -2760,7 +2785,7 @@ public class ReuseAnalyserView extends ViewPart {
             propertyList.add(NodeTypes.HEADER_MS.getId());
             propertyList.add(NodeTypes.PROBE.getId());
             propertyList.add(NodeTypes.CALL.getId());
-            
+            propertyList.add(NodeTypes.GPEH_EVENT.getId());
         }
         public PropertyReturnableEvalvator(NodeTypes propertyType){
             super();
@@ -3014,24 +3039,33 @@ public class ReuseAnalyserView extends ViewPart {
          * 
          * @param color - color
          */
-        public void saveColor(Color color) {
+        public void saveColor(final Color color) {
             if (this.color != null && this.color.equals(color)) {
                 return;
             }
             this.color = color;
             if (node != null) {
-                Transaction tx = NeoUtils.beginTransaction();
-                try {
-                    Integer valueToSave = color == null ? null : color.getRGB();
-                    if (valueToSave == null) {
-                        node.removeProperty(INeoConstants.AGGREGATION_COLOR);
-                    } else {
-                        node.setProperty(INeoConstants.AGGREGATION_COLOR, valueToSave);
+                Job job=new Job("save color") {
+                    
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        Transaction tx = NeoUtils.beginTransaction();
+                        try {
+                            Integer valueToSave = color == null ? null : color.getRGB();
+                            if (valueToSave == null) {
+                                node.removeProperty(INeoConstants.AGGREGATION_COLOR);
+                            } else {
+                                node.setProperty(INeoConstants.AGGREGATION_COLOR, valueToSave);
+                            }
+                            tx.success();
+                        } finally {
+                            tx.finish();
+                        }
+                        return Status.OK_STATUS;
                     }
-                    tx.success();
-                } finally {
-                    tx.finish();
-                }
+                };
+                job.schedule();
+//                job.join(); TODO test on necessary join
             }
         }
 

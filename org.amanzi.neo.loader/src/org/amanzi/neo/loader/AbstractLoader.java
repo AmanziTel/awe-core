@@ -115,9 +115,11 @@ public abstract class AbstractLoader {
         String key;
         String name;
         HashMap<Class< ? extends Object>, Integer> parseTypes = new HashMap<Class< ? extends Object>, Integer>();
+        Double min=Double.POSITIVE_INFINITY;
+        Double max=Double.NEGATIVE_INFINITY;
         HashMap<Object, Integer> values = new HashMap<Object, Integer>();
         int parseCount = 0;
-
+        int countALL=0;
         Header(String name, String key, int index) {
             this.index = index;
             this.name = name;
@@ -131,6 +133,9 @@ public abstract class AbstractLoader {
             this(old.name, old.key, old.index);
             this.parseCount = old.parseCount;
             this.values = old.values;
+            this.min=old.min;
+            this.max=old.max;
+            this.countALL=old.countALL;
         }
 
         protected boolean invalid(String field) {
@@ -165,6 +170,14 @@ public abstract class AbstractLoader {
         }
 
         protected Object incValue(Object value) {
+            if (value != null) {
+                countALL++;
+                if (value instanceof Number) {
+                    double doubleValue = ((Number)value).doubleValue();
+                    min = Math.min(min, doubleValue);
+                    max = Math.max(max, doubleValue);
+                }
+            }
             if (values != null) {
                 Integer count = values.get(value);
                 if (count == null) {
@@ -1315,6 +1328,7 @@ public abstract class AbstractLoader {
     protected abstract Node getStoringNode(Integer key);
 
     private void savePropertiesToNode(HeaderMaps headerMaps, Node propTypeNode, Collection<String> properties) {
+
         propTypeNode.setProperty("properties", properties.toArray(new String[properties.size()]));
         HashMap<String, Node> valueNodes = new HashMap<String, Node>();
         ArrayList<String> noStatsProperties = new ArrayList<String>();
@@ -1337,16 +1351,17 @@ public abstract class AbstractLoader {
                 continue;
             }
             HashMap<Object, Integer> values = header.values;
+            Relationship valueRelation = null;
             if (values == null) {
                 if (valueNode != null) {
                     for (Relationship relation : valueNode.getRelationships()) {
                         relation.delete();
                     }
                     valueNode.delete();
+                    valueNode = null;
                 }
                 noStatsProperties.add(property);
             } else {
-                Relationship valueRelation = null;
                 if (valueNode == null) {
                     valueNode = neo.createNode();
                     valueRelation = propTypeNode.createRelationshipTo(valueNode, GeoNeoRelationshipTypes.PROPERTIES);
@@ -1373,6 +1388,18 @@ public abstract class AbstractLoader {
                 if (valueRelation != null) {
                     valueRelation.setProperty("count", total);
                 }
+            }
+
+            if (valueNode == null) {
+                valueNode = neo.createNode();
+                valueRelation = propTypeNode.createRelationshipTo(valueNode, GeoNeoRelationshipTypes.PROPERTIES);
+                valueRelation.setProperty("property", property);
+                valueRelation.setProperty(INeoConstants.COUNT_TYPE_NAME, header.countALL);
+            }
+            if (!header.min.equals(Double.POSITIVE_INFINITY)) {
+                valueRelation.setProperty(INeoConstants.MIN_VALUE, header.min);
+                valueRelation.setProperty(INeoConstants.MAX_VALUE, header.max);
+
             }
         }
         ArrayList<String> statsProperties = new ArrayList<String>(properties);
