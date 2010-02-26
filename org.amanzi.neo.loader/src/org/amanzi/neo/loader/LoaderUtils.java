@@ -13,10 +13,13 @@
 package org.amanzi.neo.loader;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import net.refractions.udig.catalog.CatalogPlugin;
@@ -27,11 +30,16 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkFileType;
+import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.CSVParser;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -42,7 +50,9 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.PlatformUI;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Transaction;
 
 public class LoaderUtils {
     /**
@@ -251,5 +261,48 @@ public class LoaderUtils {
                 zoomCommand.runWithEvent(null, null);
             }
         }, true);
+    }
+    /**
+     * Calculates list of files 
+     *
+     * @param directoryName directory to import
+     * @param filter - filter (if filter teturn true for directory this directory will be handled also  )
+     * @return list of files to import
+     */
+    public static List<File> getAllFiles(String directoryName, FileFilter filter) {
+        File directory = new File(directoryName);
+        LinkedList<File> result = new LinkedList<File>();
+        for (File childFile : directory.listFiles(filter)) {
+            if (childFile.isDirectory()) {
+                result.addAll(getAllFiles(childFile.getAbsolutePath(),filter));
+            }
+            else  {
+                result.add(childFile);
+            }
+        }
+        return result;
+    }
+    /**
+     *find or create OSS node
+     * 
+     * @return
+     */
+    public static Node findOrCreateOSSNode(OssType ossType,String ossName,NeoService neo) {
+        Node oss;
+        Transaction tx = neo.beginTx();
+        try {
+            oss = NeoUtils.findRootNode(NodeTypes.OSS, ossName, neo);
+            if (oss == null) {
+                oss = neo.createNode();
+                oss.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.OSS.getId());
+                oss.setProperty(INeoConstants.PROPERTY_NAME_NAME, ossName);
+                ossType.setOssType(oss, neo);
+                neo.getReferenceNode().createRelationshipTo(oss, GeoNeoRelationshipTypes.CHILD);
+            }
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        return oss;
     }
 }

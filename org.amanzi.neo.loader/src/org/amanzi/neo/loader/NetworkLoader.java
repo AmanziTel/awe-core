@@ -34,6 +34,7 @@ import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkSiteType;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -150,6 +151,7 @@ public class NetworkLoader extends AbstractLoader {
     private NetworkHeader networkHeader = null;
     private boolean needParceHeader;
     private LuceneIndexService luceneInd;
+    private NetworkSiteType sitesType;
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -346,6 +348,7 @@ public class NetworkLoader extends AbstractLoader {
         private final ArrayList<String> sectorData = new ArrayList<String>();
         private final Map<String, Integer> channelMap = new HashMap<String, Integer>();
         Map<String, Object> lineData = null;
+        private final boolean is3G;
 
         private NetworkHeader(List<String> fields) {
             lineData = makeDataMap(fields);
@@ -364,6 +367,7 @@ public class NetworkLoader extends AbstractLoader {
                     sectorData.add(header);
                 }
             }
+            is3G=headerMap.headers.keySet().contains("gsm_ne");
         }
 
         private void setData(List<String> fields) {
@@ -422,6 +426,14 @@ public class NetworkLoader extends AbstractLoader {
         private String getCrsHint() {
             return crsHint;
         }
+
+        /**
+         * is 3g network file?
+         * @return
+         */
+        public boolean is3G() {
+            return is3G;
+        }
     }
 
     @Override
@@ -436,6 +448,7 @@ public class NetworkLoader extends AbstractLoader {
         try {
             if (networkHeader == null) {
                 networkHeader = new NetworkHeader(fields);
+                sitesType =networkHeader.is3G()?NetworkSiteType.SITE_3G:NetworkSiteType.SITE_2G;
             } else {
                 networkHeader.setData(fields);
             }
@@ -482,6 +495,8 @@ public class NetworkLoader extends AbstractLoader {
                     bsc_s.put(bscField, bsc);
                 }
             }
+            Float latitude = networkHeader.getLat();
+            Float longitude = networkHeader.getLon();
             if (!siteField.equals(siteName)) {
                 siteName = siteField;
                 debug("New site: " + siteName);
@@ -495,15 +510,20 @@ public class NetworkLoader extends AbstractLoader {
                         siteRoot.createRelationshipTo(newSite, GeoNeoRelationshipTypes.CHILD);
                     }
                 } else {
+
+                    if (latitude==0&&longitude==0){
+                        //not stored site!
+                        return;
+                    }
                     newSite = addChild(siteRoot, NodeTypes.SITE, siteName);
+                    sitesType.setSiteType(newSite, neo);
                 }
                 // TODO and maybe add create GeoNeoRelationshipTypes.NEXT between sites if
                 // necessary!
                 (site == null ? network : site).createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
                 site = newSite;
                 siteNumber++;
-                Float latitude = networkHeader.getLat();
-                Float longitude = networkHeader.getLon();
+
                 GisProperties gisProperties = getGisProperties(basename);
                 gisProperties.updateBBox(latitude, longitude);
                 if (gisProperties.getCrs() == null) {
@@ -518,6 +538,7 @@ public class NetworkLoader extends AbstractLoader {
                 }
                 site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
                 site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
+                
                 index(site);
             }
             debug("New Sector: " + sectorField);

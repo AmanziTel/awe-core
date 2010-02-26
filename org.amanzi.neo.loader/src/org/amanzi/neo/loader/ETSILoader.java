@@ -974,7 +974,6 @@ public class ETSILoader extends DriveLoader {
 				result.add(childFile);
 			}
 		}
-		
 		return result;
 		
 	}

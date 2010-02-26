@@ -718,12 +718,28 @@ public enum NodeTypes {
 
     /**
      * Check node by type
+     * 
      * @param currentNode - node
      * @return true if node type
      */
     public boolean checkNode(Node currentNode) {
         return getId().equals(NeoUtils.getNodeType(currentNode, ""));
     }
-    
+
+    /**
+     * save type in node
+     * 
+     * @param container PropertyContainer
+     * @param service - neoservice. if null then new transaction not created
+     */
+    public void setNodeType(PropertyContainer container, NeoService service) {
+        Transaction tx = NeoUtils.beginTx(service);
+        try {
+            container.setProperty(INeoConstants.PROPERTY_TYPE_NAME, getId());
+            NeoUtils.successTx(tx);
+        } finally {
+            NeoUtils.finishTx(tx);
+        }
+    }
 
 }

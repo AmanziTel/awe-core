@@ -26,8 +26,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -60,6 +60,7 @@ public class GPEHLoader extends AbstractLoader {
     private final LinkedHashMap<String, Header> headers;
 
     /**
+     * Constructor
      * @param directory
      * @param datasetName
      * @param display
@@ -87,7 +88,7 @@ public class GPEHLoader extends AbstractLoader {
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "GPEHLoader");
         try {
             initializeIndexes();
-            ossRoot = findOrCreateOSSNode();
+            ossRoot = LoaderUtils.findOrCreateOSSNode(OssType.GPEH, basename, neo);
             int perc = 0;
             int prevPerc = 0;
             int prevLineNumber = 0;
@@ -118,7 +119,8 @@ public class GPEHLoader extends AbstractLoader {
     }
 
     /**
-     * @param eventFile
+     * save event subfile
+     * @param eventFile - event file
      */
     private void saveEvent(GPEHEvent eventFile) {
         for (Event event : eventFile.getEvents()) {
@@ -127,7 +129,8 @@ public class GPEHLoader extends AbstractLoader {
     }
 
     /**
-     * @param event
+     * save event
+     * @param event - event
      */
     private void saveSingleEvent(Event event) {
         Transaction tx = neo.beginTx();
@@ -178,43 +181,6 @@ public class GPEHLoader extends AbstractLoader {
                 tx.finish();
             }
         }
-    }
-
-    /**
-     * Sets property to node (if value!=null)
-     * 
-     * @param node - node
-     * @param key - property key
-     * @param value - value
-     */
-    protected void setProperty(Node node, String key, Object value) {
-        if (value != null) {
-            node.setProperty(key, value);
-        }
-    }
-
-    /**
-     *find or create OSS node
-     * 
-     * @return
-     */
-    private Node findOrCreateOSSNode() {
-        Node oss;
-        Transaction tx = neo.beginTx();
-        try {
-            oss = NeoUtils.findRootNode(NodeTypes.OSS, basename, neo);
-            if (oss == null) {
-                oss = neo.createNode();
-                oss.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.OSS.getId());
-                oss.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-                oss.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-                neo.getReferenceNode().createRelationshipTo(oss, GeoNeoRelationshipTypes.CHILD);
-            }
-            tx.success();
-        } finally {
-            tx.finish();
-        }
-        return oss;
     }
 
     /**

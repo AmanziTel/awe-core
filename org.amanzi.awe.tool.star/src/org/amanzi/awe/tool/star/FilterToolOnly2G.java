@@ -11,18 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader;
+package org.amanzi.awe.tool.star;
 
-import org.amanzi.neo.loader.gpeh.GPEHEnd;
+import org.amanzi.neo.core.enums.NetworkSiteType;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * set 2g filter
  * </p>
  * @author Cinkel_A
  * @since 1.0.0
  */
-public interface IGPEHBlock {
-    void setEndRecord(GPEHEnd end);
+public class FilterToolOnly2G extends FilterToolRemove {
+    @Override
+    protected String getKey() {
+        return NetworkSiteType.SITE_2G.getId();
+    }
+
 }

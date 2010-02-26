@@ -15,10 +15,12 @@ package org.amanzi.neo.wizards;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
 
+import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.apache.commons.lang.StringUtils;
@@ -52,6 +54,9 @@ public class GPEHImportWizardPage extends WizardPage {
     protected String datasetName;
     private DirectoryFieldEditor editor;
     private String directory;
+    private Combo cOssType;
+    protected Pair<OssType, Exception> ossDirType;
+    private HashMap<String,Node> ossMap;
 
     /**
      * Constructor
@@ -62,6 +67,7 @@ public class GPEHImportWizardPage extends WizardPage {
         setTitle(NeoLoaderPluginMessages.GpehTitle);
         setDescription(NeoLoaderPluginMessages.GpehDescr);
         service = NeoServiceProvider.getProvider().getService();
+        ossDirType=new Pair<OssType, Exception>(null, null);
         validateFinish();
     }
 
@@ -107,8 +113,42 @@ public class GPEHImportWizardPage extends WizardPage {
                 setFileName(editor.getStringValue());
             }
         });
+        label = new Label(main, SWT.LEFT);
+        label.setText(NeoLoaderPluginMessages.OSS);
+        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+
+        cOssType = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cOssType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        cOssType.setItems(getOssFileType());
+        cOssType.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ossDirType = new Pair<OssType, Exception>(OssType.getEnumById(cOssType.getText()), null);
+                validateFinish();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+
         setControl(main);
 
+    }
+
+    /**
+     * 
+     * @return oss types
+     */
+    private String[] getOssFileType() {
+        OssType[] types = OssType.values();
+        String[] result = new String[types.length];
+        for (OssType type : types) {
+            result[type.ordinal()] = type.getId();
+        }
+        return result;
     }
 
     /**
@@ -135,11 +175,18 @@ public class GPEHImportWizardPage extends WizardPage {
      */
     protected boolean isValidPage() {
         try {
-            if (!StringUtils.isEmpty(directory) && !StringUtils.isEmpty(datasetName)){
-                File file = new File(directory);
-                return file.isDirectory()&&file.isAbsolute()&&file.exists();
+            if (StringUtils.isEmpty(directory) || StringUtils.isEmpty(datasetName) || ossDirType.left() == null) {
+                return false;
             }
-            return false;
+            File file = new File(directory);
+            if (!(file.isDirectory() && file.isAbsolute() && file.exists())) {
+                return false;
+            }
+            Node ossNode = ossMap.get(datasetName);
+            if (ossNode != null) {
+                return ossDirType.left() == OssType.getOssType(ossNode, service);
+            }
+            return true;
         } catch (Exception e) {
             return false;
         }
@@ -152,11 +199,11 @@ public class GPEHImportWizardPage extends WizardPage {
      */
     private String[] getOssData() {
         Collection<Node> allOss = NeoUtils.getAllOss(service);
-        Iterator<Node> it = allOss.iterator();
-        String[] result = new String[allOss.size()];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = NeoUtils.getNodeName(it.next(), service);
+        ossMap=new HashMap<String,Node>();
+        for (Node node : allOss) {
+            ossMap.put(NeoUtils.getNodeName(node, service), node);  
         }
+        final String[] result = ossMap.keySet().toArray(new String[0]);
         return result;
     }
 

@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.amanzi.neo.loader.GPEHLoader;
+import org.amanzi.neo.loader.OSSCounterLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -31,8 +32,9 @@ import org.eclipse.ui.IWorkbench;
 
 /**
  * <p>
- *  GPEH import wizard page
+ * GPEH import wizard page
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
@@ -46,10 +48,18 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
         Job job = new Job("Load GPEH '" + (new File(mainPage.getDirectory())).getName() + "'") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                GPEHLoader loader = new GPEHLoader(mainPage.getDirectory(),mainPage.getDatasetName(), display);
-                
                 try {
-                    loader.run(monitor);
+                    switch (mainPage.ossDirType.getLeft()) {
+                    case GPEH:
+                        GPEHLoader loader = new GPEHLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
+                        loader.run(monitor);
+                        break;
+                    case COUNTER:
+                        OSSCounterLoader loaderOss = new OSSCounterLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
+                        loaderOss.run(monitor);
+                    default:
+                        break;
+                    }
                 } catch (IOException e) {
                     NeoLoaderPlugin.error(e.getLocalizedMessage());
                     return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
@@ -60,16 +70,18 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
         job.schedule();
         return true;
     }
- @Override
-public void addPages() {
-    super.addPages();
-    addPage(mainPage);
-}
+
+    @Override
+    public void addPages() {
+        super.addPages();
+        addPage(mainPage);
+    }
+
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         mainPage = new GPEHImportWizardPage("gpehPage1");
         setWindowTitle(NeoLoaderPluginMessages.GpehWindowTitle);
-        display=workbench.getDisplay();
+        display = workbench.getDisplay();
     }
 
 }

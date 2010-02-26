@@ -952,7 +952,7 @@ public class NeoUtils {
      * 
      * @param tx -Transaction or null
      */
-    private static void finishTx(Transaction tx) {
+    public static void finishTx(Transaction tx) {
         if (tx != null) {
             tx.finish();
         }
@@ -963,7 +963,7 @@ public class NeoUtils {
      * 
      * @param tx -Transaction or null
      */
-    private static void successTx(Transaction tx) {
+    public static void successTx(Transaction tx) {
         if (tx != null) {
             tx.success();
         }
@@ -975,7 +975,7 @@ public class NeoUtils {
      * @param service
      * @return Transaction if service present else null
      */
-    private static Transaction beginTx(NeoService service) {
+    public static Transaction beginTx(NeoService service) {
         return service == null ? null : service.beginTx();
     }
 

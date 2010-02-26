@@ -1846,4 +1846,16 @@ public abstract class AbstractLoader {
         pair.setLeft(minTimeStamp);
         pair.setRight(maxTimeStamp);
     }
+    /**
+     * Sets property to node (if value!=null)
+     * 
+     * @param node - node
+     * @param key - property key
+     * @param value - value
+     */
+    protected void setProperty(Node node, String key, Object value) {
+        if (value != null) {
+            node.setProperty(key, value);
+        }
+    }
 }

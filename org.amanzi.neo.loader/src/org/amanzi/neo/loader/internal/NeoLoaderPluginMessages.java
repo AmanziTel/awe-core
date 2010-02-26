@@ -87,6 +87,8 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String GpehDescr;
     public static String GpehLbOSS;
     public static String GpehImportDirEditorTitle;
+
+    public static String OSS;
     
     private NeoLoaderPluginMessages() {
     }

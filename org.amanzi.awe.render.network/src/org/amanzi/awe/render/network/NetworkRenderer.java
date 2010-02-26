@@ -31,6 +31,7 @@ import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.core.Pair;
+import net.refractions.udig.project.IBlackboard;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IStyleBlackboard;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
@@ -45,6 +46,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkSiteType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -73,6 +75,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
+    public static String  BLACKBOARD_KEY="Network Filtering";
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
     private static final Color COLOR_SITE_SELECTED = Color.CYAN;
@@ -93,6 +96,7 @@ public class NetworkRenderer extends RendererImpl {
     private String sectorName;
     private boolean sectorLabeling;
     private boolean noSiteName;
+    private NetworkSiteType filter;
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
@@ -154,7 +158,6 @@ public class NetworkRenderer extends RendererImpl {
         int fontSize = font.getSize();
         int sectorFontSize = font.getSize();
         boolean scaleSectors = true;
-
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID );     
         siteName = NeoStyleContent.DEF_MAIN_PROPERTY;
@@ -206,7 +209,9 @@ public class NetworkRenderer extends RendererImpl {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             System.out.println("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
-            //IBlackboard blackboard = getContext().getMap().getBlackboard();
+            IBlackboard blackboard = getContext().getMap().getBlackboard();
+            String filterStr = blackboard.getString(BLACKBOARD_KEY);
+            filter=NetworkSiteType.getEnumById(filterStr);
             String starProperty = getSelectProperty(geoNeo);
             Pair<Point, Long> starPoint = getStarPoint();
             Node starNode = null;
@@ -302,6 +307,7 @@ public class NetworkRenderer extends RendererImpl {
                 }
             }
             // Now draw the selected points highlights
+            //TODO remove double selection?
             for (Node rnode : selectedPoints) {
                 GeoNode node = new GeoNode(rnode);
                 Coordinate location = node.getCoordinate();
@@ -310,6 +316,12 @@ public class NetworkRenderer extends RendererImpl {
                 }
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
                     continue; // Don't draw points outside viewport
+                }
+                if (filter!=null){
+                    NetworkSiteType type = NetworkSiteType.getOssType(node.getNode(), null);
+                    if (!filter.equals(type)){
+                        continue;
+                    }
                 }
                 try {
                     JTS.transform(location, world_location, transform_d2w);
@@ -328,6 +340,12 @@ public class NetworkRenderer extends RendererImpl {
             g.setColor(drawColor);
             long startTime = System.currentTimeMillis();
             for(GeoNode node:geoNeo.getGeoNodes(bounds_transformed)) {
+                if (filter!=null){
+                    NetworkSiteType type = NetworkSiteType.getOssType(node.getNode(), null);
+                    if (!filter.equals(type)){
+                        continue;
+                    }
+                }               
                 Coordinate location = node.getCoordinate();
 
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
