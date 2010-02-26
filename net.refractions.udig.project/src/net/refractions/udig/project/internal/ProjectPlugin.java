@@ -154,10 +154,13 @@ public final class ProjectPlugin extends EMFPlugin {
                     //first collect projects that need to be cleared
                     for (Iterator iter = resources.iterator(); iter.hasNext(); ) {
                         //Lagutko, 2.12.2009, we should remove all RubyFile from RubyProject before storing
-                        Resource resource = (Resource)iter.next();                        
-                        Object next = resource.getAllContents().next();
-                        if (next instanceof RubyProject) {      
-                            projectsToClear.add((RubyProject)next);
+                        Resource resource = (Resource)iter.next();
+                        Iterator<EObject> allContents = resource.getAllContents();
+                        if ((allContents != null) && (allContents.hasNext())) {
+                            Object next = allContents.next();
+                            if (next instanceof RubyProject) {      
+                                projectsToClear.add((RubyProject)next);
+                            }
                         }
                     }
                     
