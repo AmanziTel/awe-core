@@ -452,6 +452,9 @@ public class NetworkLoader extends AbstractLoader {
                 // return;
                 siteField = sectorField.substring(0, sectorField.length() - 1);
             }
+            //Lagutko, 24.02.2010, sector name can be repeatable (for example 'sector1') so we need
+            //additional variable for Lucene Index 
+            String sectorIndexName = sectorField;
             if (trimSectorName) {
                 sectorField = sectorField.replaceAll(siteField + "[\\:\\-]?", "");
             }
@@ -519,7 +522,7 @@ public class NetworkLoader extends AbstractLoader {
             }
             debug("New Sector: " + sectorField);
             // TODO check by necessary sector
-            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorField);
+            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorIndexName);
             if (sector != null) {
                 // TODO check
             } else {
