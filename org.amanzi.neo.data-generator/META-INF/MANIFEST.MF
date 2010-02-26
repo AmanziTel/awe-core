@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Data_generator
+Bundle-SymbolicName: org.amanzi.neo.data_generator;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Eclipse-LazyStart: true
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: org.amanzi.neo.data_generator
