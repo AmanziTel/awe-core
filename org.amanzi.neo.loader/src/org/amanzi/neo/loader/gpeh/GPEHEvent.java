@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
-import org.amanzi.neo.loader.IGPEHBlock;
 
 /**
  * <p>

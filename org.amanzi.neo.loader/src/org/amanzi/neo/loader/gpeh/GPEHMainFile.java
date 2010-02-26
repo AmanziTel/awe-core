@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.loader.IGPEHBlock;
 
 /**
  * <p>
