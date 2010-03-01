@@ -60,13 +60,13 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NS_AZIMUTH, ".*azimuth.*");
         pref.setDefault(DataLoadPreferences.NS_BEAMWIDTH, ".*beamwidth.*, beam, hbw");
         
-        pref.setDefault(DataLoadPreferences.NE_CI, "CI");
-        pref.setDefault(DataLoadPreferences.NE_BTS, "BTS_NAME");
-        pref.setDefault(DataLoadPreferences.NE_LAC, "LAC");
+        pref.setDefault(DataLoadPreferences.NE_CI, "CI,CI_s");
+        pref.setDefault(DataLoadPreferences.NE_BTS, "BTS_NAME,BTS_Name_s");
+        pref.setDefault(DataLoadPreferences.NE_LAC, "LAC,LAC_s");
         
-        pref.setDefault(DataLoadPreferences.NE_ADJ_CI, "ADJ_CI");
-        pref.setDefault(DataLoadPreferences.NE_ADJ_BTS, "ADJ_BTS_NAME");
-        pref.setDefault(DataLoadPreferences.NE_ADJ_LAC, "ADJ_LAG");
+        pref.setDefault(DataLoadPreferences.NE_ADJ_CI, "ADJ_CI,CI_t");
+        pref.setDefault(DataLoadPreferences.NE_ADJ_BTS, "ADJ_BTS_NAME,BTS_Name_t");
+        pref.setDefault(DataLoadPreferences.NE_ADJ_LAC, "ADJ_LAG,LAC_t");
         
         pref.setDefault(DataLoadPreferences.DEFAULT_CHARSET, Charset.defaultCharset().name());
         StringBuilder def;
