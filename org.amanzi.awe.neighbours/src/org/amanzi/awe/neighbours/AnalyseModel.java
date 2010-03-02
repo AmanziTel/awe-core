@@ -56,7 +56,7 @@ import org.neo4j.api.core.Traverser.Order;
  * @since 1.0.0
  */
 public class AnalyseModel {
-    private static final String ANALYSE_RABY_NAME = "analysing";
+    private static final String ANALYSE_RUBY_NAME = "analysing";
     private Node gpehNode;
     private final  List<Parameters> spreadsheetList;
     private final  Set<Events> events;
@@ -117,7 +117,7 @@ public class AnalyseModel {
     public SpreadsheetNode createSpreadSheet(String name, NeoService service) {
         Transaction tx = service.beginTx();
         try {
-            SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(ANALYSE_RABY_NAME), name);
+            SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(ANALYSE_RUBY_NAME), name);
             int column = 0;
             Cell cellToadd = new Cell(0, column, "", "EVENT name", null);
             creator.saveCell(cellToadd);

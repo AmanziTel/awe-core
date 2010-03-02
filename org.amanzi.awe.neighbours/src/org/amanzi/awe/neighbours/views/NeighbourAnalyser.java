@@ -270,7 +270,7 @@ public class NeighbourAnalyser extends ViewPart {
 
 
     /**
-     *
+     * 
      * @param gpehNode
      * @return
      */
