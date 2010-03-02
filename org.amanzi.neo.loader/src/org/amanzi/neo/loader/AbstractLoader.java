@@ -710,7 +710,7 @@ public abstract class AbstractLoader {
      * lines later. This allows us to deal with several requirements:
      * <ul>
      * <li>Know when we have passed the header and are in the data body of the file</li>
-     * <li>Have objects that automatically learn the tyep of the data as the data is parsed</li>
+     * <li>Have objects that automatically learn the type of the data as the data is parsed</li>
      * <li>Support mapping headers to known specific names</li>
      * <li>Support mapping values to different values using pre-defined mapper code</li>
      * </ul>
@@ -1225,14 +1225,7 @@ public abstract class AbstractLoader {
 
                 Node gis = NeoUtils.findGisNode(gisName, neo);
                 if (gis == null) {
-                    gis = neo.createNode();
-                    gis.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS.getId());
-                    gis.setProperty(INeoConstants.PROPERTY_NAME_NAME, gisName);
-                    gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
-                    if (fileType != null) {
-                        gis.setProperty(NetworkTypes.PROPERTY_NAME, fileType.getId());
-                    }
-                    reference.createRelationshipTo(gis, NetworkRelationshipTypes.CHILD);
+                    gis = NeoUtils.createGISNode(reference, gisName, gisType, neo);
                 }
                 gisProperties = new GisProperties(gis);
                 gisNodes.put(gisName, gisProperties);
@@ -1582,23 +1575,7 @@ public abstract class AbstractLoader {
      * @param gis gis node
      */
     protected Node findOrCreateNetworkNode(Node gisNode) {
-        Node network;
-        Transaction tx = neo.beginTx();
-        try {
-            Relationship relation = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-            if (relation != null) {
-                return relation.getOtherNode(gisNode);
-            }
-            network = neo.createNode();
-            network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NETWORK.getId());
-            network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
-            network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
-            gisNode.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
-            tx.success();
-        } finally {
-            tx.finish();
-        }
-        return network;
+        return NeoUtils.findOrCreateNetworkNode(gisNode, basename, filename, neo);
     }
 
     private static boolean askIfOverwrite() {
@@ -1610,7 +1587,7 @@ public abstract class AbstractLoader {
                 MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
                 msg.setText(LOAD_NETWORK_TITLE);
                 msg.setMessage(LOAD_NETWORK_MSG);
-                result = msg.open();
+                result = msg.open();                
             }
 
             @Override

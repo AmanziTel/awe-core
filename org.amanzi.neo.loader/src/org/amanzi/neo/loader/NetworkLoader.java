@@ -220,7 +220,7 @@ public class NetworkLoader extends AbstractLoader {
 
         // Known headers that are sector data properties
         addKnownHeader(1, "beamwidth", new String[] {".*beamwidth.*", "beam", "hbw"});
-        addKnownHeader(1, "azimuth", new String[] {".*azimuth.*"});
+        addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NS_AZIMUTH));
     }
 
     /**

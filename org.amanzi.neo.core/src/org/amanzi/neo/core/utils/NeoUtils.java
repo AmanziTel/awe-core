@@ -1762,4 +1762,29 @@ public class NeoUtils {
         }
     }
 
+    /**
+     * This code finds the specified network node in the database, creating its own transaction for
+     * that.
+     * 
+     * @param gis gis node
+     */
+    public static Node findOrCreateNetworkNode(Node gisNode, String basename, String filename, NeoService neo) {
+        Node network;
+        Transaction tx = neo.beginTx();
+        try {
+            Relationship relation = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            if (relation != null) {
+                return relation.getOtherNode(gisNode);
+            }
+            network = neo.createNode();
+            network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NETWORK.getId());
+            network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
+            network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
+            gisNode.createRelationshipTo(network, GeoNeoRelationshipTypes.NEXT);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        return network;
+    }
 }

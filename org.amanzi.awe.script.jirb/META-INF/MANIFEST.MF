@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.ui,
  net.refractions.udig.project.ui,
  org.jruby,
  org.amanzi.splash,
- org.amanzi.neo.core;bundle-version="1.0.0"
+ org.amanzi.neo.core;bundle-version="1.0.0",
+ org.amanzi.neo.loader;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
 Bundle-ClassPath: .
