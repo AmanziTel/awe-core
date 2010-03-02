@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.URLUtils;
 
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.CellID;
@@ -48,6 +49,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewPart;
@@ -56,6 +58,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.api.core.Transaction;
+import org.rubypeople.rdt.core.IRubyProject;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 public class NeoSplashUtil {
 
@@ -518,4 +522,63 @@ public class NeoSplashUtil {
 	        openSpreadsheet(PlatformUI.getWorkbench(), comparator.getSpreadsheet());
 	    }
 	}
+	   /**
+     * configure rubyproject
+     *
+     * @param aweProjectName - awe project name
+     * @param rubyProjectName - ruby project name
+     * @return IPath of ruby project
+     */
+       public static IPath configureRubyPath(String rubyProjectName) {
+           String aweProjectName=AWEProjectManager.getActiveProjectName();
+           if (rubyProjectName!=null){
+               if (!rubyProjectName.startsWith(aweProjectName)){
+                   rubyProjectName=aweProjectName+"."+rubyProjectName;
+               }
+           }
+           IRubyProject rubyProject = null;
+           try {
+               rubyProject = NewRubyElementCreationWizard.configureRubyProject(rubyProjectName, aweProjectName);
+           }
+           catch (CoreException e) {
+               throw (RuntimeException) new RuntimeException( ).initCause( e );
+           }
+           
+           return  rubyProject.getProject().getFullPath();
+       }
+
+    /**
+     * configure rubyproject
+     * 
+     * @param aweProjectName - awe project name
+     * @param rubyProjectName - ruby project name
+     * @return IPath of ruby project
+     */
+    public static IPath configureRubyPath(String aweProjectName, String rubyProjectName) {
+        IRubyProject rubyProject = null;
+        try {
+            rubyProject = NewRubyElementCreationWizard.configureRubyProject(rubyProjectName, aweProjectName);
+        } catch (CoreException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+        return rubyProject.getProject().getFullPath();
+    }
+
+    /**
+     * Obtains the current project.
+     * 
+     * @return The current active project name
+     */
+    public static String getActiveProjectName() {
+        return AWEProjectManager.getActiveProjectName();
+    }
+
+    /**
+     *open Spreadsheet
+     * @param spreadsheet - Spreadsheet node
+     */
+    public static void openSpreadsheet(SpreadsheetNode spreadsheet) {
+        openSpreadsheet(PlatformUI.getWorkbench(),spreadsheet);
+    }
 }

@@ -219,6 +219,8 @@ public enum NodeTypes {
     CHART("spreadsheet_chart"),
     CHART_ITEM("spreadsheet_chart_item"),
     CELL("spreadsheet_cell"),
+    GPEH_CELL_ROOT("cell_root"),
+    GPEH_CELL("gpeh_cell"),
     AWE_PROJECT("awe_project"){
         @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){

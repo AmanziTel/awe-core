@@ -15,6 +15,7 @@ package org.amanzi.neo.core.enums;
 
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.api.core.NeoService;
+import org.neo4j.api.core.Node;
 import org.neo4j.api.core.PropertyContainer;
 import org.neo4j.api.core.Transaction;
 
@@ -78,6 +79,15 @@ public enum OssType {
                 tx.finish();
             }
         }
+    }
+    /**
+     * Check node by type
+     * 
+     * @param currentNode - node
+     * @return true if node type
+     */
+    public boolean checkNode(Node currentNode) {
+        return getId().equals(currentNode.getProperty(PROPERTY_NAME, null));
     }
     /**
      * returns type of node

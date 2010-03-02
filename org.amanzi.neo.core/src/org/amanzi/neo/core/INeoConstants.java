@@ -155,4 +155,5 @@ public class INeoConstants {
     public static final String GPEH_LOGIC_NAME = "logic_name";
     public static final String GPEH_USER_LABEL = "label";
     public static final String GPEH_MINUTE = "minute";
+    public static final String PROPERTY_EVENT_ID = "event id";
 }

@@ -36,6 +36,9 @@ public class Messages extends NLS {
     public static String NeighbourAnalyser_3_d;
     public static String NeighbourAnalyser_4;
     public static String NeighbourAnalyser_4_d;
+    public static String NeighbourAnalyser_5;
+    public static String NeighbourAnalyser_6;
+    public static String NeighbourAnalyser_7;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

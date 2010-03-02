@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
@@ -55,8 +57,11 @@ public class GPEHLoader extends AbstractLoader {
     private final static Pattern mainFilePattern = Pattern.compile("(^.*)(_Mp0\\.)(.*$)");
     private Node ossRoot;
     private Pair<Boolean, Node> mainNode;
+    private final Map<Integer, Node> cellMap;
     private long timestampOfDay;
     private Node eventLastNode;
+    private Node cellRoot;
+    private Node lastCellNode;
     private final LinkedHashMap<String, Header> headers;
 
     /**
@@ -69,7 +74,9 @@ public class GPEHLoader extends AbstractLoader {
         initialize("GPEH", null, directory, display);
         basename = datasetName;
         headers = getHeaderMap(KEY_EVENT).headers;
-
+        cellRoot = null;
+        lastCellNode = null;
+        cellMap=new HashMap<Integer,Node>();
     }
 
     @Override
@@ -81,6 +88,7 @@ public class GPEHLoader extends AbstractLoader {
     public void run(IProgressMonitor monitor) throws IOException {
         if (monitor != null)
             monitor.subTask(basename);
+        cellMap.clear();
         addIndex(NodeTypes.GPEH_EVENT.getId(), NeoUtils.getTimeIndexProperty(basename));
 
         Map<String, List<String>> fileList = getGPEHFile(filename);
@@ -89,6 +97,15 @@ public class GPEHLoader extends AbstractLoader {
         try {
             initializeIndexes();
             ossRoot = LoaderUtils.findOrCreateOSSNode(OssType.GPEH, basename, neo);
+            Pair<Node,Node> pair= LoaderUtils.findOrCreateGPEHCellRootNode(ossRoot, neo);
+            cellRoot=pair.getLeft();
+            lastCellNode=pair.getRight();
+            if (lastCellNode!=null){
+                //TODO use index?
+               for (Node cell:NeoUtils.getChildTraverser(cellRoot)){
+                   cellMap.put((Integer)cell.getProperty(INeoConstants.PROPERTY_SECTOR_CI,null),cell); 
+               }
+            }
             int perc = 0;
             int prevPerc = 0;
             int prevLineNumber = 0;
@@ -118,6 +135,7 @@ public class GPEHLoader extends AbstractLoader {
         }
     }
 
+
     /**
      * save event subfile
      * @param eventFile - event file
@@ -136,8 +154,9 @@ public class GPEHLoader extends AbstractLoader {
         Transaction tx = neo.beginTx();
         try {
             Node eventNode = neo.createNode();
-            eventNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GPEH_EVENT.getId());
+            NodeTypes.GPEH_EVENT.setNodeType(eventNode, neo);
             setIndexProperty(headers, eventNode, INeoConstants.PROPERTY_NAME_NAME, event.getType().name());
+            eventNode.setProperty(INeoConstants.PROPERTY_EVENT_ID, event.getType().getId());
             for (Map.Entry<Parameters, Object> entry : event.getProperties().entrySet()) {
                 setIndexProperty(headers, eventNode, entry.getKey().name(), entry.getValue());
             }
@@ -148,6 +167,35 @@ public class GPEHLoader extends AbstractLoader {
             tx.success();
             index(eventNode);
             eventLastNode = eventNode;
+            createCells(event,eventNode);
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     *Create Cells 
+     *finds or create cells and links with event
+     * @param event - event 
+     * @param eventNode - event node
+     */
+    private void createCells(Event event, Node eventNode) {
+        Transaction tx = neo.beginTx();
+        try {
+            LinkedHashSet<Integer> cellsId = event.getCellId();
+            for (Integer cid : cellsId) {
+                Node cell = cellMap.get(cid);
+                if (cell == null) {
+                    cell = neo.createNode();
+                    NodeTypes.GPEH_CELL.setNodeType(cell, neo);
+                    cell.setProperty(INeoConstants.PROPERTY_SECTOR_CI, cid);
+                    cell.setProperty(INeoConstants.PROPERTY_NAME_NAME, cid.toString());
+                    NeoUtils.addChild(cellRoot, cell, lastCellNode, neo);
+                    lastCellNode = cell;
+                    cellMap.put(cid, cell);
+                }
+                cell.createRelationshipTo(eventNode, GeoNeoRelationshipTypes.EVENTS);
+            }
         } finally {
             tx.finish();
         }

@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.gpeh;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.amanzi.neo.core.enums.gpeh.Events;
@@ -152,6 +153,21 @@ public class GPEHEvent implements IGPEHBlock {
          */
         public Long getFullTime(long timestampOfDay) {
             return timestampOfDay + (hour * 60 * 60 + minute * 60 + second) * 1000 + millisecond;
+        }
+
+        /**
+         *gets set of cells id for event
+         * @return
+         */
+        public LinkedHashSet<Integer> getCellId() {
+            LinkedHashSet<Integer> result=new LinkedHashSet<Integer>();
+            for (Parameters parametr: new Parameters[]{Parameters.EVENT_PARAM_C_ID_1,  Parameters.EVENT_PARAM_C_ID_2,  Parameters.EVENT_PARAM_C_ID_3, Parameters.EVENT_PARAM_C_ID_4}){
+                final Object value = properties.get(parametr);
+                if (value!=null){
+                    result.add((Integer)value);
+                }
+            }
+            return result;
         }
     }
 

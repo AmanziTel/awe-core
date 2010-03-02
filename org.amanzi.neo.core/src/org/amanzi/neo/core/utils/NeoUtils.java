@@ -38,6 +38,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -1679,7 +1680,39 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
-
+    /**
+     *Gets all OSS nodes
+     * 
+     * @param service-neoservice
+     */
+    public static Collection<Node> getAllGpeh(NeoService service) {
+        Transaction tx = beginTx(service);
+        try {
+            return getAllReferenceChild(service, new ReturnableEvaluator() {
+                
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node=currentPos.currentNode();
+                    return NodeTypes.OSS.checkNode(node)&&OssType.GPEH.checkNode(node);
+                }
+            }).getAllNodes();
+        } finally {
+            finishTx(tx);
+        }
+    }   
+    /**
+     *Gets all childs of reference node
+     * 
+     * @param service-neoservice
+     */
+    public static Traverser getAllReferenceChild(NeoService service,final ReturnableEvaluator evaluator) {
+        Transaction tx = beginTx(service);
+        try {
+            return service.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,evaluator, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+        } finally {
+            finishTx(tx);
+        }
+    }
     /**
      * add child to node
      * 
@@ -1713,7 +1746,7 @@ public class NeoUtils {
      * @param neo service
      * @return
      */
-    private static Node findLastChild(Node mainNode, NeoService neo) {
+    public static Node findLastChild(Node mainNode, NeoService neo) {
         Transaction tx = beginTx(neo);
         try {
             Iterator<Node> iterator = getChildTraverser(mainNode, new ReturnableEvaluator() {

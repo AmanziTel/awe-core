@@ -326,4 +326,11 @@ public enum Events {
         }
         return null;
     }
+
+    /**
+     * @return Returns the id.
+     */
+    public int getId() {
+        return id;
+    }
 }
