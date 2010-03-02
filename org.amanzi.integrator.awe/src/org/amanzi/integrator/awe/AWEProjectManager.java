@@ -199,7 +199,7 @@ public class AWEProjectManager {
 	 * @param rubyProjectName
 	 */
 	
-	private static void createProjectIfNotExist(Project aweProject, String rubyProjectName) {
+	private synchronized static void createProjectIfNotExist(Project aweProject, String rubyProjectName) {
 		boolean exist = false;
 		
 		for (RubyProject rubyProject : aweProject.getElements(RubyProject.class)) {
