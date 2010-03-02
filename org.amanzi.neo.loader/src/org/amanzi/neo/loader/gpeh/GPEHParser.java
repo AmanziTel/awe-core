@@ -84,7 +84,7 @@ public class GPEHParser {
             pareseError(input, result);
         } else {
             // wrong file format!
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Wrong blok!="+recordType);
         }
 
     }
@@ -316,6 +316,9 @@ public class GPEHParser {
                     event.addProperty(parameter, bitSet);
                 }
             }
+//            if (event.getProperties().get(Parameters.EVENT_PARAM_UE_CONTEXT)==null){
+//                System.err.println("ue!");
+//            }
         }
         if (parseOk){
             result.addEvent(event);
