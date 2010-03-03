@@ -16,13 +16,17 @@ package org.amanzi.neo.core.enums;
 
 /**
  * <p>
- *Enum of network file types
+ * Enumeration of network file types
  * </p>
  * @author Cinkel_A
  * @since 1.0.0
  */
 public enum NetworkFileType {
-    RADIO_SITE("radio network sites"), RADIO_SECTOR("radio network sectors"), TRANSMISSION("transmission"), NEIGHBOUR("neighbour"), PROBE("probe");
+    RADIO_SITE(EnumsMessages.NetworkFileType_RADIO_SITE),
+    RADIO_SECTOR(EnumsMessages.NetworkFileType_RADIO_SECTOR),
+    TRANSMISSION(EnumsMessages.NetworkFileType_TRANSMISSION),
+    NEIGHBOUR(EnumsMessages.NetworkFileType_NEIGHBOUR),
+    PROBE(EnumsMessages.NetworkFileType_PROBE);
 
     private String id;
 
