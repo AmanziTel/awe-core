@@ -301,7 +301,7 @@ public class CallStatistics {
         
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYZIS_ROOT.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
-        result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(datasetNode));
+        result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(datasetNode,neoService));
         result.setProperty(CallProperties.CALL_TYPE.getId(), callType.toString());
         
         datasetNode.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYZIS);
@@ -329,8 +329,8 @@ public class CallStatistics {
     private Pair<Long, Long> getTimeBounds(Node dataset) {
         Transaction transaction = neoService.beginTx();
         try {
-            Node gisNode = NeoUtils.findGisNodeByChild(dataset);
-            return NeoUtils.getMinMaxTimeOfDataset(gisNode, null);
+            Node gisNode = NeoUtils.findGisNodeByChild(dataset,neoService);
+            return NeoUtils.getMinMaxTimeOfDataset(gisNode, neoService);
         } finally {
             transaction.finish();
         }
@@ -439,7 +439,7 @@ public class CallStatistics {
             
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                return period.getId().equals(NeoUtils.getNodeName(currentPos.currentNode()));
+                return period.getId().equals(NeoUtils.getNodeName(currentPos.currentNode(),neoService));
             }
         }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         
@@ -618,7 +618,7 @@ public class CallStatistics {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return periods.getId().equalsIgnoreCase(NeoUtils.getNodeName(currentPos.currentNode()));
+                    return periods.getId().equalsIgnoreCase(NeoUtils.getNodeName(currentPos.currentNode(),neoService));
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
             return iterator.hasNext() ? iterator.next() : null;

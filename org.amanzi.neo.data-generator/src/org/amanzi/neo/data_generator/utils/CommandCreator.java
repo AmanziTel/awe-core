@@ -86,6 +86,22 @@ public class CommandCreator {
     }
     
     /**
+     * Row with 'CTSDC' command.
+     *
+     * @param time Long.
+     * @param source CommamdRow.
+     * @return CommandRow.
+     */
+    public static CommandRow getCtsdcRow(Long time, CommandRow source){
+        CommandRow row = new CommandRow(CTSDC);
+        row.setTime(getDate(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
+        row.getParams().addAll(source.getParams());
+        row.getAdditional().add(OK_PARAMETER);
+        return row;
+    }
+    
+    /**
      * Row with 'atd' command.
      *
      * @param time Long.
@@ -308,7 +324,6 @@ public class CommandCreator {
      */
     public static CommandRow getCciRow(Long networkIdentity, Integer localArea, Double frequency){
         CommandRow row = new CommandRow(CCI);
-        row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
         row.getParams().add(networkIdentity);
         RandomValueGenerator generator = RandomValueGenerator.getGenerator();
         row.getParams().add(generator.getIntegerValue(-100, 100));

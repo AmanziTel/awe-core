@@ -14,6 +14,8 @@
 package org.amanzi.neo.data_generator;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,14 +47,25 @@ public class AmsDataGenerator {
     private static final long MAX_NETWORK_ID = 125000;
     
     private static final int CALL_DURATION_PERIODS_COUNT = 8;
-    private static final float[] CALL_DURATION_BORDERS = new float[]{0,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
+    private static final float[] CALL_DURATION_BORDERS = new float[]{0.01f,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
     
     private static final int MILLISECONDS = 1000;
     private static final long HOUR = 60*60*MILLISECONDS;
-    private static final long START_TIME = new Date(1249344651495L).getTime(); 
+    private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
+    private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(TIMESTAMP_FORMAT);
+    private static long START_TIME; 
+    
+    static{
+        try {
+            START_TIME = TIME_FORMATTER.parse("2008-01-01 00:00:00,000").getTime();
+        } catch (ParseException e) {
+            START_TIME = new Date(1249344651495L).getTime();
+        }
+    }
     
     private String directory;
     private Long networkIdentity;
+    private Long startTime;
     
     private Integer hours;
     private Integer calls;
@@ -64,11 +77,12 @@ public class AmsDataGenerator {
      * Constructor.
      * @param aDirectory String (path to save data)
      * @param aHours Integer (count of hours)
+     * @param aHourDrift Integer (drift of start time)
      * @param aCallsPerHour Integer (call count in hour)
      * @param aCallPerHourVariance Integer (call variance in hour)
      * @param aProbes Integer (probes count)
      */
-    public AmsDataGenerator(String aDirectory,Integer aHours, 
+    public AmsDataGenerator(String aDirectory,Integer aHours, Integer aHourDrift,
                         Integer aCallsPerHour, Integer aCallPerHourVariance,
                         Integer aProbes){
         directory = aDirectory;
@@ -76,18 +90,21 @@ public class AmsDataGenerator {
         calls = aCallsPerHour;
         callVariance = aCallPerHourVariance;
         probesCount = aProbes;
+        startTime = START_TIME+aHourDrift*HOUR;
     }
     
     /**
      * Generate data.
      *
+     * @return List of {@link CallPair}.
      * @throws IOException
      */
-    public void generate()throws IOException{
-        networkIdentity = getRandomGenerator().getLongValue(0L, MAX_NETWORK_ID);
+    public List<CallPair> generate()throws IOException{
+       networkIdentity = getRandomGenerator().getLongValue(0L, MAX_NETWORK_ID);
        initProbes(); 
        List<CallPair> data = buildData();
        saveData(data);
+       return data;
     }
     
     /**
@@ -161,8 +178,8 @@ public class AmsDataGenerator {
      * @return {@link CallData}
      */
     private CallData buildCall(Integer sourceNum, Integer receiverNum, Integer hour, Long duration){
-        Long startHour = START_TIME+HOUR*hour;
-        Long endHour = START_TIME+HOUR*(hour+1);
+        Long startHour = startTime+HOUR*hour;
+        Long endHour = startTime+HOUR*(hour+1);
         Long start = getRamdomTime(startHour, endHour);
         
         Long time = getRamdomTime(startHour, start);
@@ -184,7 +201,10 @@ public class AmsDataGenerator {
         CommandRow receiverCci = CommandCreator.getCciRow(networkIdentity,receiverInfo.getLocalAria(),receiverInfo.getFrequency());
         receiverCommands.add(CommandCreator.getAtCciRow(time,receiverCci));
         
-        sourceCommands.add(CommandCreator.getCtsdcRow(start));
+        time = getRamdomTime(time, start);
+        CommandRow ctsdcRow = CommandCreator.getCtsdcRow(time);
+        sourceCommands.add(ctsdcRow);
+        sourceCommands.add(CommandCreator.getCtsdcRow(start,ctsdcRow));
         time = getRamdomTime(0L, duration);
         CommandRow atdRow = CommandCreator.getAtdRow(start+time, receiver.getNumber());
         sourceCommands.add(atdRow);
@@ -210,7 +230,7 @@ public class AmsDataGenerator {
         ctcc = CommandCreator.getCtccRow(end);
         receiverCommands.add(CommandCreator.getAtaRow(ataRow, ctcc));
         
-        Long rest = START_TIME+HOUR*(hour+1)-end;
+        Long rest = startTime+HOUR*(hour+1)-end;
         if(rest<0){
             rest = HOUR;
         }

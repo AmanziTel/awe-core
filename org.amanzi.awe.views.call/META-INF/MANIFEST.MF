@@ -18,3 +18,5 @@ Require-Bundle: org.eclipse.ui,
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.neo4j.neoclipse.view
+Export-Package: org.amanzi.awe.views.calls,
+ org.amanzi.awe.views.calls.statistics

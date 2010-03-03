@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.core.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
@@ -386,6 +387,31 @@ public class NeoUtils {
      */
     public static Node findGisNodeByChild(Node childNode) {
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
+            Iterator<Node> gisIterator = childNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return isGisNode(node);
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
+            tx.success();
+            return gisIterator.hasNext() ? gisIterator.next() : null;
+        } finally {
+            tx.finish();
+        }
+    }
+    
+    /**
+     * Finds gis node by child
+     * 
+     * @param childNode child
+     * @param service NeoService
+     * @return gis node or null
+     */
+    public static Node findGisNodeByChild(Node childNode, NeoService service) {
+        Transaction tx = service.beginTx();
         try {
             Iterator<Node> gisIterator = childNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
@@ -1099,8 +1125,9 @@ public class NeoUtils {
     public static Pair<Long, Long> getMinMaxTimeOfDataset(Node driveGisNode, NeoService service) {
         Transaction tx = beginTx(service);
         try {
-            return new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null), (Long)driveGisNode.getProperty(INeoConstants.MAX_TIMESTAMP,
+            Pair<Long, Long> pair = new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null), (Long)driveGisNode.getProperty(INeoConstants.MAX_TIMESTAMP,
                     null));
+            return pair;
         } finally {
             finishTx(tx);
         }
@@ -1136,7 +1163,7 @@ public class NeoUtils {
      * @param probeName name of Probe
      * @return Probe node
      */
-    public static Node findOrCreateProbeNode(Node networkNode, final String probeName, NeoService service) {
+    public static Node findOrCreateProbeNode(Node networkNode, final String probeName, final NeoService service) {
         Transaction tx = beginTx(service);
         Node result = null;
         try {
@@ -1144,7 +1171,7 @@ public class NeoUtils {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return NeoUtils.isProbeNode(currentPos.currentNode()) && probeName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
+                    return NeoUtils.isProbeNode(currentPos.currentNode()) && probeName.equals(NeoUtils.getNodeName(currentPos.currentNode(),service));
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
 
@@ -1181,7 +1208,7 @@ public class NeoUtils {
         Transaction tx = beginTx(service);
         Node callsNode = null;
         try {
-            final String datasetName = NeoUtils.getNodeName(datasetNode);
+            final String datasetName = NeoUtils.getNodeName(datasetNode,service);
             Iterator<Node> callsIterator = probesNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
                 @Override
@@ -1279,7 +1306,7 @@ public class NeoUtils {
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.VIRTUAL_DATASET,
                     Direction.OUTGOING);
             for (Node node : traverser) {
-                result.put(getNodeName(node), node);
+                result.put(getNodeName(node,service), node);
             }
             return result;
         } finally {
@@ -1633,12 +1660,12 @@ public class NeoUtils {
         }
     }
 
-    public static Node findMultiPropertyIndex(final String indexName, NeoService neoService) {
+    public static Node findMultiPropertyIndex(final String indexName,final NeoService neoService) {
         Iterator<Node> indexNodes = neoService.getReferenceNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                return indexName.equals(NeoUtils.getNodeName(currentPos.currentNode()));
+                return indexName.equals(NeoUtils.getNodeName(currentPos.currentNode(),neoService));
             }
         }, PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING).iterator();
 

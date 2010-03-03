@@ -48,6 +48,7 @@ public class ETSIImportWizard extends Wizard implements IImportWizard {
                 
                 try {
                 	loader.run(monitor);
+                	ETSILoader.finishUpGis(loader.getDatasetNode());
                 } catch (IOException e) {
                     NeoLoaderPlugin.error(e.getLocalizedMessage());
                     return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());

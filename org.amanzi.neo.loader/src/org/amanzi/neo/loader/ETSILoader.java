@@ -49,6 +49,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
@@ -498,6 +499,39 @@ public class ETSILoader extends DriveLoader {
 	}
 	
 	/**
+     * Creates a loader
+     * 
+     * @param directoryName name of directory to import
+     * @param datasetName name of dataset
+     * @param networkName
+     * @param neo
+     */
+    public ETSILoader(String directoryName, String datasetName, String networkName, NeoService neo) {
+        driveType = DriveTypes.AMS;
+        if (datasetName == null) {
+            int startIndex = directoryName.lastIndexOf(File.separator);
+            if (startIndex < 0) {
+                startIndex = 0;
+            }
+            else {
+                startIndex++;
+            }
+            datasetName = directoryName.substring(startIndex);
+        }
+        
+        
+        this.directoryName = directoryName;
+        this.filename = directoryName;      
+        this.networkName = networkName;
+        
+        initialize("ETSI", neo, directoryName, null, datasetName);
+        
+        addDriveIndexes();
+        
+        timestampFormat = new SimpleDateFormat(TIMESTAMP_FORMAT);
+    }
+	
+	/**
 	 * Initializes Network for probes
 	 *
 	 * @param networkName name of network
@@ -580,7 +614,7 @@ public class ETSILoader extends DriveLoader {
 		    finishUp();
 		
 		    cleanupGisNode();
-		    finishUpGis(getDatasetNode());
+		    //finishUpGis(getDatasetNode());
 		}
 		finally {
 		    tx.success();
@@ -1211,7 +1245,7 @@ public class ETSILoader extends DriveLoader {
 			index(result);
 			
 			//index for Probe Calls
-			MultiPropertyIndex<Long> callIndex = getProbeCallsIndex(NeoUtils.getNodeName(probeCalls));
+			MultiPropertyIndex<Long> callIndex = getProbeCallsIndex(NeoUtils.getNodeName(probeCalls,neo));
 			callIndex.add(result);
 			
 			//create relationship to M node
