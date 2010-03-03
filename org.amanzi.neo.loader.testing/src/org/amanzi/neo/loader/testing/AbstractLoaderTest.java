@@ -46,9 +46,9 @@ public abstract class AbstractLoaderTest {
 	public static final String BUNDLE_KEY_TRUE = "1";
 	
 	private static EmbeddedNeo neo = null;
-	private static final String DATABASE_NAME = "neo_test";
-	private static final String USER_HOME = "user.home";
-	private static final String AMANZI_STR = ".amanzi";
+	protected static final String DATABASE_NAME = "neo_test";
+	protected static final String USER_HOME = "user.home";
+	protected static final String AMANZI_STR = ".amanzi";
 	
 	public static final int IGNORE = 0;
 	public static final int ONLY_ONE = 1;
@@ -97,7 +97,7 @@ public abstract class AbstractLoaderTest {
 	 * Delete data base directory.
 	 */
 	protected static void clearDbDirectory() {
-		File dir = new File(System.getProperty(USER_HOME));
+		File dir = new File(getUserHome());
 		if(dir.exists() && dir.isDirectory()){
 			dir = new File(dir,AMANZI_STR);
 			if(dir.exists() && dir.isDirectory()){
@@ -111,6 +111,15 @@ public abstract class AbstractLoaderTest {
 			}
 		}
 	}
+
+	/**
+     * Get name of %USER_HOME% directory.
+     *
+     * @return String
+     */
+    protected static String getUserHome() {
+        return System.getProperty(USER_HOME);
+    }
 	
 	/**
 	 * Clear directory.
@@ -183,6 +192,23 @@ public abstract class AbstractLoaderTest {
 		String[] splited = aString.split(BUNDLE_KEY_SEPERATOR);
 		return Arrays.asList(splited);
 	}
+	
+	/**
+     * Convert string to list by BUNDLE_KEY_SEPERATOR
+     * @param aString
+     * @return List<String>
+     */
+    protected static List<Integer> parceStringToIntegerList(String aString){
+        if(aString==null||aString.length()==0){
+            return new ArrayList<Integer>(0);
+        }
+        String[] splited = aString.split(BUNDLE_KEY_SEPERATOR);
+        List<Integer> result = new ArrayList<Integer>(splited.length);
+        for(String str : splited){
+            result.add(Integer.parseInt(str));
+        }
+        return result;
+    }
 	
 	/**
 	 * Convert string to boolean value (true - equals BUNDLE_KEY_TRUE).

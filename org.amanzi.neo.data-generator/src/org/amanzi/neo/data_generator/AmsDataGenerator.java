@@ -100,11 +100,17 @@ public class AmsDataGenerator {
      * @throws IOException
      */
     public List<CallPair> generate()throws IOException{
-       networkIdentity = getRandomGenerator().getLongValue(0L, MAX_NETWORK_ID);
-       initProbes(); 
-       List<CallPair> data = buildData();
-       saveData(data);
-       return data;
+        List<CallPair> data;
+        if (hours>0&&probesCount>0&&calls>0) {
+            networkIdentity = getRandomGenerator().getLongValue(0L, MAX_NETWORK_ID);
+            initProbes();
+            data = buildData();
+        }
+        else{
+            data = new ArrayList<CallPair>(0);
+        }
+        saveData(data);
+        return data;
     }
     
     /**
