@@ -14,6 +14,7 @@
 package org.amanzi.awe.views.kpi;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,6 +30,12 @@ import java.util.regex.Pattern;
  * @since 1.0.0
  */
 public class KPIUtils {
+    public static final String COLLECTION_FORMULAS_SCRIPT = "collection_formulas.rb";
+    public static final String UTIL_FORMULAS_SCRIPT = "util_formulas.rb";
+    public static final String ELEMENT_FORMULAS_SCRIPT="element_formulas.rb";
+    public static final String DEFAULT_EXTENSION = ".rb";
+    public static final String INDENT = "  ";
+
     /**
      * Generates a ruby method on the base of given formula name, parameters and formula text. Uses
      * given indent.
@@ -39,7 +46,7 @@ public class KPIUtils {
      * @param indent indent
      * @return
      */
-    public static String generateRubyMethod(String formulaName, String params, String formulaText, String indent) {
+    public static String generateRubyMethod_old(String formulaName, String params, String formulaText, String indent) {
         StringBuffer sb = new StringBuffer(indent);
         sb.append("def ").append(formulaName).append("(").append(params).append(")\n");
         String[] lines = formulaText.split("\n");
@@ -47,6 +54,22 @@ public class KPIUtils {
             sb.append(indent).append(indent).append(line).append("\n");
         }
         sb.append(indent).append("end\n");
+        return sb.toString();
+    }
+
+    /**
+     * Generates the text of ruby method which simply contains 'load' directive
+     * 
+     * @param formulaName the formula name
+     * @param params the parameters
+     * @return the text of ruby method
+     */
+    public static String generateRubyMethod(String formulaName, String params) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("def ").append(formulaName).append("(").append(params).append(")\n");
+        sb.append(INDENT).append("load 'kpi").append(File.separatorChar).append(formulaName).append(DEFAULT_EXTENSION).append(
+                "'\n");
+        sb.append("end\n");
         return sb.toString();
     }
 
@@ -118,7 +141,7 @@ public class KPIUtils {
         int formulaName = 2;
         for (String[] test : tests) {
             System.out.println("[DEBUG]----------------------");// TODO delete debug info
-            String methodText = KPIUtils.generateRubyMethod(test[formulaName], test[params], test[formulaText], "  ");
+            String methodText = KPIUtils.generateRubyMethod_old(test[formulaName], test[params], test[formulaText], "  ");
             System.out.println(methodText);
             // inserting method into a script test
             for (String script : test3) {
@@ -131,5 +154,28 @@ public class KPIUtils {
         // init scipt updating test
         String[] tests2 = new String[] {"load 'f1.rb'\nload 'f2.rb'"};
         // inserting method into a script test
+    }
+
+    public static String generateInitScript() {
+        StringBuffer sb = new StringBuffer(/*"module Amanzi\n"*/);
+        sb.append(INDENT).append("module KPI\n");
+        
+//        sb.append(INDENT).append(INDENT).append("module Util\n");
+//        sb.append(INDENT).append(INDENT).append(INDENT).append("load 'kpi").append(File.separatorChar).append(UTIL_FORMULAS_SCRIPT).append("'\n");
+//        sb.append(INDENT).append(INDENT).append("end\n");
+            
+        sb.append(INDENT).append(INDENT).append("module Collection\n");
+        sb.append(INDENT).append(INDENT).append(INDENT).append("load 'kpi").append(File.separatorChar).append(COLLECTION_FORMULAS_SCRIPT).append("'\n");
+        sb.append(INDENT).append(INDENT).append("end\n");
+        
+        sb.append(INDENT).append(INDENT).append("module Element\n");
+        sb.append(INDENT).append(INDENT).append(INDENT).append("load 'kpi").append(File.separatorChar).append(ELEMENT_FORMULAS_SCRIPT).append("'\n");
+        sb.append(INDENT).append(INDENT).append("end\n");
+        
+        sb.append(INDENT).append("end\n");
+        
+//        sb.append("end\n");
+        
+        return sb.toString();
     }
 }

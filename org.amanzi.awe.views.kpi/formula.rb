@@ -1,1 +1,0 @@
-Float.public_methods

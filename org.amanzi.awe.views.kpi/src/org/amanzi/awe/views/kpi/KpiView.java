@@ -13,8 +13,11 @@
 package org.amanzi.awe.views.kpi;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+
+import javax.swing.table.TableModel;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
@@ -24,11 +27,16 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.scripting.jruby.ScriptUtils;
+import org.amanzi.splash.swing.SplashTableModel;
+import org.amanzi.splash.ui.AbstractSplashEditor;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -50,9 +58,14 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jruby.Ruby;
+import org.jruby.internal.runtime.ValueAccessor;
+import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.parser.EvalStaticScope;
 import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.ThreadContext;
@@ -142,6 +155,28 @@ public class KpiView extends ViewPart {
 	
 	private String parameters="";
 
+    private String LB_FORMULA_NAME="Formula name:";
+
+    private String LB_PARAMETERS="Parameters:";
+
+    private Text txtFormulaName;
+
+    private Text txtParameters;
+
+    private Button btnElements;
+
+    private Button btnCollections;
+
+    private String LB_ELEMENTS="elements";
+
+    private String LB_COLLECTIONS="collections";
+
+    private String LB_TYPE="Type:";
+
+    private String ELEMENTS_SCRIPT="element_formulas.rb";
+    
+    private String COLLECTIONS_SCRIPT="collection_formulas.rb";
+
 	/**
 	 * The constructor.
 	 */
@@ -179,6 +214,19 @@ public class KpiView extends ViewPart {
         Label labelDrive = new Label(top, SWT.LEFT);
         labelDrive.setText(LB_DRIVE);
         driveNode = new Combo(top, SWT.DROP_DOWN | SWT.READ_ONLY);
+        /*Label labelFormulaName = new Label(top, SWT.LEFT);
+        labelFormulaName.setText(LB_FORMULA_NAME);
+        txtFormulaName=new Text(top, SWT.SINGLE);
+        Label labelParameters = new Label(top, SWT.LEFT);
+        labelParameters.setText(LB_PARAMETERS);
+        txtParameters=new Text(top, SWT.SINGLE);
+        Label labelType = new Label(top, SWT.LEFT);
+        labelType.setText(LB_TYPE);
+        btnElements=new Button(top,SWT.RADIO);
+        btnElements.setText(LB_ELEMENTS);
+        btnElements.setSelection(true);
+        btnCollections=new Button(top,SWT.RADIO);
+        btnCollections.setText(LB_COLLECTIONS);*/
         // top
         FormData layoutData = new FormData();
         layoutData.top = new FormAttachment(0, 2);
@@ -209,6 +257,50 @@ public class KpiView extends ViewPart {
         layoutData.left = new FormAttachment(labelDrive, 5);
         layoutData.right = new FormAttachment(100, -5);
         driveNode.setLayoutData(layoutData);
+        /*
+        layoutData=new FormData();
+        layoutData.top=new FormAttachment(networkNode, 2);
+        layoutData.left=new FormAttachment(0, 2);
+        layoutData.right=new FormAttachment(25, 2);
+        labelFormulaName.setLayoutData(layoutData);
+        
+        layoutData=new FormData();
+        layoutData.top=new FormAttachment(networkNode, 2);
+        layoutData.left=new FormAttachment(25, 0);
+        layoutData.right=new FormAttachment(100, -2);
+        txtFormulaName.setLayoutData(layoutData);
+        
+        layoutData=new FormData();
+        layoutData.top=new FormAttachment(txtFormulaName, 2);
+        layoutData.left=new FormAttachment(0, 2);
+        layoutData.right=new FormAttachment(25, 2);
+        labelParameters.setLayoutData(layoutData);
+        
+        layoutData=new FormData();
+        layoutData.top=new FormAttachment(txtFormulaName, 2);
+        layoutData.left=new FormAttachment(25, 0);
+        layoutData.right=new FormAttachment(100, -2);
+        txtParameters.setLayoutData(layoutData);
+        
+        layoutData=new FormData();
+        layoutData.top=new FormAttachment(txtParameters, 2);
+        layoutData.left=new FormAttachment(0, 2);
+        layoutData.right=new FormAttachment(25, 2);
+        labelType.setLayoutData(layoutData);
+        
+        layoutData=new FormData();
+        layoutData.top=new FormAttachment(txtParameters, 2);
+        layoutData.left=new FormAttachment(labelType, 2);
+        layoutData.right=new FormAttachment(50, -2);
+        btnElements.setLayoutData(layoutData);
+        
+        layoutData=new FormData();
+        layoutData.top=new FormAttachment(txtParameters, 2);
+        layoutData.left=new FormAttachment(50, 2);
+        layoutData.right=new FormAttachment(75, -2);
+        btnCollections.setLayoutData(layoutData);
+        */
+        
 
         // bottom
         layoutData = new FormData();
@@ -265,7 +357,7 @@ public class KpiView extends ViewPart {
         propertyList = new List(right, SWT.BORDER | SWT.V_SCROLL);
         propertyList.setLayoutData(layoutDataPr);
         // TODO implement save function
-        bSave.setVisible(true);
+        bSave.setVisible(false);
         fillList();
         addListeners();
 
@@ -350,6 +442,7 @@ public class KpiView extends ViewPart {
             ArrayList<String> result = new ArrayList<String>();
             Ruby rubyRuntime = KPIPlugin.getDefault().getRubyRuntime();
             IRubyObject formula = rubyRuntime.evalScriptlet(getFormulaScript());
+            System.out.println(formula);
             Object[] array = formula.convertToArray().toArray();
             for (Object met : array) {
                 result.add(met.toString());
@@ -498,6 +591,10 @@ public class KpiView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
                 try {
+                    //validate
+                    //if errors show dlg
+                    //else save
+                    //if all OK show dlg
                     String scriptText = getScriptText();
                     if (scriptText != null && scriptText.length() != 0) {
                         Shell shell = getSite().getWorkbenchWindow().getShell();
@@ -507,68 +604,81 @@ public class KpiView extends ViewPart {
                         dialog.setFileName(fileName);
                         dialog.setFormulaName(formulaName);
                         dialog.setParameters(parameters);
-                        if (dialog.open() != null) {
-                            fileName = dialog.getFileName();
-                            formulaName = dialog.getFormulaName();
-                            parameters = dialog.getParameters();
+//                        if (dialog.open() != null) {
+                        formulaName = txtFormulaName.getText();
+                            fileName = formulaName+".rb";
+                            parameters = txtParameters.getText();
+//                            fileName = dialog.getFileName();
+//                            formulaName = dialog.getFormulaName();
+//                            parameters = dialog.getParameters();
                             System.out.println(fileName);
                             System.out.println(formulaName);
                             System.out.println(parameters);
 
                             String aweProjectName = AWEProjectManager.getActiveProjectName();
                             IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
-
-                            IPath rubyProjectPath = rubyProject.getProject().getFullPath();
-                            String location = rubyProject.getResource().getLocation().toOSString();
-                            System.out.println("[DEBUG] rubyProjectPath " + rubyProjectPath);
-                            System.out.println("[DEBUG] location " + location);
-
-                            IFolder folder = rubyProject.getProject().getFolder(new Path(KPI_FOLDER));
-                            System.out.println("[DEBUG] folder.exists()? " + folder.exists());
+                            IFolder folder = rubyProject.getProject().getFolder(new Path(KPIPlugin.KPI_FOLDER));
 
                             if (!folder.exists()) {
                                 folder.create(false, true, null);
                             }
-                            // update or insert formula to file specified
-                            String methodText = KPIUtils.generateRubyMethod(formulaName, parameters, scriptText, "  ");
+                            // update formula script file
                             IFile formulaScript = folder.getFile(fileName);
-                            StringBuffer sb = new StringBuffer();
                             if (!formulaScript.exists()) {
-                                sb.append("module KpiBuilder\nend");
-                                ByteArrayInputStream is = createOrUpdateFormulaScript(sb, methodText);
+                                ByteArrayInputStream is = new ByteArrayInputStream(scriptText.getBytes());
                                 formulaScript.create(is, true, null);
                                 is.close();
                                 System.out.println("Formula script was created");
                             } else {
-                                KPIUtils.readContentToStringBuffer(formulaScript.getContents(), sb);
-                                ByteArrayInputStream is = createOrUpdateFormulaScript(sb, methodText);
+                                ByteArrayInputStream is = new ByteArrayInputStream(scriptText.getBytes());
                                 formulaScript.setContents(is, IFile.FORCE, null);
                             }
-                            //update init script
+                            String methodText = KPIUtils.generateRubyMethod(formulaName, parameters);
+                            if (btnElements.getSelection()){
+                                IFile elementsScript = folder.getFile(KPIUtils.ELEMENT_FORMULAS_SCRIPT);
+                                createOrUpdateScript(methodText, elementsScript);
+                            }else if (btnCollections.getSelection()){
+                                IFile collectionsScript = folder.getFile(KPIUtils.COLLECTION_FORMULAS_SCRIPT);
+                                createOrUpdateScript(methodText, collectionsScript);
+                            }else{
+                                System.out.println("Warning: Neither element type nor collection type selected!");
+                            }
                             IFile initScript = folder.getFile(INIT_SCRIPT);
-                            sb = new StringBuffer();
-                            if (!initScript.exists()) {
-                                ByteArrayInputStream is = createOrUpdateInitScript(formulaScript.getLocation().toOSString(), sb);
+                            if (!initScript.exists()){
+                                String initScriptText=KPIUtils.generateInitScript();
+                                ByteArrayInputStream is = new ByteArrayInputStream(initScriptText.getBytes());
                                 initScript.create(is, true, null);
                                 is.close();
-                                testInitScriptAndRun(sb.toString());
+                                IFile elementsScript = folder.getFile(KPIUtils.ELEMENT_FORMULAS_SCRIPT);
+                                if (!elementsScript.exists()) {
+                                    createEmptyScriptFile(elementsScript);
+                                } 
+                                IFile collectionsScript = folder.getFile(KPIUtils.COLLECTION_FORMULAS_SCRIPT);
+                                if (!collectionsScript.exists()) {
+                                    createEmptyScriptFile(collectionsScript);
+                                } 
+                                testInitScriptAndRun(initScriptText);
                                 System.out.println("Init script was created");
-                            } else {
+                            }else{
+                                StringBuffer sb = new StringBuffer();
                                 KPIUtils.readContentToStringBuffer(initScript.getContents(), sb);
-                                ByteArrayInputStream is = createOrUpdateInitScript(formulaScript.getLocation().toOSString(), sb);
-                                initScript.setContents(is, IFile.FORCE, null);
                                 testInitScriptAndRun(sb.toString());
-
+                                
                             }
-                        } else {
-                            System.out.println("saving was cancelled");
-                        }
+
                     }
                 } catch (Exception e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
 
+            }
+
+            private void createEmptyScriptFile(IFile scriptFile) throws IOException, CoreException {
+                ByteArrayInputStream is = new ByteArrayInputStream(new String().getBytes());
+                scriptFile.create(is, true, null);
+                is.close();
+                System.out.println("Empty script "+scriptFile.getName()+" was created");
             }
 
 			private ByteArrayInputStream createOrUpdateFormulaScript(
@@ -591,7 +701,20 @@ public class KpiView extends ViewPart {
 					sb.append(loadLine);
 				}
 			}
-        	
+			private void createOrUpdateScript(String methodText, IFile scriptFile) throws CoreException, IOException {
+                StringBuffer sb;
+                sb = new StringBuffer();
+                if (!scriptFile.exists()){
+                    ByteArrayInputStream is = new ByteArrayInputStream(methodText.getBytes());
+                    scriptFile.create(is, true, null);
+                    is.close();
+                    System.out.println(scriptFile.getName()+" was created");
+                }else{
+                KPIUtils.readContentToStringBuffer(scriptFile.getContents(), sb);
+                ByteArrayInputStream is = createOrUpdateFormulaScript(sb, methodText);
+                scriptFile.setContents(is, IFile.FORCE, null);
+                }
+            }
         });
     }
 
@@ -739,10 +862,26 @@ public class KpiView extends ViewPart {
      *run script
      */
     protected void runScript() {
-
+        Ruby rubyRuntime = KPIPlugin.getDefault().getRubyRuntime();
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow[] workbenchWindows = workbench.getWorkbenchWindows();
+        for (IWorkbenchWindow window:workbenchWindows){
+            IEditorPart activeEditor = window.getActivePage().getActiveEditor();
+            System.out.println("[DEBUG] activeEditor "+activeEditor);
+            if (activeEditor instanceof AbstractSplashEditor){
+                AbstractSplashEditor splashEditor=(AbstractSplashEditor)activeEditor;
+                TableModel model = splashEditor.getTable().getModel();
+                if (model instanceof SplashTableModel){
+                  System.out.println("[DEBUG] model "+model);
+                  IRubyObject rubyObject = JavaEmbedUtils.javaToRuby(rubyRuntime, model);
+                  rubyRuntime.getGlobalVariables().define("$tableModel", new ValueAccessor(rubyObject));
+                }
+                
+            }
+        }
         IRubyObject result;
         try {
-            result = KPIPlugin.getDefault().getRubyRuntime().evalScriptlet(getScriptText());
+            result = rubyRuntime.evalScriptlet(getScriptText());
             outputResult(result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -808,4 +947,6 @@ public class KpiView extends ViewPart {
 	public void setFocus() {
         editor.setFocus();
 	}
+
+    
 }

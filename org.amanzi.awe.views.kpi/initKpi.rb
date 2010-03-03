@@ -1,27 +1,50 @@
 require 'neo4j'
+require 'formulas'
 include Java
 
 include_class 'org.amanzi.neo.core.service.NeoServiceProvider'
 include_class 'org.amanzi.awe.views.kpi.KPIPlugin'
 
+splash_plugin = Java::org.eclipse.core.runtime.Platform.getBundle("org.amanzi.splash").getEntry("/")
+splash_plugin_path = Java::org.eclipse.core.runtime.FileLocator.resolve(splash_plugin).getFile
+$LOAD_PATH <<splash_plugin_path
+puts "$LOAD_PATH: #{$LOAD_PATH}"
+#require splash_plugin_path + 'ruby/jruby.rb'
+  
 neo_service = NeoServiceProvider.getProvider.getService
 database_location = NeoServiceProvider.getProvider.getDefaultDatabaseLocation
 
 
 Neo4j::Config[:storage_path] = database_location
 Neo4j::start(neo_service)
-module KpiBuilder
-def sum(property_set)
-  property_set.sum
+module KPI
+  module Collection
+  end
+
+  module Element
+  end
+
+  def sum(property_set)
+    property_set.sum
+  end
+
+#  def count(property_set)
+#    property_set.count
+#  end
 end
-def count(property_set)
-  property_set.count
-end
-end
+include KPI
+#include Collection
 def allFormula
-  KpiBuilder.instance_methods
+  puts "KPI.ancestors"
+  puts "Module.nesting"
+  puts "KPI.instance_methods:"
+  puts KPI.instance_methods
+  puts "KPI::Collection.instance_methods"
+  puts KPI::Collection.instance_methods
+  puts "Collection.instance_methods"
+  puts Collection.instance_methods
+  KPI.instance_methods.sort
 end
-include KpiBuilder
 def init
   networkid=KPIPlugin.getDefault.getNetworkId
   $network_root_node=if networkid==nil then nil else Neo4j.load_node(networkid) end
@@ -43,7 +66,7 @@ NodeSet.new filter($drive_root_node,'ms', options)
 end
 def events(options=nil)
 options ||= {}
-unless options.is_a Hash
+unless options.is_a? Hash
 options = {:event => options.to_s}
 end
 NodeSet.new filter($drive_root_node,'ms', {:event => true}.merge(options))
@@ -69,7 +92,7 @@ def each
 }
 end
 def count
-puts "count"
+puts "NodeSet.count"
 num=0
 @traverser.each{|n| num+=1}
 num
@@ -92,6 +115,7 @@ def each
 end
 end
 def count
+  puts "PropertySet.count"
 num=0
 @node_set.each{|n|
   num += 1 if(!n.props[@property].nil?)
@@ -101,7 +125,7 @@ end
 def sum
 num=0.0
 @node_set.each{|n|
-  puts n.props[@property]
+#  puts n.props[@property]
   if !n.props[@property].nil?
     num+= n.props[@property]
   end

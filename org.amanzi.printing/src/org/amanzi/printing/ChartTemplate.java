@@ -18,6 +18,7 @@ import net.refractions.udig.printing.model.ModelFactory;
 import net.refractions.udig.printing.model.Page;
 import net.refractions.udig.printing.model.impl.MapBoxPrinter;
 import net.refractions.udig.printing.ui.internal.AbstractTemplate;
+import net.refractions.udig.printing.ui.internal.template.AbstractPrinterPageTemplate;
 import net.refractions.udig.project.internal.Map;
 
 import org.amanzi.printing.JFreeChartBoxPrinter;
@@ -29,13 +30,17 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Rectangle;
+
+
 /**
  * Template that contains a chart and a table
  * 
  * @author Pechko_E
  * @since 1.0.0
  */
-public class ChartTemplate extends AbstractTemplate {
+public class ChartTemplate extends AbstractPrinterPageTemplate {
 
     private static final int MARGIN = 10;// from BasicTemplate
     private static final int SPACING = 10;// from BasicTemplate
@@ -49,6 +54,8 @@ public class ChartTemplate extends AbstractTemplate {
 
     @Override
     public void init(Page page, Map map) {
+//        super.init(page,map);
+        page.setPaperSize(new Dimension((int)getPaperSize().getWidth(),(int)getPaperSize().getHeight()));
         height = page.getSize().height;
         width = page.getSize().width;
         Dimension mapSize = addMap(map);
@@ -155,5 +162,8 @@ public class ChartTemplate extends AbstractTemplate {
     public String getAbbreviation() {
         return "Test";
     }
-
+    protected Rectangle getPaperSize() {
+        Rectangle a4 = PageSize.A4;
+        return a4;
+    }
 }
