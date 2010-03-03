@@ -58,8 +58,8 @@ module AWE
     end
     
     def convert_network(options = {}, network_name = nil)
-      converter = Network::Converter.new
-      converter.convert(options, network_name)      
+      converter = Network::Converter.new options, network_name
+      converter.convert      
     end
       
 private

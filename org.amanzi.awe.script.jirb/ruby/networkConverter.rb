@@ -61,7 +61,7 @@ module Network
     def run(monitor)
     end
     
-    def convert(network_name = nil)
+    def convert
       Neo4j::Transaction.run do
       
         return if !setup
@@ -90,11 +90,13 @@ module Network
           
           if !have_headers
             #if no headers than initialize them
+            #Fake: add beamwidth to parsed headers
             parseHeader header << "beamwidth"
             have_headers = true
           end
           
           #parse line with parameters
+          #Fake: set default beamwidth
           parseLine line << "60.0"          
         end
         
@@ -105,8 +107,8 @@ module Network
       end
       
       print_stats false
-      add_data_to_catalog
-      add_layers_to_map
+      Converter.addDataToCatalog
+      addLayersToMap
     end
     
     private 

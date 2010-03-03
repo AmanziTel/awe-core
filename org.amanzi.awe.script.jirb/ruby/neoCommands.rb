@@ -1,5 +1,4 @@
 include_class org.amanzi.neo.core.INeoConstants
-include_class org.amanzi.neo.core.enums.NetworkElementTypes
 include_class org.amanzi.neo.core.enums.GisTypes
 
 module AWE
