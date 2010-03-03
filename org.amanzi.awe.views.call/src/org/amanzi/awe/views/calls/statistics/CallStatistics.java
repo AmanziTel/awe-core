@@ -393,7 +393,7 @@ public class CallStatistics {
         Statistics statistics = new Statistics();
         
         long currentStartDate = period.getFirstTime(startDate);
-        long nextStartDate = period.addPeriod(currentStartDate);
+        long nextStartDate = getNextStartDate(period, endDate, currentStartDate);
         
         if (startDate > currentStartDate) {
             currentStartDate = startDate;
@@ -427,11 +427,19 @@ public class CallStatistics {
             updateStatistics(statistics, periodStatitics);            
             
             currentStartDate = nextStartDate;
-            nextStartDate = period.addPeriod(currentStartDate);
+            nextStartDate = getNextStartDate(period, endDate, currentStartDate);
         }
         while (currentStartDate < endDate);
         
         return statistics;
+    }
+
+    private long getNextStartDate(CallTimePeriods period, long endDate, long currentStartDate) {
+        long nextStartDate = period.addPeriod(currentStartDate);
+        if(!period.equals(CallTimePeriods.HOURLY)&&(nextStartDate > endDate)){
+            nextStartDate = endDate;
+        }
+        return nextStartDate;
     }
     
     private Node getStatisticsNode(Node parent, final CallTimePeriods period) {

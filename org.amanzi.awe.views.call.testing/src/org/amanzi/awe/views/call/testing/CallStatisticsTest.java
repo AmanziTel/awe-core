@@ -440,7 +440,6 @@ public class CallStatisticsTest {
             }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
             StatisticsHeaders header = StatisticsHeaders.getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             Long etalon = getCellsValue(traverse.getAllNodes(),header);
-            assertFalse("Cell "+header+" has no sources!",etalon==null);
             Long value = getCellValue(cell, header);
             assertEquals("Value in daily cell "+header+" is not conform to source.", etalon, value);
         }
@@ -475,7 +474,7 @@ public class CallStatisticsTest {
             }
             result+=value;
         }
-        return result;
+        return result==null?0L:result;
     }
 
     /**
@@ -511,7 +510,9 @@ public class CallStatisticsTest {
                 return currentPos.depth()>0&&NodeTypes.getNodeType(node, neo).equals(NodeTypes.S_ROW);
             }            
         }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
-        for(Node sRow : traverse.getAllNodes()){
+        Collection<Node> allNodes = traverse.getAllNodes();
+        assertFalse("Daily row has no sourses!",allNodes.isEmpty());
+        for(Node sRow : allNodes){
            HashMap<StatisticsHeaders, Long> cellMap = buildCellDataMap(sRow);
            for(StatisticsHeaders header : StatisticsHeaders.values()){
                Long currValue = cellMap.get(header);
@@ -524,7 +525,7 @@ public class CallStatisticsTest {
                    continue;
                }
                if(header.equals(StatisticsHeaders.SETUP_TIME_MIN)){
-                   if(currValue>0&&currValue<resValue){                       
+                   if(resValue==0||(currValue>0&&currValue<resValue)){                       
                        result.put(header, currValue);                       
                    }
                    continue;
