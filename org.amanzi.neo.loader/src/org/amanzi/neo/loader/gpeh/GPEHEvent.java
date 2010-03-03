@@ -47,6 +47,14 @@ public class GPEHEvent implements IGPEHBlock {
     public void addEvent(Event event) {
         events.add(event);
     }
+    /**
+     * clear all events
+     * 
+     * @param event
+     */
+    public void clearEvent() {
+        events.clear();
+    }
 
     /**
      * <p>

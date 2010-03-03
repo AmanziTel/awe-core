@@ -71,7 +71,7 @@ public class GPEHParser {
         int recordLen = input.readUnsignedShort();
         int recordType = input.readByte();
         if (recordType == 0) {
-            parseMainHeader(input, result);
+            parseMainHeader(input, result,recordLen-3);
         } else if (recordType == 1) {
             parseRecord(input, result, recordLen);
         } else if (recordType == 2) {
@@ -94,7 +94,7 @@ public class GPEHParser {
      * @param result
      * @throws IOException
      */
-    private static void pareseError(DataInputStream input, IGPEHBlock result) throws IOException {
+    public static void pareseError(DataInputStream input, IGPEHBlock result) throws IOException {
         GPEHError error = new GPEHError();
         result.setEndRecord(error);
         error.hour = input.readUnsignedByte();
@@ -109,7 +109,7 @@ public class GPEHParser {
      * @param result
      * @throws IOException
      */
-    private static void pareseFooter(DataInputStream input, IGPEHBlock result) throws IOException {
+    public static void pareseFooter(DataInputStream input, IGPEHBlock result) throws IOException {
         GPEHFooter footer = new GPEHFooter();
         result.setEndRecord(footer);
         footer.year = input.readUnsignedShort();
@@ -170,18 +170,33 @@ public class GPEHParser {
     /**
      * @param input
      * @param result
+     * @param recordLen 
      * @throws IOException
      */
-    private static void parseMainHeader(DataInputStream input, GPEHMainFile result) throws IOException {
+    private static void parseMainHeader(DataInputStream input, GPEHMainFile result, int recordLen) throws IOException {
+        int len=0;
         result.header.fileVer = readString(input, 5);
+        len+=5;
         result.header.year = input.readUnsignedShort();
+        len+=2;
         result.header.month = input.readUnsignedByte();
+        len+=1;
         result.header.day = input.readUnsignedByte();
+        len+=1;
         result.header.hour = input.readUnsignedByte();
+        len+=1;
         result.header.minute = input.readUnsignedByte();
+        len+=1;
         result.header.second = input.readUnsignedByte();
+        len+=1;
         result.header.neUserLabel = readString(input, 200);
+        len+=200;
         result.header.neLogicalName = readString(input, 200);
+        len+=200;
+        if (len<recordLen){
+            System.err.append(String.format("Header have %d unparsed byts",recordLen-len));
+            readString(input, recordLen-len);
+        }
     }
 
     /**
@@ -248,7 +263,7 @@ public class GPEHParser {
      * @param input input stream
      * @param result GPEHEvent
      */
-    private static void parseSubFile(DataInputStream input, GPEHEvent result) throws  IOException {
+    public static void parseSubFile(DataInputStream input, GPEHEvent result) throws  IOException {
         int recordLen = input.readUnsignedShort()-3;
         int recordType = input.readByte();
         if (recordType == 4) {
@@ -270,7 +285,7 @@ public class GPEHParser {
      * @param recordLen length of event
      * @throws IOException 
      */
-    private static void parseEvent(DataInputStream input, GPEHEvent result, int recordLen) throws IOException {
+    public static void parseEvent(DataInputStream input, GPEHEvent result, int recordLen) throws IOException {
         GPEHEvent.Event event=new GPEHEvent.Event();
 
         StringBuilder bits=new StringBuilder("");

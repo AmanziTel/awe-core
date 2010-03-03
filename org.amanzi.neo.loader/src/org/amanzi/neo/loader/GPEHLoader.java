@@ -13,9 +13,13 @@
 
 package org.amanzi.neo.loader;
 
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -25,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -55,6 +60,7 @@ public class GPEHLoader extends AbstractLoader {
     /** int KEY_EVENT field */
     private static final int KEY_EVENT = 1;
     private final static Pattern mainFilePattern = Pattern.compile("(^.*)(_Mp0\\.)(.*$)");
+    private static final int COUNT_LEN = 1000;
     private Node ossRoot;
     private Pair<Boolean, Node> mainNode;
     private final Map<Integer, Node> cellMap;
@@ -109,6 +115,7 @@ public class GPEHLoader extends AbstractLoader {
             int perc = 0;
             int prevPerc = 0;
             int prevLineNumber = 0;
+            int count=0;
             for (Map.Entry<String, List<String>> entry : fileList.entrySet()) {
                 try {
                     String mainFile = entry.getKey();
@@ -117,8 +124,42 @@ public class GPEHLoader extends AbstractLoader {
                     saveRoot(root);
                     eventLastNode = null;
                     for (String subFile : entry.getValue()) {
-                        GPEHEvent eventFile = GPEHParser.parseEventFile(new File(filename + File.separator + subFile));
-                        saveEvent(eventFile);
+                        monitor.setTaskName(subFile);
+                        System.out.println(subFile);
+                        GPEHEvent result = new GPEHEvent();
+                        File file=new File(filename + File.separator + subFile);
+                        InputStream in =new FileInputStream(file);
+                        if (Pattern.matches("^.+\\.gz$",file.getName())){
+                            in= new GZIPInputStream(in); 
+                        }
+                        DataInputStream input = new DataInputStream(in);
+                            try {
+                                while (true) {
+                                    int recordLen = input.readUnsignedShort()-3;
+                                    int recordType = input.readByte();
+                                    if (recordType == 4) {
+                                        GPEHParser.parseEvent(input, result,recordLen);
+                                    }else if (recordType == 7) {
+                                        GPEHParser.pareseFooter(input, result);
+                                    } else if (recordType == 6) {
+                                        GPEHParser.pareseError(input, result);
+                                    } else {
+                                        // wrong file format!
+                                        throw new IllegalArgumentException();
+                                    }
+                                    saveEvent(result);
+                                    result.clearEvent();
+                                    count++;
+                                    if (count>COUNT_LEN){
+                                        commit(true);
+                                        count=0;
+                                    }
+                                }
+                            }catch (EOFException e) {
+                                //normal behavior
+                            } finally {
+                                input.close();
+                            }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
