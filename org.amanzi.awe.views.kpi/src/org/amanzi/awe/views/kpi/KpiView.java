@@ -913,7 +913,7 @@ public class KpiView extends ViewPart {
     private void outputError(Exception e) {
         MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OK);
         msg.setText(TITLE);
-        String resultStr = "Script error:/n" + e.getLocalizedMessage();
+        String resultStr = "Script error:\n" + e.getLocalizedMessage();
         msg.setMessage(resultStr);
         msg.open();
     }

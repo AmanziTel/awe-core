@@ -176,12 +176,56 @@ module KPI
 
   def mediana(data)
     arr=Array.new
-    n=0
     data.each do |element|
-      n+=1
       arr<<element #if element.is_a? Fixnum
     end
+    n=arr.length
     arr=arr.sort
     n%2!=0 ? arr[(n+1)/2-1] : (arr[n/2-1]+arr[n/2]).to_f/2
+  end
+
+  def percentile(data,p)
+    arr=[]
+    data.each do |element|
+      arr<<element
+    end
+    arr=arr.sort
+    len=arr.length
+    p=p.to_f/100 if p>1.0
+    n=p*(len-1)+1
+    k=n.truncate
+    d=n-k
+    if n==1
+      arr[0]
+    elsif n==len
+      arr[len-1]
+    else
+      arr[k-1]+d*(arr[k]-arr[k-1])
+    end
+  end
+
+  def probability(data,probabilities,low,high=nil)
+    n_arr=[]
+    data.each do |element|
+      n_arr<<element
+    end
+    p_arr=[]
+    probabilities.each do |prob|
+      p_arr<<prob
+    end
+    len=n_arr.length
+    if len==p_arr.length
+      sum=0.0
+      for i in 0..len-1
+        if high!=nil
+          sum+=p_arr[i] if n_arr[i]>=low and n_arr[i]<=high
+        else
+          sum+=p_arr[i] if n_arr[i]==low
+        end
+      end
+      sum
+    else
+      raise "Incorrect data: different length for numbers and probabilities!"
+    end
   end
 end
