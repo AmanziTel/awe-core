@@ -12,7 +12,6 @@
  */
 package org.amanzi.neo.core.utils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
@@ -1073,7 +1072,7 @@ public class NeoUtils {
                     boolean result = node.hasProperty(INeoConstants.PROPERTY_TYPE_EVENT);
                     return result;
                 }
-            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+            }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
             for (Node node : traverse) {
                 result.add(node.getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString());
             }

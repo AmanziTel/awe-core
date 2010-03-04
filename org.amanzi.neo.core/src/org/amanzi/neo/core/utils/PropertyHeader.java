@@ -269,9 +269,6 @@ public class PropertyHeader {
      * @return list of possible event
      */
     public Collection<String> getEvents() {
-        if (gisType != null) {
-            return null;
-        }
         Set<String> result = new HashSet<String>();
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
         if (propRel != null) {
