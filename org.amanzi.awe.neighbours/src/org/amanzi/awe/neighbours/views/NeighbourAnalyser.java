@@ -200,7 +200,7 @@ public class NeighbourAnalyser extends ViewPart {
     private void formGPEH() {
         gpeh=new LinkedHashMap<String,Node>();
         for (Node node:NeoUtils.getAllGpeh(neo)){
-            gpeh.put(NeoUtils.getNodeType(node, ""), node);
+            gpeh.put(NeoUtils.getSimpleNodeName(node, ""), node);
         }
         cGpeh.setItems(gpeh.keySet().toArray(new String[0]));
     }
