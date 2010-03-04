@@ -1350,55 +1350,38 @@ public enum NemoEvents {
                     parsedParameters.put("CC", getFloatValue(parameters));
                 } else if (5 == system) {
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    final Integer group = getIntegerValue(parameters);
-                    // parsedParameters.put("#Chs", group);
-                    final Integer groupLen = getIntegerValue(parameters);
-                    // parsedParameters.put("#params/channel", groupLen);
-                    String[] ch = new String[group];
-                    String[] rssi = new String[group];
+                    final Integer group = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
                     for (int i = 0; i < group; i++) {
-                        ch[i] = getStringValue(parameters);
-                        rssi[i] = getStringValue(parameters);
-                        if (ch[i] == null) {
-                            ch[i] = "";
-                        }
-                        if (rssi[i] == null) {
-                            rssi[i] = "";
-                        }
+                        Integer ch = getIntegerValue(parameters);
+                        Float rssi = getFloatValue(parameters);
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Ch", ch);
+                        parsedParameters.put("RSSI"+postfix, rssi);
                     }
-                    parsedParameters.put("Ch_arr", ch);
-                    parsedParameters.put("RSSI_arr", rssi);
                     final Integer cells = getIntegerValue(parameters);
-                    // parsedParameters.put("#Cells", cells);
-                    final Integer cellLen = getIntegerValue(parameters);
-                    // parsedParameters.put("#params/cell", cellLen);
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < cells; i++) {
-                        String[] param = new String[cellLen];
-                        for (int j = 0; j < cellLen; j++) {
-                            param[j] = getStringValue(parameters);
-                            if (param[j] == null) {
-                                param[j] = "";
-                            }
-                        }
-                        parsedParameters.put("Cell_" + i, param);
+                        String cellType = getCellType(getIntegerValue(parameters));
+                        parsedParameters.put("Cell type", cellType);
+                        String postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch_2"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Scr."+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ec/N0"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("STTD"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSCP"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Secondary scr."+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Squal"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Srxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Hqual"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Hrxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Rqual"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Rrxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("OFF"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Tm"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Pathloss"+postfix, getFloatValue(parameters));
                     }
-                    // parsedParameters.put("Cell type", getIntegerValue(parameters));
-                    // parsedParameters.put("Band", getIntegerValue(parameters));
-                    // parsedParameters.put("Ch_2", getIntegerValue(parameters));
-                    // parsedParameters.put("Scr.", getIntegerValue(parameters));
-                    // parsedParameters.put("Ec/N0", getFloatValue(parameters));
-                    // parsedParameters.put("STTD", getIntegerValue(parameters));
-                    // parsedParameters.put("RSCP", getFloatValue(parameters));
-                    // parsedParameters.put("Secondary scr.", getIntegerValue(parameters));
-                    // parsedParameters.put("Squal", getFloatValue(parameters));
-                    // parsedParameters.put("Srxlev", getFloatValue(parameters));
-                    // parsedParameters.put("Hqual", getFloatValue(parameters));
-                    // parsedParameters.put("Hrxlev", getFloatValue(parameters));
-                    // parsedParameters.put("Rqual", getFloatValue(parameters));
-                    // parsedParameters.put("Rrxlev", getFloatValue(parameters));
-                    // parsedParameters.put("OFF", getIntegerValue(parameters));
-                    // parsedParameters.put("Tm", getFloatValue(parameters));
-                    // parsedParameters.put("Pathloss", getFloatValue(parameters));
                 } else if (6 == system) {
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     parsedParameters.put("#Chs", getIntegerValue(parameters));
@@ -7591,6 +7574,25 @@ public enum NemoEvents {
         }
 
         return Integer.parseInt(value);
+    }
+    
+    /**
+     * @param param
+     * @return
+     */
+    protected static String getCellType(Integer param) {
+        switch (param) {
+        case 0:
+            return "Active";
+        case 1:
+            return "Monitored";
+        case 2:
+            return "Detected";
+        case 3:
+            return "Undetected";
+        default:
+            throw new IllegalArgumentException("Unknow cell type key <"+param+">.");
+        }
     }
 
     /**
