@@ -14,13 +14,17 @@
 package org.amanzi.neo.wizards;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.apache.commons.lang.StringUtils;
@@ -158,8 +162,39 @@ public class GPEHImportWizardPage extends WizardPage {
     protected void setFileName(String dirName) {
         directory = dirName;
         DriveDialog.setDefaultDirectory(dirName);
+        autoDefineOSSType();
         validateFinish();
 
+    }
+
+    /**
+     *
+     */
+    private void autoDefineOSSType() {
+        if (StringUtils.isEmpty(directory)) {
+            return;
+        }
+        File file = new File(directory);
+        if (!(file.isDirectory() && file.isAbsolute() && file.exists())) {
+            return;
+        }   
+        List<File> files = LoaderUtils.getAllFiles(directory, new FileFilter() {
+            
+            @Override
+            public boolean accept(File arg0) {
+                return true;
+            }
+        });
+        if (files.isEmpty()){
+            return;
+        }
+        File fileToAnalyse = files.get(0);
+        if (Pattern.matches(".*\\.(xml|XML)$", fileToAnalyse.getName())){
+            ossDirType=new Pair<OssType, Exception>(OssType.COUNTER, null);
+        }else{
+            ossDirType=new Pair<OssType, Exception>(OssType.GPEH, null);
+        }
+        cOssType.setText(ossDirType.getLeft().getId());
     }
 
     /**
