@@ -58,7 +58,6 @@ public class OSSCounterLoader extends AbstractLoader {
     private static final int KEY_EVENT = 1;
     protected static final String REG_EXP_XML = "^.+\\.((xml)|(XML))$";
     private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
-    private Node ossRoot;
     private final LinkedHashMap<String, Header> headers;
     private Node ossNode;
     private Node fileNode;
@@ -154,7 +153,7 @@ public class OSSCounterLoader extends AbstractLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return ossRoot;
+        return ossNode;
     }
 
     @Override
@@ -357,7 +356,7 @@ public class OSSCounterLoader extends AbstractLoader {
                 if (parentNode.properties.size() <= countR) {
                     NeoLoaderPlugin.error("Wrong count of values. Value not stored:"+builder.toString());
                 } else {
-                    setProperty(mvNode, parentNode.properties.get(countR), builder.toString());
+                    setIndexPropertyNotParcedValue(headers,mvNode, parentNode.properties.get(countR), builder.toString());
                     countR++;
                 }
             } else {

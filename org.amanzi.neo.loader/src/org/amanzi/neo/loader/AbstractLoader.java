@@ -907,19 +907,39 @@ public abstract class AbstractLoader {
      * @param parsedValue parsed value
      */
     protected void setIndexProperty(LinkedHashMap<String, Header> headers, Node eventNode, String key, Object parsedValue) {
-       if (parsedValue==null){
+        if (parsedValue==null){
+            return;
+        }
+        eventNode.setProperty(key, parsedValue);
+        Header header = headers.get(key);
+        if (header == null) {
+            header = new Header(key, key, 1);
+            
+            headers.put(key, header);
+        }
+        header.parseCount++;
+        header.incValue(parsedValue);
+        header.incType(parsedValue.getClass());
+    }
+    /**
+     * Sets index property 
+     * @param headers index header
+     * @param eventNode node
+     * @param key property key
+     * @param nonParsedValue parsed value
+     */
+    protected void setIndexPropertyNotParcedValue(LinkedHashMap<String, Header> headers, Node eventNode, String key, String nonParsedValue) {
+       if (nonParsedValue==null){
            return;
        }
-       eventNode.setProperty(key, parsedValue);
        Header header = headers.get(key);
        if (header == null) {
            header = new Header(key, key, 1);
            
            headers.put(key, header);
        }
-       header.parseCount++;
-       header.incValue(parsedValue);
-       header.incType(parsedValue.getClass());
+       Object value = header.parse(nonParsedValue);
+       eventNode.setProperty(key, value);
    }
     private void incSaved() {
         savedData++;
