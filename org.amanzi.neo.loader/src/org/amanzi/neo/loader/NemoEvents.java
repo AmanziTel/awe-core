@@ -120,12 +120,12 @@ public enum NemoEvents {
             Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
-                String key = "Number of supported systems";
-                Integer value = getIntegerValue(parameters);
-                parsedParameters.put(key, value);
-                key = "Supported systems";
-                value = getIntegerValue(parameters);
-                parsedParameters.put(key, value);
+                String key = "Supported system ";
+                Integer systemCount = getIntegerValue(parameters);
+                for(int i = 0; i<systemCount; i++){
+                    TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                    parsedParameters.put(key+(i+1), system.getName());
+                }
             }
             return parsedParameters;
         }
@@ -394,7 +394,7 @@ public enum NemoEvents {
                 contextName.add(key);
                 parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
-                parsedParameters.put(key, getIntegerValue(parameters));
+                parsedParameters.put(key, TechnologySystems.getSystemById(getIntegerValue(parameters)).getName());
                 key = "Call type";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Direction";
@@ -440,7 +440,7 @@ public enum NemoEvents {
                 contextName.add(key);
                 parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
-                parsedParameters.put(key, getIntegerValue(parameters));
+                parsedParameters.put(key, TechnologySystems.getSystemById(getIntegerValue(parameters)).getName());
                 key = "Call type";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Call status";
@@ -470,7 +470,7 @@ public enum NemoEvents {
                 contextName.add(key);
                 parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
-                parsedParameters.put(key, getIntegerValue(parameters));
+                parsedParameters.put(key, TechnologySystems.getSystemById(getIntegerValue(parameters)).getName());
                 key = "Call type";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "CS fail. status";
@@ -499,7 +499,7 @@ public enum NemoEvents {
                 contextName.add(key);
                 parsedParameters.put(FIRST_CONTEXT_NAME, contextName);
                 key = "System";
-                parsedParameters.put(key, getIntegerValue(parameters));
+                parsedParameters.put(key, TechnologySystems.getSystemById(getIntegerValue(parameters)).getName());
                 key = "Call type";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "CS disc. status";
@@ -522,9 +522,9 @@ public enum NemoEvents {
             Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             String key = "System";
-            final Integer system = getIntegerValue(parameters);
-            parsedParameters.put(key, system);
-            if (system == 2) {
+            final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+            parsedParameters.put(key, system.getName());
+            if (system.equals(TechnologySystems.TETRA)) {
                 List<String> contextName = new ArrayList<String>(1);
                 key = "Call context ID";
                 contextName.add(key);
@@ -672,27 +672,44 @@ public enum NemoEvents {
                     // reserved 1 field
                     getStringValue(parameters);
                 }
-                if (protocol == 0 || protocol == 1 || protocol == 2) {
-                    parsedParameters.put("Data transfer cause", getIntegerValue(parameters));
-                } else if (3 == protocol) {
+                switch (protocol) {
+                case 0:
+                case 1:
+                case 2:
+                    parsedParameters.put("Data transfer cause", getIntegerValue(parameters));    
+                    break;
+                case 3:
                     parsedParameters.put("FTP cause", getIntegerValue(parameters));
-
-                } else if (4 == protocol) {
+                    break;
+                case 4:
                     parsedParameters.put("HTTP cause", getIntegerValue(parameters));
-                } else if (5 == protocol) {
+                    break;
+                case 5:
                     parsedParameters.put("SMTP cause", getIntegerValue(parameters));
-                } else if (6 == protocol) {
+                    break;
+                case 6:
                     parsedParameters.put("POP3 cause", getIntegerValue(parameters));
-                } else if (7 == protocol || 8 == protocol || 10 == protocol) {
+                    break;
+                case 7:
+                case 8:
+                case 10:
                     parsedParameters.put("WAP and MMS cause", getIntegerValue(parameters));
-                } else if (9 == protocol) {
+                    break;
+                case 9:
                     parsedParameters.put("Streaming cause", getIntegerValue(parameters));
-                } else if (11 == protocol) {
+                    break;
+                case 11:
                     parsedParameters.put("Data transfer cause", getIntegerValue(parameters));
-                } else if (12 == protocol) {
+                    break;
+                case 12:
                     parsedParameters.put("ICMP ping cause", getIntegerValue(parameters));
-                } else if (13 == protocol || 14 == protocol) {
+                    break;
+                case 13:
+                case 14:
                     parsedParameters.put("Data transfer cause", getIntegerValue(parameters));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown protocol key <"+protocol+">.");
                 }
             } else if ("1.86".equals(version)) {
                 String key = "Data disc. status";
@@ -722,46 +739,64 @@ public enum NemoEvents {
                 parsedParameters.put(key, protocol);
                 key = "Transf. dir.";
                 parsedParameters.put(key, getIntegerValue(parameters));
-                if (0 == protocol || 1 == protocol || 2 == protocol) {
+                switch (protocol) {
+                case 0:
+                case 1:
+                case 2:
                     parsedParameters.put("File size", getIntegerValue(parameters));
                     parsedParameters.put("Packet size", getIntegerValue(parameters));
                     parsedParameters.put("Rate limit", getIntegerValue(parameters));
                     parsedParameters.put("Ping size", getIntegerValue(parameters));
                     parsedParameters.put("Ping rate", getIntegerValue(parameters));
-                    parsedParameters.put("Ping timeout", getIntegerValue(parameters));
-                } else if (3 == protocol) {
+                    parsedParameters.put("Ping timeout", getIntegerValue(parameters));  
+                    break;
+                case 3:
                     parsedParameters.put("File size", getIntegerValue(parameters));
                     parsedParameters.put("Filename", getStringValue(parameters));
                     parsedParameters.put("Transf. att. #", getIntegerValue(parameters));
-                } else if (4 == protocol) {
+                    break;
+                case 4:
                     parsedParameters.put("File size", getIntegerValue(parameters));
                     parsedParameters.put("Filename", getStringValue(parameters));
                     parsedParameters.put("Transf. att. #", getIntegerValue(parameters));
-                } else if (5 == protocol) {
+                    break;
+                case 5:
                     parsedParameters.put("File size", getIntegerValue(parameters));
                     parsedParameters.put("Filename", getStringValue(parameters));
-                } else if (6 == protocol) {
+                    break;
+                case 6:
                     parsedParameters.put("File size", getIntegerValue(parameters));
                     parsedParameters.put("Filename", getStringValue(parameters));
-                } else if (7 == protocol) {
+                    break;
+                case 7:
                     parsedParameters.put("MMS file size", getIntegerValue(parameters));
                     parsedParameters.put("MMS filename", getStringValue(parameters));
-                } else if (8 == protocol || 10 == protocol) {
+                    break;
+                case 8:                    
+                case 10:
                     parsedParameters.put("File size", getIntegerValue(parameters));
                     parsedParameters.put("Filename", getStringValue(parameters));
-                } else if (9 == protocol) {
+                    break;
+                case 9:
                     parsedParameters.put("File size", getIntegerValue(parameters));
                     parsedParameters.put("Filename", getStringValue(parameters));
-                } else if (11 == protocol) {
+                    break;
+                case 11:
                     parsedParameters.put("Filename", getStringValue(parameters));
-                } else if (12 == protocol) {
+                    break;
+                case 12:
                     parsedParameters.put("Ping size", getIntegerValue(parameters));
                     parsedParameters.put("Ping rate", getIntegerValue(parameters));
                     parsedParameters.put("Ping timeout", getIntegerValue(parameters));
-                } else if (13 == protocol || 14 == protocol) {
+                    break;
+                case 13:
+                case 14:
                     parsedParameters.put("Data size", getIntegerValue(parameters));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown protocol key <"+protocol+">.");
                 }
-            } else if ("1.86".equals(version)) {
+             } else if ("1.86".equals(version)) {
 
                 String key = "Data protocol";
                 final Integer dataProt = getIntegerValue(parameters);
@@ -821,29 +856,45 @@ public enum NemoEvents {
                     // reserved 1 field
                     getStringValue(parameters);
                 }
-                if (protocol == 0 || protocol == 1 || protocol == 2) {
-                    parsedParameters.put("Data transfer cause", getIntegerValue(parameters));
-                } else if (3 == protocol) {
+                switch (protocol) {
+                case 0:
+                case 1:
+                case 2:
+                    parsedParameters.put("Data transfer cause", getIntegerValue(parameters));    
+                    break;
+                case 3:
                     parsedParameters.put("FTP cause", getIntegerValue(parameters));
-
-                } else if (4 == protocol) {
+                    break;
+                case 4:
                     parsedParameters.put("HTTP cause", getIntegerValue(parameters));
-                } else if (5 == protocol) {
+                    break;
+                case 5:
                     parsedParameters.put("SMTP cause", getIntegerValue(parameters));
-                } else if (6 == protocol) {
+                    break;
+                case 6:
                     parsedParameters.put("POP3 cause", getIntegerValue(parameters));
-                } else if (7 == protocol || 8 == protocol || 10 == protocol) {
+                    break;
+                case 7:
+                case 8:
+                case 10:
                     parsedParameters.put("WAP and MMS cause", getIntegerValue(parameters));
-                } else if (9 == protocol) {
+                    break;
+                case 9:
                     parsedParameters.put("Streaming cause", getIntegerValue(parameters));
-                } else if (11 == protocol) {
+                    break;
+                case 11:
                     parsedParameters.put("Data transfer cause", getIntegerValue(parameters));
-                } else if (12 == protocol) {
+                    break;
+                case 12:
                     parsedParameters.put("ICMP ping cause", getIntegerValue(parameters));
-                } else if (13 == protocol || 14 == protocol) {
+                    break;
+                case 13:
+                case 14:
                     parsedParameters.put("Data transfer cause", getIntegerValue(parameters));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown protocol key <"+protocol+">.");
                 }
-
             } else if ("1.86".equals(version)) {
                 String key = "Data protocol";
                 final Integer dataProt = getIntegerValue(parameters);
@@ -1043,7 +1094,7 @@ public enum NemoEvents {
             return parsedParameters;
         }
     },
-    RXL("RXL") {
+    RXL("RXL") { //TODO use TechnologySystems (what is 3?)
         @Override
         public Map<String, Object> fill(String version, List<String> params) {
             Iterator<String> parameters = params.iterator();
@@ -1096,7 +1147,7 @@ public enum NemoEvents {
             return parsedParameters;
         }
     },
-    ERXL("ERXL") {
+    ERXL("ERXL") {//TODO use TechnologySystems (what is 3?)
         @Override
         public Map<String, Object> fill(String version, List<String> params) {
             Iterator<String> parameters = params.iterator();
@@ -1181,7 +1232,7 @@ public enum NemoEvents {
             return parsedParameters;
         }
     },
-    ECI0("ECI0") {
+    ECI0("ECI0") { //TODO use TechnologySystems (what is 7,8...?)
         @Override
         public Map<String, Object> fill(String version, List<String> params) {
             Iterator<String> parameters = params.iterator();
@@ -1314,59 +1365,73 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (1 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                Integer groupCount;
+                switch (system) {
+                case GSM:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Cells", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Cell type", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("ARFCN", getIntegerValue(parameters));
-                    parsedParameters.put("BSIC", getIntegerValue(parameters));
-                    parsedParameters.put("RxLev full", getFloatValue(parameters));
-                    parsedParameters.put("RxLev sub", getFloatValue(parameters));
-                    parsedParameters.put("C1", getFloatValue(parameters));
-                    parsedParameters.put("C2", getFloatValue(parameters));
-                    parsedParameters.put("C31", getFloatValue(parameters));
-                    parsedParameters.put("C32", getFloatValue(parameters));
-                    parsedParameters.put("HCS priority", getIntegerValue(parameters));
-                    parsedParameters.put("HCS thr.", getFloatValue(parameters));
-                    parsedParameters.put("Cell ID", getIntegerValue(parameters));
-                    parsedParameters.put("LAC", getIntegerValue(parameters));
-                    parsedParameters.put("RAC", getIntegerValue(parameters));
-                    parsedParameters.put("Srxlev", getFloatValue(parameters));
-                } else if (2 == system) {
-                    parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Cells", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Cell type", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("ARFCN", getIntegerValue(parameters));
-                    parsedParameters.put("LAC", getIntegerValue(parameters));
-                    parsedParameters.put("RSSI", getFloatValue(parameters));
-                    parsedParameters.put("C1", getFloatValue(parameters));
-                    parsedParameters.put("C2", getFloatValue(parameters));
-                    parsedParameters.put("CC", getFloatValue(parameters));
-                } else if (5 == system) {
-                    parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    final Integer group = getIntegerValue(parameters);                    
-                    getIntegerValue(parameters);//not need group length
-                    for (int i = 0; i < group; i++) {
-                        Integer ch = getIntegerValue(parameters);
-                        Float rssi = getFloatValue(parameters);
-                        String postfix = " (Channel "+ch+")";
-                        parsedParameters.put("Ch", ch);
-                        parsedParameters.put("RSSI"+postfix, rssi);
-                    }
-                    final Integer cells = getIntegerValue(parameters);
+                    groupCount = getIntegerValue(parameters);
                     getIntegerValue(parameters);//not need cell group length
-                    for (int i = 0; i < cells; i++) {
-                        String cellType = getCellType(getIntegerValue(parameters));
-                        parsedParameters.put("Cell type", cellType);
-                        String postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                    for (int i = 0; i < groupCount; i++) {
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
                         parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
-                        parsedParameters.put("Ch_2"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("ARFCN"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("BSIC"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RxLev full"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RxLev sub"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C1"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C2"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C31"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C32"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("HCS priority"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("HCS thr."+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Cell ID"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("LAC"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RAC"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Srxlev"+postfix, getFloatValue(parameters));
+                    }
+                    break;
+                case TETRA: 
+                    parsedParameters.put("#Header params", getIntegerValue(parameters));
+                    groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need cell group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("ARFCN"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("LAC"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C1"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C2"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("CC"+postfix, getFloatValue(parameters));
+                    }
+                    break;
+                case UMTS_FDD:
+                    parsedParameters.put("#Header params", getIntegerValue(parameters));
+                    groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
+                    for (int i = 0; i < groupCount; i++) {
+                        Integer ch = getIntegerValue(parameters);
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Ch"+postfix, ch);
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                    }
+                    groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need cell group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch"+postfix, getIntegerValue(parameters));
                         parsedParameters.put("Scr."+postfix, getIntegerValue(parameters));
                         parsedParameters.put("Ec/N0"+postfix, getFloatValue(parameters));
                         parsedParameters.put("STTD"+postfix, getIntegerValue(parameters));
@@ -1382,115 +1447,184 @@ public enum NemoEvents {
                         parsedParameters.put("Tm"+postfix, getFloatValue(parameters));
                         parsedParameters.put("Pathloss"+postfix, getFloatValue(parameters));
                     }
-                } else if (6 == system) {
+                    break;
+                case UMTS_TD_SCDMA: 
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Chs", getIntegerValue(parameters));
-                    parsedParameters.put("#params/channel", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("Ch", getIntegerValue(parameters));
-                    parsedParameters.put("RSSI", getFloatValue(parameters));
-                    parsedParameters.put("#Cells", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Cell type", getIntegerValue(parameters));
-                    parsedParameters.put("Band_2", getIntegerValue(parameters));
-                    parsedParameters.put("Ch_2", getIntegerValue(parameters));
-                    parsedParameters.put("Cell params ID", getIntegerValue(parameters));
-                    parsedParameters.put("RSCP", getFloatValue(parameters));
-                    parsedParameters.put("Srxlev", getFloatValue(parameters));
-                    parsedParameters.put("Hrxlev", getFloatValue(parameters));
-                    parsedParameters.put("Rrxlev", getFloatValue(parameters));
-                    parsedParameters.put("Pathloss", getFloatValue(parameters));
-                } else if (11 == system || 10 == system) {
+                    groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
+                    for (int i = 0; i < groupCount; i++) {
+                        Integer band = getIntegerValue(parameters);
+                        Integer ch = getIntegerValue(parameters);
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Band"+postfix, band);
+                        parsedParameters.put("Ch"+postfix, ch);
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                    }
+                    groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need cell group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Cell params ID"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSCP"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Srxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Hrxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Rrxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Pathloss"+postfix, getFloatValue(parameters));
+                    }
+                    break;
+                case CDMA_ONE:
+                case CDMA_ONE_X:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Chs", getIntegerValue(parameters));
-                    parsedParameters.put("#params/channel", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("Ch", getIntegerValue(parameters));
-                    parsedParameters.put("RX power", getFloatValue(parameters));
-                    parsedParameters.put("RX0 power", getFloatValue(parameters));
-                    parsedParameters.put("RX1 power", getFloatValue(parameters));
-                    parsedParameters.put("#Cells", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Set", getIntegerValue(parameters));
-                    parsedParameters.put("Band_2", getIntegerValue(parameters));
-                    parsedParameters.put("Ch_2", getIntegerValue(parameters));
-                    parsedParameters.put("PN", getIntegerValue(parameters));
-                    parsedParameters.put("Ec/I0", getFloatValue(parameters));
-                    parsedParameters.put("Walsh", getIntegerValue(parameters));
-                    parsedParameters.put("RSCP", getFloatValue(parameters));
-                } else if (12 == system) {
+                    groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
+                    for (int i = 0; i < groupCount; i++) {
+                        Integer band = getIntegerValue(parameters);
+                        Integer ch = getIntegerValue(parameters);
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Band"+postfix, band);
+                        parsedParameters.put("Ch"+postfix, ch);
+                        parsedParameters.put("RX power"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RX0 power"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RX1 power"+postfix, getFloatValue(parameters));
+                    }
+                    groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need cell group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),false);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Set"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("PN"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ec/I0"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Walsh"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSCP"+postfix, getFloatValue(parameters));
+                    }
+                    break;
+                case EVDO: 
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Chs", getIntegerValue(parameters));
-                    parsedParameters.put("#params/channel", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("Ch", getIntegerValue(parameters));
-                    parsedParameters.put("RX power", getFloatValue(parameters));
-                    parsedParameters.put("RX0 power", getFloatValue(parameters));
-                    parsedParameters.put("RX1 power", getFloatValue(parameters));
-                    parsedParameters.put("#Chs_2", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Set", getIntegerValue(parameters));
-                    parsedParameters.put("Band_2", getIntegerValue(parameters));
-                    parsedParameters.put("Ch_2", getIntegerValue(parameters));
-                    parsedParameters.put("PN", getIntegerValue(parameters));
-                    parsedParameters.put("Ec/I0", getFloatValue(parameters));
-                    parsedParameters.put("RSCP", getFloatValue(parameters));
-                } else if (20 == system) {
+                    groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
+                    for (int i = 0; i < groupCount; i++) {
+                        Integer band = getIntegerValue(parameters);
+                        Integer ch = getIntegerValue(parameters);
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Band"+postfix, band);
+                        parsedParameters.put("Ch"+postfix, ch);
+                        parsedParameters.put("RX power"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RX0 power"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RX1 power"+postfix, getFloatValue(parameters));
+                    }
+                    groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String set = getParamTypeOrSet(getIntegerValue(parameters), false);
+                        Integer band = getIntegerValue(parameters);
+                        Integer ch = getIntegerValue(parameters);
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Set"+postfix, set);
+                        postfix = " (Channel "+ch+" - "+set+")";
+                        parsedParameters.put("Band"+postfix, band);
+                        parsedParameters.put("Ch"+postfix, ch);
+                        parsedParameters.put("PN"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ec/I0"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RSCP"+postfix, getFloatValue(parameters));
+                    }
+                    break;
+                case WLAN: 
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Cells", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Cell type", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("Quality", getFloatValue(parameters));
-                    parsedParameters.put("Channel", getIntegerValue(parameters));
-                    parsedParameters.put("RSSI", getFloatValue(parameters));
-                    parsedParameters.put("SSID", getStringValue(parameters));
-                    parsedParameters.put("MAC addr.", getStringValue(parameters));
-                    parsedParameters.put("Security", getIntegerValue(parameters));
-                    parsedParameters.put("Max transfer rate", getIntegerValue(parameters));
-                } else if (21 == system) {
+                    groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need cell group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Quality"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Channel"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("SSID"+postfix, getStringValue(parameters));
+                        parsedParameters.put("MAC addr."+postfix, getStringValue(parameters));
+                        parsedParameters.put("Security"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Max transfer rate"+postfix, getIntegerValue(parameters));
+                    }
+                    break;
+                case GAN_WLAN: 
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Cells", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Cell type", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("Quality", getFloatValue(parameters));
-                    parsedParameters.put("Channel", getIntegerValue(parameters));
-                    parsedParameters.put("RSSI", getFloatValue(parameters));
-                    parsedParameters.put("SSID", getStringValue(parameters));
-                    parsedParameters.put("MAC addr.", getStringValue(parameters));
-                } else if (25 == system) {
+                    groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need cell group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Quality"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Channel"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("SSID"+postfix, getStringValue(parameters));
+                        parsedParameters.put("MAC addr."+postfix, getStringValue(parameters));
+                    }
+                    break;
+                case WIMAX:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Cells", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Cell type", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("Frequency", getFloatValue(parameters));
-                    parsedParameters.put("Preamble index", getIntegerValue(parameters));
-                    parsedParameters.put("BS ID", getStringValue(parameters));
-                    parsedParameters.put("RSSI", getFloatValue(parameters));
-                    parsedParameters.put("RSSI dev", getFloatValue(parameters));
-                    parsedParameters.put("CINR dev", getFloatValue(parameters));
-                } else if (51 == system || 52 == system) {
+                    groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need cell group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Frequency"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Preamble index"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("BS ID"+postfix, getStringValue(parameters));
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RSSI dev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("CINR dev"+postfix, getFloatValue(parameters));
+                    }
+                    break;
+                case AMPS: 
+                case NAMPS:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Cells", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Cell type", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("Ch", getIntegerValue(parameters));
-                    parsedParameters.put("SAT", getIntegerValue(parameters));
-                    parsedParameters.put("RxLev", getFloatValue(parameters));
-                } else if (53 == system) {
+                    groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need cell group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("SAT"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RxLev"+postfix, getFloatValue(parameters));
+                    }
+                    break;
+                case DAMPS:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Cells", getIntegerValue(parameters));
-                    parsedParameters.put("#params/cell", getIntegerValue(parameters));
-                    parsedParameters.put("Cell type", getIntegerValue(parameters));
-                    parsedParameters.put("Band", getIntegerValue(parameters));
-                    parsedParameters.put("Ch", getIntegerValue(parameters));
-                    parsedParameters.put("SAT", getIntegerValue(parameters));
-                    parsedParameters.put("RxLev", getFloatValue(parameters));
+                    groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need cell group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("SAT"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RxLev"+postfix, getFloatValue(parameters));
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown system <"+system+">.");
                 }
-
             }
             return parsedParameters;
         }
@@ -1503,23 +1637,26 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (1 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.GSM)) {
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#Chs", getIntegerValue(parameters));
-                    parsedParameters.put("#params/channel", getIntegerValue(parameters));
-                    parsedParameters.put("C/A channel", getIntegerValue(parameters));
-                    parsedParameters.put("C/A minimum", getFloatValue(parameters));
-                    parsedParameters.put("RSSI", getFloatValue(parameters));
-                    parsedParameters.put("C/A -1", getFloatValue(parameters));
-                    parsedParameters.put("RSSI -1", getFloatValue(parameters));
-                    parsedParameters.put("C/A +1", getFloatValue(parameters));
-                    parsedParameters.put("RSSI +1", getFloatValue(parameters));
-                    parsedParameters.put("C/A -2", getFloatValue(parameters));
-                    parsedParameters.put("RSSI -2", getFloatValue(parameters));
-                    parsedParameters.put("C/A +2", getFloatValue(parameters));
-                    parsedParameters.put("RSSI +2", getFloatValue(parameters));
+                    Integer groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
+                    for (int i = 0; i < groupCount; i++) {
+                        String postfix = " (Channel "+(i+1)+")";
+                        parsedParameters.put("C/A channel"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("C/A minimum"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C/A -1"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RSSI -1"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C/A +1"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RSSI +1"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C/A -2"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RSSI -2"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C/A +2"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RSSI +2"+postfix, getFloatValue(parameters));
+                    }
                 }
             }
             return parsedParameters;
@@ -1533,12 +1670,12 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (1 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.GSM)) {
                     parsedParameters.put("RXQ full", getIntegerValue(parameters));
                     parsedParameters.put("RXQ sub", getIntegerValue(parameters));
-                } else if (53 == system) {
+                } else if (system.equals(TechnologySystems.DAMPS)) {
                     parsedParameters.put("BER class", getIntegerValue(parameters));
                 }
             } else if ("1.86".equals(version)) {
@@ -1558,14 +1695,18 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (1 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.GSM)) {
                     parsedParameters.put("RXQ", getIntegerValue(parameters));
                     parsedParameters.put("C value", getFloatValue(parameters));
                     parsedParameters.put("SIGN_VAR", getFloatValue(parameters));
-                    parsedParameters.put("#TSL results", getIntegerValue(parameters));
-                    parsedParameters.put("TSL interf.", getFloatValue(parameters));
+                    Integer count = getIntegerValue(parameters);
+                    for(int i=0; i<count;i++){
+                        String postfix = " (TSL "+(i+1)+")";
+                        parsedParameters.put("TSL interf."+postfix, getFloatValue(parameters));
+                    }
+                    
                 }
             } else if ("1.86".equals(version)) {
                 // TODO how check GSM/DAMPS????
@@ -1592,17 +1733,18 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (1 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.GSM)) {
                     parsedParameters.put("FER full", getFloatValue(parameters));
                     parsedParameters.put("FER sub", getFloatValue(parameters));
                     parsedParameters.put("FER TCH", getFloatValue(parameters));
-                } else if (5 == system) {
+                } else if (system.equals(TechnologySystems.UMTS_FDD)) {
                     parsedParameters.put("FER", getFloatValue(parameters));
-                } else if (6 == system) {
+                } else if (system.equals(TechnologySystems.UMTS_TD_SCDMA)) {
                     parsedParameters.put("FER", getFloatValue(parameters));
-                } else if (10 == system || 11 == system) {
+                } else if (system.equals(TechnologySystems.CDMA_ONE)
+                        || system.equals(TechnologySystems.CDMA_ONE_X)) {
                     parsedParameters.put("FER (dec)", getFloatValue(parameters));
                     parsedParameters.put("FER F-FCH target", getFloatValue(parameters));
                     parsedParameters.put("FER F-SCH target", getFloatValue(parameters));
@@ -1618,7 +1760,7 @@ public enum NemoEvents {
             return parsedParameters;
         }
     },
-    EFER("EFER") {
+    EFER("EFER") { //TODO use TechnologySystems
         @Override
         public Map<String, Object> fill(String version, List<String> params) {
             Iterator<String> parameters = params.iterator();
@@ -1651,8 +1793,8 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
                 parsedParameters.put("MSP", getIntegerValue(parameters));
             } else if ("1.86".equals(version)) {
                 String key = "MSP";
@@ -1668,7 +1810,8 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                parsedParameters.put(key, getIntegerValue(parameters));
+                TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
                 parsedParameters.put("RLT", getIntegerValue(parameters));
             } else if ("1.86".equals(version)) {
                 String key = "RLT";
@@ -1684,13 +1827,13 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (1 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.GSM)) {
                     parsedParameters.put("TA", getIntegerValue(parameters));
-                } else if (6 == system) {
+                } else if (system.equals(TechnologySystems.UMTS_TD_SCDMA)) {
                     parsedParameters.put("TA_f", getFloatValue(parameters));
-                } else if (53 == system) {
+                } else if (system.equals(TechnologySystems.DAMPS)) {
                     parsedParameters.put("TAL", getIntegerValue(parameters));
                 }
             } else if ("1.86".equals(version)) {
@@ -1719,8 +1862,8 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
                 parsedParameters.put("DSC current", getIntegerValue(parameters));
                 parsedParameters.put("DSC max", getIntegerValue(parameters));
 
@@ -1740,8 +1883,8 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
                 parsedParameters.put("GMSK MEAN_BEP", getIntegerValue(parameters));
                 parsedParameters.put("GMSK CV_BEP", getIntegerValue(parameters));
                 parsedParameters.put("8-PSK MEAN_BEP", getIntegerValue(parameters));
@@ -1778,30 +1921,26 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (1 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.GSM)) {
                     parsedParameters.put("C/I", getFloatValue(parameters));
-                    parsedParameters.put("#TSL results", getIntegerValue(parameters));
-                    parsedParameters.put("Timeslot C/I", getFloatValue(parameters));
-                    parsedParameters.put("#Chs", getIntegerValue(parameters));
-                    parsedParameters.put("#params/channel", getIntegerValue(parameters));
-                    parsedParameters.put("ARFCN", getIntegerValue(parameters));
+                    Integer count = getIntegerValue(parameters);
+                    for(int i=0; i<count; i++){
+                        String postfix = " (TSL "+(i+1)+")";
+                        parsedParameters.put("Timeslot C/I"+postfix, getFloatValue(parameters));
+                    }
+                } else if (system.equals(TechnologySystems.UMTS_TD_SCDMA)) {
                     parsedParameters.put("C/I", getFloatValue(parameters));
-                    parsedParameters.put("RSSI", getFloatValue(parameters));
-                } else if (6 == system) {
-                    parsedParameters.put("C/I", getFloatValue(parameters));
-                } else if (12 == system) {
+                } else if (system.equals(TechnologySystems.EVDO)) {
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     parsedParameters.put("#Act set PNs", getIntegerValue(parameters));
-                    parsedParameters.put("Timeslot C/I", getIntegerValue(parameters));
                     parsedParameters.put("Params/pilot", getIntegerValue(parameters));
                     parsedParameters.put("PN", getIntegerValue(parameters));
                     parsedParameters.put("SINR", getFloatValue(parameters));
                     parsedParameters.put("MAC Index", getIntegerValue(parameters));
                     parsedParameters.put("DRC cover", getIntegerValue(parameters));
                     parsedParameters.put("RPC cell index", getIntegerValue(parameters));
-                    parsedParameters.put("DRC cover", getIntegerValue(parameters));
                     parsedParameters.put("DRC Lock", getIntegerValue(parameters));
                     parsedParameters.put("RAB", getIntegerValue(parameters));
                 }
@@ -1825,13 +1964,15 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (2 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                switch (system) {
+                case TETRA:
                     parsedParameters.put("TX power", getFloatValue(parameters));
                     parsedParameters.put("Pwr ctrl alg.", getIntegerValue(parameters));
                     parsedParameters.put("TX power change", getFloatValue(parameters));
-                } else if (5 == system) {
+                    break;
+                case UMTS_FDD:
                     parsedParameters.put("TX power", getFloatValue(parameters));
                     parsedParameters.put("Pwr ctrl alg.", getIntegerValue(parameters));
                     parsedParameters.put("Pwr ctrl step", getFloatValue(parameters));
@@ -1839,13 +1980,16 @@ public enum NemoEvents {
                     parsedParameters.put("#UL pwr up", getIntegerValue(parameters));
                     parsedParameters.put("#UL pwr down", getIntegerValue(parameters));
                     parsedParameters.put("UL pwr up %", getFloatValue(parameters));
-                } else if (6 == system) {
+                    break;
+                case UMTS_TD_SCDMA:
                     parsedParameters.put("TX power", getFloatValue(parameters));
                     parsedParameters.put("Pwr ctrl step", getFloatValue(parameters));
                     parsedParameters.put("#UL pwr up", getIntegerValue(parameters));
                     parsedParameters.put("#UL pwr down", getIntegerValue(parameters));
                     parsedParameters.put("UL pwr up %", getFloatValue(parameters));
-                } else if (10 == system || 11 == system) {
+                    break;
+                case CDMA_ONE:
+                case CDMA_ONE_X:
                     parsedParameters.put("TX power", getFloatValue(parameters));
                     parsedParameters.put("Pwr ctrl step_i", getIntegerValue(parameters));
                     parsedParameters.put("#UL pwr up", getIntegerValue(parameters));
@@ -1858,7 +2002,8 @@ public enum NemoEvents {
                     parsedParameters.put("R-SCH0/R-PICH", getFloatValue(parameters));
                     parsedParameters.put("R-SCH1/R-PICH", getFloatValue(parameters));
                     parsedParameters.put("R-DCCH/R-PICH", getFloatValue(parameters));
-                } else if (12 == system) {
+                    break;
+                case EVDO:
                     parsedParameters.put("TX power", getFloatValue(parameters));
                     parsedParameters.put("#UL pwr up", getIntegerValue(parameters));
                     parsedParameters.put("#UL pwr hold", getIntegerValue(parameters));
@@ -1880,7 +2025,8 @@ public enum NemoEvents {
                     parsedParameters.put("RRI/Pilot", getFloatValue(parameters));
                     parsedParameters.put("DSC/Pilot", getFloatValue(parameters));
                     parsedParameters.put("AUX/Data", getFloatValue(parameters));
-                } else if (25 == system) {
+                    break;
+                case WIMAX:
                     parsedParameters.put("TX power", getFloatValue(parameters));
                     parsedParameters.put("TX ref. power", getFloatValue(parameters));
                     parsedParameters.put("TX power headroom", getFloatValue(parameters));
@@ -1888,6 +2034,7 @@ public enum NemoEvents {
                     parsedParameters.put("TX power IrMax", getFloatValue(parameters));
                     parsedParameters.put("BS EIRP", getFloatValue(parameters));
                     parsedParameters.put("BS N+I", getFloatValue(parameters));
+                    break;
                 }
             } else if ("1.86".equals(version)) {
                 String key = "System";
@@ -1947,47 +2094,51 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (5 == system) {
-                    parsedParameters.put("SIR target", getFloatValue(parameters));
-                    parsedParameters.put("SIR", getFloatValue(parameters));
-                    parsedParameters.put("BS div. state", getIntegerValue(parameters));
-                    parsedParameters.put("#DL pwr up", getIntegerValue(parameters));
-                    parsedParameters.put("#DL pwr down", getIntegerValue(parameters));
-                    parsedParameters.put("DL pwr up %", getFloatValue(parameters));
-                    parsedParameters.put("DPC mode", getFloatValue(parameters));
-                } else if (6 == system) {
-                    parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("SIR target", getFloatValue(parameters));
-                    parsedParameters.put("SIR", getFloatValue(parameters));
-                    parsedParameters.put("#DL pwr up", getIntegerValue(parameters));
-                    parsedParameters.put("#DL pwr down", getIntegerValue(parameters));
-                    parsedParameters.put("DL pwr up %", getFloatValue(parameters));
-                    parsedParameters.put("#Timeslots", getIntegerValue(parameters));
-                    parsedParameters.put("#params/timeslot", getIntegerValue(parameters));
-                    parsedParameters.put("TSL", getIntegerValue(parameters));
-                    parsedParameters.put("ISCP", getFloatValue(parameters));
-                    parsedParameters.put("RSCP", getFloatValue(parameters));
-                } else if (10 == system || 11 == system) {
-                    parsedParameters.put("FPC mode", getIntegerValue(parameters));
-                    parsedParameters.put("FPC subchannel", getIntegerValue(parameters));
-                    parsedParameters.put("FPC gain", getFloatValue(parameters));
-                    parsedParameters.put("#DL pwr up", getIntegerValue(parameters));
-                    parsedParameters.put("#DL pwr down", getIntegerValue(parameters));
-                    parsedParameters.put("DL pwr up %", getFloatValue(parameters));
-                    parsedParameters.put("F-FCH cur. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-FCH min. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-FCH max. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-SCH0 cur. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-SCH0 min. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-SCH0 max. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-SCH1 cur. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-SCH1 min. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-SCH1 max. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-DCCH cur. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-DCCH min. sp", getFloatValue(parameters));
-                    parsedParameters.put("F-DCCH max. sp", getFloatValue(parameters));
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                switch (system){
+                    case UMTS_FDD: 
+                        parsedParameters.put("SIR target", getFloatValue(parameters));
+                        parsedParameters.put("SIR", getFloatValue(parameters));
+                        parsedParameters.put("BS div. state", getIntegerValue(parameters));
+                        parsedParameters.put("#DL pwr up", getIntegerValue(parameters));
+                        parsedParameters.put("#DL pwr down", getIntegerValue(parameters));
+                        parsedParameters.put("DL pwr up %", getFloatValue(parameters));
+                        parsedParameters.put("DPC mode", getFloatValue(parameters));
+                    break;
+                    case UMTS_TD_SCDMA: 
+                        parsedParameters.put("#Header params", getIntegerValue(parameters));
+                        parsedParameters.put("SIR target", getFloatValue(parameters));
+                        parsedParameters.put("SIR", getFloatValue(parameters));
+                        parsedParameters.put("#DL pwr up", getIntegerValue(parameters));
+                        parsedParameters.put("#DL pwr down", getIntegerValue(parameters));
+                        parsedParameters.put("DL pwr up %", getFloatValue(parameters));
+                        parsedParameters.put("#Timeslots", getIntegerValue(parameters));
+                        parsedParameters.put("#params/timeslot", getIntegerValue(parameters));
+                        parsedParameters.put("TSL", getIntegerValue(parameters));
+                        parsedParameters.put("ISCP", getFloatValue(parameters));
+                        parsedParameters.put("RSCP", getFloatValue(parameters));
+                    break;
+                    case CDMA_ONE:
+                    case CDMA_ONE_X:
+                        parsedParameters.put("FPC mode", getIntegerValue(parameters));
+                        parsedParameters.put("FPC subchannel", getIntegerValue(parameters));
+                        parsedParameters.put("FPC gain", getFloatValue(parameters));
+                        parsedParameters.put("#DL pwr up", getIntegerValue(parameters));
+                        parsedParameters.put("#DL pwr down", getIntegerValue(parameters));
+                        parsedParameters.put("DL pwr up %", getFloatValue(parameters));
+                        parsedParameters.put("F-FCH cur. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-FCH min. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-FCH max. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-SCH0 cur. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-SCH0 min. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-SCH0 max. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-SCH1 cur. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-SCH1 min. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-SCH1 max. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-DCCH cur. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-DCCH min. sp", getFloatValue(parameters));
+                        parsedParameters.put("F-DCCH max. sp", getFloatValue(parameters));
                 }
             } else if ("1.86".equals(version)) {
                 String key = "System";
@@ -2053,11 +2204,11 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (2 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.TETRA)) {
                     parsedParameters.put("BER", getFloatValue(parameters));
-                } else if (5 == system) {
+                } else if (system.equals(TechnologySystems.UMTS_FDD)) {
                     parsedParameters.put("Pilot BER", getFloatValue(parameters));
                     parsedParameters.put("TFCI BER", getFloatValue(parameters));
                 }
@@ -2305,8 +2456,12 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                parsedParameters.put(key, getIntegerValue(parameters));
-                parsedParameters.put("DPDCH rate UL", getIntegerValue(parameters));
+                TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.UMTS_FDD)
+                        ||system.equals(TechnologySystems.UMTS_TD_SCDMA)) {
+                    parsedParameters.put("DPDCH rate UL", getIntegerValue(parameters));
+                }
             }
             return parsedParameters;
         }
@@ -2318,11 +2473,14 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                parsedParameters.put(key, getIntegerValue(parameters));
-                key = "WLAN rate UL";
-                parsedParameters.put(key, getIntegerValue(parameters));
-                key = "WLAN rate DL";
-                parsedParameters.put(key, getIntegerValue(parameters));
+                TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.GAN_WLAN)) {
+                    key = "WLAN rate UL";
+                    parsedParameters.put(key, getIntegerValue(parameters));
+                    key = "WLAN rate DL";
+                    parsedParameters.put(key, getIntegerValue(parameters));
+                }
             }
             return parsedParameters;
         }
@@ -2368,9 +2526,10 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (10 == system || 11 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.CDMA_ONE)
+                        ||system.equals(TechnologySystems.CDMA_ONE_X)) {
                     parsedParameters.put("Service ID", getIntegerValue(parameters));
                     parsedParameters.put("Resets", getIntegerValue(parameters));
                     parsedParameters.put("Aborts", getIntegerValue(parameters));
@@ -2395,7 +2554,7 @@ public enum NemoEvents {
                     parsedParameters.put("TX new frames", getIntegerValue(parameters));
                     parsedParameters.put("TX fund. frames", getIntegerValue(parameters));
                     parsedParameters.put("TX bytes", getIntegerValue(parameters));
-                } else if (12 == system) {
+                } else if (system.equals(TechnologySystems.EVDO)) {
                     parsedParameters.put("Service ID", getIntegerValue(parameters));
                     parsedParameters.put("RX NAKs", getIntegerValue(parameters));
                     parsedParameters.put("RX NAKs in bytes", getIntegerValue(parameters));
@@ -2426,8 +2585,8 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
                 parsedParameters.put("Measurement event", getIntegerValue(parameters));
             } else if ("1.86".equals(version)) {
                 String key = "System";
@@ -2445,18 +2604,21 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (5 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.UMTS_FDD)) {
                     parsedParameters.put("#Params", getIntegerValue(parameters));
                     parsedParameters.put("Sample dur.", getIntegerValue(parameters));
                     parsedParameters.put("Ph req. Rate", getIntegerValue(parameters));
                     parsedParameters.put("CQI repetitions", getIntegerValue(parameters));
                     parsedParameters.put("CQI cycle", getIntegerValue(parameters));
-                    parsedParameters.put("#CQI values", getIntegerValue(parameters));
-                    parsedParameters.put("#Params per CQI", getIntegerValue(parameters));
-                    parsedParameters.put("Percentage", getFloatValue(parameters));
-                    parsedParameters.put("CQI", getIntegerValue(parameters));
+                    Integer groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need parameters count
+                    for (int i = 0; i < groupCount; i++) {
+                        String postfix = " (CQI "+(i+1)+")";
+                        parsedParameters.put("Percentage"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("CQI"+postfix, getIntegerValue(parameters));
+                    }
                 }
 
             } else if ("1.86".equals(version)) {
@@ -2499,17 +2661,20 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final Integer system = getIntegerValue(parameters);
-                parsedParameters.put(key, system);
-                if (5 == system) {
+                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
+                parsedParameters.put(key, system.getName());
+                if (system.equals(TechnologySystems.UMTS_FDD)) {
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    parsedParameters.put("#HARQ processes", getIntegerValue(parameters));
-                    parsedParameters.put("#Params/HARQ", getIntegerValue(parameters));
-                    parsedParameters.put("HARQ ID", getIntegerValue(parameters));
-                    parsedParameters.put("HARQ dir.", getIntegerValue(parameters));
-                    parsedParameters.put("HARQ Rate", getIntegerValue(parameters));
-                    parsedParameters.put("#HARQ packets", getIntegerValue(parameters));
-                    parsedParameters.put("HARQ BLER", getFloatValue(parameters));
+                    Integer groupCount = getIntegerValue(parameters);
+                    getIntegerValue(parameters);//not need parameters count;
+                    for (int i = 0; i < groupCount; i++) {
+                        String postfix = " (HARQ "+(i+1)+")";
+                        parsedParameters.put("HARQ ID"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("HARQ dir."+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("HARQ Rate"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("#HARQ packets"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("HARQ BLER"+postfix, getFloatValue(parameters));
+                    }
                 }
             } else if ("1.86".equals(version)) {
                 String key = "System";
@@ -7580,16 +7745,16 @@ public enum NemoEvents {
      * @param param
      * @return
      */
-    protected static String getCellType(Integer param) {
+    protected static String getParamTypeOrSet(Integer param,boolean isType) {
         switch (param) {
         case 0:
             return "Active";
         case 1:
-            return "Monitored";
+            return isType?"Monitored":"Candidate";
         case 2:
-            return "Detected";
+            return isType?"Detected":"Neighbor";
         case 3:
-            return "Undetected";
+            return isType?"Undetected":"Remainder";
         default:
             throw new IllegalArgumentException("Unknow cell type key <"+param+">.");
         }
