@@ -1,7 +1,5 @@
 # And now define some useful commands that can be added either to the IRB shell base, or to any AWEScript run
 
-require 'D:/projects/AWE/org.amanzi.awe.script.jirb/ruby/networkConverter.rb'
-
 module AWE
   module ExtendCommandBundle
     # This is a placeholder for a possible set of AWE commands for the DSL or API
@@ -55,11 +53,6 @@ module AWE
     # Find all features in the current or specified layer (default layer index 0, default store type FeatureSource)
     def features(index=nil,fs_class=$feature_source_class)
       (fea_str=feature_store(index,fs_class)) && fea_str.features
-    end
-    
-    def convert_network(options = {}, network_name = nil)
-      converter = Network::Converter.new options, network_name
-      converter.convert      
     end
       
 private

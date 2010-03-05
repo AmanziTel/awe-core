@@ -1,4 +1,3 @@
-require 'D:/projects/AWE/org.amanzi.awe.script.jirb/ruby/gisCommands.rb'
 require 'Neo4j'
 
 include Java
@@ -111,21 +110,20 @@ module Network
       addLayersToMap
     end
     
-    private 
-    
-    def compute_beamwidth(polygon)
-      puts 'compute_beamwidth'
-      
-      x0 = polygon.get_coordinate[0].x
-      y0 = polygon.get_coordinate[0].y
-      
-      x1 = polygon.get_coordinate[1].x
-      y1 = polygon.get_coordinate[1].y
-      
-      x2 = polygon.get_coordinate[2].x
-      y2 = polygon.get_coordinate[2].y
-    end
-    
   end
   
 end
+
+module AWE
+  
+  module ExtendCommandBundle
+  
+    def convert_network(options = {}, network_name = nil)
+      converter = Network::Converter.new options, network_name
+      converter.convert
+    end
+  end
+  
+end
+
+true
