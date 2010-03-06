@@ -54,6 +54,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -152,6 +154,8 @@ public class DriveInquirerView extends ViewPart {
     private static final String MEM_DRIVE = "MEM_DRIVE";
     private static final String MEM_PROPERTY1 = "MEM_PROPERTY1";
     private static final String MEM_PROPERTY2 = "MEM_PROPERTY2";
+    private static final String MEM_ADD_PROPERTY_COUNT = "MEM_ADD_PROPERTY_COUNT";
+    private static final String MEM_ADD_PROPERTY = "MEM_ADD_PROPERTY";
     private static final String MEM_EVENT = "MEM_EVENT";
     private static final String MEM_START_TIME = "MEM_START_TIME";
     private static final String MEM_TIME_LENGTH = "MEM_TIME_LENGTH";
@@ -165,6 +169,8 @@ public class DriveInquirerView extends ViewPart {
     private Combo cEvent;
     private Combo cProperty1;
     private Combo cProperty2;
+    private List<Combo> cAdditionalProterties;
+    private Composite addPropBar;
     private Button bLeft;
     private Button bLeftHalf;
     private Button bRight;
@@ -212,6 +218,8 @@ public class DriveInquirerView extends ViewPart {
     private Integer initTimeLen;
     private String initLogarithm;
     private String initPalette;
+    private Integer initAddPropCount;
+    private List<String> initAddProp;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -221,7 +229,7 @@ public class DriveInquirerView extends ViewPart {
         formLayout.marginWidth = 0;
         formLayout.spacing = 0;
         frame.setLayout(formLayout);
-
+        
         Composite child = new Composite(frame, SWT.FILL);
         FormData fData = new FormData();
         fData.top = new FormAttachment(0, 2);
@@ -232,7 +240,7 @@ public class DriveInquirerView extends ViewPart {
         final GridLayout layout = new GridLayout(12, false);
         child.setLayout(layout);
         Label label = new Label(child, SWT.FLAT);
-        label.setText("Drive:");
+        label.setText(Messages.DriveInquirerView_label_drive);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cDrive = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 
@@ -241,7 +249,7 @@ public class DriveInquirerView extends ViewPart {
         cDrive.setLayoutData(layoutData);
 
         label = new Label(child, SWT.FLAT);
-        label.setText("Event:");
+        label.setText(Messages.DriveInquirerView_label_event);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cEvent = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 
@@ -250,7 +258,7 @@ public class DriveInquirerView extends ViewPart {
         cEvent.setLayoutData(layoutData);
 
         label = new Label(child, SWT.NONE);
-        label.setText("Property1:");
+        label.setText(Messages.DriveInquirerView_label_property+"1:");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cProperty1 = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
@@ -258,7 +266,7 @@ public class DriveInquirerView extends ViewPart {
         cProperty1.setLayoutData(layoutData);
 
         label = new Label(child, SWT.FLAT);
-        label.setText("Property2:");
+        label.setText(Messages.DriveInquirerView_label_property+"2:");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cProperty2 = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 
@@ -267,7 +275,7 @@ public class DriveInquirerView extends ViewPart {
         cProperty2.setLayoutData(layoutData);
 
         label = new Label(child, SWT.FLAT);
-        label.setText("Start Time:");
+        label.setText(Messages.DriveInquirerView_label_start_time);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         dateStart = new DateTime(child, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
         GridData dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
@@ -275,7 +283,7 @@ public class DriveInquirerView extends ViewPart {
         dateStart.setLayoutData(dateStartlayoutData);
 
         label = new Label(child, SWT.FLAT);
-        label.setText("Length:");
+        label.setText(Messages.DriveInquirerView_label_length);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         sLength = new Spinner(child, SWT.BORDER);
         sLength.setMinimum(1);
@@ -284,11 +292,37 @@ public class DriveInquirerView extends ViewPart {
         GridData timeLenlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         timeLenlayoutData.minimumWidth = 45;
         sLength.setLayoutData(timeLenlayoutData);
-
+        
+        
+        
+        addPropBar = new Composite(frame, SWT.FILL);
+        fData = new FormData();
+        fData.top = new FormAttachment(child,2);
+        fData.left = new FormAttachment(0, 2);
+        fData.right = new FormAttachment(100, -2);
+        addPropBar.setLayoutData(fData); 
+        final GridLayout layout2 = new GridLayout(12, true);
+        addPropBar.setLayout(layout2);
+        if(initAddPropCount!=null){
+            for(int i=0;i<initAddPropCount; i++){
+                addNewProperty(false);
+            }
+        }
+        
+        IMenuManager mm = getViewSite().getActionBars()
+        .getMenuManager();        
+        Action addProperty = new Action(Messages.DriveInquirerView_menu_add_property){
+            @Override
+            public void run(){
+                addNewProperty(true);
+            }
+        };
+        mm.add(addProperty);
+        
         chart = createChart();
         chartFrame = new ChartCompositeImpl(frame, SWT.NONE, chart, true);
         fData = new FormData();
-        fData.top = new FormAttachment(child, 2);
+        fData.top = new FormAttachment(addPropBar, 2);
         fData.left = new FormAttachment(0, 2);
         fData.right = new FormAttachment(100, -2);
         fData.bottom = new FormAttachment(100, -130);
@@ -405,6 +439,11 @@ public class DriveInquirerView extends ViewPart {
         formPropertyLists();
         setProperty(cProperty1, initProperty1);
         setProperty(cProperty2, initProperty2);
+        if(initAddPropCount!=null){
+            for(int i=0; i<initAddPropCount;i++){
+                setProperty(cAdditionalProterties.get(i),initAddProp.get(i));
+            }
+        }
         setProperty(cEvent, initEvent);
         try {
             if (initTime != null) {
@@ -684,6 +723,39 @@ public class DriveInquirerView extends ViewPart {
             }
             
         });
+    }
+    
+    private void addNewProperty(boolean needReloadPage) {
+        if(cAdditionalProterties == null){
+            cAdditionalProterties = new ArrayList<Combo>();
+            addPropBar.setVisible(true);
+        }
+        Label label = new Label(addPropBar, SWT.NONE);
+        label.setText(Messages.DriveInquirerView_label_property+(cAdditionalProterties.size()+3)+":");
+        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        Combo cProperty = new Combo(addPropBar, SWT.DROP_DOWN | SWT.READ_ONLY);
+        GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        layoutData.minimumWidth = MIN_FIELD_WIDTH;
+        cProperty.setLayoutData(layoutData);
+        
+        SelectionListener listener = new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updateProperty();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        };
+        cProperty.addSelectionListener(listener);
+        cProperty.setVisible(true);
+        cAdditionalProterties.add(cProperty);
+        if(needReloadPage){
+            addPropBar.setVisible(true);
+            addPropBar.redraw();
+        }
     }
 
     /**
@@ -1278,6 +1350,14 @@ public class DriveInquirerView extends ViewPart {
             if (array.length > 0) {
                 cProperty1.select(0);
                 cProperty2.select(0);
+            }
+            if(cAdditionalProterties != null){
+                for(Combo property : cAdditionalProterties){
+                    property.setItems(array);
+                    if(array.length > 0){
+                        property.select(0);
+                    }
+                }
             }
             initializeIndex(cDrive.getText());
             Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis, null);
@@ -2088,7 +2168,12 @@ public class DriveInquirerView extends ViewPart {
         memento.putInteger(MEM_TIME_LENGTH, timeLength);
         memento.putString(MEM_LOGARITHM, logarithm.toString());
         memento.putString(MEM_PALETTE, paletteName);
-
+        if(cAdditionalProterties !=null){
+            memento.putInteger(MEM_ADD_PROPERTY_COUNT, cAdditionalProterties.size());
+            for(int i=0;i<cAdditionalProterties.size();i++){
+                memento.putString(MEM_ADD_PROPERTY+i, cAdditionalProterties.get(i).getText());
+            }
+        }           
     }
 
     @Override
@@ -2105,6 +2190,11 @@ public class DriveInquirerView extends ViewPart {
         initTimeLen = memento.getInteger(MEM_TIME_LENGTH);
         initLogarithm = memento.getString(MEM_LOGARITHM);
         initPalette = memento.getString(MEM_PALETTE);
+        initAddPropCount = memento.getInteger(MEM_ADD_PROPERTY_COUNT);
+        initAddProp = new ArrayList<String>(initAddPropCount);
+        for(int i=0; i<initAddPropCount; i++){
+            initAddProp.add(memento.getString(MEM_ADD_PROPERTY+i));
+        }
     }
     /**
      * 
