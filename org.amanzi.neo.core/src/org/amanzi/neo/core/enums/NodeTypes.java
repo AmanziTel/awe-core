@@ -431,7 +431,10 @@ public enum NodeTypes {
     },
     OSS("oss"), 
     GPEH_EVENT("gpeh_event"), 
-    OSS_MAIN("oss_main");
+    OSS_MAIN("oss_main"),
+    FILTER("filter"),
+    FILTER_GROUP("filter_group"),
+    FILTER_ROOT("filter_root");
     
     private final String id;
     private boolean nodeReadOnly;
