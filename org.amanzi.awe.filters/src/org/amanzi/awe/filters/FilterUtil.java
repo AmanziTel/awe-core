@@ -13,9 +13,12 @@
 
 package org.amanzi.awe.filters;
 
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
+import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.Transaction;
 
 /**
@@ -83,6 +86,24 @@ public class FilterUtil {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             node.setProperty(PROPERTY_FILTERED_VALID, isValid);
+        } finally {
+            NeoUtils.finishTx(tx);
+        }
+    }
+
+    /**
+     * @param dataNode
+     * @param service
+     * @return
+     */
+    public static AbstractFilter getFilterOfData(Node dataNode,  NeoService service) {
+        Transaction tx = NeoUtils.beginTx(service);
+        try {
+            Relationship filterRelation = dataNode.getSingleRelationship(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING);
+            if (filterRelation==null){
+                return null;
+            }
+            return AbstractFilter.getInstance(filterRelation.getOtherNode(dataNode), service);
         } finally {
             NeoUtils.finishTx(tx);
         }

@@ -11,3 +11,6 @@ Require-Bundle: org.eclipse.ui,
  org.neo4j;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
+Export-Package: org.amanzi.awe.filters,
+ org.amanzi.awe.filters.tree,
+ org.amanzi.awe.filters.views
