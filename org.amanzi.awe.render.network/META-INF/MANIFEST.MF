@@ -12,5 +12,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.amanzi.awe.neostyle;bundle-version="1.0.0",
  org.amanzi.neo.loader;bundle-version="1.0.0",
- org.neo4j
+ org.neo4j,
+ org.amanzi.awe.filters;bundle-version="1.0.0"
 Eclipse-LazyStart: true

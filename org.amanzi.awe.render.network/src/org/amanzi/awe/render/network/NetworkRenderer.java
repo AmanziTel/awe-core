@@ -31,7 +31,6 @@ import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.core.Pair;
-import net.refractions.udig.project.IBlackboard;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IStyleBlackboard;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
@@ -39,6 +38,8 @@ import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
+import org.amanzi.awe.filters.AbstractFilter;
+import org.amanzi.awe.filters.FilterUtil;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
@@ -46,7 +47,6 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkSiteType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -75,7 +75,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
-    public static String  BLACKBOARD_KEY="Network Filtering";
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
     private static final Color COLOR_SITE_SELECTED = Color.CYAN;
@@ -96,7 +95,8 @@ public class NetworkRenderer extends RendererImpl {
     private String sectorName;
     private boolean sectorLabeling;
     private boolean noSiteName;
-    private NetworkSiteType filter;
+    private AbstractFilter filterSectors;
+    private AbstractFilter filterSites;
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
@@ -209,9 +209,9 @@ public class NetworkRenderer extends RendererImpl {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             System.out.println("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
-            IBlackboard blackboard = getContext().getMap().getBlackboard();
-            String filterStr = blackboard.getString(BLACKBOARD_KEY);
-            filter=NetworkSiteType.getEnumById(filterStr);
+            filterSectors = FilterUtil.getFilterOfData(geoNeo.getMainGisNode(), neo);
+            // TODO add
+            filterSites = null;
             String starProperty = getSelectProperty(geoNeo);
             Pair<Point, Long> starPoint = getStarPoint();
             Node starNode = null;
@@ -317,9 +317,8 @@ public class NetworkRenderer extends RendererImpl {
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
                     continue; // Don't draw points outside viewport
                 }
-                if (filter!=null){
-                    NetworkSiteType type = NetworkSiteType.getOssType(node.getNode(), null);
-                    if (!filter.equals(type)){
+                if (filterSites != null) {
+                    if (!filterSites.filterNode(node.getNode()).isValid()) {
                         continue;
                     }
                 }
@@ -340,12 +339,11 @@ public class NetworkRenderer extends RendererImpl {
             g.setColor(drawColor);
             long startTime = System.currentTimeMillis();
             for(GeoNode node:geoNeo.getGeoNodes(bounds_transformed)) {
-                if (filter!=null){
-                    NetworkSiteType type = NetworkSiteType.getOssType(node.getNode(), null);
-                    if (!filter.equals(type)){
+                if (filterSites != null) {
+                    if (!filterSites.filterNode(node.getNode()).isValid()) {
                         continue;
                     }
-                }               
+                }
                 Coordinate location = node.getCoordinate();
 
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
@@ -424,7 +422,11 @@ public class NetworkRenderer extends RendererImpl {
                                     borderColor = COLOR_SECTOR_SELECTED;
                                 }
                                 // put sector information in to blackboard
-
+                                if (filterSectors != null) {
+                                    if (!filterSectors.filterNode(child).isValid()) {
+                                        continue;
+                                    }
+                                }
                                 Pair<Point, Point> centerPoint = renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor, drawSize);
                                 nodesMap.put(child, centerPoint.getLeft());
                                 if (sectorLabeling){
