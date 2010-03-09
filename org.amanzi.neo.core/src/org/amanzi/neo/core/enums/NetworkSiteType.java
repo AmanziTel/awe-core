@@ -67,7 +67,7 @@ public enum NetworkSiteType {
      * @param service NeoService
      * @return type of node
      */
-    public static NetworkSiteType getOssType(PropertyContainer networkGis, NeoService service) {
+    public static NetworkSiteType getNetworkSiteType(PropertyContainer networkGis, NeoService service) {
         Transaction tx = service == null ? null : service.beginTx();
         try {
             return getEnumById((String)networkGis.getProperty(PROPERTY_NAME, null));
