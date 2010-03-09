@@ -282,7 +282,7 @@ public class DriveInquirerView extends ViewPart {
         GridData dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         dateStartlayoutData.minimumWidth = 75;
         dateStart.setLayoutData(dateStartlayoutData);
-
+        
         label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_length);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
@@ -1172,6 +1172,9 @@ public class DriveInquirerView extends ViewPart {
      *update chart
      */
     private void updateChart() {
+        if(cDrive.getText().isEmpty()){
+            return;
+        }
         Node gis = getGisDriveNode();
         String event = cEvent.getText();
         if (gis == null || event.isEmpty() || hasEmptyProperties()) {
