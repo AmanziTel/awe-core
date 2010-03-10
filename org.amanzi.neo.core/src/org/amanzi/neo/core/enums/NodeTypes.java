@@ -167,6 +167,8 @@ public enum NodeTypes {
             }
             if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
                 return NodeDeletableTypes.DELETE;
+            }else if(linkType.equals(GeoNeoRelationshipTypes.USE_FILTER)){
+                return NodeDeletableTypes.DELETE;
             }
             throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
         }
@@ -432,9 +434,50 @@ public enum NodeTypes {
     OSS("oss"), 
     GPEH_EVENT("gpeh_event"), 
     OSS_MAIN("oss_main"),
-    FILTER("filter"),
-    FILTER_GROUP("filter_group"),
-    FILTER_ROOT("filter_root");
+    FILTER("filter"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            return checkDeletableByTypeForCorrectStructure(aNode, cameFrom); 
+        }
+        
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link) {
+            return isGoodLinkForCorrectStructure(aNode, cameFrom, link);
+        }
+    },
+    FILTER_GROUP("filter_group"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            return checkDeletableByTypeForCorrectStructure(aNode, cameFrom); 
+        }
+        
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link) {
+            return isGoodLinkForCorrectStructure(aNode, cameFrom, link);
+        }
+    },
+    FILTER_CHAIN("filter_chain"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            return checkDeletableByTypeForCorrectStructure(aNode, cameFrom); 
+        }
+        
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link) {
+            return isGoodLinkForCorrectStructure(aNode, cameFrom, link);
+        }
+    },
+    FILTER_ROOT("filter_root"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            return NodeDeletableTypes.DELETE_LINE; 
+        }
+        
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link) {
+            return isGoodLinkForCorrectStructure(aNode, cameFrom, link);
+        }
+    };
     
     private final String id;
     private boolean nodeReadOnly;
@@ -718,7 +761,7 @@ public enum NodeTypes {
      * @return DeletableRelationshipType
      */
     protected DeletableRelationshipType getLinkType(Relationship cameFrom) {
-        return (DeletableRelationshipType)cameFrom.getType();
+        return NeoUtils.getRelationType(cameFrom);
     }
 
     /**
@@ -746,5 +789,34 @@ public enum NodeTypes {
             NeoUtils.finishTx(tx);
         }
     }
-
+    private static NodeDeletableTypes checkDeletableByTypeForCorrectStructure(Node aNode, Relationship cameFrom){
+        //TODO refactor
+        DeletableRelationshipType linkType = NeoUtils.getRelationType(cameFrom);
+        if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                return NodeDeletableTypes.DELETE_LINE; 
+        }
+        if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+            return NodeDeletableTypes.RELINK;
+        }
+        return NodeDeletableTypes.UNLINK;
+    }
+    /**
+     * Is relationship is a pair for 'cameFrom' relationship?
+     *
+     * @param aNode Node
+     * @param cameFrom Relationship that need a Pair.
+     * @param link Relationship for check
+     * @return boolean
+     */
+    private static boolean isGoodLinkForCorrectStructure(Node aNode, Relationship cameFrom, Relationship link){
+       //TODO refactor
+        RelationshipType linkType = link.getType();
+        if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+            return true;
+        }
+        if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                return true; 
+        }
+        return false;
+    }
 }

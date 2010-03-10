@@ -11,34 +11,7 @@
             onToolbar="true"
             tooltip="Star mode for selecting network elements to analyse">
       </modalTool>
-      <modalTool
-			categoryId="FilterTool"
-            class="org.amanzi.awe.tool.star.FilterToolRemove"
-            icon="icons/star_32.png"
-            id="org.amanzi.awe.tool.star.FilterToolRemove"
-            name="No Filters"
-            onToolbar="true"
-            tooltip="Remove all filters">
-      </modalTool>
-      <modalTool
-			categoryId="FilterTool"
-            class="org.amanzi.awe.tool.star.FilterToolOnly2G"
-            icon="icons/star_32.png"
-            id="org.amanzi.awe.tool.star.FilterToolOnly2G"
-            name="2G filter"
-            onToolbar="true"
-            tooltip="Show only 2g network">
-      </modalTool>
-      <modalTool
-			categoryId="FilterTool"
-            class="org.amanzi.awe.tool.star.FilterToolOnly3G"
-            icon="icons/star_32.png"
-            id="org.amanzi.awe.tool.star.FilterToolOnly3G"
-            name="3G filter"
-            onToolbar="true"
-            tooltip="Show only 3g network">
-      </modalTool>
+
       <category  id="StarTool"  name="Star Tool"/>
-      <category  id="FilterTool" name="Filter Tool"/>
    </extension>
 </plugin>
