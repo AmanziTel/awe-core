@@ -30,6 +30,7 @@
     <module>org.amanzi.awe</module>
     <module>org.amanzi.awe-feature</module>
     <module>org.amanzi.awe.catalog.neo</module>
+    <module>org.amanzi.awe.filters</module>
     <module>org.amanzi.awe.neostyle</module>
     <module>org.amanzi.awe.render.drive</module>
     <module>org.amanzi.awe.render.network</module>
