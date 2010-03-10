@@ -147,8 +147,6 @@ public class ExportSplashToCsvWizard extends Wizard implements IExportWizard {
             @Override
             public void run() {
                 MessageDialog.openError(display.getActiveShell(), "Export problem", e.getMessage());
-//                ErrorDialog.openError(display.getActiveShell(), "Error", "An exception occured:\n" + e.getMessage(),
-//                        new Status(Status.ERROR, SplashPlugin.getId(), e.getClass().getName(), e));
             }
 
         });
