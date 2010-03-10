@@ -19,6 +19,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
@@ -40,18 +42,22 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.core.enums.RelationDeletableTypes;
+import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
+import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.PropertyContainer;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
@@ -1863,5 +1869,52 @@ public class NeoUtils {
         } finally {
             tx.finish();
         }
+    }
+    
+    /**
+     * Gets relationsip type by type name.
+     *
+     * @param relation
+     * @return DeletableRelationshipType
+     */
+    public static DeletableRelationshipType getRelationType(Relationship relation){
+        String etalonName = relation.getType().name();
+        DeletableRelationshipType result = findType(Arrays.asList(GeoNeoRelationshipTypes.values()), etalonName);
+        if(result!=null){
+            return result;
+        }
+        result = findType(Arrays.asList(NetworkRelationshipTypes.values()), etalonName);
+        if(result!=null){
+            return result;
+        }
+        result = findType(Arrays.asList(ProbeCallRelationshipType.values()), etalonName);
+        if(result!=null){
+            return result;
+        }
+        result = findType(Arrays.asList(SplashRelationshipTypes.values()), etalonName);
+        if(result!=null){
+            return result;
+        }
+        result = findType(Arrays.asList(NeoIndexRelationshipTypes.values()), etalonName);
+        if(result!=null){
+            return result;
+        }
+        throw new IllegalArgumentException("Relationship type <"+etalonName+"> does not instanseof DeletableRelationshipType.");
+    }
+    
+    /**
+     * Find relationship type.
+     *
+     * @param types List of types
+     * @param etalonName String
+     * @return DeletableRelationshipType
+     */
+    private static DeletableRelationshipType findType(List<? extends DeletableRelationshipType> types, String etalonName){
+        for(DeletableRelationshipType type : types){
+            if(type.name().equals(etalonName)){
+                return type;
+            }
+        }
+        return null;
     }
 }

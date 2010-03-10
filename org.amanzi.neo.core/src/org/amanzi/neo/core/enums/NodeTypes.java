@@ -678,7 +678,7 @@ public enum NodeTypes {
         //TODO: Lagutko: implement like this
         for (Direction singleDirection : directions) {
             for (Relationship link : aNode.getRelationships(singleDirection)) {
-                DeletableRelationshipType linkType = (DeletableRelationshipType)link.getType();
+                DeletableRelationshipType linkType = NeoUtils.getRelationType(link);
                 RelationDeletableTypes deletable = linkType.getDeletableType(singleDirection);
                 if(deletable.equals(RelationDeletableTypes.FIXED)){
                     return true;

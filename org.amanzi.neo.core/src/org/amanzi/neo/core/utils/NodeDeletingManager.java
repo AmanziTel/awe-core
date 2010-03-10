@@ -148,7 +148,7 @@ public class NodeDeletingManager {
         Direction direction = isLinkOut?Direction.INCOMING:Direction.OUTGOING;
         Iterable<Relationship> allLinks = aNode.getRelationships(direction);     
         for(Relationship currLink : allLinks){
-            DeletableRelationshipType linkType = (DeletableRelationshipType)currLink.getType();
+            DeletableRelationshipType linkType = NeoUtils.getRelationType(currLink);
             RelationDeletableTypes deletable = linkType.getDeletableType(direction);
             if(deletable.equals(RelationDeletableTypes.RELINK)){
                 return currLink;
@@ -210,9 +210,9 @@ public class NodeDeletingManager {
             return true;
         }
 	    for(Relationship link : aNode.getRelationships()){
-	        boolean isLinkOut = link.getStartNode().equals(aNode);
-	        DeletableRelationshipType linkType = (DeletableRelationshipType)link.getType();
-	        RelationDeletableTypes deletable = isLinkOut?linkType.getDeletableTypeIn():linkType.getDeletableTypeOut();
+	        Direction direction = link.getStartNode().equals(aNode)?Direction.OUTGOING:Direction.INCOMING;
+	        DeletableRelationshipType linkType = NeoUtils.getRelationType(link);
+	        RelationDeletableTypes deletable = linkType.getDeletableType(direction);
 	        if(deletable.equals(RelationDeletableTypes.FIXED)){
 	            return true;
 	        }
