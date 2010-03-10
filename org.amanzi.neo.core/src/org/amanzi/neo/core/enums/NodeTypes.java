@@ -22,8 +22,10 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
+import org.eclipse.swt.graphics.Image;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
@@ -541,6 +543,13 @@ public enum NodeTypes {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * @return Returns the Image for current nodeType.
+     */
+    public Image getImage() {
+        return IconManager.getIconManager().getImage(id);
     }
     /**
      * Returns NodeTypes by its ID

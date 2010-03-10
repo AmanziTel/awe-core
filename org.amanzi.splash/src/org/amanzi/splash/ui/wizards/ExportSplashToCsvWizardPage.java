@@ -13,15 +13,14 @@
 
 package org.amanzi.splash.ui.wizards;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
+import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.apache.commons.lang.StringUtils;
@@ -31,6 +30,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -38,11 +38,9 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -76,8 +74,8 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
      */
     protected ExportSplashToCsvWizardPage(String pageName) {
         // super(pageName);
-        super(pageName, "Title", null);
-        setDescription("Description");
+        super(pageName, Messages.ExportSplashToCsvWizardPage_0, null);
+        setDescription(Messages.ExportSplashToCsvWizardPage_1);
 //        setMessage("Bugoga message!");
         setPageComplete(false);
     }
@@ -95,7 +93,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
         // viewer.setContentProvider(new );
         // viewer.setLabelProvider(labelProvider);
         Label label = new Label(main, SWT.LEFT);
-        label.setText("Splash:");
+        label.setText(Messages.ExportSplashToCsvWizardPage_2);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
         viewer = new TreeViewer(main, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -103,6 +101,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
         viewer.getControl().setLayoutData(layoutData);
         layoutData.grabExcessVerticalSpace=true;
         viewer.setContentProvider(new ViewContentProvider());
+        viewer.setLabelProvider(new ViewLabelProvider());
         viewer.setInput(new Object[0]);
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             
@@ -121,7 +120,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
                 setPageComplete(isValidPage());
             }
         });
-        editor = new FileFieldEditor("fileSelectNeighb", "File: ", main); // NON-NLS-1
+        editor = new FileFieldEditor("fileSelectNeighb", Messages.ExportSplashToCsvWizardPage_4, main); // NON-NLS-1 //$NON-NLS-1$
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
@@ -139,7 +138,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return NeoUtils.getNodeType(currentPos.currentNode(), "").equals(NodeTypes.SPREADSHEET.getId());
+                    return NeoUtils.getNodeType(currentPos.currentNode(), "").equals(NodeTypes.SPREADSHEET.getId()); //$NON-NLS-1$
                 }
             },
             SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING,
@@ -148,7 +147,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
 
             members = new HashMap<String, Node>();
             for (Node node : traverse) {
-                members.put(NeoUtils.getSimpleNodeName(node, "", null), node);
+                members.put(NeoUtils.getSimpleNodeName(node, "", null), node); //$NON-NLS-1$
             }
             return members.keySet().toArray(new String[] {});
         } finally {
@@ -315,7 +314,38 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
         }
 
     }
-    
+
+    /**
+     * <p>
+     * filter tree label provider
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
+    class ViewLabelProvider extends LabelProvider {
+
+        @Override
+        public String getText(Object obj) {
+            return obj.toString();
+        }
+
+        @Override
+        public Image getImage(Object obj) {
+            IconManager iconManager = IconManager.getIconManager();
+            if (obj instanceof TreeNeoNode) {
+                return ((TreeNeoNode)obj).getType().getImage();
+            }
+            return iconManager.getImage(IconManager.NEO_ROOT);
+
+            // String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
+            // if (obj instanceof TreeNeoNode && ((TreeNeoNode)obj).getType() != NodeTypes.FILTER) {
+            // imageKey = ISharedImages.IMG_OBJ_FOLDER;
+            // }
+            // return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
+        }
+    }
+
     class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
         private List<TreeNeoNode> elements=new LinkedList<TreeNeoNode>();
 

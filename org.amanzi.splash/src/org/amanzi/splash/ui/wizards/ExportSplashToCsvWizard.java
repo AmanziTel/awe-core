@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -35,6 +34,7 @@ import org.neo4j.api.core.Node;
  * <p>
  * Wizard for exporting Splash to CSV file
  * </p>
+ * 
  * @author NiCK
  * @since 1.0.0
  */
