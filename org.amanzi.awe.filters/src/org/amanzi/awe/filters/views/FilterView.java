@@ -12,17 +12,28 @@
  */
 package org.amanzi.awe.filters.views;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 
+import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.project.ILayer;
+import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.ui.ApplicationGIS;
+
+import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.filters.AbstractFilter;
+import org.amanzi.awe.filters.ChainRule;
 import org.amanzi.awe.filters.FilterUtil;
 import org.amanzi.awe.filters.tree.TreeNeoNode;
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.NodeDeletingManager;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -45,7 +56,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -96,7 +106,7 @@ public class FilterView extends ViewPart {
     /**
      * The ID of the view as specified by the extension.
      */
-    public static final String ID = "org.amanzi.awe.filters.views.FilterView";
+    public static final String ID = "org.amanzi.awe.filters.views.FilterView"; //$NON-NLS-1$
 
     private TreeViewer viewer;
     private DrillDownAdapter drillDownAdapter;
@@ -150,6 +160,26 @@ public class FilterView extends ViewPart {
 
     private AssignFilter assignFiltr;
 
+    private AddChainFilterAction addChainFilterAction;
+
+    private Composite filterChainFrame;
+
+    private Text tFilterChainName;
+
+    private Combo cRule;
+
+    private Button bFilterChainOk;
+
+    private Button bFilterChainCancel;
+
+    /**
+     * <p>
+     * filter tree content provider
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
     class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
         private Object invisibleRoot;
         private TreeNeoNode rootNode;
@@ -207,6 +237,14 @@ public class FilterView extends ViewPart {
 
     }
 
+    /**
+     * <p>
+     * filter tree label provider
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
     class ViewLabelProvider extends LabelProvider {
 
         @Override
@@ -224,15 +262,12 @@ public class FilterView extends ViewPart {
         }
     }
 
-    class NameSorter extends ViewerSorter {
-    }
-
     /**
      * The constructor.
      */
     public FilterView() {
         service = NeoServiceProvider.getProvider().getService();
-        dataMap=new LinkedHashMap<String, Node>();
+        dataMap = new LinkedHashMap<String, Node>();
     }
 
     /**
@@ -245,25 +280,25 @@ public class FilterView extends ViewPart {
         layout.marginWidth = 0;
         layout.spacing = 0;
         parent.setLayout(layout);
-        Composite row=new Composite(parent, SWT.FILL);
+        Composite row = new Composite(parent, SWT.FILL);
         FormData layoutData = new FormData();
         layoutData.left = new FormAttachment(0, 2);
         layoutData.right = new FormAttachment(50, -2);
         layoutData.top = new FormAttachment(0, 2);
         row.setLayoutData(layoutData);
         row.setLayout(new GridLayout(5, false));
-        //firs row
-        Label label=new Label(row, SWT.NONE);
-        label.setText("GIS nodes:");
-         cGis = new Combo(row,SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        // first row
+        Label label = new Label(row, SWT.NONE);
+        label.setText(Messages.FilterView_1);
+        cGis = new Combo(row, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         cGis.setLayoutData(new GridData(100, SWT.DEFAULT));
-         updateGisItems();
-        label=new Label(row, SWT.NONE);
-        label.setText("Filter:");
-        tGisFilter=new Text(row,SWT.READ_ONLY);
+        updateGisItems();
+        label = new Label(row, SWT.NONE);
+        label.setText(Messages.FilterView_2);
+        tGisFilter = new Text(row, SWT.READ_ONLY);
         tGisFilter.setLayoutData(new GridData(100, SWT.DEFAULT));
         viewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
-         layoutData = new FormData();
+        layoutData = new FormData();
         layoutData.left = new FormAttachment(0, 2);
         layoutData.right = new FormAttachment(50, -2);
         layoutData.top = new FormAttachment(row, 2);
@@ -278,6 +313,15 @@ public class FilterView extends ViewPart {
         groupFrame.setLayoutData(layoutData);
         groupFrame.setLayout(new GridLayout(2, false));
 
+        filterChainFrame = new Composite(parent, SWT.BORDER);
+        layoutData = new FormData();
+        layoutData.left = new FormAttachment(50, 2);
+        layoutData.right = new FormAttachment(100, -2);
+        layoutData.top = new FormAttachment(0, 2);
+        layoutData.bottom = new FormAttachment(100, -2);
+        filterChainFrame.setLayoutData(layoutData);
+        filterChainFrame.setLayout(new GridLayout(2, false));
+
         filterFrame = new Group(parent, SWT.NONE);
         filterFrame.setLayout(new GridLayout(3, false));
         layoutData = new FormData();
@@ -289,34 +333,53 @@ public class FilterView extends ViewPart {
         drillDownAdapter = new DrillDownAdapter(viewer);
         viewer.setContentProvider(new ViewContentProvider());
         viewer.setLabelProvider(new ViewLabelProvider());
-        viewer.setSorter(new NameSorter());
         viewer.setInput(service.getReferenceNode());
         // group frame
-         label = new Label(groupFrame, SWT.NONE);
-        label.setText("Group name:");
+        label = new Label(groupFrame, SWT.NONE);
+        label.setText(Messages.FilterView_3);
         tGroupName = new Text(groupFrame, SWT.BORDER);
         tGroupName.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
         label = new Label(groupFrame, SWT.NONE);
-        label.setText("Property:");
+        label.setText(Messages.FilterView_4);
         cProperty = new Text(groupFrame, SWT.BORDER);
         cProperty.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
         Composite rowFrame = new Composite(groupFrame, SWT.FILL);
         rowFrame.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
         rowFrame.setLayout(new GridLayout(2, true));
         bGroupOk = new Button(rowFrame, SWT.PUSH | SWT.CENTER);
-        bGroupOk.setText("Ok");
+        bGroupOk.setText(Messages.FilterView_5);
         bGroupOk.setLayoutData(new GridData(100, SWT.DEFAULT));
         bGroupCancel = new Button(rowFrame, SWT.PUSH | SWT.CENTER);
-        bGroupCancel.setText("Cancel");
+        bGroupCancel.setText(Messages.FilterView_6);
         bGroupCancel.setLayoutData(new GridData(100, SWT.DEFAULT));
+
+        // filter chain frame
+        label = new Label(filterChainFrame, SWT.NONE);
+        label.setText(Messages.FilterView_17);
+        tFilterChainName = new Text(filterChainFrame, SWT.BORDER);
+        tFilterChainName.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
+        label = new Label(filterChainFrame, SWT.NONE);
+        label.setText(Messages.FilterView_18);
+        cRule = new Combo(filterChainFrame, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        cRule.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
+        fillRuleCombo();
+        rowFrame = new Composite(filterChainFrame, SWT.FILL);
+        rowFrame.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
+        rowFrame.setLayout(new GridLayout(2, true));
+        bFilterChainOk = new Button(rowFrame, SWT.PUSH | SWT.CENTER);
+        bFilterChainOk.setText(Messages.FilterView_5);
+        bFilterChainOk.setLayoutData(new GridData(100, SWT.DEFAULT));
+        bFilterChainCancel = new Button(rowFrame, SWT.PUSH | SWT.CENTER);
+        bFilterChainCancel.setText(Messages.FilterView_6);
+        bFilterChainCancel.setLayoutData(new GridData(100, SWT.DEFAULT));
 
         // filter frame
         label = new Label(filterFrame, SWT.NONE);
-        label.setText("Property:");
+        label.setText(Messages.FilterView_7);
         tProperty = new Text(filterFrame, SWT.BORDER);
         tProperty.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
         label = new Label(filterFrame, SWT.NONE);
-        label.setText("Filter:");
+        label.setText(Messages.FilterView_8);
         cFirst = new Combo(filterFrame, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         cFirst.setItems(getFilters());
         cFirstText = new Text(filterFrame, SWT.BORDER);
@@ -331,12 +394,12 @@ public class FilterView extends ViewPart {
         rowFrame.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 3, 1));
         rowFrame.setLayout(new GridLayout(2, true));
         bFilterOk = new Button(rowFrame, SWT.PUSH | SWT.CENTER);
-        bFilterOk.setText("Ok");
+        bFilterOk.setText(Messages.FilterView_9);
         bFilterOk.setLayoutData(new GridData(100, SWT.DEFAULT));
         bFilterCancel = new Button(rowFrame, SWT.PUSH | SWT.CENTER);
-        bFilterCancel.setText("Cancel");
+        bFilterCancel.setText(Messages.FilterView_10);
         bFilterCancel.setLayoutData(new GridData(100, SWT.DEFAULT));
-
+        filterChainFrame.setVisible(false);
         groupFrame.setVisible(false);
         filterFrame.setVisible(false);
         addListeners();
@@ -347,24 +410,43 @@ public class FilterView extends ViewPart {
     }
 
     /**
-     *
+     *fills rules
+     */
+    private void fillRuleCombo() {
+        List<String> result = new LinkedList<String>();
+        for (ChainRule rule : ChainRule.values()) {
+            result.add(rule.getId());
+        }
+        cRule.setItems(result.toArray(new String[0]));
+        cRule.select(0);
+    }
+
+    /**
+     *update gis item
      */
     public void updateGisItems() {
         dataMap.clear();
         Transaction tx = NeoUtils.beginTx(service);
-        try{
+        try {
             Traverser traverse = service.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-                
+
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return NeoUtils.isGisNode(currentPos.currentNode());
                 }
-            } ,GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING);
+            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
             for (Node node : traverse) {
-                dataMap.put(NeoUtils.getNodeName(node), node);
+                Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, ""); //$NON-NLS-1$
+                if (type.equals(GisTypes.NETWORK.getHeader())) {
+                    dataMap.put(Messages.FilterView_12 + NeoUtils.getNodeName(node), node);
+                    final Node networkNode = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node);
+                    dataMap.put(Messages.FilterView_13 + NeoUtils.getNodeName(networkNode), networkNode);
+                } else {
+                    dataMap.put(NeoUtils.getNodeName(node), node);
+                }
             }
             cGis.setItems(dataMap.keySet().toArray(new String[0]));
-        }finally{
+        } finally {
             tx.finish();
         }
     }
@@ -387,6 +469,7 @@ public class FilterView extends ViewPart {
                 updateActions();
                 groupFrame.setVisible(false);
                 filterFrame.setVisible(false);
+                filterChainFrame.setVisible(false);
                 IStructuredSelection selection = (IStructuredSelection)event.getSelection();
                 if (selection.size() != 1) {
                     return;
@@ -398,6 +481,10 @@ public class FilterView extends ViewPart {
                     break;
                 case FILTER:
                     showFilter(element);
+                    break;
+                case FILTER_CHAIN:
+                    showFilterChain(element);
+                    break;
                 default:
                     break;
                 }
@@ -474,6 +561,31 @@ public class FilterView extends ViewPart {
                 widgetSelected(e);
             }
         });
+        bFilterChainOk.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                saveFilterChain();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        bFilterChainCancel.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showFilterChain(rootTree);
+                viewer.getControl().setEnabled(true);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         bGroupCancel.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -504,18 +616,131 @@ public class FilterView extends ViewPart {
         cSecond.addFocusListener(listener);
         cSecondText.addFocusListener(listener);
         cSecRel.addFocusListener(listener);
+        cRule.addFocusListener(listener);
+        tFilterChainName.addFocusListener(listener);
         cGis.addSelectionListener(new SelectionListener() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 updateGisFilter();
             }
-            
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
         });
+    }
+
+    /**
+     * fire changing filter event
+     * 
+     * @param filterNode - changed filters
+     */
+    protected void fireFilterChangeEvent(Node filterNode) {
+        Transaction tx = NeoUtils.beginTx(service);
+        try {
+            Traverser tr = FilterUtil.getDataNodesOfFilter(filterNode);
+            for (Node node : tr) {
+                Node gis = NeoUtils.findGisNodeByChild(node);
+                if (gis != null) {
+                    refreshLayer(gis);
+                }
+            }
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * fire event: remove filter
+     * 
+     * @param dataNode - data Node
+     * @param filterNode - changed filters
+     */
+    protected void fireRemoveFilters(Node dataNode, Node filterNode) {
+        Node gis = NeoUtils.findGisNodeByChild(dataNode);
+        if (gis != null) {
+            refreshLayer(gis);
+        }
+    }
+
+    /**
+     *refresh layer if necessary
+     * 
+     * @param gis - gis node
+     */
+    private void refreshLayer(Node gis) {
+        IMap activeMap = ApplicationGIS.getActiveMap();
+        if (activeMap != ApplicationGIS.NO_MAP) {
+            try {
+                for (ILayer layer : activeMap.getMapLayers()) {
+                    IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
+                    if (resourse != null) {
+                        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
+                        if (gis != null && geo.getMainGisNode().equals(gis)) {
+                            layer.refresh(null);
+                        } 
+                    }
+                }
+            } catch (IOException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        }
+    }
+
+    /**
+     *show filter chain part of view
+     * 
+     * @param element - tree node
+     */
+    protected void showFilterChain(TreeNeoNode element) {
+        rootTree = element;
+        Transaction tx = NeoUtils.beginTx(service);
+        try {
+            tFilterChainName.setText(NeoUtils.getSimpleNodeName(rootTree.getNode(), "")); //$NON-NLS-1$)
+            cRule.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_ORDER, "")); //$NON-NLS-1$
+        } finally {
+            NeoUtils.finishTx(tx);
+        }
+        filterChainFrame.setVisible(true);
+    }
+
+    /**
+     *save filter chain
+     */
+    protected void saveFilterChain() {
+        final String name = tFilterChainName.getText();
+        final String rule = cRule.getText();
+        Job job = new Job(Messages.FilterView_15) {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                Transaction tx = NeoUtils.beginTx(service);
+                try {
+
+                    Node node = rootTree.getNode();
+                    NeoUtils.setNodeName(node, name, service);
+                    node.setProperty(FilterUtil.PROPERTY_ORDER, rule);
+                    NeoUtils.successTx(tx);
+                } finally {
+                    NeoUtils.finishTx(tx);
+                }
+                rootTree.refresh();
+                ActionUtil.getInstance().runTask(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        viewer.refresh(rootTree);
+                        updateGisFilter();
+                    }
+                }, true);
+                return Status.OK_STATUS;
+            }
+
+        };
+        job.schedule();
+        viewer.getControl().setEnabled(true);
     }
 
     /**
@@ -528,7 +753,7 @@ public class FilterView extends ViewPart {
         final String secondrel = cSecRel.getText();
         final String second = cSecond.getText();
         final String secontxt = cSecondText.getText();
-        Job job = new Job("save filter") {
+        Job job = new Job(Messages.FilterView_14) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -553,6 +778,7 @@ public class FilterView extends ViewPart {
                     @Override
                     public void run() {
                         viewer.refresh(rootTree);
+                        updateGisFilter();
                     }
                 }, true);
                 return Status.OK_STATUS;
@@ -569,7 +795,7 @@ public class FilterView extends ViewPart {
     protected void saveGroup() {
         final String name = tGroupName.getText();
         final String property = cProperty.getText();
-        Job job = new Job("save group") {
+        Job job = new Job(Messages.FilterView_15) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -589,6 +815,7 @@ public class FilterView extends ViewPart {
                     @Override
                     public void run() {
                         viewer.refresh(rootTree);
+                        updateGisFilter();
                     }
                 }, true);
                 return Status.OK_STATUS;
@@ -606,16 +833,15 @@ public class FilterView extends ViewPart {
         rootTree = element;
         Transaction tx = NeoUtils.beginTx(service);
         try {
-            tProperty.setText(FilterUtil.getGroupProperty(element.getNode(), "", service));
-            cFirst.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_FIRST, ""));
-            cFirstText.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_FIRST_TXT, ""));
-            cSecRel.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND_REL, ""));
-            cSecond.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND, ""));
-            cSecondText.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND_TXT, ""));
+            tProperty.setText(FilterUtil.getGroupProperty(element.getNode(), "", service)); //$NON-NLS-1$
+            cFirst.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_FIRST, "")); //$NON-NLS-1$
+            cFirstText.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_FIRST_TXT, "")); //$NON-NLS-1$
+            cSecRel.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND_REL, "")); //$NON-NLS-1$
+            cSecond.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND, "")); //$NON-NLS-1$
+            cSecondText.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND_TXT, "")); //$NON-NLS-1$
         } finally {
             NeoUtils.finishTx(tx);
         }
-        groupFrame.setVisible(false);
         filterFrame.setVisible(true);
     }
 
@@ -626,8 +852,8 @@ public class FilterView extends ViewPart {
         rootTree = element;
         Transaction tx = NeoUtils.beginTx(service);
         try {
-            tGroupName.setText(NeoUtils.getSimpleNodeName(rootTree.getNode(), ""));
-            cProperty.setText(FilterUtil.getGroupProperty(rootTree.getNode(), "", service));
+            tGroupName.setText(NeoUtils.getSimpleNodeName(rootTree.getNode(), "")); //$NON-NLS-1$
+            cProperty.setText(FilterUtil.getGroupProperty(rootTree.getNode(), "", service)); //$NON-NLS-1$
         } finally {
             NeoUtils.finishTx(tx);
         }
@@ -638,7 +864,7 @@ public class FilterView extends ViewPart {
      * @return
      */
     private Node getFileRootNode() {
-        Job job = new Job("find root node") {
+        Job job = new Job(Messages.FilterView_24) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -657,7 +883,7 @@ public class FilterView extends ViewPart {
     }
 
     private void hookContextMenu() {
-        MenuManager menuMgr = new MenuManager("#PopupMenu");
+        MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
         menuMgr.setRemoveAllWhenShown(true);
         menuMgr.addMenuListener(new IMenuListener() {
             public void menuAboutToShow(IMenuManager manager) {
@@ -688,6 +914,9 @@ public class FilterView extends ViewPart {
         if (addGroupAction.isEnabled()) {
             manager.add(addGroupAction);
         }
+        if (addChainFilterAction.isEnabled()) {
+            manager.add(addChainFilterAction);
+        }
         if (addFilterAction.isEnabled()) {
             manager.add(addFilterAction);
         }
@@ -710,6 +939,7 @@ public class FilterView extends ViewPart {
      */
     private void updateActions() {
         addGroupAction.setEnabled(addGroupAction.isAcionEnable());
+        addChainFilterAction.setEnabled(addChainFilterAction.isAcionEnable());
         addFilterAction.setEnabled(addFilterAction.isAcionEnable());
         deleteAction.setEnabled(deleteAction.isAcionEnable());
         clearFiltr.setEnabled(clearFiltr.isAcionEnable());
@@ -717,8 +947,10 @@ public class FilterView extends ViewPart {
     }
 
     private void fillLocalToolBar(IToolBarManager manager) {
-        manager.add(addGroupAction);
         manager.add(addFilterAction);
+        manager.add(addChainFilterAction);
+        manager.add(new Separator());
+        manager.add(addGroupAction);
         manager.add(new Separator());
         manager.add(assignFiltr);
         manager.add(clearFiltr);
@@ -734,6 +966,7 @@ public class FilterView extends ViewPart {
         deleteAction = new DeleteAction();
         clearFiltr = new ClearFilter();
         assignFiltr = new AssignFilter();
+        addChainFilterAction = new AddChainFilterAction();
     }
 
     /**
@@ -741,7 +974,7 @@ public class FilterView extends ViewPart {
      * @return
      */
     protected void createAndSelectNewGroup(final TreeNeoNode nodeTree) {
-        Job job = new Job("create group") {
+        Job job = new Job(Messages.FilterView_26) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -750,7 +983,7 @@ public class FilterView extends ViewPart {
                 try {
                     node = service.createNode();
                     NodeTypes.FILTER_GROUP.setNodeType(node, service);
-                    NeoUtils.setNodeName(node, "New Group", service);
+                    NeoUtils.setNodeName(node, Messages.FilterView_27, service);
                     NeoUtils.addChild(nodeTree.getNode(), node, null, service);
                     NeoUtils.successTx(tx);
                 } finally {
@@ -779,7 +1012,7 @@ public class FilterView extends ViewPart {
     }
 
     private void showMessage(String message) {
-        MessageDialog.openInformation(viewer.getControl().getShell(), "Filters", message);
+        MessageDialog.openInformation(viewer.getControl().getShell(), Messages.FilterView_28, message);
     }
 
     /**
@@ -790,15 +1023,20 @@ public class FilterView extends ViewPart {
         viewer.getControl().setFocus();
     }
 
+    /**
+     * <p>
+     * Add filter action
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
     public class AddFilterAction extends Action {
         private TreeNeoNode node;
 
-        /**
-     * 
-     */
         public AddFilterAction() {
-            setText("Add Filter");
-            setToolTipText("Add new filter");
+            setText(Messages.FilterView_29);
+            setToolTipText(Messages.FilterView_30);
             setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 
         }
@@ -827,14 +1065,22 @@ public class FilterView extends ViewPart {
 
     }
 
+    /**
+     * <p>
+     * Delete filter action
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
     public class DeleteAction extends Action {
         /**
          * 
          */
         public DeleteAction() {
-            setText("Delete");
-            setToolTipText("Delete filter");
-            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+            setText(Messages.FilterView_31);
+            setToolTipText(Messages.FilterView_32);
+            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
 
         }
 
@@ -864,32 +1110,38 @@ public class FilterView extends ViewPart {
 
     }
 
+    /**
+     * <p>
+     * Assign filter action
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
     public class AssignFilter extends Action {
-        /**
-         * 
-         */
+
         public AssignFilter() {
-            setText("Assign filter");
-            setToolTipText("Add filter to selected data");
+            setText(Messages.FilterView_33);
+            setToolTipText(Messages.FilterView_34);
             setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-            
+
         }
-        
+
         private Node dataNode;
         private Node filterNode;
-        
+
         @Override
         public void run() {
             if (isAcionEnable()) {
-                setFilter(dataNode,filterNode);
+                setFilter(dataNode, filterNode);
             } else {
                 this.setEnabled(false);
             }
         }
-        
+
         public boolean isAcionEnable() {
-            dataNode=dataMap.get(cGis.getText());
-            if (dataNode==null){
+            dataNode = dataMap.get(cGis.getText());
+            if (dataNode == null) {
                 return false;
             }
             IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
@@ -901,24 +1153,31 @@ public class FilterView extends ViewPart {
                 return false;
             }
             TreeNeoNode node = (TreeNeoNode)element;
-            filterNode=node.getNode();
+            filterNode = node.getNode();
             return node.getType() != NodeTypes.FILTER_ROOT;
         }
-        
+
     }
+
+    /**
+     * <p>
+     * Clear filter action
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
     public class ClearFilter extends Action {
-        /**
-         * 
-         */
+
         public ClearFilter() {
-            setText("Clear filter");
-            setToolTipText("Clear filter");
+            setText(Messages.FilterView_35);
+            setToolTipText(Messages.FilterView_36);
             setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-            
+
         }
-        
+
         private Node dataNode;
-        
+
         @Override
         public void run() {
             if (isAcionEnable()) {
@@ -927,28 +1186,37 @@ public class FilterView extends ViewPart {
                 this.setEnabled(false);
             }
         }
-        
+
         public boolean isAcionEnable() {
-            dataNode=dataMap.get(cGis.getText());
-            if (dataNode==null){
+            dataNode = dataMap.get(cGis.getText());
+            if (dataNode == null) {
                 return false;
             }
             Transaction tx = NeoUtils.beginTx(service);
-            try{
-                return dataNode.hasRelationship(GeoNeoRelationshipTypes.USE_FILTER,Direction.OUTGOING);
-            }finally{
+            try {
+                return dataNode.hasRelationship(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING);
+            } finally {
                 tx.finish();
             }
         }
-        
+
     }
+
+    /**
+     * <p>
+     * Add group action
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
     public class AddGroupAction extends Action {
         /**
          * 
          */
         public AddGroupAction() {
-            setText("Add Group");
-            setToolTipText("Add new group");
+            setText(Messages.FilterView_37);
+            setToolTipText(Messages.FilterView_38);
             setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 
         }
@@ -980,10 +1248,54 @@ public class FilterView extends ViewPart {
     }
 
     /**
+     * <p>
+     * Add chain filter action
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
+    public class AddChainFilterAction extends Action {
+
+        public AddChainFilterAction() {
+            setText(Messages.FilterView_0);
+            setToolTipText(Messages.FilterView_11);
+            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+        }
+
+        private TreeNeoNode node;
+
+        @Override
+        public void run() {
+            if (isAcionEnable()) {
+                createAndSelectNewFilterChain(node);
+
+            } else {
+                this.setEnabled(false);
+            }
+        }
+
+        public boolean isAcionEnable() {
+            IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+            if (selection.size() != 1) {
+                return false;
+            }
+            Object element = (selection).getFirstElement();
+            if (!(element instanceof TreeNeoNode)) {
+                return false;
+            }
+            node = (TreeNeoNode)element;
+            return node.getType() != NodeTypes.FILTER;
+
+        }
+
+    }
+
+    /**
      * @param node
      */
     public void createAndSelectNewFilter(final TreeNeoNode nodeTree) {
-        Job job = new Job("create filter") {
+        Job job = new Job(Messages.FilterView_39) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -992,10 +1304,9 @@ public class FilterView extends ViewPart {
                 try {
                     node = service.createNode();
                     NodeTypes.FILTER.setNodeType(node, service);
-                    NeoUtils.setNodeName(node, FilterUtil.getGroupProperty(nodeTree.getNode(), "", service), service);
-                    node.setProperty(FilterUtil.PROPERTY_FILTERED_NAME, FilterUtil.getGroupProperty(nodeTree.getNode(), "", service));
+                    NeoUtils.setNodeName(node, FilterUtil.getGroupProperty(nodeTree.getNode(), "", service), service); //$NON-NLS-1$
+                    node.setProperty(FilterUtil.PROPERTY_FILTERED_NAME, FilterUtil.getGroupProperty(nodeTree.getNode(), "", service)); //$NON-NLS-1$
                     NeoUtils.addChild(nodeTree.getNode(), node, null, service);
-                    FilterUtil.setFilterValid(node, false, service);
                     NeoUtils.successTx(tx);
                 } finally {
                     NeoUtils.finishTx(tx);
@@ -1016,23 +1327,58 @@ public class FilterView extends ViewPart {
     }
 
     /**
-     *
-     * @param dataNode
-     * @param filterNode
+     * @param node
      */
-    public void setFilter(final Node dataNode, final Node filterNode) {
-        Job job=new Job("remove filter") {
-            
+    public void createAndSelectNewFilterChain(final TreeNeoNode nodeTree) {
+        Job job = new Job(Messages.FilterView_26) {
+
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoUtils.beginTx(service);
-                try{
-                    for (Relationship relation:dataNode.getRelationships(GeoNeoRelationshipTypes.USE_FILTER,Direction.OUTGOING)){
+                final Node node;
+                try {
+                    node = service.createNode();
+                    NodeTypes.FILTER_CHAIN.setNodeType(node, service);
+                    NeoUtils.setNodeName(node, Messages.FilterView_16, service);
+                    NeoUtils.addChild(nodeTree.getNode(), node, null, service);
+                    NeoUtils.successTx(tx);
+                } finally {
+                    NeoUtils.finishTx(tx);
+                }
+                ActionUtil.getInstance().runTask(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        viewer.refresh(nodeTree);
+                        viewer.setSelection(new StructuredSelection(new Object[] {new TreeNeoNode(node)}), true);
+                    }
+                }, true);
+                return Status.OK_STATUS;
+            }
+
+        };
+        job.schedule();
+    }
+
+    /**
+     * assign filter to data
+     * 
+     * @param dataNode - data node
+     * @param filterNode -filter
+     */
+    public void setFilter(final Node dataNode, final Node filterNode) {
+        Job job = new Job(Messages.FilterView_42) {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                Transaction tx = NeoUtils.beginTx(service);
+                try {
+                    for (Relationship relation : dataNode.getRelationships(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING)) {
                         relation.delete();
                     }
                     dataNode.createRelationshipTo(filterNode, GeoNeoRelationshipTypes.USE_FILTER);
                     tx.success();
-                }finally{
+                } finally {
                     tx.finish();
                 }
                 return Status.OK_STATUS;
@@ -1043,27 +1389,28 @@ public class FilterView extends ViewPart {
             job.join();
         } catch (InterruptedException e) {
             // TODO Handle InterruptedException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
         updateGisFilter();
     }
 
     /**
-     *
-     * @param dataNode
+     * remove assign data to filter
+     * 
+     * @param dataNode - data node
      */
     public void clearFilter(final Node dataNode) {
-        Job job=new Job("remove filter") {
-            
+        Job job = new Job(Messages.FilterView_42) {
+
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoUtils.beginTx(service);
-                try{
-                    for (Relationship relation:dataNode.getRelationships(GeoNeoRelationshipTypes.USE_FILTER,Direction.OUTGOING)){
+                try {
+                    for (Relationship relation : dataNode.getRelationships(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING)) {
                         relation.delete();
                     }
                     tx.success();
-                }finally{
+                } finally {
                     tx.finish();
                 }
                 return Status.OK_STATUS;
@@ -1074,29 +1421,29 @@ public class FilterView extends ViewPart {
             job.join();
         } catch (InterruptedException e) {
             // TODO Handle InterruptedException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
         updateGisFilter();
     }
 
     /**
-     *
+     *update data
      */
     private void updateGisFilter() {
-        Node data=dataMap.get(cGis.getText());
+        Node data = dataMap.get(cGis.getText());
         String result;
-        if (data==null){
-            result="";
-        }else{
+        if (data == null) {
+            result = ""; //$NON-NLS-1$
+        } else {
             Transaction tx = NeoUtils.beginTx(service);
-            try{
-                Relationship relation = data.getSingleRelationship(GeoNeoRelationshipTypes.USE_FILTER,Direction.OUTGOING);
-                if (relation==null){
-                    result="";
-                }else{
-                    result=AbstractFilter.getInstance(relation.getOtherNode(data), service).toString();
+            try {
+                Relationship relation = data.getSingleRelationship(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING);
+                if (relation == null) {
+                    result = ""; //$NON-NLS-1$
+                } else {
+                    result = AbstractFilter.getInstance(relation.getOtherNode(data), service).toString();
                 }
-            }finally{
+            } finally {
                 tx.finish();
             }
         }
@@ -1105,35 +1452,43 @@ public class FilterView extends ViewPart {
     }
 
     /**
-     * @param node
+     * delete filter
+     * 
+     * @param node - filter to delete
      */
     public void deleteNode(final TreeNeoNode node) {
+        viewer.remove(node);
         viewer.getControl().setEnabled(false);
-        Job job=new Job("delete node"){
+        Job job = new Job(Messages.FilterView_46) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                try{
-                NodeDeletingManager manager=new NodeDeletingManager(service);
-                manager.deleteNode(node.getNode());
-                } catch (IllegalAccessException e) {
-                    // TODO Handle IllegalAccessException
-                    throw (RuntimeException) new RuntimeException( ).initCause( e );
-                }finally{
-                ActionUtil.getInstance().runTask(new Runnable() {
+                try {
+                    Transaction tx = NeoUtils.beginTx(service);
+                    try {
 
-                    @Override
-                    public void run() {
-                        viewer.refresh();
-                        viewer.getControl().setEnabled(true );
+                        // TODO use manager
+                        // NodeDeletingManager deleteManager = new NodeDeletingManager(service);
+                        // deleteManager.deleteNode(node.getNode());
+                        // } catch (IllegalAccessException e) {
+                        // throw (RuntimeException)new RuntimeException().initCause(e);
+                        NeoUtils.successTx(tx);
+                    } finally {
+                        NeoUtils.finishTx(tx);
                     }
-                }, true);
+                } finally {
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            viewer.getControl().setEnabled(true);
+                        }
+                    }, true);
                 }
                 return Status.OK_STATUS;
             }
         };
         job.schedule();
-        
-        
+
     }
 }

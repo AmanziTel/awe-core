@@ -21,8 +21,8 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
 
 /**
- * TODO Purpose of
  * <p>
+ * Single filter
  * </p>
  * 
  * @author Tsinkel_A
@@ -39,7 +39,10 @@ public class Filter extends AbstractFilter {
     private boolean isValid;
 
     /**
+     * constructor
      * 
+     * @param node filter node
+     * @param service - NeoService
      */
     protected Filter(Node node, NeoService service) {
         super(node, service);
@@ -96,6 +99,11 @@ public class Filter extends AbstractFilter {
         }
     }
 
+    /**
+     * validate filter
+     * 
+     * @return true if filter valid
+     */
     public boolean validateFilter() {
         return !property.isEmpty() && !first.isEmpty() && !firstTXT.isEmpty();
 
@@ -114,68 +122,75 @@ public class Filter extends AbstractFilter {
         if (!isValid()) {
             return falseResult;
         }
-        boolean result = getResult(value,first, firstTXT);
+        boolean result = getResult(value, first, firstTXT);
         if (!isValid) {
             return falseResult;
         }
         if (secondRel.equals("&&")) {
-            result = result && getResult(value,second, secondTXT);
+            result = result && getResult(value, second, secondTXT);
         } else if ("||".equals(secondRel)) {
-            result = result || getResult(value,second, secondTXT);
+            result = result || getResult(value, second, secondTXT);
         }
-        return new FilterResult(result&&isValid(), false, -1, -1, null);
+        return new FilterResult(result && isValid(), false, -1, -1, null);
     }
 
     /**
-     * @param value2 
-     * @param first2
-     * @param firstTXT2
-     * @return
+     * get result of comparing
+     * 
+     * @param value - value
+     * @param condition - condition
+     * @param comparedValue - compared Value
+     * @return result of comparing
      */
-    private boolean getResult(Object value, String def, String comparedValue) {
-        if (def.isEmpty()){
+    private boolean getResult(Object value, String condition, String comparedValue) {
+        if (condition.isEmpty()) {
             return comparedValue.isEmpty();
         }
-        if (value instanceof Number){
-            Double value1=((Number)value).doubleValue();
-           try {
-            Double value2 = Double.parseDouble(comparedValue);
-            if ("<".equals(def)){
-                return value1.compareTo(value2)<0;
-            }else if ("<=".equals(def)){
-                return value1.compareTo(value2)<=0;
-            }else if ("<=".equals(def)){
-                return value1.compareTo(value2)<=0;
-            }else if ("==".equals(def)){
-                return value1.compareTo(value2)==0;
-            }else if (">".equals(def)){
-                return value1.compareTo(value2)>0;
-            }else if (">=".equals(def)){
-                return value1.compareTo(value2)>=0;
-            }else if ("!=".equals(def)){
-                return value1.compareTo(value2)!=0;
-            }else {
-                isValid=false;
-                return false;                  
+        if (value instanceof Number) {
+            Double value1 = ((Number)value).doubleValue();
+            try {
+                Double value2 = Double.parseDouble(comparedValue);
+                if ("<".equals(condition)) {
+                    return value1.compareTo(value2) < 0;
+                } else if ("<=".equals(condition)) {
+                    return value1.compareTo(value2) <= 0;
+                } else if ("<=".equals(condition)) {
+                    return value1.compareTo(value2) <= 0;
+                } else if ("==".equals(condition)) {
+                    return value1.compareTo(value2) == 0;
+                } else if (">".equals(condition)) {
+                    return value1.compareTo(value2) > 0;
+                } else if (">=".equals(condition)) {
+                    return value1.compareTo(value2) >= 0;
+                } else if ("!=".equals(condition)) {
+                    return value1.compareTo(value2) != 0;
+                } else {
+                    isValid = false;
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                isValid = false;
+                return false;
             }
-        } catch (NumberFormatException e) {
-            isValid=false;
-            return false;        }
-           
-        }else if (value instanceof String){
-            String value1=(String)value;
-            if ("==".equals(def)){
-                return value1.equals(comparedValue);  
-            }else if ("!=".equals(def)){
-                return !value1.equals(comparedValue);   
-            }else{
-                isValid=false;
-                return false;               
+
+        } else if (value instanceof String) {
+            String value1 = (String)value;
+            if ("==".equals(condition)) {
+                return value1.equals(comparedValue);
+            } else if ("!=".equals(condition)) {
+                return !value1.equals(comparedValue);
+            } else {
+                isValid = false;
+                return false;
             }
-        }else{
-            isValid=false;
+        } else {
+            isValid = false;
             return false;
         }
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s: %s%s %s %s%s", property, first, firstTXT, secondRel, second, secondTXT).trim();
+    }
 }

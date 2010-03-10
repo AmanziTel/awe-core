@@ -19,26 +19,36 @@ import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.ReturnableEvaluator;
+import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
+import org.neo4j.api.core.TraversalPosition;
+import org.neo4j.api.core.Traverser;
+import org.neo4j.api.core.Traverser.Order;
 
 /**
  * <p>
+ * Utility class
  * </p>
  * 
- * @author Дом
+ * @author Tsinkel_A
  * @since 1.0.0
  */
 public class FilterUtil {
+    /**
+     * hide constructor
+     */
     private FilterUtil() {
     }
 
     public static final String PROPERTY_FILTERED_NAME = "filter_property";
-    public static final String PROPERTY_FILTERED_VALID = "valid";
+//    public static final String PROPERTY_FILTERED_VALID = "valid";
     public static final String PROPERTY_FIRST = "first";
     public static final String PROPERTY_SECOND = "second";
     public static final String PROPERTY_FIRST_TXT = "firstTXT";
     public static final String PROPERTY_SECOND_REL = "second_rel";
     public static final String PROPERTY_SECOND_TXT = "secondTXT";
+    public static final String PROPERTY_ORDER = "order";
 
     public static String getGroupProperty(Node node, String defValue, NeoService service) {
         Transaction tx = NeoUtils.beginTx(service);
@@ -78,20 +88,6 @@ public class FilterUtil {
     }
 
     /**
-     * @param node
-     * @param isValid
-     * @param service
-     */
-    public static void setFilterValid(Node node, Boolean isValid, NeoService service) {
-        Transaction tx = NeoUtils.beginTx(service);
-        try {
-            node.setProperty(PROPERTY_FILTERED_VALID, isValid);
-        } finally {
-            NeoUtils.finishTx(tx);
-        }
-    }
-
-    /**
      * @param dataNode
      * @param service
      * @return
@@ -110,16 +106,26 @@ public class FilterUtil {
     }
 
     /**
-     * @param node
-     * @param isValid
-     * @param service
+     * get data node traverser of filter
+     * @param filterNode - filter node
+     * @return
      */
-    public static Boolean isFilterValid(Node node, NeoService service) {
-        Transaction tx = NeoUtils.beginTx(service);
-        try {
-            return (Boolean)node.getProperty(PROPERTY_FILTERED_VALID, false);
-        } finally {
-            NeoUtils.finishTx(tx);
-        }
+    public static Traverser getDataNodesOfFilter(Node filterNode) {
+        return filterNode.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+            
+            @Override
+            public boolean isStopNode(TraversalPosition currentPos) {
+                Relationship rel = currentPos.lastRelationshipTraversed();
+                return rel!=null&&rel.isType(GeoNeoRelationshipTypes.USE_FILTER);
+            }
+        },new ReturnableEvaluator() {
+            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Relationship rel = currentPos.lastRelationshipTraversed();
+                return rel!=null&&rel.isType(GeoNeoRelationshipTypes.USE_FILTER);
+            }
+        },GeoNeoRelationshipTypes.CHILD,Direction.INCOMING,GeoNeoRelationshipTypes.NEXT,Direction.INCOMING,GeoNeoRelationshipTypes.USE_FILTER,Direction.INCOMING);
     }
+
 }

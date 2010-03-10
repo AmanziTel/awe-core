@@ -210,8 +210,7 @@ public class NetworkRenderer extends RendererImpl {
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             System.out.println("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
             filterSectors = FilterUtil.getFilterOfData(geoNeo.getMainGisNode(), neo);
-            // TODO add
-            filterSites = null;
+            filterSites = FilterUtil.getFilterOfData(geoNeo.getMainGisNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(geoNeo.getMainGisNode()), neo);
             String starProperty = getSelectProperty(geoNeo);
             Pair<Point, Long> starPoint = getStarPoint();
             Node starNode = null;

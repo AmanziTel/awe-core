@@ -22,6 +22,7 @@ import org.neo4j.api.core.Traverser;
 
 /**
  * <p>
+ * Abstract filter
  * </p>
  * 
  * @author Tsinkel_A
@@ -33,32 +34,35 @@ public abstract class AbstractFilter {
     protected NodeTypes type;
     protected NeoService service;
 
-    public static AbstractFilter getInstance(Node node, NeoService service){
+    public static AbstractFilter getInstance(Node node, NeoService service) {
         Transaction tx = NeoUtils.beginTx(service);
-        try{
-            NodeTypes nodeType = NodeTypes.getNodeType(node, service); 
+        try {
+            NodeTypes nodeType = NodeTypes.getNodeType(node, service);
             switch (nodeType) {
             case FILTER:
-                return new Filter(node,service);
+                return new Filter(node, service);
             case FILTER_GROUP:
                 return new GroupFilter(node, service);
+            case FILTER_CHAIN:
+                return new FilterChain(node, service);
             default:
                 return null;
             }
-        }finally{
+        } finally {
             NeoUtils.finishTx(tx);
         }
     }
+
     /**
+     * Constructor
      * 
+     * @param node - filter node
+     * @param service - NeoService
      */
     protected AbstractFilter(Node node, NeoService service) {
-        Transaction tx = NeoUtils.beginTx(service);
-            this.node = node;
-            this.service = service;
-            name = NeoUtils.getSimpleNodeName(node, "", service);
-
-
+        this.node = node;
+        this.service = service;
+        name = NeoUtils.getSimpleNodeName(node, "", service);
     }
 
     /**
@@ -68,11 +72,37 @@ public abstract class AbstractFilter {
         this.service = service;
     }
 
-    public boolean isGroup() {
-        return type == NodeTypes.FILTER_GROUP;
-    }
+//    /**
+//     * is group filter?
+//     * 
+//     * @return
+//     */
+//    public boolean isGroup() {
+//        return type == NodeTypes.FILTER_GROUP;
+//    }
+
+    /**
+     * get result of filtering
+     * 
+     * @param node - node to filter
+     * @return FilterResult
+     */
     public abstract FilterResult filterNode(Node node);
+
+    /**
+     * get result of filtering
+     * 
+     * @param value value to filter
+     * @return FilterResult
+     */
     public abstract FilterResult filterNode(Object value);
+
+    /**
+     * get result of filtering
+     * 
+     * @param traverser traverser to filter - if one of traversed node is valid the result is valid
+     * @return FilterResult
+     */
     public abstract FilterResult filterNodesByTraverser(Traverser traverser);
 
 }

@@ -23,8 +23,8 @@ import org.neo4j.api.core.Transaction;
 import org.neo4j.api.core.Traverser;
 
 /**
- * TODO Purpose of
  * <p>
+ * Group filter
  * </p>
  * 
  * @author Tsinkel_A
@@ -84,5 +84,8 @@ public class GroupFilter extends AbstractFilter {
             }
             return new FilterResult(false, true, -1, subfilters.size(), null);
     }
-
+@Override
+public String toString() {
+    return String.format("Group %s",name);
+}
 }

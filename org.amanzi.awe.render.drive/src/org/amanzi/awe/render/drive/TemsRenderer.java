@@ -38,6 +38,8 @@ import net.refractions.udig.ui.PlatformGIS;
 import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
+import org.amanzi.awe.filters.AbstractFilter;
+import org.amanzi.awe.filters.FilterUtil;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
@@ -105,8 +107,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private static final Color COLOR_HIGHLIGHTED = Color.CYAN;;
     private static final Color COLOR_HIGHLIGHTED_SELECTED = Color.RED;
     private static final Color FADE_LINE = new Color(127, 127, 127, 127);
+    private AbstractFilter filterMp;
 
-    private LuceneIndexService index;
+    private final LuceneIndexService index;
     private boolean notMpLabel;
 
     private static int getIconSize(int size) {
@@ -253,6 +256,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     networkGeoNeo.add(network);
                 }
             }
+            filterMp = FilterUtil.getFilterOfData(geoNeo.getMainGisNode(), neo);
             // String selectedProp = geoNeo.getPropertyName();
             aggNode = geoNeo.getAggrNode();
             Map<String, Object> selectionMap = getSelectionMap(geoNeo);
@@ -411,6 +415,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
                     continue; // Don't draw points outside viewport
                 }
+                if (filterMp != null) {
+                    if (!filterMp.filterNodesByTraverser(node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)).isValid()) {
+                        continue;
+                    }
+                }
                 try {
                     JTS.transform(location, world_location, transform_d2w);
                 } catch (Exception e) {
@@ -430,6 +439,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             prev_p = null;// else we do not show selected node
             // Now draw the actual points
             for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
+                if (filterMp != null) {
+                    if (!filterMp.filterNodesByTraverser(node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)).isValid()) {
+                        continue;
+                    }
+                }
                 if (enableIndexRendering && indexNode == null) {
                     indexNode = getIndexNode(node);
                 }
