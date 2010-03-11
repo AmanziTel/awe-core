@@ -3,14 +3,10 @@
 <plugin>
   <extension
          point="org.eclipse.ui.views">
-      <category
-            name="org.amanzi.awe.script"
-            id="org.amanzi.awe.filters.views.FilterView">
-      </category>
       <view
             name="Filters"
-            icon="icons/sample.gif"
-            category="org.amanzi.awe.filters.views.FilterView"
+            icon="icons/filter.gif"
+            category="org.amanzi.awe.script"
             class="org.amanzi.awe.filters.views.FilterView"
             id="org.amanzi.awe.filters.views.FilterView">
       </view>
