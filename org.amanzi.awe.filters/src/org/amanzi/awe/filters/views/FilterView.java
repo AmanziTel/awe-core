@@ -21,6 +21,7 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
+import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.filters.AbstractFilter;
@@ -28,12 +29,15 @@ import org.amanzi.awe.filters.ChainRule;
 import org.amanzi.awe.filters.FilterUtil;
 import org.amanzi.awe.filters.tree.TreeNeoNode;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -45,6 +49,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -64,6 +69,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -108,6 +114,8 @@ public class FilterView extends ViewPart {
      */
     public static final String ID = "org.amanzi.awe.filters.views.FilterView"; //$NON-NLS-1$
 
+    private static final RGB DEFAULT_COLOR = new RGB(0, 0, 0);
+
     private TreeViewer viewer;
     private DrillDownAdapter drillDownAdapter;
     private AddGroupAction addGroupAction;
@@ -122,13 +130,13 @@ public class FilterView extends ViewPart {
 
     private Text tGroupName;
 
-    private Text cProperty;
+    private Combo cGroupProperty;
 
     private Button bGroupOk;
 
     private Button bGroupCancel;
 
-    private Text tProperty;
+    private Combo cFilterProperty;
 
     private Button bFilterOk;
 
@@ -152,8 +160,6 @@ public class FilterView extends ViewPart {
 
     private Text tGisFilter;
 
-    private Button bClearFilter;
-
     private final LinkedHashMap<String, Node> dataMap;
 
     private ClearFilter clearFiltr;
@@ -171,6 +177,14 @@ public class FilterView extends ViewPart {
     private Button bFilterChainOk;
 
     private Button bFilterChainCancel;
+
+    private ColorEditor filterColorEditor;
+
+    private Label filterColorEditorLabel;
+
+    private Label chainColorEditorLabel;
+
+    private ColorEditor chainColorEditor;
 
     /**
      * <p>
@@ -258,6 +272,14 @@ public class FilterView extends ViewPart {
             if (obj instanceof TreeNeoNode && ((TreeNeoNode)obj).getType() != NodeTypes.FILTER) {
                 imageKey = ISharedImages.IMG_OBJ_FOLDER;
             }
+            if (obj instanceof TreeNeoNode) {
+                TreeNeoNode element = (TreeNeoNode)obj;
+                element.formColorImage(service);
+                Image image = element.getImage();
+                if  (image!=null){
+                    return image;
+                }
+            }
             return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
         }
     }
@@ -321,7 +343,6 @@ public class FilterView extends ViewPart {
         layoutData.bottom = new FormAttachment(100, -2);
         filterChainFrame.setLayoutData(layoutData);
         filterChainFrame.setLayout(new GridLayout(2, false));
-
         filterFrame = new Group(parent, SWT.NONE);
         filterFrame.setLayout(new GridLayout(3, false));
         layoutData = new FormData();
@@ -334,6 +355,7 @@ public class FilterView extends ViewPart {
         viewer.setContentProvider(new ViewContentProvider());
         viewer.setLabelProvider(new ViewLabelProvider());
         viewer.setInput(service.getReferenceNode());
+
         // group frame
         label = new Label(groupFrame, SWT.NONE);
         label.setText(Messages.FilterView_3);
@@ -341,8 +363,8 @@ public class FilterView extends ViewPart {
         tGroupName.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
         label = new Label(groupFrame, SWT.NONE);
         label.setText(Messages.FilterView_4);
-        cProperty = new Text(groupFrame, SWT.BORDER);
-        cProperty.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
+        cGroupProperty = new Combo(groupFrame, SWT.BORDER | SWT.DROP_DOWN);
+        cGroupProperty.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
         Composite rowFrame = new Composite(groupFrame, SWT.FILL);
         rowFrame.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
         rowFrame.setLayout(new GridLayout(2, true));
@@ -363,6 +385,11 @@ public class FilterView extends ViewPart {
         cRule = new Combo(filterChainFrame, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         cRule.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
         fillRuleCombo();
+        chainColorEditorLabel = new Label(filterChainFrame, SWT.NONE);
+        chainColorEditorLabel.setText(Messages.FilterView_19);
+        chainColorEditor = new ColorEditor(filterChainFrame);
+        chainColorEditor.getButton().setVisible(false);
+        chainColorEditorLabel.setVisible(false);
         rowFrame = new Composite(filterChainFrame, SWT.FILL);
         rowFrame.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
         rowFrame.setLayout(new GridLayout(2, true));
@@ -376,8 +403,8 @@ public class FilterView extends ViewPart {
         // filter frame
         label = new Label(filterFrame, SWT.NONE);
         label.setText(Messages.FilterView_7);
-        tProperty = new Text(filterFrame, SWT.BORDER);
-        tProperty.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
+        cFilterProperty = new Combo(filterFrame, SWT.BORDER | SWT.DROP_DOWN);
+        cFilterProperty.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
         label = new Label(filterFrame, SWT.NONE);
         label.setText(Messages.FilterView_8);
         cFirst = new Combo(filterFrame, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -390,6 +417,11 @@ public class FilterView extends ViewPart {
         cSecond.setItems(getFilters());
         cSecondText = new Text(filterFrame, SWT.BORDER);
         cSecondText.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
+        filterColorEditorLabel = new Label(filterFrame, SWT.NONE);
+        filterColorEditorLabel.setText(Messages.FilterView_19);
+        filterColorEditor = new ColorEditor(filterFrame);
+        filterColorEditor.getButton().setVisible(false);
+        filterColorEditorLabel.setVisible(false);
         rowFrame = new Composite(filterFrame, SWT.FILL);
         rowFrame.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 3, 1));
         rowFrame.setLayout(new GridLayout(2, true));
@@ -501,7 +533,7 @@ public class FilterView extends ViewPart {
                 viewer.getControl().setEnabled(false);
             }
         });
-        cProperty.addFocusListener(new FocusListener() {
+        cGroupProperty.addFocusListener(new FocusListener() {
 
             @Override
             public void focusLost(FocusEvent e) {
@@ -518,7 +550,7 @@ public class FilterView extends ViewPart {
             public void modifyText(ModifyEvent e) {
             }
         });
-        cProperty.addModifyListener(new ModifyListener() {
+        cGroupProperty.addModifyListener(new ModifyListener() {
 
             @Override
             public void modifyText(ModifyEvent e) {
@@ -610,7 +642,9 @@ public class FilterView extends ViewPart {
                 viewer.getControl().setEnabled(false);
             }
         };
-        tProperty.addFocusListener(listener);
+        filterColorEditor.getButton().addFocusListener(listener);
+        chainColorEditor.getButton().addFocusListener(listener);
+        cFilterProperty.addFocusListener(listener);
         cFirst.addFocusListener(listener);
         cFirstText.addFocusListener(listener);
         cSecond.addFocusListener(listener);
@@ -680,7 +714,7 @@ public class FilterView extends ViewPart {
                         GeoNeo geo = resourse.resolve(GeoNeo.class, null);
                         if (gis != null && geo.getMainGisNode().equals(gis)) {
                             layer.refresh(null);
-                        } 
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -700,6 +734,15 @@ public class FilterView extends ViewPart {
         try {
             tFilterChainName.setText(NeoUtils.getSimpleNodeName(rootTree.getNode(), "")); //$NON-NLS-1$)
             cRule.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_ORDER, "")); //$NON-NLS-1$
+            final TreeNeoNode parent = element.getParent(service);
+            if (parent != null && parent.getType() == NodeTypes.FILTER_GROUP) {
+                chainColorEditor.setColorValue(getColor(FilterUtil.PROPERTY_FILTER_COLOR, element.getNode(), DEFAULT_COLOR));
+                chainColorEditor.getButton().setVisible(true);
+                chainColorEditorLabel.setVisible(true);
+            } else {
+                chainColorEditor.getButton().setVisible(false);
+                chainColorEditorLabel.setVisible(false);
+            }
         } finally {
             NeoUtils.finishTx(tx);
         }
@@ -712,6 +755,12 @@ public class FilterView extends ViewPart {
     protected void saveFilterChain() {
         final String name = tFilterChainName.getText();
         final String rule = cRule.getText();
+        final RGB color;
+        if (rootTree.getParent(service).getType() == NodeTypes.FILTER_GROUP) {
+            color = chainColorEditor.getColorValue();
+        } else {
+            color = null;
+        }
         Job job = new Job(Messages.FilterView_15) {
 
             @Override
@@ -722,11 +771,12 @@ public class FilterView extends ViewPart {
                     Node node = rootTree.getNode();
                     NeoUtils.setNodeName(node, name, service);
                     node.setProperty(FilterUtil.PROPERTY_ORDER, rule);
+                    saveColor(node, FilterUtil.PROPERTY_FILTER_COLOR, color);
                     NeoUtils.successTx(tx);
                 } finally {
                     NeoUtils.finishTx(tx);
                 }
-                rootTree.refresh();
+                rootTree.refresh(service);
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
@@ -747,12 +797,18 @@ public class FilterView extends ViewPart {
      *
      */
     protected void saveFilter() {
-        final String property = tProperty.getText();
+        final String property = cFilterProperty.getText();
         final String first = cFirst.getText();
         final String firsttxt = cFirstText.getText();
         final String secondrel = cSecRel.getText();
         final String second = cSecond.getText();
         final String secontxt = cSecondText.getText();
+        final RGB color;
+        if (rootTree.getParent(service).getType() == NodeTypes.FILTER_GROUP) {
+            color = filterColorEditor.getColorValue();
+        } else {
+            color = null;
+        }
         Job job = new Job(Messages.FilterView_14) {
 
             @Override
@@ -768,11 +824,12 @@ public class FilterView extends ViewPart {
                     node.setProperty(FilterUtil.PROPERTY_SECOND_REL, secondrel);
                     node.setProperty(FilterUtil.PROPERTY_SECOND, second);
                     node.setProperty(FilterUtil.PROPERTY_SECOND_TXT, secontxt);
+                    saveColor(node, FilterUtil.PROPERTY_FILTER_COLOR, color);
                     NeoUtils.successTx(tx);
                 } finally {
                     NeoUtils.finishTx(tx);
                 }
-                rootTree.refresh();
+                rootTree.refresh(service);
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
@@ -794,7 +851,7 @@ public class FilterView extends ViewPart {
      */
     protected void saveGroup() {
         final String name = tGroupName.getText();
-        final String property = cProperty.getText();
+        final String property = cGroupProperty.getText();
         Job job = new Job(Messages.FilterView_15) {
 
             @Override
@@ -809,7 +866,7 @@ public class FilterView extends ViewPart {
                 } finally {
                     NeoUtils.finishTx(tx);
                 }
-                rootTree.refresh();
+                rootTree.refresh(service);
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
@@ -833,12 +890,21 @@ public class FilterView extends ViewPart {
         rootTree = element;
         Transaction tx = NeoUtils.beginTx(service);
         try {
-            tProperty.setText(FilterUtil.getGroupProperty(element.getNode(), "", service)); //$NON-NLS-1$
+            cFilterProperty.setText(FilterUtil.getGroupProperty(element.getNode(), "", service)); //$NON-NLS-1$
             cFirst.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_FIRST, "")); //$NON-NLS-1$
             cFirstText.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_FIRST_TXT, "")); //$NON-NLS-1$
             cSecRel.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND_REL, "")); //$NON-NLS-1$
             cSecond.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND, "")); //$NON-NLS-1$
             cSecondText.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND_TXT, "")); //$NON-NLS-1$
+            final TreeNeoNode parent = element.getParent(service);
+            if (parent != null && parent.getType() == NodeTypes.FILTER_GROUP) {
+                filterColorEditor.setColorValue(getColor(FilterUtil.PROPERTY_FILTER_COLOR, element.getNode(), DEFAULT_COLOR));
+                filterColorEditor.getButton().setVisible(true);
+                filterColorEditorLabel.setVisible(true);
+            } else {
+                filterColorEditor.getButton().setVisible(false);
+                filterColorEditorLabel.setVisible(false);
+            }
         } finally {
             NeoUtils.finishTx(tx);
         }
@@ -853,11 +919,50 @@ public class FilterView extends ViewPart {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             tGroupName.setText(NeoUtils.getSimpleNodeName(rootTree.getNode(), "")); //$NON-NLS-1$
-            cProperty.setText(FilterUtil.getGroupProperty(rootTree.getNode(), "", service)); //$NON-NLS-1$
+            cGroupProperty.setText(FilterUtil.getGroupProperty(rootTree.getNode(), "", service)); //$NON-NLS-1$
         } finally {
             NeoUtils.finishTx(tx);
         }
         groupFrame.setVisible(true);
+    }
+
+    /**
+     * Save color in database
+     * 
+     * @param node node
+     * @param property property name
+     * @param rgb color
+     */
+    private void saveColor(Node node, String property, RGB rgb) {
+        if (node == null || property == null) {
+            return;
+        }
+        if (rgb == null) {
+            node.removeProperty(property);
+        } else {
+            int[] array = new int[3];
+            array[0] = rgb.red;
+            array[1] = rgb.green;
+            array[2] = rgb.blue;
+            node.setProperty(property, array);
+        }
+    }
+
+    /**
+     * Gets color of right bar
+     * 
+     * @param aggrNode aggregation node
+     * @param defaultColor
+     * @return RGB
+     */
+    private RGB getColor(String property, Node aggrNode, RGB defaultColor) {
+        if (aggrNode != null) {
+            int[] colors = (int[])aggrNode.getProperty(property, null);
+            if (colors != null) {
+                return new RGB(colors[0], colors[1], colors[2]);
+            }
+        }
+        return defaultColor;
     }
 
     /**
@@ -1037,8 +1142,7 @@ public class FilterView extends ViewPart {
         public AddFilterAction() {
             setText(Messages.FilterView_29);
             setToolTipText(Messages.FilterView_30);
-            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-
+            setImageDescriptor(ImageDescriptor.createFromImage(IconManager.getIconManager().getImage("add_filter")));
         }
 
         @Override
@@ -1123,7 +1227,7 @@ public class FilterView extends ViewPart {
         public AssignFilter() {
             setText(Messages.FilterView_33);
             setToolTipText(Messages.FilterView_34);
-            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+            setImageDescriptor(ImageDescriptor.createFromImage(IconManager.getIconManager().getImage("assign_filter")));
 
         }
 
@@ -1172,7 +1276,7 @@ public class FilterView extends ViewPart {
         public ClearFilter() {
             setText(Messages.FilterView_35);
             setToolTipText(Messages.FilterView_36);
-            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+            setImageDescriptor(ImageDescriptor.createFromImage(IconManager.getIconManager().getImage("clear_filter")));
 
         }
 
@@ -1217,7 +1321,7 @@ public class FilterView extends ViewPart {
         public AddGroupAction() {
             setText(Messages.FilterView_37);
             setToolTipText(Messages.FilterView_38);
-            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+            setImageDescriptor(ImageDescriptor.createFromImage(IconManager.getIconManager().getImage("add_filter_group")));
 
         }
 
@@ -1260,7 +1364,7 @@ public class FilterView extends ViewPart {
         public AddChainFilterAction() {
             setText(Messages.FilterView_0);
             setToolTipText(Messages.FilterView_11);
-            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+            setImageDescriptor(ImageDescriptor.createFromImage(IconManager.getIconManager().getImage("add_filter_chain")));
         }
 
         private TreeNeoNode node;
@@ -1327,7 +1431,9 @@ public class FilterView extends ViewPart {
     }
 
     /**
-     * @param node
+     * Create new FilterChain
+     * 
+     * @param node - parent node
      */
     public void createAndSelectNewFilterChain(final TreeNeoNode nodeTree) {
         Job job = new Job(Messages.FilterView_26) {
@@ -1447,8 +1553,33 @@ public class FilterView extends ViewPart {
                 tx.finish();
             }
         }
+        updatePropertyHelp(data);
         updateActions();
         tGisFilter.setText(result);
+    }
+
+    /**
+     * Updates Property list
+     * 
+     * @param data
+     */
+    private void updatePropertyHelp(Node data) {
+
+        String[] fields;
+        if (data != null) {
+            fields = new PropertyHeader(data).getAllFields();
+        } else {
+            fields = new String[0];
+        }
+        if (fields == null) {
+            fields = new String[0];
+        }
+        String txt = cGroupProperty.getText();
+        cGroupProperty.setItems(fields);
+        cGroupProperty.setText(txt);
+        txt = cFilterProperty.getText();
+        cFilterProperty.setItems(fields);
+        cFilterProperty.setText(txt);
     }
 
     /**
@@ -1459,6 +1590,7 @@ public class FilterView extends ViewPart {
     public void deleteNode(final TreeNeoNode node) {
         viewer.remove(node);
         viewer.getControl().setEnabled(false);
+        final TreeNeoNode parent = node.getParent(service);
         Job job = new Job(Messages.FilterView_46) {
 
             @Override
@@ -1466,7 +1598,7 @@ public class FilterView extends ViewPart {
                 try {
                     Transaction tx = NeoUtils.beginTx(service);
                     try {
-
+                        NeoCorePlugin.getDefault().getProjectService().dirtyRemoveNodeFromStructure(node.getNode());
                         // TODO use manager
                         // NodeDeletingManager deleteManager = new NodeDeletingManager(service);
                         // deleteManager.deleteNode(node.getNode());
@@ -1481,6 +1613,11 @@ public class FilterView extends ViewPart {
 
                         @Override
                         public void run() {
+                            // viewer.setInput(service.getReferenceNode());
+                            viewer.refresh(true);
+                            if (parent != null) {
+                                viewer.setSelection(new StructuredSelection(new Object[] {parent}), true);
+                            }
                             viewer.getControl().setEnabled(true);
                         }
                     }, true);

@@ -47,6 +47,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkSiteType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -549,8 +550,9 @@ public class NetworkRenderer extends RendererImpl {
                     drawRelation(g, (Relationship)properties, lineColor, nodesMap);
                 }
                 properties = geoNeo.getProperties(GeoNeo.NEIGH_MAIN_NODE);
+                Object type=geoNeo.getProperties(GeoNeo.NEIGH_TYPE);
                 if (properties != null) {
-                    drawNeighbour(g, neiName, (Node)properties, lineColor, nodesMap);
+                    drawNeighbour(g, neiName, (Node)properties, lineColor, nodesMap,type);
                 }
             }
             System.out.println("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
@@ -671,13 +673,21 @@ public class NetworkRenderer extends RendererImpl {
      * @param node serve node
      * @param lineColor - line color
      * @param nodesMap map of nodes
+     * @param type 
      */
-    private void drawNeighbour(Graphics2D g, String neiName, Node node, Color lineColor, Map<Node, Point> nodesMap) {
+    private void drawNeighbour(Graphics2D g, String neiName, Node node, Color lineColor, Map<Node, Point> nodesMap, Object type) {
         g.setColor(lineColor);
         Point point1 = nodesMap.get(node);
+        NetworkSiteType siteType=(NetworkSiteType)type;
         if (point1 != null) {
             for (Relationship relation : NeoUtils.getNeighbourRelations(node, neiName)) {
-                Point point2 = nodesMap.get(relation.getOtherNode(node));
+                final Node neighNode = relation.getOtherNode(node);
+                if (siteType!=null){
+                    if (!siteType.checkNode(NeoUtils.getParent(null, neighNode),null)){
+                        continue;
+                    }
+                }
+                Point point2 = nodesMap.get(neighNode);
                 if (point2 != null) {
                     g.drawLine(point1.x, point1.y, point2.x, point2.y);
                 }

@@ -13,12 +13,18 @@
 
 package org.amanzi.awe.filters.tree;
 
+import java.awt.Color;
 import java.util.Collection;
 
+import net.refractions.udig.ui.graphics.Glyph;
+
+import org.amanzi.awe.filters.FilterUtil;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
@@ -36,12 +42,16 @@ public class TreeNeoNode implements IAdaptable {
     private  String name;
     private final Node node;
     private  NodeTypes type;
+    private Image image;
+    private RGB oldColor;
 
     public TreeNeoNode(Node node) {
 
         this.node = node;
         this.name = NeoUtils.getNodeName(node);
         this.type = NodeTypes.getNodeType(node, null);
+        image=null;
+        oldColor=null;
     }
 
     /**
@@ -57,7 +67,8 @@ public class TreeNeoNode implements IAdaptable {
         }
         Transaction tx = NeoUtils.beginTx(service);
         try {
-            return new TreeNeoNode(NeoUtils.getParent(service, node));
+            final Node parent = NeoUtils.getParent(service, node);
+            return parent==null?null:new TreeNeoNode(parent);
         } finally {
             NeoUtils.finishTx(tx);
         }
@@ -158,9 +169,61 @@ public class TreeNeoNode implements IAdaptable {
     /**
      *
      */
-    public void refresh() {
+    public void refresh(NeoService service) {
         name = NeoUtils.getNodeName(node);
-       type = NodeTypes.getNodeType(node, null);
+       type = NodeTypes.getNodeType(node, service);
     }
 
+    /**
+     *
+     */
+    public void formColorImage(NeoService service) {
+      Transaction tx = NeoUtils.beginTx(service);
+      try{
+          RGB newColor = getColor();
+          if (newColor==null){
+              if (image!=null){
+                  image.dispose();
+              }
+              image=null;
+              oldColor=null;
+          }else if (!newColor.equals(oldColor)){
+              if (image!=null){
+                  image.dispose();
+              }
+              image=Glyph.palette(new Color[]{new Color(newColor.red,newColor.green,newColor.blue)}).createImage();
+              oldColor=newColor;
+          }
+      }finally{
+          NeoUtils.finishTx(tx);
+      }
+    }
+
+    /**
+     * Gets color of right bar
+     * 
+     */
+    private RGB getColor() {
+        if (node != null) {
+            int[] colors = (int[])node.getProperty(FilterUtil.PROPERTY_FILTER_COLOR, null);
+            if (colors != null) {
+                return new RGB(colors[0], colors[1], colors[2]);
+            }
+        }
+        return null;
+    }
+    /**
+     *
+     * @return
+     */
+    public Image getImage() {
+        return image;
+    }
+@Override
+protected void finalize() throws Throwable {
+    super.finalize();
+    if (image!=null){
+        image.dispose();
+    }
+}
 }

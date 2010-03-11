@@ -38,11 +38,11 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.index.PropertyIndex;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
+import org.neo4j.api.core.RelationshipType;
 import org.neo4j.api.core.ReturnableEvaluator;
 import org.neo4j.api.core.StopEvaluator;
 import org.neo4j.api.core.Transaction;
@@ -61,7 +61,7 @@ public class AweProjectService {
 	/*
 	 * NeoService Provider
 	 */
-	private NeoServiceProvider provider;
+	private final NeoServiceProvider provider;
 
 	/*
 	 * NeoService
@@ -416,30 +416,74 @@ public class AweProjectService {
         deleteNode(node.getUnderlyingNode());
 	}
 
+	/**
+	 * Delete Node and all depends nodes from database
+	 * 
+	 * @param node node to delete
+	 */
+	public void deleteNode(Node node) {
+	    Transaction transaction = neoService.beginTx();
+	    try {
+	        LinkedList<Node> nodeToDelete = new LinkedList<Node>();
+	        nodeToDelete.add(node);
+	        for (int i = 0; i < nodeToDelete.size(); i++) {
+	            Node deleteNode = nodeToDelete.get(i);
+	            Iterator<Relationship> relations = deleteNode.getRelationships(Direction.BOTH).iterator();
+	            while (relations.hasNext()) {
+	                Relationship relationship = relations.next();
+	                if (relationship.getStartNode().equals(deleteNode)) {
+	                    Node endNode = relationship.getEndNode();
+	                    if (!nodeToDelete.contains(endNode))
+	                        nodeToDelete.addLast(endNode);
+	                }
+	                relationship.delete();
+	            }
+	            deleteNode.delete();
+	        }
+	        transaction.success();
+	    }
+	    catch (Exception e) {
+	        NeoCorePlugin.error(null, e);
+	        transaction.failure();
+	    } finally {
+	        transaction.finish();
+	    }
+	}
     /**
      * Delete Node and all depends nodes from database
      * 
      * @param node node to delete
-     */
-    public void deleteNode(Node node) {
+     * TODO not used - use delete manager
+     */@Deprecated 
+    public void dirtyRemoveNodeFromStructure(Node node) {
         Transaction transaction = neoService.beginTx();
         try {
-            LinkedList<Node> nodeToDelete = new LinkedList<Node>();
-            nodeToDelete.add(node);
-            for (int i = 0; i < nodeToDelete.size(); i++) {
-                Node deleteNode = nodeToDelete.get(i);
-                Iterator<Relationship> relations = deleteNode.getRelationships(Direction.BOTH).iterator();
-                while (relations.hasNext()) {
-                    Relationship relationship = relations.next();
-                    if (relationship.getStartNode().equals(deleteNode)) {
-                        Node endNode = relationship.getEndNode();
-                        if (!nodeToDelete.contains(endNode))
-                            nodeToDelete.addLast(endNode);
-                    }
-                    relationship.delete();
+            Node relink1=null;
+            Node relink2=null;
+            RelationshipType delRelation=null;
+            for (Relationship relation : node.getRelationships(Direction.INCOMING)) {
+                if (relation.isType(GeoNeoRelationshipTypes.CHILD)){
+                    relink1=relation.getOtherNode(node);
+                    delRelation=GeoNeoRelationshipTypes.CHILD;
+                    break;
+                }else if (relation.isType(GeoNeoRelationshipTypes.NEXT)){
+                    relink1=relation.getOtherNode(node);
+                    delRelation=GeoNeoRelationshipTypes.NEXT;
                 }
-                deleteNode.delete();
             }
+            for (Relationship relation : node.getRelationships(Direction.OUTGOING)) {
+                if (relation.isType(GeoNeoRelationshipTypes.NEXT)){
+                    relink2=relation.getOtherNode(node);
+                    break;
+                }
+            }
+            for (Relationship relation : node.getRelationships(Direction.BOTH)) {
+                relation.delete();
+            }
+            if (relink1!=null&&relink2!=null){
+                relink1.createRelationshipTo(relink2, delRelation);
+            }
+            
             transaction.success();
         }
         catch (Exception e) {
@@ -464,7 +508,7 @@ public class AweProjectService {
 		try {
 			Iterator<RubyScriptNode> scripts = rubyProject.getScripts();
 			while (scripts.hasNext()) {
-				RubyScriptNode rubyScriptNode = (RubyScriptNode) scripts.next();
+				RubyScriptNode rubyScriptNode = scripts.next();
 				if (scriptName.equals(rubyScriptNode.getName())) {
 					transaction.success();
 					return rubyScriptNode;

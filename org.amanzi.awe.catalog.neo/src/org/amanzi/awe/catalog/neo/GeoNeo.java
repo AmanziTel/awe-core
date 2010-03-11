@@ -54,6 +54,7 @@ import com.vividsolutions.jts.geom.Envelope;
 public class GeoNeo {
     /** String NEIGH_RELATION field */
     public static final String NEIGH_RELATION = "NEIGH_RELATION";
+    public static final String NEIGH_TYPE = "NEIGH_TYPE";
 
     /** String NEIGH_MAIN_NODE field */
     public static final String NEIGH_MAIN_NODE = "NEIGH_MAIN_NODE";
@@ -63,12 +64,12 @@ public class GeoNeo {
 
     /** GeoNeo DRIVE_INQUIRER field */
     public static final String DRIVE_INQUIRER = "DRIVE_INQUIRER";
-    private Node gisNode; // the root of some specific GIS information in the Neo4j database
+    private final Node gisNode; // the root of some specific GIS information in the Neo4j database
     private CoordinateReferenceSystem crs;
     private ReferencedEnvelope bounds;
-    private String name;
-    private org.neo4j.api.core.NeoService neo;
-    private GisTypes types;
+    private final String name;
+    private final org.neo4j.api.core.NeoService neo;
+    private final GisTypes types;
     private String propertyName;
     // private Integer propertyAdjacency;
     private Double minPropertyValue;
@@ -100,8 +101,8 @@ public class GeoNeo {
      * @since 1.0.0
      */
     public static class GeoNode {
-        private double[] coords;
-        private Node node;
+        private final double[] coords;
+        private final Node node;
         private Coordinate coordinate;
 
         public GeoNode(Node node) {
@@ -139,6 +140,7 @@ public class GeoNeo {
             return node.toString();
         }
 
+        @Override
         public String toString() {
             return getName();
         }
@@ -343,12 +345,13 @@ public class GeoNeo {
      * 
      * @return descriptive string
      */
+    @Override
     public String toString() {
         return "Neo[" + getName() + "]: CRS:" + getCRS() + " Bounds:" + getBounds();
     }
 
     private class GeoIterator implements Iterator<GeoNode> {
-        private Iterator<Node> iterator;
+        private final Iterator<Node> iterator;
         private GeoNode next;
 
         // private Transaction transaction;

@@ -74,6 +74,7 @@ public class GPEHEvent implements IGPEHBlock {
         protected Events type;
 
         protected Map<Parameters, Object> properties;
+        public Integer scannerId;
 
         /**
          * 

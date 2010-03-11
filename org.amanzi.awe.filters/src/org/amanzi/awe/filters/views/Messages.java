@@ -36,6 +36,7 @@ public class Messages extends NLS {
     public static String FilterView_16;
     public static String FilterView_17;
     public static String FilterView_18;
+    public static String FilterView_19;
     public static String FilterView_2;
     public static String FilterView_24;
     public static String FilterView_26;

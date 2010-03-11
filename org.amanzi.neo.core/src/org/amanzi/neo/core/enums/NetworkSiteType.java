@@ -94,4 +94,18 @@ public enum NetworkSiteType {
         }
     }
 
+    /**
+     *check node by necessary type
+     * @param container - node
+     * @param service - neo service
+     * @return result of checking
+     */
+    public boolean checkNode(PropertyContainer container, NeoService service) {
+        Transaction tx = NeoUtils.beginTx(service);
+        try {
+            return getId().equals(container.getProperty(PROPERTY_NAME,""));
+        } finally {
+            NeoUtils.finishTx(tx);
+        }
+    }
 }

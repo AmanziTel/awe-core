@@ -293,7 +293,9 @@ public class GPEHParser {
 //        bits.insert(0, buf);
 //        System.out.println("--------");
 //        System.out.println(bits.toString());
-        String readBits= readBits(bits,input,5);
+        String readBits= readBits(bits,input,24);
+        event.scannerId=Integer.valueOf(readBits, 2);
+        readBits= readBits(bits,input,5);
         event.hour=Integer.valueOf(readBits, 2);
         readBits= readBits(bits,input,6);
         event.minute=Integer.valueOf(readBits, 2);       
@@ -303,7 +305,7 @@ public class GPEHParser {
         event.millisecond=Integer.valueOf(readBits, 2);       
         readBits= readBits(bits,input,11);
         event.id=Integer.valueOf(readBits, 2);  
-        int len=5+6+6+11+11;
+        int len=24+5+6+6+11+11;
         Events events=Events.findById(event.id);
         final int recLen = recordLen * 8;
         boolean parseOk = false;

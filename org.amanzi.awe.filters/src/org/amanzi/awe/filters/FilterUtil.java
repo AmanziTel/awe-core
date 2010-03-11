@@ -49,6 +49,7 @@ public class FilterUtil {
     public static final String PROPERTY_SECOND_REL = "second_rel";
     public static final String PROPERTY_SECOND_TXT = "secondTXT";
     public static final String PROPERTY_ORDER = "order";
+    public static final String PROPERTY_FILTER_COLOR = "filter_color";
 
     public static String getGroupProperty(Node node, String defValue, NeoService service) {
         Transaction tx = NeoUtils.beginTx(service);

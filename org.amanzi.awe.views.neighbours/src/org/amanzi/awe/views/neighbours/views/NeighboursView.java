@@ -36,8 +36,10 @@ import org.amanzi.awe.views.neighbours.RelationWrapper;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkSiteType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.icons.IconManager;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.jface.action.Action;
@@ -79,6 +81,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
 import org.geotools.referencing.CRS;
 import org.neo4j.api.core.Direction;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.ReturnableEvaluator;
@@ -106,6 +109,8 @@ public class NeighboursView extends ViewPart {
     /** String SHOW_NEIGHBOUR field */
     private static final String SHOW_NEIGHBOUR = "show neighbour relation '%s' > '%s' on map";
     private static final String SHOW_SERVE = "show all '%s' neighbours on map";
+    private static final String SHOW_SERVE_2G = "show 2G '%s' neighbours on map";
+    private static final String SHOW_SERVE_3G = "show 3G '%s' neighbours on map";
 
     /** String ROLLBACK field */
     private static final String ROLLBACK = "Rollback";
@@ -338,6 +343,7 @@ public class NeighboursView extends ViewPart {
         /** int DEF_SIZE field */
         protected static final int DEF_SIZE = 100;
         private final ArrayList<String> columns = new ArrayList<String>();
+        private final NeoService service=NeoServiceProvider.getProvider().getService();
 
         public String getColumnText(Object obj, int index) {
             // Transaction tx = NeoUtils.beginTransaction();
@@ -346,8 +352,14 @@ public class NeighboursView extends ViewPart {
             if (index == 0) {
                 return NeoUtils.getSimpleNodeName(relation.getServeNode(), "");
             } else if (index == 1) {
+                NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(service, relation.getServeNode()), service);
+                return networkSiteType==null?"":networkSiteType.getId();
+            } else if (index == 2) {
                 return NeoUtils.getSimpleNodeName(relation.getNeighbourNode(), "");
-            } else {
+            } else if (index == 3) {
+                NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(service, relation.getNeighbourNode()), service);
+                return networkSiteType==null?"":networkSiteType.getId();
+            }else {
                 return relation.getRelation().getProperty(columns.get(index), "").toString();
             }
         }
@@ -369,7 +381,7 @@ public class NeighboursView extends ViewPart {
                 col = column.getColumn();
                 col.setText("Serving cell");
                 col.addSelectionListener(new SelectionListener() {
-
+                    
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         sortOrder = 0;
@@ -379,7 +391,7 @@ public class NeighboursView extends ViewPart {
                         viewer.refresh();
                         viewer.getTable().showSelection();
                     }
-
+                    
                     @Override
                     public void widgetDefaultSelected(SelectionEvent e) {
                         widgetSelected(e);
@@ -388,6 +400,12 @@ public class NeighboursView extends ViewPart {
                 columns.add(col.getText());
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
+                column = new TableViewerColumn(viewer, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("Serving cell type");
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+                columns.add(col.getText());
                 column = new TableViewerColumn(viewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText("Neighbour cell");
@@ -411,6 +429,12 @@ public class NeighboursView extends ViewPart {
                 columns.add(col.getText());
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
+                column = new TableViewerColumn(viewer, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("Neighbour cell type");
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+                columns.add(col.getText());
             }
             List<String> allNeighbourEditableProperties = getAllNeighbourEditableProperties();
             for (String name : allNeighbourEditableProperties) {
@@ -433,7 +457,7 @@ public class NeighboursView extends ViewPart {
                     column.setEditingSupport(new NeighbourEditableSupport(viewer, name, cl));
                 }
             }
-            for (int i = 2; i < columns.size(); i++) {
+            for (int i = 4; i < columns.size(); i++) {
                 TableColumn colum = table.getColumn(i);
                 if (!allNeighbourEditableProperties.contains(columns.get(i))) {
                     colum.setWidth(0);
@@ -509,7 +533,6 @@ public class NeighboursView extends ViewPart {
             if (arrayDouble != null) {
                 doubleProperties.addAll(Arrays.asList(arrayDouble));
             }
-
         }
         // update element in content provider, because neighbour list was changed
         provider.elements = provider.getElements2(input);
@@ -693,6 +716,7 @@ public class NeighboursView extends ViewPart {
                         properties.put(GeoNeo.NEIGH_MAIN_NODE, null);
                         properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
                         properties.put(GeoNeo.NEIGH_RELATION, relationWrapper.getRelation());
+                        properties.put(GeoNeo.NEIGH_TYPE, null);
                             geo.setProperties(properties);
                         showSelectionOnMap(layer, geo, relationWrapper.getNeighbourNode(), relationWrapper.getServeNode());
                         // layer.refresh(null);
@@ -730,6 +754,7 @@ public class NeighboursView extends ViewPart {
                         properties.put(GeoNeo.NEIGH_MAIN_NODE, relationWrapper.getServeNode());
                         properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
                         properties.put(GeoNeo.NEIGH_RELATION, null);
+                        properties.put(GeoNeo.NEIGH_TYPE, null);
                         geo.setProperties(properties);
                         showSelectionOnMap(layer, geo, relationWrapper.getServeNode(), relationWrapper.getServeNode());
                         return;
@@ -899,11 +924,10 @@ public class NeighboursView extends ViewPart {
         if (point != null) {
         TableItem item = table.getItem(point);
         if (item != null) {
-            if (item.getBounds(0).contains(point)) {
+            if (item.getBounds(0).contains(point)||item.getBounds(1).contains(point)) {
                     fillServMenu(manager, (RelationWrapper)item.getData());
-            } else if (item.getBounds(1).contains(point)) {
+            } else if (item.getBounds(2).contains(point)||item.getBounds(3).contains(point)) {
                     fillNeighMenu(manager, (RelationWrapper)item.getData());
-
             }
         }
     }
@@ -940,6 +964,48 @@ public class NeighboursView extends ViewPart {
                 showServe(data);
             }
         });
+        manager.add(new Action(String.format(SHOW_SERVE_2G, serv)) {
+            @Override
+            public void run() {
+                showServe(data,NetworkSiteType.SITE_2G);
+            }
+        });
+        manager.add(new Action(String.format(SHOW_SERVE_3G, serv)) {
+            @Override
+            public void run() {
+                showServe(data,NetworkSiteType.SITE_3G);
+            }
+        });
+    }
+
+    /**
+     *
+     * @param relationWrapper
+     * @param siteType
+     */
+    protected void showServe(RelationWrapper relationWrapper, NetworkSiteType siteType) {
+        setServeSelection(relationWrapper);
+        IMap map = ApplicationGIS.getActiveMap();
+        for (ILayer layer : map.getMapLayers()) {
+            IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
+            if (resourse != null) {
+                try {
+                    GeoNeo geo = resourse.resolve(GeoNeo.class, null);
+                    if (geo.getMainGisNode().equals(gis)) {
+                        HashMap<String, Object> properties = new HashMap<String, Object>();
+                        properties.put(GeoNeo.NEIGH_MAIN_NODE, relationWrapper.getServeNode());
+                        properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
+                        properties.put(GeoNeo.NEIGH_RELATION, null);
+                        properties.put(GeoNeo.NEIGH_TYPE, siteType);
+                        geo.setProperties(properties);
+                        showSelectionOnMap(layer, geo, relationWrapper.getServeNode(), relationWrapper.getServeNode());
+                        return;
+                    }
+                } catch (IOException e) {
+                    throw (RuntimeException)new RuntimeException().initCause(e);
+                }
+            }
+        }
     }
 
     /**
@@ -1053,6 +1119,7 @@ public class NeighboursView extends ViewPart {
                         properties.put(GeoNeo.NEIGH_MAIN_NODE, null);
                         properties.put(GeoNeo.NEIGH_NAME, null);
                         properties.put(GeoNeo.NEIGH_RELATION, null);
+                        properties.put(GeoNeo.NEIGH_TYPE, null);
                         geo.setProperties(properties);
                         layer.refresh(null);
                         return;
