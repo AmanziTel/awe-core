@@ -22,7 +22,7 @@
                visible="true">
          </view>
          <viewShortcut
-               id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView">
+               id="org.amanzi.awe.filters.views.FilterView">
          </viewShortcut>
       </perspectiveExtension>
    </extension>
