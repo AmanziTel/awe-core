@@ -51,6 +51,7 @@ import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.swt.graphics.RGB;
 import org.neo4j.api.core.Direction;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
@@ -1868,51 +1869,104 @@ public class NeoUtils {
             tx.finish();
         }
     }
-    
+
     /**
      * Gets relationsip type by type name.
-     *
+     * 
      * @param relation
      * @return DeletableRelationshipType
      */
-    public static DeletableRelationshipType getRelationType(Relationship relation){
+    public static DeletableRelationshipType getRelationType(Relationship relation) {
         String etalonName = relation.getType().name();
         DeletableRelationshipType result = findType(Arrays.asList(GeoNeoRelationshipTypes.values()), etalonName);
-        if(result!=null){
+        if (result != null) {
             return result;
         }
         result = findType(Arrays.asList(NetworkRelationshipTypes.values()), etalonName);
-        if(result!=null){
+        if (result != null) {
             return result;
         }
         result = findType(Arrays.asList(ProbeCallRelationshipType.values()), etalonName);
-        if(result!=null){
+        if (result != null) {
             return result;
         }
         result = findType(Arrays.asList(SplashRelationshipTypes.values()), etalonName);
-        if(result!=null){
+        if (result != null) {
             return result;
         }
         result = findType(Arrays.asList(NeoIndexRelationshipTypes.values()), etalonName);
-        if(result!=null){
+        if (result != null) {
             return result;
         }
-        throw new IllegalArgumentException("Relationship type <"+etalonName+"> does not instanseof DeletableRelationshipType.");
+        throw new IllegalArgumentException("Relationship type <" + etalonName + "> does not instanseof DeletableRelationshipType.");
     }
-    
+
     /**
      * Find relationship type.
-     *
+     * 
      * @param types List of types
      * @param etalonName String
      * @return DeletableRelationshipType
      */
-    private static DeletableRelationshipType findType(List<? extends DeletableRelationshipType> types, String etalonName){
-        for(DeletableRelationshipType type : types){
-            if(type.name().equals(etalonName)){
+    private static DeletableRelationshipType findType(List< ? extends DeletableRelationshipType> types, String etalonName) {
+        for (DeletableRelationshipType type : types) {
+            if (type.name().equals(etalonName)) {
                 return type;
             }
         }
         return null;
+    }
+
+    /**
+     * Save color in database
+     * 
+     * @param node node
+     * @param property property name
+     * @param rgb color
+     * @param service - NeoService - if null, then transaction do not created
+     */
+    public static void saveColor(Node node, String property, RGB rgb, NeoService service) {
+        if (node == null || property == null) {
+            return;
+        }
+        Transaction tx = beginTx(service);
+        try {
+            if (rgb == null) {
+                node.removeProperty(property);
+            } else {
+                int[] array = new int[3];
+                array[0] = rgb.red;
+                array[1] = rgb.green;
+                array[2] = rgb.blue;
+                node.setProperty(property, array);
+            }
+            successTx(tx);
+        } finally {
+            finishTx(tx);
+        }
+    }
+
+    /**
+     * Gets color
+     * 
+     * @param property - property name
+     * @param node - node
+     * @param defaultColor - default color (return if no color stored in property)
+     * @param service - NeoService - if null, then transaction do not created
+     * @return RGB
+     */
+    public static RGB getColor(Node node, String property, RGB defaultColor, NeoService service) {
+        if (node != null) {
+            Transaction tx = beginTx(service);
+            try {
+                int[] colors = (int[])node.getProperty(property, null);
+                if (colors != null) {
+                    return new RGB(colors[0], colors[1], colors[2]);
+                }
+            } finally {
+                finishTx(tx);
+            }
+        }
+        return defaultColor;
     }
 }
