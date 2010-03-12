@@ -70,12 +70,34 @@ public class SpreadsheetNode extends AbstractNode {
 	 */
 	public SpreadsheetNode(Node node, String name) {
 		super(node);
+		neoService = NeoServiceProvider.getProvider().getService();
 		setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SPREADSHEET.getId());
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, name);
 		
 		index = new HilbertIndex(CELL_INDEX, 3, CellNode.CELL_COLUMN, CellNode.CELL_ROW);
 		index.initialize(node);
 	}
+	
+	/**
+     * Constructor. Wraps a Node from database and sets type and name of Node
+     * 
+     * @param node
+     *            database node
+     */
+    public SpreadsheetNode(Node node, String name, NeoService neo) {
+        super(node);
+        if(neo==null){
+            neoService = NeoServiceProvider.getProvider().getService();
+        }
+        else{
+            neoService = neo;
+        }
+        setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SPREADSHEET.getId());
+        setParameter(INeoConstants.PROPERTY_NAME_NAME, name);
+        
+        index = new HilbertIndex(CELL_INDEX, 3, CellNode.CELL_COLUMN, CellNode.CELL_ROW);
+        index.initialize(node,neoService);
+    }
 
 	/**
      * Constructor for wrapping existing Spreadsheet nodes. To reduce API confusion,
@@ -518,6 +540,9 @@ public class SpreadsheetNode extends AbstractNode {
 	 * @param column Column that was swapped with next Column
 	 */
 	public void swapColumns(ColumnHeaderNode column) {
+	    if(column == null){
+	        return;
+	    }
 		for (CellNode cell : column.getAllCellsFromThis(true)) {
 			Node rowNode1 = cell.getUnderlyingNode();
 			if (cell.getNextCellInRow() != null) {
@@ -534,9 +559,10 @@ public class SpreadsheetNode extends AbstractNode {
 	 * @param row RowHeader of deleted row
 	 */
 	public void deleteRow(RowHeaderNode row) {
-		for (CellNode cell : row.getAllCellsFromThis(true)) {
-			deleteCell(cell.getUnderlyingNode(), SplashRelationshipTypes.NEXT_CELL_IN_COLUMN);
+		for (CellNode cell : row.getAllCellsFromThis(false)) {
+			deleteCell(cell);
 		}
+		deleteCell(row);
 	}
 	
 	/**
@@ -545,10 +571,76 @@ public class SpreadsheetNode extends AbstractNode {
 	 * @param column ColumnHeader of deleted column
 	 */
 	public void deleteColumn(ColumnHeaderNode column) {
-		for (CellNode cell : column.getAllCellsFromThis(true)) {
-			deleteCell(cell.getUnderlyingNode(), SplashRelationshipTypes.NEXT_CELL_IN_ROW);
+		for (CellNode cell : column.getAllCellsFromThis(false)) {
+			deleteCell(cell);
 		}
+		deleteCell(column);
 	}
+	
+	public void deleteCell(CellNode cell){
+	    Node cellNode = cell.getUnderlyingNode();
+	    Relationship prevCol = cellNode.getSingleRelationship(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, Direction.INCOMING);
+	    Relationship nextCol = cellNode.getSingleRelationship(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, Direction.OUTGOING);
+	    Relationship prevRow = cellNode.getSingleRelationship(SplashRelationshipTypes.NEXT_CELL_IN_ROW, Direction.INCOMING);
+        Relationship nextRow = cellNode.getSingleRelationship(SplashRelationshipTypes.NEXT_CELL_IN_ROW, Direction.OUTGOING);
+        Integer cellColumn = cell.getCellColumn();
+        Integer cellRow = cell.getCellRow();
+        if(prevCol!=null){
+            Node start = prevCol.getStartNode();
+            prevCol.delete();
+            if(nextCol!=null){
+                Node end = nextCol.getEndNode();
+                start.createRelationshipTo(end, SplashRelationshipTypes.NEXT_CELL_IN_COLUMN);
+                nextCol.delete();
+            }else if (start.equals(getColumnHeader(cellColumn).getUnderlyingNode())){
+                deleteCell(getColumnHeader(cellColumn));
+            }
+        }
+        if(prevRow!=null){
+            Node start = prevRow.getStartNode();
+            prevRow.delete();
+            if(nextRow!=null){
+                Node end = nextRow.getEndNode();
+                start.createRelationshipTo(end, SplashRelationshipTypes.NEXT_CELL_IN_ROW);
+                nextRow.delete();
+            }else if (start.equals(getRowHeader(cellRow).getUnderlyingNode())){
+                deleteCell(getRowHeader(cellRow));
+            }
+        }
+        clearCellIndex(cellRow, cellColumn);
+	}
+	
+	public void updateCellColumn(CellNode cell, int newColumnInd){
+	    int rowInd = cell.getCellRow();
+	    int oldColumnInd = cell.getCellColumn();
+	    newColumnInd=newColumnInd+1;
+	    if(oldColumnInd==newColumnInd){
+	        return;
+	    }
+	    CellNode newCell = new CellNode(neoService.createNode());
+	    newCell.setCellColumn(newColumnInd);
+	    newCell.setCellRow(rowInd);
+	    newCell.setSpreadsheetId(node.getId());
+        addCell(newCell);
+        newCell.setValue(cell.getValue());
+	    deleteCell(cell);
+	}
+	
+	public void updateCellRow(CellNode cell, int newRowInd){
+        int oldRowInd = cell.getCellRow();
+        int columnInd = cell.getCellColumn();
+        newRowInd=newRowInd+1;
+        if(oldRowInd==newRowInd){
+            return;
+        }
+        CellNode newCell = new CellNode(neoService.createNode());
+        newCell.setCellColumn(columnInd);
+        newCell.setCellRow(newRowInd);
+        newCell.setSpreadsheetId(node.getId());
+        addCell(newCell);
+        newCell.setValue(cell.getValue());
+        deleteCell(cell);
+    }
 	
 	/**
 	 * Deletes a Cell and updates 
@@ -668,13 +760,17 @@ public class SpreadsheetNode extends AbstractNode {
     public ColumnHeaderNode getColumnHeaderMoreEquals(int columnIndex) {
         Node cellNode = getUnderlyingNode().getSingleRelationship(NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)
                 .getOtherNode(getUnderlyingNode());
-        Node zeroRowNode = cellNode.getSingleRelationship(new RelationshipType() {
+        Relationship indexRelationship = cellNode.getSingleRelationship(new RelationshipType() {
 
             @Override
             public String name() {
                 return "0";
             }
-        }, Direction.OUTGOING).getOtherNode(cellNode);
+        }, Direction.OUTGOING);
+        if(indexRelationship == null){
+            return null;
+        }
+        Node zeroRowNode = indexRelationship.getOtherNode(cellNode);
         while (zeroRowNode.hasRelationship(SplashRelationshipTypes.NEXT_CELL_IN_ROW, Direction.OUTGOING)) {
             zeroRowNode = zeroRowNode.getSingleRelationship(SplashRelationshipTypes.NEXT_CELL_IN_ROW, Direction.OUTGOING)
                     .getOtherNode(zeroRowNode);
@@ -696,13 +792,17 @@ public class SpreadsheetNode extends AbstractNode {
     public RowHeaderNode getRowHeaderMoreEquals(int rowIndex) {
         Node cellNode = getUnderlyingNode().getSingleRelationship(NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)
                 .getOtherNode(getUnderlyingNode());
-        Node zeroRowNode = cellNode.getSingleRelationship(new RelationshipType() {
+        Relationship indexRelationship = cellNode.getSingleRelationship(new RelationshipType() {
 
             @Override
             public String name() {
                 return "0";
             }
-        }, Direction.OUTGOING).getOtherNode(cellNode);
+        }, Direction.OUTGOING);
+        if(indexRelationship==null){
+            return null;
+        }
+        Node zeroRowNode = indexRelationship.getOtherNode(cellNode);
         while (zeroRowNode.hasRelationship(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, Direction.OUTGOING)) {
             zeroRowNode = zeroRowNode.getSingleRelationship(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, Direction.OUTGOING)
                     .getOtherNode(zeroRowNode);

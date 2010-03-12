@@ -104,6 +104,26 @@ public class SpreadsheetService {
         }
 		
 	}
+	
+	/**
+     * Constructor of Service.
+     * 
+     * Initializes NeoService and create a Root Element
+     */
+    public SpreadsheetService(NeoService neo){
+
+        provider = NeoServiceProvider.getProvider();
+        neoService = neo;
+        Transaction tx = neoService.beginTx();
+        try {
+            projectService = NeoCorePlugin.getDefault().getProjectService();
+            defaultSFNode = new SplashFormatNode(neoService.createNode());
+            setSplashFormat(defaultSFNode, new CellFormat());
+        } finally {
+            tx.finish();
+        }
+        
+    }
 
 	/**
 	 * Creates a Spreadsheet by given name
@@ -118,7 +138,7 @@ public class SpreadsheetService {
 	 */
 
 	public SpreadsheetNode createSpreadsheet(RubyProjectNode root, String name) throws SplashDatabaseException {
-		if (projectService.findSpreadsheet(root, name) != null) {
+	    if (projectService.findSpreadsheet(root, name) != null) {
 			String message = SplashDatabaseExceptionMessages.getFormattedString(
 					SplashDatabaseExceptionMessages.Duplicate_Spreadsheet, name);
 			throw new SplashDatabaseException(message);
@@ -126,7 +146,7 @@ public class SpreadsheetService {
 			Transaction transaction = neoService.beginTx();
 
 			try {
-				SpreadsheetNode spreadsheet = new SpreadsheetNode(neoService.createNode(),name);
+				SpreadsheetNode spreadsheet = new SpreadsheetNode(neoService.createNode(),name,neoService);
 
 				root.addSpreadsheet(spreadsheet);
 
@@ -614,18 +634,62 @@ public class SpreadsheetService {
 	 */
 	public boolean deleteCell(SpreadsheetNode sheet, int row, int column) {
 		CellNode cell = getCellNode(sheet, row, column);
-
-		if (cell != null) {
-			// check if there are cells that are dependent on this cell
-			if (cell.getDependedNodes().hasNext()) {
-				// we can't delete Cell on which other Cell depends
-				return false;
-			}
-
-			cell.delete();			
-		}
-
-		return true;
+		CellNode lastCell;
+		Transaction tx = neoService.beginTx();
+        try {
+    		if (cell != null) {
+    			// check if there are cells that are dependent on this cell
+    			if (cell.getDependedNodes().hasNext()) {
+    				// we can't delete Cell on which other Cell depends
+    				return false;
+    			}
+    			lastCell = cell;
+    		}else{
+    		    RowHeaderNode rowHeader = sheet.getRowHeader(row);
+                if(rowHeader==null){
+    		        return true; // not need to shift cells if row is empty
+    		    }
+    		    lastCell = rowHeader;
+    		}
+    		while (lastCell.getNextCellInRow()!=null) {
+                lastCell = lastCell.getNextCellInRow();
+            }
+    		int lastCol = lastCell.getCellColumn()-1;
+            int currCol = column;
+            if(lastCol<currCol){
+                return true;
+            }
+            while(lastCol>currCol){
+                int nextCol = currCol+1;
+                CellNode next = getCellNode(sheet, row, nextCol);
+                if(next==null){
+                    if(cell!=null){
+                        sheet.updateCellColumn(cell,nextCol);
+                    }
+                    cell = next;
+                }
+                else{
+                    if(cell==null){
+                        sheet.updateCellColumn(next,currCol);
+                    }
+                    else{
+                        cell.setValue(next.getValue());
+                        cell = next;
+                    }                    
+                }                
+                currCol++;
+                //TODO update formula
+            }
+            if (cell!=null) {
+                sheet.deleteCell(cell);
+            }else{
+                sheet.clearCellIndex(row+1, currCol+1);
+            }
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        return true;
 	}
 
 	/**
@@ -716,38 +780,31 @@ public class SpreadsheetService {
 	 */
 	public void insertRow(SpreadsheetNode spreadsheet, int rowIndex) {
         Transaction transaction = neoService.beginTx();
-
+        
         try {
             // update column index to use in HilbertIndexes
-            rowIndex = rowIndex + 1;
-            RowHeaderNode row = spreadsheet.getRowHeaderMoreEquals(rowIndex);
-            if (row != null) {
-                rowIndex = row.getCellRow();
-                for (CellNode cellInRow : row.getAllCellsFromThis(true)) {
-                    for (CellNode cellInColumn : cellInRow.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, true)) {
-                        cellInColumn.setCellRow(cellInColumn.getCellRow() + 1);
-                        spreadsheet.updateCellIndex(cellInColumn);
-
-                        Iterator<CellNode> referencedNode = cellInColumn.getReferencedNodes();
-                        String formula = cellInColumn.getDefinition();
-
-                        while (referencedNode.hasNext()) {
-                            CellNode nodeToUpdate = referencedNode.next();
-
-                            int oldRow = nodeToUpdate.getCellRow();
-                            int newRow = oldRow + 1;
-                            int column = nodeToUpdate.getCellColumn();
-
-                            formula = updatingFormula(formula, oldRow, column, newRow, column);
-                        }
-                        if (formula != null) {
-                            cellInColumn.setDefinition(formula);
-                        }
-                    }
-                    int columnIndex = cellInRow.getCellColumn();
-                    spreadsheet.clearCellIndex(rowIndex, columnIndex);
+            RowHeaderNode row = spreadsheet.getRowHeaderMoreEquals(rowIndex+1);
+            CellNode lastNode = row;
+            if(row == null){
+                ColumnHeaderNode zeroRow = spreadsheet.getColumnHeader(0);
+                if(zeroRow == null){
+                    return;
                 }
+                lastNode = zeroRow;
             }
+            while(lastNode.getNextCellInColumn()!=null){
+                lastNode = lastNode.getNextCellInColumn();
+            }
+            int lastRowInd = lastNode.getCellRow()-1;
+            if(lastRowInd<rowIndex){
+                return;
+            }
+            int currRowInd = lastRowInd;
+            while(currRowInd>=rowIndex){
+                swapRows(spreadsheet, currRowInd, currRowInd+1);
+                currRowInd--;
+            }
+          //TODO update formula
             transaction.success();
         } catch (Exception e) {
             transaction.failure();
@@ -772,22 +829,36 @@ public class SpreadsheetService {
         try {
             // update column index to use in HilbertIndexes
             rowIndex = rowIndex + 1;
-            RowHeaderNode row = spreadsheet.getRowHeaderMoreEquals(rowIndex);
-            if (row != null) {
-                rowIndex = row.getCellRow();
-                for (CellNode cellInRow : row.getAllCellsFromThis(true)) {
-                    for (CellNode cellInColumn : cellInRow.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_COLUMN, false)) {
-                        cellInColumn.setCellRow(cellInColumn.getCellRow() - 1);
-                        spreadsheet.updateCellIndex(cellInColumn);
-                    }
-                    int columnIndex = cellInRow.getCellColumn();
-                    spreadsheet.clearCellIndex(rowIndex, columnIndex);
+            RowHeaderNode row = spreadsheet.getRowHeader(rowIndex);
+            CellNode lastRow = row;
+            if (row ==null){
+                RowHeaderNode zeroHeader = spreadsheet.getRowHeader(0);
+                if(zeroHeader==null){
+                    return true;
                 }
-
+                lastRow = zeroHeader;                              
+            }
+            while(lastRow.getNextCellInColumn()!=null){
+                lastRow = lastRow.getNextCellInColumn();
+            }
+            int lastRowInd = lastRow.getCellRow()-1;
+            int currRowInd = rowIndex-1;
+            if(lastRowInd<currRowInd){
+                return true;
+            }
+            while(lastRowInd>currRowInd){
+                int nextRowInd = currRowInd+1;
+                swapRows(spreadsheet, currRowInd, nextRowInd);
+                row = spreadsheet.getRowHeader(nextRowInd+1);
+                currRowInd++;
+            }
+            if (row!=null) {
                 spreadsheet.deleteRow(row);
             }
+          //TODO update formula
             transaction.success();
         } catch (Exception e) {
+            e.printStackTrace();
             transaction.failure();
 			SplashPlugin.error(null, e);
 			return false;
@@ -812,19 +883,28 @@ public class SpreadsheetService {
 
         try {
             // update column index to use in HilbertIndexes
-            columnIndex = columnIndex + 1;
-            ColumnHeaderNode column = spreadsheet.getColumnHeaderMoreEquals(columnIndex);
-            if (column != null) {
-                columnIndex = column.getCellColumn();
-                for (CellNode cellInColumn : column.getAllCellsFromThis(true)) {
-                    int rowIndex = cellInColumn.getCellRow();
-                    for (CellNode cellInRow : cellInColumn.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_ROW, true)) {
-                        cellInRow.setCellColumn(cellInRow.getCellColumn() + 1);
-                        spreadsheet.updateCellIndex(cellInRow);
-                    }
-                    spreadsheet.clearCellIndex(rowIndex, columnIndex);
+            ColumnHeaderNode column = spreadsheet.getColumnHeader(columnIndex+1);
+            CellNode lastNode = column;
+            if(column == null){
+                ColumnHeaderNode zeroColumn = spreadsheet.getColumnHeader(0);
+                if(zeroColumn == null){
+                    return;
                 }
+                lastNode = zeroColumn;
             }
+            while(lastNode.getNextCellInRow()!=null){
+                lastNode = lastNode.getNextCellInRow();
+            }
+            int lastColInd = lastNode.getCellColumn()-1;
+            if(lastColInd<columnIndex){
+                return;
+            }
+            int currColInd = lastColInd;
+            while(currColInd>=columnIndex){
+                swapColumns(spreadsheet, currColInd, currColInd+1);
+                currColInd--;
+            }
+          //TODO update formula
             transaction.success();
         } catch (Exception e) {
             e.printStackTrace();
@@ -850,19 +930,33 @@ public class SpreadsheetService {
 			//update column index to use in HilbertIndexes
 			columnIndex = columnIndex + 1;
 			ColumnHeaderNode column = spreadsheet.getColumnHeader(columnIndex);
-	    
-			for (CellNode cellInColumn : column.getAllCellsFromThis(true)) {
-				for (CellNode cellInRow : cellInColumn.getAllCellsFromThis(SplashRelationshipTypes.NEXT_CELL_IN_ROW, true)) {
-					cellInRow.setCellColumn(cellInRow.getCellColumn() - 1);
-					spreadsheet.updateCellIndex(cellInRow);
-				}
-				int rowIndex = cellInColumn.getCellRow();	        
-				spreadsheet.clearCellIndex(rowIndex, columnIndex);
+			CellNode lastColumn = column;
+			if(column == null){
+			    ColumnHeaderNode zeroNode = spreadsheet.getColumnHeader(0);
+			    if(zeroNode==null){
+			        return true;
+			    }
+			    lastColumn = zeroNode;
 			}
-			
-			spreadsheet.deleteColumn(column);
-			
-			transaction.success();
+			while(lastColumn.getNextCellInRow()!=null){
+			    lastColumn = lastColumn.getNextCellInRow();
+			}
+			int lastColInd = lastColumn.getCellColumn()-1;
+			int currColInd = columnIndex-1;
+			if(lastColInd<currColInd){
+			    return true;
+			}
+            while(lastColInd>currColInd){
+                int nextColInd = currColInd+1;
+                swapColumns(spreadsheet, currColInd, nextColInd);
+                column = spreadsheet.getColumnHeader(nextColInd+1);
+                currColInd++;
+            }			
+			if (column!=null) {
+                spreadsheet.deleteColumn(column);
+            }
+			//TODO update formula
+            transaction.success();
 		}
 		catch (Exception e) {
 			transaction.failure();
@@ -896,45 +990,42 @@ public class SpreadsheetService {
 			RowHeaderNode row1 = spreadsheet.getRowHeader(index1);
 			RowHeaderNode row2 = spreadsheet.getRowHeader(index2);
 			
-			//swap row header
-			if (row1 != null) {
-				row1.setIndex(index2);
-				spreadsheet.updateCellIndex(row1);
-			
-				//swap cells
-				for (CellNode cellInRow : row1.getAllCellsFromThis(false)) {
-					if (row2 == null) {
-						spreadsheet.clearCellIndex(cellInRow.getCellRow(), cellInRow.getCellColumn());
-					}
-					cellInRow.setCellRow(index2);
-					spreadsheet.updateCellIndex(cellInRow);
-				}
+			if(row1==null&&row2==null){
+			    return;
 			}
-			else {
-				spreadsheet.clearCellIndex(index2, 0);
+			if(row1==null||row2==null){
+			    RowHeaderNode movedRow = row1==null?row2:row1;
+			    int newIndex = (row1==null?index1:index2)-1;
+			    for (CellNode cellInRow : movedRow.getAllCellsFromThis(false)) {
+                    spreadsheet.updateCellRow(cellInRow, newIndex);
+                }
+			    spreadsheet.deleteCell(movedRow);
+			    return;
 			}
-			
-			if (row2 != null ) {
-				//if second row exists than swap row header 
-				row2.setIndex(index1);
-				spreadsheet.updateCellIndex(row2);
-			
-				//swap row cells
-				for (CellNode cellInRow : row2.getAllCellsFromThis(false)) {
-					if (row1 == null) {
-						spreadsheet.clearCellIndex(cellInRow.getCellRow(), cellInRow.getCellColumn());
-					}
-					cellInRow.setCellRow(index1);
-					spreadsheet.updateCellIndex(cellInRow);
-				}
-			
-				transaction.success();
+			int currColumn=0;
+			boolean hasNext1 = true;
+			boolean hasNext2 = true;
+			while(hasNext1||hasNext2){
+			    CellNode cell1 = spreadsheet.getCell(index1-1, currColumn);
+			    CellNode cell2 = spreadsheet.getCell(index2-1, currColumn);
+			    if(cell1 == null){
+			        if(cell2!=null){
+			            hasNext2 = cell2.getNextCellInRow()!=null;
+			            spreadsheet.updateCellRow(cell2, index1-1);			            
+			        }
+			    }else{
+			        hasNext1 = cell1.getNextCellInRow()!=null;
+			        if(cell2 == null){
+			            spreadsheet.updateCellRow(cell1,index2-1);
+			        }else{
+			            hasNext2 = cell2.getNextCellInRow()!=null;
+			            Object value = cell1.getValue();
+			            cell1.setValue(cell2.getValue());
+			            cell2.setValue(value);			            
+			        }			        
+			    }
+			    currColumn++;
 			}
-			else {
-				spreadsheet.clearCellIndex(index1, 0);
-			}
-			
-			spreadsheet.swapRows(row1);
 		}
 		catch (Exception e) {
 			transaction.failure();
@@ -963,45 +1054,42 @@ public class SpreadsheetService {
 			ColumnHeaderNode column1 = spreadsheet.getColumnHeader(index1);
 			ColumnHeaderNode column2 = spreadsheet.getColumnHeader(index2);
 			
-			//swap row header
-			if (column1 != null) {
-				column1.setIndex(index2);
-				spreadsheet.updateCellIndex(column1);
-			
-				//swap cells
-				for (CellNode cellInRow : column1.getAllCellsFromThis(false)) {
-					if (column2 == null) {
-						spreadsheet.clearCellIndex(cellInRow.getCellRow(), cellInRow.getCellColumn());
-					}
-					cellInRow.setCellColumn(index2);
-					spreadsheet.updateCellIndex(cellInRow);
-				}
-			}
-			else {
-				spreadsheet.clearCellIndex(0, index2);
-			}
-			
-			if (column2 != null ) {
-				//if second row exists than swap row header 
-				column2.setIndex(index1);
-				spreadsheet.updateCellIndex(column2);
-			
-				//swap row cells
-				for (CellNode cellInRow : column2.getAllCellsFromThis(false)) {
-					if (column1 == null) {
-						spreadsheet.clearCellIndex(cellInRow.getCellRow(), cellInRow.getCellColumn());
-					}
-					cellInRow.setCellColumn(index1);
-					spreadsheet.updateCellIndex(cellInRow);
-				}
-			
-				transaction.success();
-			}
-			else {
-				spreadsheet.clearCellIndex(0, index1);
-			}
-			
-			spreadsheet.swapColumns(column1);			
+			if(column1==null&&column2==null){
+                return;
+            }
+            if(column1==null||column2==null){
+                ColumnHeaderNode movedColumn = column1==null?column2:column1;
+                int newIndex = (column1==null?index1:index2)-1;
+                for (CellNode cellInRow : movedColumn.getAllCellsFromThis(false)) {
+                    spreadsheet.updateCellColumn(cellInRow, newIndex);
+                }
+                spreadsheet.deleteCell(movedColumn);
+                return;
+            }
+            int currRow=0;
+            boolean hasNext1 = true;
+            boolean hasNext2 = true;
+            while(hasNext1||hasNext2){
+                CellNode cell1 = spreadsheet.getCell(currRow,index1-1);
+                CellNode cell2 = spreadsheet.getCell(currRow,index2-1);
+                if(cell1 == null){
+                    if(cell2!=null){
+                        hasNext2 = cell2.getNextCellInColumn()!=null;
+                        spreadsheet.updateCellColumn(cell2, index1-1);                     
+                    }
+                }else{
+                    hasNext1 = cell1.getNextCellInColumn()!=null;
+                    if(cell2 == null){
+                        spreadsheet.updateCellColumn(cell1,index2-1);
+                    }else{
+                        hasNext2 = cell2.getNextCellInColumn()!=null;
+                        Object value = cell1.getValue();
+                        cell1.setValue(cell2.getValue());
+                        cell2.setValue(value);                      
+                    }                   
+                }
+                currRow++;
+            }	
 		}
 		catch (Exception e) {
 			transaction.failure();

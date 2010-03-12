@@ -93,7 +93,21 @@ public class HilbertIndex {
             reference = service.getReferenceNode();
         }
         
-        root = HilbertIndexNode.getFromReferencedNode(reference, indexName, hilbertSquadOrder);
+        root = HilbertIndexNode.getFromReferencedNode(reference, indexName, hilbertSquadOrder,null);
+        referencedNode = reference;
+    }
+    
+    /**
+     * Initialize an Index with given referenced Node
+     * 
+     * @param reference root node of indexes (if null than it's a referenced node of database)
+     */
+    public void initialize(Node reference, NeoService service) {
+        if (reference == null) {
+            reference = service.getReferenceNode();
+        }
+        
+        root = HilbertIndexNode.getFromReferencedNode(reference, indexName, hilbertSquadOrder,service);
         referencedNode = reference;
     }
     

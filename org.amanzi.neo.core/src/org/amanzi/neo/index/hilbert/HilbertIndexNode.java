@@ -104,7 +104,7 @@ public class HilbertIndexNode {
      * Creates a node of Index
      */
     private void createIndexNode(boolean isLastIndex) {
-    	indexNode = neoService.createNode();
+        indexNode = neoService.createNode();
         indexNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.HILBERT_INDEX.getId());
         indexNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, indexName);
         indexNode.setProperty(HILBERT_INDEX_LEVEL, level);
@@ -204,7 +204,10 @@ public class HilbertIndexNode {
      * @param order order of index
      * @return Index Node
      */
-    public static HilbertIndexNode getFromReferencedNode(Node referencedNode, String indexName, int order) {
+    public static HilbertIndexNode getFromReferencedNode(Node referencedNode, String indexName, int order,NeoService neo) {
+        if(neo!=null){
+            neoService = neo;
+        }
         if (referencedNode == null) {
             referencedNode = neoService.getReferenceNode();
         }

@@ -90,6 +90,18 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     }
     
     /**
+     * Creates an instance of NeoServiceProvider
+     *
+     * @return instance of NeoServiceProvider
+     */
+    
+    public static void initProvider(NeoService service) {
+        provider = new NeoServiceProvider();
+        provider.init(service);
+        
+    }
+    
+    /**
      * Protected constructor
      */
     
@@ -143,6 +155,23 @@ public class NeoServiceProvider implements IPropertyChangeListener{
         }
         if (indexService == null) {
         	indexService = new LuceneIndexService(neoService);
+        }
+
+    }
+    
+    /**
+     * Initializes NeoService and NeoServiceManager
+     */
+    
+    private void init(NeoService service) {
+        neoService = service;
+
+        if (neoManager == null) {
+            neoManager = Activator.getDefault().getNeoServiceManager();
+            neoManager.addServiceEventListener(defaultListener);
+        }
+        if (indexService == null) {
+            indexService = new LuceneIndexService(neoService);
         }
 
     }
@@ -207,7 +236,9 @@ public class NeoServiceProvider implements IPropertyChangeListener{
         						PlatformUI.getWorkbench().isClosing() ||                                 
                                 Thread.currentThread().equals(display.getThread());
         if (currentThread) {
-            neoManager.commit();
+            if (neoManager!=null) {
+                neoManager.commit();
+            }
         } else {
             display.syncExec(new Runnable() {
 

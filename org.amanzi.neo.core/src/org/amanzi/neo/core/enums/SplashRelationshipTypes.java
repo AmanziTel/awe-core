@@ -25,7 +25,7 @@ public enum SplashRelationshipTypes implements DeletableRelationshipType {
 	SPREADSHEET(null,null), 
 	CHART_ITEM(null,null), 
 	CHART(null,null), 
-	RUBY_PROJECT(null,null), 
+	RUBY_PROJECT(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK), 
 	AWE_PROJECT(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK), 
 	PIE_CHART_ITEM(null,null), 
 	PIE_CHART(null,null),
@@ -36,8 +36,8 @@ public enum SplashRelationshipTypes implements DeletableRelationshipType {
 	CHART_VALUE(null,null), 
 	REPORT(null,null), 
 	REPORT_TEXT(null,null),
-	NEXT_CELL_IN_ROW(null,null),
-	NEXT_CELL_IN_COLUMN(null,null),
+	NEXT_CELL_IN_ROW(RelationDeletableTypes.RELINK,RelationDeletableTypes.RELINK),
+	NEXT_CELL_IN_COLUMN(RelationDeletableTypes.RELINK,RelationDeletableTypes.RELINK),
 	CHILD_SPREADSHEET(null,null),
 	COMPARE_RESULTS(null,null);
 	

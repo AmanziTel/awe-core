@@ -164,10 +164,12 @@ public class NeoServiceManager
      */
     public void commit()
     {
-        tx.success();
-        tx.finish();
-        tx = neo.beginTx();
-        fireServiceChangedEvent( NeoServiceStatus.COMMIT );
+        if (tx!=null) {
+            tx.success();
+            tx.finish();
+            tx = neo.beginTx();
+            fireServiceChangedEvent(NeoServiceStatus.COMMIT);
+        }
     }
 
     /**
