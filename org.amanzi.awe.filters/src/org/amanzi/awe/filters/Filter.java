@@ -15,6 +15,7 @@ package org.amanzi.awe.filters;
 
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.eclipse.swt.graphics.RGB;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
@@ -37,6 +38,7 @@ public class Filter extends AbstractFilter {
     private String secondTXT;
     private String property;
     private boolean isValid;
+    private RGB color;
 
     /**
      * constructor
@@ -55,6 +57,7 @@ public class Filter extends AbstractFilter {
             secondRel = (String)node.getProperty(FilterUtil.PROPERTY_SECOND_REL, "");
             second = (String)node.getProperty(FilterUtil.PROPERTY_SECOND, "");
             secondTXT = (String)node.getProperty(FilterUtil.PROPERTY_SECOND_TXT, "");
+            color=NeoUtils.getColor(node, FilterUtil.PROPERTY_FILTER_COLOR, null, null);
             isValid = validateFilter();
         } finally {
             NeoUtils.finishTx(tx);
@@ -73,7 +76,7 @@ public class Filter extends AbstractFilter {
                 return falseResult;
             }
             Object value = node.getProperty(property);
-            if (filterNode(value).isValid()) {
+            if (filterValue(value).isValid()) {
                 return new FilterResult(true, false, -1, -1, node);
             } else {
                 return falseResult;
@@ -117,7 +120,7 @@ public class Filter extends AbstractFilter {
     }
 
     @Override
-    public FilterResult filterNode(Object value) {
+    public FilterResult filterValue(Object value) {
         final FilterResult falseResult = new FilterResult(false, false, -1, -1, null);
         if (!isValid()) {
             return falseResult;

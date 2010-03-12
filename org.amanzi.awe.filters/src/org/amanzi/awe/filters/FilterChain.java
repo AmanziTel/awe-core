@@ -17,6 +17,7 @@ import java.util.LinkedList;
 
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.eclipse.swt.graphics.RGB;
 import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
@@ -24,7 +25,7 @@ import org.neo4j.api.core.Traverser;
 
 /**
  * <p>
- *  
+ *  Filter Chain
  * </p>
  * @author Cinkel_A
  * @since 1.0.0
@@ -33,6 +34,7 @@ public class FilterChain extends AbstractFilter {
     private final LinkedList<AbstractFilter> subfilters;
     private final  ChainRule rule;
     private final boolean isValid;
+    private final RGB color;
 
     protected FilterChain(Node node, NeoService service) {
         super(node, service);
@@ -42,6 +44,7 @@ public class FilterChain extends AbstractFilter {
         for (Node child : NeoUtils.getChildTraverser(node)) {
             subfilters.add(AbstractFilter.getInstance(child, service));
         }
+        color=NeoUtils.getColor(node, FilterUtil.PROPERTY_FILTER_COLOR, null, service);
         isValid = validateFilter();
     }
     /**
@@ -93,13 +96,13 @@ public class FilterChain extends AbstractFilter {
     }
 
     @Override
-    public FilterResult filterNode(Object value) {
+    public FilterResult filterValue(Object value) {
         final FilterResult falseResult = new FilterResult(false, false, -1, subfilters.size(), node);
         if (!isValid) {
             return falseResult;
         }
         for (int i = 0; i < subfilters.size(); i++) {
-            final FilterResult result = subfilters.get(i).filterNode(value);
+            final FilterResult result = subfilters.get(i).filterValue(value);
             switch (rule) {
             case OR:
                 if (result.isValid()){

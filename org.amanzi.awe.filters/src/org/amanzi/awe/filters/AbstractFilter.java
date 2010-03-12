@@ -95,7 +95,7 @@ public abstract class AbstractFilter {
      * @param value value to filter
      * @return FilterResult
      */
-    public abstract FilterResult filterNode(Object value);
+    public abstract FilterResult filterValue(Object value);
 
     /**
      * get result of filtering

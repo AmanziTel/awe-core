@@ -692,7 +692,7 @@ public class FilterView extends ViewPart {
      * @param dataNode - data Node
      * @param filterNode - changed filters
      */
-    protected void fireRemoveFilters(Node dataNode, Node filterNode) {
+    protected void fireChangeFilterForData(Node dataNode) {
         Node gis = NeoUtils.findGisNodeByChild(dataNode);
         if (gis != null) {
             refreshLayer(gis);
@@ -766,9 +766,10 @@ public class FilterView extends ViewPart {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoUtils.beginTx(service);
+                final Node node;
                 try {
 
-                    Node node = rootTree.getNode();
+                    node = rootTree.getNode();
                     NeoUtils.setNodeName(node, name, service);
                     node.setProperty(FilterUtil.PROPERTY_ORDER, rule);
                     saveColor(node, FilterUtil.PROPERTY_FILTER_COLOR, color);
@@ -776,11 +777,13 @@ public class FilterView extends ViewPart {
                 } finally {
                     NeoUtils.finishTx(tx);
                 }
+                fireFilterChangeEvent(node);
                 rootTree.refresh(service);
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
                     public void run() {
+
                         viewer.refresh(rootTree);
                         updateGisFilter();
                     }
@@ -814,9 +817,10 @@ public class FilterView extends ViewPart {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoUtils.beginTx(service);
+                final Node node;
                 try {
 
-                    Node node = rootTree.getNode();
+                    node = rootTree.getNode();
                     NeoUtils.setNodeName(node, property, service);
                     FilterUtil.setGroupProperty(node, property, service);
                     node.setProperty(FilterUtil.PROPERTY_FIRST, first);
@@ -829,6 +833,7 @@ public class FilterView extends ViewPart {
                 } finally {
                     NeoUtils.finishTx(tx);
                 }
+                fireFilterChangeEvent(node);
                 rootTree.refresh(service);
                 ActionUtil.getInstance().runTask(new Runnable() {
 
@@ -844,6 +849,7 @@ public class FilterView extends ViewPart {
         };
         job.schedule();
         viewer.getControl().setEnabled(true);
+
     }
 
     /**
@@ -857,15 +863,17 @@ public class FilterView extends ViewPart {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoUtils.beginTx(service);
+                final Node node;
                 try {
 
-                    Node node = rootTree.getNode();
+                     node = rootTree.getNode();
                     NeoUtils.setNodeName(node, name, service);
                     FilterUtil.setGroupProperty(node, property, service);
                     NeoUtils.successTx(tx);
                 } finally {
                     NeoUtils.finishTx(tx);
                 }
+                fireFilterChangeEvent(node);
                 rootTree.refresh(service);
                 ActionUtil.getInstance().runTask(new Runnable() {
 
@@ -1493,6 +1501,7 @@ public class FilterView extends ViewPart {
         job.schedule();
         try {
             job.join();
+            fireChangeFilterForData(dataNode);
         } catch (InterruptedException e) {
             // TODO Handle InterruptedException
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -1511,6 +1520,7 @@ public class FilterView extends ViewPart {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 Transaction tx = NeoUtils.beginTx(service);
+                
                 try {
                     for (Relationship relation : dataNode.getRelationships(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING)) {
                         relation.delete();
@@ -1525,11 +1535,14 @@ public class FilterView extends ViewPart {
         job.schedule();
         try {
             job.join();
+
+            
         } catch (InterruptedException e) {
             // TODO Handle InterruptedException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         updateGisFilter();
+        fireChangeFilterForData(dataNode);
     }
 
     /**

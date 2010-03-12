@@ -75,9 +75,9 @@ public class GroupFilter extends AbstractFilter {
     }
 
     @Override
-    public FilterResult filterNode(Object value) {
+    public FilterResult filterValue(Object value) {
             for (int i=0;i<subfilters.size();i++){
-                final FilterResult result = subfilters.get(i).filterNode(value);
+                final FilterResult result = subfilters.get(i).filterValue(value);
                 if (result.isValid()){
                     return new FilterResult(true, true, i, subfilters.size(), null);
                 }

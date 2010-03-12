@@ -64,14 +64,14 @@ public class FilterUtil {
      * @return
      */
     public static String[] getFilterDes() {
-        return new String[] {"<", "<=", "==", ">", ">=", "!="};
+        return new String[] {"","<", "<=", "==", ">", ">=", "!="};
     }
 
     /**
      * @return
      */
     public static String[] getFilterRel() {
-        return new String[] {"||", "&&"};
+        return new String[] {"","||", "&&"};
     }
 
     /**
