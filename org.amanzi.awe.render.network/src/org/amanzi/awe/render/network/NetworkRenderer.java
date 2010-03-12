@@ -261,29 +261,25 @@ public class NetworkRenderer extends RendererImpl {
             ArrayList<Node> selectedPoints = new ArrayList<Node>();
             final Set<Node> selectedNodes = new HashSet<Node>(geoNeo.getSelectedNodes());
 
+            final ReturnableEvaluator returnableEvaluator = new ReturnableEvaluator() {
+                
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    final Object property = currentPos.currentNode().getProperty("type", "");
+                    return "site".equals(property)||"probe".equals(property);
+                }
+            };
             for (Node node : selectedNodes) {
                 final String nodeType = NeoUtils.getNodeType(node, "");
                 if ("network".equals(nodeType)) {
                     // Select all 'site' nodes in that file
                     for (Node rnode : node
-                            .traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-
-                        @Override
-                                public boolean isReturnableNode(TraversalPosition currentPos) {
-                                    return "site".equals(currentPos.currentNode().getProperty("type", ""));
-                        }
-                            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                            .traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                         selectedPoints.add(rnode);
                     }
                 } else if ("city".equals(nodeType) || "bsc".equals(nodeType)) {
                     for (Node rnode : node.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                            new ReturnableEvaluator() {
-
-                        @Override
-                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                            return "site".equals(currentPos.currentNode().getProperty("type", ""));
-                        }
-                            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                            returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                         selectedPoints.add(rnode);
                     }
                 } else {

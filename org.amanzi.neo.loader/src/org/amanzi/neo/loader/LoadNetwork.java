@@ -13,7 +13,6 @@
 package org.amanzi.neo.loader;
 
 import java.io.File;
-import java.io.IOException;
 
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
@@ -121,7 +120,7 @@ public class LoadNetwork extends AbstractActionTool {
                             loader.run(monitor);
                             loader.addLayersToMap();
                         }
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         NeoCorePlugin.error("Error loading Network file", e);
                     }
                     return Status.OK_STATUS;

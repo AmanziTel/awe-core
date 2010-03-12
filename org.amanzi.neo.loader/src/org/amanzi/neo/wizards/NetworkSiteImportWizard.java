@@ -75,6 +75,8 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                     case PROBE:
                         ProbeLoader loader = new ProbeLoader(mainPage.getNetworkName(), mainPage.getFileName(), display);
                         loader.run(monitor);
+                        NetworkLoader.addDataToCatalog();
+                        loader.addLayersToMap();                        
                         break;
                     case NEIGHBOUR:
                         NeighbourLoader neighbourLoader;

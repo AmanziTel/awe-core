@@ -28,7 +28,7 @@ public enum EventType {
             return true;
         }
     },
-    RRC, NBAP, RANAP, RNSAP;
+    RRC, NBAP, RANAP, RNSAP,PCAP,SBAP;
     /***
      * is internal event
      * 
