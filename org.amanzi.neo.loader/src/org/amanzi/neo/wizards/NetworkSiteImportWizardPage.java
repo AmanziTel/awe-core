@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.wizards;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -193,6 +194,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
         for (NetworkFileType type : types) {
             result[type.ordinal()] = type.getId();
         }
+        Arrays.sort(result);
         return result;
     }
 
