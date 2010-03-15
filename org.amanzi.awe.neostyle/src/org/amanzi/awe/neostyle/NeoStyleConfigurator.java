@@ -27,8 +27,10 @@ import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -116,6 +118,19 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private Label lSecondaryProperty;
 
     public void createControl(Composite parent) {
+        //Lagutko, 15.03.2010, adding a Scroll
+        GridLayout mainLayout = new GridLayout(1, false);
+        parent.setLayout(mainLayout);
+        
+        ScrolledComposite scroll = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
+        scroll.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        scroll.setExpandVertical(true);
+        scroll.setExpandHorizontal(true);
+        
+        parent = new Composite(scroll, SWT.NONE);
+        parent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        parent.setLayout(new GridLayout(1, true));
+        
         FormLayout layout = new FormLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -379,6 +394,9 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
                 widgetSelected(e);
             }
         });
+        
+        scroll.setContent(parent);
+        scroll.setMinSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
 
     /**
