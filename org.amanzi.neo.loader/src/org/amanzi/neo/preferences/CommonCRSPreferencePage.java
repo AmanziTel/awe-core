@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 
 import org.amanzi.neo.loader.dialogs.CRSdialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
@@ -66,10 +67,8 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
             label.setLayoutData(gridData);
             label.setText(subtitle);
         }
-        Label label = new Label(mainFrame, SWT.NONE);
         GridData gridData = new GridData();
         gridData.horizontalSpan = 2;
-        label.setText("Common CRS:");
         commonCrs = new List(mainFrame, SWT.DEFAULT);
         String[] arrayCRS = crsList.keySet().toArray(new String[0]);
         commonCrs.setItems(arrayCRS);
@@ -96,7 +95,7 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
             }
         });
         Button btnAdd = new Button(mainFrame, SWT.PUSH);
-        btnAdd.setText("Add");
+        btnAdd.setText(NeoLoaderPluginMessages.CommonCRSPreference_button_ADD);
         GridData gdBtnSave = new GridData();
         gdBtnSave.horizontalAlignment = GridData.CENTER;
         btnAdd.setLayoutData(gdBtnSave);
@@ -114,7 +113,7 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
         });
 
         Button btnDelete = new Button(mainFrame, SWT.PUSH);
-        btnDelete.setText("Delete");
+        btnDelete.setText(NeoLoaderPluginMessages.CommonCRSPreference_button_REMOVE);
         GridData gdBtnCancel = new GridData();
         gdBtnCancel.horizontalAlignment = GridData.CENTER;
         btnDelete.setLayoutData(gdBtnCancel);

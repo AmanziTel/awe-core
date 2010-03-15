@@ -96,6 +96,13 @@ public class NeoLoaderPluginMessages extends NLS {
     
     public static String OSS;
     
+    public static String CommonCRSPreference_button_ADD;
+    public static String CommonCRSPreference_button_REMOVE;
+    public static String CRSdialog_TITLE;
+    public static String CRSdialog_button_SAVE;
+    public static String CRSdialog_button_CANSEL;
+    public static String CRSdialog_label_Select;
+    
     private NeoLoaderPluginMessages() {
     }
 

@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.dialogs;
 import net.refractions.udig.ui.CRSChooser;
 import net.refractions.udig.ui.Controller;
 
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -53,7 +54,7 @@ public class CRSdialog extends Dialog {
     public int open() {
         Shell parentShell = getParent();
         Shell shell = new Shell(parentShell, getStyle());
-        shell.setText("Add CRS:");
+        shell.setText(NeoLoaderPluginMessages.CRSdialog_TITLE);
 
         createContents(shell);
         shell.pack();
@@ -79,7 +80,7 @@ public class CRSdialog extends Dialog {
         shell.setLayout(new GridLayout(2, true));
 
         Label lb = new Label(shell, SWT.NONE);
-        lb.setText("demo label");
+        lb.setText(NeoLoaderPluginMessages.CRSdialog_label_Select);
         GridData layoutData = new GridData();
         layoutData.horizontalSpan = 2;
         lb.setLayoutData(layoutData);
@@ -99,7 +100,7 @@ public class CRSdialog extends Dialog {
         gridData.horizontalSpan = 2;
         control.setLayoutData(gridData);
         Button btnSave = new Button(shell, SWT.PUSH);
-        btnSave.setText("Save");
+        btnSave.setText(NeoLoaderPluginMessages.CRSdialog_button_SAVE);
         GridData gdBtnSave = new GridData();
         gdBtnSave.horizontalAlignment = GridData.CENTER;
         btnSave.setLayoutData(gdBtnSave);
@@ -114,7 +115,7 @@ public class CRSdialog extends Dialog {
 
         });
         Button btnCancel = new Button(shell, SWT.PUSH);
-        btnCancel.setText("Cancel");
+        btnCancel.setText(NeoLoaderPluginMessages.CRSdialog_button_CANSEL);
         GridData gdBtnCancel = new GridData();
         gdBtnCancel.horizontalAlignment = GridData.CENTER;
         btnCancel.setLayoutData(gdBtnCancel);
