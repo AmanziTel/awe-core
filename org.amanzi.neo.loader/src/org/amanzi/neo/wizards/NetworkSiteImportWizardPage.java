@@ -28,6 +28,7 @@ import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.NeighbourLoader;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -111,7 +112,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
         main = new Group(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
         Label label = new Label(main, SWT.LEFT);
-        label.setText("Network:");
+        label.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_NETWORK);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         network = new Combo(main, SWT.DROP_DOWN);
         network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
@@ -139,7 +140,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
                 widgetSelected(e);
             }
         });
-        editor = new FileFieldEditorExt("fileSelectNeighb", "File: ", main); // NON-NLS-1
+        editor = new FileFieldEditorExt("fileSelectNeighb", NeoLoaderPluginMessages.NetworkSiteImportWizard_FILE, main); // NON-NLS-1
         editor.setDefaulDirectory(NeighbourLoader.getDirectory());
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
@@ -157,7 +158,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
         editor.setFileExtensions(LoadNetwork.NETWORK_FILE_EXTENSIONS);
 
         label = new Label(main, SWT.LEFT);
-        label.setText("File type:");
+        label.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_DATA_TYPE);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         networkType = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
         networkType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));

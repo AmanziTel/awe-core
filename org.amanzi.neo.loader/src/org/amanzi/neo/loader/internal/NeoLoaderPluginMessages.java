@@ -88,6 +88,12 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String GpehLbOSS;
     public static String GpehImportDirEditorTitle;
 
+    public static String NetworkSiteImportWizard_PAGE_TITLE;
+    public static String NetworkSiteImportWizard_PAGE_DESCR;
+    public static String NetworkSiteImportWizard_NETWORK;
+    public static String NetworkSiteImportWizard_FILE; 
+    public static String NetworkSiteImportWizard_DATA_TYPE;
+    
     public static String OSS;
     
     private NeoLoaderPluginMessages() {

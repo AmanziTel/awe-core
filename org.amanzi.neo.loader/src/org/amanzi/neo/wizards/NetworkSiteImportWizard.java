@@ -24,6 +24,7 @@ import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.NetworkSiteLoader;
 import org.amanzi.neo.loader.ProbeLoader;
 import org.amanzi.neo.loader.TransmissionLoader;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -45,8 +46,8 @@ import org.eclipse.ui.IWorkbench;
  */
 public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
 
-    private static final String PAGE_TITLE = "Import Network Site File";
-    private static final String PAGE_DESCR = "Import a network site file into a previously loaded network";
+    private static final String PAGE_TITLE = NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE;
+    private static final String PAGE_DESCR = NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR;
     private NetworkSiteImportWizardPage mainPage;
     private Display display;
 
