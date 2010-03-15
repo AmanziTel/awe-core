@@ -1148,6 +1148,9 @@ public class DriveInquirerView extends ViewPart {
     
     @SuppressWarnings("deprecation")
     private Long getBeginTime() {
+        if(dateStartTimestamp == null){
+            return null;
+        }
         Date date = new Date(dateStartTimestamp);
         date.setHours(dateStart.getHours());
         date.setMinutes(dateStart.getMinutes());
