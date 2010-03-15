@@ -43,9 +43,8 @@ public class DataLoadPreferences {
     public static final String PR_LONGITUDE = "PR_LONGITUDE";
     
 	// network site loader headers
-    public static final String NS_SITE = "NS_SITE";
-    public static final String NS_BEAMWIDTH = "NS_BEAMWIDTH";
-    public static final String NS_AZIMUTH = "NS_AZIMUTH";
+    public static final String NH_BEAMWIDTH = "NS_BEAMWIDTH";
+    public static final String NH_AZIMUTH = "NS_AZIMUTH";
     
     // neighbour loader headers
     public static final String NE_CI = "NE_CI";
@@ -55,6 +54,15 @@ public class DataLoadPreferences {
     public static final String NE_ADJ_CI = "NE_ADJ_CI";
     public static final String NE_ADJ_LAC = "NE_ADJ_LAC";
     public static final String NE_ADJ_BTS = "NE_ADJ_BTS";
+    
+    // transmission loader headers
+    public static final String TR_SITE_ID_SERV = "TR_SITE_ID_SERV";
+    public static final String TR_SITE_NO_SERV = "TR_SITE_NO_SERV";
+    public static final String TR_ITEM_NAME_SERV = "TR_ITEM_NAME_SERV";
+    
+    public static final String TR_SITE_ID_NEIB = "TR_SITE_ID_NEIB";
+    public static final String TR_SITE_NO_NEIB = "TR_SITE_NO_NEIB";
+    public static final String TR_ITEM_NAME_NEIB = "TR_ITEM_NAME_NEIB";
     
     public static final String COMMON_CRS_LIST = "COMMON_CRS_LIST";
     public static final String CRS_DELIMETERS = "--DELIMETER--";

@@ -52,7 +52,9 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String ETSIImport_directory;
     public static String ETSIImport_dir_editor_title;
     
-    public static String PrefNetwork_title;
+    public static String PrefNetwork_title_network;
+    public static String PrefNetwork_title_sector;
+    public static String PrefNetwork_title_site;
     public static String PrefNetwork_field_city;
     public static String PrefNetwork_field_msc;
     public static String PrefNetwork_field_bsc;
@@ -60,11 +62,8 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String PrefNetwork_field_sector;
     public static String PrefNetwork_field_latitude;
     public static String PrefNetwork_field_longitude;
-    
-    public static String PrefSite_title;
-    public static String PrefSite_field_site;
-    public static String PrefSite_field_beamwidth;
-    public static String PrefSite_field_azimuth;
+    public static String PrefNetwork_field_beamwidth;
+    public static String PrefNetwork_field_azimuth;
 
     public static String PrefProbe_title;
     public static String PrefProbe_field_name;
@@ -81,6 +80,14 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String PrefNeighbour_field_adj_ci;
     public static String PrefNeighbour_field_adj_bts;
     public static String PrefNeighbour_field_adj_lac;
+    
+    public static String PrefTransmission_title;
+    public static String PrefTransmission_title_server;
+    public static String PrefTransmission_title_neighbour;
+    public static String PrefTransmission_field_Site_ID;
+    public static String PrefTransmission_field_Site_No;
+    public static String PrefTransmission_field_ITEM_Name;
+    
     
     public static String GpehWindowTitle;
     public static String GpehTitle;

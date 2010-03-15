@@ -46,7 +46,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_CITY, "City, Town, Ort");
         pref.setDefault(DataLoadPreferences.NH_MSC, "MSC, MSC_NAME, MSC Name");
         pref.setDefault(DataLoadPreferences.NH_BSC, "BSC, BSC_NAME, RNC, BSC Name");
-        pref.setDefault(DataLoadPreferences.NH_SITE, "Site, Name, Site Name");
+        pref.setDefault(DataLoadPreferences.NH_SITE, "Site, Name, Site Name, SITE_ID");
         pref.setDefault(DataLoadPreferences.NH_SECTOR, "Sector, Cell, BTS_Name, CELL_NAME, GSM Sector ID");
         pref.setDefault(DataLoadPreferences.NH_LATITUDE, "lat.*, y_wert.*, northing");
         pref.setDefault(DataLoadPreferences.NH_LONGITUDE, "long.*, x_wert.*, easting");
@@ -56,9 +56,8 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.PR_LATITUDE, "lat.*, .*latitude.*");
         pref.setDefault(DataLoadPreferences.PR_LONGITUDE, "long.*, .*longitude.*");
         
-        pref.setDefault(DataLoadPreferences.NS_SITE, "SITE_ID");
-        pref.setDefault(DataLoadPreferences.NS_AZIMUTH, ".*azimuth.*");
-        pref.setDefault(DataLoadPreferences.NS_BEAMWIDTH, ".*beamwidth.*, beam, hbw");
+        pref.setDefault(DataLoadPreferences.NH_AZIMUTH, ".*azimuth.*");
+        pref.setDefault(DataLoadPreferences.NH_BEAMWIDTH, ".*beamwidth.*, beam, hbw");
         
         pref.setDefault(DataLoadPreferences.NE_CI, "CI,CI_s");
         pref.setDefault(DataLoadPreferences.NE_BTS, "BTS_NAME,BTS_Name_s");
@@ -67,6 +66,14 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NE_ADJ_CI, "ADJ_CI,CI_t");
         pref.setDefault(DataLoadPreferences.NE_ADJ_BTS, "ADJ_BTS_NAME,BTS_Name_t");
         pref.setDefault(DataLoadPreferences.NE_ADJ_LAC, "ADJ_LAG,LAC_t");
+        
+        pref.setDefault(DataLoadPreferences.TR_SITE_ID_SERV, "Site ID, Near end Name");
+        pref.setDefault(DataLoadPreferences.TR_SITE_NO_SERV, "Site No, Near End Site No");
+        pref.setDefault(DataLoadPreferences.TR_ITEM_NAME_SERV, "ITEM_Name");
+        
+        pref.setDefault(DataLoadPreferences.TR_SITE_ID_NEIB, "Site ID, Far end Name");
+        pref.setDefault(DataLoadPreferences.TR_SITE_NO_NEIB, "Site No, Far End Site No");
+        pref.setDefault(DataLoadPreferences.TR_ITEM_NAME_NEIB, "ITEM_Name");
         
         pref.setDefault(DataLoadPreferences.DEFAULT_CHARSET, Charset.defaultCharset().name());
         StringBuilder def;

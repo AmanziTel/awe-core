@@ -127,7 +127,7 @@ public class LoaderUtils {
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.NEIGHBOUR, null);
                 }
             }
-            for (String header : getPossibleHeaders(DataLoadPreferences.NS_SITE)) {
+            for (String header : getPossibleHeaders(DataLoadPreferences.NH_SITE)) {
                 if (headers.contains(header)) {
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.RADIO_SITE, null);
                 }

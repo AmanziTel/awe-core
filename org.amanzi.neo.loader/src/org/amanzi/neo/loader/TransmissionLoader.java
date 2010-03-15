@@ -17,9 +17,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,6 +39,7 @@ import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.api.core.Direction;
@@ -57,12 +60,7 @@ import org.neo4j.util.index.LuceneIndexService;
  * @since 1.0.0
  */
 public class TransmissionLoader {
-    /** String ID3 field */
-    private static final String ID3 = "ITEM_Name";
-    /** String ID2 field */
-    private static final String ID1 = "Site ID";
-    /** String ID1 field */
-    private static final String ID2 = "Site No";
+    
     /** String STRING field */
     // private static String directory = null;
     private static final int COMMIT_MAX = 1000;
@@ -234,10 +232,12 @@ public class TransmissionLoader {
             index=NeoServiceProvider.getProvider().getIndexService();
             determineFieldSepRegex(line);
             headers = splitLine(line);
-            serverNodeName = new NodeName(new String[] {ID1, "Near end Name"}, new String[] {ID2, "Near End Site No"},
-                    new String[] {ID3});
-            neighbourNodeName = new NodeName(new String[] {ID1, "Far end Name"}, new String[] {ID2, "Far End Site No"},
-                    new String[] {ID3});
+            serverNodeName = new NodeName(getPossibleHeaders(DataLoadPreferences.TR_SITE_ID_SERV), 
+                                          getPossibleHeaders(DataLoadPreferences.TR_SITE_NO_SERV),
+                                          getPossibleHeaders(DataLoadPreferences.TR_ITEM_NAME_SERV));
+            neighbourNodeName = new NodeName(getPossibleHeaders(DataLoadPreferences.TR_SITE_ID_NEIB), 
+                                             getPossibleHeaders(DataLoadPreferences.TR_SITE_NO_NEIB),
+                                             getPossibleHeaders(DataLoadPreferences.TR_ITEM_NAME_NEIB));
             for (int i = 0; i < headers.length; i++) {
                 String fieldHeader = headers[i];
                 if (serverNodeName.setFieldIndex(fieldHeader, i)) {
@@ -248,6 +248,23 @@ public class TransmissionLoader {
                     indexMap.put(i, new Pair<String, String>(fieldHeader, null));
                 }
             }
+        }
+        
+        /**
+         * @param key -key of value from preference store
+         * @return array of possible headers
+         */
+        protected String[] getPossibleHeaders(String key) {
+            String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(key);
+            String[] array = text.split(",");
+            List<String> result = new ArrayList<String>();
+            for (String string : array) {
+                String value = string.trim();
+                if (!value.isEmpty()) {
+                    result.add(value);
+                }
+            }
+            return result.toArray(new String[0]);
         }
 
         protected String[] splitLine(String line) {

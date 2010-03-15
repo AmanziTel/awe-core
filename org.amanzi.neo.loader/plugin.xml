@@ -209,7 +209,7 @@
 	  <page
             class="org.amanzi.neo.preferences.NeighbourLoaderPreferencePage"
             id="org.amanzi.neo.preferences.NeighbourLoaderPreferencePage"
-            name="Neighbour data"
+            name="Neighbour lists"
             category="org.amanzi.neo.preferences.DataLoadPreferencePage">
       </page>
       <page
@@ -219,9 +219,9 @@
             category="org.amanzi.neo.preferences.DataLoadPreferencePage">
       </page>
       <page
-            class="org.amanzi.neo.preferences.SiteLoaderPreferencePage"
-            id="org.amanzi.neo.preferences.SiteLoaderPreferencePage"
-            name="Network Site data"
+            class="org.amanzi.neo.preferences.TransmissionLoaderPreferencePage"
+            id="org.amanzi.neo.preferences.TransmissionLoaderPreferencePage"
+            name="Transmission lists"
             category="org.amanzi.neo.preferences.DataLoadPreferencePage">
       </page>
    </extension>

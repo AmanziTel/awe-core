@@ -22,7 +22,7 @@ public class SiteLoaderPreferencePage extends FieldEditorPreferencePage implemen
         attributePanel.setLayout(new GridLayout());
 
         Group attributeGroup = new Group(attributePanel, attributePanel.getStyle());
-        attributeGroup.setText(NeoLoaderPluginMessages.PrefSite_title);
+        //attributeGroup.setText(NeoLoaderPluginMessages.PrefSite_title);
         attributeGroup.setLayout(new GridLayout());
         Composite marginPanel = new Composite(attributeGroup, attributeGroup.getStyle());
         GridLayout layout = new GridLayout();
@@ -31,9 +31,9 @@ public class SiteLoaderPreferencePage extends FieldEditorPreferencePage implemen
         marginPanel.setLayout(layout);
 
         int width = 53;
-        addField(new StringFieldEditor(DataLoadPreferences.NS_SITE, NeoLoaderPluginMessages.PrefSite_field_site, width,marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NS_BEAMWIDTH, NeoLoaderPluginMessages.PrefSite_field_beamwidth, width,marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NS_AZIMUTH, NeoLoaderPluginMessages.PrefSite_field_azimuth,width, marginPanel));
+        //addField(new StringFieldEditor(DataLoadPreferences.NS_SITE, NeoLoaderPluginMessages.PrefSite_field_site, width,marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NH_BEAMWIDTH, NeoLoaderPluginMessages.PrefNetwork_field_beamwidth, width,marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NH_AZIMUTH, NeoLoaderPluginMessages.PrefNetwork_field_azimuth,width, marginPanel));
     }
 
     @Override

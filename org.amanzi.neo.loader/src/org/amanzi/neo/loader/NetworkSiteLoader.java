@@ -168,7 +168,7 @@ public class NetworkSiteLoader extends AbstractLoader {
     private void initializeKnownHeaders() {
         needParceHeader = true;
         // Known headers that are not sector data properties
-        addMainHeader(SITE_ID_KEY, getPossibleHeaders(DataLoadPreferences.NS_SITE));
+        addMainHeader(SITE_ID_KEY, getPossibleHeaders(DataLoadPreferences.NH_SITE));
         // addMainHeader("type", new String[] {"TYPE"});
         // Stop statistics collection for properties we will not save to the sector
         addNonDataHeaders(1, mainHeaders);
@@ -177,8 +177,8 @@ public class NetworkSiteLoader extends AbstractLoader {
         useMapper(1, SITE_ID_KEY, new StringMapper());
 
         // Known headers that are sector data properties
-        addKnownHeader(1, "beamwidth", getPossibleHeaders(DataLoadPreferences.NS_BEAMWIDTH));
-        addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NS_AZIMUTH));
+        addKnownHeader(1, "beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
+        addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
     }
 
     private class NetworkHeader {
