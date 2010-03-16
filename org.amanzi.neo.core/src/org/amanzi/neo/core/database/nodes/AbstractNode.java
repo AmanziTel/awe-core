@@ -12,7 +12,13 @@
  */
 package org.amanzi.neo.core.database.nodes;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.neo4j.api.core.NeoService;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Relationship;
 import org.neo4j.api.core.RelationshipType;
@@ -29,6 +35,11 @@ public abstract class AbstractNode {
 	 * Wrapped Node
 	 */
 	protected Node node;
+    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+    private final Lock r = rwl.readLock();
+    private final Lock w = rwl.writeLock();
+
+	private NeoService service;
 
 	/**
 	 * Constructor of abstract Wrapper
@@ -37,8 +48,9 @@ public abstract class AbstractNode {
 	 *            wrapped Node
 	 */
 
-	public AbstractNode(Node node) {
+	protected AbstractNode(Node node) {
 		this.node = node;
+		service=null;
 	}
 
 	/**
@@ -51,10 +63,10 @@ public abstract class AbstractNode {
 	 * @param nodeType
 	 *            node type
 	 */
-	public AbstractNode(Node node, String nodeName, String nodeType) {
+	protected AbstractNode(Node node, String nodeName, NodeTypes nodeType) {
 		this(node);
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, nodeName);
-		setParameter(INeoConstants.PROPERTY_TYPE_NAME, nodeType);
+		nodeType.setNodeType(node, null);
 	}
 
 	/**
@@ -122,15 +134,27 @@ public abstract class AbstractNode {
 	 *            parameter name
 	 * @return value of parameter
 	 */
-
+	
 	protected Object getParameter(String name) {
-		Object value = null;
+	    Object value = null;
+	    
+	    if (node.hasProperty(name)) {
+	        value = node.getProperty(name);
+	    }
+	    
+	    return value;
+	}
+	/**
+	 * Returns cached value of Parameter of get it from Node
+	 * 
+	 * @param name
+	 *            parameter name
+	 * @param defvalue - default value         
+	 * @return value of parameter, or defvalue if property not exist
+	 */
 
-		if (node.hasProperty(name)) {
-			value = node.getProperty(name);
-		}
-
-		return value;
+	protected Object getParameter(String name,Object defvalue) {
+	    return getUnderlyingNode().getProperty(name,defvalue);
 	}
 
 	/**
@@ -150,4 +174,33 @@ public abstract class AbstractNode {
 	public void delete() {
 		node.delete();
 	}
+	
+	/**
+	 *Get NeoService  
+	 * @return NeoService. If NeoService id nod defined, then sets and return NeoServiceProvider.getProvider().getService()
+	 */
+    protected  NeoService getService(){
+        r.lock();
+        try{
+            if (service==null){
+                setService(NeoServiceProvider.getProvider().getService());
+            }
+            return service;
+        }finally{
+            r.unlock();
+        }
+    }
+    /**
+     * set NeoService
+     *
+     * @param service - new NeoService
+     */
+    public void setService(NeoService service){
+        w.lock();
+        try{
+            this.service=service;
+        }finally{
+            w.unlock();
+        }
+    }
 }

@@ -13,7 +13,9 @@
 
 package org.amanzi.neo.core.enums;
 
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.api.core.NeoService;
+import org.neo4j.api.core.Node;
 import org.neo4j.api.core.PropertyContainer;
 import org.neo4j.api.core.Transaction;
 
@@ -31,8 +33,7 @@ public enum NetworkTypes {
         @Override
         public boolean isCorrectFileType(NetworkFileType fileType) {
             return fileType != null
-                    && (fileType == NetworkFileType.NEIGHBOUR || fileType == NetworkFileType.RADIO_SECTOR
-                            || fileType == NetworkFileType.RADIO_SITE || fileType == NetworkFileType.TRANSMISSION);
+                    && (fileType == NetworkFileType.NEIGHBOUR || fileType == NetworkFileType.RADIO_SECTOR || fileType == NetworkFileType.RADIO_SITE || fileType == NetworkFileType.TRANSMISSION);
         }
     },
     PROBE("probe") {
@@ -104,5 +105,21 @@ public enum NetworkTypes {
      * @return
      */
     public abstract boolean isCorrectFileType(NetworkFileType fileType);
+
+    /**
+     * Set network type to current node
+     * 
+     * @param node - node
+     * @param service NeoService - neo service, if null then transaction do not created
+     */
+    public void setTypeToNode(Node node, NeoService service) {
+        Transaction tx = NeoUtils.beginTx(service);
+        try {
+            node.setProperty(PROPERTY_NAME, getId());
+            NeoUtils.successTx(tx);
+        } finally {
+            NeoUtils.finishTx(tx);
+        }
+    }
 
 }

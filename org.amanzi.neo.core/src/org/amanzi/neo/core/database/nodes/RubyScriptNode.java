@@ -31,7 +31,7 @@ public class RubyScriptNode extends AbstractNode {
 	 * @param wrapped node
 	 */
 	public RubyScriptNode(Node node, String name) {
-		super(node, name, NodeTypes.SCRIPT.getId());
+		super(node, name, NodeTypes.SCRIPT);
 	}
 
    /**
@@ -60,7 +60,8 @@ public class RubyScriptNode extends AbstractNode {
 	 * 
 	 * @return name of Ruby script
 	 */
-	public String getName() {
+	@Override
+    public String getName() {
 		return (String) getParameter(ATTR_NAME);
 	}
 

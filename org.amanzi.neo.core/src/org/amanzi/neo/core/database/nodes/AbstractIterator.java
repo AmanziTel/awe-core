@@ -51,7 +51,13 @@ public abstract class AbstractIterator<T extends AbstractNode> implements
 				ReturnableEvaluator.ALL_BUT_START_NODE, type,
 				Direction.OUTGOING).iterator();
 	}
-
+	/**
+	 * Constructor - create iterator by traverser
+	 * @param traverser traverser
+	 */
+    public AbstractIterator(Traverser traverser) {
+        this.iterator=traverser.iterator();
+    }
 	/**
 	 * Default constructor - do nothing
 	 */

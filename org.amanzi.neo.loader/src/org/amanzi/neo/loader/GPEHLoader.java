@@ -69,6 +69,7 @@ public class GPEHLoader extends AbstractLoader {
     private Node cellRoot;
     private Node lastCellNode;
     private final LinkedHashMap<String, Header> headers;
+    private int eventsCount;
 
     /**
      * Constructor
@@ -112,6 +113,7 @@ public class GPEHLoader extends AbstractLoader {
                    cellMap.put((Integer)cell.getProperty(INeoConstants.PROPERTY_SECTOR_CI,null),cell); 
                }
             }
+            eventsCount=0;
             int perc = 0;
             int count=0;
             for (Map.Entry<String, List<String>> entry : fileList.entrySet()) {
@@ -129,6 +131,7 @@ public class GPEHLoader extends AbstractLoader {
                     monitor.worked(1);
                     eventLastNode = null;
                     for (String subFile : entry.getValue()) {
+                        int cn=0;
                         monitor.setTaskName(subFile);
                         System.out.println(subFile);
                         GPEHEvent result = new GPEHEvent();
@@ -144,6 +147,8 @@ public class GPEHLoader extends AbstractLoader {
                                     int recordType = input.readByte();
                                     if (recordType == 4) {
                                         GPEHParser.parseEvent(input, result,recordLen);
+                                        eventsCount++;
+                                        cn++;
                                     }else if (recordType == 7) {
                                         GPEHParser.pareseFooter(input, result);
                                     } else if (recordType == 6) {
@@ -166,7 +171,7 @@ public class GPEHLoader extends AbstractLoader {
                                 input.close();
                                 monitor.worked(1);
                             }
-                    }
+                            info(String.format("File %s: saved %s events",subFile,cn));                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     // TODO add more information
@@ -182,7 +187,10 @@ public class GPEHLoader extends AbstractLoader {
         }
     }
 
-
+@Override
+public void printStats(boolean verbose) {
+    info("Finished loading " + eventsCount + " events");
+}
     /**
      * save event subfile
      * @param eventFile - event file

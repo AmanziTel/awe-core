@@ -19,11 +19,11 @@ import java.util.List;
 
 import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
 import org.amanzi.neo.core.database.services.AweProjectService;
+import org.amanzi.neo.core.database.services.NeoDataService;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.core.database.services.UpdateDatabaseManager;
 import org.amanzi.neo.core.preferences.NeoPreferencesInitializer;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
@@ -61,7 +61,10 @@ public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
 
 	private AweProjectService aweProjectService;
 	private UpdateDatabaseManager updateBDManager;
+	private NeoDataService neoDataService;
+	private final Object neoDataMonitor=new Object();
     final List<UpdateDatabaseEventType> eventList = Arrays.asList(UpdateDatabaseEventType.values());
+
 
 	/**
 	 * Constructor for SplashPlugin.
@@ -71,7 +74,8 @@ public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
 		plugin = this;
 	}
 
-	public void start(BundleContext context) throws Exception {
+	@Override
+    public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
 		updateBDManager = new UpdateDatabaseManager();
@@ -85,7 +89,8 @@ public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
 	 * org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext
 	 * )
 	 */
-	public void stop(BundleContext context) throws Exception {
+	@Override
+    public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
 	}
@@ -112,10 +117,24 @@ public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
 	 * @return awe project service
 	 */
 	public AweProjectService getProjectService() {
-		if (aweProjectService == null) {
-			aweProjectService = new AweProjectService();
+	    if (aweProjectService == null) {
+	        aweProjectService = new AweProjectService();
+	    }
+	    return aweProjectService;
+	}
+	/**
+	 * get service
+	 * @return awe project service
+	 */
+	public NeoDataService getNeoDataService() {
+		if (neoDataService == null) {
+		    synchronized (neoDataMonitor) {
+		        if (neoDataService == null) {
+		            neoDataService = new NeoDataService();
+		        }
+            }
 		}
-		return aweProjectService;
+		return neoDataService;
 	}
 	
 	/**

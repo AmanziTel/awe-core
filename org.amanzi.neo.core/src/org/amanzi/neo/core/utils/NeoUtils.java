@@ -99,9 +99,18 @@ public class NeoUtils {
      * @param defValue default value
      * @return node name or defValue
      */
-    public static String getNodeType(Node node, String... defValue) {
-        String def = defValue == null || defValue.length < 1 ? null : defValue[0];
-        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, def);
+    public static String getNodeType(Node node, String defValue) {
+        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, defValue);
+    }
+    /**
+     * gets node name
+     * 
+     * @param node node
+     * @param defValue default value
+     * @return node name or defValue
+     */
+    public static String getNodeType(Node node) {
+        return getNodeType(node,null);
     }
 
     /**

@@ -15,6 +15,13 @@ package org.amanzi.neo.core.enums;
 
 import java.util.ArrayList;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.utils.NeoUtils;
+import org.neo4j.api.core.NeoService;
+import org.neo4j.api.core.Node;
+import org.neo4j.api.core.PropertyContainer;
+import org.neo4j.api.core.Transaction;
+
 /**
  * <p>
  * Drive types
@@ -159,5 +166,36 @@ public enum DriveTypes {
     public String getFullDatasetName(String datasetName) {
         return datasetName;
     }
-
+    /**
+     * returns type of node
+     * 
+     * @param container PropertyContainer
+     * @param service NeoService
+     * @return type of node
+     */
+    public static DriveTypes getNodeType(PropertyContainer node, NeoService service) {
+        Transaction tx = service == null ? null : service.beginTx();
+        try {
+            return findById((String)node.getProperty(INeoConstants.DRIVE_TYPE, null));
+        } finally {
+            if (service != null) {
+                tx.finish();
+            }
+        }
+    }
+    /**
+     * Set drive type to current node
+     * 
+     * @param node - node
+     * @param service NeoService - neo service, if null then transaction do not created
+     */
+    public void setTypeToNode(Node node, NeoService service) {
+        Transaction tx = NeoUtils.beginTx(service);
+        try {
+            node.setProperty(INeoConstants.DRIVE_TYPE, getId());
+            NeoUtils.successTx(tx);
+        } finally {
+            NeoUtils.finishTx(tx);
+        }
+    }
 }

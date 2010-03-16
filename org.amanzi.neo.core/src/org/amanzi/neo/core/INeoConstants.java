@@ -156,4 +156,5 @@ public class INeoConstants {
     public static final String GPEH_USER_LABEL = "label";
     public static final String GPEH_MINUTE = "minute";
     public static final String PROPERTY_EVENT_ID = "event id";
+    public static final String LAST_CHILD_ID = "last_child_id";
 }
