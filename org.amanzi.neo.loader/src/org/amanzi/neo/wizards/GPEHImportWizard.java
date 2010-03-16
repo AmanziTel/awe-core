@@ -16,6 +16,9 @@ package org.amanzi.neo.wizards;
 import java.io.File;
 import java.io.IOException;
 
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.loader.GPEHLoader;
 import org.amanzi.neo.loader.OSSCounterLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -60,6 +63,8 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                     default:
                         break;
                     }
+                    NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
+                            new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
                 } catch (IOException e) {
                     NeoLoaderPlugin.error(e.getLocalizedMessage());
                     return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
