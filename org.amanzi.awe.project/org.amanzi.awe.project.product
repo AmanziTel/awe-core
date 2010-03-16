@@ -42,11 +42,10 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <linux icon="/org.amanzi.awe.project/icons/awe_icon_128.xpm"/>
       <solaris/>
       <win useIco="true">
-         <ico path="D:/projects/AWE/org.amanzi.awe.project/icons/awe.ico"/>
+         <ico path="/org.amanzi.awe/icons/awe.ico"/>
          <bmp/>
       </win>
    </launcher>
-
 
    <vm>
       <linux>jre1.6.0_11_gdal</linux>

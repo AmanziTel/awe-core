@@ -2,7 +2,7 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>AWE</artifactId>
+    <artifactId>awe</artifactId>
     <groupId>AWE_build</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
@@ -14,7 +14,7 @@
   	<generatedBuildProperties>root.properties</generatedBuildProperties>
   </properties>
   <build>
-  	<finalName>${parent.artifactId}-${BUILD_NUMBER}</finalName>  	
+  	<finalName>${parent.artifactId}-0.10.${BUILD_NUMBER}</finalName>  	
     <plugins>
       <plugin>
         <groupId>org.sonatype.tycho</groupId>
@@ -38,8 +38,7 @@
               <arch>x86</arch>
             </environment>
           </environments>
-          <directoryName>awe</directoryName>
-          <includeJRE>true</includeJRE>
+          <directoryName>awe</directoryName>          
         </configuration>
       </plugin>
     </plugins>
