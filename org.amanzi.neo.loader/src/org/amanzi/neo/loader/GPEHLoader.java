@@ -113,15 +113,20 @@ public class GPEHLoader extends AbstractLoader {
                }
             }
             int perc = 0;
-            int prevPerc = 0;
-            int prevLineNumber = 0;
             int count=0;
+            for (Map.Entry<String, List<String>> entry : fileList.entrySet()) {
+//                long len = new File(filename + File.separator + entry.getKey()).length();
+                perc+= entry.getValue().size()+1;
+            }
+            monitor.beginTask("Load GPEH data", perc);
             for (Map.Entry<String, List<String>> entry : fileList.entrySet()) {
                 try {
                     String mainFile = entry.getKey();
+                    monitor.setTaskName(mainFile);;
                     String rootFile = filename + File.separator + mainFile;
                     GPEHMainFile root = GPEHParser.parseMainFile(new File(rootFile));
                     saveRoot(root);
+                    monitor.worked(1);
                     eventLastNode = null;
                     for (String subFile : entry.getValue()) {
                         monitor.setTaskName(subFile);
@@ -159,6 +164,7 @@ public class GPEHLoader extends AbstractLoader {
                                 //normal behavior
                             } finally {
                                 input.close();
+                                monitor.worked(1);
                             }
                     }
                 } catch (Exception e) {
