@@ -87,8 +87,8 @@ public class GPEHEvent implements IGPEHBlock {
          * @param parameter
          * @param bitSet
          */
-        public void addProperty(Parameters parameter, String bitSet) {
-            properties.put(parameter, parameter.pareseBits(bitSet));
+        public void addProperty(Parameters parameter, Object value) {
+            properties.put(parameter, value);
         }
 
         /**
