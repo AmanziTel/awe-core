@@ -46,13 +46,13 @@ import org.neo4j.api.core.Traverser;
 
 /**
  * <p>
- * Main page if ETSIImportWizard
+ * Main page if AMSImportWizard
  * </p>
  * 
  * @author Lagutko_n
  * @since 1.0.0
  */
-public class ETSIImportWizardPage extends WizardPage {
+public class AMSImportWizardPage extends WizardPage {
 	
     private String fileName;
     private Composite main;
@@ -71,7 +71,7 @@ public class ETSIImportWizardPage extends WizardPage {
      * @param pageName page name
      * @param description page description
      */
-    public ETSIImportWizardPage(String pageName, String description) {
+    public AMSImportWizardPage(String pageName, String description) {
         super(pageName);
         setTitle(pageName);
         setDescription(description);
@@ -93,7 +93,7 @@ public class ETSIImportWizardPage extends WizardPage {
         main = new Group(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
         Label label = new Label(main, SWT.LEFT);
-        label.setText(NeoLoaderPluginMessages.ETSIImport_dataset);
+        label.setText(NeoLoaderPluginMessages.AMSImport_dataset);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         dataset = new Combo(main, SWT.DROP_DOWN);
         dataset.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
@@ -122,7 +122,7 @@ public class ETSIImportWizardPage extends WizardPage {
         });        
         
         Label networkLabel = new Label(main, SWT.LEFT);
-        networkLabel.setText(NeoLoaderPluginMessages.ETSIImport_network);
+        networkLabel.setText(NeoLoaderPluginMessages.AMSImport_network);
         networkLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 2));
         network = new Combo(main, SWT.DROP_DOWN);
         network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 2));
@@ -148,8 +148,8 @@ public class ETSIImportWizardPage extends WizardPage {
 			}
 		});
         
-        editor = new DirectoryEditor(NeoLoaderPluginMessages.ETSIImport_dir_editor_title, 
-        		NeoLoaderPluginMessages.ETSIImport_directory, main); // NON-NLS-1
+        editor = new DirectoryEditor(NeoLoaderPluginMessages.AMSImport_dir_editor_title, 
+        		NeoLoaderPluginMessages.AMSImport_directory, main); // NON-NLS-1
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
             	String oldFileName = fileName;

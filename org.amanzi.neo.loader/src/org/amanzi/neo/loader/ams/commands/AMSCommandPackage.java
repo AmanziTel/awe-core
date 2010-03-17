@@ -11,23 +11,23 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
 import java.util.HashMap;
 
 
 /**
- * Package of ETSI command
+ * Package of AMS command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class ETSICommandPackage {
+public class AMSCommandPackage {
 	
 	/*
 	 * Map with commands
 	 */
-	private static HashMap<String, AbstractETSICommand> commandsMap = new HashMap<String, AbstractETSICommand>();
+	private static HashMap<String, AbstractAMSCommand> commandsMap = new HashMap<String, AbstractAMSCommand>();
 	
 	static {
 		registerCommand(new CCI());
@@ -50,9 +50,9 @@ public class ETSICommandPackage {
 	/**
 	 * Registers command
 	 * 
-	 * @param command ETSI command
+	 * @param command AMS command
 	 */
-	private static void registerCommand(AbstractETSICommand command) {
+	private static void registerCommand(AbstractAMSCommand command) {
 		commandsMap.put(command.getName(), command);
 	}
 	
@@ -62,7 +62,7 @@ public class ETSICommandPackage {
 	 * @param commandName name of command
 	 * @return command
 	 */
-	public static AbstractETSICommand getCommand(String commandName, CommandSyntax syntax) {
+	public static AbstractAMSCommand getCommand(String commandName, CommandSyntax syntax) {
 		if (syntax == CommandSyntax.EXECUTE) {
 			for (String singleCommandName : commandsMap.keySet()) {
 				if (commandName.startsWith(singleCommandName)) {
@@ -87,12 +87,12 @@ public class ETSICommandPackage {
 	}
 	
 	/**
-	 * Checks is it ETSI command
+	 * Checks is it AMS command
 	 *
 	 * @param commandName name of command
-	 * @return is it ETSI command
+	 * @return is it AMS command
 	 */
-	public static boolean isETSICommand(String commandName) {
+	public static boolean isAMSCommand(String commandName) {
 		return commandName.toUpperCase().startsWith("AT");
 	}
 	

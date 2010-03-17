@@ -11,24 +11,24 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
 
 /**
- * ATA command
+ * CTCR command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-class ATA extends AbstractETSICommand {
+class CTCR extends AbstractAMSCommand {
 	
 	/*
 	 * Name of command
 	 */
-	private static final String COMMAND_NAME = "ATA";
+	private static final String COMMAND_NAME = "CTCR";
 	
 	@Override
 	public String getName() {

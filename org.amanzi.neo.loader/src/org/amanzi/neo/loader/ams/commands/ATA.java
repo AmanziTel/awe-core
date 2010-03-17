@@ -11,24 +11,24 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
 
 /**
- * ATD command
+ * ATA command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-class ATD extends AbstractETSICommand {
+class ATA extends AbstractAMSCommand {
 	
 	/*
 	 * Name of command
 	 */
-	private static final String COMMAND_NAME = "atd";
+	private static final String COMMAND_NAME = "ATA";
 	
 	@Override
 	public String getName() {

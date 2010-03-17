@@ -22,7 +22,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.LoaderUtils;
-import org.amanzi.neo.loader.correlate.ETSICorrellator;
+import org.amanzi.neo.loader.correlate.AMSCorrellator;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -203,7 +203,7 @@ public class CorrelateDialog {
 			
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				ETSICorrellator correlator = new ETSICorrellator();
+				AMSCorrellator correlator = new AMSCorrellator();
 				correlator.correlate(firstDataset, secondDataset);
                 ActionUtil.getInstance().runTask(new Runnable() {
 

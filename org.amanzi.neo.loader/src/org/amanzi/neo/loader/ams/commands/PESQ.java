@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
 
 
 /**
@@ -22,7 +22,7 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class PESQ extends AbstractETSICommand {
+public class PESQ extends AbstractAMSCommand {
 	
 	/** String ESTIMATED_DELAY field */
     public static final String ESTIMATED_DELAY = "estimated delay";
@@ -51,11 +51,11 @@ public class PESQ extends AbstractETSICommand {
 
 	@Override
 	protected void initializeParameters() {
-	    parameters.add(new ETSICommandParameter(PESQ_LISTENING_QUALITIY, ParamterType.FLOAT));
-	    parameters.add(new ETSICommandParameter("PESQ Threshold", ParamterType.FLOAT));
-	    parameters.add(new ETSICommandParameter("Average Symmetrical Disturbance", ParamterType.FLOAT));
-	    parameters.add(new ETSICommandParameter("Average Asymmetrical Distrurbance", ParamterType.FLOAT));
-	    parameters.add(new ETSICommandParameter(ESTIMATED_DELAY, ParamterType.FLOAT));
+	    parameters.add(new AMSCommandParameter(PESQ_LISTENING_QUALITIY, ParamterType.FLOAT));
+	    parameters.add(new AMSCommandParameter("PESQ Threshold", ParamterType.FLOAT));
+	    parameters.add(new AMSCommandParameter("Average Symmetrical Disturbance", ParamterType.FLOAT));
+	    parameters.add(new AMSCommandParameter("Average Asymmetrical Distrurbance", ParamterType.FLOAT));
+	    parameters.add(new AMSCommandParameter(ESTIMATED_DELAY, ParamterType.FLOAT));
 	}
 
 	@Override

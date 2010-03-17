@@ -11,13 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
 
 /**
  * AT+CNUM command
@@ -25,7 +25,7 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
  * @author Lagutko_N
  * @since 1.0.0
  */
-class CNUM extends AbstractETSICommand {
+class CNUM extends AbstractAMSCommand {
 	
 	/*
 	 * Command name
@@ -39,9 +39,9 @@ class CNUM extends AbstractETSICommand {
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new ETSICommandParameter("num type", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("Called Party Identity", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("Alpha", ParamterType.STRING));
+		parameters.add(new AMSCommandParameter("num type", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("Called Party Identity", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("Alpha", ParamterType.STRING));
 	}
 
 	@Override
@@ -56,7 +56,7 @@ class CNUM extends AbstractETSICommand {
 			
 			for (int i = 0; i < parameters.size(); i++) {
 				Object value = null;
-				ETSICommandParameter parameter = parameters.get(i);
+				AMSCommandParameter parameter = parameters.get(i);
 				if (parametersTokenizer.hasMoreTokens()) {
 					value = parameter.parseString(parametersTokenizer.nextToken());
 				}

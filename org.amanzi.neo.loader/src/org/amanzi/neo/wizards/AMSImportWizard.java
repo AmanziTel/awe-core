@@ -15,7 +15,7 @@ package org.amanzi.neo.wizards;
 import java.io.File;
 import java.io.IOException;
 
-import org.amanzi.neo.loader.ETSILoader;
+import org.amanzi.neo.loader.AMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -29,26 +29,26 @@ import org.eclipse.ui.IWorkbench;
 
 /**
  * <p>
- * ETSIImportWizard - wizard for import ETSI data
+ * AMSImportWizard - wizard for import AMS data
  * </p>
  * 
  * @author Lagutko_n
  * @since 1.0.0
  */
-public class ETSIImportWizard extends Wizard implements IImportWizard {
+public class AMSImportWizard extends Wizard implements IImportWizard {
 
-    private ETSIImportWizardPage mainPage;
+    private AMSImportWizardPage mainPage;
 
     @Override
     public boolean performFinish() {
-        Job job = new Job("Load ETSI '" + (new File(mainPage.getFileName())).getName() + "'") {
+        Job job = new Job("Load AMS '" + (new File(mainPage.getFileName())).getName() + "'") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-            	ETSILoader loader = new ETSILoader(mainPage.getFileName(), null, mainPage.getDatasetName(), mainPage.getNetworkName());
+            	AMSLoader loader = new AMSLoader(mainPage.getFileName(), null, mainPage.getDatasetName(), mainPage.getNetworkName());
                 
                 try {
                 	loader.run(monitor);
-                	ETSILoader.finishUpGis(loader.getDatasetNode());
+                	AMSLoader.finishUpGis(loader.getDatasetNode());
                 } catch (IOException e) {
                     NeoLoaderPlugin.error(e.getLocalizedMessage());
                     return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
@@ -62,7 +62,7 @@ public class ETSIImportWizard extends Wizard implements IImportWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        mainPage = new ETSIImportWizardPage(NeoLoaderPluginMessages.ETSIImport_page_title, NeoLoaderPluginMessages.ETSIImport_page_descr);
+        mainPage = new AMSImportWizardPage(NeoLoaderPluginMessages.AMSImport_page_title, NeoLoaderPluginMessages.AMSImport_page_descr);
     }
 
     @Override

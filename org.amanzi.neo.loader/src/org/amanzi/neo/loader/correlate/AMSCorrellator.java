@@ -39,12 +39,12 @@ import org.neo4j.api.core.TraversalPosition;
 import org.neo4j.api.core.Traverser.Order;
 
 /**
- * Correlator that is uses for correlating ETSI data with other Drive Data.
+ * Correlator that is uses for correlating AMS data with other Drive Data.
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class ETSICorrellator {
+public class AMSCorrellator {
 	
 	/**
 	 * Index for Timestamps
@@ -61,7 +61,7 @@ public class ETSICorrellator {
 	 * 
 	 * Initializes Neo Service
 	 */
-	public ETSICorrellator() {
+	public AMSCorrellator() {
 		neoService = NeoServiceProvider.getProvider().getService();
 	}
 	

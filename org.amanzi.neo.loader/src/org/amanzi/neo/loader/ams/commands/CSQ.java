@@ -11,36 +11,37 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
 
 /**
- * CME ERROR command
+ * AT+CSQ command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-class CME extends AbstractETSICommand {
+class CSQ extends AbstractAMSCommand {
 	
 	/*
-	 * Name of command
+	 * Command name
 	 */
-	private static final String COMMAND_NAME = "CME ERROR";
+	private static final String COMMAND_NAME = "CCQ";
 	
 	@Override
 	public String getName() {
-		return COMMAND_NAME;
+		return COMMAND_PREFIX + COMMAND_NAME;
 	}
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new ETSICommandParameter("error code", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("RSSI", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("BER", ParamterType.FLOAT));		
 	}
 
 	@Override
 	public boolean isCallCommand() {
-		return true;
+		return false;
 	}
 
 }

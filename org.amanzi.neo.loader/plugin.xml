@@ -39,7 +39,7 @@
        </command>     
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadETSI"
+             id="org.amanzi.neo.loader.commands.LoadAMS"
              name="Load Probe Data">
        </command>   
        <command
@@ -79,8 +79,8 @@
              commandId="org.amanzi.neo.loader.commands.LoadTransmission">
        </handler>
        <handler
-             class="org.amanzi.neo.loader.handlers.LoadETSIHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadETSI">
+             class="org.amanzi.neo.loader.handlers.LoadAMSHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadAMS">
        </handler>
     </extension>
    
@@ -117,11 +117,11 @@
        <menuContribution
              locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
           <toolbar
-                id="org.amanzi.neo.loader.toolbar.etsi">             
+                id="org.amanzi.neo.loader.toolbar.ams">             
              <command
-                   commandId="org.amanzi.neo.loader.commands.LoadETSI"
+                   commandId="org.amanzi.neo.loader.commands.LoadAMS"
             icon="icons/16/drive.png"
-            id="org.amanzi.neo.loader.LoadETSI"
+            id="org.amanzi.neo.loader.LoadAMS"
                    tooltip="Load Probe Data">
              </command>
              <command
@@ -167,7 +167,7 @@
        </wizard>
         <wizard  
              category="org.amanzi.load"
-             class="org.amanzi.neo.wizards.ETSIImportWizard"
+             class="org.amanzi.neo.wizards.AMSImportWizard"
              icon="icons/16/neighbour.png"
              id="org.amanzi.neo.wizards.ESTIImportWizard"
              name="Import TETRA Drive Data">

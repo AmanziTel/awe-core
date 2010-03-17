@@ -11,15 +11,15 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
 /**
- * Parameter of ETSI command
+ * Parameter of AMS command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-class ETSICommandParameter {
+class AMSCommandParameter {
 	
 	/**
 	 * Type of parameter
@@ -43,7 +43,7 @@ class ETSICommandParameter {
 	 */
 	private ParamterType type;
 	
-	public ETSICommandParameter(String name, ParamterType type) {
+	public AMSCommandParameter(String name, ParamterType type) {
 		this.name = name;
 		this.type = type;
 	}

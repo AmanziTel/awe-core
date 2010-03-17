@@ -107,11 +107,11 @@ public class GPEHImportWizardPage extends WizardPage {
             }
         });
 
-        editor = new DirectoryEditor(NeoLoaderPluginMessages.GpehImportDirEditorTitle, NeoLoaderPluginMessages.ETSIImport_directory, main); // NON-NLS-1
+        editor = new DirectoryEditor(NeoLoaderPluginMessages.GpehImportDirEditorTitle, NeoLoaderPluginMessages.AMSImport_directory, main); // NON-NLS-1
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 if (StringUtils.isEmpty(datasetName)){
-                    datasetName=ETSIImportWizardPage.getDatasetDefaultName(editor.getStringValue());
+                    datasetName=AMSImportWizardPage.getDatasetDefaultName(editor.getStringValue());
                     dataset.setText(datasetName);
                 }
                 setFileName(editor.getStringValue());

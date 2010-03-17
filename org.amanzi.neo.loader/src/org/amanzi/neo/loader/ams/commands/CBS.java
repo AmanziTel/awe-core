@@ -11,37 +11,32 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
-import java.util.HashMap;
-import java.util.StringTokenizer;
-
+import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
 
 /**
- * CTOCP command
+ * AT+CBS command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-class CTOCP extends AbstractETSICommand {
+class CBS extends AbstractAMSCommand {
 	
 	/*
 	 * Name of command
 	 */
-	private static final String COMMAND_NAME = "CTOCP";
+	private static final String COMMAND_NAME = "CBS";
 	
 	@Override
 	public String getName() {
-		return COMMAND_NAME;
+		return COMMAND_PREFIX + COMMAND_NAME;
 	}
 
 	@Override
 	protected void initializeParameters() {
-	}
-
-	@Override
-	protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
-		return null;
+		parameters.add(new AMSCommandParameter("BCS", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("BCL", ParamterType.INTEGER));
 	}
 
 	@Override

@@ -12,7 +12,7 @@
  */
 package org.amanzi.neo.loader.handlers;
 
-import org.amanzi.neo.wizards.ETSIImportWizard;
+import org.amanzi.neo.wizards.AMSImportWizard;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -24,18 +24,18 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
  * <p>
- * Load ETSI command handler
+ * Load AMS command handler
  * </p>
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class LoadETSIHandler extends AbstractHandler {
+public class LoadAMSHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
     	IWorkbenchWindow workbenchWindow= HandlerUtil.getActiveWorkbenchWindowChecked(event);
-        IImportWizard wizard=new ETSIImportWizard();
+        IImportWizard wizard=new AMSImportWizard();
         wizard.init(workbenchWindow.getWorkbench(), null);
         Shell parent = workbenchWindow.getShell();
         WizardDialog dialog = new WizardDialog(parent, wizard);

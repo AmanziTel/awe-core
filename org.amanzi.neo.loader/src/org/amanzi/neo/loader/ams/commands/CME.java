@@ -11,24 +11,22 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
-import java.util.HashMap;
-import java.util.StringTokenizer;
-
+import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
 
 /**
- * <UNSOLICITED> command
+ * CME ERROR command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-class UNSOLICITED extends AbstractETSICommand {
+class CME extends AbstractAMSCommand {
 	
 	/*
 	 * Name of command
 	 */
-	private static final String COMMAND_NAME = "<UNSOLICITED>";
+	private static final String COMMAND_NAME = "CME ERROR";
 	
 	@Override
 	public String getName() {
@@ -37,16 +35,12 @@ class UNSOLICITED extends AbstractETSICommand {
 
 	@Override
 	protected void initializeParameters() {
-	}
-
-	@Override
-	protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
-		return null;
+		parameters.add(new AMSCommandParameter("error code", ParamterType.INTEGER));
 	}
 
 	@Override
 	public boolean isCallCommand() {
-		return false;
+		return true;
 	}
 
 }

@@ -11,19 +11,19 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
 /**
- * Abstract class that describes ETSI command
+ * Abstract class that describes AMS command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-public abstract class AbstractETSICommand {
+public abstract class AbstractAMSCommand {
 	
 	/*
 	 * Delimiter of parameters in result
@@ -43,9 +43,9 @@ public abstract class AbstractETSICommand {
 	/*
 	 * List of parameters in command
 	 */
-	protected ArrayList<ETSICommandParameter> parameters = new ArrayList<ETSICommandParameter>();
+	protected ArrayList<AMSCommandParameter> parameters = new ArrayList<AMSCommandParameter>();
 	
-	public AbstractETSICommand() {
+	public AbstractAMSCommand() {
 		initializeParameters();
 	}
 
@@ -90,7 +90,7 @@ public abstract class AbstractETSICommand {
         
         StringTokenizer parametersTokenizer = new StringTokenizer(tokenizer.nextToken(getResultDelimiter()), getParamterDelimiter());
         
-        for (ETSICommandParameter singleParameter : parameters) {
+        for (AMSCommandParameter singleParameter : parameters) {
             if (!parametersTokenizer.hasMoreTokens()) {
                 break;
             }

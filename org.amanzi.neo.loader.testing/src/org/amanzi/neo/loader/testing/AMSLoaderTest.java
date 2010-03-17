@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.amanzi.neo.data_generator.AmsDataGenerator;
-import org.amanzi.neo.loader.ETSILoader;
+import org.amanzi.neo.loader.AMSLoader;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -26,14 +26,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests for ETSI loader.
+ * Tests for AMS loader.
  * <p>
  *
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class ETSILoaderTest extends AbstractLoaderTest {
+public class AMSLoaderTest extends AbstractLoaderTest {
     
     private static final String DATA_SAVER_DIR = "neo_calls";
     
@@ -76,7 +76,7 @@ public class ETSILoaderTest extends AbstractLoaderTest {
      */
     @Test
     public void testEmptyLoading()throws IOException{
-        ETSILoader loader = initDataBase(BUNDLE_KEY_EMPTY);
+        AMSLoader loader = initDataBase(BUNDLE_KEY_EMPTY);
         assertLoader(loader);
         
     }
@@ -86,7 +86,7 @@ public class ETSILoaderTest extends AbstractLoaderTest {
      */
     @Test
     public void testCorrectLoading()throws IOException{
-        ETSILoader loader = initDataBase(BUNDLE_KEY_CORRECT);
+        AMSLoader loader = initDataBase(BUNDLE_KEY_CORRECT);
         assertLoader(loader);
     }
     
@@ -95,10 +95,10 @@ public class ETSILoaderTest extends AbstractLoaderTest {
      * @param aTestKey String (key for test)
      * @throws IOException (loading problem)
      */
-    private ETSILoader initDataBase(String aTestKey) throws IOException {
+    private AMSLoader initDataBase(String aTestKey) throws IOException {
         generateDataFiles(aTestKey);
         initProjectService();
-        ETSILoader loader = new ETSILoader(dataDirectory, "test", "test network", getNeo());
+        AMSLoader loader = new AMSLoader(dataDirectory, "test", "test network", getNeo());
         loader.setLimit(5000);
         loader.run(new NullProgressMonitor());
         return loader;

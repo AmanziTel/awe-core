@@ -45,12 +45,12 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String CorrelateDialog_CorrelateButtonText;
     public static String CorrelateDialog_select_probe_data;
     public static String CorrelateDialog_select_drive_data;
-    public static String ETSIImport_page_title;
-    public static String ETSIImport_page_descr;
-    public static String ETSIImport_dataset;
-    public static String ETSIImport_network;
-    public static String ETSIImport_directory;
-    public static String ETSIImport_dir_editor_title;
+    public static String AMSImport_page_title;
+    public static String AMSImport_page_descr;
+    public static String AMSImport_dataset;
+    public static String AMSImport_network;
+    public static String AMSImport_directory;
+    public static String AMSImport_dir_editor_title;
     
     public static String PrefNetwork_title_network;
     public static String PrefNetwork_title_sector;

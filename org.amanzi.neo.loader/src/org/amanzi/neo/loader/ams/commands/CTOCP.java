@@ -11,24 +11,24 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
 
 /**
- * CTCC command
+ * CTOCP command
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-class CTCC extends AbstractETSICommand {
+class CTOCP extends AbstractAMSCommand {
 	
 	/*
 	 * Name of command
 	 */
-	private static final String COMMAND_NAME = "CTCC";
+	private static final String COMMAND_NAME = "CTOCP";
 	
 	@Override
 	public String getName() {
@@ -46,7 +46,7 @@ class CTCC extends AbstractETSICommand {
 
 	@Override
 	public boolean isCallCommand() {
-		return true;
+		return false;
 	}
 
 }

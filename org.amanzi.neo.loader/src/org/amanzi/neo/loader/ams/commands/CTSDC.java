@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
 
 
 /**
@@ -22,7 +22,7 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class CTSDC extends AbstractETSICommand {
+public class CTSDC extends AbstractAMSCommand {
 	
     public static final String SIMPLEX = "simplex";
     public static final String HOOK = "hook";
@@ -41,17 +41,17 @@ public class CTSDC extends AbstractETSICommand {
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new ETSICommandParameter("AI Service", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("called party ident type", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("area", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter(HOOK, ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter(SIMPLEX, ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("end-to-end encryption", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter(COMMS_TYPE, ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter(SLOTS, ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("RqTx", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("priority", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("CLIR control", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("AI Service", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("called party ident type", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("area", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter(HOOK, ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter(SIMPLEX, ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("end-to-end encryption", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter(COMMS_TYPE, ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter(SLOTS, ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("RqTx", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("priority", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("CLIR control", ParamterType.INTEGER));
 	}
 
 	@Override

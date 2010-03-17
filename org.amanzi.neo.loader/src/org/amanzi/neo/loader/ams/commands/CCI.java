@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.etsi.commands;
+package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
 
 /**
  * AT+CCI command
@@ -21,7 +21,7 @@ import org.amanzi.neo.loader.etsi.commands.ETSICommandParameter.ParamterType;
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class CCI extends AbstractETSICommand {
+public class CCI extends AbstractAMSCommand {
 	
 	/*
 	 * Command name 
@@ -35,15 +35,15 @@ public class CCI extends AbstractETSICommand {
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new ETSICommandParameter("MNI", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("RSSI", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("BER", ParamterType.FLOAT));
-		parameters.add(new ETSICommandParameter("LA", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("F", ParamterType.FLOAT));
-		parameters.add(new ETSICommandParameter("C1", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("BNC_LA", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("BNC_C2", ParamterType.INTEGER));
-		parameters.add(new ETSICommandParameter("BNC_RSSI", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("MNI", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("RSSI", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("BER", ParamterType.FLOAT));
+		parameters.add(new AMSCommandParameter("LA", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("F", ParamterType.FLOAT));
+		parameters.add(new AMSCommandParameter("C1", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("BNC_LA", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("BNC_C2", ParamterType.INTEGER));
+		parameters.add(new AMSCommandParameter("BNC_RSSI", ParamterType.INTEGER));
 	}
 
 	@Override

@@ -39,7 +39,7 @@ import org.amanzi.neo.data_generator.data.CallData;
 import org.amanzi.neo.data_generator.data.CallPair;
 import org.amanzi.neo.data_generator.data.CommandRow;
 import org.amanzi.neo.data_generator.data.ProbeData;
-import org.amanzi.neo.loader.ETSILoader;
+import org.amanzi.neo.loader.AMSLoader;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -322,7 +322,7 @@ public class CallStatisticsTest {
      * @throws IOException (problem in data generation)
      */
     private Node loadData(String dataDir) throws IOException {
-        ETSILoader loader = new ETSILoader(dataDir, "test", "test network", getNeo());
+        AMSLoader loader = new AMSLoader(dataDir, "test", "test network", getNeo());
         loader.setLimit(5000);
         loader.run(new NullProgressMonitor());
         Node datasetNode = loader.getDatasetNode();

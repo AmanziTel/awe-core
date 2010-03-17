@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -38,12 +41,12 @@ import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.loader.etsi.commands.AbstractETSICommand;
-import org.amanzi.neo.loader.etsi.commands.CCI;
-import org.amanzi.neo.loader.etsi.commands.CTSDC;
-import org.amanzi.neo.loader.etsi.commands.CommandSyntax;
-import org.amanzi.neo.loader.etsi.commands.ETSICommandPackage;
-import org.amanzi.neo.loader.etsi.commands.PESQ;
+import org.amanzi.neo.loader.ams.commands.AMSCommandPackage;
+import org.amanzi.neo.loader.ams.commands.AbstractAMSCommand;
+import org.amanzi.neo.loader.ams.commands.CCI;
+import org.amanzi.neo.loader.ams.commands.CTSDC;
+import org.amanzi.neo.loader.ams.commands.CommandSyntax;
+import org.amanzi.neo.loader.ams.commands.PESQ;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -59,12 +62,12 @@ import org.neo4j.api.core.Traverser.Order;
 
 
 /**
- * Loader of ETSI data
+ * Loader of AMS data
  * 
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class ETSILoader extends DriveLoader {
+public class AMSLoader extends DriveLoader {
 	
 
     /**
@@ -366,12 +369,12 @@ public class ETSILoader extends DriveLoader {
 	private static final String UNSOLICITED = "<UNSOLICITED>";
 	
 	/*
-	 * ETSI log file extension
+	 * AMS log file extension
 	 */
-	private static final String ETSI_LOG_FILE_EXTENSION = ".log";
+	private static final String AMS_LOG_FILE_EXTENSION = ".log";
 
 	/*
-	 * Timestamp format for ETSI log files
+	 * Timestamp format for AMS log files
 	 */
 	private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
 	
@@ -473,7 +476,7 @@ public class ETSILoader extends DriveLoader {
 	 * @param display
 	 * @param datasetName name of dataset
 	 */
-	public ETSILoader(String directoryName, Display display, String datasetName, String networkName) {
+	public AMSLoader(String directoryName, Display display, String datasetName, String networkName) {
         driveType = DriveTypes.AMS;
         if (datasetName == null) {
 			int startIndex = directoryName.lastIndexOf(File.separator);
@@ -491,7 +494,7 @@ public class ETSILoader extends DriveLoader {
 		this.filename = directoryName;		
 		this.networkName = networkName;
 		
-		initialize("ETSI", null, directoryName, display, datasetName);
+		initialize("AMS", null, directoryName, display, datasetName);
 		
 		addDriveIndexes();
 		
@@ -506,7 +509,7 @@ public class ETSILoader extends DriveLoader {
      * @param networkName
      * @param neo
      */
-    public ETSILoader(String directoryName, String datasetName, String networkName, NeoService neo) {
+    public AMSLoader(String directoryName, String datasetName, String networkName, NeoService neo) {
         driveType = DriveTypes.AMS;
         if (datasetName == null) {
             int startIndex = directoryName.lastIndexOf(File.separator);
@@ -524,7 +527,7 @@ public class ETSILoader extends DriveLoader {
         this.filename = directoryName;      
         this.networkName = networkName;
         
-        initialize("ETSI", neo, directoryName, null, datasetName);
+        initialize("AMS", neo, directoryName, null, datasetName);
         
         addDriveIndexes();
         
@@ -578,52 +581,70 @@ public class ETSILoader extends DriveLoader {
 	
 	@Override
 	public void run(IProgressMonitor monitor) throws IOException {
-		monitor.beginTask("Loading ETSI data", 2);
-		monitor.subTask("Searching for files to load");
-		ArrayList<File> allFiles = getAllLogFilePathes(filename);
-		
-		monitor = SubMonitor.convert(monitor, allFiles.size());
-		monitor.beginTask("Loading ETSI data", allFiles.size());
+	    Long startTime = System.currentTimeMillis();
+        monitor.beginTask("Loading AMS data", 2);
+        monitor.subTask("Searching for files to load");
+        ArrayList<File> allFiles = getAllLogFilePathes(filename);
         
-        initializeNetwork(networkName);
-		initializeDatasets(dataset);
+        monitor = SubMonitor.convert(monitor, allFiles.size());
+        monitor.beginTask("Loading AMS data", allFiles.size());
+        Transaction tx = neo.beginTx();
+        try {
+            initializeNetwork(networkName);
+            initializeDatasets(dataset);
+            Node dirNode = null;
+            for (File logFile : allFiles) {
+                monitor.subTask("Loading file " + logFile.getAbsolutePath());
+                
+                String probeName = initializeProbeNodes(logFile);
+                filename = logFile.getAbsolutePath();
+                currentDirectoryNode = findOrCreateDirectoryNode(logFile.getParentFile());
+                if(dirNode != null && !currentDirectoryNode.equals(dirNode)){
+                    tx = commit(tx);
+                }
+                dirNode = currentDirectoryNode;
+                
+                newFile = true;
+                headersMap.clear();
+                getHeaderMap(REAL_DATASET_HEADER_INDEX).typedProperties = null;
+                getHeaderMap(CALL_DATASET_HEADER_INDEX).typedProperties = null;
+    
+                super.run(null);
+                
+                monitor.worked(1);
+                
+                updateProbeCache(probeName);
+            }
         
-		for (File logFile : allFiles) {
-			monitor.subTask("Loading file " + logFile.getAbsolutePath());
-			
-			String probeName = initializeProbeNodes(logFile);
-			filename = logFile.getAbsolutePath();
-            currentDirectoryNode = findOrCreateDirectoryNode(logFile.getParentFile());
-			
-			newFile = true;
-            headersMap.clear();
-            getHeaderMap(REAL_DATASET_HEADER_INDEX).typedProperties = null;
-            getHeaderMap(CALL_DATASET_HEADER_INDEX).typedProperties = null;
-
-			super.run(null);
-			
-			monitor.worked(1);
-			
-			updateProbeCache(probeName);
-		}
-		Transaction tx = neo.beginTx();
-		try {
-		    saveCall(call);
-		    saveProperties();
-		    finishUpIndexes();
-		    finishUp();
+            saveCall(call);
+            saveProperties();
+            finishUpIndexes();
+            finishUp();
+        
+            cleanupGisNode();
+            //finishUpGis(getDatasetNode());
+        }
+        finally {
+            tx.success();
+            tx.finish();
+        }
+        
+        basename = dataset;
+        printStats(false);
 		
-		    cleanupGisNode();
-		    //finishUpGis(getDatasetNode());
-		}
-		finally {
-		    tx.success();
-		    tx.finish();
-		}
-		
-		basename = dataset;
-		printStats(false);
+		Long endTime = System.currentTimeMillis();
+		System.out.println("====================== Load time: "+(endTime-startTime)+"=============================");
 	}
+	
+	protected Transaction commit(Transaction tx) {
+        if (tx != null) {
+            flushIndexes();
+            tx.success();
+            tx.finish();
+            return neo.beginTx();
+        }
+        return null;
+    }
 	
 	/**
 	 * Updates cache for probes
@@ -808,15 +829,15 @@ public class ETSILoader extends DriveLoader {
 			return;
 		}
 		
-		if (ETSICommandPackage.isETSICommand(commandName) || (commandName.equals(UNSOLICITED))) {
-			CommandSyntax syntax = ETSICommandPackage.getCommandSyntax(commandName);
+		if (AMSCommandPackage.isAMSCommand(commandName) || (commandName.equals(UNSOLICITED))) {
+			CommandSyntax syntax = AMSCommandPackage.getCommandSyntax(commandName);
 			if (syntax == CommandSyntax.SET) { 
 				int equalsIndex = commandName.indexOf("=");
 				tokenizer = new StringTokenizer(commandName.substring(equalsIndex).trim());
 				commandName = commandName.substring(0, equalsIndex);
 			}
 			
-			AbstractETSICommand command = ETSICommandPackage.getCommand(commandName, syntax);
+			AbstractAMSCommand command = AMSCommandPackage.getCommand(commandName, syntax);
 			if (command == null) {
 				return;
 			}
@@ -826,7 +847,7 @@ public class ETSILoader extends DriveLoader {
 				commandName = command.getName();
 			}
 			else {
-				commandName = ETSICommandPackage.getRealCommandName(commandName);
+				commandName = AMSCommandPackage.getRealCommandName(commandName);
 			}
 					
 			if (syntax == CommandSyntax.EXECUTE) {
@@ -839,8 +860,8 @@ public class ETSILoader extends DriveLoader {
 						int colonIndex = maybeTimestamp.indexOf(":");
 						commandName = maybeTimestamp.substring(1, colonIndex);
 						StringTokenizer paramTokenizer = new StringTokenizer(maybeTimestamp.substring(colonIndex + 1).trim());
-						syntax = ETSICommandPackage.getCommandSyntax(commandName);
-						command = ETSICommandPackage.getCommand(commandName, syntax);
+						syntax = AMSCommandPackage.getCommandSyntax(commandName);
+						command = AMSCommandPackage.getCommand(commandName, syntax);
 					
 						if (command != null) {
 							//should be a result of command						    
@@ -849,7 +870,7 @@ public class ETSILoader extends DriveLoader {
 								commandName = command.getName();
 							}
 							else {
-								commandName = ETSICommandPackage.getRealCommandName(commandName);
+								commandName = AMSCommandPackage.getRealCommandName(commandName);
 							}
 						}
 					}
@@ -867,8 +888,8 @@ public class ETSILoader extends DriveLoader {
 	 * @return true if it was PESQ command, false otherwise
 	 */
 	private boolean processPESQCommand(String timestamp, String commandName, StringTokenizer tokenizer) {
-	    CommandSyntax syntax = ETSICommandPackage.getCommandSyntax(commandName);
-	    AbstractETSICommand command = ETSICommandPackage.getCommand(commandName, syntax);
+	    CommandSyntax syntax = AMSCommandPackage.getCommandSyntax(commandName);
+	    AbstractAMSCommand command = AMSCommandPackage.getCommand(commandName, syntax);
 	    
 	    if (command != null) {
 	        processCommand(timestamp, command, syntax, tokenizer, false);
@@ -1004,7 +1025,7 @@ public class ETSILoader extends DriveLoader {
 				result.addAll(getAllLogFilePathes(childFile.getAbsolutePath()));
 			}
 			else if (childFile.isFile() &&
-					 childFile.getName().endsWith(ETSI_LOG_FILE_EXTENSION)) {
+					 childFile.getName().endsWith(AMS_LOG_FILE_EXTENSION)) {
 				result.add(childFile);
 			}
 		}
@@ -1063,7 +1084,7 @@ public class ETSILoader extends DriveLoader {
 	 * @param callCommandResult is this command part of call result 
 	 * @return is this command was a Call Command
 	 */
-	private boolean processCommand(String timestamp, AbstractETSICommand command, CommandSyntax syntax, StringTokenizer tokenizer, boolean callCommandResult) {
+	private boolean processCommand(String timestamp, AbstractAMSCommand command, CommandSyntax syntax, StringTokenizer tokenizer, boolean callCommandResult) {
 		//try to parse timestamp
 		long timestampValue;
 		try {
