@@ -459,25 +459,7 @@ public enum Parameters {
         return bits;
     }
 
-    /**
-     * Parsing bits
-     * @param bitSet - bitset or string for String parameters
-     * @return parsed value or null if value is invalid (first bit is 1)
-     */
-    public Object pareseBits(String bitSet) {
-        switch (rule) {
-        case INTEGER:
-            //if first bit is 1 - the value is invalid
-            return bitSet.length()==getBitsLen()&&'1'==bitSet.charAt(0)?null:Integer.valueOf(bitSet, 2);
-        case LONG:
-            return bitSet.length()==getBitsLen()&&'1'==bitSet.charAt(0)?null:Long.valueOf(bitSet, 2);
-        case STRING:
-            //in current implementation already contains String value
-            return bitSet;
-        default:
-            return null;
-        }
-    }
+
 
     /**
      * @return Returns the rule.

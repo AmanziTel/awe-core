@@ -436,6 +436,7 @@ public enum NodeTypes {
     OSS("oss"), 
     GPEH_EVENT("gpeh_event"), 
     OSS_MAIN("oss_main"),
+    URBAN_CONFIG("urban_config"),
     FILTER("filter"){
         @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
