@@ -21,6 +21,7 @@ import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.loader.GPEHLoader;
 import org.amanzi.neo.loader.OSSCounterLoader;
+import org.amanzi.neo.loader.UTRANLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -60,6 +61,9 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                     case COUNTER:
                         OSSCounterLoader loaderOss = new OSSCounterLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         loaderOss.run(monitor);
+                    case UTRAN:
+                        UTRANLoader loaderUtran = new UTRANLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
+                        loaderUtran.run(monitor);                       
                     default:
                         break;
                     }

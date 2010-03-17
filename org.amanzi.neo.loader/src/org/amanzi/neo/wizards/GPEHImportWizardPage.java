@@ -14,17 +14,13 @@
 package org.amanzi.neo.wizards;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.apache.commons.lang.StringUtils;
@@ -54,16 +50,19 @@ import org.neo4j.api.core.Node;
 public class GPEHImportWizardPage extends WizardPage {
 
     private Combo dataset;
+    private final Object mon=new Object();
     private final NeoService service;
     protected String datasetName;
-    private DirectoryFieldEditor editor;
+    private DirectoryFieldEditor editorDir;
     private String directory;
     private Combo cOssType;
     protected Pair<OssType, Exception> ossDirType;
-    private HashMap<String,Node> ossMap;
+    private HashMap<String, Node> ossMap;
+    private FileFieldEditorExt editorFile;
 
     /**
      * Constructor
+     * 
      * @param pageName
      */
     protected GPEHImportWizardPage(String pageName) {
@@ -71,13 +70,13 @@ public class GPEHImportWizardPage extends WizardPage {
         setTitle(NeoLoaderPluginMessages.GpehTitle);
         setDescription(NeoLoaderPluginMessages.GpehDescr);
         service = NeoServiceProvider.getProvider().getService();
-        ossDirType=new Pair<OssType, Exception>(null, null);
+        ossDirType = new Pair<OssType, Exception>(null, null);
         validateFinish();
     }
 
     @Override
     public void createControl(Composite parent) {
-        Composite main = new Composite(parent, SWT.NULL);
+        final Composite main = new Composite(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
         Label label = new Label(main, SWT.LEFT);
         label.setText(NeoLoaderPluginMessages.GpehLbOSS);
@@ -107,14 +106,45 @@ public class GPEHImportWizardPage extends WizardPage {
             }
         });
 
-        editor = new DirectoryEditor(NeoLoaderPluginMessages.GpehImportDirEditorTitle, NeoLoaderPluginMessages.AMSImport_directory, main); // NON-NLS-1
-        editor.getTextControl(main).addModifyListener(new ModifyListener() {
+        editorDir = new DirectoryEditor(NeoLoaderPluginMessages.GpehImportDirEditorTitle, NeoLoaderPluginMessages.AMSImport_directory, main); // NON-NLS-1
+        editorDir.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                if (StringUtils.isEmpty(datasetName)){
-                    datasetName=AMSImportWizardPage.getDatasetDefaultName(editor.getStringValue());
+                if (StringUtils.isEmpty(datasetName)) {
+                    synchronized (mon) {
+                        datasetName = AMSImportWizardPage.getDatasetDefaultName(editorDir.getStringValue());
+                    }
+                        dataset.setText(datasetName);
+                }
+                String stringValue = editorDir.getStringValue();
+                if (StringUtils.isEmpty(stringValue)) {
+                  if (StringUtils.isEmpty(editorFile.getStringValue())){
+                      setFileName(stringValue);
+                  }
+                } else {
+                    editorFile.setStringValue("");
+                    setFileName(stringValue);
+                }
+            }
+        });
+        editorFile = new FileFieldEditorExt(NeoLoaderPluginMessages.GpehImportDirEditorTitle, "Load single file: ", main);
+        editorFile.setDefaulDirectory(DriveDialog.getDefaultDirectory());
+        editorFile.getTextControl(main).addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                if (StringUtils.isEmpty(datasetName)) {
+                    synchronized (mon) {
+                        datasetName = AMSImportWizardPage.getDatasetDefaultName(editorFile.getStringValue());
+                    }
                     dataset.setText(datasetName);
                 }
-                setFileName(editor.getStringValue());
+                String stringValue = editorFile.getStringValue();
+                if (StringUtils.isEmpty(stringValue)) {
+                  if (StringUtils.isEmpty(editorDir.getStringValue())){
+                      setFileName(stringValue);
+                  }
+                } else {
+                    editorDir.setStringValue("");
+                    setFileName(stringValue);
+                }
             }
         });
         label = new Label(main, SWT.LEFT);
@@ -143,7 +173,6 @@ public class GPEHImportWizardPage extends WizardPage {
     }
 
     /**
-     * 
      * @return oss types
      */
     private String[] getOssFileType() {
@@ -157,6 +186,7 @@ public class GPEHImportWizardPage extends WizardPage {
 
     /**
      * set File name
+     * 
      * @param dirName - dir. name
      */
     protected void setFileName(String dirName) {
@@ -168,33 +198,37 @@ public class GPEHImportWizardPage extends WizardPage {
     }
 
     /**
-     *
+     *auto defined type of oss datas
      */
     private void autoDefineOSSType() {
+        // TODO implement!
+        if (true) {
+            return;
+        }
         if (StringUtils.isEmpty(directory)) {
             return;
         }
-        File file = new File(directory);
-        if (!(file.isDirectory() && file.isAbsolute() && file.exists())) {
-            return;
-        }   
-        List<File> files = LoaderUtils.getAllFiles(directory, new FileFilter() {
-            
-            @Override
-            public boolean accept(File arg0) {
-                return true;
-            }
-        });
-        if (files.isEmpty()){
-            return;
-        }
-        File fileToAnalyse = files.get(0);
-        if (Pattern.matches(".*\\.(xml|XML)$", fileToAnalyse.getName())){
-            ossDirType=new Pair<OssType, Exception>(OssType.COUNTER, null);
-        }else{
-            ossDirType=new Pair<OssType, Exception>(OssType.GPEH, null);
-        }
-        cOssType.setText(ossDirType.getLeft().getId());
+        // File file = new File(directory);
+        // if (!(file.isDirectory() && file.isAbsolute() && file.exists())) {
+        // return;
+        // }
+        // List<File> files = LoaderUtils.getAllFiles(directory, new FileFilter() {
+        //            
+        // @Override
+        // public boolean accept(File arg0) {
+        // return true;
+        // }
+        // });
+        // if (files.isEmpty()){
+        // return;
+        // }
+        // File fileToAnalyse = files.get(0);
+        // if (Pattern.matches(".*\\.(xml|XML)$", fileToAnalyse.getName())){
+        // ossDirType=new Pair<OssType, Exception>(OssType.COUNTER, null);
+        // }else{
+        // ossDirType=new Pair<OssType, Exception>(OssType.GPEH, null);
+        // }
+        // cOssType.setText(ossDirType.getLeft().getId());
     }
 
     /**
@@ -206,6 +240,7 @@ public class GPEHImportWizardPage extends WizardPage {
 
     /**
      * validate page
+     * 
      * @return
      */
     protected boolean isValidPage() {
@@ -214,7 +249,7 @@ public class GPEHImportWizardPage extends WizardPage {
                 return false;
             }
             File file = new File(directory);
-            if (!(file.isDirectory() && file.isAbsolute() && file.exists())) {
+            if (!( file.isAbsolute() && file.exists())) {
                 return false;
             }
             Node ossNode = ossMap.get(datasetName);
@@ -234,9 +269,9 @@ public class GPEHImportWizardPage extends WizardPage {
      */
     private String[] getOssData() {
         Collection<Node> allOss = NeoUtils.getAllOss(service);
-        ossMap=new HashMap<String,Node>();
+        ossMap = new HashMap<String, Node>();
         for (Node node : allOss) {
-            ossMap.put(NeoUtils.getNodeName(node, service), node);  
+            ossMap.put(NeoUtils.getNodeName(node, service), node);
         }
         final String[] result = ossMap.keySet().toArray(new String[0]);
         return result;
@@ -255,5 +290,5 @@ public class GPEHImportWizardPage extends WizardPage {
     public String getDirectory() {
         return directory;
     }
-    
+
 }
