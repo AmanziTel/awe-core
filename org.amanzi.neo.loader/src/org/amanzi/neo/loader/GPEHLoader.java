@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.loader;
 
-import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +44,7 @@ import org.amanzi.neo.loader.gpeh.GPEHEvent.Event;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
+import org.kc7bfi.jflac.io.BitInputStream;
 import org.neo4j.api.core.Node;
 import org.neo4j.api.core.Transaction;
 
@@ -130,8 +130,12 @@ public class GPEHLoader extends AbstractLoader {
                     saveRoot(root);
                     monitor.worked(1);
                     eventLastNode = null;
+                    long time;
                     for (String subFile : entry.getValue()) {
                         int cn=0;
+                        long timeAll=System.currentTimeMillis();
+                        long saveTime=0;
+                        long parseTime=0;
                         monitor.setTaskName(subFile);
                         System.out.println(subFile);
                         GPEHEvent result = new GPEHEvent();
@@ -140,11 +144,12 @@ public class GPEHLoader extends AbstractLoader {
                         if (Pattern.matches("^.+\\.gz$",file.getName())){
                             in= new GZIPInputStream(in); 
                         }
-                        DataInputStream input = new DataInputStream(in);
+                        BitInputStream input = new BitInputStream(in);
                             try {
                                 while (true) {
-                                    int recordLen = input.readUnsignedShort()-3;
-                                    int recordType = input.readByte();
+                                    time=System.currentTimeMillis();
+                                    int recordLen = input.readRawUInt(16)-3;
+                                    int recordType = input.readRawUInt(8);
                                     if (recordType == 4) {
                                         GPEHParser.parseEvent(input, result,recordLen);
                                         eventsCount++;
@@ -157,7 +162,10 @@ public class GPEHLoader extends AbstractLoader {
                                         // wrong file format!
                                         throw new IllegalArgumentException();
                                     }
+                                    parseTime+=System.currentTimeMillis()-time;
+                                    time=System.currentTimeMillis();
                                     saveEvent(result);
+                                    saveTime+=System.currentTimeMillis()-time;
                                     result.clearEvent();
                                     count++;
                                     if (count>COUNT_LEN){
@@ -168,10 +176,13 @@ public class GPEHLoader extends AbstractLoader {
                             }catch (EOFException e) {
                                 //normal behavior
                             } finally {
-                                input.close();
+                                in.close();
                                 monitor.worked(1);
                             }
-                            info(String.format("File %s: saved %s events",subFile,cn));                    }
+                            timeAll=System.currentTimeMillis()-timeAll;
+                            info(String.format("File %s: saved %s events",subFile,cn));                    
+                            info(String.format("\ttotal time\t\t%s\n\t\tparce time\t%s\n\t\tsave time\t%s",timeAll,parseTime,saveTime));   
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     // TODO add more information
