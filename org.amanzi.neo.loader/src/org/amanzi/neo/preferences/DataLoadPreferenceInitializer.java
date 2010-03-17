@@ -75,6 +75,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.TR_SITE_NO_NEIB, "Site No, Far End Site No");
         pref.setDefault(DataLoadPreferences.TR_ITEM_NAME_NEIB, "ITEM_Name");
         
+        pref.setDefault(DataLoadPreferences.PROPERY_LISTS, "");
         pref.setDefault(DataLoadPreferences.DEFAULT_CHARSET, Charset.defaultCharset().name());
         StringBuilder def;
         try {

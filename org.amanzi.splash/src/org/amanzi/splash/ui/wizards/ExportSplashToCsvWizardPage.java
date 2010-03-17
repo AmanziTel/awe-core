@@ -63,7 +63,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
 
     private FileFieldEditor editor;
     private Group main;
-//    private Combo network;
+
     private String fileName;
     private HashMap<String, Node> members;
     private TreeViewer viewer;
@@ -76,7 +76,6 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
         // super(pageName);
         super(pageName, Messages.ExportSplashToCsvWizardPage_0, null);
         setDescription(Messages.ExportSplashToCsvWizardPage_1);
-//        setMessage("Bugoga message!");
         setPageComplete(false);
     }
 
@@ -337,17 +336,11 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
                 return ((TreeNeoNode)obj).getType().getImage();
             }
             return iconManager.getImage(IconManager.NEO_ROOT);
-
-            // String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
-            // if (obj instanceof TreeNeoNode && ((TreeNeoNode)obj).getType() != NodeTypes.FILTER) {
-            // imageKey = ISharedImages.IMG_OBJ_FOLDER;
-            // }
-            // return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
         }
     }
 
     class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
-        private List<TreeNeoNode> elements=new LinkedList<TreeNeoNode>();
+        private final List<TreeNeoNode> elements=new LinkedList<TreeNeoNode>();
 
         public void inputChanged(Viewer v, Object oldInput, Object newInput) {
             if (newInput==null){

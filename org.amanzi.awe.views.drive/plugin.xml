@@ -52,4 +52,13 @@
          </viewShortcut>
       </perspectiveExtension>
    </extension>
+     <extension   point="org.eclipse.ui.preferencePages">
+       <page
+            class="org.amanzi.awe.views.drive.preferences.PropertyListPreferences"
+            id="org.amanzi.awe.views.drive.preferences.PropertyListPreferences"
+            name="Property list"
+            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
+      </page>
+
+   </extension>
 </plugin>

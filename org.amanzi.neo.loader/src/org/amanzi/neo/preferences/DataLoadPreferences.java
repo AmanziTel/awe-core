@@ -66,6 +66,9 @@ public class DataLoadPreferences {
     
     public static final String COMMON_CRS_LIST = "COMMON_CRS_LIST";
     public static final String CRS_DELIMETERS = "--DELIMETER--";
+    
+    
+    public static final String PROPERY_LISTS = "PROPERY_LISTS";
 
     private DataLoadPreferences() {
 
