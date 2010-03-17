@@ -31,8 +31,6 @@ import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.loader.sax_parser.FileContentHandler;
-import org.amanzi.neo.loader.sax_parser.Tags;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -42,6 +40,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
@@ -63,12 +62,12 @@ public class OSSCounterLoader extends AbstractLoader {
     private Node ossNode;
     private Node fileNode;
     private final FileContentHandler handler;
-    // private final Tags[] rootTags;
+    private final Tags[] rootTags;
+    private Tags rootTag = null;
     private Node lastChild;
     public Node lastMiChild;
     public Node lastMvChild;
-    protected static final SimpleDateFormat dataFormat = new SimpleDateFormat("yyyyHHmmss");
-   
+    protected static final  SimpleDateFormat dataFormat=new SimpleDateFormat("yyyyHHmmss");
 
     /**
      * Constructor
@@ -81,8 +80,8 @@ public class OSSCounterLoader extends AbstractLoader {
         initialize("OSS_COUNTER", null, directory, display);
         basename = datasetName;
         headers = getHeaderMap(KEY_EVENT).headers;
-        // rootTags = new Tags[] {new MfhTag(), new MdTag()};
-        handler = new FileContentHandler(new Tags[] {new MfhTag(), new MdTag()});
+        handler = new FileContentHandler();
+        rootTags = new Tags[] {new MfhTag(), new MdTag()};
 
     }
 
@@ -109,7 +108,7 @@ public class OSSCounterLoader extends AbstractLoader {
             for (File file : fileList) {
                 try {
                     monitor.subTask(file.getName());
-                    System.out.println(file.getName());
+                    System.out.println(file.getName() );
                     storeFile(file);
                     commit(true);
                     monitor.worked(1);
@@ -132,7 +131,7 @@ public class OSSCounterLoader extends AbstractLoader {
     /**
      *storing XML in database
      * 
-     * @param file - XML file
+     * @param file  - XML file
      * @throws SAXException
      * @throws IOException
      * @throws
@@ -165,6 +164,127 @@ public class OSSCounterLoader extends AbstractLoader {
     @Override
     protected void parseLine(String line) {
         // do nothing
+    }
+
+    /**
+     * <p>
+     * SAX parsing handler
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
+    private class FileContentHandler extends DefaultHandler {
+        public String tag = null;
+        public StringBuilder chars;
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            super.characters(ch, start, length);
+            if (tag == null || rootTag == null) {
+                return;
+            }
+            for (int i = 0; i < length; i++) {
+                chars.append(ch[start + i]);
+            }
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            super.startElement(uri, localName, qName, attributes);
+            tag = localName;
+            if (rootTag == null) {
+                rootTag = findRootTag(tag);
+                if (rootTag != null) {
+                    chars = new StringBuilder();
+                }
+                tag = null;
+                return;
+            } else {
+                chars = new StringBuilder();
+                rootTag.startElement(tag);
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            super.endElement(uri, localName, qName);
+            tag = null;
+            if (rootTag != null) {
+                if (rootTag.getTagName().equals(localName)) {
+                    rootTag = null;
+                } else {
+                    rootTag.endElement(localName, chars);
+                }
+            }
+        }
+    }
+
+    /**
+     * find root tag by id
+     * 
+     * @param localName - tag name;
+     * @return tag or null
+     */
+    public Tags findRootTag(String localName) {
+        for (Tags tag : rootTags) {
+            if (tag.getTagName().equals(localName)) {
+                tag.initialize();
+                return tag;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * <p>
+     * abstract TAG of OSS counter XML data
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
+     */
+    private abstract static class Tags {
+        protected final String tagName;
+
+        /**
+         * constructor
+         * 
+         * @param tagName tag name
+         */
+        public Tags(String tagName) {
+            this.tagName = tagName;
+        }
+
+        /**
+         * handle start element
+         * 
+         * @param tag - start tag
+         */
+        public void startElement(String tag) {
+        }
+
+        /**
+         *initialize tags
+         */
+        public void initialize() {
+        }
+
+        /**
+         * Handle end element
+         * 
+         * @param tag - tag
+         * @param builder - string in current element
+         */
+        public abstract void endElement(String tag, StringBuilder builder);
+
+        /**
+         * @return Returns the tagName.
+         */
+        public String getTagName() {
+            return tagName;
+        }
+
     }
 
     /**
@@ -234,9 +354,9 @@ public class OSSCounterLoader extends AbstractLoader {
             }
             if (tag.equals("r")) {
                 if (parentNode.properties.size() <= countR) {
-                    NeoLoaderPlugin.error("Wrong count of values. Value not stored:" + builder.toString());
+                    NeoLoaderPlugin.error("Wrong count of values. Value not stored:"+builder.toString());
                 } else {
-                    setIndexPropertyNotParcedValue(headers, mvNode, parentNode.properties.get(countR), builder.toString());
+                    setIndexPropertyNotParcedValue(headers,mvNode, parentNode.properties.get(countR), builder.toString());
                     countR++;
                 }
             } else {
@@ -282,16 +402,13 @@ public class OSSCounterLoader extends AbstractLoader {
         }
 
         @Override
-        public void startElement(String tag, Attributes attributes) {
-            super.startElement(tag, attributes);
-            if (tag.equals(tagName)){
-                return;
-            }
+        public void startElement(String tag) {
+            super.startElement(tag);
             if (tag.equals(Mv.TAG_NAME)) {
                 mv = new Mv(this);
                 mv.initialize();
             } else if (mv != null) {
-                mv.startElement(tag, null);
+                mv.startElement(tag);
             }
         }
 
@@ -305,16 +422,16 @@ public class OSSCounterLoader extends AbstractLoader {
                 properties.add(builder.toString());
             } else {
                 setProperty(miNode, tag, builder.toString());
-                if (tag.equals("mts")) {
+                if (tag.equals("mts")){
                     try {
                         long timestamp = dataFormat.parse(builder.toString()).getTime();
                         setProperty(miNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
                         updateTimestampMinMax(KEY_EVENT, timestamp);
                     } catch (ParseException e) {
-
+                        
                         NeoLoaderPlugin.exception(e);
                     }
-
+                    
                 }
             }
         }
@@ -375,12 +492,12 @@ public class OSSCounterLoader extends AbstractLoader {
         }
 
         @Override
-        public void startElement(String tag, Attributes attributes) {
+        public void startElement(String tag) {
             if (tag.equals(Mi.TAG_NAME)) {
                 mi = new Mi(mdNode);
                 mi.initialize();
             } else if (mi != null) {
-                mi.startElement(tag, null);
+                mi.startElement(tag);
             }
         }
 
