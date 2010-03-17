@@ -28,8 +28,10 @@ import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.loader.sax_parser.FileContentHandler;
-import org.amanzi.neo.loader.sax_parser.Tags;
+import org.amanzi.neo.loader.sax_parsers.AbstractNeoTag;
+import org.amanzi.neo.loader.sax_parsers.IXmlTag;
+import org.amanzi.neo.loader.sax_parsers.IXmlTagFactory;
+import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.api.core.Node;
@@ -52,7 +54,7 @@ public class UTRANLoader extends AbstractLoader {
     private Node lastConfig = null;
     protected static final String REG_EXP_XML = "^.+\\.((xml)|(XML))$";
     private final LinkedHashMap<String, Header> headers;
-    private final FileContentHandler handler;
+    private final ReadContentHandler handler;
     private Node ossNode;
     private Node fileNode;
     private Node lastChild;
@@ -69,7 +71,7 @@ public class UTRANLoader extends AbstractLoader {
         initialize("OSS_COUNTER", null, file, display);
         basename = datasetName;
         headers = getHeaderMap(KEY_EVENT).headers;
-        handler = new FileContentHandler(new Tags[] {new FileHeader(), new ConfigData()});
+        handler = new ReadContentHandler(new Factory());
 
     }
 
@@ -160,74 +162,55 @@ public class UTRANLoader extends AbstractLoader {
     protected void parseLine(String line) {
     }
 
-    private class FileHeader extends Tags {
-        FileHeader() {
-            super("fileHeader");
-        }
-
-        @Override
-        public void startElement(String tag, Attributes attributes) {
-            super.startElement(tag, attributes);
-            if (tag.equals(tagName)) {
-                for (int i = 0; i < attributes.getLength(); i++) {
-                    fileNode.setProperty(attributes.getLocalName(i), attributes.getValue(i));
-                }
-            }
-        }
-
-        @Override
-        public void endElement(String tag, StringBuilder builder) {
-        }
-    }
-    private class SubNetwork extends Tags {
-        SubNetwork child;
-        
-        SubNetwork(Tags parent) {
-            super("SubNetwork");
-            SubNetwork subNode=null;
-        }
-        @Override
-        public void startElement(String tag, Attributes attributes) {
-            super.startElement(tag, attributes);
-            if (tag.equals("")){
-                
-            }
-        }
-        @Override
-        public void endElement(String tag, StringBuilder builder) {
-        }
-        
-    }
-    private class ConfigData extends Tags {
-        private Tags subNetwork;
-
-        ConfigData() {
-            super("configData");
-        }
-
-        @Override
-        public void startElement(String tag, Attributes attributes) {
-            if (tag.equals(tagName)) {
-                updateTx();
-                Node node = neo.createNode();
-                NodeTypes.URBAN_CONFIG.setNodeType(node, neo);
-                NeoUtils.addChild(fileNode, node, lastConfig, neo);
-                lastConfig = node;
-                super.startElement(tag, attributes);
-                for (int i = 0; i < attributes.getLength(); i++) {
-                    fileNode.setProperty(attributes.getLocalName(i), attributes.getValue(i));
-                }
-            } else {
-                if (tag.equals("SubNetwork")){
-                    subNetwork=new SubNetwork(this);
-                }
-            }
-        }
-
-        @Override
-        public void endElement(String tag, StringBuilder builder) {
-        }
-    }
+    // private class SubNetwork extends Tags {
+    // SubNetwork child;
+    //        
+    // SubNetwork(Tags parent) {
+    // super("SubNetwork");
+    // SubNetwork subNode=null;
+    // }
+    // @Override
+    // public void startElement(String tag, Attributes attributes) {
+    // super.startElement(tag, attributes);
+    // if (tag.equals("")){
+    //                
+    // }
+    // }
+    // @Override
+    // public void endElement(String tag, StringBuilder builder) {
+    // }
+    //        
+    // }
+    // private class ConfigData extends Tags {
+    // private Tags subNetwork;
+    //
+    // ConfigData() {
+    // super("configData");
+    // }
+    //
+    // @Override
+    // public void startElement(String tag, Attributes attributes) {
+    // if (tag.equals(tagName)) {
+    // updateTx();
+    // Node node = neo.createNode();
+    // NodeTypes.URBAN_CONFIG.setNodeType(node, neo);
+    // NeoUtils.addChild(fileNode, node, lastConfig, neo);
+    // lastConfig = node;
+    // super.startElement(tag, attributes);
+    // for (int i = 0; i < attributes.getLength(); i++) {
+    // fileNode.setProperty(attributes.getLocalName(i), attributes.getValue(i));
+    // }
+    // } else {
+    // if (tag.equals("SubNetwork")){
+    // subNetwork=new SubNetwork(this);
+    // }
+    // }
+    // }
+    //
+    // @Override
+    // public void endElement(String tag, StringBuilder builder) {
+    // }
+    // }
 
     protected void updateTx() {
         counter++;
@@ -235,5 +218,76 @@ public class UTRANLoader extends AbstractLoader {
             commit(true);
             counter = 0;
         }
+    }
+
+    public class Factory implements IXmlTagFactory {
+        @Override
+        public IXmlTag createInstance(String tagName, Attributes attributes) {
+            if (tagName.equals(BulkCmConfigDataFile.TAG_NAME)) {
+                return new BulkCmConfigDataFile(attributes);
+            }
+            return null;
+        }
+
+    }
+
+    /**
+     * <p>
+     * </p>
+     * 
+     * @author TsAr
+     * @since 1.0.0
+     */
+    public class BulkCmConfigDataFile extends AbstractNeoTag {
+        public static final String TAG_NAME = "bulkCmConfigDataFile";
+
+        /**
+         * @param tagName
+         */
+        protected BulkCmConfigDataFile(Attributes attributes) {
+            super(TAG_NAME, fileNode, null, attributes);
+        }
+
+        @Override
+        public IXmlTag startElement(String localName, Attributes attributes) {
+            IXmlTag result = this;
+            if (FileHeader.TAG_NAME.equals(localName)) {
+                result = new FileHeader(attributes, this);
+            }
+            return result;
+        }
+
+        @Override
+        protected Node createNode(Attributes attributes) {
+            updateTx();
+            Node node = neo.createNode();
+            storeAttributes(attributes);
+            return node;
+        }
+
+    }
+
+    public class FileHeader extends AbstractNeoTag {
+        public static final String TAG_NAME = "fileHeader";
+
+        /**
+         * @param tagName
+         */
+        protected FileHeader(Attributes attributes, AbstractNeoTag parent) {
+            super(TAG_NAME, parent, attributes);
+        }
+
+        @Override
+        public IXmlTag startElement(String localName, Attributes attributes) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        protected Node createNode(Attributes attributes) {
+            Node node = neo.createNode();
+            storeAttributes(attributes);
+            return node;
+        }
+
     }
 }
