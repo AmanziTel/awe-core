@@ -12,6 +12,16 @@
             id="org.amanzi.awe.views.drive.views.DriveInquirerView">
       </view>
    </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Drive Refactoring"
+            icon="icons/drive.png"
+            category="org.amanzi.awe.script"
+            class="org.amanzi.awe.views.drive.views.DIVrefactoring"
+            id="org.amanzi.awe.views.drive.views.DIVrefactoring">
+      </view>
+   </extension>
       <extension
          point="org.eclipse.ui.views">
       <view
