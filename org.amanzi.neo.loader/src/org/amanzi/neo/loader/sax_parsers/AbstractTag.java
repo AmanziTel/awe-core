@@ -17,47 +17,35 @@ import org.xml.sax.Attributes;
 
 /**
  * <p>
+ * Abstract Tag
  * </p>
  * 
- * @author TsAr
+ * @author Tsinkel_A
  * @since 1.0.0
  */
 public abstract class AbstractTag implements IXmlTag {
 
     private final String tagName;
-    private final IXmlTag parent;
-    private IXmlTag child;
+    protected final IXmlTag parent;
 
+    /**
+     * Constructor
+     * 
+     * @param tagName name of tag
+     * @param parent - parent tag
+     */
     protected AbstractTag(String tagName, IXmlTag parent) {
         this.tagName = tagName;
         this.parent = parent;
-        child = null;
     }
 
     @Override
     public IXmlTag endElement(String localName, StringBuilder chars) {
-            if (tagName.equals(localName)) {
-                closeCurrentElement(chars);
-                return parent;
-            } else {
-                closeNewTag(localName, chars);
-                return this;
-            }
-    }
-
-    /**
-     * @param localName
-     * @param chars
-     */
-    protected void closeNewTag(String localName, StringBuilder chars) {
-        throw new IllegalArgumentException(String.format("Wrong handle closing of tag: %s", localName));
-    }
-
-    /**
-     * @param chars
-     */
-    protected void closeCurrentElement(StringBuilder chars) {
-        // do nothing
+        if (localName.equals(getName())) {
+            return parent;
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Override

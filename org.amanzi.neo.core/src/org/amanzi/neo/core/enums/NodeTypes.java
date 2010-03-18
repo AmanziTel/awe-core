@@ -436,7 +436,7 @@ public enum NodeTypes {
     OSS("oss"), 
     GPEH_EVENT("gpeh_event"), 
     OSS_MAIN("oss_main"),
-    URBAN_CONFIG("urban_config"),
+//    URBAN_CONFIG("urban_config"),
     FILTER("filter"){
         @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
@@ -480,7 +480,7 @@ public enum NodeTypes {
         protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link) {
             return isGoodLinkForCorrectStructure(aNode, cameFrom, link);
         }
-    };
+    }, UTRAN_DATA("utran_data");
     
     private final String id;
     private boolean nodeReadOnly;

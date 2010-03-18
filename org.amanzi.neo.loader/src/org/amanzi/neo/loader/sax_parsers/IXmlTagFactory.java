@@ -16,13 +16,19 @@ package org.amanzi.neo.loader.sax_parsers;
 import org.xml.sax.Attributes;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Tag factory
  * </p>
  * @author TsAr
  * @since 1.0.0
  */
 public interface IXmlTagFactory {
+    /**
+     * create instance by tag name
+     *
+     * @param tagName - tag name
+     * @param attributes - tag attributes
+     * @return IXmlTag tag or null;
+     */
     IXmlTag createInstance(String tagName, Attributes attributes);
 }

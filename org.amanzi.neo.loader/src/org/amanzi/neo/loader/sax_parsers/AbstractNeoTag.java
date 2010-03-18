@@ -18,20 +18,23 @@ import org.neo4j.api.core.Node;
 import org.xml.sax.Attributes;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Abstract tag with support neo4j and CHILD/NEXT structure New transaction do not created
  * </p>
- * @author TsAr
+ * 
+ * @author Tsinkel_A
  * @since 1.0.0
  */
 public abstract class AbstractNeoTag extends AbstractTag {
-    Node node;
-    Node lastChild;
+    protected Node node;
+    protected Node lastChild;
 
     /**
-     * @param tagName
-     * @param parent
+     * Constructor
+     * 
+     * @param tagName - tag name
+     * @param parent - parent AbstractNeoTag
+     * @param attributes - attributes of tag
      */
     protected AbstractNeoTag(String tagName, AbstractNeoTag parent, Attributes attributes) {
         super(tagName, parent);
@@ -41,13 +44,13 @@ public abstract class AbstractNeoTag extends AbstractTag {
     }
 
     /**
-     * @param abstractNeoTag
+     * Constructor
+     * 
+     * @param tagName - tag name
+     * @param parent - parent node
+     * @param lastChild -last child of parent node, if null, then child will be found
+     * @param attributes - attributes of tag
      */
-    private void addChild(AbstractNeoTag childNode) {
-        NeoUtils.addChild(node, childNode.node, lastChild, null);
-        lastChild = childNode.node;
-    }
-
     protected AbstractNeoTag(String tagName, Node parent, Node lastChild, Attributes attributes) {
         super(tagName, null);
         lastChild = null;
@@ -55,16 +58,43 @@ public abstract class AbstractNeoTag extends AbstractTag {
         NeoUtils.addChild(parent, node, lastChild, null);
     }
 
-    protected void storeAttributes(Attributes attributes) {
+    /**
+     * add child
+     * 
+     * @param childNode - child tag
+     */
+    private void addChild(AbstractNeoTag childNode) {
+        NeoUtils.addChild(node, childNode.node, lastChild, null);
+        lastChild = childNode.node;
+    }
+
+    /**
+     * utility method for storing attributes like propertys in node
+     * 
+     * @param node - node to store
+     * @param attributes - attributes
+     */
+    public void storeAttributes(Node node, Attributes attributes) {
         for (int i = 0; i < attributes.getLength(); i++) {
             node.setProperty(attributes.getLocalName(i), attributes.getValue(i));
         }
     }
+
     /**
-     * @param attributes
-     * @return
+     * Create node of current tag
+     * 
+     * @param attributes - attributes
+     * @return created node
      */
     protected abstract Node createNode(Attributes attributes);
 
+    /**
+     * Get node of current tag
+     * 
+     * @return Returns the node.
+     */
+    public Node getNode() {
+        return node;
+    }
 
 }

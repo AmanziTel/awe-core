@@ -16,27 +16,39 @@ package org.amanzi.neo.loader.sax_parsers;
 import org.xml.sax.Attributes;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Interface of Tag handler
  * </p>
- * @author TsAr
+ * @author Tsinkel_A
  * @since 1.0.0
  */
 public interface IXmlTag {
+    /**
+     * get name of tag
+     *
+     * @return
+     */
     String getName();
 
     /**
-     * @param localName
-     * @param attributes
-     * @return
+     * Receive notification of the start of an element.
+     * @param localName The local name (without prefix), or the
+     *        empty string if Namespace processing is not being
+     *        performed.
+     * @param attributes The attributes attached to the element.  If
+     *        there are no attributes, it shall be an empty
+     *        Attributes object.
+     * @return handler of next tag
      */
     IXmlTag startElement(String localName, Attributes attributes);
 
     /**
-     * @param localName
-     * @param chars
-     * @return
+     * Receive notification of the end of an element.
+     * @param localName The local name (without prefix), or the
+     *        empty string if Namespace processing is not being
+     *        performed.
+     * @param chars contains string between tags <></>
+     * @return handler of next tag
      */
     IXmlTag endElement(String localName, StringBuilder chars);
 

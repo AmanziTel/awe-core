@@ -18,11 +18,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * TODO Purpose of
  * <p>
+ * Extension of DefaultHandler
  * </p>
  * 
- * @author TsAr
+ * @author Tsinkel_A
  * @since 1.0.0
  */
 public class ReadContentHandler extends DefaultHandler {
@@ -30,6 +30,11 @@ public class ReadContentHandler extends DefaultHandler {
     private IXmlTag currentTag;
     private final IXmlTagFactory factory;
 
+    /**
+     * Constructor
+     * 
+     * @param factory - tag factory for creating roots tag
+     */
     public ReadContentHandler(IXmlTagFactory factory) {
         this.factory = factory;
         chars = null;
@@ -62,7 +67,7 @@ public class ReadContentHandler extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         super.endElement(uri, localName, qName);
         if (currentTag != null) {
-            currentTag = currentTag.endElement(localName, chars);
+            currentTag = currentTag.endElement(localName, chars != null ? chars : new StringBuilder());
         }
         chars = null;
     }

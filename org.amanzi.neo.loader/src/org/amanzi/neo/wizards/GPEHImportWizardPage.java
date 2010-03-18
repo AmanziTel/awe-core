@@ -252,6 +252,10 @@ public class GPEHImportWizardPage extends WizardPage {
             if (!( file.isAbsolute() && file.exists())) {
                 return false;
             }
+            //GPEH handle only directories
+            if (file.isFile()&&ossDirType.left()==OssType.GPEH){
+                return false;
+            }
             Node ossNode = ossMap.get(datasetName);
             if (ossNode != null) {
                 return ossDirType.left() == OssType.getOssType(ossNode, service);

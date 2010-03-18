@@ -27,7 +27,7 @@ import org.neo4j.api.core.Transaction;
  * @since 1.0.0
  */
 public enum OssType {
-    GPEH("gpeh"), COUNTER("counter"),UTRAN("utran");
+    GPEH("gpeh"), COUNTER("counter"),UTRAN("utran"),NOKIA_GSM("nokia_gsm");
     public static final String PROPERTY_NAME = "oss_type";
     private final String id;
 

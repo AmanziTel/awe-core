@@ -21,6 +21,7 @@ import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
 import org.amanzi.neo.loader.GPEHLoader;
 import org.amanzi.neo.loader.OSSCounterLoader;
+import org.amanzi.neo.loader.OSSNokiaGSM;
 import org.amanzi.neo.loader.UTRANLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -63,12 +64,14 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                         loaderOss.run(monitor);
                     case UTRAN:
                         UTRANLoader loaderUtran = new UTRANLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
-                        loaderUtran.run(monitor);                       
+                        loaderUtran.run(monitor);
+                    case NOKIA_GSM:
+                        OSSNokiaGSM loaderNokia = new OSSNokiaGSM(mainPage.getDirectory(), mainPage.getDatasetName(), display);
+                        loaderNokia.run(monitor);
                     default:
                         break;
                     }
-                    NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
-                            new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
+                    NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
                 } catch (IOException e) {
                     NeoLoaderPlugin.error(e.getLocalizedMessage());
                     return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
