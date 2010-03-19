@@ -204,8 +204,9 @@ public class NetworkSiteImportWizardPage extends WizardPage {
     protected void updateLabelFileDescr() {
         netwFile = LoaderUtils.getFileType(getFileName());
         NetworkFileType fileType = netwFile.getLeft();
-        int ind = fileType == null ? -1 : fileType.ordinal();
-        networkType.select(ind);
+        if (fileType!=null){
+            networkType.setText(fileType.getId());
+        }
         setPageComplete(isValidPage());
     }
 

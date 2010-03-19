@@ -127,14 +127,14 @@ public class LoaderUtils {
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.NEIGHBOUR, null);
                 }
             }
-            for (String header : getPossibleHeaders(DataLoadPreferences.NH_SITE)) {
-                if (headers.contains(header)) {
-                    return new Pair<NetworkFileType, Exception>(NetworkFileType.RADIO_SITE, null);
-                }
-            }
             for (String header : getPossibleHeaders(DataLoadPreferences.NH_SECTOR)) {
                 if (headers.contains(header)) {
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.RADIO_SECTOR, null);
+                }
+            }
+            for (String header : getPossibleHeaders(DataLoadPreferences.NH_SITE)) {
+                if (headers.contains(header)) {
+                    return new Pair<NetworkFileType, Exception>(NetworkFileType.RADIO_SITE, null);
                 }
             }
             //TODO use preference page
