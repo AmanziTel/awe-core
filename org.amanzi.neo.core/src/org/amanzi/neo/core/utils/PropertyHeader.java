@@ -119,6 +119,16 @@ public class PropertyHeader {
         
         return havePropertyNode ? getDefinedNumericFields() : NeoUtils.getNumericFields(node);
     }
+    
+    /**
+     * get String Fields of current node
+     * 
+     * @return array or null
+     */
+    public String[] getStringFields() {
+        
+        return havePropertyNode ? getDefinedStringFields() : null;
+    }
 
     /**
      * get data vault
@@ -185,6 +195,25 @@ public class PropertyHeader {
         result.addAll(ints);
         result.addAll(floats);
         result.addAll(longs);
+        return result.toArray(new String[0]);
+    }
+    
+    private String[] getDefinedStringFields() {
+        List<String> result = new ArrayList<String>();
+        Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+        if (propRel != null) {
+            Node propNode = propRel.getEndNode();
+            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                String[] properties = (String[])node.getProperty(INeoConstants.PROPERTY_DATA, null);
+                if (propType != null && properties != null) {
+                    if (propType.equals("string")) {
+                        result.addAll(Arrays.asList(properties));
+                    } 
+                }
+            }
+        }
         return result.toArray(new String[0]);
     }
 

@@ -11,6 +11,13 @@
             class="org.amanzi.awe.views.reuse.views.ReuseAnalyserView"
             id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView">
       </view>
+      <view
+            name="Message and Event tabular"
+            icon="icons/distribution.png"
+            category="org.amanzi.awe.script"
+            class="org.amanzi.awe.views.reuse.mess_table.view.MessageAndEventTableView"
+            id="org.amanzi.awe.views.reuse.views.MessageAndEventTableView">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -24,6 +31,15 @@
          </view>
          <viewShortcut
                id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView">
+         </viewShortcut>
+         <view
+               id="org.amanzi.awe.views.reuse.views.MessageAndEventTableView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.reuse.views.MessageAndEventTableView">
          </viewShortcut>
       </perspectiveExtension>
    </extension>
