@@ -79,6 +79,8 @@ public class OSSNokiaGSM extends AbstractLoader {
         initialize("OSSNokiaGSM", null, file, display);
         basename = datasetName;
         headers = getHeaderMap(KEY_EVENT).headers;
+        headers.put("name",new StringHeader(new Header("name", "name", 0)));
+        headers.put("address",new StringHeader(new Header("address", "address", 1)));
         handler = new ReadContentHandler(new Factory());
 
     }
@@ -237,6 +239,7 @@ public class OSSNokiaGSM extends AbstractLoader {
             Node node = neo.createNode();
             NodeTypes.UTRAN_DATA.setNodeType(node, neo);
             node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
+            NeoUtils.setNodeName(node, getName(), null);
             storeAttributes(node, attributes);
             updateTx();
             return node;
@@ -421,7 +424,8 @@ public class OSSNokiaGSM extends AbstractLoader {
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             if (chars.length() > 0 && name != null) {
-                ((AbstractNeoTag)parent).getNode().setProperty(name, chars.toString());
+                Node nodeToSave = getNode();
+                setIndexPropertyNotParcedValue(headers, nodeToSave, name, chars.toString());
             }
             updateMonitor();
             if (localName.equals(TAG_NAME)) {
@@ -439,7 +443,7 @@ public class OSSNokiaGSM extends AbstractLoader {
         protected Node createNode(Attributes attributes) {
             Node node = neo.createNode();
             NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
+            node.setProperty(INeoConstants.URTAN_DATA_TYPE, getName());
             storeAttributes(node, attributes);
             updateTx();
             return node;

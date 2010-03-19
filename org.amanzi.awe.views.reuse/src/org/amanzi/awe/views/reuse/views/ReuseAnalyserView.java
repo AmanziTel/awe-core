@@ -2781,10 +2781,12 @@ public class ReuseAnalyserView extends ViewPart {
             super();
             propertyList=new HashSet<String>();
             propertyList.add(NodeTypes.M.getId());
+            propertyList.add("mv");
             propertyList.add(NodeTypes.SECTOR.getId());
             propertyList.add(NodeTypes.HEADER_MS.getId());
             propertyList.add(NodeTypes.PROBE.getId());
             propertyList.add(NodeTypes.CALL.getId());
+            propertyList.add(NodeTypes.UTRAN_DATA.getId());
             propertyList.add(NodeTypes.GPEH_EVENT.getId());
         }
         public PropertyReturnableEvalvator(NodeTypes propertyType){

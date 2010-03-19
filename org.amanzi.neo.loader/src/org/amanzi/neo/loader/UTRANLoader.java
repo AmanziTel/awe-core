@@ -29,11 +29,11 @@ import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.loader.sax_parsers.AbstractNeoTag;
 import org.amanzi.neo.loader.sax_parsers.AbstractTag;
 import org.amanzi.neo.loader.sax_parsers.IXmlTag;
 import org.amanzi.neo.loader.sax_parsers.IXmlTagFactory;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -244,15 +244,6 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
 
     }
 
@@ -276,18 +267,45 @@ public class UTRANLoader extends AbstractLoader {
             throw new UnsupportedOperationException();
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
 
     }
+public abstract class AbstractNeoTag extends org.amanzi.neo.loader.sax_parsers.AbstractNeoTag{
+    /**
+     * Constructor
+     * 
+     * @param tagName - tag name
+     * @param parent - parent AbstractNeoTag
+     * @param attributes - attributes of tag
+     */
+    protected AbstractNeoTag(String tagName, AbstractNeoTag parent, Attributes attributes) {
+        super(tagName, parent,attributes);
+    }
 
+    /**
+     * Constructor
+     * 
+     * @param tagName - tag name
+     * @param parent - parent node
+     * @param lastChild -last child of parent node, if null, then child will be found
+     * @param attributes - attributes of tag
+     */
+    protected AbstractNeoTag(String tagName, Node parent, Node lastChild, Attributes attributes) {
+        super(tagName, parent,lastChild,attributes);
+    }
+    @Override
+    protected Node createNode(Attributes attributes) {
+        Node node = neo.createNode();
+        NodeTypes.UTRAN_DATA.setNodeType(node, neo);
+        node.setProperty(INeoConstants.URTAN_DATA_TYPE, getName());
+        storeAttributes(node, attributes);
+        String name=attributes.getValue("id");
+        if (!StringUtils.isEmpty(name)){
+            NeoUtils.setNodeName(node, name, null);
+        }
+        updateTx();
+        return node;
+    }
+}
     /**
      * <p>
      * Handler "fileFooter" tag
@@ -306,16 +324,6 @@ public class UTRANLoader extends AbstractLoader {
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             throw new UnsupportedOperationException();
-        }
-
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
         }
 
     }
@@ -351,15 +359,6 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
 
     }
 
@@ -417,15 +416,6 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -466,7 +456,7 @@ public class UTRANLoader extends AbstractLoader {
                     throw new UnsupportedOperationException();
                 } else {
                     if (chars.length() > 0) {
-                        ((AbstractNeoTag)parent).getNode().setProperty(localName, chars.toString());
+                        setIndexPropertyNotParcedValue(headers, ((AbstractNeoTag)parent).getNode(), localName, chars.toString());
                     }
                 }
                 return this;
@@ -515,16 +505,6 @@ public class UTRANLoader extends AbstractLoader {
                 throw new UnsupportedOperationException();
             }
         }
-
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -570,15 +550,6 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -624,15 +595,6 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -681,15 +643,6 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -729,16 +682,6 @@ public class UTRANLoader extends AbstractLoader {
             } else {
                 throw new UnsupportedOperationException();
             }
-        }
-
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
         }
     }
 
@@ -781,15 +724,6 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -834,15 +768,6 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -884,15 +809,6 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -934,15 +850,6 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -991,15 +898,7 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
+
     }
 
     /**
@@ -1042,15 +941,6 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -1090,15 +980,7 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
+
     }
 
     /**
@@ -1138,15 +1020,6 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 
     /**
@@ -1188,15 +1061,7 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
+
     }
 
     /**
@@ -1241,15 +1106,7 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
+
     }
 
     /**
@@ -1294,14 +1151,5 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
-        @Override
-        protected Node createNode(Attributes attributes) {
-            Node node = neo.createNode();
-            NodeTypes.UTRAN_DATA.setNodeType(node, neo);
-            node.setProperty(INeoConstants.URTAN_DATA_TYPE, TAG_NAME);
-            storeAttributes(node, attributes);
-            updateTx();
-            return node;
-        }
     }
 }

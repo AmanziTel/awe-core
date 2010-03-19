@@ -1875,7 +1875,7 @@ public class NeoUtils {
             }
             successTx(tx);
         } finally {
-            tx.finish();
+            finishTx(tx);
         }
     }
 
