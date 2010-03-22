@@ -196,6 +196,8 @@ public class UDIGDropHandler extends DropTargetAdapter {
                 System.out.println(data.getClass());
                 System.out.println(data.pIDataObject);
                 System.out.println(data.result);
+                System.out.println(data.stgmedium);
+                System.out.println(data.formatetc);
                 System.out.println(data.type);
                 UiPlugin.trace(Trace.DND, getClass(), data.type+" data "+object,null);                
                 if( !dataList.contains( object )){
