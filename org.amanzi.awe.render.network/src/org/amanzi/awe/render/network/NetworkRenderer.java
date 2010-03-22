@@ -76,6 +76,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
+    /** double CIRCLE_BEAMWIDTH field */
+    private static final double CIRCLE_BEAMWIDTH = 360.0;
+    private static final double DRFAULT_BEAMWIDTH = 10.0;
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
     private static final Color COLOR_SITE_SELECTED = Color.CYAN;
@@ -402,13 +405,18 @@ public class NetworkRenderer extends RendererImpl {
                         for (Relationship relationship : node.getNode().getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                             Node child = relationship.getEndNode();
                             if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
-                                // double azimuth = Double.NaN;
-                                double beamwidth = getDouble(child, "beamwidth", 360.0);
-                                Color colorToFill = getSectorColor(child, fillColor);
                                 double azimuth = getDouble(child, "azimuth", Double.NaN);
+                                double beamwidth = Double.NaN;
                                 if (azimuth == Double.NaN) {
-                                    continue;
-                                }
+                                    beamwidth = getDouble(child, "beamwidth", CIRCLE_BEAMWIDTH);
+                                    if(beamwidth<CIRCLE_BEAMWIDTH){
+                                        azimuth = 0;
+                                        System.err.println("Error in render GeoNeo: azimuth is defined, but beamwidth less than "+CIRCLE_BEAMWIDTH);
+                                    }
+                                }else{
+                                    beamwidth = getDouble(child, "beamwidth", DRFAULT_BEAMWIDTH);
+                                }                                
+                                Color colorToFill = getSectorColor(child, fillColor);
                                 borderColor = drawColor;
                                 if (starPoint != null && starPoint.right().equals(child.getId())) {
                                     borderColor = COLOR_SECTOR_STAR;
@@ -434,7 +442,7 @@ public class NetworkRenderer extends RendererImpl {
                                 // g.setColor(drawColor);
                                 // g.rotate(-Math.toRadians(beamwidth/2));
                                 // g.drawString(sector.getString("name"),drawSize,0);
-                                if(beamwidth==360) countOmnis++;
+                                if(beamwidth==CIRCLE_BEAMWIDTH) countOmnis++;
                                 s++;
                             }
                         }
@@ -782,7 +790,7 @@ public class NetworkRenderer extends RendererImpl {
         g.setTransform(base_transform);
         g.translate(p.x, p.y);
         int draw2 = drawSize + 3;
-        if (beamwidth >= 360.0) {
+        if (beamwidth >= CIRCLE_BEAMWIDTH) {
             g.setColor(fillColor);
             g.fillOval(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize);
             g.setColor(borderColor);
