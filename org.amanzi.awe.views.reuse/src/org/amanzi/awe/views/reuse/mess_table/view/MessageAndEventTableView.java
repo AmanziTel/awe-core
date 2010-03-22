@@ -281,6 +281,25 @@ public class MessageAndEventTableView extends ViewPart {
             for(String property : newVisible){
                 datasetInfo.setPropertyVisible(property, true);
             }
+            String selected = null;
+            if(cProperty.getSelectionIndex()>=0){
+                selected = cProperty.getText();
+            }
+            String[] filteredProperties = datasetInfo.getFilteredProperties();
+            cProperty.setItems(filteredProperties);
+            if(selected!=null){
+                int length = filteredProperties.length;
+                int i;
+                for(i=0; i<length; i++){
+                    if(selected.equals(cProperty.getItem(i))){
+                        cProperty.select(i);
+                        break;
+                    }
+                }
+                if(i==length){
+                    cExpression.setItems(DEFAULT_EXPRESSIONS);
+                }
+            }
         }
         updateTable();        
     }
@@ -751,7 +770,7 @@ public class MessageAndEventTableView extends ViewPart {
      */
     private class TableContentProvider implements IStructuredContentProvider {
         
-        private static final int PAGE_SIZE = 500;
+        private static final int PAGE_SIZE = 100;
 
         private List<TableRowWrapper> rows = new ArrayList<TableRowWrapper>();
         private Iterator<Node> allNodes;
@@ -811,7 +830,7 @@ public class MessageAndEventTableView extends ViewPart {
             Job updateJob = new Job("Upload data to table job") {            
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                    if((rows.size()-index)>PAGE_SIZE/2){
+                    if((rows.size()-index)>PAGE_SIZE/4){
                         return Status.OK_STATUS;
                     }
                     DatasetInfo datasetInfo = datasets.get(dataset);
