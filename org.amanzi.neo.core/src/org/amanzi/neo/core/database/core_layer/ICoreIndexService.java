@@ -13,14 +13,14 @@
 
 package org.amanzi.neo.core.database.core_layer;
 
-import org.neo4j.api.core.Node;
-
 /**
+ * TODO Purpose of 
  * <p>
- *Wrapper of 
+ *
  * </p>
- * @author Cinkel_A
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public interface ICoreNode extends Node{
+public interface ICoreIndexService {
+
 }

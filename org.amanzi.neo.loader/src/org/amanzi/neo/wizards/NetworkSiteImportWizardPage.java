@@ -82,7 +82,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
     private Label labNetworkDescr;
     private Pair<NetworkFileType, Exception> netwFile = new Pair<NetworkFileType, Exception>(null, null);
     private Combo networkType;
-    protected String networkName;
+    protected String networkName="";
 
     /**
      *check page
@@ -148,6 +148,22 @@ public class NetworkSiteImportWizardPage extends WizardPage {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
                 updateLabelFileDescr();
+                if (netwFile.getLeft()!=null){
+                    if (netwFile.getLeft()==NetworkFileType.NEIGHBOUR||netwFile.getLeft()==NetworkFileType.TRANSMISSION){
+                        if (members.get(networkName)!=null||members.isEmpty()){
+                            return;
+                        }
+                        if (members.size()==1){
+                            networkName=members.keySet().iterator().next();
+                        }else{
+                            networkName="";
+                        }
+                        network.setText(networkName);
+                        networkNode = members.get(networkName);                       
+                        setPageComplete(isValidPage());
+                        return;
+                    }
+                }
                 if (networkName==null||networkName.trim().isEmpty()){
                     networkName=new java.io.File(getFileName()).getName(); 
                     network.setText(networkName);
@@ -206,6 +222,8 @@ public class NetworkSiteImportWizardPage extends WizardPage {
         NetworkFileType fileType = netwFile.getLeft();
         if (fileType!=null){
             networkType.setText(fileType.getId());
+        }else{
+            networkType.setText("");
         }
         setPageComplete(isValidPage());
     }

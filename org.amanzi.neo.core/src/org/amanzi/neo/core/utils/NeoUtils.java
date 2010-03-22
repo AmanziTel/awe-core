@@ -818,9 +818,9 @@ public class NeoUtils {
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node curNode = currentPos.currentNode();
-                return getNodeType(curNode, "").equals(NodeTypes.M.getId()) && curNode.hasProperty(msName);
+                return  !currentPos.isStartNode()&&curNode.hasProperty(msName);
             }
-        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+        }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
         for (Node nodeMs : traverse) {
 
             result.append(nodeMs.getProperty(msName).toString()).append(delim);

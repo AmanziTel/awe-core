@@ -32,5 +32,10 @@ public class DataStatisticManager {
     public void addHeader(String key,Header header){
         
     }
-
+    public void indexValue(String key, Object value){
+        
+    }
+    public void parseAndIndex(String key, String value){
+        
+    }
 }

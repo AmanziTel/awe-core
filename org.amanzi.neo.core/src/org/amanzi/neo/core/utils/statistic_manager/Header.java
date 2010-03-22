@@ -216,29 +216,11 @@ public class Header {
             }
             boolean discard = false;
             if (count == 0) {
-                // We have a new value, so adding it will increase the size
-                // of the map
-                // We should perform threshold tests to decide whether to
-                // drop the map or not
                 if (values.size() >= MAX_PROPERTY_VALUE_COUNT) {
                     // Exceeded absolute threashold, drop map
                     System.out.println("Property values exceeded maximum count, no longer tracking value set: " + this.key);
                     discard = true;
                 }
-                // TODO if we do not use parse method this check will be
-                // wrong
-                // else if (values.size() >=
-                // MIN_PROPERTY_VALUE_SPREAD_COUNT) {
-                // // Exceeded minor threshold, test spread and then decide
-                // float spread = (float)values.size() / (float)parseCount;
-                // if (spread > MAX_PROPERTY_VALUE_SPREAD) {
-                // // Exceeded maximum spread, too much property variety,
-                // drop map
-                // System.out.println("Property shows excessive variation, no longer tracking value set: "
-                // + this.key);
-                // discard = true;
-                // }
-                // }
             }
             if (discard) {
                 // Detected too much variety in property values, stop
