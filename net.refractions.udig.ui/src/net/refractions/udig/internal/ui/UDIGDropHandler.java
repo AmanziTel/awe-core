@@ -1,5 +1,6 @@
 package net.refractions.udig.internal.ui;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -194,11 +195,9 @@ public class UDIGDropHandler extends DropTargetAdapter {
                 }
                 System.out.println(data);
                 System.out.println(data.getClass());
-                System.out.println(data.pIDataObject);
-                System.out.println(data.result);
-                System.out.println(data.stgmedium);
-                System.out.println(data.formatetc);
-                System.out.println(data.type);
+                for (Field field : data.getClass().getFields()) {
+                    System.out.println(field.getName());
+                }
                 UiPlugin.trace(Trace.DND, getClass(), data.type+" data "+object,null);                
                 if( !dataList.contains( object )){
                     dataList.add( object );
