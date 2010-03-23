@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Report Plug-in
+Bundle-SymbolicName: org.amanzi.awe.report;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: org.amanzi.awe.report.ReportPlugin
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.jruby,
+ org.amanzi.scripting.jruby,
+ net.refractions.udig.project.ui,
+ org.amanzi.awe.views.kpi,
+ org.amanzi.integrator.awe,
+ org.rubypeople.rdt.ui,
+ org.rubypeople.rdt.core,
+ org.amanzi.awe.script.jirb,
+ org.eclipse.core.resources,
+ org.neo4j,
+ org.amanzi.neo.core,
+ org.jfree,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.editors,
+ org.eclipse.jface.text
+Eclipse-LazyStart: true
+Export-Package: org.amanzi.awe.report.editor,
+ org.amanzi.awe.report.model

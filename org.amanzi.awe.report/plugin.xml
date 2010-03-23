@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="org.amanzi.awe.report.command.GenerateReport"
+            name="Generate Report">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.amanzi.awe.report.handlers.GenerateReportCommandHandler"
+            commandId="org.amanzi.awe.report.command.GenerateReport">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="org.amanzi.awe.report.toolbar1">
+            <command
+                  commandId="org.amanzi.awe.report.command.GenerateReport"
+                  id="org.amanzi.awe.report.GenerateReport"
+                  label="Report">
+            </command>
+         </toolbar>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.amanzi.awe.report.editor.ReportEditor"
+            contributorClass="org.amanzi.awe.report.editor.ReportEditorContributor"
+            extensions="rb,r"
+            icon="icons/report.PNG"
+            id="org.amanzi.awe.report.editor.ReportEditor"
+            name="Amanzi Reportt Editor">
+      </editor>
+   </extension>
+   <extension
+         point="net.refractions.udig.ui.newObjectAction">
+      <action
+            class="org.amanzi.awe.report.wizards.NewReportAction"
+            icon="icons/report.PNG"
+            id="org.amanzi.report.wizards.newReportAction"
+            label="New Amanzi Report">
+      </action>
+   </extension>
+
+</plugin>
