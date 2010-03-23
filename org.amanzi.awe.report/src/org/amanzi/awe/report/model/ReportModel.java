@@ -120,12 +120,12 @@ public class ReportModel {
             
         };
         initJob.schedule();
-//        try {
-////            initJob.join();
-//        } catch (InterruptedException e) {
-//            // TODO Handle InterruptedException
-//            e.printStackTrace();
-//        }
+        try {
+            initJob.join();
+        } catch (InterruptedException e) {
+            // TODO Handle InterruptedException
+            e.printStackTrace();
+        }
     }
 
     /**
