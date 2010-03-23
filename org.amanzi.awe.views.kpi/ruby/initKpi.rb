@@ -1,5 +1,5 @@
 require 'neo4j'
-require 'formulas'
+require 'ruby/formulas'
 include Java
 
 include_class 'org.amanzi.neo.core.service.NeoServiceProvider'

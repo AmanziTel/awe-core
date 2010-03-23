@@ -12,5 +12,5 @@ Require-Bundle: org.eclipse.ui,
  net.refractions.udig.printing.ui,
  com.lowagie.itext,
  org.jfree,
- org.amanzi.splash
+ org.amanzi.awe.report
 Eclipse-LazyStart: true

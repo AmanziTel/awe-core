@@ -11,16 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.splash.report.model;
+package org.amanzi.splash.chart;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.splash.chart.ChartType;
-import org.amanzi.splash.report.IReportPart;
-import org.amanzi.splash.report.ReportPartType;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.general.AbstractDataset;

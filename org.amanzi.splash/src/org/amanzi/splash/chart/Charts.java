@@ -22,7 +22,6 @@ import java.util.List;
 import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.ChartItemNode;
 import org.amanzi.neo.core.database.nodes.ChartNode;
-import org.amanzi.splash.report.model.Chart;
 import org.amanzi.splash.ui.ChartEditorInput;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;
@@ -345,69 +344,7 @@ public class Charts implements IElementFactory {
 
         return dataset;
     }
-    public static void applyDefaultSettings(Plot plot, Dataset dataset, int dsNum) {
-        if (plot instanceof XYPlot) {
-            XYPlot xyplot = (XYPlot)plot;
-
-            xyplot.setDomainAxis(new DateAxis("Time"));
-            xyplot.setDomainCrosshairVisible(true);
-            xyplot.setDomainCrosshairLockedOnData(false);
-            xyplot.setRangeCrosshairVisible(false);
-            xyplot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
-           
-            if (dataset instanceof TimeSeriesCollection) {
-
-                xyplot.setDataset(dsNum, (TimeSeriesCollection)dataset);
-
-                StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
-                standardxyitemrenderer.setBaseShapesFilled(true);
-                xyplot.setRenderer(dsNum, standardxyitemrenderer);
-//                if (dsNum == 0) {
-//                    xyplot.getRenderer(0).setSeriesPaint(0, new Color(0, 0, 0, 0));
-//                } else if (dsNum == 1) {
-//                    xyplot.getRenderer(1).setSeriesPaint(0, COLOR_LEFT_PROPERTY);
-//                } else if (dsNum == 2) {
-//                    xyplot.getRenderer(2).setSeriesPaint(0, COLOR_RIGHT_PROPERTY);
-//                }
-                NumberAxis numberaxis = new NumberAxis("Value");
-                numberaxis.setAutoRangeIncludesZero(false);
-                xyplot.setRangeAxis(dsNum, numberaxis);
-                xyplot.setRangeAxisLocation(dsNum, AxisLocation.BOTTOM_OR_LEFT);
-                xyplot.mapDatasetToRangeAxis(dsNum, dsNum);
-            } else if (dataset instanceof EventDataset) {
-                EventDataset eventDataset = (EventDataset)dataset;
-                xyplot.setDataset(dsNum, eventDataset);
-               
-                XYBarRenderer eventRenderer = new EventRenderer(eventDataset);
-                xyplot.setRenderer(dsNum, eventRenderer);
-               
-                NumberAxis rangeAxis = new NumberAxis("Events");
-                rangeAxis.setVisible(false);
-                xyplot.setRangeAxis(dsNum, rangeAxis);
-            }
-        }else if (plot instanceof CategoryPlot){
-         // get a reference to the plot for further customisation...
-            CategoryPlot categoryPlot = (CategoryPlot)plot;
-
-            // set the range axis to display integers only...
-            NumberAxis rangeAxis = new NumberAxis();
-            rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-            categoryPlot.setRangeAxis(rangeAxis);
-            
-            // disable bar outlines...
-            BarRenderer renderer = new BarRenderer();
-            renderer.setDrawBarOutline(false);
-            
-            // set up gradient paints for series...
-            GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
-            renderer.setSeriesPaint(0, gp0);
-            categoryPlot.setRenderer(renderer);
-            
-            CategoryAxis domainAxis = new CategoryAxis();
-            domainAxis.setCategoryLabelPositions(CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0));
-            categoryPlot.setDomainAxis(domainAxis);
-        }
-    }
+    
     public static void applyMainVisualSettings(Plot plot, String rangeAxisLablel, String domainAxisLabel,
             PlotOrientation orientation) {
         if (plot instanceof CategoryPlot) {

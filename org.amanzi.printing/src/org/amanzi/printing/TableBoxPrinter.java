@@ -20,7 +20,7 @@ import java.awt.Graphics2D;
 
 import net.refractions.udig.printing.model.AbstractBoxPrinter;
 
-import org.amanzi.splash.report.model.ReportTable;
+import org.amanzi.awe.report.model.ReportTable;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**

@@ -1,8 +1,11 @@
 include Java
+#require 'java'
+puts "trying to include GIS"
 
-puts "include GIS"
 include_class org.amanzi.awe.report.util.GIS
-puts "class included"
+#include_class 'org.amanzi.awe.report.util.GIS'
+puts "GIS included"
+
 class Map
 #  include_class net.refractions.udig.project.IMap
   #  def copy
@@ -34,7 +37,7 @@ class MapIterator
     @collection.iterator
   end
 end
-puts "class GIS"
+
 class GIS
   #  map = GIS.maps.first.copy # make copy for report
   #Returns all open maps

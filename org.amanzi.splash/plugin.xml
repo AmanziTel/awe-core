@@ -26,14 +26,6 @@
             id="org.amanzi.splash.editors.SplashJFreePieChartEditor"
             name="Amanzi Splash Pie Chart Editor">
       </editor>
-      <editor
-            class="org.amanzi.splash.editors.ReportEditor"
-            contributorClass="org.amanzi.splash.editors.ReportEditorContributor"
-            extensions="rb,r"
-            icon="icons/report.PNG"
-            id="org.amanzi.splash.editors.ReportEditor"
-            name="Amanzi Splash Reportt Editor">
-      </editor>
    </extension>
    
    	<extension point= "org.eclipse.ui.perspectiveExtensions">
@@ -199,12 +191,6 @@
              icon="icons/splash_16.png"
              id="org.amanzi.splash.newSpreadsheetAction"
              label="New Amanzi Splash Sheet">
-       </action>
-       <action
-             class="org.amanzi.splash.ui.wizards.NewReportAction"
-             icon="icons/report.PNG"
-             id="org.amanzi.splash.ui.wizards.newReportAction"
-             label="New Amanzi Report">
        </action>
     </extension>
     

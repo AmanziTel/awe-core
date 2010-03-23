@@ -123,7 +123,7 @@ public class KPIPlugin extends AbstractUIPlugin {
                 NeoUtils.addTransactionLog(tx, Thread.currentThread(), "1111");
                 tx.finish();
                 try {
-                    scriptURL = FileLocator.toFileURL(KPIPlugin.getDefault().getBundle().getEntry("initKpi.rb"));
+                    scriptURL = FileLocator.toFileURL(KPIPlugin.getDefault().getBundle().getEntry("ruby/initKpi.rb"));
                 } catch (IOException e) {
                     scriptURL = null;
                 }
