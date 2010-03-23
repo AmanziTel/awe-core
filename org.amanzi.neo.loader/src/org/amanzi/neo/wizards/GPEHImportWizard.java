@@ -62,12 +62,15 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                     case COUNTER:
                         OSSCounterLoader loaderOss = new OSSCounterLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         loaderOss.run(monitor);
+                        break;
                     case UTRAN:
                         UTRANLoader loaderUtran = new UTRANLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         loaderUtran.run(monitor);
+                        break;
                     case NOKIA_GSM:
                         OSSNokiaGSM loaderNokia = new OSSNokiaGSM(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         loaderNokia.run(monitor);
+                        break;
                     default:
                         break;
                     }
