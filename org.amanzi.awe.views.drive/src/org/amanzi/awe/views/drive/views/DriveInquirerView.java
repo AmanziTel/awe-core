@@ -243,6 +243,7 @@ public class DriveInquirerView extends ViewPart {
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cDrive.setLayoutData(layoutData);
 
+        
         label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_event);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
