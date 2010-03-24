@@ -137,6 +137,9 @@ public class TEMSLoader extends DriveLoader {
         // ".*pilot_set.*"});
         addKnownHeader(1, "latitude", ".*latitude");
         addKnownHeader(1, "longitude", ".*longitude");
+        addKnownHeader(1, "ms","MS");
+        addMappedHeader(1, "ms","MS", "ms", new StringMapper());
+        addMappedHeader(1, "message_type","Message Type", "message_type", new StringMapper());
         addMappedHeader(1, "event", "Event Type", "event_type", new PropertyMapper() {
 
             @Override
