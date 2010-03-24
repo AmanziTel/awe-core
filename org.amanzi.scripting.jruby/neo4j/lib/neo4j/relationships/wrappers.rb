@@ -1,16 +1,11 @@
-#
-# This files contains common private classes that implements various Neo4j java interfaces.
-# This classes are only used inside this Relationships module
-#
-
 module Neo4j
   module Relationships
 
-    # Wrapper for org.neo4j.api.core.ReturnableEvaluator
+    # Wrapper for org.neo4j.graphdb.ReturnableEvaluator
     #
     # :api: private
     class ReturnableEvaluator #:nodoc:
-      include org.neo4j.api.core.ReturnableEvaluator
+      include org.neo4j.graphdb.ReturnableEvaluator
 
       def initialize(proc, raw = false)
         @proc = proc
@@ -35,12 +30,12 @@ module Neo4j
     end
 
     
-    # Wrapper for the neo4j org.neo4j.api.core.StopEvalutor interface.
+    # Wrapper for the neo4j org.neo4j.graphdb.StopEvalutor interface.
     # Used in the Neo4j Traversers.
     #
     # :api: private
     class DepthStopEvaluator #:nodoc:
-      include org.neo4j.api.core.StopEvaluator
+      include org.neo4j.graphdb.StopEvaluator
 
       def initialize(depth)
         @depth = depth
@@ -51,37 +46,6 @@ module Neo4j
       end
     end
 
-
-    # Wrapper for the Java org.neo4j.api.core.RelationshipType interface.
-    # Each type is a singelton.
-    # 
-    # :api: private
-    class RelationshipType #:nodoc:
-      include org.neo4j.api.core.RelationshipType
-
-      @@names = {}
-
-      def RelationshipType.instance(name)
-        n = name.to_s
-        return @@names[n] if @@names.include?(n)
-        @@names[n] = RelationshipType.new(n)
-      end
-
-      def to_s
-        self.class.to_s + " name='#{@name}'"
-      end
-
-      def name
-        @name
-      end
-
-      private
-
-      def initialize(name)
-        @name = name.to_s
-        raise ArgumentError.new("Expect type of relationship to be a name of at least one character") if @name.empty?
-      end
-
-    end
   end
+  
 end

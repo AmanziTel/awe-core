@@ -5,23 +5,22 @@ module Neo4j
     # Provides appending and traversing nodes that are linked together in a list with
     # relationships to the next list item.
     #
-    class HasList
+    class HasList 
       include Enumerable
       attr_reader :relationship_type
 
-      def initialize(node, list_name, counter, cascade_delete, &filter)
+      def initialize(node, dsl, &filter)
         @node = node
-        @relationship_type = "_list_#{list_name}_#{node.neo_id}"
-        if (counter)
-          @counter_id = "_#{list_name}_size".to_sym
+        @relationship_type = "_list_#{dsl.to_type}_#{node.neo_id}"
+        if (dsl.counter?)
+          @counter_id = "_#{dsl.to_type}_size".to_sym
         end
-        @cascade_delete = cascade_delete if cascade_delete
+        @cascade_delete = dsl.cascade_delete_prop_name
       end
 
       def size
         @node[@counter_id] || 0
       end
-
 
       # called by the event handler
       def self.on_node_deleted(node) #:nodoc:
@@ -84,12 +83,12 @@ module Neo4j
       end
 
       def iterator
-        stop_evaluator = org.neo4j.api.core.StopEvaluator::END_OF_GRAPH
-        traverser_order = org.neo4j.api.core.Traverser::Order::BREADTH_FIRST
-        returnable_evaluator = org.neo4j.api.core.ReturnableEvaluator::ALL_BUT_START_NODE
+        stop_evaluator = org.neo4j.graphdb.StopEvaluator::END_OF_GRAPH
+        traverser_order = org.neo4j.graphdb.Traverser::Order::BREADTH_FIRST
+        returnable_evaluator = org.neo4j.graphdb.ReturnableEvaluator::ALL_BUT_START_NODE
         types_and_dirs = []
-        types_and_dirs << RelationshipType.instance(@relationship_type)
-        types_and_dirs << org.neo4j.api.core.Direction::OUTGOING
+        types_and_dirs << org.neo4j.graphdb.DynamicRelationshipType.withName(@relationship_type.to_s)
+        types_and_dirs << org.neo4j.graphdb.Direction::OUTGOING
         @node._java_node.traverse(traverser_order, stop_evaluator,  returnable_evaluator, types_and_dirs.to_java(:object)).iterator
       end
 

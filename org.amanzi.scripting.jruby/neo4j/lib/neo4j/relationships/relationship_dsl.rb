@@ -7,27 +7,36 @@ module Neo4j
       include Enumerable
       attr_reader :node
 
-      def initialize(node, direction = :outgoing)
+      def initialize(node, direction = :outgoing, type = nil)
+        @raw  = false
+        @type = type
         @node = node
+
         case direction
           when :outgoing
-            outgoing
+            outgoing(type)
           when :incoming
-            incoming
+            incoming(type)
           when :both
-            both
+            both(type)
         end
       end
 
+      # if raw == true then it will return raw Java object instead of wrapped JRuby object which can improve performance.
+      def raw(raw = true)
+        @raw = raw
+        self
+      end
+      
       def outgoing(type = nil)
         @type = type
-        @direction = org.neo4j.api.core.Direction::OUTGOING
+        @direction = org.neo4j.graphdb.Direction::OUTGOING
         self
       end
 
       def incoming(type = nil)
         @type = type
-        @direction = org.neo4j.api.core.Direction::INCOMING
+        @direction = org.neo4j.graphdb.Direction::INCOMING
         self
       end
 
@@ -36,9 +45,9 @@ module Neo4j
         self
       end
 
-      def  both(type = nil)
+      def both(type = nil)
         @type = type
-        @direction = org.neo4j.api.core.Direction::BOTH
+        @direction = org.neo4j.graphdb.Direction::BOTH
         self
       end
 
@@ -60,8 +69,8 @@ module Neo4j
       #
       # :api: public
       def <<(other_node)
-        source,target = @node, other_node
-        source,target = target,source if @direction == org.neo4j.api.core.Direction::INCOMING
+        source, target = @node, other_node
+        source, target = target, source if @direction == org.neo4j.graphdb.Direction::INCOMING
         source.add_rel(@type, target)
         self
       end
@@ -86,20 +95,20 @@ module Neo4j
       def each
         iter = iterator
         while (iter.hasNext) do
-          rel = iter.next.wrapper
+          rel = @raw ? iter.next : iter.next.wrapper
           next if @filter_proc && !rel.instance_eval(&@filter_proc)
           yield rel
         end
       end
 
       def nodes
-        RelationshipsEnumeration.new(self)
+        RelationshipsEnumeration.new(self, @raw)
       end
 
       def iterator
         # if type is nil then we traverse all relationship types of depth one
         return @node.getRelationships(@direction).iterator if @type.nil?
-        return @node.getRelationships(RelationshipType.instance(@type), @direction).iterator unless @type.nil?
+        return @node.getRelationships(org.neo4j.graphdb.DynamicRelationshipType.withName(@type.to_s), @direction).iterator unless @type.nil?
       end
 
       def to_s
@@ -111,8 +120,9 @@ module Neo4j
       class RelationshipsEnumeration #:nodoc:
         include Enumerable
 
-        def initialize(relationships)
+        def initialize(relationships, raw)
           @relationships = relationships
+          @raw = raw
         end
 
         def first
@@ -122,15 +132,18 @@ module Neo4j
         def empty?
           first.nil?
         end
-        
+
         def each
-          @relationships.each do |relationship|
-            yield relationship.getOtherNode(@relationships.node).wrapper
+          if @raw
+            @relationships.each { |relationship| yield relationship.getOtherNode(@relationships.node) }
+          else
+            @relationships.each { |relationship| yield relationship.getOtherNode(@relationships.node).wrapper }
           end
         end
+
+
       end
     end
-
 
   end
 end

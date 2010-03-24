@@ -2,7 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
-require 'neo4j/spec_helper'
+require 'spec_helper'
 
 
 
@@ -22,8 +22,12 @@ describe "CustomerA,Order,Product" do
   #   7. What is the mark-up on a certain P&roduct
 
 
+  after(:all) do
+    undefine_class :Order, :CustomerA, :Product, :OrderLine
+  end
+
   before(:all) do
-    undefine_class :Order, :CustomerA, :Product
+#    undefine_class :Order, :CustomerA, :Product
 
 
     class Order
@@ -102,11 +106,11 @@ describe "CustomerA,Order,Product" do
       Neo4j::Transaction.finish
     end
 
-    it "should allow to create a new dynamic relationship to an order from a customer instance" do
+     it "should allow to create a new dynamic relationship to an order from a customer instance" do
       c = CustomerA.new
       o = Order.new
       r = c.orders.new(o)
-      r.should be_kind_of(Neo4j::Relationships::Relationship)
+      r.should be_kind_of(org.neo4j.graphdb.Relationship)
 
     end
 
@@ -191,7 +195,7 @@ describe "CustomerA,Order,Product" do
 
       # when
       Neo4j::Transaction.run do
-        order.delete
+        order.del
       end
 
       # then
@@ -327,7 +331,7 @@ describe "CustomerA,Order,Product" do
       end
 
       Neo4j::Transaction.run do
-        c1.delete
+        c1.del
       end
 
       Neo4j::Transaction.run do

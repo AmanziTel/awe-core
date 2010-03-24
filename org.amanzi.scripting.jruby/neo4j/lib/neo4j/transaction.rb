@@ -43,8 +43,9 @@ module Neo4j
         res
       end
 
+
       def placebo?(tx)
-        tx.java_object.java_type == 'org.neo4j.api.core.EmbeddedNeoImpl$PlaceboTransaction'
+        tx.java_object.java_type == 'org.neo4j.kernel.EmbeddedGraphDbImpl$PlaceboTransaction'
       end
 
       # Creates a transaction. If one is already running then a 'placebo' transaction will be created instead.
@@ -94,18 +95,15 @@ module Neo4j
       # ==== Returns
       # The value of the evaluated provided block
       #
-      # :api: public
-      #
-      def run # :yield: block of code to run inside a transaction
+      def run # :yield: transaction
         raise ArgumentError.new("Expected a block to run in Transaction.run") unless block_given?
-
-        ret = nil
 
         begin
           tx = Neo4j::Transaction.new
           ret = yield tx
         rescue Exception => bang
-          #$NEO_LOGGER.warn{e.backtrace.join("\n")}
+#          puts "BANG #{bang}"
+#          puts bang.backtrace.join("\n")
           tx.failure unless tx.nil?
           raise
         ensure
@@ -117,7 +115,6 @@ module Neo4j
 
       # Returns the current running transaction or nil
       #
-      # :api: public
       def current
         Thread.current[:transaction]
       end
@@ -125,7 +122,6 @@ module Neo4j
 
       # Returns true if there is a transaction for the current thread
       #
-      # :api: public
       def running?
         self.current != nil # && self.current.neo_tx != nil
       end
@@ -133,7 +129,6 @@ module Neo4j
 
       # Returns true if the transaction has been marked for failure/rollback
       #
-      # :api: public
       def failure?
         current.failure?
       end
@@ -142,15 +137,12 @@ module Neo4j
       #
       # See Neo4j::Transaction#failure
       #
-      # :api: public
       def failure
         current.failure if running?
       end
 
 
       # Finish the current transaction if it is running
-      #
-      # :api: public
       def finish
         current.finish if running?
       end
@@ -178,8 +170,6 @@ module Neo4j
 
 
     # Returns true if the transaction will rollback
-    #
-    # :api: public
     def failure?
       @failure == true
     end
@@ -189,18 +179,15 @@ module Neo4j
       false
     end
 
-    def create_placebo_tx_if_not_already_exists
+    def create_placebo_tx_if_not_already_exists # :nodoc:
       @placebo ||= PlaceboTransaction.new(self)
     end
 
 
     # Marks this transaction as successful, which means that it will be commited 
     # upon invocation of finish() unless failure()  has or will be invoked before then.
-    # 
-    # :api: public
     def success
       raise NotInTransactionError.new unless Transaction.running?
-      $NEO_LOGGER.info{"success #{self.to_s}"}
       @neo_tx.success
     end
 
@@ -208,9 +195,8 @@ module Neo4j
     # Commits or marks this transaction for rollback, depending on whether
     # success() or failure() has been previously invoked.
     #
-    # :api: public
     def finish
-      raise NotInTransactionError.new unless Transaction.running?
+      return unless Transaction.running?
       Neo4j.event_handler.tx_finished(self) unless failure?
       begin
         @neo_tx.success unless failure?
@@ -221,22 +207,15 @@ module Neo4j
       end
 
       Thread.current[:transaction] = nil
-
       if Lucene::Transaction.running?
-        $NEO_LOGGER.debug{"LUCENE TX running failure: #{failure?}"}
-
         # mark lucene transaction for failure if the neo transaction fails
         Lucene::Transaction.current.failure if failure?
         Lucene::Transaction.current.commit
-      else
-        $NEO_LOGGER.debug{"NO LUCENE TX running"}
       end
     end
 
     # Marks this transaction as failed, which means that it will inexplicably
     # be rolled back upon invocation of finish().
-    #
-    # :api: public
     def failure
       raise NotInTransactionError.new unless Transaction.running?
       @neo_tx.failure
@@ -254,7 +233,6 @@ module Neo4j
   class PlaceboTransaction < DelegateClass(Transaction) #:nodoc:
 
     def initialize(tx)
-      puts 'placebo transaction initialize'
       super(tx)
       @tx = tx # store it only for logging purpose
     end

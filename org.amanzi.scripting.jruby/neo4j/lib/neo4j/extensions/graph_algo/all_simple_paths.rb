@@ -1,8 +1,8 @@
 module Neo4j::GraphAlgo
-  require 'neo4j/extensions/graph_algo/graph-algo-0.2-20090815.182816-1.jar'
+  require 'neo4j/extensions/graph_algo/neo4j-graph-algo-0.3.jar'
 
-
-  class ListOfAlternatingNodesAndRelationships  #:nodoc:
+                                                   
+  class ListOfAlternatingNodesAndRelationships #:nodoc:
     include Enumerable
 
     def initialize(list)
@@ -44,12 +44,24 @@ module Neo4j::GraphAlgo
     end
   end
 
+  # A Wrapper for some of the neo4j graphdb algorithms
+  #
+  # Currently only the AllSimplePaths is wrapped in Ruby.
+  #
+  # === Usage
+  #
+  #   found_nodes = GraphAlgo.all_simple_paths.from(node1).both(:knows).to(node7).depth(4).as_nodes
+  #
+  # === See also
+  # * JavaDoc: http://components.neo4j.org/graph-algo/apidocs/org/neo4j/graphalgo/AllSimplePaths.html
+  # * A complete example: http://github.com/andreasronge/neo4j/tree/master/examples/you_might_know/ 
+  #
   class AllSimplePaths
     include Enumerable
 
     def initialize
       @types = []
-      @direction = org.neo4j.api.core.Direction::OUTGOING
+      @direction = org.neo4j.graphdb.Direction::OUTGOING
     end
 
     def each
@@ -72,7 +84,7 @@ module Neo4j::GraphAlgo
     end
 
     def paths
-      @paths ||= org.neo4j.graphalgo.AllSimplePaths.new(@from._java_node, @to._java_node, @depth, @direction, @types.to_java(:"org.neo4j.api.core.RelationshipType"))
+      @paths ||= org.neo4j.graphalgo.AllSimplePaths.new(@from._java_node, @to._java_node, @depth, @direction, @types.to_java(:"org.neo4j.graphdb.RelationshipType"))
     end
 
     def from(f)
@@ -91,27 +103,27 @@ module Neo4j::GraphAlgo
     end
 
     def both(*types)
-      types.each { |type| @types << Neo4j::Relationships::RelationshipType.instance(type)}
-      @direction = org.neo4j.api.core.Direction::BOTH
+      types.each { |type| @types << org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s) }
+      @direction = org.neo4j.graphdb.Direction::BOTH
       self
     end
 
     def outgoing(*types)
-      types.each { |type| @types << Neo4j::Relationships::RelationshipType.instance(type)}
-      @direction = org.neo4j.api.core.Direction::OUTGOING
+      types.each { |type| @types << org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s) }
+      @direction = org.neo4j.graphdb.Direction::OUTGOING
       self
     end
 
     def incoming(*types)
-      types.each { |type| @types << Neo4j::Relationships::RelationshipType.instance(type)}
-      @direction = org.neo4j.api.core.Direction::INCOMING
+      types.each { |type| @types << org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s) }
+      @direction = org.neo4j.graphdb.Direction::INCOMING
       self
     end
 
   end
 
   def self.all_simple_paths
-    # org.neo4j.api.core.Node node1, org.neo4j.api.core.Node node2, int maximumTotalDepth, org.neo4j.api.core.Direction relationshipDirection, org.neo4j.api.core.RelationshipType... relationshipTypes)
+    # org.neo4j.graphdb.Node node1, org.neo4j.graphdb.Node node2, int maximumTotalDepth, org.neo4j.graphdb.Direction relationshipDirection, org.neo4j.graphdb.RelationshipType... relationshipTypes)
     AllSimplePaths.new
   end
 

@@ -2,34 +2,40 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
-require 'neo4j/spec_helper'
-require 'neo4j/extensions/tx_tracker'
-
-
-class TxTestNode
-  include Neo4j::NodeMixin
-  property :myid
-
-
-  def to_s
-    "TxTestNode " + props.inspect
-  end
-end
+require 'spec_helper'
 
 
 describe "TxTracker (TxNodeList)" do
 
+  before(:all) do
+    require 'neo4j/extensions/tx_tracker'
+
+    class TxTestNode
+      include Neo4j::NodeMixin
+      property :myid
+
+      def to_s
+        "TxTestNode " + props.inspect
+      end
+    end
+  end
 
   before(:each) do
     start
-    Neo4j.load_tx_tracker
-    @tx_node_list = Neo4j::TxNodeList.instance
+#    Neo4j.load_tx_tracker
+    Neo4j::Transaction.run do
+      @tx_node_list = Neo4j::TxNodeList.instance
+    end
   end
 
   after(:each) do
     stop
   end
 
+  after(:all) do
+    Neo4j.unload_tx_tracker if Neo4j.respond_to? :unload_tx_tracker
+    stop
+  end
 
   it "should have a reference to the TxNodeList" do
     @tx_node_list.should_not be_nil
@@ -47,7 +53,7 @@ describe "TxTracker (TxNodeList)" do
   end
 
   it "should set a UUID on the node and the TxNode and property created=true" do
-    a = Neo4j::Transaction.run {  TxTestNode.new }
+    a = Neo4j::Transaction.run { TxTestNode.new }
 
     tx_node = @tx_node_list.tx_nodes.first
     tx_node[:uuid].should == a[:uuid]
@@ -56,7 +62,7 @@ describe "TxTracker (TxNodeList)" do
 
 
   it "should set property 'property_changed' when a node property is changed" do
-    a =  Neo4j::Transaction.run { TxTestNode.new }
+    a = Neo4j::Transaction.run { TxTestNode.new }
     Neo4j::Transaction.run { a.myid = "hej" }
 
     first = @tx_node_list.tx_nodes.first
@@ -85,13 +91,13 @@ describe "TxTracker (TxNodeList)" do
       a.myid = "hej2"
       a.myid.should == "hej2"
     end
-    id = a.neo_node_id
+    id = a.neo_id
 
     # when
     Neo4j::Transaction.run { Neo4j.undo_tx }
 
     # then
-    node = Neo4j.load(id)
+    node = Neo4j.load_node(id)
     node.myid.should == "hej1"
   end
 
@@ -99,20 +105,20 @@ describe "TxTracker (TxNodeList)" do
     Neo4j::Transaction.new
 
     a = TxTestNode.new
-    id = a.neo_node_id
+    id = a.neo_id
     Neo4j::Transaction.finish
 
     Neo4j::Transaction.new
-    
+
     # when
-    Neo4j.load(id.to_i).should_not be_nil # make sure it exists
+    Neo4j.load_node(id).should_not be_nil # make sure it exists
     Neo4j.undo_tx
 
     # then
     Neo4j::Transaction.finish
 
     # make sure it has been deleted
-    Neo4j::Transaction.run { Neo4j.load(id).should == nil }
+    Neo4j::Transaction.run { Neo4j.load_node(id).should == nil }
   end
 
 
@@ -120,19 +126,19 @@ describe "TxTracker (TxNodeList)" do
     # given, create and delete a node in the same transaction
     Neo4j::Transaction.new
     a = TxTestNode.new
-    id = a.neo_node_id
-    a.delete
+    id = a.neo_id
+    a.del
     Neo4j::Transaction.finish
 
     # when deleted
     Neo4j::Transaction.new
-    Neo4j.load(id).should be_nil # make sure it is deleted
+    Neo4j.load_node(id).should be_nil # make sure it is deleted
     Neo4j.undo_tx
     Neo4j::Transaction.finish
 
     # then
     Neo4j::Transaction.new
-    Neo4j.load(id).should be_nil
+    Neo4j.load_node(id).should be_nil
     Neo4j::Transaction.finish
   end
 
@@ -140,23 +146,23 @@ describe "TxTracker (TxNodeList)" do
     # given, create a node
     Neo4j::Transaction.new
     a = TxTestNode.new
-    id = a.neo_node_id
+    id = a.neo_id
     Neo4j::Transaction.finish
 
     # next transaction - delete it
     Neo4j::Transaction.new
-    a.delete
+    a.del
     Neo4j::Transaction.finish
 
     # when deleted
     Neo4j::Transaction.new
-    Neo4j.load(id).should be_nil # make sure it is deleted
+    Neo4j.load_node(id).should be_nil # make sure it is deleted
     Neo4j.undo_tx
     Neo4j::Transaction.finish
 
     # then
     Neo4j::Transaction.new
-    Neo4j.load(id).should be_nil
+    Neo4j.load_node(id).should be_nil
     Neo4j::Transaction.finish
   end
 
@@ -174,10 +180,10 @@ describe "TxTracker (TxNodeList)" do
       first = @tx_node_list.tx_nodes.first
       first[:tx_finished].should == true
 
-      second = @tx_node_list.tx_nodes.to_a[1]
+      second = [*@tx_node_list.tx_nodes][1]
       second[:tx_finished].should be_nil
 
-      third = @tx_node_list.tx_nodes.to_a[2]
+      third = [*@tx_node_list.tx_nodes][2]
       third[:tx_finished].should be_nil
     end
   end
@@ -211,37 +217,37 @@ describe "TxTracker (TxNodeList)" do
 
     # then
     Neo4j::Transaction.run do
-      Neo4j.load(node3.neo_node_id).should be_nil
       node2.myid.should == '2'
+      Neo4j.load_node(node3.neo_id).should be_nil
     end
   end
 
   it "should undo a new relationship" do
     a = Neo4j::Transaction.run { Neo4j::Node.new}
     b = Neo4j::Transaction.run { Neo4j::Node.new}
-    rel = Neo4j::Transaction.run { a.relationships.outgoing(:foobar) << b}
-    rel_id = rel.neo_relationship_id
-    Neo4j::Transaction.run { Neo4j.load_relationship(rel_id).should == rel }
+    rel = Neo4j::Transaction.run { a.add_rel(:foobar, b)}
+    rel_id = rel.neo_id
+    Neo4j::Transaction.run { Neo4j.load_rel(rel_id).should == rel }
 
     # when
     Neo4j::Transaction.run { Neo4j.undo_tx }
 
     # then
-    Neo4j::Transaction.run { Neo4j.load_relationship(rel_id).should == nil }
+    Neo4j::Transaction.run { Neo4j.load_rel(rel_id).should == nil }
   end
 
-  it "should undo delation of relationship" do
+  it "should undo deletion of relationship" do
     a = Neo4j::Transaction.run { Neo4j::Node.new}
     b = Neo4j::Transaction.run { Neo4j::Node.new}
-    rel = Neo4j::Transaction.run { a.relationships.outgoing(:foobar) << b}
+    rel = Neo4j::Transaction.run { a.add_rel(:foobar, b)}
     # make sure relationship exists
-    Neo4j::Transaction.run { a.relationship?(:foobar).should be_true }
+    Neo4j::Transaction.run { a.rel?(:foobar).should be_true }
 
     # delete relationship
-    Neo4j::Transaction.run { rel.delete }
+    Neo4j::Transaction.run { rel.del }
 
     # make sure it is deleted
-    Neo4j::Transaction.run { a.relationship?(:foobar).should be_false }
+    Neo4j::Transaction.run { a.rel?(:foobar).should be_false }
 
     # when
     Neo4j::Transaction.run { Neo4j.undo_tx }
@@ -249,7 +255,7 @@ describe "TxTracker (TxNodeList)" do
 
     # then
     # make sure relationship exists
-    Neo4j::Transaction.run { a.relationship?(:foobar).should be_true }
+    Neo4j::Transaction.run { a.rel?(:foobar).should be_true }
   end
 
 end

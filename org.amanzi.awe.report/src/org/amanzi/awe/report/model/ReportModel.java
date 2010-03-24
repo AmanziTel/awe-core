@@ -22,10 +22,6 @@ import java.util.List;
 import org.amanzi.awe.report.ReportPlugin;
 import org.amanzi.awe.report.model.events.IReportModelListener;
 import org.amanzi.awe.report.util.ReportUtils;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.ReportNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.eclipse.core.runtime.FileLocator;
@@ -107,7 +103,6 @@ public class ReportModel {
         HashMap<String, Object> globals = new HashMap<String, Object>();
         globals.put(REPORT_MODEL_RUBY_NAME, this);
         makeRubyGlobals(runtime, globals);
-
         Job initJob= new Job("Initializing Ruby runtime"){
 
             @Override

@@ -22,7 +22,7 @@ module Neo4j
     end
 
     class StopEvaluator
-      include org.neo4j.api.core.StopEvaluator
+      include org.neo4j.graphdb.StopEvaluator
       
       def initialize(proc, raw = false)
         @proc = proc

@@ -1,17 +1,9 @@
 module Neo4j
 
-  module NodeMixin
-    def ignore_incoming_cascade_delete? (relationship)
-      # if it's an index node relationship then it should be allowed to cascade delete the node
-      return relationship.other_node(self) == IndexNode.instance
-    end
-
-    module ClassMethods
-
+  module PropertyClassMethods
       # Traverse all nodes and update the lucene index.
       # Can be used for example if it is neccessarly to change the index on a class
       #
-      # :api: public
       def update_index
         all.nodes.each do |n|
           n.update_index
@@ -20,13 +12,19 @@ module Neo4j
 
       # Returns node instances of this class.
       #
-      # :api: public
       def all
         index_node = IndexNode.instance
         index_node.rels.outgoing(self)
       end
-
+  end
+  
+  module NodeMixin
+    alias_method :ignore_incoming_cascade_delete_orig?, :ignore_incoming_cascade_delete?
+    def ignore_incoming_cascade_delete? (relationship)
+      # if it's an index node relationship then it should be allowed to cascade delete the node
+      ignore_incoming_cascade_delete_orig?(relationship) || relationship.other_node(self) == IndexNode.instance
     end
+
   end
 
 
@@ -48,7 +46,7 @@ module Neo4j
     #
     # :api: private
     def connect(node, type = node.class.root_class)
-      rtype = Neo4j::Relationships::RelationshipType.instance(type)
+      rtype = org.neo4j.graphdb.DynamicRelationshipType.withName(type.to_s)
       @_java_node.createRelationshipTo(node._java_node, rtype)
       nil
     end

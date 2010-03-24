@@ -2,7 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
-require 'neo4j/spec_helper'
+require 'spec_helper'
 
 
 
@@ -44,8 +44,10 @@ describe "NodeTraverser" do
       t2 = TestNode.new
       t1.friends << t2
 
+      t1.traverse.outgoing(:friends)
+
       # when
-      outgoing = t1.traverse.outgoing(:friends).to_a
+      outgoing = [*t1.traverse.outgoing(:friends)]
 
       # then
       outgoing.size.should == 1
@@ -59,7 +61,7 @@ describe "NodeTraverser" do
       t1.friends << t2
 
       # when
-      t2_incoming = t2.traverse.incoming(:friends).to_a
+      t2_incoming = [*t2.traverse.incoming(:friends)]
 
       # then
       t2_incoming.size.should == 1
@@ -72,8 +74,8 @@ describe "NodeTraverser" do
       t2 = TestNode.new
 
       # when and then
-      t2.traverse.incoming(:friends).to_a.size.should == 0
-      t2.traverse.outgoing(:friends).to_a.size.should == 0
+      [*t2.traverse.incoming(:friends)].size.should == 0
+      [*t2.traverse.outgoing(:friends)].size.should == 0
     end
 
     it "should make sure that incoming nodes are not found in outcoming nodes" do
@@ -83,8 +85,8 @@ describe "NodeTraverser" do
       t1.friends << t2
 
       # when and then
-      t1.traverse.incoming(:friends).to_a.size.should == 0
-      t2.traverse.outgoing(:friends).to_a.size.should == 0
+      [*t1.traverse.incoming(:friends)].size.should == 0
+      [*t2.traverse.outgoing(:friends)].size.should == 0
     end
 
 
@@ -95,8 +97,8 @@ describe "NodeTraverser" do
       t1.friends << t2
 
       # when and then
-      t1.traverse.both(:friends).to_a.should include(t2)
-      t2.traverse.both(:friends).to_a.should include(t1)
+      [*t1.traverse.both(:friends)].should include(t2)
+      [*t2.traverse.both(:friends)].should include(t1)
     end
 
     it "should find several both incoming and outgoing nodes" do
@@ -109,11 +111,11 @@ describe "NodeTraverser" do
       t1.friends << t3
 
       # when and then
-      t1.traverse.both(:friends).to_a.should include(t2, t3)
-      t1.traverse.outgoing(:friends).to_a.should include(t2, t3)
-      t2.traverse.incoming(:friends).to_a.should include(t1)
-      t3.traverse.incoming(:friends).to_a.should include(t1)
-      t1.traverse.both(:friends).to_a.size.should == 2
+      [*t1.traverse.both(:friends)].should include(t2, t3)
+      [*t1.traverse.outgoing(:friends)].should include(t2, t3)
+      [*t2.traverse.incoming(:friends)].should include(t1)
+      [*t3.traverse.incoming(:friends)].should include(t1)
+      [*t1.traverse.both(:friends)].size.should == 2
     end
 
     it "should find incoming nodes of a specific type" do
@@ -126,9 +128,9 @@ describe "NodeTraverser" do
       t1.friends << t3
 
       # when and then
-      t1.traverse.outgoing(:friends).to_a.should include(t2, t3)
-      t2.traverse.incoming(:friends).to_a.should include(t1)
-      t3.traverse.incoming(:friends).to_a.should include(t1)
+      [*t1.traverse.outgoing(:friends)].should include(t2, t3)
+      [*t2.traverse.incoming(:friends)].should include(t1)
+      [*t3.traverse.incoming(:friends)].should include(t1)
     end
 
     it "should find outgoing nodes of depth 2" do
@@ -145,7 +147,7 @@ describe "NodeTraverser" do
       t11.friends << t111
 
       # when and then
-      t1_outgoing = t1.traverse.outgoing(:friends).depth(2).to_a
+      t1_outgoing = [*t1.traverse.outgoing(:friends).depth(2)]
       t1_outgoing.size.should == 3
       t1_outgoing.should include(t11, t111, t12)
     end
@@ -164,7 +166,7 @@ describe "NodeTraverser" do
       t11.friends << t111
 
       # when and then
-      t_outgoing = t.traverse.outgoing(:friends).depth(:all).to_a
+      t_outgoing = [*t.traverse.outgoing(:friends).depth(:all)]
       t_outgoing.size.should == 5
       t_outgoing.should include(t1, t11, t111, t12, t2)
     end
@@ -183,7 +185,7 @@ describe "NodeTraverser" do
       t11.friends << t111
 
       # when and then
-      t11_incoming = t11.traverse.incoming(:friends).depth(2).to_a
+      t11_incoming = [*t11.traverse.incoming(:friends).depth(2)]
       t11_incoming.size.should == 2
       t11_incoming.should include(t, t1)
     end
@@ -199,7 +201,7 @@ describe "NodeTraverser" do
       a.friends << b << c
 
       # when
-      result = a.traverse.outgoing(:friends).filter{ name == 'b'}.to_a
+      result = [*a.traverse.outgoing(:friends).filter{ name == 'b'}]
 
       # then
       result.size.should == 1
@@ -239,50 +241,70 @@ describe "NodeTraverser" do
       end
     end
 
-    it "should work with the TraversalPosition#current_node parameter" do
+    it "should work with the TraversalPosition#current_node parameter for filter" do
       # when
-      result = @a.traverse.outgoing(:friends).filter{|tp| tp.current_node.name == 'b'}.to_a
+      result = [*@a.traverse.outgoing(:friends).filter{|tp| tp.current_node.name == 'b'}]
 
       # then
       result.size.should == 1
       result.should include(@b)
     end
 
-    it "should work with the TraversalPosition#previous_node parameter" do
+    it "should work with the TraversalPosition#previous_node parameter for filter" do
       # when
-      result = @a.traverse.outgoing(:friends).filter{|tp| tp.previous_node.name == 'a' unless tp.previous_node.nil?}.to_a
+      result = [*@a.traverse.outgoing(:friends).filter{|tp| tp.previous_node.name == 'a' unless tp.previous_node.nil?}]
 
       # then
       result.size.should == 2
       result.should include(@b, @c)
     end
 
-    it "should work with the TraversalPosition#last_relationship_traversed parameter" do
+    it "should work with the TraversalPosition#last_relationship_traversed parameter  for filter" do
       # when
-      result = @a.traverse.outgoing(:friends, :parents).filter do |tp|
+      result = [*@a.traverse.outgoing(:friends, :parents).filter do |tp|
         tp.last_relationship_traversed.relationship_type == :parents unless tp.last_relationship_traversed.nil?
-      end.to_a
+      end]
 
       # then
       result.size.should == 1
       result.should include(@p)
     end
 
-    it "should work with the TraversalPosition#depth parameter" do
+    it "should work with the TraversalPosition#depth parameter  for filter" do
       # when
-      result = @a.traverse.outgoing(:friends, :parents).filter { |tp|  tp.depth == 0 }.to_a
+      result = [*@a.traverse.outgoing(:friends, :parents).filter { |tp|  tp.depth == 0 }]
 
       # then
       result.size.should == 1
       result.should include(@a)
     end
 
-    it "should work with the TraversalPosition#returned_nodes_count parameter" do
+    it "should work with the TraversalPosition#returned_nodes_count parameter for filter" do
       # when
-      result = @a.traverse.outgoing(:friends, :parents).filter { |tp|  tp.returned_nodes_count < 2 }.to_a
+      result = [*@a.traverse.outgoing(:friends, :parents).filter { |tp|  tp.returned_nodes_count < 2 }]
 
       # then
       result.size.should == 2
+    end
+
+
+    it "should work with the TraversalPosition parameter for each_with_position" do
+      # when
+      a = Neo4j::Node.new; a[:name] = 'a'
+      b = Neo4j::Node.new; b[:name] = 'b'
+      c = Neo4j::Node.new; c[:name] = 'c'
+      d = Neo4j::Node.new; d[:name] = 'd'
+      a.rels.outgoing(:baar) << b
+      a.rels.outgoing(:baar) << c
+      b.rels.outgoing(:baar) << d
+
+      name_depth = {}
+      a.outgoing(:baar).depth(:all).each_with_position { |node, tp| name_depth[node[:name]] = tp.depth }
+
+     # then
+      name_depth['b'].should == 1
+      name_depth['c'].should == 1
+      name_depth['d'].should == 2
     end
 
   end
@@ -346,13 +368,13 @@ describe "NodeTraverser" do
 
     it "should raise an exception if no type of direction is specified for the traversal" do
       # when and then
-      lambda { @sweden.traverse.to_a }.should raise_error(Neo4j::Relationships::IllegalTraversalArguments)
-      lambda { @sweden.traverse.outgoing().to_a }.should raise_error(Neo4j::Relationships::IllegalTraversalArguments)
+      lambda { [*@sweden.traverse] }.should raise_error(Neo4j::Relationships::IllegalTraversalArguments)
+      lambda { [*@sweden.traverse.outgoing()] }.should raise_error(Neo4j::Relationships::IllegalTraversalArguments)
     end
 
     it "should work with two outgoing relationship types" do
       # default is traversal of depth one
-      nodes = @sweden.traverse.outgoing(:contains, :trips).to_a
+      nodes = [*@sweden.traverse.outgoing(:contains, :trips)]
       nodes.should include(@malmoe, @stockholm)
       nodes.should include(@sweden_trip)
       nodes.size.should == 3
@@ -360,7 +382,7 @@ describe "NodeTraverser" do
 
     it "should work with two incoming relationship types" do
       # in which cities are the 'The city tour specialist' available in
-      nodes = @city_tour.traverse.incoming(:contains, :trips).to_a
+      nodes = [*@city_tour.traverse.incoming(:contains, :trips)]
       nodes.should include(@malmoe)
       nodes.should include(@stockholm)
       nodes.size.should == 2
@@ -368,9 +390,9 @@ describe "NodeTraverser" do
 
     it "should work with two outgoing relationship types and a filter" do
       # find all trips in sweden
-      nodes = @sweden.traverse.outgoing(:contains, :trips).depth(:all).filter do |tp|
+      nodes = [*@sweden.traverse.outgoing(:contains, :trips).depth(:all).filter do |tp|
         tp.last_relationship_traversed.relationship_type == :trips unless tp.last_relationship_traversed.nil?
-      end.to_a
+      end]
 
       nodes.should include(@sweden_trip)
       nodes.should include(@city_tour)
@@ -379,7 +401,7 @@ describe "NodeTraverser" do
     end
 
     it "should work with both incoming and outgoing relationship types" do
-      nodes = @stockholm.traverse.incoming(:contains).outgoing(:trips).to_a
+      nodes = [*@stockholm.traverse.incoming(:contains).outgoing(:trips)]
       nodes.should include(@sweden)
       nodes.should include(@city_tour)
       nodes.size.should == 2

@@ -2,7 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
-require 'neo4j/spec_helper'
+require 'spec_helper'
 
 
 include Neo4j
@@ -27,7 +27,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
 #    Indexer.clear_all_instances
     @employee_indexer = Indexer.instance Employee
     @company_indexer = Indexer.instance Company
-    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employed_by', 'salary')
+    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employed_by', 'salary', :employed_by)
   end
 
   after(:all) do
@@ -57,7 +57,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     @employee_indexer.on_property_changed(employee, 'salary')
 
     index.size.should == 1
-    index[0][:id].should == company.neo_node_id
+    index[0][:id].should == company.neo_id
     index[0][:'employees.salary'].size.should == 1
     index[0][:'employees.salary'].should include(10000)
   end
@@ -76,7 +76,7 @@ describe Indexer, " given Employee.salary in employed_by Company is indexed" do
     @employee_indexer.on_relationship_created(employee, 'employed_by')
 
     index.size.should == 1
-    index[0][:id].should == company.neo_node_id
+    index[0][:id].should == company.neo_id
     index[0][:'employees.salary'].size.should == 1
     index[0][:'employees.salary'].should include(10000)
   end
@@ -113,7 +113,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     Indexer.remove_instance Company
     @employee_indexer = Indexer.instance Employee
     @company_indexer = Indexer.instance Company
-    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employees', 'salary')
+    @employee_indexer.add_index_in_relationship_on_property(Company, 'employees', 'employees', 'salary', "Employee#employees".to_sym)
 
   end
 
@@ -142,7 +142,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @company_indexer.index(company)
 
     index.size.should == 1
-    index[0][:id].should == company.neo_node_id
+    index[0][:id].should == company.neo_id
     index[0][:'employees.salary'].size.should == 2
     index[0][:'employees.salary'].should include(1, 2)
   end
@@ -161,7 +161,7 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @employee_indexer.on_property_changed(employee, 'salary')
 
     index.size.should == 1
-    index[0][:id].should == company.neo_node_id
+    index[0][:id].should == company.neo_id
     index[0][:'employees.salary'].size.should == 1
     index[0][:'employees.salary'].should include(10000)
   end
@@ -177,10 +177,10 @@ describe Indexer, " given employees.salary is indexed on Company" do
     @company_indexer.stub!(:lucene_index).and_return index
 
     # when
-    @employee_indexer.on_relationship_created(employee, 'employees')
+    @employee_indexer.on_relationship_created(employee, 'Employee#employees')
 
     index.size.should == 1
-    index[0][:id].should == company.neo_node_id
+    index[0][:id].should == company.neo_id
     index[0][:'employees.salary'].size.should == 1
     index[0][:'employees.salary'].should include(10000)
   end
@@ -224,7 +224,7 @@ describe Indexer, " given friends.age is indexed on class Person" do
   def create_indexer
     Indexer.remove_instance Person
     indexer = Indexer.instance Person
-    indexer.add_index_in_relationship_on_property(Person, 'friends', 'friends', 'age')
+    indexer.add_index_in_relationship_on_property(Person, 'friends', 'friends', 'age', :friends)
     indexer
   end
 
@@ -243,7 +243,7 @@ describe Indexer, " given friends.age is indexed on class Person" do
     indexer.on_property_changed(node1, 'age')
 
     index.size.should == 1
-    index[0][:id].should == node2.neo_node_id
+    index[0][:id].should == node2.neo_id
     index[0][:'friends.age'].size.should == 1
     index[0][:'friends.age'].should include(42)
   end
@@ -272,7 +272,7 @@ describe Indexer, " given friends.age is indexed on class Person" do
     index_node2 = index[0]
 
     # then
-    index_node2[:id].should == node2.neo_node_id
+    index_node2[:id].should == node2.neo_id
     index_node2[:'friends.age'].size.should == 2
     index_node2[:'friends.age'].should include(42, 44)
   end
@@ -298,14 +298,14 @@ describe Indexer, " given friends.age is indexed on class Person" do
     # find which index belongs to which node
     index.size.should == 2
     index_node2, index_node3 = index
-    index_node2, index_node3 = index_node3, index_node2 unless index_node2[:id] == node2.neo_node_id
+    index_node2, index_node3 = index_node3, index_node2 unless index_node2[:id] == node2.neo_id
 
     # then
-    index_node2[:id].should == node2.neo_node_id
+    index_node2[:id].should == node2.neo_id
     index_node2[:'friends.age'].size.should == 1
     index_node2[:'friends.age'].should include(42)
 
-    index_node3[:id].should == node3.neo_node_id
+    index_node3[:id].should == node3.neo_id
     index_node2[:'friends.age'].size.should == 1
     index_node3[:'friends.age'].should include(42)
   end
@@ -338,7 +338,7 @@ describe Indexer, " given property foo is indexed" do
     # given and then
     node = mock('node')
     node.should_receive(:class).any_number_of_times.and_return(@node_class)
-    node.should_receive(:neo_node_id).and_return(42)
+    node.should_receive(:neo_id).and_return(42)
     node.should_receive(:foo).and_return("Hi")
 
     index = []
@@ -365,6 +365,53 @@ describe Indexer, " given property foo is indexed" do
   end
 
 
+end
+
+describe Indexer, " given index is defined in a subclass" do
+  module IndexerExample
+    class Base
+      include Neo4j::NodeMixin
+
+      def init_node
+        time_now = Time.now
+
+        self[:created] = time_now
+
+      end
+
+      property :created, :type => Time
+      index :created
+    end
+
+    class Publication < Base
+      property :title, :content
+      index :title, :content
+    end
+
+    class Person < Base
+      property :name, :uri
+
+      has_n :publications
+
+      index :name
+    end
+
+  end
+
+  it "should not index a property that does not exist in the base class" do
+    Neo4j::Transaction.run do
+      person = IndexerExample::Person.new
+      doc = IndexerExample::Publication.new
+
+      person.name = 'Helio Miranda'
+
+      doc.title = 'Test Document'
+      doc.content = 'Test content'
+
+      person.publications << doc
+    end
+
+  end
 end
 
 

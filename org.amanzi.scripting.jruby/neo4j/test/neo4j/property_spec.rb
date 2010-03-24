@@ -2,7 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
-require 'neo4j/spec_helper'
+require 'spec_helper'
 require 'date'
 
 class MyPropertyData
@@ -122,24 +122,24 @@ describe 'Neo4j::Node with properties of unknown type' do
     # when
     @node.fooz = 42
     # then
-    Neo4j.load(@node.neo_node_id).fooz.should == 42
+    Neo4j.load_node(@node.neo_id).fooz.should == 42
   end
 
   it "should allow to set properties of type Float" do
     # when
     @node.fooz = 3.1415
     # then
-    Neo4j.load(@node.neo_node_id).fooz.should == 3.1415
+    Neo4j.load_node(@node.neo_id).fooz.should == 3.1415
   end
 
 
   it "should allow to set properties of type true and false" do
     @node.fooz = true
-    Neo4j.load(@node.neo_node_id).fooz.should == true
-    Neo4j.load(@node.neo_node_id).fooz.class.should == TrueClass
+    Neo4j.load_node(@node.neo_id).fooz.should == true
+    Neo4j.load_node(@node.neo_id).fooz.class.should == TrueClass
     @node.fooz = false
-    Neo4j.load(@node.neo_node_id).fooz.should == false
-    Neo4j.load(@node.neo_node_id).fooz.class.should == FalseClass
+    Neo4j.load_node(@node.neo_id).fooz.should == false
+    Neo4j.load_node(@node.neo_id).fooz.class.should == FalseClass
   end
 
 end
@@ -181,7 +181,7 @@ describe 'Neo4j::Node having a property of type Object' do
     @node.stuff = array
 
     # then
-    node = Neo4j.load(@node.neo_node_id)
+    node = Neo4j.load_node(@node.neo_id)
     node.stuff.class == Array
     node.stuff.should == array
     node.stuff.object_id.should_not == array.object_id
@@ -194,7 +194,7 @@ describe 'Neo4j::Node having a property of type Object' do
     @node.stuff = data
 
     # then
-    node = Neo4j.load(@node.neo_node_id)
+    node = Neo4j.load_node(@node.neo_id)
     node.stuff.class == MyPropertyData
     node.stuff.x.should == 98
     node.stuff.object_id.should_not == data.object_id
@@ -248,14 +248,11 @@ describe 'Neo4j properties' do
 
 
   it "should have a neo id property" do
-    @node.should respond_to(:neo_node_id)
-    @node.neo_node_id.should be_kind_of(Fixnum)
+    @node.should respond_to(:neo_id)
+    @node.neo_id.should be_kind_of(Fixnum)
   end
 
-  it "should have a property for the ruby class it represent" do
-    @node.classname.should be == TestNode.to_s
-  end
-
+  
   it "should allow to set any property" do
     # given
     @node.p1 = "first"
@@ -298,7 +295,7 @@ describe 'Neo4j properties' do
     @node.should be_property('p1')
 
     # when
-    @node.remove_property('p1')
+    @node.p1 = nil
 
     # then
     @node.should_not be_property('p1')
@@ -330,6 +327,103 @@ describe 'Neo4j properties' do
     p.methods.should include("salary", "salary=")
   end
 
+end
 
 
+# ----------------------------------------------------------------------------
+# update
+#
+
+describe Neo4j::JavaPropertyMixin, "#update" do
+
+  before(:all) do
+    class TestNode
+      include Neo4j::NodeMixin
+      property :name, :age
+
+      def my_accessor
+        @my_accessor
+      end
+
+      def my_accessor=(val)
+        @my_accessor = val + 1
+      end
+    end
+
+    start
+  end
+
+  before(:each) do
+    Neo4j::Transaction.new
+  end
+
+  after(:each) do
+    Neo4j::Transaction.finish
+  end
+
+  it "should be able to update a node from a value obejct" do
+    # given
+    t = TestNode.new
+    t[:name]='kalle'
+    t[:age]=2
+    vo = t.value_object
+    t2 = TestNode.new
+    t2[:name] = 'foo'
+
+    # when
+    t2.update(vo)
+
+    # then
+    t2[:name].should == 'kalle'
+    t2[:age].should == 2
+  end
+
+  it "should use your own setters method if it exists" do
+    t = TestNode.new
+    # when
+    t.update({ :my_accessor => 1})
+    # then
+    t.my_accessor.should == 2
+  end
+  
+  it "should be able to update a node by using a hash even if the keys in the hash is not a declarared property" do
+    t = TestNode.new
+    t.update({:name=>'123', :oj=>'hoj'})
+    t.name.should == '123'
+    t.age.should == nil
+    t['oj'].should == 'hoj'
+  end
+
+  it "should be able to update a node by using a hash" do
+    t = TestNode.new
+    t.update({:name=>'andreas', :age=>3})
+    t.name.should == 'andreas'
+    t.age.should == 3
+  end
+
+  it "should not allow the classname to be changed" do
+    t = TestNode.new
+    t.update({:_classname => 'wrong'})
+    t[:_classname].should == 'TestNode'
+  end
+
+  it "should not allow the id to be changed" do
+    t = TestNode.new
+    t.update({:_neo_id => 987654321})
+    t.props['_neo_id'].should == t.neo_id
+  end
+
+  it "should remove attributes that are not mentioned if the strict option is set" do
+    t = TestNode.new
+    t.update({:name=>'andreas', :age=>3})
+    t.update({:age=>4}, :strict => true)
+    t.name.should be_nil
+  end
+
+  it "should not remove attributes that are not mentioned if the strict option is not set" do
+    t = TestNode.new
+    t.update({:name=>'andreas', :age=>3})
+    t.update({:age=>4})
+    t.name.should == 'andreas'
+  end
 end

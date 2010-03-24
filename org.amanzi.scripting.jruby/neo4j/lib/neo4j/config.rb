@@ -2,18 +2,18 @@
 module Neo4j
 
 
+  # Keeps configuration for neo4j.
   #
-  # Keeps configuration for neo4j
-  # This code is copied from merb-core/config.rb.
+  # Neo4j::Config[:storage_path]:: is used for locating the neo4j database on the filesystem.
+  # Neo4j::Config[:rest_port]:: used by the REST extension for starting a web server on a port
   #
   class Config
+    # This code is copied from merb-core/config.rb.
     class << self
       # Returns the hash of default config values for neo4j
       #
       # ==== Returns
       # Hash:: The defaults for the config.
-      #
-      # :api: private
       def defaults
         @defaults ||= {
           :storage_path => 'tmp/neo4j',
@@ -34,8 +34,6 @@ module Neo4j
       #
       # ==== Returns
       # nil
-      #
-      # :api: public
       def use
         @configuration ||= {}
         yield @configuration
@@ -49,7 +47,6 @@ module Neo4j
       # key<Object>:: The key to set the parameter for.
       # val<Object>:: The value of the parameter.
       #
-      # :api: public
       def []=(key, val)
         (@configuration ||= setup)[key] = val
       end
@@ -59,8 +56,6 @@ module Neo4j
       #
       # ==== Parameters
       # key<Object>:: The key of the config entry value we want
-      #
-      # :api: public
       #
       def [](key)
         (@configuration ||= setup)[key]
@@ -75,7 +70,6 @@ module Neo4j
       # ==== Returns
       # Object:: The value of the removed entry.
       #
-      # :api: public
       def delete(key)
         @configuration.delete(key)
       end
@@ -87,7 +81,6 @@ module Neo4j
       # ==== Returns
       # nil
       #
-      # :api: private
       def delete_all
         @configuration = nil
       end
@@ -103,7 +96,6 @@ module Neo4j
       # ==== Returns
       # Object:: The value of the configuration parameter or the default.
       #
-      # :api: public
       def fetch(key, default)
         @configuration.fetch(key, default)
       end
@@ -113,7 +105,6 @@ module Neo4j
       # ==== Returns
       # The configuration as a hash.
       #
-      # :api: private
       def setup()
         @configuration = {}
         @configuration.merge!(defaults)

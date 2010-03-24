@@ -2,7 +2,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/../../lib")
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 require 'neo4j'
-require 'neo4j/spec_helper'
+require 'spec_helper'
 
 
 
@@ -30,7 +30,7 @@ describe "Person" do
     end
 
     Neo4j::Transaction.run do
-      result = Neo4j.instance.find_node person.neo_node_id
+      result = Neo4j.load_node person.neo_id
       result.should == person
     end
 
@@ -97,7 +97,7 @@ describe "Person" do
 
     Neo4j::Transaction.run do
       # then
-      person1.friends.to_a.should include(person2)
+      [*person1.friends].should include(person2)
     end
   end
 
@@ -113,10 +113,10 @@ describe "Person" do
       person1.friends << person2
 
       # when
-      person1.relationships[person2].delete
+      person1.rels[person2].delete
 
       # then
-      person1.friends.to_a.should_not include(person2)
+      [*person1.friends].should_not include(person2)
     end
   end
 
