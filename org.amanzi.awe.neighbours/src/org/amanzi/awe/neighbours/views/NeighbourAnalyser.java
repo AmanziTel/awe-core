@@ -39,14 +39,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
 
 
 public class NeighbourAnalyser extends ViewPart {
@@ -65,7 +65,7 @@ public class NeighbourAnalyser extends ViewPart {
     private Combo cNeighbour;
     private Button bStart;
     private LinkedHashMap<String, Node> gpeh;
-    private final NeoService neo=NeoServiceProvider.getProvider().getService();
+    private final GraphDatabaseService neo=NeoServiceProvider.getProvider().getService();
     private LinkedHashMap<String, Node> neighbour;
 
 	/**

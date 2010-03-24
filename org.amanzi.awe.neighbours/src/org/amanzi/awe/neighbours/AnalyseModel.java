@@ -38,15 +38,15 @@ import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.amanzi.splash.utilities.SpreadsheetCreator;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * <p>
@@ -104,7 +104,7 @@ public class AnalyseModel {
      * @param neo
      * @return
      */
-    public static AnalyseModel create(Node gpehNode, NeoService neo) {
+    public static AnalyseModel create(Node gpehNode, GraphDatabaseService neo) {
         AnalyseModel result=new AnalyseModel(gpehNode);
         result.addEvents(Events.INTERNAL_SOHO_DS_MISSING_NEIGHBOUR,Events.INTERNAL_SOHO_DS_UNMONITORED_NEIGHBOUR,Events.INTERNAL_SOFT_HANDOVER_EVALUATION,Events.INTERNAL_SOFT_HANDOVER_EXECUTION);
         return result;
@@ -114,7 +114,7 @@ public class AnalyseModel {
      * @param string
      * @return
      */
-    public SpreadsheetNode createSpreadSheet(String name, NeoService service) {
+    public SpreadsheetNode createSpreadSheet(String name, GraphDatabaseService service) {
         Transaction tx = service.beginTx();
         try {
             SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(ANALYSE_RUBY_NAME), name);
