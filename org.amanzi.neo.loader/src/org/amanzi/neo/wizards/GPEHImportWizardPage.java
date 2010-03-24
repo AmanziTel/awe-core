@@ -36,8 +36,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 
 /**
  * <p>
@@ -51,7 +51,7 @@ public class GPEHImportWizardPage extends WizardPage {
 
     private Combo dataset;
     private final Object mon=new Object();
-    private final NeoService service;
+    private final GraphDatabaseService service;
     protected String datasetName;
     private DirectoryFieldEditor editorDir;
     private String directory;

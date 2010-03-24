@@ -18,9 +18,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.PropertyContainer;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Transaction;
+
 
 /**
  * <p>
@@ -167,7 +168,7 @@ public enum NodeTypes {
  * @param service NeoService
  * @return type of node 
  */
-    public static NodeTypes getNodeType(PropertyContainer container,NeoService service) {
+    public static NodeTypes getNodeType(PropertyContainer container,GraphDatabaseService service) {
         Transaction tx = service==null?null:service.beginTx();
         try{
             return getEnumById((String)container.getProperty("type", null));

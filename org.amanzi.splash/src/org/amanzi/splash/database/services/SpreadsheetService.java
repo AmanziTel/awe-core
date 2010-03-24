@@ -40,10 +40,10 @@ import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.jruby.RubyArray;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 import org.rubypeople.rdt.refactoring.core.renamelocal.LocalVariableRenamer;
 import org.rubypeople.rdt.refactoring.documentprovider.DocumentProvider;
 import org.rubypeople.rdt.refactoring.documentprovider.StringDocumentProvider;
@@ -76,7 +76,7 @@ public class SpreadsheetService {
 	/*
 	 * NeoService
 	 */
-	protected NeoService neoService;
+	protected GraphDatabaseService neoService;
 
 	/*
 	 * Project Service
@@ -110,7 +110,7 @@ public class SpreadsheetService {
      * 
      * Initializes NeoService and create a Root Element
      */
-    public SpreadsheetService(NeoService neo){
+    public SpreadsheetService(GraphDatabaseService neo){
 
         provider = NeoServiceProvider.getProvider();
         neoService = neo;

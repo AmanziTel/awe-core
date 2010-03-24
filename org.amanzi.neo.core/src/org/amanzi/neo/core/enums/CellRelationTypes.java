@@ -12,7 +12,8 @@
  */
 package org.amanzi.neo.core.enums;
 
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.RelationshipType;
+
 
 /**
  * RelationshipTypes for Spreadsheet Cell

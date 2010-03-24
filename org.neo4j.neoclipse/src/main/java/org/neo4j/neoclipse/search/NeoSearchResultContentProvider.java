@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Node;
 
 /**
  * This is the content provider for populating the result list tree viewer.

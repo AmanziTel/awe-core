@@ -26,13 +26,13 @@ import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.eclipse.swt.graphics.Image;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.PropertyContainer;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -577,7 +577,7 @@ public enum NodeTypes {
      * @param service NeoService
      * @return type of node 
      */
-    public static NodeTypes getNodeType(PropertyContainer container,NeoService service) {
+    public static NodeTypes getNodeType(PropertyContainer container,GraphDatabaseService service) {
         Transaction tx = service==null?null:service.beginTx();
         try{
             return getEnumById((String)container.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null));
@@ -596,7 +596,7 @@ public enum NodeTypes {
      * @param service NeoService
      * @return NodeDeletableTypes
      */
-    public static NodeDeletableTypes getNodeDeletableType(Node aNode, Relationship cameFrom, NeoService service){
+    public static NodeDeletableTypes getNodeDeletableType(Node aNode, Relationship cameFrom, GraphDatabaseService service){
         return getNodeType(aNode, service).getDeletableType(aNode, cameFrom, service);
     }
     
@@ -606,7 +606,7 @@ public enum NodeTypes {
      * @param service NeoService
      * @return boolean
      */
-    public static boolean isNodeFixed(Node aNode, NeoService service){
+    public static boolean isNodeFixed(Node aNode, GraphDatabaseService service){
         return getNodeType(aNode, service).isFixedType();
     }
     
@@ -618,7 +618,7 @@ public enum NodeTypes {
      * @param service NeoService
      * @return Relationship
      */
-    public static Relationship getSecondLinkForRelink(Node aNode, Relationship cameFrom, NeoService service){
+    public static Relationship getSecondLinkForRelink(Node aNode, Relationship cameFrom, GraphDatabaseService service){
         return getNodeType(aNode, service).getSecondLinkForRelinkByType(aNode, cameFrom, service);
     }
     
@@ -630,7 +630,7 @@ public enum NodeTypes {
      * @param service NeoService
      * @return NodeDeletableTypes
      */
-    protected NodeDeletableTypes getDeletableType(Node aNode, Relationship cameFrom, NeoService service){
+    protected NodeDeletableTypes getDeletableType(Node aNode, Relationship cameFrom, GraphDatabaseService service){
         Transaction tx = service.beginTx();
         try{
             if(isFixedType()||hasFixedLinks(aNode)){
@@ -671,7 +671,7 @@ public enum NodeTypes {
      * @param service NeoService
      * @return Relationship
      */
-    protected Relationship getSecondLinkForRelinkByType(Node aNode, Relationship cameFrom, NeoService service){
+    protected Relationship getSecondLinkForRelinkByType(Node aNode, Relationship cameFrom, GraphDatabaseService service){
         Transaction tx = service.beginTx();
         try{
             boolean isLinkOut = cameFrom.getStartNode().equals(aNode);
@@ -790,7 +790,7 @@ public enum NodeTypes {
      * @param container PropertyContainer
      * @param service - neoservice. if null then new transaction not created
      */
-    public void setNodeType(PropertyContainer container, NeoService service) {
+    public void setNodeType(PropertyContainer container, GraphDatabaseService service) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             container.setProperty(INeoConstants.PROPERTY_TYPE_NAME, getId());

@@ -15,10 +15,10 @@ package org.amanzi.awe.filters;
 
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.Traverser;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
 
 /**
  * <p>
@@ -32,9 +32,9 @@ public abstract class AbstractFilter {
     protected final Node node;
     protected String name;
     protected NodeTypes type;
-    protected NeoService service;
+    protected GraphDatabaseService service;
 
-    public static AbstractFilter getInstance(Node node, NeoService service) {
+    public static AbstractFilter getInstance(Node node, GraphDatabaseService service) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             NodeTypes nodeType = NodeTypes.getNodeType(node, service);
@@ -59,7 +59,7 @@ public abstract class AbstractFilter {
      * @param node - filter node
      * @param service - NeoService
      */
-    protected AbstractFilter(Node node, NeoService service) {
+    protected AbstractFilter(Node node, GraphDatabaseService service) {
         this.node = node;
         this.service = service;
         name = NeoUtils.getSimpleNodeName(node, "", service);
@@ -68,7 +68,7 @@ public abstract class AbstractFilter {
     /**
      * @param service The service to set.
      */
-    public void setService(NeoService service) {
+    public void setService(GraphDatabaseService service) {
         this.service = service;
     }
 

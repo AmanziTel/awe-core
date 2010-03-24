@@ -74,16 +74,16 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
 /**
@@ -163,7 +163,7 @@ public class CallAnalyserView extends ViewPart {
             if (!inputWr.isCorrectInput()) {
                 return;
             }
-            NeoService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
                 Traverser sRowTraverser = inputWr.getSrowTraverser(service);
@@ -911,7 +911,7 @@ public class CallAnalyserView extends ViewPart {
         probeCallDataset.clear();
         probeCallDataset.put(KEY_ALL, null);
         if ((drive != null) && (callType != null)) {
-            NeoService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
                 Collection<Node> allProbesOfDataset = NeoUtils.getAllProbesOfDataset(drive, callType);
@@ -1158,7 +1158,7 @@ public class CallAnalyserView extends ViewPart {
         /**
          * @return
          */
-        public Traverser getSrowTraverser(NeoService service) {
+        public Traverser getSrowTraverser(GraphDatabaseService service) {
 
             try {
                 CallStatistics statistic = new CallStatistics(drive, service);

@@ -20,7 +20,6 @@ import net.refractions.udig.ui.PlatformGIS;
 
 import org.geotools.brewer.color.BrewerPalette;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
-import org.neo4j.api.core.Node;
 
 /**
  * <p>

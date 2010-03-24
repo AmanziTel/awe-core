@@ -58,15 +58,15 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -206,7 +206,7 @@ public class NetworkRenderer extends RendererImpl {
         Map<Node, java.awt.Point> nodesMap = new HashMap<Node, java.awt.Point>();
         Map<Node, java.awt.Point> sectorMap = new HashMap<Node, java.awt.Point>();
         Map<Point, String> labelsMap = new HashMap<Point, String>();
-        NeoService neo = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
         Transaction tx = neo.beginTx();
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "render Network");
         try {
@@ -277,18 +277,18 @@ public class NetworkRenderer extends RendererImpl {
                 if ("network".equals(nodeType)) {
                     // Select all 'site' nodes in that file
                     for (Node rnode : node
-                            .traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                            .traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                         selectedPoints.add(rnode);
                     }
                 } else if ("city".equals(nodeType) || "bsc".equals(nodeType)) {
-                    for (Node rnode : node.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    for (Node rnode : node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
                             returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                         selectedPoints.add(rnode);
                     }
                 } else {
                     // Traverse backwards on CHILD relations to closest 'mp' Point
                     for (@SuppressWarnings("unused")
-                    Node rnode : node.traverse(Traverser.Order.DEPTH_FIRST, new StopEvaluator() {
+                    Node rnode : node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
                         @Override
                         public boolean isStopNode(TraversalPosition currentPos) {
                             return "site".equals(currentPos.currentNode().getProperty("type", ""));
@@ -375,12 +375,12 @@ public class NetworkRenderer extends RendererImpl {
                     // }
                     if (selected) {
                         selected = false;
-                        DELTA_LOOP: for (Node rnode:node.getNode().traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.MISSING, Direction.INCOMING, NetworkRelationshipTypes.DIFFERENT, Direction.INCOMING)){
+                        DELTA_LOOP: for (Node rnode:node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.MISSING, Direction.INCOMING, NetworkRelationshipTypes.DIFFERENT, Direction.INCOMING)){
                             if (geoNeo.getSelectedNodes().contains(rnode)) {
                                 selected = true;
                                 break;
                             } else {
-                                for (Node xnode:rnode.traverse(Traverser.Order.BREADTH_FIRST, new StopEvaluator(){
+                                for (Node xnode:rnode.traverse(Order.BREADTH_FIRST, new StopEvaluator(){
 
                                     @Override
                                     public boolean isStopNode(TraversalPosition currentPos) {

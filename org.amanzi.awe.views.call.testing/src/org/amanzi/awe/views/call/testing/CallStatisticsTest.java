@@ -45,15 +45,17 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.EmbeddedNeo;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.examples.apoc.EmbeddedNeo4j;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import static org.junit.Assert.*;
 
@@ -93,7 +95,7 @@ public class CallStatisticsTest {
     private static final int ETALON_CELL_COUNT = 13;
     
     private static String mainDirectoryName;
-    private static EmbeddedNeo neo;
+    private static GraphDatabaseService neo;
     
     /**
      * Initialize project service.
@@ -176,9 +178,9 @@ public class CallStatisticsTest {
      * Gets neo service.
      * @return EmbeddedNeo
      */
-    public static EmbeddedNeo getNeo(){
+    public static GraphDatabaseService getNeo(){
         if (neo == null){
-            neo = new EmbeddedNeo(getDbDirectoryName());
+            neo = new EmbeddedGraphDatabase(getDbDirectoryName());
         }
         return neo;
     }

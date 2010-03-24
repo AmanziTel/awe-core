@@ -34,11 +34,11 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.AbstractLoader.GisProperties;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
-import org.neo4j.api.core.EmbeddedNeo;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.util.index.LuceneIndexService;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.index.lucene.LuceneIndexService;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 public class RomesLoader extends DriveLoader {
     private Node mNode = null;
@@ -103,7 +103,7 @@ public class RomesLoader extends DriveLoader {
      * @param filename of file to load
      * @param display
      */
-    public RomesLoader(NeoService neo, String filename, String datasetName,LuceneIndexService anIndex) {
+    public RomesLoader(GraphDatabaseService neo, String filename, String datasetName,LuceneIndexService anIndex) {
         initialize("Romes", neo, filename, null, datasetName);
         driveType = DriveTypes.ROMES;
         initData();
@@ -285,7 +285,7 @@ public class RomesLoader extends DriveLoader {
         NeoLoaderPlugin.debug = false;
         if (args.length < 1)
             args = new String[] {"amanzi/G_YA004_090723_W09_Test.ASC"};
-        EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
+        EmbeddedGraphDatabase neo = new EmbeddedGraphDatabase("../../testing/neo");
         try {
             for (String filename : args) {
                 RomesLoader driveLoader = new RomesLoader(neo, filename,null, null);

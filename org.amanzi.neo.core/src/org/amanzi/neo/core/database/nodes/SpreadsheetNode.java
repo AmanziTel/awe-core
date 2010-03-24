@@ -23,16 +23,15 @@ import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.amanzi.neo.index.hilbert.HilbertIndex;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * Wrapper class for Spreadsheet
@@ -60,7 +59,7 @@ public class SpreadsheetNode extends AbstractNode {
 	/*
 	 * Neo Service
 	 */
-	private NeoService neoService = NeoServiceProvider.getProvider().getService();
+	private GraphDatabaseService neoService = NeoServiceProvider.getProvider().getService();
 	
 	/**
 	 * Constructor. Wraps a Node from database and sets type and name of Node
@@ -84,7 +83,7 @@ public class SpreadsheetNode extends AbstractNode {
      * @param node
      *            database node
      */
-    public SpreadsheetNode(Node node, String name, NeoService neo) {
+    public SpreadsheetNode(Node node, String name, GraphDatabaseService neo) {
         super(node);
         if(neo==null){
             neoService = NeoServiceProvider.getProvider().getService();
@@ -294,7 +293,7 @@ public class SpreadsheetNode extends AbstractNode {
 	private class ChartIterator extends AbstractIterator<ChartNode> {
 
 		public ChartIterator(final String chartIndex) {
-			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
+			this.iterator = node.traverse(Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
 						public boolean isReturnableNode(
@@ -326,7 +325,7 @@ public class SpreadsheetNode extends AbstractNode {
 	private class PieChartIterator extends AbstractIterator<PieChartNode> {
 
 		public PieChartIterator(final String chartIndex) {
-			this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
+			this.iterator = node.traverse(Order.BREADTH_FIRST,
 					StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
 						public boolean isReturnableNode(

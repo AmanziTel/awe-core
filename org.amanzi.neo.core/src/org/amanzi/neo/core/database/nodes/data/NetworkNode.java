@@ -15,7 +15,7 @@ package org.amanzi.neo.core.database.nodes.data;
 
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Node;
 
 /**
  * <p>

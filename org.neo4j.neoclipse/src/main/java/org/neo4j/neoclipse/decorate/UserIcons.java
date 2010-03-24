@@ -21,8 +21,8 @@ import java.util.Set;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * This class manages user icons.

@@ -36,7 +36,7 @@ Import-Package: org.eclipse.core.commands.common,
  org.eclipse.zest.layouts,
  org.eclipse.zest.layouts.algorithms,
  org.junit;version="4.3.1",
- org.neo4j.api.core,
+ org.neo4j.graphdb,
  org.neo4j.neoclipse.preference,
  org.osgi.framework;version="1.4.0"
 Require-Bundle: org.eclipse.ui,

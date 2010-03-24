@@ -25,10 +25,10 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -61,7 +61,7 @@ public class TreeNeoNode implements IAdaptable {
         return name;
     }
 
-    public TreeNeoNode getParent(NeoService service) {
+    public TreeNeoNode getParent(GraphDatabaseService service) {
         if (isRootNode()){
             return null;
         }
@@ -82,7 +82,7 @@ public class TreeNeoNode implements IAdaptable {
         return type==NodeTypes.FILTER_ROOT;
     }
 
-    public TreeNeoNode[] getChildren(NeoService service) {
+    public TreeNeoNode[] getChildren(GraphDatabaseService service) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             Collection<Node> childs = NeoUtils.getChildTraverser(node).getAllNodes();
@@ -131,7 +131,7 @@ public class TreeNeoNode implements IAdaptable {
      * @param service
      * @return
      */
-    public boolean hasChildren(NeoService service) {
+    public boolean hasChildren(GraphDatabaseService service) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             return node.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
@@ -169,7 +169,7 @@ public class TreeNeoNode implements IAdaptable {
     /**
      *
      */
-    public void refresh(NeoService service) {
+    public void refresh(GraphDatabaseService service) {
         name = NeoUtils.getNodeName(node);
        type = NodeTypes.getNodeType(node, service);
     }
@@ -177,7 +177,7 @@ public class TreeNeoNode implements IAdaptable {
     /**
      *
      */
-    public void formColorImage(NeoService service) {
+    public void formColorImage(GraphDatabaseService service) {
       Transaction tx = NeoUtils.beginTx(service);
       try{
           RGB newColor = getColor();

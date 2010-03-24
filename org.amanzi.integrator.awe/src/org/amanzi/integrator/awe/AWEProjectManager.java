@@ -49,7 +49,7 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IActionDelegate;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * Class for integration functionality of AWE project to RDT plugin

@@ -23,11 +23,11 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.hilbert.map.HilbertSqaud;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * Node of Hilbert-curbes-based index
@@ -55,7 +55,7 @@ public class HilbertIndexNode {
     /*
      * NeoService
      */
-    public static NeoService neoService = NeoServiceProvider.getProvider().getService();
+    public static GraphDatabaseService neoService = NeoServiceProvider.getProvider().getService();
     
     /*
      * Level of this index
@@ -204,7 +204,7 @@ public class HilbertIndexNode {
      * @param order order of index
      * @return Index Node
      */
-    public static HilbertIndexNode getFromReferencedNode(Node referencedNode, String indexName, int order,NeoService neo) {
+    public static HilbertIndexNode getFromReferencedNode(Node referencedNode, String indexName, int order,GraphDatabaseService neo) {
         if(neo!=null){
             neoService = neo;
         }

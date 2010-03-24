@@ -29,7 +29,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
-import org.neo4j.api.core.NeoService;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -142,7 +142,7 @@ public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
 	 * @param aNeo NeoService
 	 * @author Shcharbatsevich_A
 	 */
-	public void initProjectService(NeoService aNeo){
+	public void initProjectService(GraphDatabaseService aNeo){
 		aweProjectService = new AweProjectService(aNeo);
 	}
 

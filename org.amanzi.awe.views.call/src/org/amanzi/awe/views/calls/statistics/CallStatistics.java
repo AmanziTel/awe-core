@@ -32,14 +32,14 @@ import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * Class for creating Call Statistics
@@ -171,7 +171,7 @@ public class CallStatistics {
     /*
      * Neo Service 
      */
-    private NeoService neoService;
+    private GraphDatabaseService neoService;
     
     /*
      * Map of previous s_cell nodes for each period
@@ -206,7 +206,7 @@ public class CallStatistics {
      * @param drive Dataset Node
      * @throws IOException if was problem in initializing of indexes
      */
-    public CallStatistics(Node drive, NeoService service) throws IOException {
+    public CallStatistics(Node drive, GraphDatabaseService service) throws IOException {
         assert drive != null;
         datasetNode = drive;
         neoService = service;

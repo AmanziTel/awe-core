@@ -52,13 +52,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.EmbeddedNeo;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.util.index.LuceneIndexService;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.index.lucene.LuceneIndexService;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -175,7 +175,7 @@ public class NetworkLoader extends AbstractLoader {
      * @param filename of file to load
      * @param display
      */
-    public NetworkLoader(NeoService neo, String filename) {
+    public NetworkLoader(GraphDatabaseService neo, String filename) {
         initialize("Network", neo, filename, null);
         initializeKnownHeaders();
         addNetworkIndexes();
@@ -688,7 +688,7 @@ public class NetworkLoader extends AbstractLoader {
         // NeoLoaderPlugin.debug = true;
         if (args.length < 1)
             args = new String[] {"amanzi/network.txt"};
-        EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
+        EmbeddedGraphDatabase neo = new EmbeddedGraphDatabase("../../testing/neo");
         try {
             for (String filename : args) {
                 long startTime = System.currentTimeMillis();

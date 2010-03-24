@@ -19,7 +19,7 @@ import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Transaction;
 
 import com.eteks.openjeks.format.CellFormat;
 

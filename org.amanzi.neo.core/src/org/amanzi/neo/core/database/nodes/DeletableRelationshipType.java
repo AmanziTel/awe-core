@@ -14,8 +14,8 @@
 package org.amanzi.neo.core.database.nodes;
 
 import org.amanzi.neo.core.enums.RelationDeletableTypes;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * Base for all relationships.

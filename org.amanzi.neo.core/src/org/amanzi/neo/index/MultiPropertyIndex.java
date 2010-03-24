@@ -11,17 +11,17 @@ import java.util.Random;
 
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.EmbeddedNeo;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
  * <p>
@@ -36,7 +36,7 @@ import org.neo4j.api.core.Traverser.Order;
  */
 public class MultiPropertyIndex<E extends Object> {
     private String[] properties;
-    private NeoService neo;
+    private GraphDatabaseService neo;
     private E[] origin;
     private MultiValueConverter<E> converter;
     private Node root;
@@ -333,7 +333,7 @@ public class MultiPropertyIndex<E extends Object> {
         }
     }
 
-    public MultiPropertyIndex(NeoService neo, String name, String[] properties, MultiValueConverter<E> converter) throws IOException {
+    public MultiPropertyIndex(GraphDatabaseService neo, String name, String[] properties, MultiValueConverter<E> converter) throws IOException {
         if (properties == null || properties.length < 1 || properties[0].length() < 1)
             throw new IllegalArgumentException("Index properties must be a non-empty array of non-empty strings");
         this.converter = converter;
@@ -351,7 +351,7 @@ public class MultiPropertyIndex<E extends Object> {
         this.name = name;
     }
 
-    public void initialize(NeoService neo, Node reference) throws IOException {
+    public void initialize(GraphDatabaseService neo, Node reference) throws IOException {
         if (neo == null)
             throw new IllegalArgumentException("Index NeoService must exist");
         this.neo = neo;
@@ -805,11 +805,11 @@ public class MultiPropertyIndex<E extends Object> {
     }
 
     private static class NeoCommitter {
-        NeoService neo;
+        GraphDatabaseService neo;
         Transaction tx = null;
 
         private NeoCommitter(String db) {
-            neo = new EmbeddedNeo(db);
+            neo = new EmbeddedGraphDatabase(db);
         }
 
         private Transaction beginTx() {

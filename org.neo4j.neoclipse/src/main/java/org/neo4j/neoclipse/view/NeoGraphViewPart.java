@@ -39,10 +39,10 @@ import org.eclipse.zest.core.viewers.GraphViewer;
 import org.eclipse.zest.core.viewers.IZoomableWorkbenchPart;
 import org.eclipse.zest.layouts.LayoutStyles;
 import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.NotFoundException;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.NotFoundException;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.event.NeoclipseEvent;
 import org.neo4j.neoclipse.event.NeoclipseEventListener;
@@ -402,7 +402,7 @@ public class NeoGraphViewPart extends ViewPart implements
      */
     public void showSomeNode()
     {
-        NeoService ns = Activator.getDefault().getNeoServiceSafely();
+        GraphDatabaseService ns = Activator.getDefault().getNeoServiceSafely();
         if ( ns != null )
         {
             Node node = ns.getReferenceNode();
@@ -436,7 +436,7 @@ public class NeoGraphViewPart extends ViewPart implements
      */
     public void showNode( final long nodeId )
     {
-        NeoService ns = Activator.getDefault().getNeoServiceSafely();
+        GraphDatabaseService ns = Activator.getDefault().getNeoServiceSafely();
         if ( ns != null )
         {
             Node node = ns.getNodeById( nodeId );

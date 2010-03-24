@@ -13,7 +13,7 @@
 package org.amanzi.neo.core.enums;
 
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
-import org.neo4j.api.core.Direction;
+import org.neo4j.graphdb.Direction;
 
 /**
  * Relationship types defined by the GeoNeo specification for traversing

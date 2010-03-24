@@ -35,16 +35,16 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.AbstractLoader.GisProperties;
 import org.eclipse.swt.widgets.Display;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.EmbeddedNeo;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser.Order;
-import org.neo4j.util.index.LuceneIndexService;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.index.lucene.LuceneIndexService;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 public class TEMSLoader extends DriveLoader {
     private static final String TIMESTAMP_DATE_FORMAT = "HH:mm:ss.S";
@@ -91,7 +91,7 @@ public class TEMSLoader extends DriveLoader {
      * @param filename of file to load
      * @param display
      */
-    public TEMSLoader(NeoService neo, String filename) {
+    public TEMSLoader(GraphDatabaseService neo, String filename) {
         driveType = DriveTypes.TEMS;
         virtualMnode = null;
         mNode = null;
@@ -110,7 +110,7 @@ public class TEMSLoader extends DriveLoader {
      * @param filename of file to load
      * @param display
      */
-    public TEMSLoader(NeoService neo, String filename, String datasetName, LuceneIndexService anIndex) {
+    public TEMSLoader(GraphDatabaseService neo, String filename, String datasetName, LuceneIndexService anIndex) {
         driveType = DriveTypes.TEMS;
         virtualMnode = null;
         mNode = null;
@@ -483,7 +483,7 @@ public class TEMSLoader extends DriveLoader {
     public static void main(String[] args) {
         if (args.length < 1)
             args = new String[] {"amanzi/test.FMT", "amanzi/0904_90.FMT", "amanzi/0905_22.FMT", "amanzi/0908_44.FMT"};
-        EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
+        EmbeddedGraphDatabase neo = new EmbeddedGraphDatabase("../../testing/neo");
         try {
             for (String filename : args) {
                 TEMSLoader driveLoader = new TEMSLoader(neo, filename);

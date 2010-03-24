@@ -16,8 +16,8 @@ package org.amanzi.awe.views.reuse.mess_table;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of 
@@ -59,7 +59,7 @@ public enum DataTypes {
         return childType;
     }
     
-    public static DataTypes getTypeByNode(Node aNode, NeoService service){
+    public static DataTypes getTypeByNode(Node aNode, GraphDatabaseService service){
         DriveTypes key = NeoUtils.getDatasetType(aNode, service);
         for(DataTypes curr : values()){
             if(key.equals(curr.type)){

@@ -1,6 +1,7 @@
 package org.neo4j.neoclipse;
 
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.RelationshipType;
+
 
 /**
  * Relationship types defined by the GeoNeo specification for traversing

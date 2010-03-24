@@ -29,13 +29,13 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.eclipse.swt.widgets.Display;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.util.index.LuceneIndexService;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.index.lucene.LuceneIndexService;
 
 public abstract class DriveLoader extends AbstractLoader {
 	
@@ -70,7 +70,7 @@ public abstract class DriveLoader extends AbstractLoader {
      * @param display Display to use for scheduling plugin lookups and message boxes, or null
      * @param datasetName to add data to, or null to add to same as filename
      */
-    protected final void initialize(String typeString, NeoService neoService, String filenameString, Display display, String datasetName) {
+    protected final void initialize(String typeString, GraphDatabaseService neoService, String filenameString, Display display, String datasetName) {
         super.initialize(typeString, neoService, filenameString, display);
         if (datasetName == null || datasetName.trim().isEmpty()) {
             this.dataset = null;

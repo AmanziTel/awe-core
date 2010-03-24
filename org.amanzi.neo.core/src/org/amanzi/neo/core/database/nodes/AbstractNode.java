@@ -18,10 +18,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * Abstract wrapper of Neo Database Node
@@ -39,7 +39,7 @@ public abstract class AbstractNode {
     private final Lock r = rwl.readLock();
     private final Lock w = rwl.writeLock();
 
-	private NeoService service;
+	private GraphDatabaseService service;
 
 	/**
 	 * Constructor of abstract Wrapper
@@ -179,7 +179,7 @@ public abstract class AbstractNode {
 	 *Get NeoService  
 	 * @return NeoService. If NeoService id nod defined, then sets and return NeoServiceProvider.getProvider().getService()
 	 */
-    protected  NeoService getService(){
+    protected  GraphDatabaseService getService(){
         r.lock();
         try{
             if (service==null){
@@ -195,7 +195,7 @@ public abstract class AbstractNode {
      *
      * @param service - new NeoService
      */
-    public void setService(NeoService service){
+    public void setService(GraphDatabaseService service){
         w.lock();
         try{
             this.service=service;

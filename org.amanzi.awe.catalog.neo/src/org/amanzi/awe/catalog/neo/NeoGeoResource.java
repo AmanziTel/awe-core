@@ -23,8 +23,9 @@ import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageRegistry;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * This class represents a single collection of geographic objects in the Neo4j
@@ -43,7 +44,7 @@ public class NeoGeoResource extends IGeoResource {
     private URL identifierFull;
 
 	public NeoGeoResource(NeoService service,
-			org.neo4j.api.core.NeoService neo, Node gisNode) {
+			GraphDatabaseService neo, Node gisNode) {
 		this.service = service;
 		this.gisNode = gisNode;
 		this.geoNeo = new GeoNeo(neo, this.gisNode);

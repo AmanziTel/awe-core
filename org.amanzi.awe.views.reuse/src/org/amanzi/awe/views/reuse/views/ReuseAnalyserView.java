@@ -107,16 +107,16 @@ import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.AbstractDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * <p>
@@ -1334,7 +1334,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @return necessary aggregates node
      */
     protected Node findOrCreateAggregateNode(Node gisNode, final String propertyName, final String distribute, final String select, IProgressMonitor monitor) {
-        NeoService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
         // final GisTypes typeOfGis = new GeoNeo(service, gisNode).getGisType();
         final Runnable setAutoDistribute = new Runnable() {
             @Override
@@ -2563,7 +2563,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @return array of GIS nodes
      */
     private String[] getGisItems() {
-        NeoService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
         Node refNode = service.getReferenceNode();
         members = new LinkedHashMap<String, Node>();
         for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {

@@ -44,15 +44,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * Wizard page for exporting CSV
@@ -68,7 +68,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
     private HashMap<String, Node> members;
     private TreeViewer viewer;
     private Node selectedNode;
-    private final NeoService service = NeoServiceProvider.getProvider().getService();
+    private final GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
     /**
      * @param pageName
      */
@@ -200,7 +200,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
             return name;
         }
 
-        public TreeNeoNode getParent(NeoService service) {
+        public TreeNeoNode getParent(GraphDatabaseService service) {
             if (isRootNode()){
                 return null;
             }
@@ -221,7 +221,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
             return type==NodeTypes.AWE_PROJECT;
         }
 
-        public TreeNeoNode[] getChildren(NeoService service) {
+        public TreeNeoNode[] getChildren(GraphDatabaseService service) {
             Transaction tx = NeoUtils.beginTx(service);
             try {
                 List<TreeNeoNode>result=new LinkedList<TreeNeoNode>();
@@ -269,7 +269,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
          * @param service
          * @return
          */
-        public boolean hasChildren(NeoService service) {
+        public boolean hasChildren(GraphDatabaseService service) {
             Transaction tx = NeoUtils.beginTx(service);
             try {
                 return node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, SplashRelationshipTypes.AWE_PROJECT,Direction.OUTGOING,SplashRelationshipTypes.RUBY_PROJECT,Direction.OUTGOING, SplashRelationshipTypes.SPREADSHEET,Direction.OUTGOING).iterator().hasNext();

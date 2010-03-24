@@ -27,7 +27,7 @@ import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Transaction;
 
 
 /**

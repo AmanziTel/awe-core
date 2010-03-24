@@ -22,9 +22,9 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.ImageData;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * This class produces information about the CSV data stream, including the
@@ -37,7 +37,7 @@ public class NeoGeoResourceInfo extends IGeoResourceInfo {
 	Node gisNode;
 
     public NeoGeoResourceInfo(NeoGeoResource resource, Node gisNode, IProgressMonitor monitor) throws IOException {
-        NeoService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
         Transaction tx = service.beginTx();
         try {
             this.handle = resource;

@@ -14,7 +14,7 @@
 package org.amanzi.neo.core.database.nodes;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of

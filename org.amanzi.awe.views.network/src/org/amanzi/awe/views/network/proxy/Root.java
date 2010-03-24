@@ -23,15 +23,15 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * Proxy class that provides access for Neo-database
@@ -57,7 +57,7 @@ public class Root extends NeoNode {
     
     public LinkedHashMap<Node,List<Node>> search(final String text) {
         LinkedHashMap<Node,List<Node>> results = new LinkedHashMap<Node,List<Node>>();
-        NeoService service = serviceProvider.getService();
+        GraphDatabaseService service = serviceProvider.getService();
         Transaction transaction = service.beginTx();
         try {
             for(NeoNode firstLevel:getChildren()){
@@ -96,7 +96,7 @@ public class Root extends NeoNode {
         ArrayList<NeoNode> networkNodes = new ArrayList<NeoNode>();
         HashMap<String,NeoNode> deltaNodes = new HashMap<String,NeoNode>();
 
-        NeoService service = serviceProvider.getService();
+        GraphDatabaseService service = serviceProvider.getService();
 
         Transaction transaction = service.beginTx();
         try {

@@ -18,10 +18,10 @@ import java.util.LinkedList;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.swt.graphics.RGB;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.Traverser;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
 
 /**
  * <p>
@@ -36,7 +36,7 @@ public class FilterChain extends AbstractFilter {
     private final boolean isValid;
     private final RGB color;
 
-    protected FilterChain(Node node, NeoService service) {
+    protected FilterChain(Node node, GraphDatabaseService service) {
         super(node, service);
         type = NodeTypes.FILTER_GROUP;
         rule=getRuleFromNode();

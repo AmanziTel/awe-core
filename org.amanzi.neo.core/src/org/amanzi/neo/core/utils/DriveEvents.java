@@ -21,15 +21,15 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.icons.IconManager.EventIcons;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * <p>
@@ -218,7 +218,7 @@ public enum DriveEvents {
      * @param mpNode - point drive node
      * @param neo - NeoService - if null, then transaction do not create
      */
-    public boolean haveEvents(Node mpNode, NeoService neo) {
+    public boolean haveEvents(Node mpNode, GraphDatabaseService neo) {
         Transaction tx = neo == null ? null : neo.beginTx();
         try {
             Traverser traverser = eventTraverser(mpNode);
@@ -267,7 +267,7 @@ public enum DriveEvents {
      * @param neo - NeoService - if null, then transaction do not create
      * @return set of DriveEvents
      */
-    public static Set<DriveEvents> getAllEvents(Node mpNode, NeoService neo) {
+    public static Set<DriveEvents> getAllEvents(Node mpNode, GraphDatabaseService neo) {
         Set<DriveEvents> result = new HashSet<DriveEvents>();
         Set<DriveEvents> unknownEwents = new HashSet<DriveEvents>();
         Transaction tx = neo == null ? null : neo.beginTx();
@@ -331,7 +331,7 @@ public enum DriveEvents {
      * @param neo - NeoService - if null, then transaction do not create
      * @return DriveEvents or null
      */
-    public static DriveEvents getWorstEvent(Node mpNode, NeoService neo) {
+    public static DriveEvents getWorstEvent(Node mpNode, GraphDatabaseService neo) {
         Set<DriveEvents> events = getAllEvents(mpNode, neo);
         if (events.isEmpty()) {
             return null;

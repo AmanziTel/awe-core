@@ -14,7 +14,7 @@
 package org.amanzi.neo.loader.sax_parsers;
 
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Node;
 import org.xml.sax.Attributes;
 
 /**

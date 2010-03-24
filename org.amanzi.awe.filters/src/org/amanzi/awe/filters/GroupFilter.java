@@ -17,10 +17,10 @@ import java.util.LinkedList;
 
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.Traverser;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
 
 /**
  * <p>
@@ -33,7 +33,7 @@ import org.neo4j.api.core.Traverser;
 public class GroupFilter extends AbstractFilter {
     protected final LinkedList<AbstractFilter> subfilters;
 
-    protected GroupFilter(Node node, NeoService service) {
+    protected GroupFilter(Node node, GraphDatabaseService service) {
         super(node, service);
         type = NodeTypes.FILTER_GROUP;
         subfilters = new LinkedList<AbstractFilter>();
@@ -84,8 +84,9 @@ public class GroupFilter extends AbstractFilter {
             }
             return new FilterResult(false, true, -1, subfilters.size(), null);
     }
-@Override
-public String toString() {
-    return String.format("Group %s",name);
-}
+    
+    @Override
+    public String toString() {
+        return String.format("Group %s",name);
+    }
 }

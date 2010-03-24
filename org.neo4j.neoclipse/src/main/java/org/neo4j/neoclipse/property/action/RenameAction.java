@@ -16,7 +16,7 @@ package org.neo4j.neoclipse.property.action;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertySheetEntry;
-import org.neo4j.api.core.PropertyContainer;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.neoclipse.action.Actions;
 import org.neo4j.neoclipse.neo.NodeSpaceUtil;
 import org.neo4j.neoclipse.property.NeoPropertySheetPage;

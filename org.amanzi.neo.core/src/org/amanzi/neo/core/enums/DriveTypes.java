@@ -17,10 +17,10 @@ import java.util.ArrayList;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.PropertyContainer;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -173,7 +173,7 @@ public enum DriveTypes {
      * @param service NeoService
      * @return type of node
      */
-    public static DriveTypes getNodeType(PropertyContainer node, NeoService service) {
+    public static DriveTypes getNodeType(PropertyContainer node, GraphDatabaseService service) {
         Transaction tx = service == null ? null : service.beginTx();
         try {
             return findById((String)node.getProperty(INeoConstants.DRIVE_TYPE, null));
@@ -189,7 +189,7 @@ public enum DriveTypes {
      * @param node - node
      * @param service NeoService - neo service, if null then transaction do not created
      */
-    public void setTypeToNode(Node node, NeoService service) {
+    public void setTypeToNode(Node node, GraphDatabaseService service) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             node.setProperty(INeoConstants.DRIVE_TYPE, getId());

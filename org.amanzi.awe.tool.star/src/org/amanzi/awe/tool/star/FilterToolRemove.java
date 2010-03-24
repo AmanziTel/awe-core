@@ -24,9 +24,9 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -61,7 +61,7 @@ public class FilterToolRemove extends AbstractModalTool {
      * @throws IOException 
      */
     private void updateNetworksLayer(IMap map) throws IOException {
-        NeoService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
         Transaction tx = service.beginTx();
         try{
         for (ILayer layer : map.getMapLayers()) {

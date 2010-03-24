@@ -13,11 +13,11 @@
 
 package org.amanzi.neo.core.enums;
 
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Transaction;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.PropertyContainer;
-import org.neo4j.api.core.Transaction;
 
 /**
  * <p>
@@ -87,7 +87,7 @@ public enum NetworkTypes {
      * @param service NeoService
      * @return type of node
      */
-    public static NetworkTypes getNodeType(PropertyContainer networkGis, NeoService service) {
+    public static NetworkTypes getNodeType(PropertyContainer networkGis, GraphDatabaseService service) {
         Transaction tx = service == null ? null : service.beginTx();
         try {
             return getEnumById((String)networkGis.getProperty(PROPERTY_NAME, null));
@@ -112,7 +112,7 @@ public enum NetworkTypes {
      * @param node - node
      * @param service NeoService - neo service, if null then transaction do not created
      */
-    public void setTypeToNode(Node node, NeoService service) {
+    public void setTypeToNode(Node node, GraphDatabaseService service) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             node.setProperty(PROPERTY_NAME, getId());

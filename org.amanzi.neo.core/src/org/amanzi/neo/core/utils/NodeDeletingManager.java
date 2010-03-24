@@ -8,15 +8,15 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeDeletableTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.RelationDeletableTypes;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.Traverser;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
 
 /**
  * Manager for node deleting with its links and children.
@@ -24,13 +24,13 @@ import org.neo4j.api.core.Traverser;
  */
 public class NodeDeletingManager {
     
-    private NeoService neo;
+    private GraphDatabaseService neo;
     
     /**
      * Constructor.
      * @param service NeoService
      */
-    public NodeDeletingManager(NeoService service) {
+    public NodeDeletingManager(GraphDatabaseService service) {
         neo = service;
     }
 

@@ -39,12 +39,13 @@ import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.PropertyContainer;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.util.index.LuceneIndexService;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.index.lucene.LuceneIndexService;
+
 
 /**
  * <p>
@@ -70,7 +71,7 @@ public class NeighbourLoader {
     private Header header;
     private Node neighbour;
     private final String baseName;
-    private final NeoService neo;
+    private final GraphDatabaseService neo;
     private final LuceneIndexService index;
     private final String gisName;
 
@@ -80,7 +81,7 @@ public class NeighbourLoader {
      * @param networkNode network Node
      * @param fileName Neighbour file Name
      */
-    public NeighbourLoader(Node networkNode, String fileName, NeoService neo) {
+    public NeighbourLoader(Node networkNode, String fileName, GraphDatabaseService neo) {
         network = networkNode;
         this.fileName = fileName;
         this.neo = neo;
@@ -215,7 +216,7 @@ public class NeighbourLoader {
         private final NodeName neighbourNodeName;
         private final String[] headers;
         private final LuceneIndexService index;
-        private final NeoService neo;
+        private final GraphDatabaseService neo;
         private final String gisName;
 
         /**
@@ -223,7 +224,7 @@ public class NeighbourLoader {
          * 
          * @param line - header line
          */
-        public Header(String line, NeoService neo, LuceneIndexService index, String gisName) {
+        public Header(String line, GraphDatabaseService neo, LuceneIndexService index, String gisName) {
             this.index = index;
             this.gisName = gisName;
             this.neo = neo;

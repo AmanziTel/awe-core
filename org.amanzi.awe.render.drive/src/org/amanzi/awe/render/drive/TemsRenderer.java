@@ -58,17 +58,16 @@ import org.geotools.brewer.color.BrewerPalette;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
-import org.neo4j.util.index.LuceneIndexService;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.index.lucene.LuceneIndexService;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -241,7 +240,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         g.setFont(font.deriveFont((float)fontSize));
 
         int drawWidth = 1 + 2 * drawSize;
-        NeoService neo = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
         Transaction tx = neo.beginTx();
         try {
             monitor.subTask("connecting");
@@ -374,7 +373,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             for (Node node : selectedNodes) {
                 if (NeoUtils.isFileNode(node)) {
                     // Select all 'mp' nodes in that file
-                    for (Node rnode : node.traverse(Traverser.Order.BREADTH_FIRST, new StopEvaluator() {
+                    for (Node rnode : node.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
                         @Override
                         public boolean isStopNode(TraversalPosition currentPos) {
                             return !currentPos.isStartNode() && !NeoUtils.isDriveMNode(currentPos.currentNode());
@@ -391,7 +390,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 } else {
                     // Traverse backwards on CHILD relations to closest 'mp' Point
                     for (@SuppressWarnings("unused")
-                    Node rnode : node.traverse(Traverser.Order.DEPTH_FIRST, new StopEvaluator() {
+                    Node rnode : node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
                         @Override
                         public boolean isStopNode(TraversalPosition currentPos) {
                             return NeoUtils.isDrivePointNode(currentPos.currentNode());

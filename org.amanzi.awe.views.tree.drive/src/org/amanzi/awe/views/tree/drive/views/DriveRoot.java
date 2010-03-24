@@ -23,11 +23,11 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * Proxy class that provides access for Neo-database
@@ -52,7 +52,7 @@ public class DriveRoot extends Root {
     public NeoNode[] getChildren() {
         ArrayList<NeoNode> driveNodes = new ArrayList<NeoNode>();
 
-        NeoService service = serviceProvider.getService();
+        GraphDatabaseService service = serviceProvider.getService();
 
         Transaction transaction = service.beginTx();
         try {

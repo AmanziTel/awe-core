@@ -43,7 +43,7 @@ import org.jruby.RubyInstanceConfig;
 import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Transaction;
 import org.osgi.framework.BundleContext;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;

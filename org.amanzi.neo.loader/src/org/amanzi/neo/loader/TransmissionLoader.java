@@ -42,13 +42,13 @@ import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.PropertyContainer;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.util.index.LuceneIndexService;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * TODO extend from NeighbourLoader
@@ -69,7 +69,7 @@ public class TransmissionLoader {
     private Header header;
     private Node neighbour;
     private final String baseName;
-    private final NeoService neo;
+    private final GraphDatabaseService neo;
     private final String gisName;
     private final Node gis;
 
@@ -79,7 +79,7 @@ public class TransmissionLoader {
      * @param networkNode network Node
      * @param fileName Neighbour file Name
      */
-    public TransmissionLoader(String gisName, String fileName, NeoService neo) {
+    public TransmissionLoader(String gisName, String fileName, GraphDatabaseService neo) {
         this.gisName=gisName;
         this.neo = neo;
         this.fileName = fileName;
@@ -217,7 +217,7 @@ public class TransmissionLoader {
         // private Map<String, Pair<Node, Integer>> cach = new HashMap<String, Pair<Node,
         // Integer>>();
         private final LuceneIndexService index;
-        private final NeoService neo;
+        private final GraphDatabaseService neo;
         private char fieldSepRegex;
         private final char[] possibleFieldSepRegexes = new char[] {'\t', ',', ';'};
         private CSVParser parser;
@@ -227,7 +227,7 @@ public class TransmissionLoader {
          * 
          * @param line - header line
          */
-        public Header(String line, NeoService neo) {
+        public Header(String line, GraphDatabaseService neo) {
             this.neo = neo;
             index=NeoServiceProvider.getProvider().getIndexService();
             determineFieldSepRegex(line);

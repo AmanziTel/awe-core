@@ -19,7 +19,7 @@ import java.util.Set;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.neoclipse.reltype.RelationshipTypeHashMap;
 
 /**

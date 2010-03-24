@@ -20,14 +20,14 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.neo4j.api.core.NeoService;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.neo.NeoServiceEvent;
 import org.neo4j.neoclipse.neo.NeoServiceEventListener;
 import org.neo4j.neoclipse.neo.NeoServiceManager;
 import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 import org.neo4j.neoclipse.preference.NeoPreferences;
-import org.neo4j.util.index.LuceneIndexService;
 
 /**
  * Provider that give access to NeoService
@@ -46,7 +46,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     /*
      * NeoService
      */
-    private NeoService neoService;
+    private GraphDatabaseService neoService;
     
     /*
      * NeoServiceManager
@@ -95,7 +95,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * @return instance of NeoServiceProvider
      */
     
-    public static void initProvider(NeoService service) {
+    public static void initProvider(GraphDatabaseService service) {
         provider = new NeoServiceProvider();
         provider.init(service);
         
@@ -120,7 +120,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * @return
      */
     
-    public NeoService getService() {
+    public GraphDatabaseService getService() {
         init();
         
         return neoService;
@@ -163,7 +163,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * Initializes NeoService and NeoServiceManager
      */
     
-    private void init(NeoService service) {
+    private void init(GraphDatabaseService service) {
         neoService = service;
 
         if (neoManager == null) {

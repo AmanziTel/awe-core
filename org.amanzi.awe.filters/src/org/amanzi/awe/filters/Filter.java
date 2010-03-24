@@ -16,10 +16,10 @@ package org.amanzi.awe.filters;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.swt.graphics.RGB;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.Traverser;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
 
 /**
  * <p>
@@ -46,7 +46,7 @@ public class Filter extends AbstractFilter {
      * @param node filter node
      * @param service - NeoService
      */
-    protected Filter(Node node, NeoService service) {
+    protected Filter(Node node, GraphDatabaseService service) {
         super(node, service);
         type = NodeTypes.FILTER;
         Transaction tx = NeoUtils.beginTx(service);

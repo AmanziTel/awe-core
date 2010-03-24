@@ -15,7 +15,8 @@ package org.neo4j.neoclipse.view;
 
 import java.util.EventListener;
 
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Node;
+
 
 /**
  * Listener for changes of the input node.

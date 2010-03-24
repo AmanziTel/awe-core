@@ -33,7 +33,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.zest.core.viewers.GraphViewer;
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.action.Actions;
 import org.neo4j.neoclipse.action.PrintGraphAction;

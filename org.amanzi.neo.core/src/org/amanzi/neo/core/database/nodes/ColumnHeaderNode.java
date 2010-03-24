@@ -15,8 +15,8 @@ package org.amanzi.neo.core.database.nodes;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * Header of Column

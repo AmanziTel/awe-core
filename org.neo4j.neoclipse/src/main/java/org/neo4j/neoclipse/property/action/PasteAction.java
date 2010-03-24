@@ -18,7 +18,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.neo4j.api.core.PropertyContainer;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.neoclipse.action.Actions;
 import org.neo4j.neoclipse.neo.NodeSpaceUtil;
 import org.neo4j.neoclipse.property.NeoPropertySheetPage;

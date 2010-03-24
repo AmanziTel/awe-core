@@ -15,7 +15,7 @@ package org.amanzi.neo.core.database.nodes;
 
 import org.amanzi.neo.core.utils.Pair;
 import org.eclipse.core.runtime.IAdaptable;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Node;
 
 /**
  * <p>

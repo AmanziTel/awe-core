@@ -16,7 +16,7 @@ package org.neo4j.neoclipse.property;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.neoclipse.NeoIcons;
 
 public class ContainerLabelProvider implements ILabelProvider

@@ -43,7 +43,7 @@ import org.amanzi.splash.utilities.SelectedCellsSet;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.ui.PlatformUI;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Transaction;
 
 import com.eteks.openjeks.format.CellFormat;
 

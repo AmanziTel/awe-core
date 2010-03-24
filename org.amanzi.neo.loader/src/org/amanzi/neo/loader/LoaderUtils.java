@@ -50,11 +50,11 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.PlatformUI;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 
 public class LoaderUtils {
     /**
@@ -289,7 +289,7 @@ public class LoaderUtils {
      * 
      * @return
      */
-    public static Node findOrCreateOSSNode(OssType ossType,String ossName,NeoService neo) {
+    public static Node findOrCreateOSSNode(OssType ossType,String ossName,GraphDatabaseService neo) {
         Node oss;
         Transaction tx = neo.beginTx();
         try {
@@ -314,7 +314,7 @@ public class LoaderUtils {
      * @param neo neoservice
      * @return Pair<cell_root node, last child or null if no child found>
      */
-    public static Pair<Node, Node> findOrCreateGPEHCellRootNode(Node ossRoot, NeoService neo) {
+    public static Pair<Node, Node> findOrCreateGPEHCellRootNode(Node ossRoot, GraphDatabaseService neo) {
         Transaction tx = neo.beginTx();
         try {
             Relationship relation = ossRoot.getSingleRelationship(GeoNeoRelationshipTypes.CELLS, Direction.OUTGOING);

@@ -9,13 +9,12 @@ import java.util.Random;
 
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
 import org.amanzi.neo.core.enums.RelationDeletableTypes;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.EmbeddedNeo;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
  * <p>
@@ -112,7 +111,7 @@ import org.neo4j.api.core.Transaction;
  */
 public class PropertyIndex<E extends Comparable<E>> {
     private String property;
-    private NeoService neo;
+    private GraphDatabaseService neo;
     private E origin;
     private ValueConverter<E> converter;
     private Node root;
@@ -439,7 +438,7 @@ public class PropertyIndex<E extends Comparable<E>> {
 
     }
 
-    public PropertyIndex(NeoService neo, Node reference, String name, String property, ValueConverter<E> converter, int step) {
+    public PropertyIndex(GraphDatabaseService neo, Node reference, String name, String property, ValueConverter<E> converter, int step) {
         if (neo == null)
             throw new IllegalArgumentException("Index NeoService must exist");
         if (property == null || property.length() < 1)
@@ -720,7 +719,7 @@ public class PropertyIndex<E extends Comparable<E>> {
         castAndFloorTests();
         Random random = new Random(0);
         SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
-        EmbeddedNeo neo = new EmbeddedNeo("../../testing/neo");
+        EmbeddedGraphDatabase neo = new EmbeddedGraphDatabase("../../testing/neo");
         MultiTimer timer = new MultiTimer("PropertyIndexTest");
         Transaction tx = neo.beginTx();
         try {

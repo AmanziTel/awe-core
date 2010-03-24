@@ -30,14 +30,15 @@ import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -68,7 +69,7 @@ public class GeoNeo {
     private CoordinateReferenceSystem crs;
     private ReferencedEnvelope bounds;
     private final String name;
-    private final org.neo4j.api.core.NeoService neo;
+    private final GraphDatabaseService neo;
     private final GisTypes types;
     private String propertyName;
     // private Integer propertyAdjacency;
@@ -173,7 +174,7 @@ public class GeoNeo {
      * 
      * @param gisNode
      */
-    public GeoNeo(org.neo4j.api.core.NeoService neo, Node gisNode) {
+    public GeoNeo(GraphDatabaseService neo, Node gisNode) {
         this.neo = neo;
         this.gisNode = gisNode;
         this.name = this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();

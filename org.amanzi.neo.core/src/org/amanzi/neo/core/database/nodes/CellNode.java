@@ -26,15 +26,14 @@ import org.amanzi.neo.core.enums.CellRelationTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.geotools.xml.xsi.XSISimpleTypes.Int;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * Wrapper of Spreadsheet Cell Node
@@ -335,7 +334,7 @@ public class CellNode extends AbstractNode {
     private class DependedNodesIterator extends AbstractIterator<CellNode> {
         
         public DependedNodesIterator() {
-            this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
+            this.iterator = node.traverse(Order.BREADTH_FIRST,
                                           StopEvaluator.DEPTH_ONE,
                                           ReturnableEvaluator.ALL_BUT_START_NODE,
                                           CellRelationTypes.REFERENCED,
@@ -356,7 +355,7 @@ public class CellNode extends AbstractNode {
     private class ReferencedNodesIterator extends AbstractIterator<CellNode> {
         
         public ReferencedNodesIterator() {
-            this.iterator = node.traverse(Traverser.Order.BREADTH_FIRST,
+            this.iterator = node.traverse(Order.BREADTH_FIRST,
                                           StopEvaluator.DEPTH_ONE,
                                           ReturnableEvaluator.ALL_BUT_START_NODE,
                                           CellRelationTypes.REFERENCED,
@@ -380,11 +379,9 @@ public class CellNode extends AbstractNode {
         public LoopDependencyIterator(CellNode endNode) {
             final Node end = endNode.getUnderlyingNode();
             
-            this.iterator = node.traverse(Traverser.Order.DEPTH_FIRST, 
+            this.iterator = node.traverse(Order.DEPTH_FIRST, 
                                           StopEvaluator.END_OF_GRAPH,
                                           new ReturnableEvaluator(){
-                                              
-                                            
                                               public boolean isReturnableNode(TraversalPosition arg0) {
                                                   if (arg0.depth() > 0) {
                                                       return arg0.currentNode().equals(end);

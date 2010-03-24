@@ -15,8 +15,8 @@ package org.amanzi.awe.views.neighbours;
 
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.swt.graphics.Color;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 /**
  * <p>

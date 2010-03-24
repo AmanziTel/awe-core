@@ -77,8 +77,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Traverser;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Traverser;
 
 /**
  * Dialog for Loading drive test data

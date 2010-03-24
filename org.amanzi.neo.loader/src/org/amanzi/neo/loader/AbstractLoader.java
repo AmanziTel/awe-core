@@ -60,14 +60,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PlatformUI;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser.Order;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public abstract class AbstractLoader {
@@ -79,7 +79,7 @@ public abstract class AbstractLoader {
     private static final String LOAD_NETWORK_MSG = "This network is already loaded into the database.\nDo you wish to overwrite the data?";
     protected Map<Integer, HeaderMaps> headersMap = new HashMap<Integer, HeaderMaps>();
     private String typeName = "CSV";
-    protected NeoService neo;
+    protected GraphDatabaseService neo;
     private NeoServiceProvider neoProvider;
     protected HashMap<String, GisProperties> gisNodes = new HashMap<String, GisProperties>();
     protected String filename = null;
@@ -508,7 +508,7 @@ public abstract class AbstractLoader {
      * @param fileName name of file to load
      * @param display Display to use for scheduling plugin lookups and message boxes, or null
      */
-    protected final void initialize(String typeString, NeoService neoService, String filenameString, Display display) {
+    protected final void initialize(String typeString, GraphDatabaseService neoService, String filenameString, Display display) {
         if (typeString != null && !typeString.isEmpty()) {
             this.typeName = typeString;
         }
@@ -518,7 +518,7 @@ public abstract class AbstractLoader {
         this.basename = (new File(filename)).getName();
     }
 
-    private void initializeNeo(NeoService neoService, Display display) {
+    private void initializeNeo(GraphDatabaseService neoService, Display display) {
         if (neoService == null) {
             // if Display is given than start Neo using syncExec
             if (display != null) {

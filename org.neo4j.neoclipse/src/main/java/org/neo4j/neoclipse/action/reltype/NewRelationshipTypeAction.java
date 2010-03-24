@@ -14,7 +14,7 @@
 package org.neo4j.neoclipse.action.reltype;
 
 import org.eclipse.jface.dialogs.InputDialog;
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.neoclipse.action.AbstractBaseAction;
 import org.neo4j.neoclipse.action.Actions;
 import org.neo4j.neoclipse.neo.NodeSpaceUtil;

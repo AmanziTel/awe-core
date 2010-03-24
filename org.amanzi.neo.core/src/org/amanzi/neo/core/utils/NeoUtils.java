@@ -52,17 +52,17 @@ import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.graphics.RGB;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.PropertyContainer;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 
 /**
@@ -137,7 +137,7 @@ public class NeoUtils {
      * @param node node
      * @return node name or empty string
      */
-    public static String getNodeName(Node node, NeoService service) {
+    public static String getNodeName(Node node, GraphDatabaseService service) {
         // String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
         // if (type.equals(INeoConstants.MP_TYPE_NAME)) {
         // return node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
@@ -173,7 +173,7 @@ public class NeoUtils {
      * @param defValue default value
      * @return node name or empty string
      */
-    public static String getSimpleNodeName(PropertyContainer node, String defValue, NeoService service) {
+    public static String getSimpleNodeName(PropertyContainer node, String defValue, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
@@ -279,7 +279,6 @@ public class NeoUtils {
         }
         Node root = NeoServiceProvider.getProvider().getService().getReferenceNode();
         Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node node = currentPos.currentNode();
@@ -295,7 +294,7 @@ public class NeoUtils {
      * @param gisName name of gis node
      * @return gis node or null
      */
-    public static Node findGisNode(final String gisName, final NeoService service) {
+    public static Node findGisNode(final String gisName, final GraphDatabaseService service) {
         if (gisName == null || gisName.isEmpty()) {
             return null;
         }
@@ -317,7 +316,7 @@ public class NeoUtils {
      * @param nodeName name of gis node
      * @return gis node or null
      */
-    public static Node findRootNode(final NodeTypes type, final String nodeName, final NeoService service) {
+    public static Node findRootNode(final NodeTypes type, final String nodeName, final GraphDatabaseService service) {
         if (nodeName == null || nodeName.isEmpty() || type == null) {
             return null;
         }
@@ -423,7 +422,7 @@ public class NeoUtils {
      * @param service NeoService
      * @return gis node or null
      */
-    public static Node findGisNodeByChild(Node childNode, NeoService service) {
+    public static Node findGisNodeByChild(Node childNode, GraphDatabaseService service) {
         Transaction tx = service.beginTx();
         try {
             Iterator<Node> gisIterator = childNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
@@ -493,7 +492,7 @@ public class NeoUtils {
      * @param name - Neighbour name
      * @return Neighbour node or null;
      */
-    public static Node findNeighbour(Node network, final String name, NeoService neo) {
+    public static Node findNeighbour(Node network, final String name, GraphDatabaseService neo) {
         if (network == null || name == null) {
             return null;
         }
@@ -783,7 +782,7 @@ public class NeoUtils {
      * @param neo - NeoService
      * @return Transmission node or null;
      */
-    public static Node findTransmission(Node network, final String name, NeoService neo) {
+    public static Node findTransmission(Node network, final String name, GraphDatabaseService neo) {
         if (network == null || name == null) {
             return null;
         }
@@ -838,9 +837,9 @@ public class NeoUtils {
      * @param neo - NeoService
      * @return SectorDriveRoot node
      */
-    public static Node findOrCreateSectorDriveRoot(Node root, NeoService service, boolean isNewTransaction) {
+    public static Node findOrCreateSectorDriveRoot(Node root, GraphDatabaseService service, boolean isNewTransaction) {
 
-        NeoService neo = isNewTransaction ? service : null;
+        GraphDatabaseService neo = isNewTransaction ? service : null;
         Transaction tx = beginTx(neo);
         try {
             Relationship relation = root.getSingleRelationship(NetworkRelationshipTypes.SECTOR_DRIVE, Direction.OUTGOING);
@@ -866,8 +865,8 @@ public class NeoUtils {
      * @param neo - neo service if null then transaction do not created
      * @return sector-drive node
      */
-    public static Node findOrCreateSectorDrive(String aDriveName, Node sectorDriveRoot, Node mpNode, NeoService service, boolean isNewTransaction) {
-        NeoService neo = isNewTransaction ? service : null;
+    public static Node findOrCreateSectorDrive(String aDriveName, Node sectorDriveRoot, Node mpNode, GraphDatabaseService service, boolean isNewTransaction) {
+        GraphDatabaseService neo = isNewTransaction ? service : null;
         Transaction tx = beginTx(neo);
         try {
             final Object idProperty = mpNode.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
@@ -910,7 +909,7 @@ public class NeoUtils {
      * @param parentNode parent node
      * @return Pair<is node was created?,child node>
      */
-    public static Pair<Boolean, Node> findOrCreateChildNode(NeoService service, Node parentNode, final String nodeName) {
+    public static Pair<Boolean, Node> findOrCreateChildNode(GraphDatabaseService service, Node parentNode, final String nodeName) {
         Transaction tx = beginTx(service);
         try {
             Traverser fileNodeTraverser = NeoUtils.getChildTraverser(parentNode);
@@ -942,7 +941,7 @@ public class NeoUtils {
      * @param parentNode parent node
      * @return Pair<is node was created?,child node>
      */
-    public static Pair<Boolean, Node> findOrCreateFileNode(NeoService service, Node parentNode, final String nodeName, final String fileName) {
+    public static Pair<Boolean, Node> findOrCreateFileNode(GraphDatabaseService service, Node parentNode, final String nodeName, final String fileName) {
         Transaction tx = beginTx(service);
         try {
             Pair<Boolean, Node> result = findOrCreateChildNode(service, parentNode, nodeName);
@@ -964,7 +963,7 @@ public class NeoUtils {
      * @param service NeoService
      * @return Traverser
      */
-    public static Traverser getLinkedNetworkTraverser(NeoService service) {
+    public static Traverser getLinkedNetworkTraverser(GraphDatabaseService service) {
         Transaction tx = service.beginTx();
         try {
             return service.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -1015,7 +1014,7 @@ public class NeoUtils {
      * @param service
      * @return Transaction if service present else null
      */
-    public static Transaction beginTx(NeoService service) {
+    public static Transaction beginTx(GraphDatabaseService service) {
         return service == null ? null : service.beginTx();
     }
 
@@ -1027,7 +1026,7 @@ public class NeoUtils {
      * @param service - neo service if null then transaction do not created
      * @return sector node or null if sector not found
      */
-    public static Node linkWithSector(Node networkGis, Node sectorDrive, NeoService service) {
+    public static Node linkWithSector(Node networkGis, Node sectorDrive, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             // TODO use index?
@@ -1070,7 +1069,7 @@ public class NeoUtils {
      * @param service - neo service if null then transaction do not created
      * @return list of all event of mp node
      */
-    public static Set<String> getEventsList(Node mpNode, NeoService service) {
+    public static Set<String> getEventsList(Node mpNode, GraphDatabaseService service) {
         // TODO store list of events in mp node
         Transaction tx = beginTx(service);
         try {
@@ -1135,7 +1134,7 @@ public class NeoUtils {
      * @param service neoservice if null then transaction do not created
      * @return pair of min and max timestamps
      */
-    public static Pair<Long, Long> getMinMaxTimeOfDataset(Node driveGisNode, NeoService service) {
+    public static Pair<Long, Long> getMinMaxTimeOfDataset(Node driveGisNode, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             Pair<Long, Long> pair = new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null), (Long)driveGisNode.getProperty(
@@ -1176,7 +1175,7 @@ public class NeoUtils {
      * @param probeName name of Probe
      * @return Probe node
      */
-    public static Node findOrCreateProbeNode(Node networkNode, final String probeName, final NeoService service) {
+    public static Node findOrCreateProbeNode(Node networkNode, final String probeName, final GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         Node result = null;
         try {
@@ -1217,7 +1216,7 @@ public class NeoUtils {
      * @param service Neo Serivce
      * @return a Probe Calls node for current dataset
      */
-    public static Node getCallsNode(Node datasetNode, String probesName, Node probesNode, NeoService service) {
+    public static Node getCallsNode(Node datasetNode, String probesName, Node probesNode, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         Node callsNode = null;
         try {
@@ -1260,7 +1259,7 @@ public class NeoUtils {
      * @param service Neo service
      * @return last Call node
      */
-    public static Node getLastCallFromProbeCalls(Node probeCallsNode, NeoService service) {
+    public static Node getLastCallFromProbeCalls(Node probeCallsNode, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         Node callNode = null;
         try {
@@ -1285,7 +1284,7 @@ public class NeoUtils {
      * @param service neoservice if null then transaction do not created
      * @return DriveTypes or null
      */
-    public static DriveTypes getDatasetType(Node datasetNode, NeoService service) {
+    public static DriveTypes getDatasetType(Node datasetNode, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             String typeId = (String)datasetNode.getProperty(INeoConstants.DRIVE_TYPE, null);
@@ -1305,7 +1304,7 @@ public class NeoUtils {
      * @param service neoservice can not be null
      * @return Map<node name,dataset node>
      */
-    public static LinkedHashMap<String, Node> getAllDatasetNodes(NeoService service) {
+    public static LinkedHashMap<String, Node> getAllDatasetNodes(GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         LinkedHashMap<String, Node> result = new LinkedHashMap<String, Node>();
         try {
@@ -1327,7 +1326,7 @@ public class NeoUtils {
         }
     }
 
-    public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, DriveTypes driveType, final NeoService neo) {
+    public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, DriveTypes driveType, final GraphDatabaseService neo) {
         Node virtualDataset = null;
         String realDatasetName = NeoUtils.getNodeName(realDatasetNode, neo);
         final String virtualDatasetName = driveType.getFullDatasetName(realDatasetName);
@@ -1362,7 +1361,7 @@ public class NeoUtils {
         return virtualDataset;
     }
 
-    public static Node createGISNode(Node parent, String gisName, String gisType, NeoService neo) {
+    public static Node createGISNode(Node parent, String gisName, String gisType, GraphDatabaseService neo) {
         Node gisNode = null;
 
         Transaction transaction = beginTx(neo);
@@ -1390,7 +1389,7 @@ public class NeoUtils {
      * @param service
      * @return
      */
-    public static LinkedHashMap<String, Node> getAllDatasetNodesByType(final DriveTypes datasetType, NeoService service) {
+    public static LinkedHashMap<String, Node> getAllDatasetNodesByType(final DriveTypes datasetType, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         LinkedHashMap<String, Node> result = new LinkedHashMap<String, Node>();
         try {
@@ -1476,7 +1475,7 @@ public class NeoUtils {
      * @param childNode child node
      * @return parent node or null
      */
-    public static Node getParent(NeoService service, Node childNode) {
+    public static Node getParent(GraphDatabaseService service, Node childNode) {
         Transaction tx = beginTx(service);
         try {
             Iterator<Node> parentIterator = childNode.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
@@ -1505,7 +1504,7 @@ public class NeoUtils {
      * @param service neoservice if null then transaction do not created
      * @return GisTypes or null
      */
-    public static GisTypes getGisType(Node gisNode, NeoService service) {
+    public static GisTypes getGisType(Node gisNode, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             String typeId = (String)gisNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "");
@@ -1522,7 +1521,7 @@ public class NeoUtils {
      * @param service neoservice if null then transaction do not created
      * @return location node or null
      */
-    public static Node getLocationNode(Node node, NeoService service) {
+    public static Node getLocationNode(Node node, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             return node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING) ? node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION,
@@ -1598,7 +1597,7 @@ public class NeoUtils {
      * @param service neoservice if null then transaction do not created
      * @return Pair<LATITUDE,LONGITUDE>
      */
-    public static Pair<Double, Double> getLocationPair(Node locationNode, NeoService service) {
+    public static Pair<Double, Double> getLocationPair(Node locationNode, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             Double lat = (Double)locationNode.getProperty(INeoConstants.PROPERTY_LAT_NAME, null);
@@ -1610,7 +1609,7 @@ public class NeoUtils {
         }
     }
 
-    public static void checkTransactionOnThread(NeoService service, String description) {
+    public static void checkTransactionOnThread(GraphDatabaseService service, String description) {
         service = service == null ? NeoServiceProvider.getProvider().getService() : service;
         Transaction tx = beginTx(service);
         addTransactionLog(tx, Thread.currentThread(), description);
@@ -1673,7 +1672,7 @@ public class NeoUtils {
         }
     }
 
-    public static Node findMultiPropertyIndex(final String indexName, final NeoService neoService) {
+    public static Node findMultiPropertyIndex(final String indexName, final GraphDatabaseService neoService) {
         Iterator<Node> indexNodes = neoService.getReferenceNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
             @Override
@@ -1706,7 +1705,7 @@ public class NeoUtils {
      * 
      * @param service-neoservice
      */
-    public static Collection<Node> getAllOss(NeoService service) {
+    public static Collection<Node> getAllOss(GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             return service.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -1726,7 +1725,7 @@ public class NeoUtils {
      * 
      * @param service-neoservice
      */
-    public static Collection<Node> getAllGpeh(NeoService service) {
+    public static Collection<Node> getAllGpeh(GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             return getAllReferenceChild(service, new ReturnableEvaluator() {
@@ -1747,7 +1746,7 @@ public class NeoUtils {
      * 
      * @param service-neoservice
      */
-    public static Traverser getAllReferenceChild(NeoService service, final ReturnableEvaluator evaluator) {
+    public static Traverser getAllReferenceChild(GraphDatabaseService service, final ReturnableEvaluator evaluator) {
         Transaction tx = beginTx(service);
         try {
             return service.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, evaluator, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
@@ -1765,7 +1764,7 @@ public class NeoUtils {
      *        should be= null)
      * @param neo - neoservice
      */
-    public static void addChild(Node mainNode, Node subNode, Node lastChild, NeoService neo) {
+    public static void addChild(Node mainNode, Node subNode, Node lastChild, GraphDatabaseService neo) {
         Transaction tx = beginTx(neo);
         try {
             if (lastChild == null) {
@@ -1790,7 +1789,7 @@ public class NeoUtils {
      * @param neo service
      * @return
      */
-    public static Node findLastChild(Node mainNode, NeoService neo) {
+    public static Node findLastChild(Node mainNode, GraphDatabaseService neo) {
         Transaction tx = beginTx(neo);
         try {
             Iterator<Node> iterator = getChildTraverser(mainNode, new ReturnableEvaluator() {
@@ -1812,7 +1811,7 @@ public class NeoUtils {
      * 
      * @param gis gis node
      */
-    public static Node findOrCreateNetworkNode(Node gisNode, String basename, String filename, NeoService neo) {
+    public static Node findOrCreateNetworkNode(Node gisNode, String basename, String filename, GraphDatabaseService neo) {
         Node network;
         Transaction tx = neo.beginTx();
         try {
@@ -1839,7 +1838,7 @@ public class NeoUtils {
      * @param service NeoService
      * @return filter root node
      */
-    public static Node findOrCreateFilterRootNode(NeoService service) {
+    public static Node findOrCreateFilterRootNode(GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             Node referenceNode = service.getReferenceNode();
@@ -1865,7 +1864,7 @@ public class NeoUtils {
      * @param name - name
      * @param service NeoService - if null then used current transaction
      */
-    public static void setNodeName(Node node, String name, NeoService service) {
+    public static void setNodeName(Node node, String name, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             if (name != null) {
@@ -1934,7 +1933,7 @@ public class NeoUtils {
      * @param rgb color
      * @param service - NeoService - if null, then transaction do not created
      */
-    public static void saveColor(Node node, String property, RGB rgb, NeoService service) {
+    public static void saveColor(Node node, String property, RGB rgb, GraphDatabaseService service) {
         if (node == null || property == null) {
             return;
         }
@@ -1964,7 +1963,7 @@ public class NeoUtils {
      * @param service - NeoService - if null, then transaction do not created
      * @return RGB
      */
-    public static RGB getColor(Node node, String property, RGB defaultColor, NeoService service) {
+    public static RGB getColor(Node node, String property, RGB defaultColor, GraphDatabaseService service) {
         if (node != null) {
             Transaction tx = beginTx(service);
             try {

@@ -14,10 +14,10 @@
 package org.amanzi.neo.core.enums;
 
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.PropertyContainer;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -70,7 +70,7 @@ public enum OssType {
      * @param service NeoService
      * @return type of node
      */
-    public static OssType getOssType(PropertyContainer networkGis, NeoService service) {
+    public static OssType getOssType(PropertyContainer networkGis, GraphDatabaseService service) {
         Transaction tx = service == null ? null : service.beginTx();
         try {
             return getEnumById((String)networkGis.getProperty(PROPERTY_NAME, null));
@@ -96,7 +96,7 @@ public enum OssType {
      * @param service NeoService
      * @return type of node
      */
-    public void setOssType(PropertyContainer container, NeoService service) {
+    public void setOssType(PropertyContainer container, GraphDatabaseService service) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             container.setProperty(PROPERTY_NAME, getId());

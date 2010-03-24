@@ -20,8 +20,8 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.neo4j.neoclipse.neo.NeoServiceManager;
 import org.neo4j.neoclipse.preference.NeoPreferenceHelper;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
@@ -91,7 +91,7 @@ public class Activator extends AbstractUIPlugin
      * showing appropriate error messages.
      * @return current neo service
      */
-    public NeoService getNeoServiceSafely()
+    public GraphDatabaseService getNeoServiceSafely()
     {
         NeoServiceManager sm = Activator.getDefault().getNeoServiceManager();
         if ( sm == null )
@@ -100,7 +100,7 @@ public class Activator extends AbstractUIPlugin
                 "The Neo service manager is not available." );
             return null;
         }
-        NeoService ns = null;
+        GraphDatabaseService ns = null;
         try
         {
             ns = sm.getNeoService();
@@ -153,7 +153,7 @@ public class Activator extends AbstractUIPlugin
      */
     public Node getReferenceNode()
     {
-        NeoService ns = getNeoServiceSafely();
+        GraphDatabaseService ns = getNeoServiceSafely();
         if ( ns == null )
         {
             return null;

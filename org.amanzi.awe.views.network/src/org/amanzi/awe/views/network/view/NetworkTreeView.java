@@ -107,16 +107,16 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.geotools.referencing.CRS;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -1419,7 +1419,7 @@ public class NetworkTreeView extends ViewPart {
                     int searchPerc = 15;
                     int calcPerc = 40;
                     int reportPerc = 40;
-                    NeoService neo = NeoServiceProvider.getProvider().getService();
+                    GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
                     Transaction tx = neo.beginTx();
                     try {
                         monitor.subTask("Preparing report");
@@ -1583,7 +1583,7 @@ public class NetworkTreeView extends ViewPart {
                     }
                 }
 
-                private Transaction commit(NeoService neo, Transaction tx) {
+                private Transaction commit(GraphDatabaseService neo, Transaction tx) {
                     tx.success();
                     tx.finish();
                     tx = neo.beginTx();
@@ -1610,7 +1610,7 @@ public class NetworkTreeView extends ViewPart {
         }
 
         private NeoNode makePreviousReport() {
-            NeoService neo = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
             Transaction tx = neo.beginTx();
             try {
                 reportNode = neo.createNode();

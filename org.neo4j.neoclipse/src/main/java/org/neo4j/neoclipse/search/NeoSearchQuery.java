@@ -25,10 +25,10 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
@@ -48,7 +48,7 @@ public class NeoSearchQuery implements ISearchQuery
      */
     private final NeoSearchResult result;
 
-    private NeoService neoService;
+    private GraphDatabaseService neoService;
 
     /**
      * The constructor.

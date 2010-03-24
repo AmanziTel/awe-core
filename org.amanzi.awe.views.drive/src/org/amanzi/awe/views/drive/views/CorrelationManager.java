@@ -72,16 +72,16 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 
 
 /**
@@ -107,7 +107,7 @@ public class CorrelationManager extends ViewPart {
     private Combo cNetwork;
     private Button bCorrelate;
     private TableViewer table;
-    private NeoService service = NeoServiceProvider.getProvider().getService();
+    private GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
     private LinkedHashMap<String, Node> gisDriveNodes = new LinkedHashMap<String, Node>();
     private LinkedHashMap<String, Node> gisNetworkNodes = new LinkedHashMap<String, Node>();
     private TableLabelProvider labelProvider;

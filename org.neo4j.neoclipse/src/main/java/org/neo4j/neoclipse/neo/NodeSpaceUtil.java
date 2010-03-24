@@ -20,11 +20,11 @@ import java.util.List;
 
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.PropertyContainer;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.property.NeoPropertySheetPage;
 import org.neo4j.neoclipse.property.PropertyTransform.PropertyHandler;
@@ -104,7 +104,7 @@ public class NodeSpaceUtil
             throw new IllegalArgumentException(
                 "Both soure and destination can not be null" );
         }
-        NeoService ns = Activator.getDefault().getNeoServiceSafely();
+        GraphDatabaseService ns = Activator.getDefault().getNeoServiceSafely();
         if ( ns == null )
         {
             return;

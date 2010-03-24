@@ -30,8 +30,8 @@ import org.amanzi.splash.ui.SplashPlugin;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * Class for creating Spreadsheets
@@ -59,7 +59,7 @@ public class SpreadsheetCreator {
     /*
      * Neo Service
      */
-    protected NeoService neoService;
+    protected GraphDatabaseService neoService;
     
     protected SpreadsheetService spreadsheetService;
     

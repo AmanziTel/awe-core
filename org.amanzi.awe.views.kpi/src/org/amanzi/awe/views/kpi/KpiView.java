@@ -71,11 +71,11 @@ import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.scope.ManyVarsDynamicScope;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
@@ -386,7 +386,7 @@ public class KpiView extends ViewPart {
     private String[] getAllDrive() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            NeoService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Node refNode = service.getReferenceNode();
             drives = new LinkedHashMap<String, Node>();
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
@@ -412,7 +412,7 @@ public class KpiView extends ViewPart {
     private String[] getAllNetworks() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            NeoService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Node refNode = service.getReferenceNode();
             networks = new LinkedHashMap<String, Node>();
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {

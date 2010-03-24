@@ -29,7 +29,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Transaction;
 
 import com.eteks.openjeks.format.CellFormat;
 

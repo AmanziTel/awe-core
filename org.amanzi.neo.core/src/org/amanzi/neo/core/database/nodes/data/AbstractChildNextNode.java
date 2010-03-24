@@ -18,10 +18,10 @@ import org.amanzi.neo.core.database.nodes.AbstractNode;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Traverser;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Traverser;
 
 /**
  * <p>
@@ -73,7 +73,8 @@ public abstract class AbstractChildNextNode extends AbstractNode {
      * @return next node or null
      */
     protected Node getNextNode() {
-        Relationship nextRelation = getUnderlyingNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        Relationship nextRelation = getUnderlyingNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction
+                .OUTGOING);
         return nextRelation == null ? null : nextRelation.getOtherNode(getUnderlyingNode());
     }
     /**

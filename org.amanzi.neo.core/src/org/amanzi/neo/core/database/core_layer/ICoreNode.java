@@ -13,7 +13,8 @@
 
 package org.amanzi.neo.core.database.core_layer;
 
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Node;
+
 
 /**
  * <p>

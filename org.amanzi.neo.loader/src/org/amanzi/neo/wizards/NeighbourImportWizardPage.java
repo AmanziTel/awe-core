@@ -33,11 +33,11 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -137,7 +137,7 @@ public class NeighbourImportWizardPage extends WizardPage {
     private String[] getGisItems() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            NeoService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Node refNode = service.getReferenceNode();
             members = new HashMap<String, Node>();
             String header = GisTypes.NETWORK.getHeader();

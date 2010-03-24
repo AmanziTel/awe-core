@@ -17,10 +17,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.NotFoundException;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.neoclipse.Activator;
+import org.neo4j.neoclipse.neo.NeoServiceEvent;
 
 /**
  * Keep track of browsing history and preserve states.
@@ -72,7 +73,7 @@ public class BrowserHistory
          */
         public Node getNode()
         {
-            NeoService neoService = Activator.getDefault()
+            GraphDatabaseService neoService = Activator.getDefault()
                 .getNeoServiceSafely();
             if ( neoService != null )
             {

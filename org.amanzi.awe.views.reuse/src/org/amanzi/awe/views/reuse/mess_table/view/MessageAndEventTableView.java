@@ -65,14 +65,14 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.ReturnableEvaluator;
-import org.neo4j.api.core.StopEvaluator;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.api.core.TraversalPosition;
-import org.neo4j.api.core.Traverser.Order;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * View for Message and Event tabular
@@ -482,7 +482,7 @@ public class MessageAndEventTableView extends ViewPart {
      * @return
      */
     private HashMap<String, DatasetInfo> initDatasetsInfo(){
-        NeoService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
         LinkedHashMap<String, Node> allDatasetNodes = NeoUtils.getAllDatasetNodes(service);
         HashMap<String, DatasetInfo> result = new HashMap<String, DatasetInfo>(allDatasetNodes.size());
         Transaction tx = service.beginTx();
@@ -548,7 +548,7 @@ public class MessageAndEventTableView extends ViewPart {
          * @param aDataset
          * @param service
          */
-        public DatasetInfo(Node aDataset, NeoService service) {
+        public DatasetInfo(Node aDataset, GraphDatabaseService service) {
             dataset = aDataset;
             type = DataTypes.getTypeByNode(dataset,service);
             initProperties();
@@ -837,7 +837,7 @@ public class MessageAndEventTableView extends ViewPart {
                     if(datasetInfo==null){
                         return Status.OK_STATUS;
                     }
-                    NeoService service = NeoServiceProvider.getProvider().getService();
+                    GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
                     Transaction tx = service.beginTx();            
                     try{
                         if (inputData != null) {
@@ -916,7 +916,7 @@ public class MessageAndEventTableView extends ViewPart {
          * @param childType NodeTypes
          * @return Iterator
          */
-        private Iterator<Node> getNodesByFilter(final NeoService service, final NodeTypes childType){
+        private Iterator<Node> getNodesByFilter(final GraphDatabaseService service, final NodeTypes childType){
             Node datasetNode = datasets.get(dataset).getDataset();
             Iterator<Node> result = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
                 

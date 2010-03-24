@@ -36,7 +36,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.PlatformUI;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Transaction;
 import org.rubypeople.rdt.core.RubyModelException;
 
 /**

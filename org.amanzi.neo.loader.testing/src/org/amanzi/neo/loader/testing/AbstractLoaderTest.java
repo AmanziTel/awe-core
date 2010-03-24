@@ -24,11 +24,11 @@ import java.util.ResourceBundle;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.neo4j.api.core.EmbeddedNeo;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.util.index.LuceneIndexService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.index.lucene.LuceneIndexService;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
  * Abstract class for testing neo loaders.
@@ -45,7 +45,7 @@ public abstract class AbstractLoaderTest {
 	public static final String BUNDLE_KEY_SEPERATOR = ",";
 	public static final String BUNDLE_KEY_TRUE = "1";
 	
-	private static EmbeddedNeo neo = null;
+	private static EmbeddedGraphDatabase neo = null;
 	protected static final String DATABASE_NAME = "neo_test";
 	protected static final String USER_HOME = "user.home";
 	protected static final String AMANZI_STR = ".amanzi";
@@ -60,9 +60,9 @@ public abstract class AbstractLoaderTest {
 	 * Gets neo service.
 	 * @return
 	 */
-	public static EmbeddedNeo getNeo(){
+	public static EmbeddedGraphDatabase getNeo(){
 		if (neo == null){
-			neo = new EmbeddedNeo(NeoTestPlugin.getDefault().getDatabaseLocationWithCheck());
+			neo = new EmbeddedGraphDatabase(NeoTestPlugin.getDefault().getDatabaseLocationWithCheck());
 		}
 		return neo;
 	}

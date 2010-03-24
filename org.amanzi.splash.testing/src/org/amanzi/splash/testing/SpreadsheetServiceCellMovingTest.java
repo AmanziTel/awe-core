@@ -34,8 +34,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.api.core.EmbeddedNeo;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import static org.junit.Assert.*;
 
@@ -80,7 +80,7 @@ public class SpreadsheetServiceCellMovingTest {
     
     
     private static String mainDirectoryName;
-    private static EmbeddedNeo neo;
+    private static EmbeddedGraphDatabase neo;
     private static AweProjectService projectService;
     
     private SpreadsheetNode spreadsheet;
@@ -90,9 +90,9 @@ public class SpreadsheetServiceCellMovingTest {
      * Gets neo service.
      * @return EmbeddedNeo
      */
-    public static EmbeddedNeo getNeo(){
+    public static EmbeddedGraphDatabase getNeo(){
         if (neo == null){
-            neo = new EmbeddedNeo(getDbDirectoryName());
+            neo = new EmbeddedGraphDatabase(getDbDirectoryName());
             NeoServiceProvider.initProvider(neo);
         }
         return neo;
