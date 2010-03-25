@@ -335,7 +335,7 @@ public class DIVrefactoring extends ViewPart {
         FormData dReport = new FormData();
         dReport.left = new FormAttachment(cPalette, 2);
         bReport.setLayoutData(dReport);
-        
+
         label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_start_time);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
@@ -343,7 +343,7 @@ public class DIVrefactoring extends ViewPart {
         GridData dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         dateStartlayoutData.minimumWidth = 75;
         dateStart.setLayoutData(dateStartlayoutData);
-        
+
         label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_length);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
@@ -415,6 +415,7 @@ public class DIVrefactoring extends ViewPart {
         cDrive.setItems(getDriveItems());
 
         formPropertyList();
+
         cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
 
         initializeIndex(cDrive.getText());
@@ -712,163 +713,171 @@ public class DIVrefactoring extends ViewPart {
                     return;
                 }
                 long domainCrosshairValue = (long)chart.getXYPlot().getDomainCrosshairValue();
-                if (domainCrosshairValue!=selectedTime){
-                    selectedTime=domainCrosshairValue;
-                    slider.setSelection((int)((selectedTime-beginGisTime)/SLIDER_STEP));
+                try{
+                if (domainCrosshairValue != selectedTime) {
+                    selectedTime = domainCrosshairValue;
+                    slider.setSelection((int)((selectedTime - beginGisTime) / SLIDER_STEP));
+                }
+                }catch (NullPointerException e) {
+                    e.printStackTrace();
+                    // TODO: debug
                 }
                 labelProvider.refreshTable();
                 table.setInput(0);
                 table.refresh();
             }
         });
-        bReport.addSelectionListener(new SelectionAdapter(){
+        bReport.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 generateReport();
             }
-            
+
         });
     }
-    
+
     private void generateReport() {
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTimeInMillis(beginGisTime);
         calendar.set(GregorianCalendar.HOUR_OF_DAY, dateStart.getHours());
         calendar.set(GregorianCalendar.MINUTE, dateStart.getMinutes());
         calendar.set(GregorianCalendar.SECOND, dateStart.getSeconds());
-        System.out.println("[DEBUG]calendar.getTimeInMillis()"+calendar.getTimeInMillis());// TODO delete debug info
-        
-      
+        System.out.println("[DEBUG]calendar.getTimeInMillis()" + calendar.getTimeInMillis());// TODO
+        // delete
+        // debug
+        // info
+
         final String TRAVERSE_NEXT_ALL = "traverse(:outgoing, :NEXT, :all)\n";
         final String TRAVERSE_CHILD_1 = "traverse(:outgoing, :CHILD, 1)\n";
-        //TODO fix when drive loader will be fixed
-//        Long start_time=(((dateStart.getHours()-2L)*60+dateStart.getMinutes())*60+dateStart.getSeconds())*1000;
-        Long start_time=calendar.getTimeInMillis();
-        Long end_time=start_time+sLength.getSelection()*60*1000;
-        if (selectedTime==null)
-            selectedTime=start_time;
-        Long delta_sec=2L;
-        Long delta_msec=delta_sec*1000;
-        
-//        System.out.println("time: "+dateStart.getHours()+":"+dateStart.getMinutes()+":"+dateStart.getSeconds());
-        StringBuffer sb = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(
-                System.getProperty("user.name")).append("'\n  date '")
-                .append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n  chart 'Drive ").append(cDrive.getText()).append("' do\n");
+        // TODO fix when drive loader will be fixed
+        // Long
+        // start_time=(((dateStart.getHours()-2L)*60+dateStart.getMinutes())*60+dateStart.getSeconds())*1000;
+        Long start_time = calendar.getTimeInMillis();
+        Long end_time = start_time + sLength.getSelection() * 60 * 1000;
+        if (selectedTime == null)
+            selectedTime = start_time;
+        Long delta_sec = 2L;
+        Long delta_msec = delta_sec * 1000;
+
+        // System.out.println("time: "+dateStart.getHours()+":"+dateStart.getMinutes()+":"+dateStart.getSeconds());
+        StringBuffer sb = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(System.getProperty("user.name")).append(
+                "'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n  chart 'Drive ").append(cDrive.getText()).append("' do\n");
         sb.append("    self.type=:time\n");
-  
-        //event dataset
-        sb.append("    select 'event dataset', :categories=>'timestamp', :values=>'event_type', :time_period=>:millisecond, :event=>'")
-        .append(cEvent.getText()).append("' do\n");
-//        sb.append("      from{\n");
+
+        // event dataset
+        sb.append("    select 'event dataset', :categories=>'timestamp', :values=>'event_type', :time_period=>:millisecond, :event=>'").append(cEvent.getText()).append(
+                "' do\n");
+        // sb.append("      from{\n");
         sb.append("      from{\n");
         sb.append("        ").append(TRAVERSE_CHILD_1);
         sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
         sb.append("      }\n");
         sb.append("      ").append(TRAVERSE_NEXT_ALL);
         sb.append("      stop{property? 'timestamp' and self[:timestamp]>").append(end_time).append("}\n");
-//        sb.append("      }\n");
-//        sb.append("      ").append(TRAVERSE_CHILD_1);
-        sb.append("      ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(end_time)
-        .append(" and self[:timestamp]>=").append(start_time).append(") and property? 'event_type'");
-        if (!cEvent.getText().equals(ALL_EVENTS)){
+        // sb.append("      }\n");
+        // sb.append("      ").append(TRAVERSE_CHILD_1);
+        sb.append("      ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(end_time).append(" and self[:timestamp]>=").append(start_time).append(
+                ") and property? 'event_type'");
+        if (!cEvent.getText().equals(ALL_EVENTS)) {
             sb.append(" and self[:event_type]=='").append(cEvent.getText()).append("'}\n");
-        }else{
+        } else {
             sb.append("}\n");
         }
         sb.append("    end\n");
-        //property datasets
+        // property datasets
         String prefix = "    select 'property datasets', :categories=>'timestamp', :values=>['";
 
-//        for(int i=0; i<currentPropertyCount; i++){
-//            sb.append(prefix)
-//            .append(cProperties.get(i).getText());
-//            prefix = "', '";
-//        }
-        for(String property : currentProperies){
+        // for(int i=0; i<currentPropertyCount; i++){
+        // sb.append(prefix)
+        // .append(cProperties.get(i).getText());
+        // prefix = "', '";
+        // }
+        for (String property : currentProperies) {
             sb.append(prefix).append(property);
             prefix = "', '";
         }
-        
+
         sb.append("'], :time_period=>:millisecond do\n");
         sb.append("      from{\n");
-//        sb.append("        from{\n");
+        // sb.append("        from{\n");
         sb.append("        ").append(TRAVERSE_CHILD_1);
         sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
         sb.append("        }\n");
         sb.append("        ").append(TRAVERSE_NEXT_ALL);
         sb.append("        stop{property? 'timestamp' and self[:timestamp]>").append(end_time).append("}\n");
-//        sb.append("      }\n");
-//        sb.append("      ").append(TRAVERSE_CHILD_1);
-        sb.append("      ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(end_time)
-        .append(" and self[:timestamp]>=").append(start_time);
+        // sb.append("      }\n");
+        // sb.append("      ").append(TRAVERSE_CHILD_1);
+        sb.append("      ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(end_time).append(" and self[:timestamp]>=").append(start_time);
         prefix = ") and (property? '";
-        
-//        for(int i=0; i<currentPropertyCount; i++){
-//            sb.append(prefix).append(cProperties.get(i).getText());
-//            prefix = "' or property? '";
-//        }
-        for(String property : currentProperies){
+
+        // for(int i=0; i<currentPropertyCount; i++){
+        // sb.append(prefix).append(cProperties.get(i).getText());
+        // prefix = "' or property? '";
+        // }
+        for (String property : currentProperies) {
             sb.append(prefix).append(property);
             prefix = "' or property? '";
         }
-        
+
         sb.append("')}\n");
         sb.append("    end\n");
-        sb.append("  end\n");//chart end
-        
-        //table
+        sb.append("  end\n");// chart end
+
+        // table
         sb.append("  table 'Drive table' do\n");
         prefix = "    select 'drive table data', :properties=>['id','type','time','timestamp', 'event_type', '";
-        
-//        for(int i=0; i<currentPropertyCount; i++){
-//            sb.append(prefix).append(cProperties.get(i).getText());
-//            prefix = "', '";
-//        }
-        for(String property : currentProperies){
+
+        // for(int i=0; i<currentPropertyCount; i++){
+        // sb.append(prefix).append(cProperties.get(i).getText());
+        // prefix = "', '";
+        // }
+        for (String property : currentProperies) {
             sb.append(prefix).append(property);
             prefix = "', '";
         }
-        
+
         sb.append("'] do\n");
         sb.append("      from{\n");
-//        sb.append("        from{\n");
+        // sb.append("        from{\n");
         sb.append("        ").append(TRAVERSE_CHILD_1);
         sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
         sb.append("      }\n");
         sb.append("      ").append(TRAVERSE_NEXT_ALL);
-        sb.append("      stop{property? 'timestamp' and self[:timestamp]>").append(selectedTime+delta_msec).append("}\n");
-//        sb.append("      }\n");
-//        sb.append("      ").append(TRAVERSE_CHILD_1);
-        sb.append("    ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(selectedTime+delta_msec)
-        .append(" and self[:timestamp]>=").append(selectedTime-delta_msec);
+        sb.append("      stop{property? 'timestamp' and self[:timestamp]>").append(selectedTime + delta_msec).append("}\n");
+        // sb.append("      }\n");
+        // sb.append("      ").append(TRAVERSE_CHILD_1);
+        sb.append("    ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(selectedTime + delta_msec).append(" and self[:timestamp]>=").append(
+                selectedTime - delta_msec);
         prefix = ") and (property? 'event_type' or property? '";
 
-//        for(int i=0; i<currentPropertyCount; i++){
-//            sb.append(prefix).append(cProperties.get(i).getText());
-//            prefix = "' or property? '";
-//        }
-        for(String property : currentProperies){
+        // for(int i=0; i<currentPropertyCount; i++){
+        // sb.append(prefix).append(cProperties.get(i).getText());
+        // prefix = "' or property? '";
+        // }
+        for (String property : currentProperies) {
             sb.append(prefix).append(property);
             prefix = "' or property? '";
         }
-        
+
         sb.append("')}\n");
         sb.append("    end\n");
         sb.append("  end\n");
         sb.append("end\n");
-        
-//        StringBuffer sb1 = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(
-//                System.getProperty("user.name")).append("'\n  date '")
-//                .append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n  chart '").append(cDrive.getText()).append("' do\n    self.drive='")
-//                .append(cDrive.getText()).append("'\n    self.event='")
-//                .append(cEvent.getText()).append("'\n    self.property1='")
-//                .append(cProperty1.getText()).append("'\n    self.property2='")
-//                .append(cProperty2.getText()).append("'\n    self.start_time='")
-//                .append(dateStart.getHours()).append(":").append(dateStart.getMinutes()).append(":").append(dateStart.getSeconds())
-//                .append("'\n    self.length='").append(sLength.getSelection()).append("'\n  end\nend");
-        
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];//TODO correct
+
+        // StringBuffer sb1 = new
+        // StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(
+        // System.getProperty("user.name")).append("'\n  date '")
+        // .append(new SimpleDateFormat("yyyy-MM-dd").format(new
+        // Date())).append("'\n  chart '").append(cDrive.getText()).append("' do\n    self.drive='")
+        // .append(cDrive.getText()).append("'\n    self.event='")
+        // .append(cEvent.getText()).append("'\n    self.property1='")
+        // .append(cProperty1.getText()).append("'\n    self.property2='")
+        // .append(cProperty2.getText()).append("'\n    self.start_time='")
+        // .append(dateStart.getHours()).append(":").append(dateStart.getMinutes()).append(":").append(dateStart.getSeconds())
+        // .append("'\n    self.length='").append(sLength.getSelection()).append("'\n  end\nend");
+
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];// TODO correct
         IFile file;
         int i = 0;
         while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
@@ -893,7 +902,7 @@ public class DIVrefactoring extends ViewPart {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
-    
+
     /**
      *change slider position
      */
@@ -903,26 +912,26 @@ public class DIVrefactoring extends ViewPart {
         XYPlot xyplot = (XYPlot)chart.getPlot();
         ValueAxis valueaxis = xyplot.getDomainAxis();
         Range range = valueaxis.getRange();
-        Double d = beginGisTime+ (i / (double)(slider.getMaximum()-slider.getMinimum())) * (endGisTime-beginGisTime);
-        selectedTime=d.longValue();
-        xyplot.setDomainCrosshairValue(selectedTime.doubleValue());       
-        double l = xyplot.getDomainCrosshairValue()-d;
+        Double d = beginGisTime + (i / (double)(slider.getMaximum() - slider.getMinimum())) * (endGisTime - beginGisTime);
+        selectedTime = d.longValue();
+        xyplot.setDomainCrosshairValue(selectedTime.doubleValue());
+        double l = xyplot.getDomainCrosshairValue() - d;
         Long beginTime = getBeginTime();
         int timeWindowLen = getLength();
-        Long endTime=beginTime + timeWindowLen;
-        if (selectedTime<beginTime||selectedTime>endTime){
-//            selectedTime=Math.min(endGisTime, selectedTime);
-//            selectedTime=Math.max(beginGisTime, selectedTime);
-            Long windowStartTime=selectedTime<beginTime?Math.max(beginGisTime, beginTime-timeWindowLen):Math.min(endGisTime, beginTime+timeWindowLen);
-            if (selectedTime<windowStartTime||selectedTime>windowStartTime+timeWindowLen){
-                windowStartTime= selectedTime;
+        Long endTime = beginTime + timeWindowLen;
+        if (selectedTime < beginTime || selectedTime > endTime) {
+            // selectedTime=Math.min(endGisTime, selectedTime);
+            // selectedTime=Math.max(beginGisTime, selectedTime);
+            Long windowStartTime = selectedTime < beginTime ? Math.max(beginGisTime, beginTime - timeWindowLen) : Math.min(endGisTime, beginTime + timeWindowLen);
+            if (selectedTime < windowStartTime || selectedTime > windowStartTime + timeWindowLen) {
+                windowStartTime = selectedTime;
             }
-           setBeginTime(windowStartTime);
-           updateChart();
+            setBeginTime(windowStartTime);
+            updateChart();
         }
-       chart.fireChartChanged();
+        chart.fireChartChanged();
     }
-    
+
     /**
      * get length from spin
      * 
@@ -931,7 +940,7 @@ public class DIVrefactoring extends ViewPart {
     private int getLength() {
         return sLength.getSelection() * 60 * 1000;
     }
-    
+
     /**
      * begin time-=length
      */
@@ -945,7 +954,7 @@ public class DIVrefactoring extends ViewPart {
             setBeginTime(time);
             updateChart();
         }
-    }    
+    }
 
     /**
      * go to left
@@ -960,7 +969,7 @@ public class DIVrefactoring extends ViewPart {
         }
 
     }
-    
+
     /**
      *go to previos gis node
      */
@@ -986,7 +995,6 @@ public class DIVrefactoring extends ViewPart {
         }
 
     }
-    
 
     /**
      *go to next gis node
@@ -1000,7 +1008,7 @@ public class DIVrefactoring extends ViewPart {
         cDrive.select(currentIndex);
         changeDrive();
     }
-    
+
     /**
      * Change time length
      */
@@ -1011,7 +1019,6 @@ public class DIVrefactoring extends ViewPart {
         updateChart();
         oldTimeLength = sLength.getSelection();
     }
-    
 
     /**
      * @return
@@ -1019,7 +1026,7 @@ public class DIVrefactoring extends ViewPart {
     private boolean isTimeLengthChanged() {
         return oldTimeLength == null || sLength.getSelection() != oldTimeLength;
     }
-    
+
     /**
      *change drive
      */
@@ -1036,6 +1043,7 @@ public class DIVrefactoring extends ViewPart {
         updateChart();
         oldStartTime = getBeginTime();
     }
+
     /**
      *Check changing start date
      * 
@@ -1044,6 +1052,7 @@ public class DIVrefactoring extends ViewPart {
     private boolean isStartDateChanged() {
         return oldStartTime == null || !getBeginTime().equals(oldStartTime);
     }
+
     /**
      * Sets time from datetime field
      */
@@ -1056,6 +1065,7 @@ public class DIVrefactoring extends ViewPart {
         dateStartTimestamp = cl.getTimeInMillis();
 
     }
+
     /**
      *
      */
@@ -1097,7 +1107,6 @@ public class DIVrefactoring extends ViewPart {
         }
         chart.fireChartChanged();
     }
-    
 
     /**
      *remove property from geo
@@ -1113,7 +1122,7 @@ public class DIVrefactoring extends ViewPart {
             geo.setProperty(GeoNeo.DRIVE_INQUIRER, null);
         }
     }
-    
+
     /**
      * Sets property in geo for necessary
      * 
@@ -1163,7 +1172,7 @@ public class DIVrefactoring extends ViewPart {
 
         geo.setProperty(GeoNeo.DRIVE_INQUIRER, map);
     }
-    
+
     /**
      * get id of selected ms node for property 2
      * 
@@ -1194,7 +1203,6 @@ public class DIVrefactoring extends ViewPart {
         }
     }
 
-
     /**
      *
      */
@@ -1216,9 +1224,8 @@ public class DIVrefactoring extends ViewPart {
             xyplot.setRangeAxisLocation(i, null);
         }
         xydatasets.clear();
-        
 
-        for (int i = 0; i < getCurrentPropertyCount(); i++) {
+        for (int i = 1; i <= getCurrentPropertyCount(); i++) {
             TimeDataset xydataset = new TimeDataset();
             StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
             standardxyitemrenderer.setBaseShapesFilled(true);
@@ -1231,7 +1238,7 @@ public class DIVrefactoring extends ViewPart {
             xyplot.setRangeAxisLocation(number, AxisLocation.BOTTOM_OR_LEFT);
             xyplot.mapDatasetToRangeAxis(number, number);
             xydatasets.add(xydataset);
-            
+
             ValueAxis axisNumeric = xyplot.getRangeAxis(i);
             LogarithmicAxis axisLog = new LogarithmicAxis(axisNumeric.getLabel());
             axisLog.setAllowNegativesFlag(true);
@@ -1246,14 +1253,14 @@ public class DIVrefactoring extends ViewPart {
             axisNumerics.add(axisNumeric);
             axisLogs.add(axisLog);
             xyplot.getRenderer(i).setSeriesPaint(0, color);
-            
+
             Integer length = sLength.getSelection();
             Long time = getBeginTime();
             Date date = new Date(time);
             domainAxis.setMinimumDate(date);
             domainAxis.setMaximumDate(new Date(time + length * 1000 * 60));
-            
-            String propertyName = currentProperies.get(i);
+
+            String propertyName = currentProperies.get(i-1);
             xydataset.updateDataset(propertyName, getBeginTime(), sLength.getSelection(), propertyName);
         }
     }
@@ -1278,10 +1285,10 @@ public class DIVrefactoring extends ViewPart {
         domainAxis.setMinimumDate(date);
         domainAxis.setMaximumDate(new Date(time + length * 1000 * 60));
 
-//        updateDatasets();
-//        if (xydatasets.size() < currentPropertyCount) {
-//            addDatasets();
-//        }
+        // updateDatasets();
+        // if (xydatasets.size() < currentPropertyCount) {
+        // addDatasets();
+        // }
 
         for (int i = 0; i < getCurrentPropertyCount(); i++) {
             TimeDataset xydataset = xydatasets.get(i);
@@ -1323,20 +1330,20 @@ public class DIVrefactoring extends ViewPart {
             cEvent.setItems(eventList.toArray(new String[0]));
             cEvent.select(0);
             String[] array = propertyHeader.getNumericFields();
-//            for(Combo property : cProperties){
-//                property.setItems(array);
-//                if(array.length > 0){
-//                    property.select(0);
-//                }
-//            }
+            // for(Combo property : cProperties){
+            // property.setItems(array);
+            // if(array.length > 0){
+            // property.select(0);
+            // }
+            // }
             initializeIndex(cDrive.getText());
             Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis, null);
             beginGisTime = minMax.getLeft();
             endGisTime = minMax.getRight();
-            selectedTime=beginGisTime;
-            slider.setMaximum((int)((endGisTime-beginGisTime)/SLIDER_STEP));
+            selectedTime = beginGisTime;
+            slider.setMaximum((int)((endGisTime - beginGisTime) / SLIDER_STEP));
             slider.setSelection(0);
-            selectedTime=beginGisTime;
+            selectedTime = beginGisTime;
             setBeginTime(beginGisTime);
             chart.getXYPlot().setDomainCrosshairValue(selectedTime);
 
@@ -1344,17 +1351,17 @@ public class DIVrefactoring extends ViewPart {
             tx.finish();
         }
     }
-   
+
     /**
      * set chart visible
      * 
      * @param visible - is visible?
      */
     private void setsVisible(boolean visible) {
-         chartFrame.setVisible(visible);
-         table.getControl().setVisible(visible);
-         buttonLine.setVisible(visible);
-         slider.setVisible(visible);
+        chartFrame.setVisible(visible);
+        table.getControl().setVisible(visible);
+        buttonLine.setVisible(visible);
+        slider.setVisible(visible);
     }
 
     /**
@@ -1401,7 +1408,7 @@ public class DIVrefactoring extends ViewPart {
     }
 
     private int getCurrentPropertyCount() {
-        return 0;
+        return currentProperies.size();
     }
 
     /**
@@ -1417,16 +1424,16 @@ public class DIVrefactoring extends ViewPart {
         dateStart.setMinutes(date.getMinutes());
         dateStart.setSeconds(date.getSeconds());
     }
-    
+
     /**
      * get begin time
      * 
      * @return Long
      */
-    
+
     @SuppressWarnings("deprecation")
     private Long getBeginTime() {
-        if(dateStartTimestamp == null){
+        if (dateStartTimestamp == null) {
             return null;
         }
         Date date = new Date(dateStartTimestamp);
@@ -1899,7 +1906,8 @@ public class DIVrefactoring extends ViewPart {
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
             NodeWrapper wr = provider.nodeWrapper;
-            if (columnIndex == 3 && wr.nEvents.get((Integer)element) != null) {
+            Integer index = (Integer)element;
+            if (columnIndex == 3 && wr.nEvents.size()>index && wr.nEvents.get(index) != null) {
                 Color eventColor = getEventColor(wr.nEvents.get((Integer)element));
                 return Glyph.palette(new Color[] {eventColor}).createImage();
             }
@@ -1908,29 +1916,52 @@ public class DIVrefactoring extends ViewPart {
 
         public void refreshTable() {
             Table tabl = table.getTable();
-            TableColumn col = getColumn(0);
-            col.setText("Time");
-            col.setWidth(DEF_SIZE);
-            col.setResizable(true);
+            TableViewerColumn column;
+            TableColumn col;
+            if (columns.isEmpty()) {
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("Time");
+                columns.add(col);
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
 
-            for (int i = 1; i <= getCurrentPropertyCount(); i++) {
-                col = getColumn(i);
-                col.setText(Messages.DriveInquirerView_label_property + (i));
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("events");
+                columns.add(col);
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
             }
-
-            col = getColumn(getCurrentPropertyCount() + 1);
-            col.setText("events");
-            columns.add(col);
-            col.setWidth(DEF_SIZE);
-            col.setResizable(true);
-            for (int i = getCurrentPropertyCount() + 1; i < getCurrentPropertyCount() + 1; i++) {
-                col = getColumn(i);
-                col.setText("");
+            int i = 0;
+            for (; i < getCurrentPropertyCount() && i < columns.size() - 2; i++) {
+                col = columns.get(i + 2);
+                // column = new TableViewerColumn(table, SWT.LEFT);
+                // col = column.getColumn();
+                // col.setText(Messages.DriveInquirerView_label_property + (i + 1));
+                col.setText(currentProperies.get(i));
+                // columns.add(col);
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
             }
+            if (getCurrentPropertyCount() > columns.size() - 2) {
+                for (; i < getCurrentPropertyCount(); i++) {
+                    column = new TableViewerColumn(table, SWT.LEFT);
+                    col = column.getColumn();
+                    col.setText(currentProperies.get(i));
+                    columns.add(col);
+                    col.setWidth(DEF_SIZE);
+                    col.setResizable(true);
+                }
+            } else if (getCurrentPropertyCount() < columns.size() - 2) {
+                i+=2;
+                for (; i < columns.size(); i++) {
+                    col = columns.get(i);
+                    col.setWidth(0);
+                    col.setResizable(false);
+                }
+            }
+
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
             table.setLabelProvider(this);
@@ -1961,7 +1992,26 @@ public class DIVrefactoring extends ViewPart {
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
 
-                for (int i = 0; i < getCurrentPropertyCount(); i++) {
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText("events");
+                columns.add(col);
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+            }
+            int i;
+            for (i = 0; i < getCurrentPropertyCount() && i < columns.size() - 2; i++) {
+                col = columns.get(i + 2);
+                // column = new TableViewerColumn(table, SWT.LEFT);
+                // col = column.getColumn();
+                col.setText(Messages.DriveInquirerView_label_property + (i + 1));
+                // columns.add(col);
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+            }
+            if (getCurrentPropertyCount() > columns.size() - 2) {
+                for (; i < getCurrentPropertyCount(); i++) {
+                    // col = columns.get(i+2);
                     column = new TableViewerColumn(table, SWT.LEFT);
                     col = column.getColumn();
                     col.setText(Messages.DriveInquirerView_label_property + (i + 1));
@@ -1969,15 +2019,16 @@ public class DIVrefactoring extends ViewPart {
                     col.setWidth(DEF_SIZE);
                     col.setResizable(true);
                 }
-
-                column = new TableViewerColumn(table, SWT.LEFT);
-                col = column.getColumn();
-                col.setText("events");
-                columns.add(col);
-                col.setWidth(DEF_SIZE);
-                col.setResizable(true);
-
+            } else if (getCurrentPropertyCount() < columns.size() - 2) {
+                for (; i < getCurrentPropertyCount(); i++) {
+                    col = columns.get(i + 2);
+                    // col.setText(Messages.DriveInquirerView_label_property + (i + 1));
+                    columns.add(col);
+                    col.setWidth(0);
+                    col.setResizable(false);
+                }
             }
+
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
             table.setLabelProvider(this);
@@ -1990,20 +2041,26 @@ public class DIVrefactoring extends ViewPart {
             int index = (Integer)element;
             SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
             if (columnIndex == 0) {
-                if(index>=wr.time.size()){
+                if (index >= wr.time.size()) {
                     return "";
                 }
                 Long time = wr.time.get(index);
                 return time == null ? "" : df.format(new Date(time));
             }
-            if (columnIndex <= getCurrentPropertyCount() && wr.nProperties.get(columnIndex - 1)[index] != null) {
-                return wr.nProperties.get(columnIndex - 1)[index].getProperty(wr.propertyNames.get(columnIndex - 1), "").toString();
-            }
-            if (columnIndex == getCurrentPropertyCount() + 1) {
-                if (index<wr.nEvents.size() && wr.nEvents.get(index) != null) {
+            if (columnIndex == 1) {
+                if (index < wr.nEvents.size() && wr.nEvents.get(index) != null) {
                     return wr.nEvents.get(index).getProperty(EVENT, "").toString();
                 }
+                return "";
             }
+            if (columnIndex <= getCurrentPropertyCount() + 1 && wr.nProperties.size() > columnIndex && wr.nProperties.get(columnIndex - 1)[index] != null) {
+                return wr.nProperties.get(columnIndex - 1)[index].getProperty(wr.propertyNames.get(columnIndex - 1), "").toString();
+            }
+            // if (columnIndex == getCurrentPropertyCount() + 1) {
+            // if (index < wr.nEvents.size() && wr.nEvents.get(index) != null) {
+            // return wr.nEvents.get(index).getProperty(EVENT, "").toString();
+            // }
+            // }
             return "";
         }
 
@@ -2034,39 +2091,44 @@ public class DIVrefactoring extends ViewPart {
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            // if (newInput == null) {
-            // return;
-            // }
-            // labelProvider.refreshTable();
-            // Double crosshair = ((XYPlot)chart.getPlot()).getDomainCrosshairValue();
-            // nodeWrapper.propertyNames.clear();
-            // nodeWrapper.propertyNames.addAll(propertyLists.get(cPropertyList.getText()));
-            // for(int i=0; i<getCurrentPropertyCount(); i++){
-            // nodeWrapper.propertyNames.add(cProperties.get(i).getText());
-            // changeName(labelProvider.columns.get(i+1), nodeWrapper.propertyNames.get(i));
-            // }
-            // nodeWrapper.eventName = cEvent.getText();
-            // changeName(labelProvider.columns.get(getCurrentPropertyCount()+1),
-            // nodeWrapper.eventName);
-            // for (int i = 0; i < 2; i++) {
-            // nodeWrapper.nEvents[i] = null;
-            // for(int j=0; j<getCurrentPropertyCount();j++){
-            // nodeWrapper.nProperties.get(j)[i] = null;
-            // }
-            // nodeWrapper.time[i] = null;
-            // }
-            // if (crosshair < 0.1) {
-            // return;
-            // }
-            // nodeWrapper.time.set(1, crosshair.longValue());
-            // nodeWrapper.time.set(0,getPreviousTime(nodeWrapper.time.get(1)));
-            // nodeWrapper.time.set(2,getNextTime(nodeWrapper.time.get(1)));
-            // for(int i=0; i<getCurrentPropertyCount(); i++){
-            // fillProperty(crosshair, xydatasets.get(i).collection, nodeWrapper.nProperties.get(i),
-            // nodeWrapper.time);
-            // }
-            // fillProperty(crosshair, eventDataset.collection, nodeWrapper.nEvents,
-            // nodeWrapper.time);
+            if (newInput == null || cPropertyList.getText().isEmpty()) {
+                return;
+            }
+            labelProvider.refreshTable();
+            Double crosshair = ((XYPlot)chart.getPlot()).getDomainCrosshairValue();
+            nodeWrapper.propertyNames.clear();
+            nodeWrapper.propertyNames.addAll(propertyLists.get(cPropertyList.getText()));
+            for (int i = 0; i < getCurrentPropertyCount(); i++) {
+                nodeWrapper.propertyNames.add(currentProperies.get(i));
+                changeName(labelProvider.columns.get(i + 2), nodeWrapper.propertyNames.get(i));
+            }
+            nodeWrapper.eventName = cEvent.getText();
+            changeName(labelProvider.columns.get(1), nodeWrapper.eventName);
+            
+            nodeWrapper.nEvents.clear();
+            nodeWrapper.time.clear();
+            nodeWrapper.nProperties.clear();
+//            for (int i = 0; i < 2; i++) {
+//                nodeWrapper.nEvents.remove(i);
+//                for (int j = 0; j < getCurrentPropertyCount(); j++) {
+//                    nodeWrapper.nProperties.get(j)[i] = null;
+//                }
+//                nodeWrapper.time.remove(i);
+//            }
+            if (crosshair < 0.1) {
+                return;
+            }
+            nodeWrapper.time.add(null);
+            nodeWrapper.time.add(crosshair.longValue());
+            nodeWrapper.time.set(0, getPreviousTime(nodeWrapper.time.get(1)));
+            nodeWrapper.time.add(getNextTime(nodeWrapper.time.get(1)));
+//            nodeWrapper.time.set(1, crosshair.longValue());
+//            nodeWrapper.time.set(0, getPreviousTime(nodeWrapper.time.get(1)));
+//            nodeWrapper.time.set(2, getNextTime(nodeWrapper.time.get(1)));
+            for (int i = 0; i < getCurrentPropertyCount(); i++) {
+//                fillProperty(crosshair, xydatasets.get(i).collection, nodeWrapper.nProperties.get(i), nodeWrapper.time.toArray(new Long[0]));
+            }
+//            fillProperty(crosshair, eventDataset.collection, nodeWrapper.nEvents.toArray(new Node[0]), nodeWrapper.time.toArray(new Long[0]));
 
         }
 
