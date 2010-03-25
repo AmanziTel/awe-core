@@ -58,6 +58,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
+import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -134,7 +136,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author Saelenchits_N
  * @since 1.0.0
  */
-public class DIVrefactoring extends ViewPart {
+public class DIVrefactoring extends ViewPart implements IPropertyChangeListener {
 
     private static final int MIN_FIELD_WIDTH = 50;
     private static final long SLIDER_STEP = 1000;// 1 sek
@@ -145,7 +147,7 @@ public class DIVrefactoring extends ViewPart {
     private static final String ALL_EVENTS = "all events";
 
     /** Color PROPERTY fields */
-    private static final Color[] PROPERTY_COLORS = new Color[] {Color.red, Color.black, Color.blue, Color.green, Color.magenta, Color.yellow};
+    private static final Color[] PROPERTY_COLORS = new Color[] {Color.black, Color.red, Color.green, Color.blue, Color.magenta, Color.yellow};
 
     private MultiPropertyIndex<Long> timestampIndex = null;
     private ArrayList<String> eventList;
@@ -174,6 +176,8 @@ public class DIVrefactoring extends ViewPart {
     private Button bLogarithmic;
     private Label lPalette;
     private Combo cPalette;
+    private Label lPropertyPalette;
+    private Combo cPropertyPalette;
     private Spinner sLength;
 
     private DateAxis domainAxis;
@@ -189,6 +193,7 @@ public class DIVrefactoring extends ViewPart {
     private Long dateStartTimestamp;
     private Long oldStartTime;
     private Integer oldTimeLength;
+    private String propertyListsConstantValue;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -206,7 +211,7 @@ public class DIVrefactoring extends ViewPart {
         fData.right = new FormAttachment(100, -2);
 
         child.setLayoutData(fData);
-        final GridLayout layout = new GridLayout(10, false);
+        final GridLayout layout = new GridLayout(12, false);
         child.setLayout(layout);
         Label label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_drive);
@@ -307,6 +312,7 @@ public class DIVrefactoring extends ViewPart {
         lLogarithmic.setText(LOG_LABEL);
         bLogarithmic = new Button(buttonLine, SWT.CHECK);
         bLogarithmic.setSelection(false);
+
         lPalette = new Label(buttonLine, SWT.NONE);
         lPalette.setText(PALETTE_LABEL);
         cPalette = new Combo(buttonLine, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -355,6 +361,12 @@ public class DIVrefactoring extends ViewPart {
         timeLenlayoutData.minimumWidth = 45;
         sLength.setLayoutData(timeLenlayoutData);
 
+        lPropertyPalette = new Label(child, SWT.NONE);
+        lPropertyPalette.setText(PALETTE_LABEL);
+        cPropertyPalette = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cPropertyPalette.setItems(PlatformGIS.getColorBrewer().getPaletteNames());
+        cPropertyPalette.select(0);
+
         setsVisible(false);
 
         init();
@@ -386,22 +398,22 @@ public class DIVrefactoring extends ViewPart {
         axisNumerics = new ArrayList<ValueAxis>(0);
         axisLogs = new ArrayList<LogarithmicAxis>(0);
         xyplot.getRenderer(0).setSeriesPaint(0, new Color(0, 0, 0, 0));
-        for (int i = 0; i < getCurrentPropertyCount(); i++) {
-            ValueAxis axisNumeric = xyplot.getRangeAxis(i);
-            LogarithmicAxis axisLog = new LogarithmicAxis(axisNumeric.getLabel());
-            axisLog.setAllowNegativesFlag(true);
-            axisLog.setAutoRange(true);
-
-            Color color = getColorForProperty(i);
-            axisLog.setTickLabelPaint(color);
-            axisLog.setLabelPaint(color);
-            axisNumeric.setTickLabelPaint(color);
-            axisNumeric.setLabelPaint(color);
-
-            axisNumerics.add(axisNumeric);
-            axisLogs.add(axisLog);
-            xyplot.getRenderer(i).setSeriesPaint(0, color);
-        }
+        // for (int i = 0; i < getCurrentPropertyCount(); i++) {
+        // ValueAxis axisNumeric = xyplot.getRangeAxis(i);
+        // LogarithmicAxis axisLog = new LogarithmicAxis(axisNumeric.getLabel());
+        // axisLog.setAllowNegativesFlag(true);
+        // axisLog.setAutoRange(true);
+        //
+        // Color color = getColorForProperty(i);
+        // axisLog.setTickLabelPaint(color);
+        // axisLog.setLabelPaint(color);
+        // axisNumeric.setTickLabelPaint(color);
+        // axisNumeric.setLabelPaint(color);
+        //
+        // axisNumerics.add(axisNumeric);
+        // axisLogs.add(axisLog);
+        // xyplot.getRenderer(i).setSeriesPaint(0, color);
+        // }
 
         return jfreechart;
 
@@ -411,6 +423,7 @@ public class DIVrefactoring extends ViewPart {
      *
      */
     private void init() {
+        NeoLoaderPlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
         addListeners();
         cDrive.setItems(getDriveItems());
 
@@ -468,7 +481,12 @@ public class DIVrefactoring extends ViewPart {
     }
 
     private Color getColorForProperty(int propNum) {
-        return PROPERTY_COLORS[propNum];
+        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalette(cPropertyPalette.getText());
+        Color[] colors = palette.getColors(palette.getMaxColors());
+        int index = (colors.length * propNum) / Math.max(1, getCurrentPropertyCount());
+        Color color = colors[index];
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
+        // return PROPERTY_COLORS[propNum];
     }
 
     /**
@@ -502,8 +520,8 @@ public class DIVrefactoring extends ViewPart {
      */
     private void formPropertyList() {
         propertyLists.clear();
-        String val = getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS);
-        String[] lists = val.split(DataLoadPreferences.CRS_DELIMETERS);
+        propertyListsConstantValue = getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS);
+        String[] lists = propertyListsConstantValue.split(DataLoadPreferences.CRS_DELIMETERS);
         if (lists.length > 1 && lists.length % 2 != 0) {
             displayErrorMessage("Exception while parsing property lists data");
         }
@@ -693,6 +711,19 @@ public class DIVrefactoring extends ViewPart {
                 widgetSelected(e);
             }
         });
+        cPropertyPalette.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updatePropertyList();
+
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         slider.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -713,14 +744,9 @@ public class DIVrefactoring extends ViewPart {
                     return;
                 }
                 long domainCrosshairValue = (long)chart.getXYPlot().getDomainCrosshairValue();
-                try{
                 if (domainCrosshairValue != selectedTime) {
                     selectedTime = domainCrosshairValue;
                     slider.setSelection((int)((selectedTime - beginGisTime) / SLIDER_STEP));
-                }
-                }catch (NullPointerException e) {
-                    e.printStackTrace();
-                    // TODO: debug
                 }
                 labelProvider.refreshTable();
                 table.setInput(0);
@@ -1229,14 +1255,13 @@ public class DIVrefactoring extends ViewPart {
             TimeDataset xydataset = new TimeDataset();
             StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
             standardxyitemrenderer.setBaseShapesFilled(true);
-            int number = i;
-            xyplot.setDataset(number, xydataset);
-            xyplot.setRenderer(number, standardxyitemrenderer);
+            xyplot.setDataset(i, xydataset);
+            xyplot.setRenderer(i, standardxyitemrenderer);
             NumberAxis numberaxis = new NumberAxis(getPropertyYAxisName(i));
             numberaxis.setAutoRangeIncludesZero(false);
-            xyplot.setRangeAxis(number, numberaxis);
-            xyplot.setRangeAxisLocation(number, AxisLocation.BOTTOM_OR_LEFT);
-            xyplot.mapDatasetToRangeAxis(number, number);
+            xyplot.setRangeAxis(i, numberaxis);
+            xyplot.setRangeAxisLocation(i, AxisLocation.BOTTOM_OR_LEFT);
+            xyplot.mapDatasetToRangeAxis(i, i);
             xydatasets.add(xydataset);
 
             ValueAxis axisNumeric = xyplot.getRangeAxis(i);
@@ -1244,7 +1269,7 @@ public class DIVrefactoring extends ViewPart {
             axisLog.setAllowNegativesFlag(true);
             axisLog.setAutoRange(true);
 
-            Color color = getColorForProperty(i);
+            Color color = getColorForProperty(i - 1);
             axisLog.setTickLabelPaint(color);
             axisLog.setLabelPaint(color);
             axisNumeric.setTickLabelPaint(color);
@@ -1254,14 +1279,15 @@ public class DIVrefactoring extends ViewPart {
             axisLogs.add(axisLog);
             xyplot.getRenderer(i).setSeriesPaint(0, color);
 
-            Integer length = sLength.getSelection();
-            Long time = getBeginTime();
-            Date date = new Date(time);
-            domainAxis.setMinimumDate(date);
-            domainAxis.setMaximumDate(new Date(time + length * 1000 * 60));
+            // Integer length = sLength.getSelection();
+            // Long time = getBeginTime();
+            // Date date = new Date(time);
+            // domainAxis.setMinimumDate(date);
+            // domainAxis.setMaximumDate(new Date(time + length * 1000 * 60));
 
-            String propertyName = currentProperies.get(i-1);
-            xydataset.updateDataset(propertyName, getBeginTime(), sLength.getSelection(), propertyName);
+            // String propertyName = currentProperies.get(i-1);
+            // xydataset.updateDataset(propertyName, getBeginTime(), sLength.getSelection(),
+            // propertyName);
         }
     }
 
@@ -1269,7 +1295,9 @@ public class DIVrefactoring extends ViewPart {
      *update chart
      */
     private void updateChart() {
-        if (cDrive.getText().isEmpty()) {
+        // try {
+        if (cDrive.getText().isEmpty() || cPropertyList.getText().isEmpty()) {
+            setsVisible(false);
             return;
         }
         Node gis = getGisDriveNode();
@@ -1284,26 +1312,30 @@ public class DIVrefactoring extends ViewPart {
         Date date = new Date(time);
         domainAxis.setMinimumDate(date);
         domainAxis.setMaximumDate(new Date(time + length * 1000 * 60));
-
-        // updateDatasets();
-        // if (xydatasets.size() < currentPropertyCount) {
-        // addDatasets();
-        // }
-
         for (int i = 0; i < getCurrentPropertyCount(); i++) {
-            TimeDataset xydataset = xydatasets.get(i);
-            String property = currentProperies.get(i);
-            xydataset.updateDataset(property, time, length, property);
+            try {
+                TimeDataset xydataset = xydatasets.get(i);
+                String property = currentProperies.get(i);
+                xydataset.updateDataset(property, time, length, property);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // TODO: handle exception
+            }
         }
         eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
         setsVisible(true);
         fireEventUpdateChart();
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // // TODO: handle exception
+        // }
     }
 
     /**
      *change drive dataset
      */
     private void changeDrive() {
+        System.out.println("changeDrive() called");
         if (cDrive.getSelectionIndex() < 0) {
             setsVisible(false);
         } else {
@@ -1907,7 +1939,7 @@ public class DIVrefactoring extends ViewPart {
         public Image getColumnImage(Object element, int columnIndex) {
             NodeWrapper wr = provider.nodeWrapper;
             Integer index = (Integer)element;
-            if (columnIndex == 3 && wr.nEvents.size()>index && wr.nEvents.get(index) != null) {
+            if (columnIndex == 3 && wr.nEvents.size() > index && wr.nEvents.get(index) != null) {
                 Color eventColor = getEventColor(wr.nEvents.get((Integer)element));
                 return Glyph.palette(new Color[] {eventColor}).createImage();
             }
@@ -1954,7 +1986,7 @@ public class DIVrefactoring extends ViewPart {
                     col.setResizable(true);
                 }
             } else if (getCurrentPropertyCount() < columns.size() - 2) {
-                i+=2;
+                i += 2;
                 for (; i < columns.size(); i++) {
                     col = columns.get(i);
                     col.setWidth(0);
@@ -2048,13 +2080,13 @@ public class DIVrefactoring extends ViewPart {
                 return time == null ? "" : df.format(new Date(time));
             }
             if (columnIndex == 1) {
-                if (index < wr.nEvents.size() && wr.nEvents.get(index) != null) {
+                if (index < wr.nEvents.size()) {
                     return wr.nEvents.get(index).getProperty(EVENT, "").toString();
                 }
                 return "";
             }
-            if (columnIndex <= getCurrentPropertyCount() + 1 && wr.nProperties.size() > columnIndex && wr.nProperties.get(columnIndex - 1)[index] != null) {
-                return wr.nProperties.get(columnIndex - 1)[index].getProperty(wr.propertyNames.get(columnIndex - 1), "").toString();
+            if (columnIndex < getCurrentPropertyCount() + 2 && (columnIndex - 2) < wr.nProperties.size() && wr.nProperties.get(columnIndex - 2)[index] != null) {
+                return wr.nProperties.get(columnIndex - 2)[index].getProperty(wr.propertyNames.get(columnIndex - 2), "").toString();
             }
             // if (columnIndex == getCurrentPropertyCount() + 1) {
             // if (index < wr.nEvents.size() && wr.nEvents.get(index) != null) {
@@ -2063,7 +2095,6 @@ public class DIVrefactoring extends ViewPart {
             // }
             return "";
         }
-
     }
 
     /*
@@ -2075,7 +2106,7 @@ public class DIVrefactoring extends ViewPart {
 
     private class TableContentProvider implements IStructuredContentProvider {
 
-        private final NodeWrapper nodeWrapper = new NodeWrapper();
+        private NodeWrapper nodeWrapper = new NodeWrapper();
 
         public TableContentProvider() {
         }
@@ -2094,6 +2125,8 @@ public class DIVrefactoring extends ViewPart {
             if (newInput == null || cPropertyList.getText().isEmpty()) {
                 return;
             }
+            nodeWrapper = new NodeWrapper();
+
             labelProvider.refreshTable();
             Double crosshair = ((XYPlot)chart.getPlot()).getDomainCrosshairValue();
             nodeWrapper.propertyNames.clear();
@@ -2104,17 +2137,18 @@ public class DIVrefactoring extends ViewPart {
             }
             nodeWrapper.eventName = cEvent.getText();
             changeName(labelProvider.columns.get(1), nodeWrapper.eventName);
-            
+
             nodeWrapper.nEvents.clear();
             nodeWrapper.time.clear();
-            nodeWrapper.nProperties.clear();
-//            for (int i = 0; i < 2; i++) {
-//                nodeWrapper.nEvents.remove(i);
-//                for (int j = 0; j < getCurrentPropertyCount(); j++) {
-//                    nodeWrapper.nProperties.get(j)[i] = null;
-//                }
-//                nodeWrapper.time.remove(i);
-//            }
+            // nodeWrapper.nProperties.clear();
+
+            // for (int i = 0; i < 2; i++) {
+            // nodeWrapper.nEvents.remove(i);
+            // for (int j = 0; j < getCurrentPropertyCount(); j++) {
+            // nodeWrapper.nProperties.get(j)[i] = null;
+            // }
+            // nodeWrapper.time.remove(i);
+            // }
             if (crosshair < 0.1) {
                 return;
             }
@@ -2122,13 +2156,13 @@ public class DIVrefactoring extends ViewPart {
             nodeWrapper.time.add(crosshair.longValue());
             nodeWrapper.time.set(0, getPreviousTime(nodeWrapper.time.get(1)));
             nodeWrapper.time.add(getNextTime(nodeWrapper.time.get(1)));
-//            nodeWrapper.time.set(1, crosshair.longValue());
-//            nodeWrapper.time.set(0, getPreviousTime(nodeWrapper.time.get(1)));
-//            nodeWrapper.time.set(2, getNextTime(nodeWrapper.time.get(1)));
+            // nodeWrapper.time.set(1, crosshair.longValue());
+            // nodeWrapper.time.set(0, getPreviousTime(nodeWrapper.time.get(1)));
+            // nodeWrapper.time.set(2, getNextTime(nodeWrapper.time.get(1)));
             for (int i = 0; i < getCurrentPropertyCount(); i++) {
-//                fillProperty(crosshair, xydatasets.get(i).collection, nodeWrapper.nProperties.get(i), nodeWrapper.time.toArray(new Long[0]));
+                fillProperty(crosshair, xydatasets.get(i).collection, nodeWrapper.nProperties.get(i), nodeWrapper.time.toArray(new Long[0]));
             }
-//            fillProperty(crosshair, eventDataset.collection, nodeWrapper.nEvents.toArray(new Node[0]), nodeWrapper.time.toArray(new Long[0]));
+            fillProperty(crosshair, eventDataset.collection, nodeWrapper.nEvents.toArray(new Node[0]), nodeWrapper.time.toArray(new Long[0]));
 
         }
 
@@ -2176,6 +2210,15 @@ public class DIVrefactoring extends ViewPart {
             for (int i = 0; i < getCurrentPropertyCount(); i++) {
                 nProperties.add(new Node[3]);
             }
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (propertyListsConstantValue != getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS)) {
+            formPropertyList();
+            cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
+            updatePropertyList();
         }
     }
 

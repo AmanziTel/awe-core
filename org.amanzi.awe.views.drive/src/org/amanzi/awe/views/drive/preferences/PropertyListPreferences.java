@@ -15,8 +15,6 @@ package org.amanzi.awe.views.drive.preferences;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -400,18 +398,21 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         propertyLists.addAll(newPropertyLists);
         propertyLists.add(new RowWr("", ""));
         
-        Collections.sort(propertyLists, new Comparator<RowWr>() {
-            @Override
-            public int compare(RowWr arg0, RowWr arg1) {
-                if(arg0.getListName().isEmpty() && arg0.getProperties().isEmpty() && (!arg1.getListName().isEmpty() || !arg1.getProperties().isEmpty())){
-                    return -1;
-                }else if(arg1.getListName().isEmpty() && arg1.getProperties().isEmpty() && (!arg0.getListName().isEmpty() || !arg0.getProperties().isEmpty())){
-                    return 1;
-                }
-                return 0;
-//            return arg0.getListName().compareTo(arg1.getListName());
-            }
-            });
+
+        // Collections.sort(propertyLists, new Comparator<RowWr>() {
+        // @Override
+        // public int compare(RowWr arg0, RowWr arg1) {
+        // if(arg0.getListName().isEmpty() && arg0.getProperties().isEmpty() &&
+        // (!arg1.getListName().isEmpty() || !arg1.getProperties().isEmpty())){
+        // return -1;
+        // }else if(arg1.getListName().isEmpty() && arg1.getProperties().isEmpty() &&
+        // (!arg0.getListName().isEmpty() || !arg0.getProperties().isEmpty())){
+        // return 1;
+        // }
+        // return 0;
+        // // return arg0.getListName().compareTo(arg1.getListName());
+        // }
+        // });
         
         viewer.setInput("");
     }
