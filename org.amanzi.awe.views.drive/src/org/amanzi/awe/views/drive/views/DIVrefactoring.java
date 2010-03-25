@@ -1283,11 +1283,11 @@ public class DIVrefactoring extends ViewPart {
 //            addDatasets();
 //        }
 
-//        for (int i = 0; i < getCurrentPropertyCount(); i++) {
-//            TimeDataset xydataset = xydatasets.get(i);
-//            String property = cProperties.get(i).getText();
-//            xydataset.updateDataset(property, time, length, property);
-//        }
+        for (int i = 0; i < getCurrentPropertyCount(); i++) {
+            TimeDataset xydataset = xydatasets.get(i);
+            String property = currentProperies.get(i);
+            xydataset.updateDataset(property, time, length, property);
+        }
         eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
         setsVisible(true);
         fireEventUpdateChart();
