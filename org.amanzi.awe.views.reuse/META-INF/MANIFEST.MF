@@ -6,7 +6,6 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.views.reuse.ReusePlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.core;bundle-version="1.0.0",
- org.neo4j.neoclipse;bundle-version="0.4.0",
  net.refractions.udig.project.ui;bundle-version="1.1.1",
  org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
  org.jfree;bundle-version="1.0.0",

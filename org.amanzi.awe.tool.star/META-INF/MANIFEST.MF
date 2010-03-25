@@ -12,6 +12,5 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.neo4j,
  org.neo4j.neoclipse;bundle-version="0.4.0",
- org.amanzi.gef;bundle-version="1.0.0",
- org.amanzi.awe.views.network;bundle-version="1.0.0"
+ org.amanzi.gef;bundle-version="1.0.0"
 Eclipse-LazyStart: false
