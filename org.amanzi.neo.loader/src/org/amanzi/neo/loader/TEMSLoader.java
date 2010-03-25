@@ -131,9 +131,6 @@ public class TEMSLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
-        // addHeaderFilters(new String[] {"time", "ms", "message_type", "event", ".*latitude",
-        // ".*longitude", ".*active_set.*1",
-        // ".*pilot_set.*"});
         addKnownHeader(1, "latitude", ".*latitude");
         addKnownHeader(1, "longitude", ".*longitude");
         addKnownHeader(1, "ms","MS");
@@ -174,8 +171,8 @@ public class TEMSLoader extends DriveLoader {
                 }
             }
         };
-        addMappedHeader(1, "all_rxlev_full","All-RxLev Full", "all_rx_lev_full", intMapper);
-        addMappedHeader(1, "all_rxlev_sub","All-RxLev Sub", "all_rx_lev_sub", intMapper);
+        addMappedHeader(1, "all_rxlev_full","All-RxLev Full", "all_rxlev_full", intMapper);
+        addMappedHeader(1, "all_rxlev_sub","All-RxLev Sub", "all_rxlev_sub", intMapper);
         addMappedHeader(1, "all_rxqual_full","All-RxQual Full", "all_rxqual_full", intMapper);
         addMappedHeader(1, "all_rxqual_sub","All-RxQual Sub", "all_rxqual_sub", intMapper);
         addMappedHeader(1, "all_sqi","All-SQI", "all_sqi", intMapper);
@@ -234,20 +231,10 @@ public class TEMSLoader extends DriveLoader {
         event = (String)lineData.get("event"); // currently only getting this as a change
 
         // marker
-        String message_type = (String)lineData.get("message_type"); // need this to filter for only
-        // relevant messages
-        // message_id = lineData.get("message_id"); // parsing this is not faster
-        if (!"EV-DO Pilot Sets Ver2".equals(message_type))
-            return;
+        String message_type = (String)lineData.get("message_type"); // need this to filter for only      
+        
         this.incValidMessage();
-        // return unless message_id == '27019' // not faster
-        // return unless message_id.to_i == 27019 // not faster
-
-        // TODO: Ignore lines with Event=~/Idle/ since these generally contain invalid All-RX-Power
-        // TODO: Also be careful of any All-RX-Power of -63 (since it is most often invalid data)
-        // TODO: If number of PN codes does not match number of EC-IO make sure to align correct
-        // values to PNs
-
+        
         Float latitude = (Float)lineData.get("latitude");
         Float longitude = (Float)lineData.get("longitude");
         if (time == null || latitude == null || longitude == null) {
@@ -266,6 +253,8 @@ public class TEMSLoader extends DriveLoader {
         }
         this.incValidLocation();
 
+        if (!"EV-DO Pilot Sets Ver2".equals(message_type))
+            return;
         int channel = 0;
         int pn_code = 0;
         int ec_io = 0;
@@ -324,7 +313,6 @@ public class TEMSLoader extends DriveLoader {
                     signals.get(chan_code)[1] += 1;
                 } catch (Exception e) {
                     error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage());
-                    // e.printStackTrace(System.err);
                 }
             }
         }
