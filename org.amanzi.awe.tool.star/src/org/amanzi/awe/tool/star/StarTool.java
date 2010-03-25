@@ -38,20 +38,17 @@ import net.refractions.udig.project.ui.render.displayAdapter.MapMouseEvent;
 import net.refractions.udig.project.ui.render.displayAdapter.ViewportPane;
 import net.refractions.udig.project.ui.tool.AbstractModalTool;
 
-import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -60,7 +57,6 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
-import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
 /**
  * Custom uDIG Map Tool for performing a 'star analysis'. This means it interacts with objects on
@@ -78,6 +74,7 @@ public class StarTool extends AbstractModalTool {
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     /** StarTool BLACKBOARD_CENTER_POINT field */
     public static final String BLACKBOARD_CENTER_POINT = "org.amanzi.awe.tool.star.StarTool.point";
+    public static final String START_TOOL_ID = "org.amanzi.awe.tool.star.StarTool";
     private static final int MAXIMUM_SELECT_LEN = 2500; // find sectors in 50x50 pixels
     private boolean dragging = false;
     private Point start = null;
@@ -375,34 +372,7 @@ public class StarTool extends AbstractModalTool {
         }
         Node nodeToSelect = NeoUtils.getNodeById(selectedPair.getRight());
 
-        IViewPart viewNetwork;
-        try {
-            viewNetwork = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
-                    NetworkTreeView.NETWORK_TREE_VIEW_ID);
-        } catch (PartInitException e) {
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
-            viewNetwork = null;
-        }
-        if (viewNetwork != null) {
-            NetworkTreeView networkView = (NetworkTreeView)viewNetwork;
-            networkView.selectNode(nodeToSelect);
-            // viewNetwork.setFocus();
-        }
-        IViewPart viewNeoGraph;
-        try {
-            viewNeoGraph = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NeoGraphViewPart.ID);
-        } catch (PartInitException e) {
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
-            viewNeoGraph = null;
-        }
-        if (viewNeoGraph != null) {
-            NeoGraphViewPart view = (NeoGraphViewPart)viewNeoGraph;
-            view.showNode(nodeToSelect);
-            final StructuredSelection selection = new StructuredSelection(new Object[] {nodeToSelect});
-            view.setFocus();
-            view.getViewer().setSelection(selection, true);
-
-        }
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodeToSelect, START_TOOL_ID));
         // sets focus
         // if (viewNetwork != null) {
         // viewNetwork.setFocus();

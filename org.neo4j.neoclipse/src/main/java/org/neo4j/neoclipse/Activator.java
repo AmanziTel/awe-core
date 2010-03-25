@@ -27,6 +27,8 @@ import org.neo4j.neoclipse.preference.NeoPreferenceHelper;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
 import org.osgi.framework.BundleContext;
 
+import com.sun.istack.internal.FinalArrayList;
+
 /**
  * The activator class controls the plug-in life cycle.
  */
@@ -227,6 +229,25 @@ public class Activator extends AbstractUIPlugin
                     return;
                 }
                 NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
+                viewGraph.refresh();
+            }
+        });
+
+    }
+    /**
+     *Updates NeoGraphView
+     */
+    public void updateNeoGraphView(final Node aNode) {
+        Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NeoGraphViewPart.ID);
+                if (view == null) {
+                    return;
+                }
+                NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
+                viewGraph.showNodeOnEvent(aNode);
                 viewGraph.refresh();
             }
         });

@@ -34,14 +34,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.project.ILayer;
-import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 import net.refractions.udig.ui.PlatformGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.report.editor.ReportEditor;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Select;
@@ -1221,26 +1219,12 @@ public class ReuseAnalyserView extends ViewPart {
         NeoServiceProvider.getProvider().commit();
         int adj = spinAdj.getSelection();
         Node columnNode = columnKey == null ? null : columnKey.getNode();
-        for (IMap activeMap : ApplicationGIS.getOpenMaps()) {
-            for (ILayer layer : activeMap.getMapLayers()) {
-                IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
-                if (resourse != null) {
-                    try {
-                        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-                        if (geo.getMainGisNode().equals(gisNode)) {
-                            int colInd = columnKey == null ? 0 : dataset.getColumnIndex(columnKey);
-                            int minInd = columnKey == null ? 0 : Math.max(colInd - adj, 0);
-                            int maxind = columnKey == null ? 0 : Math.min(colInd + adj, dataset.getColumnCount() - 1);
-                            geo.setPropertyToRefresh(aggrNode, columnNode,/* adj, */((ChartNode)dataset.getColumnKey(minInd))
-                                    .getNode(), ((ChartNode)dataset.getColumnKey(maxind)).getNode(), aggregatedProperties);
-                            layer.refresh(null);
-                        }
-                    } catch (IOException e) {
-                        throw (RuntimeException)new RuntimeException().initCause(e);
-                    }
-                }
-            }
-        }
+        int colInd = columnKey == null ? 0 : dataset.getColumnIndex(columnKey);
+        int minInd = columnKey == null ? 0 : Math.max(colInd - adj, 0);
+        int maxind = columnKey == null ? 0 : Math.min(colInd + adj, dataset.getColumnCount() - 1);
+        RefreshPropertiesEvent event = new RefreshPropertiesEvent(gisNode, aggregatedProperties, aggrNode,columnNode,((ChartNode)dataset.getColumnKey(minInd))
+                .getNode(), ((ChartNode)dataset.getColumnKey(maxind)).getNode());
+        NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
     }
 
     /**

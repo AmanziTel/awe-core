@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.NetworkFileType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.NeighbourLoader;
@@ -63,6 +64,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         NetworkSiteLoader networkSiteLoader = new NetworkSiteLoader(mainPage.getNetworkName(), mainPage.getFileName(), display);
                         networkSiteLoader.run(monitor);
                         networkSiteLoader.printStats(false);
+                        NetworkSiteLoader.sendUpdateEvent(UpdateViewEventType.GIS);
                         break;
                     case RADIO_SECTOR:
                         NetworkLoader networkLoader = new NetworkLoader(mainPage.getNetworkName(), mainPage.getFileName(), display);

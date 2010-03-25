@@ -12,7 +12,12 @@
  */
 package org.amanzi.neo.core.database.services;
 
-import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
+import org.amanzi.neo.core.database.listener.IUpdateViewListener;
+import org.amanzi.neo.core.database.listener.ShowViewListener;
+import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
+import org.amanzi.neo.core.database.services.events.ShowViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.SafeRunner;
@@ -24,16 +29,17 @@ import org.eclipse.core.runtime.SafeRunner;
  * 
  */
 // TODO create extension point?
-public class UpdateDatabaseManager {
+public class UpdateViewManager {
 
 	private ListenerList listeners = new ListenerList();
-
+	private IUpdateViewListener showViewListener = new ShowViewListener();
+	
 	/**
 	 * Adds new listener
 	 * 
 	 * @param listener
 	 */
-	public void addListener(IUpdateDatabaseListener listener) {
+	public void addListener(IUpdateViewListener listener) {
 		getListeners().add(listener);
 	}
 
@@ -42,7 +48,7 @@ public class UpdateDatabaseManager {
 	 * 
 	 * @param listener
 	 */
-	public void removeListener(IUpdateDatabaseListener listener) {
+	public void removeListener(IUpdateViewListener listener) {
 		getListeners().remove(listener);
 	}
 
@@ -60,7 +66,7 @@ public class UpdateDatabaseManager {
 			String fullCellID) {
 		UpdateDatabaseEvent event = new UpdateDatabaseEvent(rubyProjectName,
 				spreadSheetName, fullCellID);
-		fireUpdateDatabase(event);
+		fireUpdateView(event);
 
 	}
 
@@ -78,15 +84,18 @@ public class UpdateDatabaseManager {
      * 
      * @param event UpdateDatabaseEvent
      */
-    public void fireUpdateDatabase(final UpdateDatabaseEvent event) {
+    public void fireUpdateView(final UpdateViewEvent event) {
 		Object[] allListeners = getListeners().getListeners();
 		for (Object listener : allListeners) {
-			final IUpdateDatabaseListener singleListener = (IUpdateDatabaseListener) listener;
+			final IUpdateViewListener singleListener = (IUpdateViewListener) listener;
 			SafeRunner.run(new ISafeRunnable() {
 				@Override
                 public void run() throws Exception {
-                    if (singleListener.getType().contains(event.getType())) {
-                        singleListener.databaseUpdated(event);
+				    if(event instanceof ShowViewEvent){
+				        showViewListener.updateView(event);
+				    }
+				    else if (singleListener.getType().contains(event.getType())) {
+                        singleListener.updateView(event);
                     }
 				}
 
@@ -96,5 +105,29 @@ public class UpdateDatabaseManager {
 			});
 		}
 	}
+    
+    /**
+     * Fires <code>ShowPreparedViewEvent</code> to listeners.
+     * 
+     * @param event ShowPreparedViewEvent
+     */
+    public void fireShowPreparedView(final ShowPreparedViewEvent event) {
+        Object[] allListeners = getListeners().getListeners();
+        for (Object listener : allListeners) {
+            final IUpdateViewListener singleListener = (IUpdateViewListener) listener;
+            SafeRunner.run(new ISafeRunnable() {
+                @Override
+                public void run() throws Exception {
+                    if (singleListener.getType().contains(event.getType())) {
+                        singleListener.updateView(event);
+                    }
+                }
+
+                @Override
+                public void handleException(Throwable exception) {
+                }
+            });
+        }
+    }
 
 }

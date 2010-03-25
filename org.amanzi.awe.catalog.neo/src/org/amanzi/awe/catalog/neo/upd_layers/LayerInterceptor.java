@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.awe.catalog.neo;
+package org.amanzi.awe.catalog.neo.upd_layers;
 
 import java.io.IOException;
 
@@ -20,6 +20,7 @@ import net.refractions.udig.project.LayerEvent;
 import net.refractions.udig.project.LayerEvent.EventType;
 import net.refractions.udig.project.internal.Layer;
 
+import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;

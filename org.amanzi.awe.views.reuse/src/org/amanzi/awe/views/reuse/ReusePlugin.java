@@ -19,9 +19,9 @@ import java.util.HashSet;
 import org.amanzi.awe.views.reuse.mess_table.view.MessageAndEventTableView;
 import org.amanzi.awe.views.reuse.views.ReuseAnalyserView;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
+import org.amanzi.neo.core.database.listener.IUpdateViewListener;
+import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IViewPart;
@@ -32,12 +32,12 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class ReusePlugin extends AbstractUIPlugin implements IUpdateDatabaseListener {
-    private static final Collection<UpdateDatabaseEventType> handedTypes;
+public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener {
+    private static final Collection<UpdateViewEventType> handedTypes;
     static {
-        Collection<UpdateDatabaseEventType> spr = new HashSet<UpdateDatabaseEventType>();
-        spr.add(UpdateDatabaseEventType.GIS);
-        spr.add(UpdateDatabaseEventType.NEIGHBOUR);
+        Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
+        spr.add(UpdateViewEventType.GIS);
+        spr.add(UpdateViewEventType.NEIGHBOUR);
         handedTypes = Collections.unmodifiableCollection(spr);
     }
     /** String VIEW_ID field */
@@ -63,7 +63,7 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateDatabaseList
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-        NeoCorePlugin.getDefault().getUpdateDatabaseManager().addListener(this);
+        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
 	}
 
 	/*
@@ -73,7 +73,7 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateDatabaseList
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
-        NeoCorePlugin.getDefault().getUpdateDatabaseManager().removeListener(this);
+        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
 	}
 
 	/**
@@ -110,19 +110,19 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateDatabaseList
                 }
                 IViewPart tableView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(MESS_TABLE_VIEW_ID);
                 if (tableView != null) {
-                    ((MessageAndEventTableView )reuseView).updateDatasetNodes();
+                    ((MessageAndEventTableView )tableView).updateDatasetNodes();
                 }
             }
         }, true);
     }
 
     @Override
-    public void databaseUpdated(UpdateDatabaseEvent event) {
+    public void updateView(UpdateViewEvent event) {
         updateView();
     }
 
     @Override
-    public Collection<UpdateDatabaseEventType> getType() {
+    public Collection<UpdateViewEventType> getType() {
         return handedTypes;
     }
 

@@ -29,8 +29,9 @@ import net.refractions.udig.project.IMap;
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
+import org.amanzi.neo.core.database.services.events.ShowViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -50,7 +51,6 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -178,7 +178,26 @@ public class NetworkLoader extends AbstractLoader {
     public NetworkLoader(GraphDatabaseService neo, String filename) {
         initialize("Network", neo, filename, null);
         initializeKnownHeaders();
+        luceneInd = NeoServiceProvider.getProvider().getIndexService();
         addNetworkIndexes();
+    }
+    
+    /**
+     * Constructor for loading data in test mode, with no display and NeoService passed
+     * 
+     * @param neo database to load data into
+     * @param filename of file to load
+     * @param display
+     */
+    public NetworkLoader(GraphDatabaseService neo, String filename, LuceneIndexService indexService) {
+        initialize("Network", neo, filename, null);
+        initializeKnownHeaders();
+        addNetworkIndexes();
+        if(indexService==null){
+            luceneInd = NeoServiceProvider.getProvider().getIndexService();
+        }else{
+            luceneInd = indexService;
+        }
     }
 
     /**
@@ -219,7 +238,7 @@ public class NetworkLoader extends AbstractLoader {
         useMapper(1, "sector", new StringMapper());
 
         // Known headers that are sector data properties
-        addKnownHeader(1, "beamwidth", new String[] {".*beamwidth.*", "beam", "hbw"});
+        addKnownHeader(1, "beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
         addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
     }
 
@@ -304,17 +323,13 @@ public class NetworkLoader extends AbstractLoader {
 
     private void showNetworkTree() {
         // TODO: See if we need this event
-        NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
 
         // Lagutko, 21.07.2009, show NeworkTree
         ActionUtil.getInstance().runTask(new Runnable() {
             @Override
             public void run() {
-                try {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NetworkTreeView.NETWORK_TREE_VIEW_ID);
-                } catch (PartInitException e) {
-                    NeoCorePlugin.error(null, e);
-                }
+                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowViewEvent(NetworkTreeView.NETWORK_TREE_VIEW_ID));
             }
         }, false);
     }
@@ -528,7 +543,7 @@ public class NetworkLoader extends AbstractLoader {
                 gisProperties.updateBBox(latitude, longitude);
                 if (gisProperties.getCrs() == null) {
                     gisProperties.checkCRS(latitude, longitude, networkHeader.getCrsHint());
-                    if (gisProperties.getCrs() != null) {
+                    if (!isTest()&&gisProperties.getCrs() != null) {
                         CoordinateReferenceSystem crs = askCRSChoise(gisProperties);
                         if (crs != null) {
                             gisProperties.setCrs(crs);

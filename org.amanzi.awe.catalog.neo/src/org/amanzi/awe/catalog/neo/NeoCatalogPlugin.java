@@ -11,8 +11,17 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 package org.amanzi.awe.catalog.neo;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+
 import net.refractions.udig.catalog.internal.ui.CatalogView;
 
+import org.amanzi.awe.catalog.neo.upd_layers.LayerUpdateManager;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.listener.IUpdateViewListener;
+import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.ActionUtil;
@@ -22,13 +31,22 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServiceProviderListener {
+public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServiceProviderListener,IUpdateViewListener {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.amanzi.awe.mapgraphic.star";
 
     // The shared instance
     private static NeoCatalogPlugin plugin;
+    
+    private static final Collection<UpdateViewEventType> handedTypes;
+    static {
+        Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
+        spr.add(UpdateViewEventType.GIS);
+        handedTypes = Collections.unmodifiableCollection(spr);
+    }
 
+    private LayerUpdateManager layerManager;
+    
     /**
      * The constructor
      */
@@ -43,7 +61,8 @@ public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServicePro
         super.start(context);
         plugin = this;
         NeoServiceProvider.getProvider().addServiceProviderListener(this);
-
+        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+        layerManager = new LayerUpdateManager();
     }
 
     /*
@@ -54,6 +73,7 @@ public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServicePro
         plugin = null;
         super.stop(context);
         NeoServiceProvider.getProvider().removeServiceProviderListener(this);
+        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
     }
 
     /**
@@ -103,6 +123,23 @@ public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServicePro
 
     @Override
     public void onNeoStop(Object source) {
+    }
+
+    @Override
+    public void updateView(UpdateViewEvent event) {
+        updateCatalog();
+    }
+
+    @Override
+    public Collection<UpdateViewEventType> getType() {
+        return handedTypes;
+    }
+    
+    /**
+     * @return Returns the layerManager.
+     */
+    public LayerUpdateManager getLayerManager() {
+        return layerManager;
     }
 
 }

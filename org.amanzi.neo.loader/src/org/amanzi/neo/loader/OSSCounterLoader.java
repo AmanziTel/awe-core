@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -126,6 +127,12 @@ public class OSSCounterLoader extends AbstractLoader {
         } finally {
             commit(false);
         }
+    }
+    
+    @Override
+    protected void finishUp() {
+        super.finishUp();
+        sendUpdateEvent(UpdateViewEventType.OSS);
     }
 
     /**

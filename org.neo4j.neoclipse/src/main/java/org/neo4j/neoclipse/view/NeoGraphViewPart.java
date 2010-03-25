@@ -451,6 +451,13 @@ public class NeoGraphViewPart extends ViewPart implements
     {
         setInput( node );
     }
+    
+    public void showNodeOnEvent(Node node) {
+        showNode(node);
+        final StructuredSelection selection = new StructuredSelection(new Object[] {node});
+        getViewer().setSelection(selection, true);
+        setFocus();
+    }
 
     /**
      * Returns the current traversal depth.

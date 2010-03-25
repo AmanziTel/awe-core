@@ -27,8 +27,8 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -162,10 +162,10 @@ public class TransmissionLoader {
             tx.finish();
             header.finish();
             NeoServiceProvider.getProvider().commit();
-            NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
-                    new UpdateDatabaseEvent(UpdateDatabaseEventType.TRANSMISSION));
-            NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
-                    new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                    new UpdateDatabaseEvent(UpdateViewEventType.TRANSMISSION));
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                    new UpdateDatabaseEvent(UpdateViewEventType.GIS));
         }
 
     }

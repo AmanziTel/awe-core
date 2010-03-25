@@ -6,26 +6,24 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
-import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.views.calls.CallTimePeriods;
 import org.amanzi.awe.views.calls.ExportSpreadsheetWizard;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
+import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -44,7 +42,6 @@ import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
@@ -69,10 +66,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -84,7 +78,6 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
-import org.neo4j.neoclipse.view.NeoGraphViewPart;
 
 /**
  * <p>
@@ -447,43 +440,11 @@ public class CallAnalyserView extends ViewPart {
      */
     protected void select(final Node node) {
         //TODO refactor
-        IViewPart viewNetwork;
         InputWrapper wr = (InputWrapper)tableViewer.getInput();
-        StructuredSelection selection = new StructuredSelection(new Object[] {new StatisticSelectionNode(node, wr.periodNode)});
-        try {
-            viewNetwork = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(DRIVE_ID);
-        } catch (PartInitException e) {
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
-            viewNetwork = null;
-        }
-        try {
-            if (viewNetwork != null) {
-                Viewer networkView = (Viewer)viewNetwork.getSite().getSelectionProvider();
-                networkView.setSelection(selection, true);
-                // viewNetwork.setFocus();
-            }
-        } catch (Exception e1) {
-            // TODO Handle Exception
-            e1.printStackTrace();
-        }
-         selection = new StructuredSelection(new Object[] {node});
-        try {
-            IViewPart viewNeoGraph;
-            try {
-                viewNeoGraph = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NEOGRAPH_ID);
-            } catch (Exception e) {
-                NeoCorePlugin.error(e.getLocalizedMessage(), e);
-                viewNeoGraph = null;
-            }
-            if ((viewNeoGraph != null) && PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().isPartVisible(viewNeoGraph)) {
-                NeoGraphViewPart view = (NeoGraphViewPart)viewNeoGraph;                
-                view.showNode(node);
-                view.setFocus();
-                view.getViewSite().getSelectionProvider().setSelection(selection);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        List<Node> nodes = new ArrayList<Node>(2);
+        nodes.add(node);
+        nodes.add(wr.periodNode);
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodes,CallAnalyserView.ID));
         final Node drive = callDataset.get(cDrive.getText());
         Job job = new Job("SelectOnMap") {
 
@@ -549,30 +510,7 @@ public class CallAnalyserView extends ViewPart {
         Node gis = NeoUtils.findGisNodeByChild(drive);
         IMap activeMap = ApplicationGIS.getActiveMap();
         if (activeMap != ApplicationGIS.NO_MAP) {
-            try {
-                for (ILayer layer : activeMap.getMapLayers()) {
-                    IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
-                    if (resourse != null) {
-                        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-                        if (gis != null && geo.getMainGisNode().equals(gis)) {
-                            Set<Node> prevSel = geo.getSelectedNodes();
-                            if (!prevSel.equals(nodes)) {
-                                geo.setSelectedNodes(new HashSet<Node>(nodes));
-                                layer.refresh(null);
-                            }
-                        } else {
-                            Set<Node> prevSel = geo.getSelectedNodes();
-                            if (prevSel != null && !prevSel.isEmpty()) {
-                                geo.setSelectedNodes(new HashSet<Node>());
-                                layer.refresh(null);
-                            }
-                        }
-
-                    }
-                }
-            } catch (IOException e) {
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
+            NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new ChangeSelectionEvent(gis, nodes));
         }
     }
 

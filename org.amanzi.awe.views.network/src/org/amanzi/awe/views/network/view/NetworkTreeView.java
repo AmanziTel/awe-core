@@ -20,6 +20,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,10 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeLabelProvider;
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.upd_layers.events.AddSelectionEvent;
+import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.views.neighbours.views.NeighboursView;
 import org.amanzi.awe.views.neighbours.views.TransmissionView;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
@@ -49,6 +54,9 @@ import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.UpdateViewManager;
+import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -482,54 +490,18 @@ public class NetworkTreeView extends ViewPart {
      * @param node selected node
      */
     protected void showSelectionOnMap(NeoNode node) {
-        try {
-            IMap map = ApplicationGIS.getActiveMap();
-            if (map == ApplicationGIS.NO_MAP || node == null) {
-                return;
-            }
-            Node gis = getGisNode(node.getNode());
-            if (gis == null) {
-                return;
-            }
-            boolean presentFlag = false;
-            for (ILayer layer : map.getMapLayers()) {
-                IGeoResource resource = layer.findGeoResource(Node.class);
-                if (resource != null && gis.equals(resource.resolve(Node.class, null))) {
-                    presentFlag = true;
-                    break;
-                }
-            }
-            if (!presentFlag) {
-                return;
-            }
-            CoordinateReferenceSystem crs = null;
-            if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, "").toString().equalsIgnoreCase(("projected"))) {
-                autoZoom = false;
-            }
-            if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
-                crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
-            } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
-                URL crsURL = new URL(gis.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
-                crs = CRS.decode(crsURL.getContent().toString());
-            }
-            double[] c = getCoords(node.getNode());
-            if (c == null) {
-                return;
-            }
-            if (autoZoom) {
-                // TODO: Check that this works with all CRS
-                map.sendCommandASync(new net.refractions.udig.project.internal.command.navigation.SetViewportWidth(30000));
-                autoZoom = false; // only zoom first time, then rely on user to control zoom level
-            }
-            map.sendCommandASync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
-        } catch (NoSuchAuthorityCodeException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (MalformedURLException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (IOException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
+        Node gis = getGisNode(node.getNode());
+        UpdatePropertiesAndMapEvent event = new UpdatePropertiesAndMapEvent(gis, null, false);
+        event.setNeedCentered(true);
+        if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, "").toString().equalsIgnoreCase(("projected"))) {
+            autoZoom = false;
         }
-
+        event.setAutoZoom(autoZoom);
+        event.setCoords(getCoords(node.getNode()));
+        NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
+        if (autoZoom) {
+            autoZoom = false; // only zoom first time, then rely on user to control zoom level
+        }
     }
 
     /**
@@ -574,11 +546,7 @@ public class NetworkTreeView extends ViewPart {
      */
     private void showSelection(NeoNode nodeToSelect) {
         try {
-            IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NeoGraphViewPart.ID);
-            NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
-            viewGraph.showNode(nodeToSelect.getNode());
-            final StructuredSelection selection = new StructuredSelection(new Object[] {nodeToSelect.getNode()});
-            viewGraph.getViewer().setSelection(selection, true);
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodeToSelect.getNode(), NetworkTreeView.NETWORK_TREE_VIEW_ID));
             showThisView();
         } catch (Exception e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -653,8 +621,7 @@ public class NetworkTreeView extends ViewPart {
      * @since 1.0.0
      */
     private final class NetworkSelectionListener implements ISelectionChangedListener {
-        private List<ILayer> layers = new ArrayList<ILayer>();
-
+        
         @SuppressWarnings("unchecked")
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
@@ -664,108 +631,38 @@ public class NetworkTreeView extends ViewPart {
             }
             ITreeSelection selected = (ITreeSelection)event.getSelection();
             Iterator iterator = selected.iterator();
-            layers = findAllNetworkLayers();
-            if (layers.isEmpty()) {
-                return;
-            };
-            dropLayerSelection(layers);
+            Set<Node> selection = new HashSet<Node>();
             while (iterator.hasNext()) {
                 NeoNode selectedNode = (NeoNode)iterator.next();
-                addNodeToSelect(selectedNode);
-            }
-            for (ILayer singleLayer : layers) {
-                singleLayer.refresh(null);
-            }
-        }
-
-        /**
-         * Drop selection in layers
-         * 
-         * @param list of layers
-         */
-        private void dropLayerSelection(List<ILayer> layers) {
-            try {
-                for (ILayer singleLayer : layers) {
-                    GeoNeo resource = singleLayer.findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
-                    resource.setSelectedNodes(null);
+                if(needAddNodeToSelect(selectedNode)){
+                    selection.add(selectedNode.getNode());
                 }
-            } catch (IOException e) {
-                // TODO Handle IOException
-                throw (RuntimeException)new RuntimeException().initCause(e);
             }
-        }
+            NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new ChangeSelectionEvent(null, selection));
+        }        
 
         /**
          * Add selected node
          * 
          * @param selectedNode - selected node
          */
-        private void addNodeToSelect(NeoNode selectedNode) {
-            try {
-                if (selectedNode == null) {
-                    return;
-                }
-                String nodeType = selectedNode.getType();
-                if (NodeTypes.SITE.getId().equals(nodeType) || NodeTypes.SECTOR.getId().equals(nodeType)
-                        || NodeTypes.CITY.getId().equals(nodeType)
-                        || NodeTypes.BSC.getId().equals(nodeType) || NodeTypes.DELTA_NETWORK.getId().equals(nodeType)
-                        || NodeTypes.DELTA_SITE.getId().equals(nodeType) || NodeTypes.DELTA_SECTOR.getId().equals(nodeType) || NodeTypes.MISSING_SITES.getId().equals(nodeType)
-                        || NodeTypes.MISSING_SECTORS.getId().equals(nodeType) || NodeTypes.MISSING_SITE.getId().equals(nodeType)
-                        || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.M.getId().equalsIgnoreCase(nodeType)
-                        || NodeTypes.PROBE.getId().equalsIgnoreCase(nodeType)
-                        || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
-                        || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType)
-                        || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType)) {
-                    for (ILayer singleLayer : layers) {
-                        GeoNeo resource = singleLayer.findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
-                        if (containsGisNode(resource, selectedNode)) {
-                            resource.addNodeToSelect(selectedNode.getNode());
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                // TODO Handle IOException
-                throw (RuntimeException)new RuntimeException().initCause(e);
+        private boolean needAddNodeToSelect(NeoNode selectedNode) {
+            if (selectedNode == null) {
+                return false;
             }
+            String nodeType = selectedNode.getType();
+            return NodeTypes.SITE.getId().equals(nodeType) || NodeTypes.SECTOR.getId().equals(nodeType)
+                    || NodeTypes.CITY.getId().equals(nodeType)
+                    || NodeTypes.BSC.getId().equals(nodeType) || NodeTypes.DELTA_NETWORK.getId().equals(nodeType)
+                    || NodeTypes.DELTA_SITE.getId().equals(nodeType) || NodeTypes.DELTA_SECTOR.getId().equals(nodeType) || NodeTypes.MISSING_SITES.getId().equals(nodeType)
+                    || NodeTypes.MISSING_SECTORS.getId().equals(nodeType) || NodeTypes.MISSING_SITE.getId().equals(nodeType)
+                    || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.M.getId().equalsIgnoreCase(nodeType)
+                    || NodeTypes.PROBE.getId().equalsIgnoreCase(nodeType)
+                    || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
+                    || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType)
+                    || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType);
         }
 
-        /**
-         * checks if node is part of GIS tree
-         * 
-         * @param gisNode - gis node
-         * @param selectedNode - selected node
-         * @return now this method always return true, because expenses for check at present are not
-         *         justified
-         */
-        private boolean containsGisNode(GeoNeo gisNode, NeoNode selectedNode) {
-            return true;
-        }
-
-        /**
-         * find all layers, that contains network gis node
-         * 
-         * @return
-         */
-        private List<ILayer> findAllNetworkLayers() {
-            List<ILayer> result = new ArrayList<ILayer>();
-            for (IMap activeMap : ApplicationGIS.getOpenMaps()) {
-                for (ILayer layer : activeMap.getMapLayers()) {
-                    IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
-                    if (resourse != null) {
-                        try {
-                            GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-                            if (geo != null /* &&geo.getGisType() == GisTypes.Network */) {
-                                result.add(layer);
-                            }
-                        } catch (IOException e) {
-                            // TODO Handle IOException
-                            throw (RuntimeException)new RuntimeException().initCause(e);
-                        }
-                    }
-                }
-            }
-            return result;
-        }
     }
 
     /**
@@ -793,29 +690,6 @@ public class NetworkTreeView extends ViewPart {
                     NetworkTreeView.this.viewer.refresh();
                 }
             });
-        }
-    }
-
-    /**
-     * Returns layer, that contains necessary gis node
-     * 
-     * @param map map
-     * @param gisNode gis node
-     * @return layer or null
-     */
-    public static ILayer findLayerByNode(IMap map, Node gisNode) {
-        try {
-            for (ILayer layer : map.getMapLayers()) {
-                IGeoResource resource = layer.findGeoResource(GeoNeo.class);
-                if (resource != null && resource.resolve(GeoNeo.class, null).getMainGisNode().equals(gisNode)) {
-                    return layer;
-                }
-            }
-            return null;
-        } catch (IOException e) {
-            // TODO Handle IOException
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -920,7 +794,8 @@ public class NetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
-            IViewPart transmissionView;
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(TransmissionView.ID,getInputNodes(selection)));
+            /*IViewPart transmissionView;
             try {
                 transmissionView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
                         TransmissionView.ID);
@@ -930,7 +805,7 @@ public class NetworkTreeView extends ViewPart {
             }
             if (transmissionView != null) {
                 ((TransmissionView)transmissionView).setInput(getInputNodes(selection));
-            }
+            }*/
         }
 
     }
@@ -975,23 +850,7 @@ public class NetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
-            ActionUtil.getInstance().runTask(new Runnable() {
-
-                @Override
-                public void run() {
-                    IViewPart neighbourView;
-                    try {
-                        neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
-                                NeighboursView.ID);
-                    } catch (PartInitException e) {
-                        NeoCorePlugin.error(e.getLocalizedMessage(), e);
-                        neighbourView = null;
-                    }
-                    if (neighbourView != null) {
-                        ((NeighboursView)neighbourView).setInput(getInputNodes(selection));
-                    }
-                }
-            }, true);
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(NeighboursView.ID,getInputNodes(selection)));
         }
 
         /**

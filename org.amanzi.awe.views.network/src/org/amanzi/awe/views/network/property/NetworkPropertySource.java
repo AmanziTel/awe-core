@@ -12,26 +12,17 @@
  */
 package org.amanzi.awe.views.network.property;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.project.ILayer;
-import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.ui.ApplicationGIS;
-
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.views.network.proxy.NeoNode;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
@@ -140,54 +131,8 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
      *updates layer
      */
     private void updateLayer() {
-        final IMap map = ApplicationGIS.getActiveMap();
-        if (map == ApplicationGIS.NO_MAP) {
-            return;
-        }
-        Job job = new Job("update layers") {
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "updateLayer");
-                try {
-                    Node gisNode = NeoUtils.findGisNodeByChild((Node)container);
-                    if (gisNode != null) {
-                        ILayer layer = findLayerByNode(map, gisNode);
-                        if (layer != null) {
-                            layer.refresh(null);
-                        }
-                    }
-                    return Status.OK_STATUS;
-                } finally {
-                    tx.finish();
-                }
-            }
-
-        };
-        job.schedule();
+        Node gisNode = NeoUtils.findGisNodeByChild((Node)container);
+        NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));
     }
 
-    // TODO move to utility class
-    /**
-     *Returns layer, that contains necessary gis node
-     * 
-     * @param map map
-     * @param gisNode gis node
-     * @return layer or null
-     */
-    public static ILayer findLayerByNode(IMap map, Node gisNode) {
-        try {
-            for (ILayer layer : map.getMapLayers()) {
-                IGeoResource resource = layer.findGeoResource(Node.class);
-                if (resource != null && resource.resolve(Node.class, null).equals(gisNode)) {
-                    return layer;
-                }
-            }
-            return null;
-        } catch (IOException e) {
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
-            return null;
-        }
-    }
 }

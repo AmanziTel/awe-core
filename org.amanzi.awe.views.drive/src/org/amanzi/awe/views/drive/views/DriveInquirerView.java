@@ -30,8 +30,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.ui.PlatformGIS;
@@ -39,6 +37,8 @@ import net.refractions.udig.ui.graphics.Glyph;
 
 import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GisTypes;
@@ -1257,52 +1257,13 @@ public class DriveInquirerView extends ViewPart {
         IMap activeMap = ApplicationGIS.getActiveMap();
         Node gis = getGisDriveNode();
         if (activeMap != ApplicationGIS.NO_MAP) {
-            try {
-                for (ILayer layer : activeMap.getMapLayers()) {
-                    IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
-                    if (resourse != null) {
-                        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-                        if (gis != null && geo.getMainGisNode().equals(gis)) {
-                            setProperty(geo);
-                            layer.refresh(null);
-                        } else {
-                            dropProperty(geo);
-                        }
-
-                    }
-                }
-            } catch (IOException e) {
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
+            NeoCatalogPlugin.getDefault().getLayerManager()
+                .sendUpdateMessage(new UpdatePropertiesEvent(gis, getValueForProperty(), true));
         }
         chart.fireChartChanged();
     }
 
-    /**
-     *remove property from geo
-     * 
-     * @param geo
-     */
-    private void dropProperty(GeoNeo geo) {
-        if (geo.getGisType() != GisTypes.DRIVE) {
-            return;
-        }
-        Object map = geo.getProperties(GeoNeo.DRIVE_INQUIRER);
-        if (map != null) {
-            geo.setProperty(GeoNeo.DRIVE_INQUIRER, null);
-        }
-    }
-
-    /**
-     * Sets property in geo for necessary
-     * 
-     * @param geo
-     */
-    private void setProperty(GeoNeo geo) {
-        Node gisNode = getGisDriveNode();
-        if (!geo.getMainGisNode().equals(gisNode)) {
-            return;
-        }
+    private HashMap<String, Object> getValueForProperty() {
         HashMap<String, Object> map = new HashMap<String, Object>();
         Long beginTime = getBeginTime();
         map.put(GeoConstant.Drive.BEGIN_TIME, beginTime);
@@ -1339,8 +1300,9 @@ public class DriveInquirerView extends ViewPart {
         map.put(GeoConstant.SELECTED_EVENT, cEvent.getText());
         map.put(GeoConstant.EVENT_LIST, Collections.unmodifiableList(eventList));
         map.put(GeoConstant.Drive.SELECT_PALETTE, cPalette.getText());
-
-        geo.setProperty(GeoNeo.DRIVE_INQUIRER, map);
+        HashMap<String, Object> result = new HashMap<String, Object>(1);
+        result.put(GeoNeo.DRIVE_INQUIRER, map);
+        return result;
     }
 
     /**

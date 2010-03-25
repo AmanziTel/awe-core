@@ -16,9 +16,10 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
+import org.amanzi.neo.core.database.listener.IUpdateViewListener;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
@@ -61,11 +62,11 @@ import org.eclipse.ui.part.ShowInContext;
 
 public class SplashResourceEditor extends AbstractSplashEditor implements
 		IResourceChangeListener, IShowInSource, IShowInTargetList,
-		IUpdateDatabaseListener {
-    private static final Collection<UpdateDatabaseEventType> handedTypes;
+		IUpdateViewListener {
+    private static final Collection<UpdateViewEventType> handedTypes;
     static {
-        Collection<UpdateDatabaseEventType> spr = new HashSet<UpdateDatabaseEventType>();
-        spr.add(UpdateDatabaseEventType.Spreadsheet);
+        Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
+        spr.add(UpdateViewEventType.Spreadsheet);
         handedTypes = Collections.unmodifiableCollection(spr);
     }
 	private IFile createNewFile(String message) throws CoreException {	    
@@ -126,7 +127,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 	    super.dispose();	    
 		NeoServiceProvider.getProvider().removeServiceProviderListener(this);
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-		NeoCorePlugin.getDefault().getUpdateDatabaseManager().removeListener(this);
+		NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
 		NeoSplashUtil.logn("Closing the spreadsheet");
 
 	}
@@ -155,7 +156,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 		super.init(site, editorInput);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
 				IResourceChangeEvent.POST_CHANGE);
-		NeoCorePlugin.getDefault().getUpdateDatabaseManager().addListener(this);
+		NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
 		NeoServiceProvider.getProvider().addServiceProviderListener(this);
 	}
 
@@ -273,15 +274,16 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 	}
 
 	@Override
-	public void databaseUpdated(UpdateDatabaseEvent event) {
+	public void updateView(UpdateViewEvent event) {
 	    
 		SplashTableModel splashTableModel = ((SplashTableModel) getTable()
 				.getModel());
-		if (event.getRubyProjectName().equals(
+		UpdateDatabaseEvent dbEvent = (UpdateDatabaseEvent)event;
+		if (dbEvent.getRubyProjectName().equals(
 				splashTableModel.getRubyProjectNode().getName())
-				&& (event.getSpreadSheetName().equals(splashTableModel
+				&& (dbEvent.getSpreadSheetName().equals(splashTableModel
 						.getSpreadsheet().getName()))) {
-			Cell cellByID = splashTableModel.getCellByID(event.getFullCellID());
+			Cell cellByID = splashTableModel.getCellByID(dbEvent.getFullCellID());
 			splashTableModel.refreshCell(cellByID);
 			splashTableModel.updateCellFromScript(cellByID);
 		}
@@ -310,7 +312,7 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
     }
 
     @Override
-    public Collection<UpdateDatabaseEventType> getType() {
+    public Collection<UpdateViewEventType> getType() {
         return handedTypes;
     }
 }

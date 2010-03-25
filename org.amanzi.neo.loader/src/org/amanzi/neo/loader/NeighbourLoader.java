@@ -27,8 +27,8 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -86,7 +86,7 @@ public class NeighbourLoader {
         this.fileName = fileName;
         this.neo = neo;
         this.baseName = new File(fileName).getName();
-        gisName=NeoUtils.getSimpleNodeName(networkNode, "");
+        gisName=NeoUtils.getSimpleNodeName(networkNode, "",neo);
         index = NeoServiceProvider.getProvider().getIndexService();
     }
 
@@ -161,7 +161,7 @@ public class NeighbourLoader {
             if (reader != null) {
                 reader.close();
             }
-            NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(new UpdateDatabaseEvent(UpdateDatabaseEventType.NEIGHBOUR));
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.NEIGHBOUR));
             tx.finish();
             // 8.02.2010 Shcharbatsevich A. - check header for null.
             if (header != null) {

@@ -14,10 +14,20 @@
    <extension
          point="net.refractions.udig.project.layerInterceptor">
       <layerCreated
-            class="org.amanzi.awe.catalog.neo.LayerInterceptor"
+            class="org.amanzi.awe.catalog.neo.upd_layers.LayerInterceptor"
             id="org.amanzi.awe.catalog.neo.layerCreated"
             name="Layer Interceptor">
       </layerCreated>
+      <layerAdded
+            class="org.amanzi.awe.catalog.neo.upd_layers.LayerAddedInterceptor"
+            id="org.amanzi.awe.catalog.neo.LayerAddedInterceptor"
+            name="Layer Added Interceptor">
+      </layerAdded>
+      <layerRemoved
+            class="org.amanzi.awe.catalog.neo.upd_layers.LayerRemoveInterceptor"
+            id="org.amanzi.awe.catalog.neo.LayerRemoveInterceptor"
+            name="Layer Remove Interceptor">
+      </layerRemoved>
    </extension>
 <!--
    <extension

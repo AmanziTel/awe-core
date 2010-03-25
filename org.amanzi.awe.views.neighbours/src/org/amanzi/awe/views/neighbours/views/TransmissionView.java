@@ -13,24 +13,19 @@
 
 package org.amanzi.awe.views.neighbours.views;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.project.ILayer;
-import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.internal.command.navigation.SetViewportCenterCommand;
-import net.refractions.udig.project.ui.ApplicationGIS;
-
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
 import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.RelationWrapper;
 import org.amanzi.neo.core.INeoConstants;
@@ -78,7 +73,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
-import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -87,10 +81,6 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import com.vividsolutions.jts.geom.Coordinate;
 
 //TODO extend from NeighboursView
 /**
@@ -686,27 +676,31 @@ public class TransmissionView extends ViewPart {
      */
     protected void showNeighbour(RelationWrapper relationWrapper) {
         setNeighbourSelection(relationWrapper);
-        IMap map = ApplicationGIS.getActiveMap();
-        for (ILayer layer : map.getMapLayers()) {
-            IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
-            if (resourse != null) {
-                try {
-                    GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-                    if (geo.getMainGisNode().equals(gis)) {
-                        HashMap<String, Object> properties = new HashMap<String, Object>();
-                        properties.put(GeoNeo.NEIGH_MAIN_NODE, null);
-                        properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
-                        properties.put(GeoNeo.NEIGH_RELATION, relationWrapper.getRelation());
-                        geo.setProperties(properties);
-                        showSelectionOnMap(layer, geo, relationWrapper.getNeighbourNode(), relationWrapper.getServeNode());
-                        // layer.refresh(null);
-                        return;
-                    }
-                } catch (IOException e) {
-                    throw (RuntimeException)new RuntimeException().initCause(e);
-                }
+        HashMap<String, Object> properties = new HashMap<String, Object>();
+        properties.put(GeoNeo.NEIGH_MAIN_NODE, null);
+        properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
+        properties.put(GeoNeo.NEIGH_RELATION, relationWrapper.getRelation());
+        UpdatePropertiesAndMapEvent event = getLayerEvent(properties, relationWrapper.getNeighbourNode(), relationWrapper.getServeNode());
+        NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);        
+    }
+    
+    private UpdatePropertiesAndMapEvent getLayerEvent(HashMap<String, Object> properties, Node selection, Node center){
+        UpdatePropertiesAndMapEvent event = new UpdatePropertiesAndMapEvent(gis, properties, false);
+        boolean needCentered = needCentered(center);
+        event.setSelection(Collections.singleton(selection));
+        event.setNeedCentered(needCentered);
+        if(needCentered){
+            centeredNode = center;
+            if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, "").toString().equalsIgnoreCase(("projected"))) {
+                autoZoom = false;
             }
+            event.setAutoZoom(autoZoom);
+            if(autoZoom){
+                autoZoom = false; // only zoom first time, then rely on user to control zoom
+            }
+            event.setCoords(getCoords(center));
         }
+        return event;
     }
 
     /**
@@ -723,26 +717,12 @@ public class TransmissionView extends ViewPart {
      */
     protected void showServe(RelationWrapper relationWrapper) {
         setServeSelection(relationWrapper);
-        IMap map = ApplicationGIS.getActiveMap();
-        for (ILayer layer : map.getMapLayers()) {
-            IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
-            if (resourse != null) {
-                try {
-                    GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-                    if (geo.getMainGisNode().equals(gis)) {
-                        HashMap<String, Object> properties = new HashMap<String, Object>();
-                        properties.put(GeoNeo.NEIGH_MAIN_NODE, relationWrapper.getServeNode());
-                        properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
-                        properties.put(GeoNeo.NEIGH_RELATION, null);
-                        geo.setProperties(properties);
-                        showSelectionOnMap(layer, geo, relationWrapper.getServeNode(), relationWrapper.getServeNode());
-                        return;
-                    }
-                } catch (IOException e) {
-                    throw (RuntimeException)new RuntimeException().initCause(e);
-                }
-            }
-        }
+        HashMap<String, Object> properties = new HashMap<String, Object>();
+        properties.put(GeoNeo.NEIGH_MAIN_NODE, null);
+        properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
+        properties.put(GeoNeo.NEIGH_RELATION, relationWrapper.getRelation());
+        UpdatePropertiesAndMapEvent event = getLayerEvent(properties, relationWrapper.getServeNode(), relationWrapper.getServeNode());
+        NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
     }
 
     /**
@@ -947,53 +927,6 @@ public class TransmissionView extends ViewPart {
     }
 
     /**
-     * Shows selected node on map
-     * 
-     * @param selection selected node
-     */
-    protected void showSelectionOnMap(ILayer layer, GeoNeo gisGeo, Node selection, Node center) {
-        try {
-            gisGeo.setSelectedNodes(null);
-            gisGeo.addNodeToSelect(selection);
-            IMap map = layer.getMap();
-            CoordinateReferenceSystem crs = null;
-            Node gis = gisGeo.getMainGisNode();
-            if (needCentered(center)) {
-                centeredNode = center;
-                if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, "").toString().equalsIgnoreCase(("projected"))) {
-                    autoZoom = false;
-                }
-                if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
-                    crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
-                } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
-                    URL crsURL = new URL(gis.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
-                    crs = CRS.decode(crsURL.getContent().toString());
-                }
-                double[] c = getCoords(center);
-                if (c == null) {
-                    return;
-                }
-                if (autoZoom) {
-                    // TODO: Check that this works with all CRS
-                    map.sendCommandASync(new net.refractions.udig.project.internal.command.navigation.SetViewportWidth(30000));
-                    autoZoom = false; // only zoom first time, then rely on user to control zoom
-                    // level
-                }
-                map.sendCommandASync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
-            } else {
-                layer.refresh(null);
-            }
-        } catch (NoSuchAuthorityCodeException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (MalformedURLException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (IOException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-
-    }
-
-    /**
      * @param center
      * @return
      */
@@ -1046,26 +979,11 @@ public class TransmissionView extends ViewPart {
      *
      */
     private void clearSelection() {
-        IMap map = ApplicationGIS.getActiveMap();
-        for (ILayer layer : map.getMapLayers()) {
-            IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
-            if (resourse != null) {
-                try {
-                    GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-                    if (geo.getMainGisNode().equals(gis)) {
-                        HashMap<String, Object> properties = new HashMap<String, Object>();
-                        properties.put(GeoNeo.NEIGH_MAIN_NODE, null);
-                        properties.put(GeoNeo.NEIGH_NAME, null);
-                        properties.put(GeoNeo.NEIGH_RELATION, null);
-                        geo.setProperties(properties);
-                        layer.refresh(null);
-                        return;
-                    }
-                } catch (IOException e) {
-                    throw (RuntimeException)new RuntimeException().initCause(e);
-                }
-            }
-        }
+        HashMap<String, Object> properties = new HashMap<String, Object>();
+        properties.put(GeoNeo.NEIGH_MAIN_NODE, null);
+        properties.put(GeoNeo.NEIGH_NAME, null);
+        properties.put(GeoNeo.NEIGH_RELATION, null);
+        NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdatePropertiesEvent(gis, properties, false));
     }
 
     /**

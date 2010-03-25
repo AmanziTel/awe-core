@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
@@ -358,6 +359,7 @@ public void printStats(boolean verbose) {
         }
 
         super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
+        sendUpdateEvent(UpdateViewEventType.OSS);
     }
 
 

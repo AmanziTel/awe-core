@@ -10,16 +10,31 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.neo.core.database.services;
+
+package org.amanzi.neo.core.database.services.events;
+
 
 /**
+ * Abstract event, that fire view update. 
  * <p>
- * types of event UpdateDatabaseEvent
+ *
  * </p>
- * 
- * @author Cinkel_A
+ * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public enum UpdateDatabaseEventType {
-    Spreadsheet, GIS, NEIGHBOUR, TRANSMISSION;
+public abstract class UpdateViewEvent {
+    
+    private final UpdateViewEventType type;
+    
+    protected UpdateViewEvent(UpdateViewEventType aType) {
+        type = aType;
+    }
+    
+    /**
+     * @return Returns the type.
+     */
+    public UpdateViewEventType getType() {
+        return type;
+    }
+
 }

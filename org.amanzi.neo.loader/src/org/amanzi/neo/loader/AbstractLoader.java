@@ -39,8 +39,8 @@ import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
@@ -1473,8 +1473,7 @@ public abstract class AbstractLoader {
         NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
         if (neoProvider != null) {
             String databaseLocation = neoProvider.getDefaultDatabaseLocation();
-            NeoCorePlugin.getDefault().getUpdateDatabaseManager().fireUpdateDatabase(
-                    new UpdateDatabaseEvent(UpdateDatabaseEventType.GIS));
+            sendUpdateEvent(UpdateViewEventType.GIS);
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
             URL url = new URL("file://" + databaseLocation);
             List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
@@ -1487,6 +1486,11 @@ public abstract class AbstractLoader {
             }
             neoProvider.commit();
         }
+    }
+
+    public static void sendUpdateEvent(UpdateViewEventType aType) {
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                new UpdateDatabaseEvent(aType));
     }
     
     /**

@@ -12,18 +12,16 @@
  */
 package org.amanzi.awe.filters.views;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 
-import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.filters.AbstractFilter;
 import org.amanzi.awe.filters.ChainRule;
 import org.amanzi.awe.filters.FilterUtil;
@@ -708,19 +706,7 @@ public class FilterView extends ViewPart {
     private void refreshLayer(Node gis) {
         IMap activeMap = ApplicationGIS.getActiveMap();
         if (activeMap != ApplicationGIS.NO_MAP) {
-            try {
-                for (ILayer layer : activeMap.getMapLayers()) {
-                    IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
-                    if (resourse != null) {
-                        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-                        if (gis != null && geo.getMainGisNode().equals(gis)) {
-                            layer.refresh(null);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
+            NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gis));
         }
     }
 

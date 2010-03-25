@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
@@ -422,5 +423,10 @@ public class NemoLoader extends DriveLoader {
     @Override
     protected boolean needParceHeaders() {
         return false;
+    }
+    
+    @Override
+    protected void finishUp() {
+        sendUpdateEvent(UpdateViewEventType.GIS);
     }
 }

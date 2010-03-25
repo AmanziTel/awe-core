@@ -19,6 +19,10 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.ui.CatalogUIPlugin;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.UpdateViewManager;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -62,7 +66,8 @@ public class NeoGeoResource extends IGeoResource {
             URL url = new URL(identifier + this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             if (identifierFull == null || !url.equals(identifierFull)) {
                 changeIconsId(url);
-                NeoCatalogPlugin.getDefault().updateCatalog();
+                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                        new UpdateDatabaseEvent(UpdateViewEventType.GIS));
             }
             return url;
         } catch (Exception e) {

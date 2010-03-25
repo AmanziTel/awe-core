@@ -24,6 +24,7 @@ import java.util.Stack;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -184,6 +185,12 @@ public class UTRANLoader extends AbstractLoader {
 
     @Override
     protected void parseLine(String line) {
+    }
+    
+    @Override
+    protected void finishUp() {
+        super.finishUp();
+        sendUpdateEvent(UpdateViewEventType.OSS);
     }
 
     protected void updateTx() {

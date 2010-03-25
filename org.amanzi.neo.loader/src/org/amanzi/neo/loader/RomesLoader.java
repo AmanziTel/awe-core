@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -201,6 +202,7 @@ public class RomesLoader extends DriveLoader {
     protected void finishUp() {
         saveData();        
         super.finishUp();
+        sendUpdateEvent(UpdateViewEventType.GIS);
     }
 
     /**

@@ -19,9 +19,9 @@ import java.util.HashSet;
 import org.amanzi.awe.views.drive.views.CorrelationManager;
 import org.amanzi.awe.views.drive.views.DriveInquirerView;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
+import org.amanzi.neo.core.database.listener.IUpdateViewListener;
+import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -34,11 +34,11 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class DriveInquirerPlugin extends AbstractUIPlugin implements IUpdateDatabaseListener {
-    private static final Collection<UpdateDatabaseEventType> handedTypes;
+public class DriveInquirerPlugin extends AbstractUIPlugin implements IUpdateViewListener {
+    private static final Collection<UpdateViewEventType> handedTypes;
     static {
-        Collection<UpdateDatabaseEventType> spr = new HashSet<UpdateDatabaseEventType>();
-        spr.add(UpdateDatabaseEventType.GIS);
+        Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
+        spr.add(UpdateViewEventType.GIS);
         handedTypes = Collections.unmodifiableCollection(spr);
     }
 	// The plug-in ID
@@ -60,7 +60,7 @@ public class DriveInquirerPlugin extends AbstractUIPlugin implements IUpdateData
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-        NeoCorePlugin.getDefault().getUpdateDatabaseManager().addListener(this);
+        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
 	}
 
 	/*
@@ -124,12 +124,12 @@ public class DriveInquirerPlugin extends AbstractUIPlugin implements IUpdateData
         getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message == null ? "" : message, e)); //$NON-NLS-1$
     }
     @Override
-    public void databaseUpdated(UpdateDatabaseEvent event) {
+    public void updateView(UpdateViewEvent event) {
         updateView();
     }
 
     @Override
-    public Collection<UpdateDatabaseEventType> getType() {
+    public Collection<UpdateViewEventType> getType() {
         return handedTypes;
     }
 }

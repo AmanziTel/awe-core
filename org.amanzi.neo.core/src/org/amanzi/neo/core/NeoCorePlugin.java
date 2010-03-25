@@ -17,12 +17,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
+import org.amanzi.neo.core.database.listener.IUpdateViewListener;
 import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.database.services.NeoDataService;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
-import org.amanzi.neo.core.database.services.UpdateDatabaseManager;
+import org.amanzi.neo.core.database.services.UpdateViewManager;
+import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.preferences.NeoPreferencesInitializer;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
@@ -30,6 +32,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.neoclipse.view.NeoGraphViewPart;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -39,7 +43,7 @@ import org.osgi.framework.BundleContext;
  * @since 1.0.0
  */
 
-public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
+public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
 
 	/*
 	 * Plugin's ID
@@ -60,10 +64,10 @@ public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
 	private NeoPreferencesInitializer initializer = new NeoPreferencesInitializer();
 
 	private AweProjectService aweProjectService;
-	private UpdateDatabaseManager updateBDManager;
+	private UpdateViewManager updateBDManager;
 	private NeoDataService neoDataService;
 	private final Object neoDataMonitor=new Object();
-    final List<UpdateDatabaseEventType> eventList = Arrays.asList(UpdateDatabaseEventType.values());
+    final List<UpdateViewEventType> eventList = Arrays.asList(UpdateViewEventType.values());
 
 
 	/**
@@ -78,9 +82,9 @@ public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
     public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		updateBDManager = new UpdateDatabaseManager();
+		updateBDManager = new UpdateViewManager();
         updateBDManager.addListener(this);
-	}
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -150,10 +154,10 @@ public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
 	 * 
 	 * @return UpdateBDManager
 	 */
-	public UpdateDatabaseManager getUpdateDatabaseManager() {
+	public UpdateViewManager getUpdateViewManager() {
 		return updateBDManager;
 	}
-
+	
 	/**
 	 * Sets initializer of NeoPreferences
 	 * 
@@ -191,13 +195,29 @@ public class NeoCorePlugin extends Plugin implements IUpdateDatabaseListener {
 	}
 
     @Override
-    public void databaseUpdated(UpdateDatabaseEvent event) {
+    public void updateView(UpdateViewEvent event) {
+        UpdateViewEventType type = event.getType();
         // update NeoGraphViewPart
-        org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView();
+        if(type.equals(UpdateViewEventType.DRILL_DOWN)){
+            UpdateDrillDownEvent ddEvent = (UpdateDrillDownEvent)event;
+            if (!ddEvent.getSource().equals(NeoGraphViewPart.ID)) {
+                Node node = ddEvent.getNodes().get(0);
+                org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView(node);
+            }
+            
+        }else if(type.equals(UpdateViewEventType.SHOW_PREPARED_VIEW)){
+            ShowPreparedViewEvent spvEvent = (ShowPreparedViewEvent)event;
+            if (spvEvent.isViewNeedUpdate(NeoGraphViewPart.ID)) {
+                Node node = spvEvent.getNodes().get(0);
+                org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView(node);
+            }
+        }else{            
+            org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView();
+        }
     }
 
     @Override
-    public Collection<UpdateDatabaseEventType> getType() {
+    public Collection<UpdateViewEventType> getType() {
         return eventList;
     }
 

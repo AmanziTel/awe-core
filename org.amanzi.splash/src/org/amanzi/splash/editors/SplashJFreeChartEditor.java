@@ -20,12 +20,12 @@ import java.util.HashSet;
 
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateDatabaseListener;
+import org.amanzi.neo.core.database.listener.IUpdateViewListener;
 import org.amanzi.neo.core.database.nodes.ChartNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.UpdateDatabaseEventType;
+import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.splash.chart.Charts;
 import org.amanzi.splash.ui.ChartEditorInput;
 import org.amanzi.splash.ui.SplashPlugin;
@@ -68,11 +68,11 @@ import com.eteks.openjeks.format.CellFormatPanel;
 
 
 public class SplashJFreeChartEditor extends EditorPart implements
-        IResourceChangeListener, IShowInSource, IShowInTargetList, IUpdateDatabaseListener {
-    private static final Collection<UpdateDatabaseEventType> handedTypes;
+        IResourceChangeListener, IShowInSource, IShowInTargetList, IUpdateViewListener {
+    private static final Collection<UpdateViewEventType> handedTypes;
     static {
-        Collection<UpdateDatabaseEventType> spr = new HashSet<UpdateDatabaseEventType>();
-        spr.add(UpdateDatabaseEventType.Spreadsheet);
+        Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
+        spr.add(UpdateViewEventType.Spreadsheet);
         handedTypes = Collections.unmodifiableCollection(spr);
     }
 	private boolean isDirty = false;
@@ -254,7 +254,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
     public void dispose() {
         super.dispose();
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-        NeoCorePlugin.getDefault().getUpdateDatabaseManager().removeListener(this);
+        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
     }
 
 	/*
@@ -275,7 +275,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
 					+ "does not exist.");
 
 		IEditorInput ei = validateEditorInput(editorInput);
-		NeoCorePlugin.getDefault().getUpdateDatabaseManager().addListener(this);
+		NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
 		// This message includes class names to help
 		// the programmer / reader; production code would instead
 		// log an error and provide a helpful, friendly message.
@@ -404,7 +404,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
 	}
 
     @Override
-    public void databaseUpdated(UpdateDatabaseEvent event) {
+    public void updateView(UpdateViewEvent event) {
         NeoSplashUtil.logn("firePropertyChange(PROP_INPUT)");
         PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
             public void run() {
@@ -415,7 +415,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
     }
 
     @Override
-    public Collection<UpdateDatabaseEventType> getType() {
+    public Collection<UpdateViewEventType> getType() {
         return handedTypes;
     }
 
