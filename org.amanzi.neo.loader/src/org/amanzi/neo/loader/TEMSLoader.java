@@ -33,7 +33,6 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.loader.AbstractLoader.GisProperties;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -163,14 +162,36 @@ public class TEMSLoader extends DriveLoader {
                 return datetime;
             }
         });
-        // addNonDataHeaders(Arrays.asList(new String[] {"time", "timestamp", "latitude",
-        // "longitude", "all_pilot_set_count"}));
-        // for (int i = 0; i < 13; i++) {
-        // String[] array = new String[] {"all_active_set_channel_" + i, "all_active_set_pn_" + i,
-        // "all_active_set_ec_io_" + i,
-        // "all_pilot_set_ec_io_" + i, "all_pilot_set_channel_" + i, "all_pilot_set_pn_" + i};
-        // addNonDataHeaders(Arrays.asList(array));
-        // }
+        PropertyMapper intMapper = new PropertyMapper() {
+            
+            @Override
+            public Object mapValue(String value) {
+                try {
+                    return Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    error(e.getLocalizedMessage());
+                    return 0L;
+                }
+            }
+        };
+        addMappedHeader(1, "all_rxlev_full","All-RxLev Full", "all_rx_lev_full", intMapper);
+        addMappedHeader(1, "all_rxlev_sub","All-RxLev Sub", "all_rx_lev_sub", intMapper);
+        addMappedHeader(1, "all_rxqual_full","All-RxQual Full", "all_rxqual_full", intMapper);
+        addMappedHeader(1, "all_rxqual_sub","All-RxQual Sub", "all_rxqual_sub", intMapper);
+        addMappedHeader(1, "all_sqi","All-SQI", "all_sqi", intMapper);
+        PropertyMapper floatMapper = new PropertyMapper() {
+            
+            @Override
+            public Object mapValue(String value) {
+                try {
+                    return Float.parseFloat(value);
+                } catch (NumberFormatException e) {
+                    error(e.getLocalizedMessage());
+                    return 0L;
+                }
+            }
+        };
+        addMappedHeader(1, "all_sqi_mos","All-SQI MOS", "all_sqi_mos", floatMapper);
     }
 
     private void addDriveIndexes() {
