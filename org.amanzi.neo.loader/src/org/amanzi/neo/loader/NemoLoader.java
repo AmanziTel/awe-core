@@ -427,6 +427,7 @@ public class NemoLoader extends DriveLoader {
     
     @Override
     protected void finishUp() {
+        super.finishUp();
         sendUpdateEvent(UpdateViewEventType.GIS);
     }
 }
