@@ -14,6 +14,7 @@
 package org.amanzi.awe.views.drive.preferences;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -500,6 +501,7 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
      */
     public void setAvaliableProperties(List<String> avaliableProperties) {
         this.avaliableProperties = avaliableProperties;
+        Collections.sort(avaliableProperties);
 
     }
 }
