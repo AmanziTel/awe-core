@@ -58,7 +58,7 @@ public abstract class AbstractNeoTag extends AbstractTag {
         addChild(parent,lastChild);
     }
     /**
-     * add child
+     * add current node like child of parent node
      * 
      * @param childNode - child tag
      */
