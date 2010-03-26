@@ -63,7 +63,7 @@ public abstract class AbstractNeoTag extends AbstractTag {
      * 
      * @param childNode - child tag
      */
-    private void addChild(AbstractNeoTag childNode) {
+    protected void addChild(AbstractNeoTag childNode) {
         NeoUtils.addChild(node, childNode.node, lastChild, null);
         lastChild = childNode.node;
     }
