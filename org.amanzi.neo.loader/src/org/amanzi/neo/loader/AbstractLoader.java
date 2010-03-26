@@ -906,7 +906,7 @@ public abstract class AbstractLoader {
      * @param key property key
      * @param parsedValue parsed value
      */
-    protected void setIndexProperty(LinkedHashMap<String, Header> headers, Node eventNode, String key, Object parsedValue) {
+    protected void setIndexProperty(Map<String, Header> headers, Node eventNode, String key, Object parsedValue) {
         if (parsedValue==null){
             return;
         }
