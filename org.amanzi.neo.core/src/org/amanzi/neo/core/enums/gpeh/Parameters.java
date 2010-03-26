@@ -78,10 +78,30 @@ public enum Parameters {
     EVENT_PARAM_VALUE_AT_FAILURE(24),
     EVENT_PARAM_RNC_MODULE_ID(7),
     EVENT_PARAM_EVENT_ID(11),
-    EVENT_PARAM_TIMESTAMP_HOUR(5),
-    EVENT_PARAM_TIMESTAMP_MINUTE(6),
-    EVENT_PARAM_TIMESTAMP_SECOND(6),
-    EVENT_PARAM_TIMESTAMP_MILLISEC(11),
+    EVENT_PARAM_TIMESTAMP_HOUR(5){
+        @Override
+        public boolean firstBitIsError() {
+            return false;
+        }
+    },
+    EVENT_PARAM_TIMESTAMP_MINUTE(6){
+        @Override
+        public boolean firstBitIsError() {
+            return false;
+        }
+    },
+    EVENT_PARAM_TIMESTAMP_SECOND(6){
+        @Override
+        public boolean firstBitIsError() {
+            return false;
+        }
+    },
+    EVENT_PARAM_TIMESTAMP_MILLISEC(11){
+        @Override
+        public boolean firstBitIsError() {
+            return false;
+        }
+    },
     EVENT_PARAM_ERROR_TYPE(6),
     EVENT_PARAM_PROTOCOL_ERROR_CAUSE(16),
     EVENT_PARAM_RRC_TRANSACTION_IDENTIFIER(16),
