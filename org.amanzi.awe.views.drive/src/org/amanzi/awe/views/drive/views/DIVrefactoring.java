@@ -521,7 +521,12 @@ public class DIVrefactoring extends ViewPart implements IPropertyChangeListener 
             displayErrorMessage("Exception while parsing property lists data");
         }
         for (int i = 0; i < lists.length; i++) {
-            propertyLists.put(lists[i], Arrays.asList(lists[++i].split(",")));
+            List<String> propertiesToAdd =  new ArrayList<String>();
+            List<String> properties = Arrays.asList(lists[++i].split(","));
+            for(String property : properties){
+                propertiesToAdd.add(property.trim());
+            }
+            propertyLists.put(lists[i],propertiesToAdd);
         }
     }
 
@@ -2211,7 +2216,11 @@ public class DIVrefactoring extends ViewPart implements IPropertyChangeListener 
             updatePropertyList();
         }
     }
-    
+    /**
+     * Contains all flags for that must be valid before update chart
+     *
+     * @return is all valid
+     */
     private boolean chartDataValid() {
         return validDrive;
     }

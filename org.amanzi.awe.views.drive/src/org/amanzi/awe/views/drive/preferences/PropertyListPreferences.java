@@ -175,7 +175,7 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
                 newPropertyLists.add(row);
             }
         }
-        Collections.sort(propertyLists, new Comparator<RowWr>() {
+        Collections.sort(newPropertyLists, new Comparator<RowWr>() {
             @Override
             public int compare(RowWr arg0, RowWr arg1) {
                 return arg0.getListName().compareTo(arg1.getListName());
