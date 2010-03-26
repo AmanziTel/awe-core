@@ -198,6 +198,7 @@ public class DIVrefactoring extends ViewPart implements IPropertyChangeListener 
     private Integer oldTimeLength;
     private String propertyListsConstantValue;
     private Button bAddPropertyList;
+    private boolean validDrive;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -452,6 +453,11 @@ public class DIVrefactoring extends ViewPart implements IPropertyChangeListener 
             Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis, null);
             beginGisTime = minMax.getLeft();
             endGisTime = minMax.getRight();
+            if(beginGisTime == null || endGisTime == null){
+                displayErrorMessage("Invalid data: selected drive isn't contains begin or/and end gis time.");
+                validDrive = false;
+                return;
+            }
             selectedTime = beginGisTime;
             slider.setMaximum((int)((endGisTime - beginGisTime) / SLIDER_STEP));
             slider.setSelection(0);
@@ -1320,7 +1326,7 @@ public class DIVrefactoring extends ViewPart implements IPropertyChangeListener 
      *update chart
      */
     private void updateChart() {
-        if (cDrive.getText().isEmpty() || cPropertyList.getText().isEmpty()) {
+        if (cDrive.getText().isEmpty() || cPropertyList.getText().isEmpty() || !chartDataValid()) {
             setsVisible(false);
             return;
         }
@@ -1350,12 +1356,10 @@ public class DIVrefactoring extends ViewPart implements IPropertyChangeListener 
      *change drive dataset
      */
     private void changeDrive() {
-        System.out.println("changeDrive() called");
         if (cDrive.getSelectionIndex() < 0) {
             setsVisible(false);
         } else {
             formPropertyLists();
-            updateChart();
         }
     }
 
@@ -1381,16 +1385,28 @@ public class DIVrefactoring extends ViewPart implements IPropertyChangeListener 
             Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis, null);
             beginGisTime = minMax.getLeft();
             endGisTime = minMax.getRight();
+
+            if(beginGisTime == null || endGisTime == null){
+                displayErrorMessage("Invalid data: selected drive isn't contains begin or/and end gis time.");
+                validDrive = false;
+                setsVisible(false);
+                return;
+            }
+            validDrive = true;
+            
             selectedTime = beginGisTime;
             slider.setMaximum((int)((endGisTime - beginGisTime) / SLIDER_STEP));
             slider.setSelection(0);
             selectedTime = beginGisTime;
             setBeginTime(beginGisTime);
             chart.getXYPlot().setDomainCrosshairValue(selectedTime);
-
+            
+            updateChart();
         } finally {
             tx.finish();
         }
+        
+        
     }
 
     /**
@@ -2194,6 +2210,10 @@ public class DIVrefactoring extends ViewPart implements IPropertyChangeListener 
             cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
             updatePropertyList();
         }
+    }
+    
+    private boolean chartDataValid() {
+        return validDrive;
     }
 
 }

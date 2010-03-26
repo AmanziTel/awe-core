@@ -15,6 +15,7 @@ package org.amanzi.awe.views.drive.preferences;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -95,8 +96,9 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         // viewer.setLabelProvider(new TableLabelProvider());
         GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
         viewer.getControl().setLayoutData(layoutData);
-        viewer.getControl().setToolTipText("To create a new property list, just enter needed values to the first blank line.\n" +
-        		"To delete a property list it is need to remove it's name and value.");
+        viewer.getControl().setToolTipText(
+                "To create a new property list, just enter needed values to the first blank line.\n"
+                        + "To delete a property list it is need to remove it's name and value.");
         layoutData.grabExcessVerticalSpace = true;
         layoutData.grabExcessHorizontalSpace = true;
 
@@ -138,7 +140,7 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
                 }
             });
         }
-        
+
         viewer.setInput("");
         return mainFrame;
     }
@@ -173,6 +175,12 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
                 newPropertyLists.add(row);
             }
         }
+        Collections.sort(propertyLists, new Comparator<RowWr>() {
+            @Override
+            public int compare(RowWr arg0, RowWr arg1) {
+                return arg0.getListName().compareTo(arg1.getListName());
+            }
+        });
 
         propertyLists.clear();
         propertyLists.addAll(newPropertyLists);
