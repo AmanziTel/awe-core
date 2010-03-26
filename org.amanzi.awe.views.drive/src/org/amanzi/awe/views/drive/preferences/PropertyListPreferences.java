@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.views.drive.preferences;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -27,17 +26,23 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -48,99 +53,155 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Saelenchits_N
  * @since 1.0.0
  */
-public class PropertyListPreferences extends PreferencePage implements IWorkbenchPreferencePage  {
+public class PropertyListPreferences extends PreferencePage implements IWorkbenchPreferencePage {
 
     private static final int MIN_FIELD_WIDTH = 50;
     private static final int MAX_PROP_COUNT = 6;
     public static final Color BAD_COLOR = new Color(null, 255, 0, 0);
-    private final List<RowWr> propertyLists=new ArrayList<RowWr>();
+    private final List<RowWr> propertyLists = new ArrayList<RowWr>();
     private Composite mainFrame;
     MultiPropertyIndex<Long> timestampIndex = null;
     private TableViewer viewer;
-    
-    
+    private List<String> avaliableProperties = new ArrayList<String>();
+    private Combo cAvaliableProperties;
+    private Button bAddProperty;
+
     @Override
     protected Control createContents(Composite parent) {
-        mainFrame=new Group(parent, SWT.NULL);
-        
-        GridLayout mainLayout = new GridLayout(3,false);
-        
+        mainFrame = new Group(parent, SWT.NULL);
+
+        GridLayout mainLayout = new GridLayout(3, false);
+
         mainFrame.setLayout(mainLayout);
-        
+
         Label label = new Label(mainFrame, SWT.LEFT);
-//        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+
         label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
-        label.setText("Label");
-        
-       
+        label.setText("Property lists");
+
         viewer = new TableViewer(mainFrame, SWT.BORDER | SWT.FULL_SELECTION);
         TableContentProvider provider = new TableContentProvider();
         createTableColumn();
-        
+
         viewer.setContentProvider(provider);
         // viewer.setLabelProvider(new TableLabelProvider());
         GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
         viewer.getControl().setLayoutData(layoutData);
-        layoutData.grabExcessVerticalSpace=true;
-        layoutData.grabExcessHorizontalSpace=true;
+        viewer.getControl().setToolTipText("To create a new property list, just enter needed values to the first blank line.\n" +
+        		"To delete a property list it is need to remove it's name and value.");
+        layoutData.grabExcessVerticalSpace = true;
+        layoutData.grabExcessHorizontalSpace = true;
+
+        if (!avaliableProperties.isEmpty()) {
+            label = new Label(mainFrame, SWT.NONE);
+            label.setText("Avaliable properties");
+            label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+            cAvaliableProperties = new Combo(mainFrame, SWT.DROP_DOWN | SWT.READ_ONLY);
+            layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+            cAvaliableProperties.setLayoutData(layoutData);
+            cAvaliableProperties.setItems(avaliableProperties.toArray(new String[0]));
+
+            bAddProperty = new Button(mainFrame, SWT.PUSH);
+            bAddProperty.setText("Add");
+
+            bAddProperty.addSelectionListener(new SelectionListener() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+
+                    IStructuredSelection sel = (IStructuredSelection)viewer.getSelection();
+                    RowWr wr;
+                    if (sel.size() != 1) {
+                        wr = propertyLists.get(propertyLists.size() - 1);
+                        viewer.setSelection(new StructuredSelection(new Object[] {wr}));
+                    } else {
+                        wr = (RowWr)sel.getFirstElement();
+                    }
+                    if (!cAvaliableProperties.getText().isEmpty()) {
+                        wr.setProperties(wr.getProperties().isEmpty() ? cAvaliableProperties.getText() : wr.getProperties() + ", " + cAvaliableProperties.getText());
+                        viewer.refresh(wr);
+                        validate();
+                    }
+                }
+
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {
+                    widgetSelected(e);
+                }
+            });
+        }
+        
         viewer.setInput("");
         return mainFrame;
     }
 
     @Override
     public void init(IWorkbench workbench) {
-      formPropertyList();  
+        formPropertyList();
 
     }
+
     /**
-     *Preparing existing property lists for display 
+     *Preparing existing property lists for display
      */
     private void formPropertyList() {
         propertyLists.clear();
         String val = getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS);
-        boolean isName=true;
-        RowWr wr=null;
-        for (String str:val.split(DataLoadPreferences.CRS_DELIMETERS)){
-            if (isName){
-                wr=new RowWr(str,"");
+        boolean isName = true;
+        RowWr wr = null;
+        for (String str : val.split(DataLoadPreferences.CRS_DELIMETERS)) {
+            if (isName) {
+                wr = new RowWr(str, "");
                 propertyLists.add(wr);
-            }else{
+            } else {
                 wr.setProperties(str);
             }
-            isName=!isName;
+            isName = !isName;
         }
+
+        ArrayList<RowWr> newPropertyLists = new ArrayList<RowWr>(propertyLists.size() + 1);
+        for (RowWr row : propertyLists) {
+            if (!row.getListName().isEmpty() || !row.getProperties().isEmpty()) {
+                newPropertyLists.add(row);
+            }
+        }
+
+        propertyLists.clear();
+        propertyLists.addAll(newPropertyLists);
+        propertyLists.add(new RowWr("", ""));
     }
-    
+
     @Override
     protected void performDefaults() {
         super.performDefaults();
         getPreferenceStore().setToDefault(DataLoadPreferences.PROPERY_LISTS);
         formPropertyList();
-        viewer.setInput("");        
+        viewer.setInput("");
     }
+
     @Override
     public boolean performOk() {
         StringBuilder result = new StringBuilder();
         // checkEmpty();
-       for (RowWr wr:propertyLists){
+        for (RowWr wr : propertyLists) {
             if (!wr.isEmpty()) {
                 result.append(DataLoadPreferences.CRS_DELIMETERS);
-               result.append(wr.getListName());
-               result.append(DataLoadPreferences.CRS_DELIMETERS);
-               result.append(wr.getProperties());
+                result.append(wr.getListName());
+                result.append(DataLoadPreferences.CRS_DELIMETERS);
+                result.append(wr.getProperties());
             }
-       }
-       String string = result.length()>0?result.substring(DataLoadPreferences.CRS_DELIMETERS.length()):result.toString();
+        }
+        String string = result.length() > 0 ? result.substring(DataLoadPreferences.CRS_DELIMETERS.length()) : result.toString();
         getPreferenceStore().setValue(DataLoadPreferences.PROPERY_LISTS, string);
         return true;
-        
+
     }
 
     /**
@@ -150,7 +211,7 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         Table table = viewer.getTable();
         TableViewerColumn column;
         TableColumn col;
-        
+
         column = new TableViewerColumn(viewer, SWT.RIGHT);
         col = column.getColumn();
         col.setText("List name");
@@ -159,7 +220,7 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         column.setLabelProvider(new ColLabelProvider(0));
 
         column.setEditingSupport(new TableEditableSupport(viewer, true));
-        
+
         column = new TableViewerColumn(viewer, SWT.RIGHT);
         col = column.getColumn();
         col.setText("Properties");
@@ -172,7 +233,7 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         table.setLinesVisible(true);
 
         viewer.refresh();
-        
+
     }
 
     private class ColLabelProvider extends ColumnLabelProvider {
@@ -227,9 +288,9 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         }
-        
+
     }
-    
+
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
 
         @Override
@@ -239,14 +300,11 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
 
         @Override
         public String getColumnText(Object element, int columnIndex) {
-            RowWr wrapper=(RowWr)element;
-            return columnIndex==0?wrapper.getListName():wrapper.getProperties();
+            RowWr wrapper = (RowWr)element;
+            return columnIndex == 0 ? wrapper.getListName() : wrapper.getProperties();
         }
-
-
-        
     }
-    
+
     public class TableEditableSupport extends EditingSupport {
 
         private final TextCellEditor editor;
@@ -273,27 +331,27 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
 
         @Override
         protected Object getValue(Object element) {
-            return isName?((RowWr)element).getListName():((RowWr)element).getProperties();
+            return isName ? ((RowWr)element).getListName() : ((RowWr)element).getProperties();
         }
 
         @Override
         protected void setValue(Object element, Object value) {
             String sValue = ((String)value).trim();
-            if(isName){
+            if (isName) {
                 ((RowWr)element).setListName(sValue);
-            }else{
+            } else {
                 ((RowWr)element).setProperties(sValue);
             }
             checkEmpty();
             validate();
-        }        
-        
+        }
+
     }
-    
-    public class RowWr{
+
+    public class RowWr {
         private String listName;
         private String properties;
-        
+
         /**
          * @param listName
          * @param properties
@@ -317,18 +375,21 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         public String getListName() {
             return listName;
         }
+
         /**
          * @param listName The listName to set.
          */
         public void setListName(String listName) {
             this.listName = listName;
         }
+
         /**
          * @return Returns the properties.
          */
         public String getProperties() {
             return properties;
         }
+
         /**
          * @param properties The properties to set.
          */
@@ -344,8 +405,8 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
                 return false;
             }
 
-            for(RowWr row : propertyLists){
-                if(row == this){
+            for (RowWr row : propertyLists) {
+                if (row == this) {
                     continue;
                 }
                 if (row.getListName().equals(this.listName)) {
@@ -397,7 +458,6 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         propertyLists.clear();
         propertyLists.addAll(newPropertyLists);
         propertyLists.add(new RowWr("", ""));
-        
 
         // Collections.sort(propertyLists, new Comparator<RowWr>() {
         // @Override
@@ -413,7 +473,7 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         // // return arg0.getListName().compareTo(arg1.getListName());
         // }
         // });
-        
+
         viewer.setInput("");
     }
 
@@ -429,8 +489,17 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         }
         return true;
     }
-@Override
-public IPreferenceStore getPreferenceStore() {
-    return NeoLoaderPlugin.getDefault().getPreferenceStore();
-}
+
+    @Override
+    public IPreferenceStore getPreferenceStore() {
+        return NeoLoaderPlugin.getDefault().getPreferenceStore();
+    }
+
+    /**
+     * @param avaliableProperties
+     */
+    public void setAvaliableProperties(List<String> avaliableProperties) {
+        this.avaliableProperties = avaliableProperties;
+
+    }
 }
