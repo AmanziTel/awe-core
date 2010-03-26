@@ -55,9 +55,16 @@ public abstract class AbstractNeoTag extends AbstractTag {
         super(tagName, null);
         lastChild = null;
         node = createNode(attributes);
+        addChild(parent,lastChild);
+    }
+    /**
+     * add child
+     * 
+     * @param childNode - child tag
+     */
+    protected void addChild(Node parent,Node lastChild) {
         NeoUtils.addChild(parent, node, lastChild, null);
     }
-
     /**
      * add child
      * 
