@@ -21,7 +21,7 @@ import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.loader.GPEHLoader;
 import org.amanzi.neo.loader.OSSCounterLoader;
-import org.amanzi.neo.loader.OSSNokiaGSM;
+import org.amanzi.neo.loader.NokiaTopologyLoader;
 import org.amanzi.neo.loader.UTRANLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -68,7 +68,7 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                         loaderUtran.run(monitor);
                         break;
                     case NOKIA_GSM:
-                        OSSNokiaGSM loaderNokia = new OSSNokiaGSM(mainPage.getDirectory(), mainPage.getDatasetName(), display);
+                        NokiaTopologyLoader loaderNokia = new NokiaTopologyLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         loaderNokia.run(monitor);
                         break;
                     default:
