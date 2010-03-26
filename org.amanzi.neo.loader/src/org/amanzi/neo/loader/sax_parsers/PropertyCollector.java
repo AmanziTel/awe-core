@@ -34,15 +34,22 @@ public class PropertyCollector implements IXmlTag {
     private final IXmlTag parent;
     private final Map<String, String> propertyMap;
     private final List<String> skippedTag;
+    private final List<PropertyCollector> subCollectors;
+    private final Boolean computeSubChild;
+    private final String tagName;
 
     /**
      * 
      */
-    public PropertyCollector(IXmlTag parent) {
+    public PropertyCollector(String tagName, IXmlTag parent, Boolean computeSubChild) {
+        this.tagName = tagName;
         this.parent = parent;
+        this.computeSubChild = computeSubChild;
         hasOpenTag = false;
         propertyMap = new LinkedHashMap<String, String>();
         skippedTag = new LinkedList<String>();
+        subCollectors = new LinkedList<PropertyCollector>();
+
     }
 
     @Override
@@ -57,14 +64,20 @@ public class PropertyCollector implements IXmlTag {
 
     @Override
     public String getName() {
-        return "property collector";
+        return tagName;
     }
 
     @Override
     public IXmlTag startElement(String localName, Attributes attributes) {
         if (hasOpenTag) {
-            skippedTag.add(localName);
-            return new SkipTag(this);
+            if (computeSubChild) {
+                PropertyCollector col = new PropertyCollector(localName, this, computeSubChild);
+                subCollectors.add(col);
+                return col;
+            } else {
+                skippedTag.add(localName);
+                return new SkipTag(this);
+            }
         } else {
             hasOpenTag = true;
             return this;
@@ -83,6 +96,13 @@ public class PropertyCollector implements IXmlTag {
      */
     public List<String> getSkippedTag() {
         return skippedTag;
+    }
+
+    /**
+     * @return Returns the subCollectors.
+     */
+    public List<PropertyCollector> getSubCollectors() {
+        return subCollectors;
     }
 
 }
