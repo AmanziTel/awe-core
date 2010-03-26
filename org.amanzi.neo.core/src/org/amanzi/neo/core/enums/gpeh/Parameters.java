@@ -467,5 +467,13 @@ public enum Parameters {
     public Rules getRule() {
         return rule;
     }
+
+    /**
+     *
+     * @return
+     */
+    public boolean firstBitIsError() {
+        return rule!=Rules.STRING;
+    }
     
 }
