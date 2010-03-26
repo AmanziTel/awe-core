@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +30,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.TreeMap;
 
+import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.ui.PlatformGIS;
@@ -37,10 +41,8 @@ import net.refractions.udig.ui.graphics.Glyph;
 
 import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
-import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
+import org.amanzi.awe.views.drive.preferences.PropertyListPreferences;
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -49,13 +51,21 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
+import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -80,14 +90,15 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.ui.IMemento;
-import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.geotools.brewer.color.BrewerPalette;
@@ -128,93 +139,70 @@ import org.neo4j.graphdb.Traverser.Order;
  * Drive Inquirer View
  * </p>
  * 
- * @author Cinkel_A
+ * @author Saelenchits_N
  * @since 1.0.0
  */
-public class DriveInquirerView extends ViewPart {
-
-    /** int MIN_FIELD_WIDTH field */
-    private static final int MIN_FIELD_WIDTH = 50;
-    /** Color PROPERTY fields */
-    private static final Color[] PROPERTY_COLORS = new Color[]{Color.red,Color.black,Color.blue,
-                                                               Color.green,Color.magenta,Color.yellow};
+public class DriveInquirerView  extends ViewPart implements IPropertyChangeListener {
     
-    private static final int MIN_PROP_COUNT = 2;
-    private static final int MAX_PROP_COUNT = 6;
-    /**
-     * The ID of the view as specified by the extension.
-     */
-    public static final String ID = "org.amanzi.awe.views.drive.views.DriveInquirerView";
-    private static final String CHART_TITLE = "";
-    private static final String LOG_LABEL = "Logarithmic counts";
-    private static final String PALETTE_LABEL = "Palette";
-    private static final String ALL_EVENTS = "all events";
-    protected static final String EVENT = "event_type";
-    // memento keys
-    private static final String MEM_DRIVE = "MEM_DRIVE";
-    private static final String MEM_ADD_PROPERTY_COUNT = "MEM_ADD_PROPERTY_COUNT";
-    private static final String MEM_ADD_PROPERTY = "MEM_ADD_PROPERTY";
-    private static final String MEM_EVENT = "MEM_EVENT";
-    private static final String MEM_START_TIME = "MEM_START_TIME";
-    private static final String MEM_TIME_LENGTH = "MEM_TIME_LENGTH";
-    private static final String MEM_LOGARITHM = "MEM_LOGARITHM";
-    private static final String MEM_PALETTE = "MEM_PALETTE";
-    private static final long SLIDER_STEP = 1000;//1 sek
+    /* Data constants */
+    public static final String ID = "org.amanzi.awe.views.drive.views.DriveInquirerView"; //$NON-NLS-1$
+    private static final int MIN_FIELD_WIDTH = 50;
+    private static final long SLIDER_STEP = 1000;// 1 sek
+    private static final String CHART_TITLE = ""; //$NON-NLS-1$
+    private static final String LOG_LABEL = Messages.DriveInquirerView_2;
+    private static final String PALETTE_LABEL = Messages.DriveInquirerView_3;
+    protected static final String EVENT = Messages.DriveInquirerView_4;
+    private static final String ALL_EVENTS = Messages.DriveInquirerView_5;
 
-    private Action addProperty;
-    private JFreeChart chart;
-    private ChartCompositeImpl chartFrame;
+    /* Data keepers */
+    private MultiPropertyIndex<Long> timestampIndex = null;
+    private ArrayList<String> eventList;
+    private LinkedHashMap<String, Node> gisDriveNodes;
+    private final TreeMap<String, List<String>> propertyLists = new TreeMap<String, List<String>>();
+    private List<String> currentProperies = new ArrayList<String>(0);;
+    private DateAxis domainAxis;
+    private List<LogarithmicAxis> axisLogs;
+    private List<ValueAxis> axisNumerics;
+    private List<TimeDataset> xydatasets;
+
+    /* Gui elements */
     private Combo cDrive;
     private Combo cEvent;
-    private List<Combo> cProperties;
-    private List<Label> addPropLabels;
-    private Composite addPropBar;
+    private Combo cPropertyList;
+    private JFreeChart chart;
+    private ChartCompositeImpl chartFrame;
+    private EventDataset eventDataset;
+    private TableViewer table;
+    private TableLabelProvider labelProvider;
+    private TableContentProvider provider;
+    private Slider slider;
+    private Composite buttonLine;
     private Button bLeft;
     private Button bLeftHalf;
     private Button bRight;
     private Button bRightHalf;
     private Button bReport;
-    private LinkedHashMap<String, Node> gisDriveNodes;
-    private DateTime dateStart;
-    private Long dateStartTimestamp = null;
-    private Spinner sLength;
     private Label lLogarithmic;
     private Button bLogarithmic;
     private Label lPalette;
     private Combo cPalette;
-    private Composite buttonLine;
-    private List<TimeDataset> xydatasets;
-    private EventDataset eventDataset;
-    private List<LogarithmicAxis> axisLogs;
-    private List<ValueAxis> axisNumerics;
-    private ArrayList<String> eventList;
-    private DateAxis domainAxis;
+    private Label lPropertyPalette;
+    private Combo cPropertyPalette;
+    private Spinner sLength;
+
+    /* Simple work fields */
+    private int currentIndex;
     private Long beginGisTime;
     private Long endGisTime;
     private Long selectedTime;
-    // private List<Node> dataset;
-    private int currentIndex;
-    private int currentPropertyCount = MIN_PROP_COUNT;
-    private TableViewer table;
-    private TableLabelProvider labelProvider;
-    private TableContentProvider provider;
-    private Slider slider;
-    /**
-     * Index for Timestamps
-     */
-    MultiPropertyIndex<Long> timestampIndex = null;
-    private Long oldStartTime = null;
-    private Integer oldTimeLength = null;
-    // init values
-    private String initDrive;
-    private String initEvent;
-    private String initTime;
-    private Integer initTimeLen;
-    private String initLogarithm;
-    private String initPalette;
-    private Integer initPropCount;
-    private List<String> initProperties;
-    
+    private DateTime dateStart;
+    private Long dateStartTimestamp;
+    private Long oldStartTime;
+    private Integer oldTimeLength;
+    private String propertyListsConstantValue;
+    private Button bAddPropertyList;
+    private boolean validDrive;
+
     @Override
     public void createPartControl(Composite parent) {
         Composite frame = new Composite(parent, SWT.FILL);
@@ -223,7 +211,7 @@ public class DriveInquirerView extends ViewPart {
         formLayout.marginWidth = 0;
         formLayout.spacing = 0;
         frame.setLayout(formLayout);
-        
+
         Composite child = new Composite(frame, SWT.FILL);
         FormData fData = new FormData();
         fData.top = new FormAttachment(0, 2);
@@ -231,7 +219,7 @@ public class DriveInquirerView extends ViewPart {
         fData.right = new FormAttachment(100, -2);
 
         child.setLayoutData(fData);
-        final GridLayout layout = new GridLayout(12, false);
+        final GridLayout layout = new GridLayout(13, false);
         child.setLayout(layout);
         Label label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_drive);
@@ -242,7 +230,6 @@ public class DriveInquirerView extends ViewPart {
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cDrive.setLayoutData(layoutData);
 
-        
         label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_event);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
@@ -252,88 +239,21 @@ public class DriveInquirerView extends ViewPart {
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cEvent.setLayoutData(layoutData);
 
-        cProperties = new ArrayList<Combo>(MAX_PROP_COUNT);
-        
         label = new Label(child, SWT.NONE);
-        label.setText(Messages.DriveInquirerView_label_property+"1:");
+        label.setText(Messages.DriveInquirerView_6);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        Combo cProperty1 = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cPropertyList = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
-        cProperty1.setLayoutData(layoutData);
-        
-        cProperties.add(cProperty1);
+        cPropertyList.setLayoutData(layoutData);
 
-        label = new Label(child, SWT.FLAT);
-        label.setText(Messages.DriveInquirerView_label_property+"2:");
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        Combo cProperty2 = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
+        bAddPropertyList = new Button(child, SWT.PUSH);
+        bAddPropertyList.setText(Messages.DriveInquirerView_7);
 
-        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        layoutData.minimumWidth = MIN_FIELD_WIDTH;
-        cProperty2.setLayoutData(layoutData);
-
-        cProperties.add(cProperty2);
-        
-        label = new Label(child, SWT.FLAT);
-        label.setText(Messages.DriveInquirerView_label_start_time);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        dateStart = new DateTime(child, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
-        GridData dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        dateStartlayoutData.minimumWidth = 75;
-        dateStart.setLayoutData(dateStartlayoutData);
-        
-        label = new Label(child, SWT.FLAT);
-        label.setText(Messages.DriveInquirerView_label_length);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        sLength = new Spinner(child, SWT.BORDER);
-        sLength.setMinimum(1);
-        sLength.setMaximum(1000);
-        sLength.setSelection(5);
-        GridData timeLenlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        timeLenlayoutData.minimumWidth = 45;
-        sLength.setLayoutData(timeLenlayoutData);
-        
-        
-        
-        addPropBar = new Composite(frame, SWT.FILL);
-        fData = new FormData();
-        fData.top = new FormAttachment(child,2);
-        fData.left = new FormAttachment(0, 2);
-        fData.right = new FormAttachment(100, -2);
-        addPropBar.setLayoutData(fData); 
-        final GridLayout layout2 = new GridLayout(12, true);
-        addPropBar.setLayout(layout2);
-        addPropLabels = new ArrayList<Label>();
-        for(int i=MIN_PROP_COUNT;i<MAX_PROP_COUNT; i++){
-            label = new Label(addPropBar, SWT.NONE);
-            label.setText(Messages.DriveInquirerView_label_property+(i+1)+":");
-            label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-            label.setVisible(i<currentPropertyCount);
-            Combo cProperty = new Combo(addPropBar, SWT.DROP_DOWN | SWT.READ_ONLY);
-            layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-            layoutData.minimumWidth = MIN_FIELD_WIDTH;
-            cProperty.setLayoutData(layoutData);
-            cProperty.setVisible(i<currentPropertyCount);
-            
-            addPropLabels.add(label);
-            cProperties.add(cProperty);
-        }
-        
-        IMenuManager mm = getViewSite().getActionBars()
-        .getMenuManager();        
-        addProperty = new Action(Messages.DriveInquirerView_menu_add_property){
-            @Override
-            public void run(){
-                addNewProperty();
-            }
-        };
-        mm.add(addProperty);
-        
         chart = createChart();
         chartFrame = new ChartCompositeImpl(frame, SWT.NONE, chart, true);
         fData = new FormData();
-        fData.top = new FormAttachment(addPropBar, 2);
+        fData.top = new FormAttachment(child, 2);
         fData.left = new FormAttachment(0, 2);
         fData.right = new FormAttachment(100, -2);
         fData.bottom = new FormAttachment(100, -130);
@@ -356,7 +276,6 @@ public class DriveInquirerView extends ViewPart {
         fData.bottom = new FormAttachment(100, -30);
         table.getControl().setLayoutData(fData);
 
-
         labelProvider = new TableLabelProvider();
         labelProvider.createTableColumn();
         provider = new TableContentProvider();
@@ -372,18 +291,18 @@ public class DriveInquirerView extends ViewPart {
         buttonLine.setLayout(formLayout);
 
         bLeft = new Button(buttonLine, SWT.PUSH);
-        bLeft.setText("<<");
+        bLeft.setText(Messages.DriveInquirerView_8);
         bLeftHalf = new Button(buttonLine, SWT.PUSH);
-        bLeftHalf.setText("<");
+        bLeftHalf.setText(Messages.DriveInquirerView_9);
 
         bRight = new Button(buttonLine, SWT.PUSH);
-        bRight.setText(">>");
+        bRight.setText(Messages.DriveInquirerView_10);
         bRightHalf = new Button(buttonLine, SWT.PUSH);
-        bRightHalf.setText(">");
+        bRightHalf.setText(Messages.DriveInquirerView_11);
 
         bReport = new Button(buttonLine, SWT.PUSH);
-        bReport.setText("Report");
-        
+        bReport.setText(Messages.DriveInquirerView_12);
+
         FormData formData = new FormData();
         formData.left = new FormAttachment(0, 5);
         bLeft.setLayoutData(formData);
@@ -404,6 +323,7 @@ public class DriveInquirerView extends ViewPart {
         lLogarithmic.setText(LOG_LABEL);
         bLogarithmic = new Button(buttonLine, SWT.CHECK);
         bLogarithmic.setSelection(false);
+
         lPalette = new Label(buttonLine, SWT.NONE);
         lPalette.setText(PALETTE_LABEL);
         cPalette = new Combo(buttonLine, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -428,94 +348,235 @@ public class DriveInquirerView extends ViewPart {
         dCombo = new FormData();
         dCombo.left = new FormAttachment(lPalette, 2);
         cPalette.setLayoutData(dCombo);
-        
-        FormData dReport  = new FormData();
+
+        FormData dReport = new FormData();
         dReport.left = new FormAttachment(cPalette, 2);
         bReport.setLayoutData(dReport);
 
+        label = new Label(child, SWT.FLAT);
+        label.setText(Messages.DriveInquirerView_label_start_time);
+        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        dateStart = new DateTime(child, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
+        GridData dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        dateStartlayoutData.minimumWidth = 75;
+        dateStart.setLayoutData(dateStartlayoutData);
+
+        label = new Label(child, SWT.FLAT);
+        label.setText(Messages.DriveInquirerView_label_length);
+        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        sLength = new Spinner(child, SWT.BORDER);
+        sLength.setMinimum(1);
+        sLength.setMaximum(1000);
+        sLength.setSelection(5);
+        GridData timeLenlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        timeLenlayoutData.minimumWidth = 45;
+        sLength.setLayoutData(timeLenlayoutData);
+
+        lPropertyPalette = new Label(child, SWT.NONE);
+        lPropertyPalette.setText(PALETTE_LABEL);
+        cPropertyPalette = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cPropertyPalette.setItems(PlatformGIS.getColorBrewer().getPaletteNames());
+        cPropertyPalette.select(0);
+
         setsVisible(false);
+
+        init();
+    }
+
+    /**
+     * Creates the Chart based on a dataset
+     */
+    private JFreeChart createChart() {
+
+        XYBarRenderer xyarearenderer = new EventRenderer();
+        eventDataset = new EventDataset();
+        NumberAxis rangeAxis = new NumberAxis(Messages.DriveInquirerView_13);
+        rangeAxis.setVisible(false);
+        domainAxis = new DateAxis(Messages.DriveInquirerView_14);
+        XYPlot xyplot = new XYPlot(eventDataset, domainAxis, rangeAxis, xyarearenderer);
+
+        xydatasets = new ArrayList<TimeDataset>();
+
+        xyplot.setDomainCrosshairVisible(true);
+        xyplot.setDomainCrosshairLockedOnData(false);
+        xyplot.setRangeCrosshairVisible(false);
+
+        JFreeChart jfreechart = new JFreeChart(CHART_TITLE, JFreeChart.DEFAULT_TITLE_FONT, xyplot, true);
+
+        ChartUtilities.applyCurrentTheme(jfreechart);
+        jfreechart.getTitle().setVisible(false);
+
+        axisNumerics = new ArrayList<ValueAxis>(0);
+        axisLogs = new ArrayList<LogarithmicAxis>(0);
+        xyplot.getRenderer(0).setSeriesPaint(0, new Color(0, 0, 0, 0));
+
+        return jfreechart;
+
+    }
+
+    /**
+     * Init start data
+     */
+    private void init() {
+        NeoLoaderPlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
+        addListeners();
         cDrive.setItems(getDriveItems());
 
-        addListeners();
-        initializeStartupProperties();
+        formPropertyList();
+
+        cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
+
+        initializeIndex(cDrive.getText());
+
+        initEvents();
     }
 
     /**
-     * initialize startup properies;
+     * Init events
      */
-    private void initializeStartupProperties() {
-        if (!setProperty(cDrive, initDrive)) {
-            return;
-        }
-        formPropertyLists();
-        currentPropertyCount = initPropCount;
-        for(int i=0; i<currentPropertyCount;i++){
-            setProperty(cProperties.get(i),initProperties.get(i));
-        }
-        setProperty(cEvent, initEvent);
+    private void initEvents() {
+        Transaction tx = NeoUtils.beginTransaction();
         try {
-            if (initTime != null) {
-                long beginTime = Long.parseLong(initTime);
-                setBeginTime(beginTime);
+            Node gis = getGisDriveNode();
+            if (gis == null) {
+                return;
             }
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+            currentIndex = cDrive.getSelectionIndex();
+            PropertyHeader propertyHeader = new PropertyHeader(gis);
+            Collection<String> events = propertyHeader.getEvents();
+            eventList = new ArrayList<String>();
+            eventList.add(ALL_EVENTS);
+            if (events != null) {
+                eventList.addAll(events);
+            }
+            cEvent.setItems(eventList.toArray(new String[0]));
+            cEvent.select(0);
+
+            initializeIndex(cDrive.getText());
+            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis, null);
+            beginGisTime = minMax.getLeft();
+            endGisTime = minMax.getRight();
+            if (beginGisTime == null || endGisTime == null) {
+                displayErrorMessage(Messages.DriveInquirerView_15);
+                validDrive = false;
+                return;
+            }
+            selectedTime = beginGisTime;
+            slider.setMaximum((int)((endGisTime - beginGisTime) / SLIDER_STEP));
+            slider.setSelection(0);
+            selectedTime = beginGisTime;
+            setBeginTime(beginGisTime);
+            chart.getXYPlot().setDomainCrosshairValue(selectedTime);
+
+        } finally {
+            tx.finish();
         }
-        if (initTimeLen != null) {
-            sLength.setSelection(initTimeLen);
-        }
-        setProperty(cPalette, initPalette);
+    }
+
+    /**
+     * Returns the color from selected palette for property by index
+     * 
+     * @param propNum index
+     * @return Color
+     */
+    private Color getColorForProperty(int propNum) {
+        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalette(cPropertyPalette.getText());
+        Color[] colors = palette.getColors(palette.getMaxColors());
+        int index = ((colors.length - 1) * propNum) / Math.max(1, getCurrentPropertyCount() - 1);
+        Color color = colors[index];
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
+    }
+
+    /**
+     * get iterable of necessary mp nodes
+     * 
+     * @param root - root
+     * @param beginTime - begin time
+     * @param length - end time
+     * @return
+     */
+    private Iterable<Node> getNodeIterator(final Long beginTime, final Long length) {
+        return timestampIndex.searchTraverser(new Long[] {beginTime}, new Long[] {beginTime + length + 1});
+    }
+
+    /**
+     * Initialized Timestamp index for dataset
+     * 
+     * @param datasetName name of dataset
+     */
+    private void initializeIndex(String datasetName) {
         try {
-            if (initLogarithm != null) {
-                boolean l = Boolean.parseBoolean(initLogarithm);
-                bLogarithmic.setSelection(l);
-            }
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+            timestampIndex = NeoUtils.getTimeIndexProperty(datasetName);
+            timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
-        if (bLogarithmic.getSelection()) {
-            XYPlot plot = (XYPlot)chart.getPlot();
-            for(int i=0; i<currentPropertyCount;i++){
-               LogarithmicAxis axisLog = axisLogs.get(i);
-               plot.setRangeAxis(currentPropertyCount-i, axisLog);
-               axisLog.autoAdjustRange();
-            }
-        }
-        updateChart();
     }
 
     /**
-     * Sets value into property
-     * 
-     * @param combo - Combo
-     * @param value - value
-     * @return if sets is correctly - return true else false
+     *Preparing existing property lists for display
      */
-    private boolean setProperty(Combo combo, String value) {
-        if (combo == null || value == null) {
-            return false;
+    private void formPropertyList() {
+        propertyLists.clear();
+        propertyListsConstantValue = getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS);
+        String[] lists = propertyListsConstantValue.split(DataLoadPreferences.CRS_DELIMETERS);
+        if (lists.length > 1 && lists.length % 2 != 0) {
+            displayErrorMessage(Messages.DriveInquirerView_16);
         }
-        for (int i = 0; i < combo.getItemCount(); i++) {
-            if (combo.getItem(i).equals(value)) {
-                combo.select(i);
-                return true;
+        for (int i = 0; i < lists.length; i += 2) {
+            List<String> allPr = Arrays.asList(lists[i + 1].split(",")); //$NON-NLS-1$
+            List<String> prsToAdd = new ArrayList<String>(allPr.size());
+            for (String pr : allPr) {
+                if (!pr.trim().isEmpty()) {
+                    prsToAdd.add(pr.trim());
+                }
             }
+            propertyLists.put(lists[i], prsToAdd);
         }
-        return false;
     }
 
     /**
-     * set chart visible
+     * Displays error message instead of throwing an exception
      * 
-     * @param visible - is visible?
+     * @param e exception thrown
      */
-    private void setsVisible(boolean visible) {
-        chartFrame.setVisible(visible);
-        table.getControl().setVisible(visible);
-        buttonLine.setVisible(visible);
-        slider.setVisible(visible);
+    private void displayErrorMessage(final String e) {
+        final Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                MessageDialog.openError(display.getActiveShell(), Messages.DriveInquirerView_18, e);
+            }
+
+        });
+    }
+
+    /**
+     * get Drive list
+     * 
+     * @return String[]
+     */
+    private String[] getDriveItems() {
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        Node refNode = service.getReferenceNode();
+        gisDriveNodes = new LinkedHashMap<String, Node>();
+
+        Transaction tx = service.beginTx();
+        try {
+            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString(); //$NON-NLS-1$
+                if (NeoUtils.isGisNode(node) && type.equals(GisTypes.DRIVE.getHeader()) || NodeTypes.OSS.checkNode(node)) {
+                    String id = NeoUtils.getSimpleNodeName(node, null);
+                    gisDriveNodes.put(id, node);
+                }
+            }
+
+            return gisDriveNodes.keySet().toArray(new String[] {});
+        } finally {
+            tx.finish();
+        }
     }
 
     /**
@@ -538,7 +599,7 @@ public class DriveInquirerView extends ViewPart {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                updateProperty();
+                updateEvent();
             }
 
             @Override
@@ -546,16 +607,10 @@ public class DriveInquirerView extends ViewPart {
                 widgetSelected(e);
             }
         });
-        
-        for(Combo property : cProperties){
-            addListenerToProperty(property);
-        }
-        
-        bLogarithmic.addSelectionListener(new SelectionListener() {
-
+        cPropertyList.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                logarithmicSelection();
+                updatePropertyList();
             }
 
             @Override
@@ -563,31 +618,6 @@ public class DriveInquirerView extends ViewPart {
                 widgetSelected(e);
             }
         });
-        bRightHalf.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                rightHalf();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
-        // change
-        // dateStart.addSelectionListener(new SelectionListener() {
-        //
-        // @Override
-        // public void widgetSelected(SelectionEvent e) {
-        // changeDate();
-        // }
-        //
-        // @Override
-        // public void widgetDefaultSelected(SelectionEvent e) {
-        // widgetSelected(e);
-        // }
-        // });
         dateStart.addFocusListener(new FocusListener() {
 
             @Override
@@ -612,7 +642,6 @@ public class DriveInquirerView extends ViewPart {
             public void keyPressed(KeyEvent e) {
             }
         });
-        // change time length
         sLength.addFocusListener(new FocusListener() {
 
             @Override
@@ -686,6 +715,19 @@ public class DriveInquirerView extends ViewPart {
                 widgetSelected(e);
             }
         });
+        cPropertyPalette.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updatePropertyPalette();
+
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         slider.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -706,189 +748,225 @@ public class DriveInquirerView extends ViewPart {
                     return;
                 }
                 long domainCrosshairValue = (long)chart.getXYPlot().getDomainCrosshairValue();
-                if (domainCrosshairValue!=selectedTime){
-                    selectedTime=domainCrosshairValue;
-                    slider.setSelection((int)((selectedTime-beginGisTime)/SLIDER_STEP));
+                if (domainCrosshairValue != selectedTime) {
+                    selectedTime = domainCrosshairValue;
+                    slider.setSelection((int)((selectedTime - beginGisTime) / SLIDER_STEP));
                 }
                 labelProvider.refreshTable();
                 table.setInput(0);
                 table.refresh();
             }
         });
-        bReport.addSelectionListener(new SelectionAdapter(){
+        bReport.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 generateReport();
             }
-            
-        });
-    }
-    
-    private void addNewProperty() {
-        addPropLabels.get(currentPropertyCount-MIN_PROP_COUNT).setVisible(true);
-        cProperties.get(currentPropertyCount++).setVisible(true);
-        
-        if(currentPropertyCount==MAX_PROP_COUNT){
-            addProperty.setEnabled(false);
-        }
-        updateChart();
-    }
 
-    private void addListenerToProperty(Combo cProperty) {
-        SelectionListener listener = new SelectionListener() {
+        });
+        bAddPropertyList.addSelectionListener(new SelectionListener() {
+
             @Override
             public void widgetSelected(SelectionEvent e) {
-                updateProperty();
+                Node gis = getGisDriveNode();
+                PropertyListPreferences page = new PropertyListPreferences();
+                if (gis != null) {
+                    page.setAvaliableProperties(Arrays.asList(new PropertyHeader(gis).getNumericFields()));
+                }
+
+                page.setTitle(Messages.DriveInquirerView_20);
+                // page.setSubTitle("Select the coordinate reference system from the list of commonly used CRS's, or add a new one with the Add button");
+                page.init(PlatformUI.getWorkbench());
+                PreferenceManager mgr = new PreferenceManager();
+                IPreferenceNode node = new PreferenceNode("1", page); //$NON-NLS-1$
+                mgr.addToRoot(node);
+                Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+                PreferenceDialog pdialog = new PreferenceDialog(shell, mgr);;
+                if (pdialog.open() == PreferenceDialog.OK) {
+                    page.performOk();
+
+                    // result = page.getCRS();
+                }
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
-        };
-        cProperty.addSelectionListener(listener);
+        });
     }
 
     /**
-     * Change time length
+     * Updates colors on chart after palette changed
      */
-    protected void changeTimeLenght() {
-        if (!isTimeLengthChanged()) {
-            return;
+    protected void updatePropertyPalette() {
+        XYPlot xyplot = chart.getXYPlot();
+        for (int i = 1; i <= getCurrentPropertyCount(); i++) {
+            ValueAxis axisNumeric = xyplot.getRangeAxis(i);
+            LogarithmicAxis axisLog = new LogarithmicAxis(axisNumeric.getLabel());
+
+            Color color = getColorForProperty(i - 1);
+            axisLog.setTickLabelPaint(color);
+            axisLog.setLabelPaint(color);
+            axisNumeric.setTickLabelPaint(color);
+            axisNumeric.setLabelPaint(color);
+
+            xyplot.getRenderer(i).setSeriesPaint(0, color);
+
         }
-        updateChart();
-        oldTimeLength = sLength.getSelection();
     }
 
     /**
-     * @return
+     * Generate report
      */
-    private boolean isTimeLengthChanged() {
-        return oldTimeLength == null || sLength.getSelection() != oldTimeLength;
-    }
-
     private void generateReport() {
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTimeInMillis(beginGisTime);
         calendar.set(GregorianCalendar.HOUR_OF_DAY, dateStart.getHours());
         calendar.set(GregorianCalendar.MINUTE, dateStart.getMinutes());
         calendar.set(GregorianCalendar.SECOND, dateStart.getSeconds());
-        System.out.println("[DEBUG]calendar.getTimeInMillis()"+calendar.getTimeInMillis());// TODO delete debug info
-        
-      
-        final String TRAVERSE_NEXT_ALL = "traverse(:outgoing, :NEXT, :all)\n";
-        final String TRAVERSE_CHILD_1 = "traverse(:outgoing, :CHILD, 1)\n";
-        //TODO fix when drive loader will be fixed
-//        Long start_time=(((dateStart.getHours()-2L)*60+dateStart.getMinutes())*60+dateStart.getSeconds())*1000;
-        Long start_time=calendar.getTimeInMillis();
-        Long end_time=start_time+sLength.getSelection()*60*1000;
-        if (selectedTime==null)
-            selectedTime=start_time;
-        Long delta_sec=2L;
-        Long delta_msec=delta_sec*1000;
-        
-//        System.out.println("time: "+dateStart.getHours()+":"+dateStart.getMinutes()+":"+dateStart.getSeconds());
-        StringBuffer sb = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(
-                System.getProperty("user.name")).append("'\n  date '")
-                .append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n  chart 'Drive ").append(cDrive.getText()).append("' do\n");
-        sb.append("    self.type=:time\n");
-  
-        //event dataset
-        sb.append("    select 'event dataset', :categories=>'timestamp', :values=>'event_type', :time_period=>:millisecond, :event=>'")
-        .append(cEvent.getText()).append("' do\n");
-//        sb.append("      from{\n");
-        sb.append("      from{\n");
-        sb.append("        ").append(TRAVERSE_CHILD_1);
-        sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
-        sb.append("      }\n");
-        sb.append("      ").append(TRAVERSE_NEXT_ALL);
-        sb.append("      stop{property? 'timestamp' and self[:timestamp]>").append(end_time).append("}\n");
-//        sb.append("      }\n");
-//        sb.append("      ").append(TRAVERSE_CHILD_1);
-        sb.append("      ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(end_time)
-        .append(" and self[:timestamp]>=").append(start_time).append(") and property? 'event_type'");
-        if (!cEvent.getText().equals(ALL_EVENTS)){
-            sb.append(" and self[:event_type]=='").append(cEvent.getText()).append("'}\n");
-        }else{
-            sb.append("}\n");
+        System.out.println("[DEBUG]calendar.getTimeInMillis()" + calendar.getTimeInMillis());// TODO //$NON-NLS-1$
+        // delete
+        // debug
+        // info
+
+        final String TRAVERSE_NEXT_ALL = "traverse(:outgoing, :NEXT, :all)\n"; //$NON-NLS-1$
+        final String TRAVERSE_CHILD_1 = "traverse(:outgoing, :CHILD, 1)\n"; //$NON-NLS-1$
+        // TODO fix when drive loader will be fixed
+        // Long
+        // start_time=(((dateStart.getHours()-2L)*60+dateStart.getMinutes())*60+dateStart.getSeconds())*1000;
+        Long start_time = calendar.getTimeInMillis();
+        Long end_time = start_time + sLength.getSelection() * 60 * 1000;
+        if (selectedTime == null)
+            selectedTime = start_time;
+        Long delta_sec = 2L;
+        Long delta_msec = delta_sec * 1000;
+
+        // System.out.println("time: "+dateStart.getHours()+":"+dateStart.getMinutes()+":"+dateStart.getSeconds());
+        StringBuffer sb = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(System.getProperty("user.name")).append( //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                "'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n  chart 'Drive ").append(cDrive.getText()).append("' do\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        sb.append("    self.type=:time\n"); //$NON-NLS-1$
+
+        // event dataset
+        sb.append("    select 'event dataset', :categories=>'timestamp', :values=>'event_type', :time_period=>:millisecond, :event=>'").append(cEvent.getText()).append( //$NON-NLS-1$
+                "' do\n"); //$NON-NLS-1$
+        // sb.append("      from{\n");
+        sb.append("      from{\n"); //$NON-NLS-1$
+        sb.append("        ").append(TRAVERSE_CHILD_1); //$NON-NLS-1$
+        sb.append(Messages.DriveInquirerView_36).append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n"); //$NON-NLS-2$ //$NON-NLS-3$
+        sb.append("      }\n"); //$NON-NLS-1$
+        sb.append("      ").append(TRAVERSE_NEXT_ALL); //$NON-NLS-1$
+        sb.append("      stop{property? 'timestamp' and self[:timestamp]>").append(end_time).append("}\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        // sb.append("      }\n");
+        // sb.append("      ").append(TRAVERSE_CHILD_1);
+        sb.append("      ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(end_time).append(" and self[:timestamp]>=").append(start_time).append( //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                ") and property? 'event_type'"); //$NON-NLS-1$
+        if (!cEvent.getText().equals(ALL_EVENTS)) {
+            sb.append(" and self[:event_type]=='").append(cEvent.getText()).append("'}\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        } else {
+            sb.append("}\n"); //$NON-NLS-1$
         }
-        sb.append("    end\n");
-        //property datasets
-        String prefix = "    select 'property datasets', :categories=>'timestamp', :values=>['";
-        for(int i=0; i<currentPropertyCount; i++){
-            sb.append(prefix)
-            .append(cProperties.get(i).getText());
-            prefix = "', '";
+        sb.append("    end\n"); //$NON-NLS-1$
+        // property datasets
+        String prefix = "    select 'property datasets', :categories=>'timestamp', :values=>['"; //$NON-NLS-1$
+
+        // for(int i=0; i<currentPropertyCount; i++){
+        // sb.append(prefix)
+        // .append(cProperties.get(i).getText());
+        // prefix = "', '";
+        // }
+        for (String property : currentProperies) {
+            sb.append(prefix).append(property);
+            prefix = "', '"; //$NON-NLS-1$
         }
-        sb.append("'], :time_period=>:millisecond do\n");
-        sb.append("      from{\n");
-//        sb.append("        from{\n");
-        sb.append("        ").append(TRAVERSE_CHILD_1);
-        sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
-        sb.append("        }\n");
-        sb.append("        ").append(TRAVERSE_NEXT_ALL);
-        sb.append("        stop{property? 'timestamp' and self[:timestamp]>").append(end_time).append("}\n");
-//        sb.append("      }\n");
-//        sb.append("      ").append(TRAVERSE_CHILD_1);
-        sb.append("      ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(end_time)
-        .append(" and self[:timestamp]>=").append(start_time);
-        prefix = ") and (property? '";
-        for(int i=0; i<currentPropertyCount; i++){
-            sb.append(prefix).append(cProperties.get(i).getText());
-            prefix = "' or property? '";
+
+        sb.append("'], :time_period=>:millisecond do\n"); //$NON-NLS-1$
+        sb.append("      from{\n"); //$NON-NLS-1$
+        // sb.append("        from{\n");
+        sb.append("        ").append(TRAVERSE_CHILD_1); //$NON-NLS-1$
+        sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        sb.append("        }\n"); //$NON-NLS-1$
+        sb.append(Messages.DriveInquirerView_60).append(TRAVERSE_NEXT_ALL);
+        sb.append("        stop{property? 'timestamp' and self[:timestamp]>").append(end_time).append("}\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        // sb.append("      }\n");
+        // sb.append("      ").append(TRAVERSE_CHILD_1);
+        sb.append("      ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(end_time).append(" and self[:timestamp]>=").append(start_time); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        prefix = ") and (property? '"; //$NON-NLS-1$
+
+        // for(int i=0; i<currentPropertyCount; i++){
+        // sb.append(prefix).append(cProperties.get(i).getText());
+        // prefix = "' or property? '";
+        // }
+        for (String property : currentProperies) {
+            sb.append(prefix).append(property);
+            prefix = "' or property? '"; //$NON-NLS-1$
         }
-        sb.append("')}\n");
-        sb.append("    end\n");
-        sb.append("  end\n");//chart end
-        
-        //table
-        sb.append("  table 'Drive table' do\n");
-        prefix = "    select 'drive table data', :properties=>['id','type','time','timestamp', 'event_type', '";
-        for(int i=0; i<currentPropertyCount; i++){
-            sb.append(prefix).append(cProperties.get(i).getText());
-            prefix = "', '";
+
+        sb.append("')}\n"); //$NON-NLS-1$
+        sb.append("    end\n"); //$NON-NLS-1$
+        sb.append("  end\n");// chart end //$NON-NLS-1$
+
+        // table
+        sb.append("  table 'Drive table' do\n"); //$NON-NLS-1$
+        prefix = "    select 'drive table data', :properties=>['id','type','time','timestamp', 'event_type', '"; //$NON-NLS-1$
+
+        // for(int i=0; i<currentPropertyCount; i++){
+        // sb.append(prefix).append(cProperties.get(i).getText());
+        // prefix = "', '";
+        // }
+        for (String property : currentProperies) {
+            sb.append(prefix).append(property);
+            prefix = "', '"; //$NON-NLS-1$
         }
-        sb.append("'] do\n");
-        sb.append("      from{\n");
-//        sb.append("        from{\n");
-        sb.append("        ").append(TRAVERSE_CHILD_1);
-        sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n");
-        sb.append("      }\n");
-        sb.append("      ").append(TRAVERSE_NEXT_ALL);
-        sb.append("      stop{property? 'timestamp' and self[:timestamp]>").append(selectedTime+delta_msec).append("}\n");
-//        sb.append("      }\n");
-//        sb.append("      ").append(TRAVERSE_CHILD_1);
-        sb.append("    ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(selectedTime+delta_msec)
-        .append(" and self[:timestamp]>=").append(selectedTime-delta_msec);
-        prefix = ") and (property? 'event_type' or property? '";
-        for(int i=0; i<currentPropertyCount; i++){
-            sb.append(prefix).append(cProperties.get(i).getText());
-            prefix = "' or property? '";
+
+        sb.append("'] do\n"); //$NON-NLS-1$
+        sb.append("      from{\n"); //$NON-NLS-1$
+        // sb.append("        from{\n");
+        sb.append("        ").append(TRAVERSE_CHILD_1); //$NON-NLS-1$
+        sb.append("        ").append("where {self[:type]=='gis' and self[:name]=='").append(cDrive.getText()).append("'}\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        sb.append("      }\n"); //$NON-NLS-1$
+        sb.append("      ").append(TRAVERSE_NEXT_ALL); //$NON-NLS-1$
+        sb.append("      stop{property? 'timestamp' and self[:timestamp]>").append(selectedTime + delta_msec).append("}\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        // sb.append("      }\n");
+        // sb.append("      ").append(TRAVERSE_CHILD_1);
+        sb.append("    ").append("where {(property? 'timestamp' and self[:timestamp]<=").append(selectedTime + delta_msec).append(" and self[:timestamp]>=").append( //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                selectedTime - delta_msec);
+        prefix = ") and (property? 'event_type' or property? '"; //$NON-NLS-1$
+
+        // for(int i=0; i<currentPropertyCount; i++){
+        // sb.append(prefix).append(cProperties.get(i).getText());
+        // prefix = "' or property? '";
+        // }
+        for (String property : currentProperies) {
+            sb.append(prefix).append(property);
+            prefix = "' or property? '"; //$NON-NLS-1$
         }
-        sb.append("')}\n");
-        sb.append("    end\n");
-        sb.append("  end\n");
-        sb.append("end\n");
-        
-        
-//        StringBuffer sb1 = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(
-//                System.getProperty("user.name")).append("'\n  date '")
-//                .append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n  chart '").append(cDrive.getText()).append("' do\n    self.drive='")
-//                .append(cDrive.getText()).append("'\n    self.event='")
-//                .append(cEvent.getText()).append("'\n    self.property1='")
-//                .append(cProperty1.getText()).append("'\n    self.property2='")
-//                .append(cProperty2.getText()).append("'\n    self.start_time='")
-//                .append(dateStart.getHours()).append(":").append(dateStart.getMinutes()).append(":").append(dateStart.getSeconds())
-//                .append("'\n    self.length='").append(sLength.getSelection()).append("'\n  end\nend");
-        
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];//TODO correct
+
+        sb.append("')}\n"); //$NON-NLS-1$
+        sb.append("    end\n"); //$NON-NLS-1$
+        sb.append("  end\n"); //$NON-NLS-1$
+        sb.append("end\n"); //$NON-NLS-1$
+
+        // StringBuffer sb1 = new
+        // StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(
+        // System.getProperty("user.name")).append("'\n  date '")
+        // .append(new SimpleDateFormat("yyyy-MM-dd").format(new
+        // Date())).append("'\n  chart '").append(cDrive.getText()).append("' do\n    self.drive='")
+        // .append(cDrive.getText()).append("'\n    self.event='")
+        // .append(cEvent.getText()).append("'\n    self.property1='")
+        // .append(cProperty1.getText()).append("'\n    self.property2='")
+        // .append(cProperty2.getText()).append("'\n    self.start_time='")
+        // .append(dateStart.getHours()).append(":").append(dateStart.getMinutes()).append(":").append(dateStart.getSeconds())
+        // .append("'\n    self.length='").append(sLength.getSelection()).append("'\n  end\nend");
+
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];// TODO correct
         IFile file;
         int i = 0;
-        while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
+        while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) { //$NON-NLS-1$ //$NON-NLS-2$
             i++;
         }
-        System.out.println("Report script:\n" + sb.toString());
+        System.out.println("Report script:\n" + sb.toString()); //$NON-NLS-1$
         InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
         try {
             file.create(is, true, null);
@@ -901,7 +979,7 @@ public class DriveInquirerView extends ViewPart {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         try {
-            getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.splash.editors.ReportEditor");
+            getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.splash.editors.ReportEditor"); //$NON-NLS-1$
         } catch (PartInitException e) {
             // TODO Handle PartInitException
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -915,69 +993,30 @@ public class DriveInquirerView extends ViewPart {
         chartFrame.dropAnchor();
         int i = slider.getSelection();
         XYPlot xyplot = (XYPlot)chart.getPlot();
-        ValueAxis valueaxis = xyplot.getDomainAxis();
-        Range range = valueaxis.getRange();
-        Double d = beginGisTime+ (i / (double)(slider.getMaximum()-slider.getMinimum())) * (endGisTime-beginGisTime);
-        selectedTime=d.longValue();
-        xyplot.setDomainCrosshairValue(selectedTime.doubleValue());       
-        double l = xyplot.getDomainCrosshairValue()-d;
+        Double d = beginGisTime + (i / (double)(slider.getMaximum() - slider.getMinimum())) * (endGisTime - beginGisTime);
+        selectedTime = d.longValue();
+        xyplot.setDomainCrosshairValue(selectedTime.doubleValue());
         Long beginTime = getBeginTime();
         int timeWindowLen = getLength();
-        Long endTime=beginTime + timeWindowLen;
-        if (selectedTime<beginTime||selectedTime>endTime){
-//            selectedTime=Math.min(endGisTime, selectedTime);
-//            selectedTime=Math.max(beginGisTime, selectedTime);
-            Long windowStartTime=selectedTime<beginTime?Math.max(beginGisTime, beginTime-timeWindowLen):Math.min(endGisTime, beginTime+timeWindowLen);
-            if (selectedTime<windowStartTime||selectedTime>windowStartTime+timeWindowLen){
-                windowStartTime= selectedTime;
+        Long endTime = beginTime + timeWindowLen;
+        if (selectedTime < beginTime || selectedTime > endTime) {
+            Long windowStartTime = selectedTime < beginTime ? Math.max(beginGisTime, beginTime - timeWindowLen) : Math.min(endGisTime, beginTime + timeWindowLen);
+            if (selectedTime < windowStartTime || selectedTime > windowStartTime + timeWindowLen) {
+                windowStartTime = selectedTime;
             }
-           setBeginTime(windowStartTime);
-           updateChart();
-        }
-       chart.fireChartChanged();
-    }
-
-    /**
-     *begin time+=length
-     */
-    protected void rightHalf() {
-        Long time = getBeginTime();
-        int length = getLength();
-        time += length / 2;
-        if (time > endGisTime) {
-            nextGis();
-        } else {
-            setBeginTime(time);
+            setBeginTime(windowStartTime);
             updateChart();
         }
+        chart.fireChartChanged();
     }
 
     /**
-     * Sets begin time
+     * get length from spin
      * 
-     * @param time - time
+     * @return length (milliseconds)
      */
-    @SuppressWarnings("deprecation")
-    private void setBeginTime(Long time) {
-        dateStartTimestamp = time;
-        Date date = new Date(time);
-        dateStart.setHours(date.getHours());
-        dateStart.setMinutes(date.getMinutes());
-        dateStart.setSeconds(date.getSeconds());
-    }
-
-    /**
-     * go to right
-     */
-    private void right() {
-        long time = Math.max(beginGisTime, endGisTime - getLength());
-        if (getBeginTime() >= time) {
-            nextGis();
-        } else {
-            setBeginTime(time);
-            updateChart();
-        }
-
+    private int getLength() {
+        return sLength.getSelection() * 60 * 1000;
     }
 
     /**
@@ -1013,34 +1052,26 @@ public class DriveInquirerView extends ViewPart {
      *go to previos gis node
      */
     private void previosGis() {
-        // int index = currentIndex;
         if (currentIndex <= 0) {
             return;
         }
         currentIndex--;
         cDrive.select(currentIndex);
         changeDrive();
-        // if (index < 0) {
-        // index = size - 1;
-        // }
-        // currentIndex = index;
-        // Node root = dataset.get(currentIndex);
-        // Node mp = getFirstMpNode(root);
-        // Long time = NeoUtils.getNodeTime(mp);
-        // beginGisTime = time;
-        // mp = getLastMpNode(mp);
-        // endGisTime = NeoUtils.getNodeTime(mp);
-        // setBeginTime(time);
-        // updateChart();
     }
 
     /**
-     * get length from spin
-     * 
-     * @return length (milliseconds)
+     * go to right
      */
-    private int getLength() {
-        return sLength.getSelection() * 60 * 1000;
+    private void right() {
+        long time = Math.max(beginGisTime, endGisTime - getLength());
+        if (getBeginTime() >= time) {
+            nextGis();
+        } else {
+            setBeginTime(time);
+            updateChart();
+        }
+
     }
 
     /**
@@ -1054,6 +1085,24 @@ public class DriveInquirerView extends ViewPart {
         currentIndex++;
         cDrive.select(currentIndex);
         changeDrive();
+    }
+
+    /**
+     * Change time length
+     */
+    protected void changeTimeLenght() {
+        if (!isTimeLengthChanged()) {
+            return;
+        }
+        updateChart();
+        oldTimeLength = sLength.getSelection();
+    }
+
+    /**
+     * @return isTimeLengthChanged
+     */
+    private boolean isTimeLengthChanged() {
+        return oldTimeLength == null || sLength.getSelection() != oldTimeLength;
     }
 
     /**
@@ -1074,19 +1123,6 @@ public class DriveInquirerView extends ViewPart {
     }
 
     /**
-     * Sets time from datetime field
-     */
-    private void setTimeFromField() {
-        GregorianCalendar cl = new GregorianCalendar();
-        cl.setTimeInMillis(dateStartTimestamp);
-        cl.set(Calendar.HOUR_OF_DAY, dateStart.getHours());
-        cl.set(Calendar.MINUTE, dateStart.getMinutes());
-        cl.set(Calendar.SECOND, dateStart.getSeconds());
-        dateStartTimestamp = cl.getTimeInMillis();
-
-    }
-
-    /**
      *Check changing start date
      * 
      * @return true if start date was changed
@@ -1096,158 +1132,26 @@ public class DriveInquirerView extends ViewPart {
     }
 
     /**
-     *change logarithmicSelection
+     * Sets time from datetime field
      */
-    protected void logarithmicSelection() {
-        XYPlot plot = (XYPlot)chart.getPlot();
-        if (bLogarithmic.getSelection()) {
-            for(int i=0; i<MAX_PROP_COUNT; i++){
-                LogarithmicAxis axisLog = axisLogs.get(i);
-                plot.setRangeAxis(MAX_PROP_COUNT-i,axisLog);
-                axisLog.autoAdjustRange();
-            }
-        } else {
-            for(int i=0; i<MAX_PROP_COUNT; i++){
-                ValueAxis axisNum = axisNumerics.get(i);
-                plot.setRangeAxis(MAX_PROP_COUNT-i,axisNum);
-            }
-        }
-        chart.fireChartChanged();
+    private void setTimeFromField() {
+        GregorianCalendar cl = new GregorianCalendar();
+        cl.setTimeInMillis(dateStartTimestamp);
+        cl.set(Calendar.HOUR_OF_DAY, dateStart.getHours());
+        cl.set(Calendar.MINUTE, dateStart.getMinutes());
+        cl.set(Calendar.SECOND, dateStart.getSeconds());
+        dateStartTimestamp = cl.getTimeInMillis();
     }
 
     /**
-     *changed property
+     * Update event
      */
-    protected void updateProperty() {
-        Long beginTime = getBeginTime();
-        String propertyName;
-        for(int i=0; i<currentPropertyCount;i++){
-            propertyName = cProperties.get(i).getText();
-            TimeDataset xydataset = xydatasets.get(i);
-            if (!propertyName.equals(xydataset.getPropertyName())) {
-                xydataset.updateDataset(propertyName, beginTime, sLength.getSelection(), propertyName);
-            }
-        }
-        propertyName = cEvent.getText();
+    protected void updateEvent() {
+        String propertyName = cEvent.getText();
         if (!propertyName.equals(eventDataset.getPropertyName())) {
             eventDataset.propertyName = propertyName;
             eventDataset.update();
-            // eventDataset.updateDataset(propertyName, dataset.get(currentIndex), beginTime,
-            // sLength.getSelection(), propertyName);
         }
-        // TODO should we update map if only event was changed?
-        fireEventUpdateChart();
-
-    }
-
-    /**
-     * get begin time
-     * 
-     * @return Long
-     */
-    
-    @SuppressWarnings("deprecation")
-    private Long getBeginTime() {
-        if(dateStartTimestamp == null){
-            return null;
-        }
-        Date date = new Date(dateStartTimestamp);
-        date.setHours(dateStart.getHours());
-        date.setMinutes(dateStart.getMinutes());
-        date.setSeconds(dateStart.getSeconds());
-        return date.getTime();
-    }
-
-    /**
-     *change drive dataset
-     */
-    protected void changeDrive() {
-        if (cDrive.getSelectionIndex() < 0) {
-            setsVisible(false);
-        } else {
-
-            formPropertyLists();
-            updateChart();
-        }
-    }
-
-    /**
-     *update chart
-     */
-    private void updateChart() {
-        if(cDrive.getText().isEmpty()){
-            return;
-        }
-        Node gis = getGisDriveNode();
-        String event = cEvent.getText();
-        if (gis == null || event.isEmpty() || hasEmptyProperties()) {
-            setsVisible(false);
-        }
-        chart.getTitle().setVisible(false);
-        // chart.setTitle(CHART_TITLE + " " + NeoUtils.getSimpleNodeName(root, ""));
-        Integer length = sLength.getSelection();
-        Long time = getBeginTime();
-        Date date = new Date(time);
-        domainAxis.setMinimumDate(date);
-        domainAxis.setMaximumDate(new Date(time + length * 1000 * 60));
-
-        if(xydatasets.size()<currentPropertyCount){
-            addDatasets();
-        }
-        
-        for(int i=0; i<currentPropertyCount; i++){
-            TimeDataset xydataset = xydatasets.get(i);
-            String property = cProperties.get(i).getText();
-            xydataset.updateDataset(property, time, length, property);
-        }
-        eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
-        setsVisible(true);
-        fireEventUpdateChart();
-    }
-    
-    private void addDatasets(){
-        int start = xydatasets.size();
-        XYPlot  xyplot = (XYPlot)chart.getPlot();
-        for(int i=start; i<currentPropertyCount;i++){
-            TimeDataset xydataset = new TimeDataset();
-            StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
-            standardxyitemrenderer.setBaseShapesFilled(true);
-            int number = MAX_PROP_COUNT-i;
-            xyplot.setDataset(number,xydataset);
-            xyplot.setRenderer(number, standardxyitemrenderer);
-            NumberAxis numberaxis = new NumberAxis(getPropertyYAxisName(i));
-            numberaxis.setAutoRangeIncludesZero(false);
-            xyplot.setRangeAxis(number, numberaxis);
-            xyplot.setRangeAxisLocation(number, AxisLocation.BOTTOM_OR_LEFT);
-            xyplot.mapDatasetToRangeAxis(number, number);
-            xydatasets.add(xydataset);
-        }
-        
-        for(int i=start; i<currentPropertyCount; i++){
-            ValueAxis axisNumeric = xyplot.getRangeAxis(MAX_PROP_COUNT-i);
-            LogarithmicAxis axisLog = new LogarithmicAxis(axisNumeric.getLabel());
-            axisLog.setAllowNegativesFlag(true);
-            axisLog.setAutoRange(true);
-            
-            Color color = getColorForProperty(i);
-            axisLog.setTickLabelPaint(color);
-            axisLog.setLabelPaint(color);
-            axisNumeric.setTickLabelPaint(color);
-            axisNumeric.setLabelPaint(color);
-            
-            axisNumerics.add(axisNumeric);
-            axisLogs.add(axisLog);
-            xyplot.getRenderer(MAX_PROP_COUNT-i).setSeriesPaint(0, color);
-        }
-    }
-    
-    private boolean hasEmptyProperties(){
-        for(int i = 0;i<currentPropertyCount;i++){
-            if(cProperties.get(i).getText().isEmpty()){
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -1257,13 +1161,52 @@ public class DriveInquirerView extends ViewPart {
         IMap activeMap = ApplicationGIS.getActiveMap();
         Node gis = getGisDriveNode();
         if (activeMap != ApplicationGIS.NO_MAP) {
-            NeoCatalogPlugin.getDefault().getLayerManager()
-                .sendUpdateMessage(new UpdatePropertiesEvent(gis, getValueForProperty(), true));
+            try {
+                for (ILayer layer : activeMap.getMapLayers()) {
+                    IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
+                    if (resourse != null) {
+                        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
+                        if (gis != null && geo.getMainGisNode().equals(gis)) {
+                            setProperty(geo);
+                            layer.refresh(null);
+                        } else {
+                            dropProperty(geo);
+                        }
+
+                    }
+                }
+            } catch (IOException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
         }
         chart.fireChartChanged();
     }
 
-    private HashMap<String, Object> getValueForProperty() {
+    /**
+     *remove property from geo
+     * 
+     * @param geo
+     */
+    private void dropProperty(GeoNeo geo) {
+        if (geo.getGisType() != GisTypes.DRIVE) {
+            return;
+        }
+        Object map = geo.getProperties(GeoNeo.DRIVE_INQUIRER);
+        if (map != null) {
+            geo.setProperty(GeoNeo.DRIVE_INQUIRER, null);
+        }
+    }
+
+    /**
+     * Sets property in geo for necessary
+     * 
+     * @param geo
+     */
+    private void setProperty(GeoNeo geo) {
+        Node gisNode = getGisDriveNode();
+        if (!geo.getMainGisNode().equals(gisNode)) {
+            return;
+        }
         HashMap<String, Object> map = new HashMap<String, Object>();
         Long beginTime = getBeginTime();
         map.put(GeoConstant.Drive.BEGIN_TIME, beginTime);
@@ -1300,9 +1243,8 @@ public class DriveInquirerView extends ViewPart {
         map.put(GeoConstant.SELECTED_EVENT, cEvent.getText());
         map.put(GeoConstant.EVENT_LIST, Collections.unmodifiableList(eventList));
         map.put(GeoConstant.Drive.SELECT_PALETTE, cPalette.getText());
-        HashMap<String, Object> result = new HashMap<String, Object>(1);
-        result.put(GeoNeo.DRIVE_INQUIRER, map);
-        return result;
+
+        geo.setProperty(GeoNeo.DRIVE_INQUIRER, map);
     }
 
     /**
@@ -1336,30 +1278,101 @@ public class DriveInquirerView extends ViewPart {
     }
 
     /**
-     * Gets index of crosshair data item
-     * 
-     * @param xydataset
-     * @param crosshair
-     * @return index or null
+     * Update data after property list changed
      */
-    private Integer getCrosshairIndex(TimeDataset dataset, Number crosshair) {
-        return getCrosshairIndex(dataset.collection, crosshair);
+    protected void updatePropertyList() {
+        currentProperies = propertyLists.get(cPropertyList.getText());
+        if (currentProperies == null) {
+            currentProperies = new ArrayList<String>(0);
+        }
+        updateDatasets();
+        updateChart();
     }
 
-    private Integer getCrosshairIndex(TimeSeriesCollection collection, Number crosshair) {
-        if (crosshair == null) {
-            return null;
+    /**
+     * Update datasets
+     */
+    protected void updateDatasets() {
+        XYPlot xyplot = chart.getXYPlot();
+        for (int i = 1; i <= xydatasets.size(); i++) {
+            xyplot.setDataset(i, null);
+            xyplot.setRenderer(i, null);
+            xyplot.setRangeAxis(i, null);
+            xyplot.setRangeAxisLocation(i, null);
         }
-        int[] item = collection.getSurroundingItems(0, crosshair.longValue());
-        Integer result = null;
-        if (item[0] >= 0) {
-            result = item[0];
+        xydatasets.clear();
+
+        for (int i = 1; i <= getCurrentPropertyCount(); i++) {
+            TimeDataset xydataset = new TimeDataset();
+            StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
+            standardxyitemrenderer.setBaseShapesFilled(true);
+            xyplot.setDataset(i, xydataset);
+            xyplot.setRenderer(i, standardxyitemrenderer);
+            NumberAxis numberaxis = new NumberAxis(getPropertyYAxisName(i));
+            numberaxis.setAutoRangeIncludesZero(false);
+            xyplot.setRangeAxis(i, numberaxis);
+            xyplot.setRangeAxisLocation(i, AxisLocation.BOTTOM_OR_LEFT);
+            xyplot.mapDatasetToRangeAxis(i, i);
+            xydatasets.add(xydataset);
+
+            ValueAxis axisNumeric = xyplot.getRangeAxis(i);
+            LogarithmicAxis axisLog = new LogarithmicAxis(axisNumeric.getLabel());
+            axisLog.setAllowNegativesFlag(true);
+            axisLog.setAutoRange(true);
+
+            Color color = getColorForProperty(i - 1);
+            axisLog.setTickLabelPaint(color);
+            axisLog.setLabelPaint(color);
+            axisNumeric.setTickLabelPaint(color);
+            axisNumeric.setLabelPaint(color);
+
+            axisNumerics.add(axisNumeric);
+            axisLogs.add(axisLog);
+            xyplot.getRenderer(i).setSeriesPaint(0, color);
         }
-        // else if (item[1] >= 0) {
-        // result = item[1];
-        // }
-        return result;
     }
+
+    /**
+     *update chart
+     */
+    private void updateChart() {
+        if (cDrive.getText().isEmpty() || cPropertyList.getText().isEmpty() || !chartDataValid()) {
+            setsVisible(false);
+            return;
+        }
+        Node gis = getGisDriveNode();
+        String event = cEvent.getText();
+        if (gis == null || event.isEmpty() || getCurrentPropertyCount() < 1) {
+            setsVisible(false);
+        }
+        chart.getTitle().setVisible(false);
+
+        Integer length = sLength.getSelection();
+        Long time = getBeginTime();
+        Date date = new Date(time);
+        domainAxis.setMinimumDate(date);
+        domainAxis.setMaximumDate(new Date(time + length * 1000 * 60));
+        for (int i = 0; i < getCurrentPropertyCount(); i++) {
+            TimeDataset xydataset = xydatasets.get(i);
+            String property = currentProperies.get(i);
+            xydataset.updateDataset(property, time, length, property);
+        }
+        eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
+        setsVisible(true);
+        fireEventUpdateChart();
+    }
+
+    /**
+     *change drive dataset
+     */
+    private void changeDrive() {
+        if (cDrive.getSelectionIndex() < 0) {
+            setsVisible(false);
+        } else {
+            formPropertyLists();
+        }
+    }
+
     /**
      *forms all property depends of gis
      */
@@ -1377,28 +1390,83 @@ public class DriveInquirerView extends ViewPart {
             }
             cEvent.setItems(eventList.toArray(new String[0]));
             cEvent.select(0);
-            String[] array = propertyHeader.getNumericFields();
-            for(Combo property : cProperties){
-                property.setItems(array);
-                if(array.length > 0){
-                    property.select(0);
-                }
-            }
+
             initializeIndex(cDrive.getText());
             Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis, null);
             beginGisTime = minMax.getLeft();
             endGisTime = minMax.getRight();
-            selectedTime=beginGisTime;
-            slider.setMaximum((int)((endGisTime-beginGisTime)/SLIDER_STEP));
+
+            if (beginGisTime == null || endGisTime == null) {
+                displayErrorMessage(Messages.DriveInquirerView_97);
+                validDrive = false;
+                setsVisible(false);
+                return;
+            }
+            validDrive = true;
+
+            selectedTime = beginGisTime;
+            slider.setMaximum((int)((endGisTime - beginGisTime) / SLIDER_STEP));
             slider.setSelection(0);
-            selectedTime=beginGisTime;
+            selectedTime = beginGisTime;
             setBeginTime(beginGisTime);
             chart.getXYPlot().setDomainCrosshairValue(selectedTime);
 
+            updateChart();
         } finally {
             tx.finish();
         }
 
+    }
+
+    /**
+     * set chart visible
+     * 
+     * @param visible - is visible?
+     */
+    private void setsVisible(boolean visible) {
+        chartFrame.setVisible(visible);
+        table.getControl().setVisible(visible);
+        buttonLine.setVisible(visible);
+        slider.setVisible(visible);
+    }
+
+    /**
+     * @return
+     */
+    private String getPropertyYAxisName(int propNum) {
+        return ""; //$NON-NLS-1$
+    }
+
+    /**
+     * Returs preference store
+     * 
+     * @return IPreferenceStore
+     */
+    public IPreferenceStore getPreferenceStore() {
+        return NeoLoaderPlugin.getDefault().getPreferenceStore();
+    }
+
+    /**
+     * get event color
+     * 
+     * @param node node
+     * @return color
+     */
+    public Color getEventColor(Node node) {
+        String event = node.getProperty(EVENT, ALL_EVENTS).toString();
+        int alpha = 0;
+        if (ALL_EVENTS.equals(eventDataset.propertyName) || event.equals(eventDataset.propertyName)) {
+            alpha = 255;
+        }
+        int i = eventList.indexOf(event);
+        if (i < 0) {
+            i = 0;
+        }
+        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalette(cPalette.getText());
+        Color[] colors = palette.getColors(palette.getMaxColors());
+        int index = i % colors.length;
+        Color color = colors[index];
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 
     /**
@@ -1410,31 +1478,94 @@ public class DriveInquirerView extends ViewPart {
         return gisDriveNodes == null ? null : gisDriveNodes.get(cDrive.getText());
     }
 
+    private int getCurrentPropertyCount() {
+        return currentProperies.size();
+    }
+
     /**
-     * get Drive list
+     * Sets begin time
      * 
-     * @return String[]
+     * @param time - time
      */
-    private String[] getDriveItems() {
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-        Node refNode = service.getReferenceNode();
-        gisDriveNodes = new LinkedHashMap<String, Node>();
+    @SuppressWarnings("deprecation")
+    private void setBeginTime(Long time) {
+        dateStartTimestamp = time;
+        Date date = new Date(time);
+        dateStart.setHours(date.getHours());
+        dateStart.setMinutes(date.getMinutes());
+        dateStart.setSeconds(date.getSeconds());
+    }
 
-        Transaction tx = service.beginTx();
-        try {
-            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();
-                Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
-                if (NeoUtils.isGisNode(node) && type.equals(GisTypes.DRIVE.getHeader())||NodeTypes.OSS.checkNode(node)) {
-                    String id = NeoUtils.getSimpleNodeName(node, null);
-                    gisDriveNodes.put(id, node);
-                }
-            }
+    /**
+     * get begin time
+     * 
+     * @return Long
+     */
 
-            return gisDriveNodes.keySet().toArray(new String[] {});
-        } finally {
-            tx.finish();
+    @SuppressWarnings("deprecation")
+    private Long getBeginTime() {
+        if (dateStartTimestamp == null) {
+            return null;
         }
+        Date date = new Date(dateStartTimestamp);
+        date.setHours(dateStart.getHours());
+        date.setMinutes(dateStart.getMinutes());
+        date.setSeconds(dateStart.getSeconds());
+        return date.getTime();
+    }
+
+    /**
+     * Gets index of crosshair data item
+     * 
+     * @param xydataset
+     * @param crosshair
+     * @return index or null
+     */
+    private Integer getCrosshairIndex(TimeDataset dataset, Number crosshair) {
+        return getCrosshairIndex(dataset.collection, crosshair);
+    }
+
+    /**
+     * Returns Crosshair Index
+     * 
+     * @param collection Time Series Collection
+     * @param crosshair Number
+     * @return Integer
+     */
+    private Integer getCrosshairIndex(TimeSeriesCollection collection, Number crosshair) {
+        if (crosshair == null) {
+            return null;
+        }
+        int[] item = collection.getSurroundingItems(0, crosshair.longValue());
+        Integer result = null;
+        if (item[0] >= 0) {
+            result = item[0];
+        }
+        return result;
+    }
+
+    /**
+     * @param time
+     * @return
+     */
+    public Long getPreviousTime(Long time) {
+        XYPlot xyplot = (XYPlot)chart.getPlot();
+        ValueAxis valueaxis = xyplot.getDomainAxis();
+        Range range = valueaxis.getRange();
+
+        return time == null ? null : (long)Math.max(time - 1000, range.getLowerBound());
+    }
+
+    /**
+     * @param time
+     * @return
+     */
+    public Long getNextTime(Long time) {
+        XYPlot xyplot = (XYPlot)chart.getPlot();
+        ValueAxis valueaxis = xyplot.getDomainAxis();
+        Range range = valueaxis.getRange();
+
+        return time == null ? null : (long)Math.min(time + 1000, range.getUpperBound());
     }
 
     @Override
@@ -1442,77 +1573,40 @@ public class DriveInquirerView extends ViewPart {
     }
 
     /**
-     * Creates the Chart based on a dataset
+     * <p>
+     * Event renderer
+     * </p>
+     * 
+     * @author Cinkel_A
+     * @since 1.0.0
      */
-    private JFreeChart createChart() {
+    private class EventRenderer extends XYBarRenderer {
 
-        XYBarRenderer xyarearenderer = new EventRenderer();
-        eventDataset = new EventDataset();
-        NumberAxis rangeAxis = new NumberAxis("Events");
-        rangeAxis.setVisible(false);
-        domainAxis = new DateAxis("Time");
-        XYPlot xyplot = new XYPlot(eventDataset, domainAxis, rangeAxis, xyarearenderer);
-        
-        xydatasets = new ArrayList<TimeDataset>(MAX_PROP_COUNT);
-        for(int i=0; i<currentPropertyCount;i++){
-            TimeDataset xydataset = new TimeDataset();
-            StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
-            standardxyitemrenderer.setBaseShapesFilled(true);
-            int number = MAX_PROP_COUNT-i;
-            xyplot.setDataset(number,xydataset);
-            xyplot.setRenderer(number, standardxyitemrenderer);
-            NumberAxis numberaxis = new NumberAxis(getPropertyYAxisName(i));
-            numberaxis.setAutoRangeIncludesZero(false);
-            xyplot.setRangeAxis(number, numberaxis);
-            xyplot.setRangeAxisLocation(number, AxisLocation.BOTTOM_OR_LEFT);
-            xyplot.mapDatasetToRangeAxis(number, number);
-            xydatasets.add(xydataset);
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 1L;
+
+        public EventRenderer() {
+            super();
         }
 
-        xyplot.setDomainCrosshairVisible(true);
-        xyplot.setDomainCrosshairLockedOnData(false);
-        xyplot.setRangeCrosshairVisible(false);
-        
- 
-        
-        JFreeChart jfreechart = new JFreeChart(CHART_TITLE, JFreeChart.DEFAULT_TITLE_FONT, xyplot, true);
-
-        ChartUtilities.applyCurrentTheme(jfreechart);
-        jfreechart.getTitle().setVisible(false);
-        
-        axisNumerics = new ArrayList<ValueAxis>(MAX_PROP_COUNT);
-        axisLogs = new ArrayList<LogarithmicAxis>(MAX_PROP_COUNT);
-        xyplot.getRenderer(0).setSeriesPaint(0, new Color(0, 0, 0, 0));
-        for(int i=0; i<currentPropertyCount; i++){
-            ValueAxis axisNumeric = xyplot.getRangeAxis(MAX_PROP_COUNT-i);
-            LogarithmicAxis axisLog = new LogarithmicAxis(axisNumeric.getLabel());
-            axisLog.setAllowNegativesFlag(true);
-            axisLog.setAutoRange(true);
-            
-            Color color = getColorForProperty(i);
-            axisLog.setTickLabelPaint(color);
-            axisLog.setLabelPaint(color);
-            axisNumeric.setTickLabelPaint(color);
-            axisNumeric.setLabelPaint(color);
-            
-            axisNumerics.add(axisNumeric);
-            axisLogs.add(axisLog);
-            xyplot.getRenderer(MAX_PROP_COUNT-i).setSeriesPaint(0, color);
+        @Override
+        public Shape getItemShape(int row, int column) {
+            return super.getItemShape(row, column);
         }
-        
-        return jfreechart;
 
-    }
-    
-    private Color getColorForProperty(int propNum){
-        return PROPERTY_COLORS[propNum];        
-    }
+        @Override
+        public Paint getItemFillPaint(int row, int column) {
+            return super.getItemFillPaint(row, column);
+        }
 
-    /**
-     * @return
-     */
-    private String getPropertyYAxisName(int propNum) {
-        return "";
+        @Override
+        public Paint getItemPaint(int row, int column) {
+            TimeSeriesDataItem item = eventDataset.series.getDataItem(column);
+            Node node = NeoServiceProvider.getProvider().getService().getNodeById(item.getValue().longValue());
+            Color color = getEventColor(node);
+            return color;
+        }
+
     }
 
     /**
@@ -1526,7 +1620,7 @@ public class DriveInquirerView extends ViewPart {
     private class EventDataset extends AbstractIntervalXYDataset {
         /** long serialVersionUID field */
         private static final long serialVersionUID = 1L;
-        
+
         private Long beginTime;
         private Long length;
         private TimeSeries series;
@@ -1670,39 +1764,25 @@ public class DriveInquirerView extends ViewPart {
 
     /**
      * <p>
-     * Event renderer
+     * temporary class for avoid bug: if anchor is set - the crosshair do not change by slider
+     * changing remove if more correctly way will be found
      * </p>
      * 
      * @author Cinkel_A
      * @since 1.0.0
      */
-    private class EventRenderer extends XYBarRenderer {
+    public static class ChartCompositeImpl extends ChartComposite {
 
-        /** long serialVersionUID field */
-        private static final long serialVersionUID = 1L;
-
-        public EventRenderer() {
-            super();
+        public ChartCompositeImpl(Composite frame, int none, JFreeChart chart, boolean b) {
+            super(frame, none, chart, b);
         }
 
-        @Override
-        public Shape getItemShape(int row, int column) {
-            return super.getItemShape(row, column);
+        /**
+         * drop anchor;
+         */
+        public void dropAnchor() {
+            setAnchor(null);
         }
-
-        @Override
-        public Paint getItemFillPaint(int row, int column) {
-            return super.getItemFillPaint(row, column);
-        }
-
-        @Override
-        public Paint getItemPaint(int row, int column) {
-            TimeSeriesDataItem item = eventDataset.series.getDataItem(column);
-            Node node = NeoServiceProvider.getProvider().getService().getNodeById(item.getValue().longValue());
-            Color color = getEventColor(node);
-            return color;
-        }
-
     }
 
     /**
@@ -1718,19 +1798,12 @@ public class DriveInquirerView extends ViewPart {
 
         /** long serialVersionUID field */
         private static final long serialVersionUID = 1L;
-        
+
         private Long beginTime;
         private Long length;
         private TimeSeries series;
         private TimeSeriesCollection collection;
         private String propertyName;
-
-        /**
-         * @return Returns the propertyName.
-         */
-        public String getPropertyName() {
-            return propertyName;
-        }
 
         /**
          * update dataset with new data
@@ -1810,7 +1883,6 @@ public class DriveInquirerView extends ViewPart {
             return iterator.hasNext() ? iterator.next() : null;
         }
 
-
         @Override
         public int getSeriesCount() {
             return collection.getSeriesCount();
@@ -1834,8 +1906,7 @@ public class DriveInquirerView extends ViewPart {
 
         @Override
         public Number getY(int i, int j) {
-            return (Number)NeoServiceProvider.getProvider().getService().getNodeById(collection.getY(i, j).longValue())
-                    .getProperty(propertyName);
+            return (Number)NeoServiceProvider.getProvider().getService().getNodeById(collection.getY(i, j).longValue()).getProperty(propertyName);
         }
 
         @Override
@@ -1890,86 +1961,73 @@ public class DriveInquirerView extends ViewPart {
 
     }
 
-    /**
-     * get event color
-     * 
-     * @param node node
-     * @return color
-     */
-    public Color getEventColor(Node node) {
-        String event = node.getProperty(EVENT, ALL_EVENTS).toString();
-        int alpha = 0;
-        if (ALL_EVENTS.equals(eventDataset.propertyName) || event.equals(eventDataset.propertyName)) {
-            alpha = 255;
-        }
-        int i = eventList.indexOf(event);
-        if (i < 0) {
-            i = 0;
-        }
-        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalette(cPalette.getText());
-        Color[] colors = palette.getColors(palette.getMaxColors());
-        int index = i % colors.length;
-        Color color = colors[index];
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
-    }
-
-
-
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
 
         private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
         /** int DEF_SIZE field */
         protected static final int DEF_SIZE = 150;
+
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
             NodeWrapper wr = provider.nodeWrapper;
-            if (columnIndex == 3 && wr.nEvents[(Integer)element] != null) {
-                Color eventColor = getEventColor(wr.nEvents[(Integer)element]);
+            Integer index = (Integer)element;
+            if (columnIndex == 3 && wr.nEvents.size() > index && wr.nEvents.get(index) != null) {
+                Color eventColor = getEventColor(wr.nEvents.get((Integer)element));
                 return Glyph.palette(new Color[] {eventColor}).createImage();
             }
             return getImage(element);
         }
 
-        public void refreshTable(){
+        public void refreshTable() {
             Table tabl = table.getTable();
-            TableColumn col = getColumn(0);
-            col.setText("Time");
-            col.setWidth(DEF_SIZE);
-            col.setResizable(true);
+            TableViewerColumn column;
+            TableColumn col;
+            if (columns.isEmpty()) {
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText(Messages.DriveInquirerView_99);
+                columns.add(col);
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
 
-            for(int i=1; i<=currentPropertyCount; i++){
-                col = getColumn(i);
-                col.setText(Messages.DriveInquirerView_label_property+(i));
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText(Messages.DriveInquirerView_100);
+                columns.add(col);
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
             }
-            
-            col = getColumn(currentPropertyCount+1);
-            col.setText("events");
-            columns.add(col);
-            col.setWidth(DEF_SIZE);
-            col.setResizable(true);
-            for(int i=currentPropertyCount+1; i<MAX_PROP_COUNT+1; i++){
-                col = getColumn(i);
-                col.setText("");
+            int i = 0;
+            for (; i < getCurrentPropertyCount() && i < columns.size() - 2; i++) {
+                col = columns.get(i + 2);
+                col.setText(currentProperies.get(i));
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
             }
+            if (getCurrentPropertyCount() > columns.size() - 2) {
+                for (; i < getCurrentPropertyCount(); i++) {
+                    column = new TableViewerColumn(table, SWT.LEFT);
+                    col = column.getColumn();
+                    col.setText(currentProperies.get(i));
+                    columns.add(col);
+                    col.setWidth(DEF_SIZE);
+                    col.setResizable(true);
+                }
+            } else if (getCurrentPropertyCount() < columns.size() - 2) {
+                i += 2;
+                for (; i < columns.size(); i++) {
+                    col = columns.get(i);
+                    col.setWidth(0);
+                    col.setResizable(false);
+                }
+            }
+
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
             table.setLabelProvider(this);
             table.refresh();
         }
-        
-        private TableColumn getColumn(int colNum){
-            if(colNum<columns.size()){
-                return columns.get(colNum);
-            }
-            TableColumn column = new TableViewerColumn(table, SWT.LEFT).getColumn();
-            columns.add(column);
-            return column;
-        }
-        
+
         /**
          *create column table
          */
@@ -1980,28 +2038,43 @@ public class DriveInquirerView extends ViewPart {
             if (columns.isEmpty()) {
                 column = new TableViewerColumn(table, SWT.LEFT);
                 col = column.getColumn();
-                col.setText("Time");
+                col.setText(Messages.DriveInquirerView_101);
                 columns.add(col);
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
 
-                for(int i=0; i<MAX_PROP_COUNT; i++){
+                column = new TableViewerColumn(table, SWT.LEFT);
+                col = column.getColumn();
+                col.setText(Messages.DriveInquirerView_102);
+                columns.add(col);
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+            }
+            int i;
+            for (i = 0; i < getCurrentPropertyCount() && i < columns.size() - 2; i++) {
+                col = columns.get(i + 2);
+                col.setText(Messages.DriveInquirerView_label_property + (i + 1));
+                col.setWidth(DEF_SIZE);
+                col.setResizable(true);
+            }
+            if (getCurrentPropertyCount() > columns.size() - 2) {
+                for (; i < getCurrentPropertyCount(); i++) {
                     column = new TableViewerColumn(table, SWT.LEFT);
                     col = column.getColumn();
-                    col.setText(Messages.DriveInquirerView_label_property+(i+1));
+                    col.setText(Messages.DriveInquirerView_label_property + (i + 1));
                     columns.add(col);
                     col.setWidth(DEF_SIZE);
                     col.setResizable(true);
                 }
-                
-                column = new TableViewerColumn(table, SWT.LEFT);
-                col = column.getColumn();
-                col.setText("events");
-                columns.add(col);
-                col.setWidth(DEF_SIZE);
-                col.setResizable(true);
-
+            } else if (getCurrentPropertyCount() < columns.size() - 2) {
+                for (; i < getCurrentPropertyCount(); i++) {
+                    col = columns.get(i + 2);
+                    columns.add(col);
+                    col.setWidth(0);
+                    col.setResizable(false);
+                }
             }
+
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
             table.setLabelProvider(this);
@@ -2012,22 +2085,25 @@ public class DriveInquirerView extends ViewPart {
         public String getColumnText(Object element, int columnIndex) {
             NodeWrapper wr = provider.nodeWrapper;
             int index = (Integer)element;
-            SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+            SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
             if (columnIndex == 0) {
-                Long time = wr.time[index];
-                return time == null ? "" : df.format(new Date(time));
-            } 
-            if (columnIndex <= currentPropertyCount && wr.nProperties.get(columnIndex-1)[index] != null) {
-                return wr.nProperties.get(columnIndex-1)[index].getProperty(wr.propertyNames.get(columnIndex-1), "").toString();
-            }
-            if (columnIndex == currentPropertyCount+1) {
-                if (wr.nEvents[index] != null) {
-                    return wr.nEvents[index].getProperty(EVENT, "").toString();
+                if (index >= wr.time.size()) {
+                    return ""; //$NON-NLS-1$
                 }
+                Long time = wr.time.get(index);
+                return time == null ? "" : df.format(new Date(time)); //$NON-NLS-1$
             }
-            return "";
+            if (columnIndex == 1) {
+                if (index < wr.nEvents.size()) {
+                    return wr.nEvents.get(index).getProperty(EVENT, "").toString(); //$NON-NLS-1$
+                }
+                return ""; //$NON-NLS-1$
+            }
+            if (columnIndex < getCurrentPropertyCount() + 2 && (columnIndex - 2) < wr.nProperties.size() && wr.nProperties.get(columnIndex - 2)[index] != null) {
+                return wr.nProperties.get(columnIndex - 2)[index].getProperty(wr.propertyNames.get(columnIndex - 2), "").toString(); //$NON-NLS-1$
+            }
+            return ""; //$NON-NLS-1$
         }
-
     }
 
     /*
@@ -2039,7 +2115,7 @@ public class DriveInquirerView extends ViewPart {
 
     private class TableContentProvider implements IStructuredContentProvider {
 
-        private final NodeWrapper nodeWrapper = new NodeWrapper();
+        private NodeWrapper nodeWrapper = new NodeWrapper();
 
         public TableContentProvider() {
         }
@@ -2055,37 +2131,37 @@ public class DriveInquirerView extends ViewPart {
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            if (newInput == null) {
+            if (newInput == null || cPropertyList.getText().isEmpty()) {
                 return;
             }
+            nodeWrapper = new NodeWrapper();
+
             labelProvider.refreshTable();
             Double crosshair = ((XYPlot)chart.getPlot()).getDomainCrosshairValue();
             nodeWrapper.propertyNames.clear();
-            for(int i=0; i<currentPropertyCount; i++){
-                nodeWrapper.propertyNames.add(cProperties.get(i).getText());
-                changeName(labelProvider.columns.get(i+1), nodeWrapper.propertyNames.get(i));
+            nodeWrapper.propertyNames.addAll(propertyLists.get(cPropertyList.getText()));
+            for (int i = 0; i < getCurrentPropertyCount(); i++) {
+                nodeWrapper.propertyNames.add(currentProperies.get(i));
+                changeName(labelProvider.columns.get(i + 2), nodeWrapper.propertyNames.get(i));
             }
             nodeWrapper.eventName = cEvent.getText();
-            changeName(labelProvider.columns.get(currentPropertyCount+1), nodeWrapper.eventName);
-            for (int i = 0; i < 2; i++) {
-                nodeWrapper.nEvents[i] = null;
-                for(int j=0; j<currentPropertyCount;j++){
-                    nodeWrapper.nProperties.get(j)[i] = null;
-                }
-                nodeWrapper.time[i] = null;
-            }
+            changeName(labelProvider.columns.get(1), nodeWrapper.eventName);
+
+            nodeWrapper.nEvents.clear();
+            nodeWrapper.time.clear();
+
             if (crosshair < 0.1) {
                 return;
             }
-            nodeWrapper.time[1] = crosshair.longValue();
-            nodeWrapper.time[0] = getPreviousTime(nodeWrapper.time[1]);
-            nodeWrapper.time[2] = getNextTime(nodeWrapper.time[1]);
-            for(int i=0; i<currentPropertyCount; i++){
-                fillProperty(crosshair, xydatasets.get(i).collection, nodeWrapper.nProperties.get(i), nodeWrapper.time);
+            nodeWrapper.time.add(null);
+            nodeWrapper.time.add(crosshair.longValue());
+            nodeWrapper.time.set(0, getPreviousTime(nodeWrapper.time.get(1)));
+            nodeWrapper.time.add(getNextTime(nodeWrapper.time.get(1)));
+
+            for (int i = 0; i < getCurrentPropertyCount(); i++) {
+                fillProperty(crosshair, xydatasets.get(i).collection, nodeWrapper.nProperties.get(i), nodeWrapper.time.toArray(new Long[0]));
             }
-            fillProperty(crosshair, eventDataset.collection, nodeWrapper.nEvents, nodeWrapper.time);
-
-
+            fillProperty(crosshair, eventDataset.collection, nodeWrapper.nEvents.toArray(new Node[0]), nodeWrapper.time.toArray(new Long[0]));
 
         }
 
@@ -2094,7 +2170,7 @@ public class DriveInquirerView extends ViewPart {
          * @param name
          */
         private void changeName(TableColumn tableColumn, String name) {
-            if (!tableColumn.getText().equals(name)){
+            if (!tableColumn.getText().equals(name)) {
                 tableColumn.setText(name);
             }
         }
@@ -2107,15 +2183,12 @@ public class DriveInquirerView extends ViewPart {
         private void fillProperty(double crosshair, TimeSeriesCollection dataset, Node[] nodes, Long[] time) {
             Integer index1 = getCrosshairIndex(dataset, time[1]);
             if (index1 != null) {
-                nodes[1] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1).getValue()
-                        .longValue());
+                nodes[1] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1).getValue().longValue());
                 if (index1 > 0) {
-                    nodes[0] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1 - 1)
-                            .getValue().longValue());
+                    nodes[0] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1 - 1).getValue().longValue());
                 }
                 if (index1 + 1 < dataset.getSeries(0).getItemCount()) {
-                    nodes[2] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1 + 1)
-                            .getValue().longValue());
+                    nodes[2] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1 + 1).getValue().longValue());
                 }
             }
         }
@@ -2123,58 +2196,30 @@ public class DriveInquirerView extends ViewPart {
     }
 
     private class NodeWrapper {
-        List<String> propertyNames = new ArrayList<String>(MAX_PROP_COUNT);
+        List<String> propertyNames = new ArrayList<String>(getCurrentPropertyCount());
         String eventName;
-        Long[] time = new Long[3];
-        List<Node[]> nProperties = new ArrayList<Node[]>(MAX_PROP_COUNT);
-        Node[] nEvents = new Node[3];
-        
+        List<Long> time = new ArrayList<Long>();
+        List<Node[]> nProperties = new ArrayList<Node[]>(getCurrentPropertyCount());
+        List<Node> nEvents = new ArrayList<Node>();;
+
         /**
-         * 
+         * Constructor
          */
         public NodeWrapper() {
-            for(int i=0; i<MAX_PROP_COUNT; i++){
+            for (int i = 0; i < getCurrentPropertyCount(); i++) {
                 nProperties.add(new Node[3]);
             }
         }
     }
 
-    /**
-     * get iterable of necessary mp nodes
-     * 
-     * @param root - root
-     * @param beginTime - begin time
-     * @param length - end time
-     * @return
-     */
-    private Iterable<Node> getNodeIterator(final Long beginTime, final Long length) {
-        return timestampIndex.searchTraverser(new Long[] {beginTime}, new Long[] {beginTime + length + 1});
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (propertyListsConstantValue != getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS)) {
+            formPropertyList();
+            cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
+            updatePropertyList();
+        }
     }
-
-    /**
-     * @param time
-     * @return
-     */
-    public Long getNextTime(Long time) {
-        XYPlot xyplot = (XYPlot)chart.getPlot();
-        ValueAxis valueaxis = xyplot.getDomainAxis();
-        Range range = valueaxis.getRange();
-
-        return time == null ? null : (long)Math.min(time + 1000, range.getUpperBound());
-    }
-
-    /**
-     * @param time
-     * @return
-     */
-    public Long getPreviousTime(Long time) {
-        XYPlot xyplot = (XYPlot)chart.getPlot();
-        ValueAxis valueaxis = xyplot.getDomainAxis();
-        Range range = valueaxis.getRange();
-
-        return time == null ? null : (long)Math.max(time - 1000, range.getLowerBound());
-    }
-
     /**
      *update drive combobox
      */
@@ -2195,79 +2240,12 @@ public class DriveInquirerView extends ViewPart {
     }
 
     /**
-     * Initialized Timestamp index for dataset
+     * Contains all flags for that must be valid before update chart
      * 
-     * @param datasetName name of dataset
+     * @return is all valid
      */
-    private void initializeIndex(String datasetName) {
-        try {
-            timestampIndex = NeoUtils.getTimeIndexProperty(datasetName);
-            timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
-        } catch (IOException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
+    private boolean chartDataValid() {
+        return validDrive;
     }
 
-    @Override
-    public void saveState(IMemento memento) {
-        super.saveState(memento);
-        String drive = cDrive.getText();
-        String event = cEvent.getText();
-        Long startTime = getBeginTime();
-        String time = startTime == null ? null : startTime.toString();
-        Integer timeLength = sLength.getSelection();
-        Boolean logarithm = bLogarithmic.getSelection();
-        String paletteName = cPalette.getText();
-        memento.putString(MEM_DRIVE, drive);
-        memento.putString(MEM_EVENT, event);
-        memento.putString(MEM_START_TIME, time);
-        memento.putInteger(MEM_TIME_LENGTH, timeLength);
-        memento.putString(MEM_LOGARITHM, logarithm.toString());
-        memento.putString(MEM_PALETTE, paletteName);
-        memento.putInteger(MEM_ADD_PROPERTY_COUNT, currentPropertyCount);
-        for(int i=0;i<currentPropertyCount;i++){
-            memento.putString(MEM_ADD_PROPERTY+i, cProperties.get(i).getText());
-        }           
-    }
-
-    @Override
-    public void init(IViewSite site, IMemento memento) throws PartInitException {
-        super.init(site, memento);
-        if (memento == null) {
-            return;
-        }
-        initDrive = memento.getString(MEM_DRIVE);
-        initEvent = memento.getString(MEM_EVENT);
-        initTime = memento.getString(MEM_START_TIME);
-        initTimeLen = memento.getInteger(MEM_TIME_LENGTH);
-        initLogarithm = memento.getString(MEM_LOGARITHM);
-        initPalette = memento.getString(MEM_PALETTE);
-        initPropCount = memento.getInteger(MEM_ADD_PROPERTY_COUNT);
-        initProperties = new ArrayList<String>(initPropCount);
-        for(int i=0; i<initPropCount; i++){
-            initProperties.add(memento.getString(MEM_ADD_PROPERTY+i));
-        }
-    }
-    /**
-     * 
-     * <p>
-     * temporary class for avoid bug: if anchor is set - the crosshair do not change by slider changing 
-     *  remove if more correctly way will be found
-     * </p>
-     * @author Cinkel_A
-     * @since 1.0.0
-     */
-public static class ChartCompositeImpl extends ChartComposite{
-
-    
-    public ChartCompositeImpl(Composite frame, int none, JFreeChart chart, boolean b) {
-        super(frame,none,chart,b);
-    }
-    /**
-     * drop anchor;
-     */
-    public void dropAnchor(){
-        setAnchor(null);
-    }
-}
 }

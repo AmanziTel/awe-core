@@ -31,6 +31,54 @@ public class Messages extends NLS {
 
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
     
+    public static String DriveInquirerView_10;
+
+    public static String DriveInquirerView_100;
+
+    public static String DriveInquirerView_101;
+
+    public static String DriveInquirerView_102;
+
+    public static String DriveInquirerView_11;
+
+    public static String DriveInquirerView_12;
+
+    public static String DriveInquirerView_13;
+
+    public static String DriveInquirerView_14;
+
+    public static String DriveInquirerView_15;
+
+    public static String DriveInquirerView_16;
+
+    public static String DriveInquirerView_18;
+
+    public static String DriveInquirerView_2;
+
+    public static String DriveInquirerView_20;
+
+    public static String DriveInquirerView_3;
+
+    public static String DriveInquirerView_36;
+
+    public static String DriveInquirerView_4;
+
+    public static String DriveInquirerView_5;
+
+    public static String DriveInquirerView_6;
+
+    public static String DriveInquirerView_60;
+
+    public static String DriveInquirerView_7;
+
+    public static String DriveInquirerView_8;
+
+    public static String DriveInquirerView_9;
+
+    public static String DriveInquirerView_97;
+
+    public static String DriveInquirerView_99;
+
     public static String DriveInquirerView_label_drive;
     public static String DriveInquirerView_label_event;
     public static String DriveInquirerView_label_property;
