@@ -1609,7 +1609,7 @@ public class NetworkTreeView extends ViewPart {
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
             try {
-                getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.splash.editors.ReportEditor");
+                getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.awe.report.editor.ReportEditor");
             } catch (PartInitException e) {
                 // TODO Handle PartInitException
                 throw (RuntimeException)new RuntimeException().initCause(e);
