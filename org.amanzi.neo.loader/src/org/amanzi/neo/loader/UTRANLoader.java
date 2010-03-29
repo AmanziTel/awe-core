@@ -17,15 +17,17 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
@@ -43,8 +45,10 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.index.lucene.LuceneIndexService;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -65,6 +69,15 @@ public class UTRANLoader extends AbstractLoader {
     private static final int KEY_EVENT = 1;
     protected static final String REG_EXP_XML = "^.+\\.((xml)|(XML))$";
     private static final NodeTypes SUBNETWORK_TYPE = NodeTypes.BSC;;
+    private static final List<String> siteProperty;
+    static {
+        siteProperty = new LinkedList<String>();
+        siteProperty.add("latitude");
+        siteProperty.add("sectorAntennasRef");
+        siteProperty.add("sectorAntennaRef");
+        siteProperty.add("longitude");
+        siteProperty.add("geoDatum");
+    }
     public Node network;
     private final LinkedHashMap<String, Header> headers;
     private final ReadContentHandler handler;
@@ -92,6 +105,11 @@ public class UTRANLoader extends AbstractLoader {
         headers = getHeaderMap(KEY_EVENT).headers;
         handler = new ReadContentHandler(new Factory());
         index = NeoServiceProvider.getProvider().getIndexService();
+        try {
+            addIndex(NodeTypes.SITE.getId(), NeoUtils.getLocationIndexProperty(basename));
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     /**
@@ -198,7 +216,14 @@ public class UTRANLoader extends AbstractLoader {
     @Override
     protected void finishUp() {
         super.finishUp();
-        sendUpdateEvent(UpdateViewEventType.OSS);
+        getGisProperties(basename).saveBBox();
+        getGisProperties(basename).saveCRS();
+        try {
+            DriveLoader.finishUpGis(getGisProperties(basename).getGis());
+        } catch (MalformedURLException e) {
+            // TODO Handle MalformedURLException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     protected void updateTx() {
@@ -375,7 +400,7 @@ public class UTRANLoader extends AbstractLoader {
             updateMonitor();
             IXmlTag result = this;
             if (SubNetwork.TAG_NAME.equals(localName)) {
-                result = new SubNetwork(attributes,network, this);
+                result = new SubNetwork(attributes, network, this);
             } else if (MeContext.TAG_NAME.equals(localName)) {
                 result = new MeContext(attributes, this);
             } else if (ManagedElement.TAG_NAME.equals(localName)) {
@@ -422,11 +447,12 @@ public class UTRANLoader extends AbstractLoader {
         /**
          * @param tagName
          */
-        protected SubNetwork(Attributes attributes, Node mainNode,IXmlTag parentToReturn){
+        protected SubNetwork(Attributes attributes, Node mainNode, IXmlTag parentToReturn) {
             super(TAG_NAME, mainNode, null, attributes);
             this.parentToReturn = parentToReturn;
             linkNecessary = false;
         }
+
         protected SubNetwork(Attributes attributes, SubNetwork parent) {
             super(TAG_NAME, parent, attributes);
             this.parentToReturn = parent;
@@ -456,7 +482,7 @@ public class UTRANLoader extends AbstractLoader {
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
             IXmlTag result = this;
-            subNetwork=getNode();
+            subNetwork = getNode();
             if (TagAttributes.TAG_NAME.equals(localName)) {
                 result = new TagAttributes(attributes, this, false);
             } else if (SubNetwork.TAG_NAME.equals(localName)) {
@@ -470,7 +496,7 @@ public class UTRANLoader extends AbstractLoader {
             } else if (ExternalUtranCell.TAG_NAME.equals(localName)) {
                 result = new DefaultHandlerTag(this);// new ExternalUtranCell(attributes, this);
             } else if (ExternalGsmCell.TAG_NAME.equals(localName)) {
-                result =  new DefaultHandlerTag(this);//new ExternalGsmCell(attributes, this);
+                result = new DefaultHandlerTag(this);// new ExternalGsmCell(attributes, this);
             } else if (VsDataContainer.TAG_NAME.equals(localName)) {
                 result = new VsDataContainer(attributes, this);
             } else {
@@ -1246,6 +1272,7 @@ public class UTRANLoader extends AbstractLoader {
     public class VsDataContainer extends AbstractTag {
         public static final String TAG_NAME = "VsDataContainer";
         PropertyCollector collector;
+        private Attributes attributes;
 
         /**
          * @param tagName
@@ -1257,11 +1284,12 @@ public class UTRANLoader extends AbstractLoader {
 
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
+            this.attributes = attributes;
             updateMonitor();
             IXmlTag result = this;
             if (TagAttributes.TAG_NAME.equals(localName)) {
-                collector = new PropertyCollector(localName,this,true);
-                result=collector;
+                collector = new PropertyCollector(localName, this, true);
+                result = collector;
             } else if (VsDataContainer.TAG_NAME.equals(localName)) {
                 handleCollector();
                 result = new VsDataContainer(attributes, this);
@@ -1290,9 +1318,9 @@ public class UTRANLoader extends AbstractLoader {
                 return;
             }
             String type = collector.getPropertyMap().get("vsDataType");
-            if (type.equals("vsDataSector")){
-                Node site=findOrCreateSite(collector);
-                Node sector=findOrCreateSector(site,collector);
+            if (type.equals("vsDataSector")) {
+                Node site = findOrCreateSite(collector);
+                Node sector = findOrCreateSector(site, collector, attributes.getValue("id"));
             }
             collector = null;
         }
@@ -1308,42 +1336,108 @@ public class UTRANLoader extends AbstractLoader {
     }
 
     /**
-     *
      * @param site
      * @param collector
      * @return
      */
-    public Node findOrCreateSector(Node site, PropertyCollector collector) {
-        return null;
+    public Node findOrCreateSector(Node site, PropertyCollector collector, String postfix) {
+        String name = NeoUtils.getNodeName(site) + postfix;
+        String indexName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
+        Node sector = index.getSingleNode(indexName, name);
+        if (sector == null) {
+            sector = neo.createNode();
+            NodeTypes.SECTOR.setNodeType(sector, neo);
+            sector.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+            PropertyCollector dataCol = collector.getSubCollectors().iterator().next();
+            Map<String, String> map = dataCol.getPropertyMap();
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                String key = entry.getKey();
+                if (siteProperty.contains(key)) {
+                    continue;
+                }
+                if (key.equals("beamDirection")) {
+                    key = "azimuth";
+                    Integer valueInt = Integer.parseInt(entry.getValue());
+                    setIndexProperty(headers, sector, key, valueInt);
+                } else {
+                    setIndexPropertyNotParcedValue(headers, sector, key, entry.getValue());
+                }
+            }
+            index.index(sector, indexName, name);
+            site.createRelationshipTo(sector, GeoNeoRelationshipTypes.CHILD);
+            updateTx();
+        } else {
+            // TODO remove after debug
+            if (!site.equals(sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector))) {
+                throw new RuntimeException("Wrong site for sector\t" + name);
+            }
+        }
+        return sector;
     }
 
     /**
-     *
      * @param collector
      * @return
      */
     public Node findOrCreateSite(PropertyCollector collector) {
         PropertyCollector dataCol = collector.getSubCollectors().iterator().next();
         String ref = dataCol.getPropertyMap().get("sectorAntennasRef");
-        Pattern pat = Pattern.compile("($*MeContext=)(*)(,*^)");
+        if (ref == null) {
+            ref = dataCol.getPropertyMap().get("sectorAntennaRef");
+            if (ref == null) {
+                // TODO remove after debug
+                System.out.println(ref);
+            }
+        }
+
+        Pattern pat = Pattern.compile("(^.*MeContext=)([^,]*)(,.*$)");
         Matcher matcher = pat.matcher(ref);
         matcher.find();
-        String id=matcher.group(2);
+        String id = matcher.group(2);
         String indName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE);
         Node node = index.getSingleNode(indName, id);
-        if (node==null){
-            pat=Pattern.compile("($*SubNetwork=)(*)(,MeContext*^)");
+        if (node == null) {
+            node = neo.createNode();
+            pat = Pattern.compile("(^.*SubNetwork=)([^,]*)(,MeContext.*$)");
             matcher = pat.matcher(ref);
+            Float latitude = null;
+            Float longitude = null;
+
+            String lon = dataCol.getPropertyMap().get("longitude");
+            if (lon != null) {
+                longitude = Float.parseFloat(lon) / 3600;
+                node.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
+            }
+
+            String lat = dataCol.getPropertyMap().get("latitude");
+            if (lat != null) {
+                latitude = Float.parseFloat(lat) / 3600;
+                node.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
+            }
+            GisProperties gisProperties = getGisProperties(basename);
+            gisProperties.updateBBox(latitude, longitude);
+            if (gisProperties.getCrs() == null && latitude != null && longitude != null) {
+                String crsHint = dataCol.getPropertyMap().get("geoDatum");
+                gisProperties.checkCRS(latitude, longitude, crsHint);
+                if (!isTest() && gisProperties.getCrs() != null) {
+                    CoordinateReferenceSystem crs = askCRSChoise(gisProperties);
+                    if (crs != null) {
+                        gisProperties.setCrs(crs);
+                        gisProperties.saveCRS();
+                    }
+                }
+            }
             matcher.find();
-            String subId=matcher.group(2);
-            Node subNetwork=index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), subId);
-            node=neo.createNode();
+            String subId = matcher.group(2);
+            Node subNetwork = index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), subId);
+
             node.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
             subNetwork.createRelationshipTo(node, GeoNeoRelationshipTypes.CHILD);
             NodeTypes.SITE.setNodeType(node, neo);
             index.index(node, indName, id);
+            index(node);
             updateTx();
         }
-        return null;
+        return node;
     }
 }

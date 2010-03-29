@@ -56,7 +56,7 @@ public class LoadNetwork extends AbstractActionTool {
     /*
      * Extensions of supported files for Network
      */
-    public static final String[] NETWORK_FILE_EXTENSIONS = {"*.csv", "*.txt", "*.sxc", "*.xls", "*.*"};
+    public static final String[] NETWORK_FILE_EXTENSIONS = {"*.csv", "*.txt", "*.sxc", "*.xls", "*.xml","*.*"};
 
     // private static String directory = null;
 

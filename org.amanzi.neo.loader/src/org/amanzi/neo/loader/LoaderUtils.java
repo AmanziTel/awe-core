@@ -98,6 +98,17 @@ public class LoaderUtils {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
             String line;
+            if (getFileExtension(fileName).equalsIgnoreCase(".xml")){
+                int c=0;
+                while ((line = reader.readLine()) != null && c<5) {
+                    if (line.contains("configData")){
+                        reader.close();
+                        return new Pair<NetworkFileType, Exception>(NetworkFileType.UTRAN, null);
+                    }
+                };
+                reader.close();
+                return new Pair<NetworkFileType, Exception>(NetworkFileType.NOKIA_TOPOLOGY, null);
+            }
             while ((line = reader.readLine()) != null && line.length() < 2) {
                 // find header
             };
@@ -334,5 +345,15 @@ public class LoaderUtils {
         } finally {
             tx.finish();
         }
+    }
+    /**
+     * get file extension
+     *
+     * @param fileName - file name
+     * @return file extension
+     */
+    public static String getFileExtension(String fileName) {
+        int idx = fileName.lastIndexOf(".");
+        return idx < 1 ? "" : fileName.substring(idx);
     }
 }

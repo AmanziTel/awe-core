@@ -41,17 +41,9 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.preferences.CommonCRSPreferencePage;
 import org.amanzi.neo.preferences.DataLoadPreferences;
-import org.eclipse.jface.preference.IPreferenceNode;
-import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.preference.PreferenceManager;
-import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -59,7 +51,6 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -81,8 +72,8 @@ public class NetworkLoader extends AbstractLoader {
      * @author craig
      */
     public static class CRS {
-        private String type = null;
-        private String epsg = null;
+        protected String type = null;
+        protected String epsg = null;
 
         private CRS() {
         }
@@ -592,49 +583,6 @@ public class NetworkLoader extends AbstractLoader {
         }
     }
 
-    /**
-     * @param gisProperties
-     * @return
-     */
-    private CoordinateReferenceSystem askCRSChoise(final GisProperties gisProperties) {
-        CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<CoordinateReferenceSystem>() {
-
-            private CoordinateReferenceSystem result;
-
-            @Override
-            public CoordinateReferenceSystem getValue() {
-                return result;
-            }
-
-            @Override
-            public void run() {
-                result = null;
-                CommonCRSPreferencePage page = new CommonCRSPreferencePage();
-                try {
-                    System.out.println(gisProperties.getCrs().epsg);
-                    page.setSelectedCRS(org.geotools.referencing.CRS.decode(gisProperties.getCrs().epsg));
-                } catch (NoSuchAuthorityCodeException e) {
-                    NeoLoaderPlugin.exception(e);
-                    result = null;
-                    return;
-                }
-                page.setTitle("Select Coordinate Reference System");
-                page.setSubTitle("Select the coordinate reference system from the list of commonly used CRS's, or add a new one with the Add button");
-                page.init(PlatformUI.getWorkbench());
-                PreferenceManager mgr = new PreferenceManager();
-                IPreferenceNode node = new PreferenceNode("1", page); //$NON-NLS-1$
-                mgr.addToRoot(node);
-                Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-                PreferenceDialog pdialog = new PreferenceDialog(shell, mgr);;
-                if (pdialog.open() == PreferenceDialog.OK) {
-                    page.performOk();
-                    result = page.getCRS();
-                }
-
-            }
-        });
-        return result;
-    }
 
     /**
      * This code expects you to create a transaction around it, so don't forget to do that.
