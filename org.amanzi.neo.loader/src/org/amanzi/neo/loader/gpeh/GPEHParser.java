@@ -371,19 +371,20 @@ public class GPEHParser {
     private static Pair<Object,Integer> readParameter(BitInputStream input, Parameters parameter,int maxBitLen) throws IOException {
         
         int bitsLen = Math.min(parameter.getBitsLen(),maxBitLen);
+        int bitsLenToRead = bitsLen;
         if (parameter.firstBitIsError()){
             int bit = input.readRawUInt(1);
             if (bit!=0){
                 input.readRawULong(bitsLen-1);
                 return new Pair<Object,Integer>(null,bitsLen);
             } 
-            bitsLen=bitsLen-1;
+            bitsLenToRead=bitsLenToRead-1;
         }
         switch (parameter.getRule()) {
         case INTEGER:
-            return new Pair<Object,Integer>(input.readRawUInt(bitsLen),bitsLen);
+            return new Pair<Object,Integer>(input.readRawUInt(bitsLenToRead),bitsLen);
         case LONG:
-            return new Pair<Object,Integer>(input.readRawULong(bitsLen),bitsLen);
+            return new Pair<Object,Integer>(input.readRawULong(bitsLenToRead),bitsLen);
         case STRING:
             Pair<String, Integer> result=readString(input, bitsLen);
             return new Pair<Object,Integer>(result.left(),result.right());
