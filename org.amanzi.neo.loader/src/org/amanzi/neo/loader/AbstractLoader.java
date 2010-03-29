@@ -1254,6 +1254,7 @@ public abstract class AbstractLoader {
                 Node gis = NeoUtils.findGisNode(gisName, neo);
                 if (gis == null) {
                     gis = NeoUtils.createGISNode(reference, gisName, gisType, neo);
+                    fileType.setTypeToNode(gis, neo);
                 }
                 gisProperties = new GisProperties(gis);
                 gisNodes.put(gisName, gisProperties);
