@@ -23,8 +23,10 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.NetworkSiteLoader;
+import org.amanzi.neo.loader.NokiaTopologyLoader;
 import org.amanzi.neo.loader.ProbeLoader;
 import org.amanzi.neo.loader.TransmissionLoader;
+import org.amanzi.neo.loader.UTRANLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -93,6 +95,20 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         transmissionLoader.run(monitor);
                         NeoServiceProvider.getProvider().commit();
                         break;
+                    case UTRAN:
+                        UTRANLoader utranLoader;
+                        utranLoader = new UTRANLoader( mainPage.getFileName(),mainPage.getNetworkName(),display);
+                        utranLoader.run(monitor);
+                        NeoServiceProvider.getProvider().commit(); 
+                        utranLoader.addLayersToMap();
+                        break;
+                    case NOKIA_TOPOLOGY:
+                        NokiaTopologyLoader nokiaTopologyLoader;
+                        nokiaTopologyLoader = new NokiaTopologyLoader( mainPage.getFileName(),mainPage.getNetworkName(),display);
+                        nokiaTopologyLoader.run(monitor);
+                        NeoServiceProvider.getProvider().commit(); 
+                        nokiaTopologyLoader.addLayersToMap();
+                        break;
                     default:
                         break;
 
@@ -111,6 +127,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         mainPage = new NetworkSiteImportWizardPage(PAGE_TITLE, PAGE_DESCR);
+        setWindowTitle(PAGE_TITLE);
         display = workbench.getDisplay();
     }
 

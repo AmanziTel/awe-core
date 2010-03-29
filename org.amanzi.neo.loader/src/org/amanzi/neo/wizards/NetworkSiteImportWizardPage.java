@@ -30,6 +30,7 @@ import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -82,7 +83,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
     private Label labNetworkDescr;
     private Pair<NetworkFileType, Exception> netwFile = new Pair<NetworkFileType, Exception>(null, null);
     private Combo networkType;
-    protected String networkName="";
+    protected String networkName=""; //$NON-NLS-1$
 
     /**
      *check page
@@ -92,19 +93,38 @@ public class NetworkSiteImportWizardPage extends WizardPage {
     protected boolean isValidPage() {
         //TODO must be refactoring after change loaders
         final NetworkFileType type = netwFile.getLeft();
-        if (fileName == null || type == null || networkName == null || networkName.isEmpty()||restrictedNames.contains(networkName)) {
+        if (fileName==null){
+            setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE); 
             return false;
         }
+        if ( StringUtils.isEmpty(networkName)){
+            setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK);  
+            return false;
+        }
+        if (restrictedNames.contains(networkName)){
+            setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_RESTRICTED_NETWORK_NAME); 
+            return false;
+        }
+        if (type == null ){
+            setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE);  
+            return false;
+        }
+
         if (networkNode==null){
-            if (type == NetworkFileType.NEIGHBOUR) {
+            if (type == NetworkFileType.NEIGHBOUR||type == NetworkFileType.TRANSMISSION) {
+                setDescription(String.format(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NETWORK_MUST_EXIST,type.getId()));  
                 return false;
             }
-            return networkName != null && !networkName.isEmpty();
+            setDescription("");  //$NON-NLS-1$
+            return true;
         }
+
         NetworkTypes netType = NetworkTypes.getNodeType(networkNode, NeoServiceProvider.getProvider().getService());
         if (netType!=null&&!netType.isCorrectFileType(type)){
+            setDescription(String.format(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_WRONG_TYPE_FOR_NETWORK,type.getId(),netType.getId()));  
             return false;
         }
+        setDescription(""); //$NON-NLS-1$
         return true;
     }
 
@@ -123,6 +143,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 networkName = network.getText();
+                networkNode = members.get(networkName);   
                 setPageComplete(isValidPage());
             }
         });
@@ -141,7 +162,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
                 widgetSelected(e);
             }
         });
-        editor = new FileFieldEditorExt("fileSelectNeighb", NeoLoaderPluginMessages.NetworkSiteImportWizard_FILE, main); // NON-NLS-1
+        editor = new FileFieldEditorExt("fileSelectNeighb", NeoLoaderPluginMessages.NetworkSiteImportWizard_FILE, main); // NON-NLS-1 //$NON-NLS-1$
         editor.setDefaulDirectory(NeighbourLoader.getDirectory());
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
@@ -156,7 +177,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
                         if (members.size()==1){
                             networkName=members.keySet().iterator().next();
                         }else{
-                            networkName="";
+                            networkName=""; //$NON-NLS-1$
                         }
                         network.setText(networkName);
                         networkNode = members.get(networkName);                       
@@ -196,6 +217,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
         labNetworkDescr = new Label(main, SWT.LEFT);
         GridData layoutData = new GridData(GridData.FILL_HORIZONTAL, SWT.CENTER, true, false, 3, 1);
         layoutData.minimumWidth = 150;
+        editor.setFocus();
         setControl(main);
     }
 
@@ -223,7 +245,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
         if (fileType!=null){
             networkType.setText(fileType.getId());
         }else{
-            networkType.setText("");
+            networkType.setText(""); //$NON-NLS-1$
         }
         setPageComplete(isValidPage());
     }
@@ -232,11 +254,11 @@ public class NetworkSiteImportWizardPage extends WizardPage {
      *
      */
     protected void updateLabelNetwDescr() {
-        String text = "";
+        String text = ""; //$NON-NLS-1$
         if (networkNode != null) {
             NetworkTypes type = NetworkTypes.getNodeType(networkNode, NeoServiceProvider.getProvider().getService());
             if (type != null) {
-                text = "Network type: " + type.getId();
+                text = "Network type: " + type.getId(); //$NON-NLS-1$
             }
         }
         labNetworkDescr.setText(text);
@@ -272,7 +294,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
                 if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
                         && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(NodeTypes.GIS.getId())                        ) {
                     String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-                    if (header.equals(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, ""))){
+                    if (header.equals(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, ""))){ //$NON-NLS-1$
                         members.put(id, node);
                     }else{
                         restrictedNames.add(id);
