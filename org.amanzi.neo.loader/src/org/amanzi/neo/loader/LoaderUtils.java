@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -148,8 +149,14 @@ public class LoaderUtils {
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.RADIO_SITE, null);
                 }
             }
-            //TODO use preference page
-            for (String header : new String[]{"Near end Name","Near End Site No","Far end Name","Far End Site No"}) {
+            List<String>possibleHeaders=new LinkedList<String>();
+            possibleHeaders.addAll(Arrays.asList(getPossibleHeaders(DataLoadPreferences.TR_SITE_ID_SERV)));
+            possibleHeaders.addAll(Arrays.asList(getPossibleHeaders(DataLoadPreferences.TR_SITE_NO_SERV)));
+            possibleHeaders.addAll(Arrays.asList(getPossibleHeaders(DataLoadPreferences.TR_ITEM_NAME_SERV)));
+            possibleHeaders.addAll(Arrays.asList(getPossibleHeaders(DataLoadPreferences.TR_SITE_ID_NEIB)));
+            possibleHeaders.addAll(Arrays.asList(getPossibleHeaders(DataLoadPreferences.TR_SITE_NO_NEIB)));
+            possibleHeaders.addAll(Arrays.asList(getPossibleHeaders(DataLoadPreferences.TR_ITEM_NAME_NEIB)));
+            for (String header : possibleHeaders) {
                 if (headers.contains(header)) {
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.TRANSMISSION, null);
                 }
