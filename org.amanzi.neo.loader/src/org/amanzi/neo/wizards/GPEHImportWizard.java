@@ -21,8 +21,6 @@ import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.loader.GPEHLoader;
 import org.amanzi.neo.loader.OSSCounterLoader;
-import org.amanzi.neo.loader.NokiaTopologyLoader;
-import org.amanzi.neo.loader.UTRANLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -50,7 +48,7 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
 
     @Override
     public boolean performFinish() {
-        Job job = new Job("Load GPEH '" + (new File(mainPage.getDirectory())).getName() + "'") {
+        Job job = new Job("Load OSS '" + (new File(mainPage.getDirectory())).getName() + "'") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
@@ -62,14 +60,6 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                     case COUNTER:
                         OSSCounterLoader loaderOss = new OSSCounterLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         loaderOss.run(monitor);
-                        break;
-                    case UTRAN:
-                        UTRANLoader loaderUtran = new UTRANLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
-                        loaderUtran.run(monitor);
-                        break;
-                    case NOKIA_GSM:
-                        NokiaTopologyLoader loaderNokia = new NokiaTopologyLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
-                        loaderNokia.run(monitor);
                         break;
                     default:
                         break;
@@ -94,7 +84,7 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        mainPage = new GPEHImportWizardPage("gpehPage1");
+        mainPage = new GPEHImportWizardPage("ossPage1");
         setWindowTitle(NeoLoaderPluginMessages.GpehWindowTitle);
         display = workbench.getDisplay();
     }
