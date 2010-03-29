@@ -16,9 +16,9 @@ package org.amanzi.neo.loader;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.net.MalformedURLException;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -39,6 +39,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.index.lucene.LuceneIndexService;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -57,13 +58,14 @@ import org.xml.sax.helpers.XMLReaderFactory;
 public class NokiaTopologyLoader extends AbstractLoader {
 private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
     
-    private String basename;    
     private final ReadContentHandler handler;
     private CountingFileInputStream inputStream;
     private int currentJobPr;
     private IProgressMonitor monitor;
+    private final LinkedHashMap<String, Header> headers;
     
-    private List<String> sitesFromOterNetwork = new ArrayList<String>();
+    private int counter;
+    private int counterAll;
     
     private Node networkNode;
     private Node lastSite;
@@ -81,10 +83,24 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
     public NokiaTopologyLoader(String fileName, String network, Display display) {
         initialize("Network", null, fileName, display);
         basename = network;
+        headers = getHeaderMap(1).headers;
         handler = new ReadContentHandler(new LoadFactory());
         luceneInd = NeoServiceProvider.getProvider().getIndexService();
+        addNetworkIndexes();
         //TODO other.
     }
+    
+    /**
+    *
+    */
+   private void addNetworkIndexes() {
+       try {
+           addIndex(NodeTypes.SITE.getId(), NeoUtils.getLocationIndexProperty(basename));
+       } catch (IOException e) {
+           throw (RuntimeException)new RuntimeException().initCause(e);
+       }
+
+   }
 
     @Override
     protected Node getStoringNode(Integer key) {
@@ -109,12 +125,17 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         }
         mainTx = neo.beginTx();
         currentJobPr = 0;
+        counter = 0;
+        counterAll = 0;
+        NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "GPEHLoader");
         try{
+            initializeIndexes();
             Node gis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.RADIO);
             networkNode = findOrCreateNetworkNode(gis);
             File file = new File(filename);
             monitor.subTask(basename);
             try {
+                monitor.subTask(filename);
                 XMLReader rdr = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
                 rdr.setContentHandler(handler);
                 rdr.setFeature(EXTERNAL_DTD_LOADING_FEATURE, false);
@@ -125,10 +146,27 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
                 NeoLoaderPlugin.error("Wrong parse file: " + file.getName());
                 NeoLoaderPlugin.exception(e);
             }
+            inputStream.close();
+            saveProperties();
+            finishUpIndexes();
+            finishUp();
         }finally{
             commit(true);
         }
         
+    }
+    
+    @Override
+    protected void finishUp() {
+        super.finishUp();
+        GisProperties gisProperties = getGisProperties(basename);
+        gisProperties.saveBBox();
+        gisProperties.saveCRS();
+        try {
+            finishUpGis(getGisProperties(basename).getGis());
+        } catch (MalformedURLException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
     
     /**
@@ -155,12 +193,42 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
     public void updateMonitor() {
         int pr = inputStream.percentage();
         if (pr > currentJobPr) {
-            info(String.format("parsed %s bytes", inputStream.tell()));
+            info(String.format("parsed %s bytes\tcreated nodes %s", inputStream.tell(), counterAll));
             monitor.worked(pr - currentJobPr);
             currentJobPr = pr;
         }
     }
     
+    protected void updateTx() {
+        counter++;
+        counterAll++;
+        if (counter > getCommitSize()) {
+            commit(true);
+            counter = 0;
+        }
+    }
+    
+    private void setSiteLocation(Node site, Float latitude, Float longitude) {
+        Double oldLat = (Double)site.getProperty(INeoConstants.PROPERTY_LAT_NAME, 0.0);
+        Double oldLon = (Double)site.getProperty(INeoConstants.PROPERTY_LON_NAME, 0.0);
+        if(oldLat == 0 || oldLon==0){
+            GisProperties gisProperties = getGisProperties(basename);
+            gisProperties.updateBBox(latitude, longitude);
+            if (gisProperties.getCrs() == null) {
+                gisProperties.checkCRS(latitude, longitude, "");
+                if (!isTest()&&gisProperties.getCrs() != null) {
+                    CoordinateReferenceSystem crs = askCRSChoise(gisProperties);
+                    if (crs != null) {
+                        gisProperties.setCrs(crs);
+                        gisProperties.saveCRS();
+                    }
+                }
+            }
+            site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
+            site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
+        }
+    }
+
     /**
      * <p>
      * Factory for parse file.
@@ -193,6 +261,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         private static final String BCF_CLASS = "BCF";
         private static final String BTS_CLASS = "BTS";
         private static final String TRX_CLASS = "TRX";
+        private static final String LCSE_CLASS = "LCSE";
         
         public static final String TAG_NAME_CM = "cmData";
         public static final String TAG_NAME_HEADER = "header";
@@ -236,7 +305,11 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
                 return new SectorTag(this,attributes);
             }
             if(name.equals(TRX_CLASS)){
-                return new RadioTag(this,attributes);
+                return new SkipTag(this);
+                //return new RadioTag(this,attributes); TODO Uncomment after implement.
+            }
+            if(name.equals(LCSE_CLASS)){
+                return new LCSETag(this,attributes);
             }
             return new SkipTag(this);
         }
@@ -250,6 +323,8 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
      * @since 1.0.0
      */
     private abstract class ManagedObjectTag extends AbstractTag{
+        
+        protected static final String EXTERNAL_BSC = "BSC-0";
         
         public static final String TAG_NAME = "managedObject";
         public static final String TAG_NAME_LIST = "list";        
@@ -287,7 +362,8 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         public IXmlTag endElement(String localName, StringBuilder chars) {
             if (localName.equals(getName())) {
                 saveData();
-                commit(true);//TODO after some nodes?
+                //getGisProperties(basename).incSaved();
+                updateTx();
                 return parent;
             } else {
                 throw new IllegalArgumentException("Wrong tag: " + localName);
@@ -308,6 +384,13 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
          */
         public void addProperty(String key,StringBuilder value){
             properties.put(key, value);
+        }
+        
+        /**
+         * @param distName The distName to set.
+         */
+        public void setDistName(String distName) {
+            this.distName = distName;
         }
         
         /**
@@ -370,6 +453,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
                     //TODO set SiteType
                     (lastSite == null ? networkNode : lastSite).createRelationshipTo(site, GeoNeoRelationshipTypes.NEXT);
                     lastSite = site;
+                    index(site);
                 }
                 siteMap.put(bcfKey, site);
             }
@@ -387,6 +471,30 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
                 return splitted[3];
             }
             return "";
+        }
+        
+        /**
+         * Find or create Sector Node.
+         *
+         * @return Node.
+         */
+        public Node getSectorNode(String sectorName){
+            String btsKey = getBTSKey();
+            Node sector = sectorMap.get(btsKey);
+            if(sector == null){
+                sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), sectorName);
+                if(sector == null){
+                    Node parent = getSiteNode(getBCFKey());
+                    sector = addChild(parent, NodeTypes.SECTOR, sectorName);
+                    index(sector);
+                }
+                sectorMap.put(btsKey, sector);
+            }
+            return sector;
+        }
+        
+        protected boolean isExternal() {
+            return getBSCKey().equals(EXTERNAL_BSC);
         }
         
         /**
@@ -417,7 +525,11 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         @Override
         protected void saveData() {
             HashMap<String, StringBuilder> properties = getProperties();
-            String bscName = properties.get("name").toString();
+            String postfix = "";
+            if(isExternal()){
+                postfix = " (external)";
+            }
+            String bscName = properties.get("name").toString()+postfix;
             Node bsc = getBSCNode(bscName);            
             for(String key : properties.keySet()){
                 Object old = bsc.getProperty(key, null);
@@ -425,10 +537,13 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
                 if(!(key.equals("name")||key.equals("address")||key.equals("neSwRelease"))){                    
                     newValue = Integer.parseInt((String)newValue);
                 }
+                if(key.equals("name")){
+                    newValue = bscName;
+                }
                 if(old == null || !old.equals(newValue)){
                     bsc.setProperty(key, newValue);
                     if(key.equals("name")){
-                        luceneInd.index(bsc, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), newValue);
+                        luceneInd.index(bsc, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
                     }
                 }
             }
@@ -455,28 +570,34 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
         @Override
         protected void saveData() {
-            if(getBSCKey().equals("BSC-0")){
-                sitesFromOterNetwork.add(getBCFKey());
-                return; //ignore data from other network. TODO rework after answer.
+            String bcfKey = getBCFKey();
+            String postfix = "";
+            if(isExternal()){
+                postfix = " (external)";
             }
             HashMap<String, StringBuilder> properties = getProperties();
-            StringBuilder nameValue = properties.get("name");
-            String siteName = nameValue==null?getBCFKey():nameValue.toString();
+            StringBuilder nameValue = properties.get("name");            
+            String siteName = (nameValue==null?bcfKey:nameValue.toString())+postfix;
             Node site = getSiteNode(siteName);
+            Float latitude = Float.parseFloat(properties.get("latitude").toString());
+            Float longitude = Float.parseFloat(properties.get("longitude").toString());
+            setSiteLocation(site, latitude, longitude);
             for(String key : properties.keySet()){
+                if(key.equals("latitude")||key.equals("longitude")){
+                    continue;
+                }
                 Object old = site.getProperty(key, null);
                 Object newValue = properties.get(key).toString();
-                if(!(key.equals("name")||key.equals("address")||key.equals("lapdLinkName")
-                        ||key.equals("latitude")||key.equals("longitude"))){                    
+                if(!(key.equals("name")||key.equals("address")||key.equals("lapdLinkName"))){                    
                     newValue = Integer.parseInt((String)newValue);
                 }
-                if(key.equals("latitude")||key.equals("longitude")){
-                    newValue = Double.parseDouble((String)newValue);
-                }
+                if(key.equals("name")){
+                    newValue = siteName;
+                }                
                 if(old == null || !old.equals(newValue)){
                     site.setProperty(key, newValue);
                     if(key.equals("name")){
-                        luceneInd.index(site, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), newValue);
+                        luceneInd.index(site, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
                     }
                 }
             }
@@ -486,7 +607,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
     
     /**
      * <p>
-     * Tag for Sector Node.
+     * Tag for Sector Node. TODO Link many to one between BTS and Sector now ignored.
      * </p>
      * @author Shcharbatsevich_A
      * @since 1.0.0
@@ -503,36 +624,28 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
         @Override
         protected void saveData() {
-            if(sitesFromOterNetwork.contains(getBCFKey())){
-                return; //ignore data from other network. TODO rework after answer.
+            String postfix = "";
+            if(isExternal()){
+                postfix = " (external)";
             }
-            HashMap<String, StringBuilder> properties = getProperties();            
-            String btsKey = getBTSKey();
-            Node sector = sectorMap.get(btsKey);
-            if(sector == null){
-                String sectorName = properties.get("segmentName").toString();
-                sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
-                if(sector == null){
-                    Node parent = getSiteNode(getBCFKey());
-                    sector = addChild(parent, NodeTypes.SECTOR, sectorName);
-                }
-                sectorMap.put(getBTSKey(), sector);
-            }
+            HashMap<String, StringBuilder> properties = getProperties();    
+            String sectorName = properties.get("name").toString()+postfix;
+            Node sector = getSectorNode(sectorName);
             for(String key : properties.keySet()){
-                if(key.equals("segmentName")){
-                    continue;
-                }
-                String nodeKey = key;
-                if(key.equals("name") ){
-                    nodeKey = "name (BTS "+btsKey+")"; //TODO other different data.
-                }
-                Object old = sector.getProperty(nodeKey, null);
+                Object old = sector.getProperty(key, null);
                 Object newValue = properties.get(key).toString();
-                if(!(key.equals("name")||key.equals("address")||key.equals("nwName"))){                    
+                if(!(key.equals("name")||key.equals("segmentName")
+                        ||key.equals("address")||key.equals("nwName"))){                    
                     newValue = Integer.parseInt((String)newValue);
                 }
+                if(key.equals("name")){
+                    newValue = ((String)newValue)+postfix;
+                }
                 if(old == null || !old.equals(newValue)){
-                    sector.setProperty(nodeKey, newValue);
+                    sector.setProperty(key, newValue);
+                    if(key.equals("name")){
+                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
+                    }
                 }
             }
         }
@@ -541,7 +654,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
     
     /**
      * <p>
-     * Tag for Radio Node.
+     * Tag for Radio Node. TODO Implement this.
      * </p>
      * @author Shcharbatsevich_A
      * @since 1.0.0
@@ -560,6 +673,61 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         protected void saveData() {
         }
         
+    }
+    
+    /**
+     * <p>
+     * Tag for getting LCSE data (locations)
+     * </p>
+     * @author Shcharbatsevich_A
+     * @since 1.0.0
+     */
+    private class LCSETag extends ManagedObjectTag{
+
+        /**
+         * @param parent
+         * @param attributes
+         */
+        protected LCSETag(IXmlTag parent, Attributes attributes) {
+            super(parent, attributes);
+        }
+
+        @Override
+        protected void saveData() {
+            HashMap<String, StringBuilder> properties = getProperties();
+            StringBuilder propValue = properties.get("linkedCellDN");
+            if(propValue==null){
+                return;
+            }
+            setDistName(propValue.toString());
+            Node site = getSiteNode(getBCFKey());
+            int degr = getIntValue(properties.get("latDegrees"));
+            int min = getIntValue(properties.get("latMinutes"));
+            int sec = getIntValue(properties.get("latSeconds"));
+            Float latitude = buildCoord(degr, min, sec);
+            degr = getIntValue(properties.get("lonDegrees"));
+            min = getIntValue(properties.get("lonMinutes"));
+            sec = getIntValue(properties.get("lonSeconds"));
+            Float longitude = buildCoord(degr, min, sec);
+            setSiteLocation(site, latitude, longitude);
+            
+            Node sector = getSectorNode(getBTSKey());
+            String key = "beamwidth";
+            Integer value = getIntValue(properties.get("antHorHalfPwrBeam"));
+            setIndexProperty(headers, sector, key, value);
+            value = getIntValue(properties.get("antBearing"));
+            key = "azimuth";
+            setIndexProperty(headers, sector, key, value);
+        }
+        
+        private Integer getIntValue(StringBuilder chars){
+            return Integer.parseInt(chars.toString());
+        }
+        
+        private Float buildCoord(int degrees, int min, int sec){
+            float mins = min+((float)sec)/60.0f;
+            return ((float)degrees)+mins/60.0f;
+        }
     }
    
     /**
