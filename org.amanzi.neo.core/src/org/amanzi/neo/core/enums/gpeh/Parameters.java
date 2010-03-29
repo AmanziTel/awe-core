@@ -77,7 +77,12 @@ public enum Parameters {
     EVENT_PARAM_UL_SIR_TARGET(9),
     EVENT_PARAM_VALUE_AT_FAILURE(24),
     EVENT_PARAM_RNC_MODULE_ID(7),
-    EVENT_PARAM_EVENT_ID(11),
+    EVENT_PARAM_EVENT_ID(11){
+      @Override
+        public boolean firstBitIsError() {
+            return false;
+        }  
+    },
     EVENT_PARAM_TIMESTAMP_HOUR(5){
         @Override
         public boolean firstBitIsError() {
