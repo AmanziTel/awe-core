@@ -101,6 +101,18 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String NetworkSiteImportWizard_FILE; 
     public static String NetworkSiteImportWizard_DATA_TYPE;
     
+    public static String NetworkSiteImportWizardPage_NETWORK_MUST_EXIST;
+
+    public static String NetworkSiteImportWizardPage_NO_FILE;
+
+    public static String NetworkSiteImportWizardPage_NO_NETWORK;
+
+    public static String NetworkSiteImportWizardPage_NO_TYPE;
+
+    public static String NetworkSiteImportWizardPage_RESTRICTED_NETWORK_NAME;
+
+    public static String NetworkSiteImportWizardPage_WRONG_TYPE_FOR_NETWORK;
+
     public static String OSS;
     
     public static String CommonCRSPreference_button_ADD;
