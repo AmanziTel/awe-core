@@ -27,7 +27,7 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public enum OssType {
-    GPEH("gpeh"), COUNTER("counter"),UTRAN("utran"),NOKIA_GSM("nokia_gsm");
+    GPEH("gpeh"), COUNTER("counter");
     public static final String PROPERTY_NAME = "oss_type";
     private final String id;
 

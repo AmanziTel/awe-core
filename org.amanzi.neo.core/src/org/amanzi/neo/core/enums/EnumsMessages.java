@@ -35,7 +35,11 @@ public class EnumsMessages extends NLS {
     public static String NetworkFileType_RADIO_SECTOR;
     public static String NetworkFileType_TRANSMISSION;
     public static String NetworkFileType_NEIGHBOUR;
+
+    public static String NetworkFileType_NOKIA;
     public static String NetworkFileType_PROBE;
+
+    public static String NetworkFileType_UTRAN;
     
     private EnumsMessages() {
     }

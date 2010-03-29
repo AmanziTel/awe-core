@@ -26,8 +26,9 @@ public enum NetworkFileType {
     RADIO_SECTOR(EnumsMessages.NetworkFileType_RADIO_SECTOR),
     TRANSMISSION(EnumsMessages.NetworkFileType_TRANSMISSION),
     NEIGHBOUR(EnumsMessages.NetworkFileType_NEIGHBOUR),
-    PROBE(EnumsMessages.NetworkFileType_PROBE);
-
+    PROBE(EnumsMessages.NetworkFileType_PROBE),
+    UTRAN(EnumsMessages.NetworkFileType_UTRAN),
+    NOKIA_TOPOLOGY(EnumsMessages.NetworkFileType_NOKIA);
     private String id;
 
     /**

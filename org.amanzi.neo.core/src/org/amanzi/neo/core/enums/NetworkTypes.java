@@ -13,11 +13,11 @@
 
 package org.amanzi.neo.core.enums;
 
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Transaction;
-import org.amanzi.neo.core.utils.NeoUtils;
 
 /**
  * <p>
@@ -33,7 +33,7 @@ public enum NetworkTypes {
         @Override
         public boolean isCorrectFileType(NetworkFileType fileType) {
             return fileType != null
-                    && (fileType == NetworkFileType.NEIGHBOUR || fileType == NetworkFileType.RADIO_SECTOR || fileType == NetworkFileType.RADIO_SITE || fileType == NetworkFileType.TRANSMISSION);
+                    && (fileType == NetworkFileType.NEIGHBOUR || fileType == NetworkFileType.RADIO_SECTOR || fileType == NetworkFileType.RADIO_SITE || fileType == NetworkFileType.TRANSMISSION||fileType==NetworkFileType.UTRAN||fileType==NetworkFileType.NOKIA_TOPOLOGY);
         }
     },
     PROBE("probe") {
