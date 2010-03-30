@@ -11,17 +11,35 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.core.database.core_layer;
+package org.amanzi.neo.core.database.entity;
 
+import org.amanzi.neo.core.enums.NetworkTypes;
 import org.neo4j.graphdb.Node;
-
 
 /**
  * <p>
- *Wrapper of 
+ *Probe Network
  * </p>
- * @author Cinkel_A
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public interface ICoreNode extends Node{
+public class ProbeNetwork extends Network{
+
+
+    public ProbeNetwork() {
+        super();
+    }
+
+
+    ProbeNetwork(Node node, NeoDataService service) {
+        super(node, service);
+    }
+
+    @Override
+    void create(NeoDataService service) {
+        super.create(service);
+        setPropertyValue(NetworkTypes.PROPERTY_NAME, NetworkTypes.PROBE.getId());
+    }
+
+
 }

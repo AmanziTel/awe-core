@@ -17,9 +17,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.amanzi.neo.core.database.entity.NeoDataService;
 import org.amanzi.neo.core.database.listener.IUpdateViewListener;
 import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.database.services.NeoDataService;
 import org.amanzi.neo.core.database.services.UpdateViewManager;
 import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;

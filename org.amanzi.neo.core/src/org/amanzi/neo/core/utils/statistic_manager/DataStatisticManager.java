@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.core.utils.statistic_manager;
 
+import java.util.HashMap;
+
 
 /**
  * <p>
@@ -23,19 +25,33 @@ package org.amanzi.neo.core.utils.statistic_manager;
  * @since 1.0.0
  */
 public class DataStatisticManager {
+    public HashMap<String,HeaderMaps> headerMap=new HashMap<String, HeaderMaps>();
     /**
      * add header
      *
      * @param key - key
      * @param header- header
      */
-    public void addHeader(String key,Header header){
+    public void addHeader(String index,String key,Header header){
         
     }
-    public void indexValue(String key, Object value){
+    public void indexValue(String index,String key, Object value){
         
     }
-    public void parseAndIndex(String key, String value){
+    public void parseAndIndex(String index,String key, String value){
+        HeaderMaps map = getHeaderMap(index);
+        if (map.headerAllowed(key)){
+            Header header=map.getHeader(key);
+        }
         
     }
+    protected HeaderMaps getHeaderMap(String index){
+        HeaderMaps result= headerMap.get(index);
+        if (result==null){
+            result=new HeaderMaps();
+            headerMap.put(index, result);
+        }
+        return result;
+    }
+    
 }

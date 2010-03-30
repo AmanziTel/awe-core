@@ -11,7 +11,8 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.core.database.core_layer;
+package org.amanzi.neo.core.database.entity;
+
 
 /**
  * TODO Purpose of 
@@ -21,6 +22,8 @@ package org.amanzi.neo.core.database.core_layer;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public interface ICoreRelationshipType {
+public  class Sector extends Base{
+
+
 
 }

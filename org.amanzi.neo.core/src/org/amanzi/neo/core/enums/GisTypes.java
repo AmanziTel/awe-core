@@ -12,6 +12,8 @@
  */
 package org.amanzi.neo.core.enums;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * <p>
  * GIS Types of GIS node
@@ -48,6 +50,9 @@ public enum GisTypes {
      * @return GisTypes
      */
     public static GisTypes findGisTypeByHeader(String header) {
+        if (StringUtils.isEmpty(header)){
+            return null;
+        }
         for (GisTypes gisType : GisTypes.values()) {
             if (gisType.getHeader().equals(header)) {
                 return gisType;

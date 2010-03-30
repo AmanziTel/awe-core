@@ -11,15 +11,34 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.core.database.services;
+package org.amanzi.neo.core.database.entity;
+
+import org.amanzi.neo.core.enums.NetworkTypes;
+import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- *Service class for working with Neo Data
+ *Radio network entity
  * </p>
- * @author Cinkel_A
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public class NeoDataService {
+public class RadioNetwork extends Network{
+
+ 
+    public RadioNetwork() {
+        super();
+    }
+
+
+    public RadioNetwork(Node node, NeoDataService service) {
+        super(node, service);
+    }
+
+@Override
+void create(NeoDataService service) {
+    super.create(service);
+    setPropertyValue(NetworkTypes.PROPERTY_NAME, NetworkTypes.RADIO.getId());
+}
 
 }

@@ -11,15 +11,24 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.core.database.core_layer;
+package org.amanzi.neo.core.database.entity;
+
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Reference node entity
  * </p>
- * @author Cinkel_A
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public interface ICoreContainer {
+public class Root extends Base {
+
+    /**
+     * @param type
+     */
+    Root(NeoDataService service) {
+        super();
+        node=service.getReferenceNode();
+    }
+
 }

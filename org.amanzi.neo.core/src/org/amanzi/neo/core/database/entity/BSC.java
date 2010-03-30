@@ -11,16 +11,17 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.core.database.core_layer;
+package org.amanzi.neo.core.database.entity;
+
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *BSC wrapper
  * </p>
- * @author Cinkel_A
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public interface ICoreService {
+public class BSC extends Base{
+
 
 }

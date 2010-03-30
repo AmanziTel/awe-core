@@ -11,15 +11,18 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.core.database.core_layer;
+package org.amanzi.neo.core.database.entity;
+
+
 
 /**
  * <p>
  *
  * </p>
- * @author Cinkel_A
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public interface ICoreRelatioship extends ICoreContainer{
+public class Site extends Base{
+
 
 }
