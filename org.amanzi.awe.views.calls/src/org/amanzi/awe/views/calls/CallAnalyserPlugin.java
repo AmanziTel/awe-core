@@ -27,7 +27,7 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewL
         handedTypes = Collections.unmodifiableCollection(spr);
     }
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.amanzi.awe.views.call";
+	public static final String PLUGIN_ID = "org.amanzi.awe.views.calls";
 
 	// The shared instance
 	private static CallAnalyserPlugin plugin;
