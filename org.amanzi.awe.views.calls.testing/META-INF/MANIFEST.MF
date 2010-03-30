@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Testing
-Bundle-SymbolicName: org.amanzi.awe.views.call.testing
+Bundle-SymbolicName: org.amanzi.awe.views.calls.testing
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.loader;bundle-version="1.0.0",
