@@ -979,7 +979,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         try {
-            getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.awe.report.editor.ReportEditor");
+            getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.splash.editors.ReportEditor"); //$NON-NLS-1$
         } catch (PartInitException e) {
             // TODO Handle PartInitException
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -1971,8 +1971,8 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
         public Image getColumnImage(Object element, int columnIndex) {
             NodeWrapper wr = provider.nodeWrapper;
             Integer index = (Integer)element;
-            if (columnIndex == 3 && wr.nEvents.size() > index && wr.nEvents.get(index) != null) {
-                Color eventColor = getEventColor(wr.nEvents.get((Integer)element));
+            if (columnIndex == 3 && wr.nEvents.length > index && wr.nEvents[index] != null) {
+                Color eventColor = getEventColor(wr.nEvents[(Integer)element]);
                 return Glyph.palette(new Color[] {eventColor}).createImage();
             }
             return getImage(element);
@@ -2087,15 +2087,15 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             int index = (Integer)element;
             SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
             if (columnIndex == 0) {
-                if (index >= wr.time.size()) {
+                if (index >= wr.time.length) {
                     return ""; //$NON-NLS-1$
                 }
-                Long time = wr.time.get(index);
+                Long time = wr.time[index];
                 return time == null ? "" : df.format(new Date(time)); //$NON-NLS-1$
             }
             if (columnIndex == 1) {
-                if (index < wr.nEvents.size()) {
-                    return wr.nEvents.get(index).getProperty(EVENT, "").toString(); //$NON-NLS-1$
+                if (index < wr.nEvents.length && wr.nEvents[index] != null) {
+                    return wr.nEvents[index].getProperty(EVENT, "").toString(); //$NON-NLS-1$
                 }
                 return ""; //$NON-NLS-1$
             }
@@ -2147,23 +2147,42 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             nodeWrapper.eventName = cEvent.getText();
             changeName(labelProvider.columns.get(1), nodeWrapper.eventName);
 
-            nodeWrapper.nEvents.clear();
-            nodeWrapper.time.clear();
+//            nodeWrapper.nEvents.clear();
+            nodeWrapper.nEvents = new Node[3];
+            nodeWrapper.time = new Long[3];;
 
             if (crosshair < 0.1) {
                 return;
             }
-            nodeWrapper.time.add(null);
-            nodeWrapper.time.add(crosshair.longValue());
-            nodeWrapper.time.set(0, getPreviousTime(nodeWrapper.time.get(1)));
-            nodeWrapper.time.add(getNextTime(nodeWrapper.time.get(1)));
+//            nodeWrapper.time.add(null);
+            nodeWrapper.time[1] = crosshair.longValue();
+            nodeWrapper.time[0] = getPreviousTime(nodeWrapper.time[1]);
+            nodeWrapper.time[2] = getNextTime(nodeWrapper.time[1]);
 
             for (int i = 0; i < getCurrentPropertyCount(); i++) {
-                fillProperty(crosshair, xydatasets.get(i).collection, nodeWrapper.nProperties.get(i), nodeWrapper.time.toArray(new Long[0]));
+                fillProperty(crosshair, xydatasets.get(i).collection, nodeWrapper.nProperties.get(i), nodeWrapper.time);
             }
-            fillProperty(crosshair, eventDataset.collection, nodeWrapper.nEvents.toArray(new Node[0]), nodeWrapper.time.toArray(new Long[0]));
+            fillProperty(crosshair, eventDataset.collection, nodeWrapper.nEvents, nodeWrapper.time);
 
         }
+        
+//        /**
+//         * @param crosshair
+//         * @param dataset
+//         * @param nodes
+//         */
+//        private void fillEvents(double crosshair, TimeSeriesCollection dataset, List<Node> nodes, Long[] time) {
+//            Integer index1 = getCrosshairIndex(dataset, time[1]);
+//            if (index1 != null) {
+//                nodes[1] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1).getValue().longValue());
+//                if (index1 > 0) {
+//                    nodes[0] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1 - 1).getValue().longValue());
+//                }
+//                if (index1 + 1 < dataset.getSeries(0).getItemCount()) {
+//                    nodes[2] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1 + 1).getValue().longValue());
+//                }
+//            }
+//        }
 
         /**
          * @param tableColumn
@@ -2198,9 +2217,9 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
     private class NodeWrapper {
         List<String> propertyNames = new ArrayList<String>(getCurrentPropertyCount());
         String eventName;
-        List<Long> time = new ArrayList<Long>();
+        Long[] time = new Long[3];
         List<Node[]> nProperties = new ArrayList<Node[]>(getCurrentPropertyCount());
-        List<Node> nEvents = new ArrayList<Node>();;
+        Node[] nEvents = new Node[3];
 
         /**
          * Constructor
