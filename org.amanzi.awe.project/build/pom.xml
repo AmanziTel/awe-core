@@ -40,7 +40,7 @@
     <module>org.amanzi.awe.startup.splash</module>
     <module>org.amanzi.awe.tool.star</module>
     <module>org.amanzi.awe.ui.operation.shape_export</module>
-    <module>org.amanzi.awe.views.call</module>
+    <module>org.amanzi.awe.views.calls</module>
     <module>org.amanzi.awe.views.drive</module>
     <module>org.amanzi.awe.views.kpi</module>
     <module>org.amanzi.awe.views.neighbours</module>
