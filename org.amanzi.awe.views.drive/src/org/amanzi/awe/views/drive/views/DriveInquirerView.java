@@ -2166,24 +2166,6 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
 
         }
         
-//        /**
-//         * @param crosshair
-//         * @param dataset
-//         * @param nodes
-//         */
-//        private void fillEvents(double crosshair, TimeSeriesCollection dataset, List<Node> nodes, Long[] time) {
-//            Integer index1 = getCrosshairIndex(dataset, time[1]);
-//            if (index1 != null) {
-//                nodes[1] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1).getValue().longValue());
-//                if (index1 > 0) {
-//                    nodes[0] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1 - 1).getValue().longValue());
-//                }
-//                if (index1 + 1 < dataset.getSeries(0).getItemCount()) {
-//                    nodes[2] = NeoUtils.getNodeById(dataset.getSeries(0).getDataItem(index1 + 1).getValue().longValue());
-//                }
-//            }
-//        }
-
         /**
          * @param tableColumn
          * @param name
