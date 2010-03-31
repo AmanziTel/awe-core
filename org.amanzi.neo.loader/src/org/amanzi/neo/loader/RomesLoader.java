@@ -32,7 +32,6 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.loader.AbstractLoader.GisProperties;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -123,8 +122,6 @@ public class RomesLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
-        addHeaderFilters(1, new String[] {"time.*", "events", ".*latitude.*", ".*longitude.*", ".*server_report.*",
-                ".*state_machine.*", ".*layer_3_message.*", ".*handover_analyzer.*"});
         addKnownHeader(1, "time", "time.*");
         addKnownHeader(1, "latitude", ".*latitude.*");
         addKnownHeader(1, "longitude", ".*longitude.*");
@@ -227,9 +224,9 @@ public class RomesLoader extends DriveLoader {
 
                 boolean haveEvents = false;
                 for (Map<String, Object> dataLine : data) {
-                    Node ms = neo.createNode();
-                    findOrCreateFileNode(ms);
-                    ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
+                    Node m = neo.createNode();
+                    findOrCreateFileNode(m);
+                    m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
                             mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
@@ -237,21 +234,21 @@ public class RomesLoader extends DriveLoader {
                         } else if ("timestamp".equals(entry.getKey())) {
                             long timeStamp = getTimeStamp(1, ((Date)entry.getValue()));
                             if (timeStamp != 0) {
-                                ms.setProperty(entry.getKey(), timeStamp);
+                                m.setProperty(entry.getKey(), timeStamp);
                                 mp.setProperty(entry.getKey(), timeStamp);
                             }
                         } else {
-                            ms.setProperty(entry.getKey(), entry.getValue());
+                            m.setProperty(entry.getKey(), entry.getValue());
                             haveEvents = haveEvents || INeoConstants.PROPERTY_TYPE_EVENT.equals(entry.getKey());
                         }
                     }
-                    ms.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+                    m.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
                     if (mNode != null) {
-                        mNode.createRelationshipTo(ms, GeoNeoRelationshipTypes.NEXT);
+                        mNode.createRelationshipTo(m, GeoNeoRelationshipTypes.NEXT);
                     }
-                    ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, getMNodeName(dataLine));
-                    mNode = ms;
-                    index(ms);
+                    m.setProperty(INeoConstants.PROPERTY_NAME_NAME, getMNodeName(dataLine));
+                    mNode = m;
+                    index(m);
                 }
                 if (haveEvents) {
                     index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, dataset);
