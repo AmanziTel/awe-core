@@ -75,9 +75,12 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
     private Node networkNode;
     private Node neighborNode;
     private Node lastSite;
+    private Node lastUmtsSite;
     private HashMap<String, Node> bscMap = new HashMap<String, Node>();
     private HashMap<String, Node> sectorMap = new HashMap<String, Node>();
     private HashMap<String, Node> siteMap = new HashMap<String, Node>();
+    private HashMap<String, Node> umtsSectorMap = new HashMap<String, Node>();
+    private HashMap<String, Node> umtsSiteMap = new HashMap<String, Node>();
     private final LuceneIndexService luceneInd;
     
     private Set<String> allNeibProperties = new HashSet<String>();
@@ -283,6 +286,36 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         }
     }
 
+    private void addNeighborLink(HashMap<String, StringBuilder> properties, Node server, Node neighbour) {
+        getNeighbourNode(); //initialize neighbors
+        Relationship relation = server.createRelationshipTo(neighbour, NetworkRelationshipTypes.NEIGHBOUR);
+        relation.setProperty(INeoConstants.NEIGHBOUR_NAME, filename);
+        for(String key : properties.keySet()){
+            if(key.equals("name")||key.equals("targetCellDN")){
+                continue;
+            }
+            Object value = properties.get(key).toString();
+            if(!key.equals("address")){
+                value = Integer.parseInt((String)value);
+                intNeibProperties.add(key);
+            }
+            relation.setProperty(key, value);
+            allNeibProperties.add(key);
+        }
+        String servCounName = NeoUtils.getNeighbourPropertyName(filename);
+        updateCount(server, servCounName);
+    }
+    
+    /**
+     * Updates count of properties
+     * 
+     * @param serverNode node
+     * @param name name of properties
+     */
+    private void updateCount(Node serverNode, String name) {
+        serverNode.setProperty(name, (Integer)serverNode.getProperty(name, 0) + 1);
+    }
+
     /**
      * <p>
      * Factory for parse file.
@@ -317,6 +350,9 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         private static final String TRX_CLASS = "TRX";
         private static final String LCSE_CLASS = "LCSE";
         private static final String ADCE_CLASS = "ADCE";
+        private static final String EXCC_CLASS = "EXCC";
+        private static final String EWCE_CLASS = "EWCE";
+        private static final String ADJW_CLASS = "ADJW";
         
         public static final String TAG_NAME_CM = "cmData";
         public static final String TAG_NAME_HEADER = "header";
@@ -368,6 +404,15 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
             }
             if(name.equals(ADCE_CLASS)){
                 return new ADCETag(this,attributes);
+            }
+            if(name.equals(EXCC_CLASS)){
+                return new EXCCTag(this,attributes);
+            }
+            if(name.equals(EWCE_CLASS)){
+                return new EWCETag(this,attributes);
+            }
+            if(name.equals(ADJW_CLASS)){
+                return new ADJWTag(this,attributes);
             }
             return new SkipTag(this);
         }
@@ -452,14 +497,15 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         }
         
         /**
-         * Get BSC from distName.
+         * Gets key from distName by number.
          *
+         * @param keyNum
          * @return
          */
-        public String getBSCKey(){
+        public String getKeyFromDistName(int keyNum){
             String[] splitted = distName.split("/");
-            if(splitted.length>1){
-                return splitted[1];
+            if(splitted.length>keyNum){
+                return splitted[keyNum];
             }
             return "";
         }
@@ -470,7 +516,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
          * @return Node.
          */
         public Node getBSCNode(String bscName){
-            String bscKey = getBSCKey();
+            String bscKey = getKeyFromDistName(1);
             Node bsc = bscMap.get(bscKey);
             if(bsc == null){                
                 bsc = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
@@ -483,52 +529,34 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         }
         
         /**
-         * Get BCF from distName.
-         *
-         * @return
-         */
-        public String getBCFKey(){
-            String[] splitted = distName.split("/");
-            if(splitted.length>2){
-                return splitted[2];
-            }
-            return "";
-        }
-        
-        /**
          * Find or create Site Node.
          *
          * @return Node.
          */
-        public Node getSiteNode(String siteName){
-            String bcfKey = getBSCKey()+"_"+getBCFKey();
-            Node site = siteMap.get(bcfKey);
+        public Node getSiteNode(String siteName, boolean isGsm){
+            String bcfKey = getKeyFromDistName(1)+(isGsm?("_"+getKeyFromDistName(2)):"");
+            Node site = isGsm?siteMap.get(bcfKey):umtsSiteMap.get(bcfKey);            
             if(site == null){
                 site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
                 if(site == null){
-                    Node parent = getBSCNode(getBSCKey());
+                    Node parent = isGsm?getBSCNode(getKeyFromDistName(1)):(lastUmtsSite==null?networkNode:lastUmtsSite);
                     site = addChild(parent, NodeTypes.SITE, siteName);
-                    site.setProperty("site_type", "site_2g");
-                    (lastSite == null ? networkNode : lastSite).createRelationshipTo(site, GeoNeoRelationshipTypes.NEXT);
-                    lastSite = site;
+                    site.setProperty("site_type", isGsm?"site_2g":"site_3g");
+                    if (isGsm) {
+                        (lastSite == null ? networkNode : lastSite).createRelationshipTo(site, GeoNeoRelationshipTypes.NEXT);
+                        lastSite = site;
+                    }else{
+                        lastUmtsSite = site;
+                    }
                     index(site);
                 }
-                siteMap.put(bcfKey, site);
+                if (isGsm) {
+                    siteMap.put(bcfKey, site);
+                }else{
+                    umtsSiteMap.put(bcfKey, site);
+                }
             }
             return site;
-        }
-        
-        /**
-         * Get BTS from distName.
-         *
-         * @return String
-         */
-        public String getBTSKey(){
-            String[] splitted = distName.split("/");
-            if(splitted.length>3){
-                return splitted[3];
-            }
-            return "";
         }
         
         /**
@@ -536,23 +564,27 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
          *
          * @return Node.
          */
-        public Node getSectorNode(String sectorName){
-            String btsKey = getBSCKey()+"_"+getBCFKey()+"_"+getBTSKey();
-            Node sector = sectorMap.get(btsKey);
+        public Node getSectorNode(String sectorName, boolean isGsm){
+            String btsKey = getKeyFromDistName(1)+"_"+getKeyFromDistName(2)+(isGsm?("_"+getKeyFromDistName(3)):"");
+            Node sector = isGsm?sectorMap.get(btsKey):umtsSectorMap.get(btsKey);
             if(sector == null){
-                sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), sectorName);
+                sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                 if(sector == null){
-                    Node parent = getSiteNode(getBCFKey());
+                    Node parent = getSiteNode(getKeyFromDistName(2),isGsm);
                     sector = addChild(parent, NodeTypes.SECTOR, sectorName);
                     index(sector);
                 }
-                sectorMap.put(btsKey, sector);
+                if (isGsm) {
+                    sectorMap.put(btsKey, sector);
+                }else{
+                    umtsSectorMap.put(btsKey, sector);
+                }
             }
             return sector;
         }
         
         protected boolean isExternal() {
-            return getBSCKey().equals(EXTERNAL_BSC);
+            return getKeyFromDistName(1).equals(EXTERNAL_BSC);
         }
         
         /**
@@ -628,15 +660,15 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
         @Override
         protected void saveData() {
-            String bcfKey = getBCFKey();
+            String bcfKey = getKeyFromDistName(2);
             String postfix = "";
             if(isExternal()){
                 postfix = " (external)";
             }
             HashMap<String, StringBuilder> properties = getProperties();
             StringBuilder nameValue = properties.get("name");            
-            String siteName = (nameValue==null?bcfKey:nameValue.toString())+postfix;
-            Node site = getSiteNode(siteName);
+            String siteName = nameValue==null?(bcfKey+postfix):nameValue.toString();
+            Node site = getSiteNode(siteName,true);
             Float latitude = Float.parseFloat(properties.get("latitude").toString());
             Float longitude = Float.parseFloat(properties.get("longitude").toString());
             setSiteLocation(site, latitude, longitude);
@@ -682,22 +714,15 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
         @Override
         protected void saveData() {
-            String postfix = "";
-            if(isExternal()){
-                postfix = " (external)";
-            }
             HashMap<String, StringBuilder> properties = getProperties();    
-            String sectorName = properties.get("name").toString()+postfix;
-            Node sector = getSectorNode(sectorName);
+            String sectorName = properties.get("name").toString();
+            Node sector = getSectorNode(sectorName, true);
             for(String key : properties.keySet()){
                 Object old = sector.getProperty(key, null);
                 Object newValue = properties.get(key).toString();
                 if(!(key.equals("name")||key.equals("segmentName")
                         ||key.equals("address")||key.equals("nwName"))){                    
                     newValue = Integer.parseInt((String)newValue);
-                }
-                if(key.equals("name")){
-                    newValue = ((String)newValue)+postfix;
                 }
                 if(old == null || !old.equals(newValue)){
                     sector.setProperty(key, newValue);
@@ -758,7 +783,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
                 return;
             }
             setDistName(propValue.toString());
-            Node site = getSiteNode(getBCFKey());
+            Node site = getSiteNode(getKeyFromDistName(2),true);
             int degr = getIntValue(properties.get("latDegrees"));
             int min = getIntValue(properties.get("latMinutes"));
             int sec = getIntValue(properties.get("latSeconds"));
@@ -769,7 +794,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
             Float longitude = buildCoord(degr, min, sec);
             setSiteLocation(site, latitude, longitude);
             
-            Node sector = getSectorNode(getBTSKey());
+            Node sector = getSectorNode(getKeyFromDistName(3),true);
             String key = "beamwidth";
             Integer value = getIntValue(properties.get("antHorHalfPwrBeam"));
             setIndexProperty(headers, sector, key, value);
@@ -788,6 +813,13 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         }
     }
     
+    /**
+     * <p>
+     * Tag for getting ADCE data (GSM to GSM neighbors)
+     * </p>
+     * @author Shcharbatsevich_A
+     * @since 1.0.0
+     */
     private class ADCETag extends ManagedObjectTag{
 
         /**
@@ -801,43 +833,126 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         @Override
         protected void saveData() {
             HashMap<String, StringBuilder> properties = getProperties();
-            Node server = getSectorNode(getBTSKey());
+            Node server = getSectorNode(getKeyFromDistName(3),true);
             StringBuilder propValue = properties.get("targetCellDN");
             if(propValue==null){
                 return;
             }
             setDistName(propValue.toString());
             StringBuilder nameValue = properties.get("name");
-            String name = nameValue==null?getBTSKey():nameValue.toString();
-            Node neighbour = getSectorNode(name);
-            getNeighbourNode(); //initialize neighbors
-            Relationship relation = server.createRelationshipTo(neighbour, NetworkRelationshipTypes.NEIGHBOUR);
-            relation.setProperty(INeoConstants.NEIGHBOUR_NAME, filename);
-            for(String key : properties.keySet()){
-                if(key.equals("name")||key.equals("targetCellDN")){
-                    continue;
-                }
-                Object value = properties.get(key).toString();
-                if(!key.equals("address")){
-                    value = Integer.parseInt((String)value);
-                    intNeibProperties.add(key);
-                }
-                relation.setProperty(key, value);
-                allNeibProperties.add(key);
-            }
-            String servCounName = NeoUtils.getNeighbourPropertyName(filename);
-            updateCount(server, servCounName);
+            String name = nameValue==null?getKeyFromDistName(3):nameValue.toString();
+            Node neighbour = getSectorNode(name,true);
+            addNeighborLink(properties, server, neighbour);
+        }
+        
+    }
+    
+    /**
+     * <p>
+     * Tag for getting EXCC data (UMTS site)
+     * </p>
+     * @author Shcharbatsevich_A
+     * @since 1.0.0
+     */
+    private class EXCCTag extends ManagedObjectTag{
+
+        /**
+         * @param parent
+         * @param attributes
+         */
+        protected EXCCTag(IXmlTag parent, Attributes attributes) {
+            super(parent, attributes);
+            initSite(attributes);
         }
         
         /**
-         * Updates count of properties
-         * 
-         * @param serverNode node
-         * @param name name of properties
+         * Find or create empty UMTS site.
+         *
+         * @param attributes
          */
-        private void updateCount(Node serverNode, String name) {
-            serverNode.setProperty(name, (Integer)serverNode.getProperty(name, 0) + 1);
+        private void initSite(Attributes attributes){
+            String name = getKeyFromDistName(1)+" (external)";
+            getSiteNode(name, false);
         }
+
+        @Override
+        protected void saveData() {
+        }
+        
+    }
+    
+    /**
+     * <p>
+     * Tag for getting EWCE data (UMTS sector)
+     * </p>
+     * @author Shcharbatsevich_A
+     * @since 1.0.0
+     */
+    private class EWCETag extends ManagedObjectTag{
+
+        /**
+         * @param parent
+         * @param attributes
+         */
+        protected EWCETag(IXmlTag parent, Attributes attributes) {
+            super(parent, attributes);
+        }
+
+        @Override
+        protected void saveData() {
+            HashMap<String, StringBuilder> properties = getProperties();    
+            String postfix = " (external)";
+            String sectorName = properties.get("name").toString()+postfix;
+            Node sector = getSectorNode(sectorName, false);
+            for(String key : properties.keySet()){
+                Object old = sector.getProperty(key, null);
+                Object newValue = properties.get(key).toString();
+                if(!key.equals("name")){                    
+                    newValue = Integer.parseInt((String)newValue);
+                } 
+                if(old == null || !old.equals(newValue)){
+                    sector.setProperty(key, newValue);
+                    if(key.equals("name")){
+                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
+                    }
+                }
+            }
+        }
+        
+    }
+    
+    /**
+     * <p>
+     * Tag for getting ADCE data (GSM to UMTS neighbors)
+     * </p>
+     * @author Shcharbatsevich_A
+     * @since 1.0.0
+     */
+    private class ADJWTag extends ManagedObjectTag{
+
+        /**
+         * @param parent
+         * @param attributes
+         */
+        protected ADJWTag(IXmlTag parent, Attributes attributes) {
+            super(parent, attributes);
+        }
+
+        @Override
+        protected void saveData() {
+            HashMap<String, StringBuilder> properties = getProperties();
+            Node server = getSectorNode(getKeyFromDistName(3),true);
+            StringBuilder propValue = properties.get("targetCellDN");
+            if(propValue==null){
+                return;
+            }
+            setDistName(propValue.toString());
+            StringBuilder nameValue = properties.get("name");
+            String name = nameValue==null?getKeyFromDistName(2):nameValue.toString();
+            Node neighbour = getSectorNode(name,false);            
+            addNeighborLink(properties, server, neighbour);
+        }
+        
     }
    
     /**
