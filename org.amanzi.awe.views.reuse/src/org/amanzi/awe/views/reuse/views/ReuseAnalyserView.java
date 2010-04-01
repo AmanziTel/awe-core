@@ -1222,8 +1222,9 @@ public class ReuseAnalyserView extends ViewPart {
         int colInd = columnKey == null ? 0 : dataset.getColumnIndex(columnKey);
         int minInd = columnKey == null ? 0 : Math.max(colInd - adj, 0);
         int maxind = columnKey == null ? 0 : Math.min(colInd + adj, dataset.getColumnCount() - 1);
-        RefreshPropertiesEvent event = new RefreshPropertiesEvent(gisNode, aggregatedProperties, aggrNode,columnNode,((ChartNode)dataset.getColumnKey(minInd))
-                .getNode(), ((ChartNode)dataset.getColumnKey(maxind)).getNode());
+        Node node1 = columnKey == null ? null :((ChartNode)dataset.getColumnKey(minInd))                .getNode();
+        Node node2 = columnKey == null ? null :((ChartNode)dataset.getColumnKey(maxind)).getNode();
+        RefreshPropertiesEvent event = new RefreshPropertiesEvent(gisNode, aggregatedProperties, aggrNode,columnNode,node1, node2);
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
     }
 
@@ -3091,11 +3092,17 @@ public class ReuseAnalyserView extends ViewPart {
      * updates list of gis nodes
      */
     public void updateGisNode() {
-        setSelection(null);
-        String[] gisItems = getGisItems();
-        gisCombo.setItems(gisItems);
-        propertyCombo.setItems(new String[] {});
-        setVisibleForChart(false);
+        try {
+            setSelection(null);
+            String[] gisItems = getGisItems();
+            gisCombo.setItems(gisItems);
+            propertyCombo.setItems(new String[] {});
+            setVisibleForChart(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // TODO Handle Exception
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
     }
 
     /**
