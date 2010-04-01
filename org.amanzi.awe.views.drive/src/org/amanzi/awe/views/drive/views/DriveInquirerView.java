@@ -426,7 +426,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
 
         cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
 
-        initializeIndex(cDrive.getText());
+        // initializeIndex(cDrive.getText());
 
         initEvents();
     }
