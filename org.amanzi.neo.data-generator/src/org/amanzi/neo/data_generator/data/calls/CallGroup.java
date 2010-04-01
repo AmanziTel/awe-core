@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.data;
+package org.amanzi.neo.data_generator.data.calls;
 
 import java.util.List;
 
@@ -25,26 +25,24 @@ import java.util.List;
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class CallPair {
+public class CallGroup {
     
-    private Integer firstProbe;    
-    private Integer secondProbe;
-    private String firstName;    
-    private String secondName;
+    private Integer sourceProbe;
+    private String sourceProbeName;
+    private List<Integer> receiverProbes;
+    private List<String> receiverProbeNames;
     
     private List<CallData> data;
     
     /**
      * Constructor.
-     * @param first Integer (source number)
-     * @param second Integer (receiver number)
-     * @param names String[] (probes names)
+     * @param probeData HashMap<Integer, String> (probe numbers and names)
      */
-    public CallPair(Integer first, Integer second, String[] names){
-        firstProbe = first;
-        secondProbe = second;
-        firstName = names[0];
-        secondName = names[1];
+    public CallGroup(Integer source, String sourceName, List<Integer> receivers, List<String> receiverNames){
+        sourceProbe = source;
+        sourceProbeName = sourceName;
+        receiverProbes = receivers;
+        receiverProbeNames = receiverNames;
     }
     
     /**
@@ -52,8 +50,8 @@ public class CallPair {
      *
      * @return Integer.
      */
-    public Integer getFirstProbe() {
-        return firstProbe;
+    public Integer getSourceProbe() {
+        return sourceProbe;
     }
     
     /**
@@ -61,8 +59,8 @@ public class CallPair {
      *
      * @return Integer.
      */
-    public Integer getSecondProbe() {
-        return secondProbe;
+    public List<Integer> getReceiverProbes() {
+        return receiverProbes;
     }
     
     /**
@@ -71,7 +69,7 @@ public class CallPair {
      * @return String.
      */
     public String getFirstName() {
-        return firstName;
+        return sourceProbeName;
     }
     
     /**
@@ -79,8 +77,8 @@ public class CallPair {
      *
      * @return String.
      */
-    public String getSecondName() {
-        return secondName;
+    public List<String> getReceiverNames() {
+        return receiverProbeNames;
     }
     
     /**

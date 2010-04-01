@@ -17,7 +17,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.amanzi.neo.data_generator.AmsDataGenerator;
+import org.amanzi.neo.data_generator.DataGenerateManager;
+import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.loader.AMSLoader;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.After;
@@ -113,7 +114,7 @@ public class AMSLoaderTest extends AbstractLoaderTest {
      */
     private void generateDataFiles(String aTestKey) throws IOException {
         List<Integer> params = parceStringToIntegerList(getProperty("test_loader.gen_params."+aTestKey));
-        AmsDataGenerator generator = new AmsDataGenerator(dataDirectory, params.get(0),params.get(1), params.get(2), params.get(3), params.get(4));
+        IDataGenerator generator = DataGenerateManager.getIndividualAmsGenerator(dataDirectory, params.get(0),params.get(1), params.get(2), params.get(3), params.get(4));
         generator.generate();
     }
     

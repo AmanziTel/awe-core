@@ -11,20 +11,22 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator;
+package org.amanzi.neo.data_generator.generate.calls;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import org.amanzi.neo.data_generator.data.CallData;
-import org.amanzi.neo.data_generator.data.CallPair;
-import org.amanzi.neo.data_generator.data.CommandRow;
-import org.amanzi.neo.data_generator.data.ProbeData;
+import org.amanzi.neo.data_generator.data.calls.CallData;
+import org.amanzi.neo.data_generator.data.calls.CallGroup;
+import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
+import org.amanzi.neo.data_generator.data.calls.ProbeData;
+import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.data_generator.utils.CommandCreator;
 import org.amanzi.neo.data_generator.utils.FileBuilder;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
@@ -37,7 +39,7 @@ import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class AmsDataGenerator {
+public abstract class AmsDataGenerator implements IDataGenerator{
     
     private static final String PROBE_NUMBER_PREFIX = "110";
     private static final String ZERO = "0";
@@ -50,7 +52,7 @@ public class AmsDataGenerator {
     private static final float[] CALL_DURATION_BORDERS = new float[]{0.01f,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
     
     private static final int MILLISECONDS = 1000;
-    private static final long HOUR = 60*60*MILLISECONDS;
+    protected static final long HOUR = 60*60*MILLISECONDS;
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
     private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(TIMESTAMP_FORMAT);
     private static long START_TIME; 
@@ -94,23 +96,46 @@ public class AmsDataGenerator {
     }
     
     /**
-     * Generate data.
-     *
-     * @return List of {@link CallPair}.
-     * @throws IOException
+     * @return Returns the probes.
      */
-    public List<CallPair> generate()throws IOException{
-        List<CallPair> data;
+    public List<ProbeInfo> getProbes() {
+        return probes;
+    }
+    
+    /**
+     * @return Returns the networkIdentity.
+     */
+    public Long getNetworkIdentity() {
+        return networkIdentity;
+    }
+    
+    /**
+     * @return Returns the startTime.
+     */
+    public Long getStartTime() {
+        return startTime;
+    }
+    
+    /**
+     * @return Returns the probesCount.
+     */
+    public Integer getProbesCount() {
+        return probesCount;
+    }
+    
+    @Override
+    public GeneratedCallsData generate(){
+        List<CallGroup> data;
         if (hours>0&&probesCount>0&&calls>0) {
             networkIdentity = getRandomGenerator().getLongValue(0L, MAX_NETWORK_ID);
             initProbes();
             data = buildData();
         }
         else{
-            data = new ArrayList<CallPair>(0);
+            data = new ArrayList<CallGroup>(0);
         }
         saveData(data);
-        return data;
+        return new GeneratedCallsData(data);
     }
     
     /**
@@ -119,10 +144,16 @@ public class AmsDataGenerator {
      * @param data
      * @throws IOException
      */
-    private void saveData(List<CallPair> data) throws IOException {
-        FileBuilder fileBuilder = new FileBuilder(directory);
-        fileBuilder.saveData(data);
+    private void saveData(List<CallGroup> data) {
+        try {
+            FileBuilder fileBuilder = new FileBuilder(directory,getDirectoryPostfix());
+            fileBuilder.saveData(data);
+        } catch (IOException e) {
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
     }
+    
+    protected abstract String getDirectoryPostfix();
     
     /**
      * Initialize probes.
@@ -144,12 +175,12 @@ public class AmsDataGenerator {
     /**
      * Build data.
      *
-     * @return List of {@link CallPair}.
+     * @return List of {@link CallGroup}.
      */
-    private List<CallPair> buildData(){
-        List<CallPair> data = initPairs();
-        for(CallPair pair : data){            
-            List<CallData> calls = buildCalls(pair.getFirstProbe(),pair.getSecondProbe());
+    private List<CallGroup> buildData(){
+        List<CallGroup> data = initCallGroups();
+        for(CallGroup pair : data){            
+            List<CallData> calls = buildCalls(pair.getSourceProbe(),pair.getReceiverProbes());
             pair.setData(calls);
         }
         return data;
@@ -162,12 +193,12 @@ public class AmsDataGenerator {
      * @param receiver Integer
      * @return List of {@link CallData}
      */
-    private List<CallData> buildCalls(Integer source, Integer receiver) {
+    private List<CallData> buildCalls(Integer source, List<Integer> receivers) {
         List<CallData> calls = new ArrayList<CallData>();
         HashMap<Integer, List<Long>> hourMap = buildHourMap();
         for(Integer hour : hourMap.keySet()){
             for(Long duration : hourMap.get(hour)){
-                CallData call = buildCall(source, receiver, hour, duration);
+                CallData call = buildCall(source, receivers, hour, duration);
                 calls.add(call);
             }
         }
@@ -183,76 +214,7 @@ public class AmsDataGenerator {
      * @param duration Long
      * @return {@link CallData}
      */
-    private CallData buildCall(Integer sourceNum, Integer receiverNum, Integer hour, Long duration){
-        Long startHour = startTime+HOUR*hour;
-        Long endHour = startTime+HOUR*(hour+1);
-        Long start = getRamdomTime(startHour, endHour);
-        
-        Long time = getRamdomTime(startHour, start);
-        ProbeData source = getNewProbeData(time, sourceNum);
-        ProbeInfo sourceInfo = probes.get(sourceNum-1);
-        time = getRamdomTime(time, start);
-        ProbeData receiver = getNewProbeData(start, receiverNum);
-        ProbeInfo receiverInfo = probes.get(receiverNum-1);
-        List<CommandRow> sourceCommands = source.getCommands();
-        List<CommandRow> receiverCommands = receiver.getCommands();
-        
-        time = getRamdomTime(time, start);
-        sourceCommands.add(CommandCreator.getAtCciRow(time));
-        CommandRow sourceCci = CommandCreator.getCciRow(networkIdentity,sourceInfo.getLocalAria(),sourceInfo.getFrequency());
-        sourceCommands.add(CommandCreator.getAtCciRow(time,sourceCci));
-        
-        time = getRamdomTime(time, start);
-        receiverCommands.add(CommandCreator.getAtCciRow(time));
-        CommandRow receiverCci = CommandCreator.getCciRow(networkIdentity,receiverInfo.getLocalAria(),receiverInfo.getFrequency());
-        receiverCommands.add(CommandCreator.getAtCciRow(time,receiverCci));
-        
-        time = getRamdomTime(time, start);
-        CommandRow ctsdcRow = CommandCreator.getCtsdcRow(time);
-        sourceCommands.add(ctsdcRow);
-        sourceCommands.add(CommandCreator.getCtsdcRow(start,ctsdcRow));
-        time = getRamdomTime(0L, duration);
-        CommandRow atdRow = CommandCreator.getAtdRow(start+time, receiver.getNumber());
-        sourceCommands.add(atdRow);
-        
-        
-        time = getRamdomTime(time, duration);
-        CommandRow ctocp1 = CommandCreator.getCtocpRow(start+time);
-        
-        time = getRamdomTime(time, duration);
-        receiverCommands.add(CommandCreator.getCticnRow(start+time,source.getNumber()));
-        time = getRamdomTime(time, duration);
-        CommandRow ataRow = CommandCreator.getAtaRow(start+time);
-        receiverCommands.add(ataRow);
-        
-        
-        time = getRamdomTime(time, duration);
-        CommandRow ctocp2 = CommandCreator.getCtocpRow(start+time);
-        CommandRow ctcc = CommandCreator.getCtccRow(null);
-        sourceCommands.add(CommandCreator.getAtdRow(atdRow,ctocp1,ctocp2,ctcc));
-        
-        time = getRamdomTime(time, duration);
-        Long end = start+duration;
-        ctcc = CommandCreator.getCtccRow(end);
-        receiverCommands.add(CommandCreator.getAtaRow(ataRow, ctcc));
-        
-        Long rest = startTime+HOUR*(hour+1)-end;
-        if(rest<0){
-            rest = HOUR;
-        }
-        time = getRamdomTime(0L, rest);
-        sourceCommands.add(CommandCreator.getAthRow(end+time));
-        time = getRamdomTime(time, rest);
-        CommandRow ctcrRow = CommandCreator.getCtcrRow(end+time);
-        time = getRamdomTime(time, rest);
-        sourceCommands.add(CommandCreator.getAthRow(end+time,ctcrRow));            
-        
-        time = getRamdomTime(time, rest);
-        ctcrRow = CommandCreator.getCtcrRow(null);
-        receiverCommands.add(CommandCreator.getUnsoCtcrRow(end+time,ctcrRow));
-        
-        return new CallData(getKey(),source, receiver);
-    }
+    protected abstract CallData buildCall(Integer sourceNum, List<Integer> receiverNums, Integer hour, Long duration);
 
     /**
      * Returns random time in interval.
@@ -261,7 +223,7 @@ public class AmsDataGenerator {
      * @param end Long
      * @return Long
      */
-    private Long getRamdomTime(Long start, Long end) {
+    protected Long getRamdomTime(Long start, Long end) {
         return getRandomGenerator().getLongValue(start, end);
     }
     
@@ -272,7 +234,7 @@ public class AmsDataGenerator {
      * @param number Integer (probe number)
      * @return {@link ProbeData}
      */
-    private ProbeData getNewProbeData(Long time,Integer number){
+    protected ProbeData getNewProbeData(Long time,Integer number){
         ProbeInfo probeInfo = probes.get(number-1);
         String name = probeInfo.getName();
         String callNumber = probeInfo.getPhoneNumber();
@@ -284,37 +246,27 @@ public class AmsDataGenerator {
     /**
      * Initialize different probe pairs.
      *
-     * @return List of {@link CallPair}.
+     * @return List of {@link CallGroup}.
      */
-    private List<CallPair> initPairs(){
-        List<CallPair> result = new ArrayList<CallPair>();
-        int sourceCount = probesCount/2+(probesCount%2==0?0:1);
-        RandomValueGenerator generator = getRandomGenerator();
-        while (result.isEmpty()) {
-            for (int i = 1; i <= sourceCount; i++) {
-                for (int j = sourceCount + 1; j <= probesCount; j++) {
-                    boolean canBePair = generator.getBooleanValue();
-                    if (canBePair) {
-                        result.add(getCallPair(i, j));
-                        result.add(getCallPair(j, i));
-                    }
-                }
-            }
-        }
-        return result;
-    }
+    protected abstract List<CallGroup> initCallGroups();
     
     /**
      * Initialize new call pair.
      *
      * @param source Integer
      * @param receiver Integer
-     * @return {@link CallPair}
+     * @return {@link CallGroup}
      */
-    private CallPair getCallPair(Integer source, Integer receiver){
+    protected CallGroup getCallGroup(Integer source, Integer... receivers){
         String sourceName = probes.get(source-1).getName();
-        String receiverName = probes.get(receiver-1).getName();
-        return new CallPair(source, receiver, new String[]{sourceName,receiverName});
+        int resCount = receivers.length;
+        List<Integer> receiverList = Arrays.asList(receivers);
+        List<String> receiverNames = new ArrayList<String>(resCount);
+        for(Integer receiver : receiverList){
+            String receiverName = probes.get(receiver-1).getName();
+            receiverNames.add(receiverName);
+        }        
+        return new CallGroup(source, sourceName, receiverList,receiverNames);
     }
     
     /**
@@ -384,7 +336,7 @@ public class AmsDataGenerator {
      *
      * @return Long.
      */
-    private Long getKey() {
+    protected Long getKey() {
         return getRandomGenerator().getLongValue(0L, (long)1E10);
     }
     
@@ -393,7 +345,7 @@ public class AmsDataGenerator {
      *
      * @return {@link RandomValueGenerator}
      */
-    private RandomValueGenerator getRandomGenerator() {
+    protected RandomValueGenerator getRandomGenerator() {
         return RandomValueGenerator.getGenerator();
     }
     

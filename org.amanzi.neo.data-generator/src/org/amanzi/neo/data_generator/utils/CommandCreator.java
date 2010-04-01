@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 
-import org.amanzi.neo.data_generator.data.CommandRow;
+import org.amanzi.neo.data_generator.data.calls.CommandRow;
 
 /**
  * Creates command rows.
@@ -32,6 +32,8 @@ public class CommandCreator {
     /** Command names */
     public static final String CCI = "+CCI";
     public static final String AT_CCI = "AT+CCI?";
+    public static final String CTGS = "+CTGS";
+    public static final String AT_CTGS = "AT+CTGS?";
     public static final String UNSOLICITED = "<UNSOLICITED>";
     public static final String CTCR = "+CTCR";
     public static final String ATH = "ATH";
@@ -327,13 +329,60 @@ public class CommandCreator {
         row.getParams().add(networkIdentity);
         RandomValueGenerator generator = RandomValueGenerator.getGenerator();
         row.getParams().add(generator.getIntegerValue(-100, 100));
-        row.getParams().add(formatDoubleValue(generator.getDoubleValue(0.0, 100.0),1));
+        row.getParams().add("99.9");
         row.getParams().add(localArea);
         row.getParams().add(formatDoubleValue(frequency,4));
         row.getParams().add(generator.getIntegerValue(0, 100));
         row.getParams().add(generator.getIntegerValue(0, 100));
         row.getParams().add(generator.getIntegerValue(0, 9999));
         row.getParams().add(generator.getIntegerValue(-100, 0));
+        return row;
+    }
+    
+    /**
+     * Row with 'AT+CTGS' command.
+     *
+     * @param time Long.
+     * @return CommandRow.
+     */
+    public static CommandRow getAtCtgsRow(Long time){
+        CommandRow row = new CommandRow(AT_CTGS);
+        row.setTime(new Date(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
+        return row;
+    }
+    
+    /**
+     * Row with 'AT+CTGS' command.
+     *
+     * @param time Long.
+     * @param ctgs CommandRow (row of CCI command)
+     * @return CommandRow.
+     */
+    public static CommandRow getAtCtgsRow(Long time, CommandRow ctgs){
+        CommandRow row = new CommandRow(AT_CTGS);
+        row.setTime(new Date(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
+        row.getAdditional().add(ctgs.getCommandAsString());
+        row.getAdditional().add(OK_PARAMETER);
+        return row;
+    }
+    
+    /**
+     * Row with 'CTGS' command.
+     *
+     * @return CommandRow.
+     */
+    public static CommandRow getCtgsRow(){
+        CommandRow row = new CommandRow(CTGS);
+        RandomValueGenerator generator = RandomValueGenerator.getGenerator();
+        int groupCount = generator.getIntegerValue(0, 26);
+        String prefix = "";
+        for(int i=0;i<groupCount;i++){
+            row.getParams().add(prefix+generator.getIntegerValue(1, 7));
+            row.getParams().add("0"+generator.getLongValue(0L, 1000000L));
+            prefix = "|";
+        }
         return row;
     }
     

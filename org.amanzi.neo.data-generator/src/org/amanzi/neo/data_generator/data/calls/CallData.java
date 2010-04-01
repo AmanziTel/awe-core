@@ -11,7 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.data;
+package org.amanzi.neo.data_generator.data.calls;
+
+import java.util.Arrays;
+import java.util.List;
+
+
 
 /**
  * Data saver for one call.
@@ -24,8 +29,8 @@ package org.amanzi.neo.data_generator.data;
 public class CallData {
     
     private Long key;
-    private ProbeData firstProbe;
-    private ProbeData secondProbe;
+    private ProbeData sourceProbe;
+    private List<ProbeData> receiverProbes;
     
     /**
      * Constructor.
@@ -33,10 +38,10 @@ public class CallData {
      * @param first ProbeData source data
      * @param second ProbeData receiver data
      */
-    public CallData(Long aKey,ProbeData first,ProbeData second) {
+    public CallData(Long aKey,ProbeData source,ProbeData... receivers) {
         key = aKey;
-        firstProbe = first;
-        secondProbe = second;
+        sourceProbe = source;
+        receiverProbes = Arrays.asList(receivers);
     }
     
     /**
@@ -53,8 +58,8 @@ public class CallData {
      *
      * @return ProbeData
      */
-    public ProbeData getFirstProbe(){
-        return firstProbe;
+    public ProbeData getSourceProbe(){
+        return sourceProbe;
     }
     
     /**
@@ -62,8 +67,8 @@ public class CallData {
      *
      * @return ProbeData
      */
-    public ProbeData getSecondProbe(){
-        return secondProbe;
+    public List<ProbeData> getReceiverProbes(){
+        return receiverProbes;
     }
     
 }

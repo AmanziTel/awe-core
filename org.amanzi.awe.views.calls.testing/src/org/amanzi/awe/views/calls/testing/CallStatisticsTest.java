@@ -34,17 +34,12 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.data_generator.AmsDataGenerator;
-import org.amanzi.neo.data_generator.data.CallData;
-import org.amanzi.neo.data_generator.data.CallPair;
-import org.amanzi.neo.data_generator.data.CommandRow;
-import org.amanzi.neo.data_generator.data.ProbeData;
+import org.amanzi.neo.data_generator.data.calls.CallData;
+import org.amanzi.neo.data_generator.data.calls.CallGroup;
+import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
+import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.loader.AMSLoader;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -59,14 +54,14 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
 import static org.junit.Assert.*;
 
 /**
- * Class for testing CallStatistics.
+ * Abstract class for testing CallStatistics.
  * <p>
  *
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class CallStatisticsTest {
+public abstract class CallStatisticsTest {
     
     private static final String DATABASE_NAME = "neo_test";
     private static final String DATA_SAVER_DIR = "neo_call";
@@ -85,9 +80,9 @@ public class CallStatisticsTest {
     private static final long HOUR = 60*60*MILLISECONDS;
     private static final long DAY = 24*HOUR;
     
-    private static final String CTSDC_COMMAND = "AT+CTSDC";
-    private static final String ATA_COMMAND = "ATA";
-    private static final String CTCC_COMMAND = "+CTCC";
+    protected static final String CTSDC_COMMAND = "AT+CTSDC";
+    protected static final String ATA_COMMAND = "ATA";
+    protected static final String CTCC_COMMAND = "+CTCC";
     
     private static final String PROBE_NAME_PREFIX = "PROBE";
     
@@ -106,7 +101,7 @@ public class CallStatisticsTest {
     /**
      * Create new empty main directory instead old one.
      */
-    private static void prepareMainDirectory() {
+    protected static void prepareMainDirectory() {
         clearMainDirectory();
         initEmptyMainDirectory();
     }
@@ -175,7 +170,7 @@ public class CallStatisticsTest {
     
     /**
      * Gets neo service.
-     * @return EmbeddedNeo
+     * @return EmbeddedGraphDatabase
      */
     public static GraphDatabaseService getNeo(){
         if (neo == null){
@@ -199,75 +194,13 @@ public class CallStatisticsTest {
     }
     
     /**
-     * Prepare operations before execute test.
+     * Shutdown database service.
      */
-    @Before
-    public void prepareTests(){
-        prepareMainDirectory();
-        initProjectService();
-    }
-    
-    /**
-     * Check statistics by one hour.
-     *
-     * @throws IOException (problem in data generation)
-     * @throws ParseException (problem in gets etalon parameters)
-     */
-    @Test
-    public void testCallStatisicsOneHour()throws IOException, ParseException{
-        executeTest(1,5,10,5,6);
-    }
-    
-    /**
-     * Check statistics by several hours.
-     *
-     * @throws IOException (problem in data generation)
-     * @throws ParseException (problem in gets etalon parameters)
-     */
-    @Test
-    public void testCallStatisicsSeveralHours()throws IOException, ParseException{
-        executeTest(5,0,10,5,6);
-    }
-
-    /**
-     * Check statistics by one day.
-     *
-     * @throws IOException (problem in data generation)
-     * @throws ParseException (problem in gets etalon parameters)
-     */
-    @Test
-    public void testCallStatisicsOneDay()throws IOException, ParseException{
-        executeTest(24,3,5,3,6);
-    }
-    
-    /**
-     * Check statistics by several days.
-     *
-     * @throws IOException (problem in data generation)
-     * @throws ParseException (problem in gets etalon parameters)
-     */
-    @Test
-    public void testCallStatisicsSeveralDays()throws IOException, ParseException{
-        executeTest(48,3,3,2,6);
-    }
-    
-    /**
-     * Finish test.
-     */
-    @After
-    public void finish(){
+    protected void shutdownNeo() {
         if(neo!=null){
             neo.shutdown();
             neo = null;
         }
-    }
-    
-    /**
-     * Finish all tests.
-     */
-    @AfterClass
-    public static void finishAll(){
-        clearMainDirectory();
     }
     
     /**
@@ -280,7 +213,7 @@ public class CallStatisticsTest {
      * @throws IOException (problem in data generation)
      * @throws ParseException (problem in gets etalon parameters)
      */
-    private void executeTest(Integer aHours, Integer aDrift,
+    protected void executeTest(Integer aHours, Integer aDrift,
             Integer aCallsPerHour, Integer aCallPerHourVariance,
             Integer aProbes)throws IOException, ParseException{
         String dataDir = getDataDirectoryName();
@@ -299,6 +232,7 @@ public class CallStatisticsTest {
      * Generate data for gets statistics.
      *
      * @param aHours Integer (hours count)
+     * @param aDrift Integer (drift for first hour from 00:00)
      * @param aCallsPerHour Integer (count of calls per hour)
      * @param aCallPerHourVariance Integer (variance of count of calls per hour)
      * @param aProbes Integer (count of probes)
@@ -310,10 +244,24 @@ public class CallStatisticsTest {
     private HashMap<Integer, CallStatData> generateDataFiles(Integer aHours, Integer aDrift, 
             Integer aCallsPerHour, Integer aCallPerHourVariance,
             Integer aProbes, String dataDir) throws IOException, ParseException {
-        AmsDataGenerator generator = new AmsDataGenerator(dataDir, aHours,aDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-        List<CallPair> generated = generator.generate();
+        IDataGenerator generator = getDataGenerator(aHours, aDrift, aCallsPerHour, aCallPerHourVariance, aProbes, dataDir);
+        List<CallGroup> generated = ((GeneratedCallsData)generator.generate()).getData();
         return buildStatisticsByGenerated(generated);
     }
+
+    /**
+     * Returns data generator.
+     *
+     * @param aHours Integer (hours count)
+     * @param aDrift Integer (drift for first hour from 00:00)
+     * @param aCallsPerHour Integer (count of calls per hour)
+     * @param aCallPerHourVariance Integer (variance of count of calls per hour)
+     * @param aProbes Integer (count of probes)
+     * @param dataDir String (directory for save data)
+     * @return AmsDataGenerator
+     */
+    protected abstract IDataGenerator getDataGenerator(Integer aHours, Integer aDrift, Integer aCallsPerHour,
+            Integer aCallPerHourVariance, Integer aProbes, String dataDir);
 
     /**
      * Load generated data.
@@ -641,18 +589,18 @@ public class CallStatisticsTest {
      * @return HashMap<Integer, CallStatData>
      * @throws ParseException (problem in gets parameters)
      */
-    private HashMap<Integer, CallStatData> buildStatisticsByGenerated(List<CallPair> generated)throws ParseException{
+    private HashMap<Integer, CallStatData> buildStatisticsByGenerated(List<CallGroup> generated)throws ParseException{
         HashMap<Integer, CallStatData> result = new HashMap<Integer, CallStatData>();
-        for(CallPair pair : generated){
-            Integer source = pair.getFirstProbe();
+        for(CallGroup pair : generated){
+            Integer source = pair.getSourceProbe();
             CallStatData data = result.get(source);
             if(data == null){
                 data = new CallStatData();
                 result.put(source, data);
             }
             for(CallData call : pair.getData()){
-                Date start = getCallStartTime(call.getFirstProbe());
-                Long duration = getCallDuration(call.getSecondProbe(), start);
+                Date start = getCallStartTime(call);
+                Long duration = getCallDuration(call, start);
                 Integer periode = getDurationPeriod(duration);
                 data.addCall(periode, start, duration);
             }
@@ -663,17 +611,10 @@ public class CallStatisticsTest {
     /**
      * Gets time of call starts.
      *
-     * @param data ProbeData
+     * @param call CallData
      * @return Date
      */
-    private Date getCallStartTime(ProbeData data){
-        for(CommandRow row : data.getCommands()){
-            if(row.getCommand().equalsIgnoreCase(CTSDC_COMMAND)){
-                return row.getTime();
-            }
-        }
-        return null;
-    }
+    protected abstract Date getCallStartTime(CallData call);
     
     /**
      * Gets call duration.
@@ -683,26 +624,7 @@ public class CallStatisticsTest {
      * @return
      * @throws ParseException (problem in gets parameters)
      */
-    private Long getCallDuration(ProbeData data, Date start)throws ParseException{
-        for(CommandRow row : data.getCommands()){
-            if(row.getCommand().equalsIgnoreCase(CTCC_COMMAND)){
-                return row.getTime().getTime()-start.getTime();
-            }
-            if(row.getCommand().equalsIgnoreCase(ATA_COMMAND)){
-                for(Object add : row.getAdditional()){
-                    if(add instanceof String){
-                        String str = (String)add;
-                        if(str.contains(CTCC_COMMAND)){
-                           String timeStr = str.substring(1, str.indexOf(CTCC_COMMAND)-1); 
-                           Date end = TIME_FORMATTER.parse(timeStr);
-                           return end.getTime()-start.getTime();
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
+    protected abstract Long getCallDuration(CallData call, Date start)throws ParseException;
     
     /**
      * Gets number of call duration period.

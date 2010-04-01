@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.data;
+package org.amanzi.neo.data_generator.data.calls;
 
 import java.util.ArrayList;
 import java.util.List;

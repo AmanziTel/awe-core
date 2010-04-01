@@ -19,10 +19,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.amanzi.neo.data_generator.data.CallData;
-import org.amanzi.neo.data_generator.data.CallPair;
-import org.amanzi.neo.data_generator.data.CommandRow;
-import org.amanzi.neo.data_generator.data.ProbeData;
+import org.amanzi.neo.data_generator.data.calls.CallData;
+import org.amanzi.neo.data_generator.data.calls.CallGroup;
+import org.amanzi.neo.data_generator.data.calls.CommandRow;
+import org.amanzi.neo.data_generator.data.calls.ProbeData;
 
 /**
  * Save call data to files.
@@ -38,7 +38,6 @@ public class FileBuilder {
     private static final String PAIR_DIRECTORY_SEPARATOR = "_";
     private static final String PAIR_DIRECTORY_PROBE = "P";
     private static final String PAIR_DIRECTORY_PROBE_SEPARATOR = "-";
-    private static final String PAIR_DIRECTORY_POSTFIX = "IndividualCall";
     
     private static final String PROBE_FILE_PREFIX = "PROBE";
     private static final String PROBE_FILE_SEPARATOR = "#";
@@ -46,13 +45,16 @@ public class FileBuilder {
     private static final String PROBE_FILE_EXTENSION = ".log";
     
     private String path;
+    private String pairDirectoryPostfix;
     
     /**
      * Constructor.
      * @param aPath String (path to save)
+     * @param postfix String (pair directory postfix)
      */
-    public FileBuilder(String aPath){
+    public FileBuilder(String aPath, String postfix){
         path = aPath;
+        pairDirectoryPostfix = postfix;
     }
 
     /**
@@ -61,16 +63,17 @@ public class FileBuilder {
      * @param aData list of CallPairs.
      * @throws IOException (problem with file creating)
      */
-    public void saveData(List<CallPair> aData)throws IOException{
+    public void saveData(List<CallGroup> aData)throws IOException{
        File mainPath = initPath();
-       for(CallPair pair : aData){
-           String firstProbe = pair.getFirstName();
-           String secondProbe = pair.getSecondName();
-           File pairDir = initPairDirectory(mainPath, firstProbe, secondProbe);
-           for(CallData call : pair.getData()){
+       for(CallGroup group : aData){
+           String firstProbe = group.getFirstName();
+           File pairDir = initPairDirectory(mainPath, firstProbe, group.getReceiverNames());
+           for(CallData call : group.getData()){
                File callDir = getCallDirectory(pairDir, call.getKey());
-               buildCallFile(call.getFirstProbe(), callDir);
-               buildCallFile(call.getSecondProbe(), callDir);
+               buildCallFile(call.getSourceProbe(), callDir);
+               for(ProbeData receiverProbe : call.getReceiverProbes()){
+                   buildCallFile(receiverProbe, callDir);
+               }               
            }
        }
     }
@@ -100,7 +103,7 @@ public class FileBuilder {
      * @param probe2 String (second probe name)
      * @return File
      */
-    private File initPairDirectory(File aPath, String probe1, String probe2){
+    private File initPairDirectory(File aPath, String probe1, List<String> probe2){
         String dirName = buildCallDirectoryName(probe1, probe2);
         return initNewDirectory(aPath, dirName);
     }
@@ -112,15 +115,17 @@ public class FileBuilder {
      * @param probe2 String (second probe name)
      * @return String
      */
-    private String buildCallDirectoryName(String probe1, String probe2){
+    private String buildCallDirectoryName(String probe1, List<String> probe2){
         StringBuilder result = new StringBuilder(PAIR_DIRECTORY_PREFIX)
                                             .append(getPairDirNumber())
                                             .append(PAIR_DIRECTORY_SEPARATOR)
-                                            .append(PAIR_DIRECTORY_PROBE).append(probe1)
-                                            .append(PAIR_DIRECTORY_PROBE_SEPARATOR)
-                                            .append(PAIR_DIRECTORY_PROBE).append(probe2)
-                                            .append(PAIR_DIRECTORY_SEPARATOR)
-                                            .append(PAIR_DIRECTORY_POSTFIX);
+                                            .append(PAIR_DIRECTORY_PROBE).append(probe1);
+        for(String curProbe : probe2){
+            result.append(PAIR_DIRECTORY_PROBE_SEPARATOR)
+            .append(PAIR_DIRECTORY_PROBE).append(curProbe);
+        }
+        result.append(PAIR_DIRECTORY_SEPARATOR)
+              .append(pairDirectoryPostfix);             
         return result.toString();
     }
     
