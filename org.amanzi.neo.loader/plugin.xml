@@ -45,7 +45,7 @@
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadGPEHHandler"
-             name="Load GPEH Data">
+             name="Load OSS Data">
        </command>   
     </extension>
     <extension
@@ -100,7 +100,7 @@
                    commandId="org.amanzi.neo.loader.commands.LoadGPEHHandler"
             icon="icons/16/delta_network.png"
             id="org.amanzi.neo.loader.LoadGPEH"
-                   tooltip="Load GPEH Data">
+                   tooltip="Load OSS Data">
              </command>
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"

@@ -41,6 +41,9 @@ public class EnumsMessages extends NLS {
 
     public static String NetworkFileType_UTRAN;
     
+    public static String OssType_GPEH;
+    public static String OssType_COUNTER;
+    
     private EnumsMessages() {
     }
 
