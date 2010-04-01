@@ -139,7 +139,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String SELECT_LABEL = "Select";
     private static final String DISTRIBUTE_LABEL = "Distribute";
     private static final String LABEL_INFO = "Selected values";
-	private static final String LABEL_INFO_BLEND = "Selected values";
+    private static final String LABEL_INFO_BLEND = "Selected values";
     private static final String ERROR_TITLE = "Chart calculation";
     private static final String ERROR_MSG = "There are too many categories for this selection";
     private static final String LOG_LABEL = "Logarithmic counts";
@@ -155,7 +155,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String VALUES_DOMAIN = "Value";
     private static final String ROW_KEY = "values";
     private static final String COLOR_LABEL = "color properties";
-    private static final String REPORT_LABEL="Report";
+    private static final String REPORT_LABEL = "Report";
 
     /** Maximum bars in chart */
     private static final int MAXIMUM_BARS = 1500;
@@ -199,9 +199,9 @@ public class ReuseAnalyserView extends ViewPart {
     private List<String> allFields;
     private List<String> numericFields;
     private Button bReport;
-	private ColorEditor colorMiddle;
-	private Button threeBlend;
-	private Label lThreeBlend;
+    private ColorEditor colorMiddle;
+    private Button threeBlend;
+    private Label lThreeBlend;
     private Label ltblendInformation;
     private Text ttblendInformation;
     private ChartNode middleColumn;
@@ -215,11 +215,11 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String BLEND = "blend";
     private static final String TT_LEFT_BAR = "left bar color ";
     private static final String TT_RIGHT_BAR = "right bar color";
-	private static final String TT_MIDLE_BAR = "third bar color";
+    private static final String TT_MIDLE_BAR = "third bar color";
     private static final RGB DEFAULT_LEFT = new RGB(255, 0, 0);
     private static final RGB DEFAULT_RIGHT = new RGB(0, 255, 0);
     private static final RGB DEFAULT_MIDDLE = new RGB(127, 127, 0);
-	private static final String THIRD_BLEND = "third color";
+    private static final String THIRD_BLEND = "third color";
     private static final String ERROR_MSG_NULL = "It is not found numerical values of the selected property";
     private static final String ERROR_CHART = "Error Chart";
     // error messages for statistic calculation
@@ -277,21 +277,21 @@ public class ReuseAnalyserView extends ViewPart {
         colorRight = new ColorEditor(parent);
         colorRight.getButton().setToolTipText(TT_RIGHT_BAR);
 
-		threeBlend = new Button(parent, SWT.CHECK);
-		threeBlend.setSelection(false);
-		lThreeBlend = new Label(parent, SWT.NONE);
-		lThreeBlend.setText(THIRD_BLEND);
+        threeBlend = new Button(parent, SWT.CHECK);
+        threeBlend.setSelection(false);
+        lThreeBlend = new Label(parent, SWT.NONE);
+        lThreeBlend.setText(THIRD_BLEND);
 
-		colorMiddle = new ColorEditor(parent);
-		colorMiddle.getButton().setToolTipText(TT_MIDLE_BAR);
+        colorMiddle = new ColorEditor(parent);
+        colorMiddle.getButton().setToolTipText(TT_MIDLE_BAR);
 
         lBlend.setVisible(false);
         blend.setVisible(false);
-		lThreeBlend.setVisible(false);
-		threeBlend.setVisible(false);
+        lThreeBlend.setVisible(false);
+        threeBlend.setVisible(false);
         colorLeft.getButton().setVisible(false);
-		colorRight.getButton().setVisible(false);
-		colorMiddle.getButton().setVisible(false);
+        colorRight.getButton().setVisible(false);
+        colorMiddle.getButton().setVisible(false);
         ltblendInformation = new Label(parent, SWT.NONE);
         ltblendInformation.setText(LABEL_INFO_BLEND);
         ttblendInformation = new Text(parent, SWT.BORDER);
@@ -304,15 +304,16 @@ public class ReuseAnalyserView extends ViewPart {
         cPalette.select(0);
         lPalette.setVisible(false);
         cPalette.setVisible(false);
-        bReport=new Button(parent,SWT.PUSH);
+        bReport = new Button(parent, SWT.PUSH);
         bReport.setText(REPORT_LABEL);
         bReport.setVisible(false);
-        bReport.addSelectionListener(new SelectionAdapter(){
+        bReport.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 generateReport();
-            }});
+            }
+        });
         SelectionListener listener = new SelectionListener() {
 
             @Override
@@ -327,21 +328,21 @@ public class ReuseAnalyserView extends ViewPart {
         };
         colorLeft.addSelectionListener(listener);
         colorRight.addSelectionListener(listener);
-		colorMiddle.addSelectionListener(listener);
-		SelectionListener blendListener = new SelectionListener() {
-            
+        colorMiddle.addSelectionListener(listener);
+        SelectionListener blendListener = new SelectionListener() {
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 changeBlendTheme();
             }
-            
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
-		};
-		blend.addSelectionListener(blendListener);
-		threeBlend.addSelectionListener(blendListener);
+        };
+        blend.addSelectionListener(blendListener);
+        threeBlend.addSelectionListener(blendListener);
         cPalette.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -396,10 +397,10 @@ public class ReuseAnalyserView extends ViewPart {
         CategoryPlot plot = (CategoryPlot)chart.getPlot();
         NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        //Craig: Don't bother with a legend when we have only one data type
-        //LegendItemCollection legends = new LegendItemCollection();
-        //legends.add(new LegendItem(ROW_KEY, defaultColor));
-        //plot.setFixedLegendItems(legends);
+        // Craig: Don't bother with a legend when we have only one data type
+        // LegendItemCollection legends = new LegendItemCollection();
+        // legends.add(new LegendItem(ROW_KEY, defaultColor));
+        // plot.setFixedLegendItems(legends);
         CategoryItemRenderer renderer = new CustomRenderer();
         renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
         plot.setRenderer(renderer);
@@ -519,28 +520,28 @@ public class ReuseAnalyserView extends ViewPart {
         cDistribute.addSelectionListener(selectComboSelectionListener);
         tSelectedInformation.addFocusListener(new FocusListener() {
 
-			@Override
-			public void focusLost(FocusEvent e) {
-				findSelectionInformation();
-			}
+            @Override
+            public void focusLost(FocusEvent e) {
+                findSelectionInformation();
+            }
 
-			@Override
-			public void focusGained(FocusEvent e) {
-			}
-		});
-		tSelectedInformation.addKeyListener(new KeyListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+            }
+        });
+        tSelectedInformation.addKeyListener(new KeyListener() {
 
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
 
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.keyCode == SWT.KEYPAD_CR || e.keyCode == 13) {
-					findSelectionInformation();
-				}
-			}
-		});
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.keyCode == SWT.KEYPAD_CR || e.keyCode == 13) {
+                    findSelectionInformation();
+                }
+            }
+        });
         ttblendInformation.addFocusListener(new FocusListener() {
 
             @Override
@@ -572,9 +573,9 @@ public class ReuseAnalyserView extends ViewPart {
         setColorThema(false);
     }
 
-	/**
-	 *Change the middle color position
-	 */
+    /**
+     *Change the middle color position
+     */
     protected void changeMiddleRange() {
         double valueToFind;
         try {
@@ -591,11 +592,10 @@ public class ReuseAnalyserView extends ViewPart {
         chartUpdate();
     }
 
-	/**
-	 * @param propertyName
-	 *            name of property
-	 * @return true if propertyName is String property
-	 */
+    /**
+     * @param propertyName name of property
+     * @return true if propertyName is String property
+     */
     protected boolean isStringProperty(String propertyName) {
         return !numericFields.contains(propertyName) && !isAggregatedProperty(propertyName);
     }
@@ -626,9 +626,9 @@ public class ReuseAnalyserView extends ViewPart {
                     RGB rgbRight = colorRight.getColorValue();
                     if (rgbRight != null) {
                         saveColor(dataset.getAggrNode(), INeoConstants.COLOR_RIGHT, rgbRight);
-					}
-					RGB rgbMiddle = colorMiddle.getColorValue();
-					if (rgbMiddle != null) {
+                    }
+                    RGB rgbMiddle = colorMiddle.getColorValue();
+                    if (rgbMiddle != null) {
                         saveColor(dataset.getAggrNode(), INeoConstants.COLOR_MIDDLE, rgbMiddle);
                     }
                     if (dataset.getAggrNode() != null) {
@@ -710,12 +710,12 @@ public class ReuseAnalyserView extends ViewPart {
      */
     protected void changePalette() {
         if (cPalette.getSelectionIndex() >= 0) {
-        String name = cPalette.getText();
-        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalette(name);
-        if (palette == null) {
-            return;
-        }
-        currentPalette = palette;
+            String name = cPalette.getText();
+            BrewerPalette palette = PlatformGIS.getColorBrewer().getPalette(name);
+            if (palette == null) {
+                return;
+            }
+            currentPalette = palette;
         } else {
             currentPalette = null;
         }
@@ -749,9 +749,9 @@ public class ReuseAnalyserView extends ViewPart {
         }
         GeoNeo geoNeo = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
         boolean isAggregated = geoNeo.getGisType() == GisTypes.DRIVE;
-//        if (!isAggregated) {
-//            System.out.println("GIS '" + geoNeo + "' is not drive: " + geoNeo.getGisType());
-//        }
+        // if (!isAggregated) {
+        // System.out.println("GIS '" + geoNeo + "' is not drive: " + geoNeo.getGisType());
+        // }
         return isAggregated;
     }
 
@@ -811,14 +811,14 @@ public class ReuseAnalyserView extends ViewPart {
      *change logarithmicSelection
      */
     protected void logarithmicSelection() {
-            CategoryPlot plot = (CategoryPlot)chart.getPlot();
-            if (bLogarithmic.getSelection()) {
-                plot.setRangeAxis(axisLog);
-                axisLog.autoAdjustRange();
-            } else {
-                plot.setRangeAxis(axisNumeric);
-            }
-            chart.fireChartChanged();
+        CategoryPlot plot = (CategoryPlot)chart.getPlot();
+        if (bLogarithmic.getSelection()) {
+            plot.setRangeAxis(axisLog);
+            axisLog.autoAdjustRange();
+        } else {
+            plot.setRangeAxis(axisNumeric);
+        }
+        chart.fireChartChanged();
     }
 
     /**
@@ -907,8 +907,8 @@ public class ReuseAnalyserView extends ViewPart {
         colorRight.getButton().setVisible(isVisible && blendTheme);
         lThreeBlend.setVisible(isVisible && blendTheme);
         threeBlend.setVisible(isVisible && blendTheme);
-        boolean middleBlend=threeBlend.getSelection();
-		colorMiddle.getButton().setVisible(	isVisible && blendTheme && middleBlend);
+        boolean middleBlend = threeBlend.getSelection();
+        colorMiddle.getButton().setVisible(isVisible && blendTheme && middleBlend);
         ltblendInformation.setVisible(isVisible && blendTheme && middleBlend);
         ttblendInformation.setVisible(isVisible && blendTheme && middleBlend);
     }
@@ -1148,6 +1148,7 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
     }
+
     /**
      * Select column
      * 
@@ -1222,9 +1223,9 @@ public class ReuseAnalyserView extends ViewPart {
         int colInd = columnKey == null ? 0 : dataset.getColumnIndex(columnKey);
         int minInd = columnKey == null ? 0 : Math.max(colInd - adj, 0);
         int maxind = columnKey == null ? 0 : Math.min(colInd + adj, dataset.getColumnCount() - 1);
-        Node node1 = columnKey == null ? null :((ChartNode)dataset.getColumnKey(minInd))                .getNode();
-        Node node2 = columnKey == null ? null :((ChartNode)dataset.getColumnKey(maxind)).getNode();
-        RefreshPropertiesEvent event = new RefreshPropertiesEvent(gisNode, aggregatedProperties, aggrNode,columnNode,node1, node2);
+        Node node1 = columnKey == null ? null : ((ChartNode)dataset.getColumnKey(minInd)).getNode();
+        Node node2 = columnKey == null ? null : ((ChartNode)dataset.getColumnKey(maxind)).getNode();
+        RefreshPropertiesEvent event = new RefreshPropertiesEvent(gisNode, aggregatedProperties, aggrNode, columnNode, node1, node2);
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
     }
 
@@ -1239,8 +1240,8 @@ public class ReuseAnalyserView extends ViewPart {
         // TODO restore focus after job execute or not necessary?
         mainView.setEnabled(false);
         String select = cSelect.getText();
-        if (!cSelect.isEnabled()){
-            select=Select.EXISTS.toString();
+        if (!cSelect.isEnabled()) {
+            select = Select.EXISTS.toString();
         }
         ComputeStatisticsJob job = new ComputeStatisticsJob(gisNode, propertyName, cDistribute.getText(), select);
         job.schedule();
@@ -1253,7 +1254,6 @@ public class ReuseAnalyserView extends ViewPart {
         private Node node;
         private final String distribute;
         private final String select;
-
 
         public ComputeStatisticsJob(Node gisNode, String propertyName, String distribute, String select) {
             super("calculating statistics");
@@ -1274,17 +1274,17 @@ public class ReuseAnalyserView extends ViewPart {
                 } finally {
                     tx.finish();
                 }
-                    ActionUtil.getInstance().runTask(new Runnable() {
-                        @Override
-                        public void run() {
-                            Transaction tx = NeoUtils.beginTransaction();
-                            try {
-                                chartUpdate(node);
-                            } finally {
-                                tx.finish();
-                            }
+                ActionUtil.getInstance().runTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        Transaction tx = NeoUtils.beginTransaction();
+                        try {
+                            chartUpdate(node);
+                        } finally {
+                            tx.finish();
                         }
-                    }, true);
+                    }
+                }, true);
 
             } finally {
                 ActionUtil.getInstance().runTask(new Runnable() {
@@ -1309,8 +1309,8 @@ public class ReuseAnalyserView extends ViewPart {
             return node;
         }
 
-        
     }
+
     /**
      * Finds aggregate node or creates if nod does not exist
      * 
@@ -1429,8 +1429,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @param monitor
      * @return a tree-map of the results for the chart
      */
-    private boolean computeStatistics(Node gisNode, Node aggrNode, final String propertyName, Distribute distribute,
-            Select select, IProgressMonitor monitor) {
+    private boolean computeStatistics(Node gisNode, Node aggrNode, final String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
         if (NeoUtils.isNeighbourNode(gisNode)) {
             return computeNeighbourStatistics(gisNode, aggrNode, propertyName, distribute, select, monitor);
         } else if (NeoUtils.isTransmission(gisNode)) {
@@ -1441,12 +1440,12 @@ public class ReuseAnalyserView extends ViewPart {
 
         boolean isAggregatedProperty = isAggregatedProperty(propertyName);
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
-        //List<Number> aggregatedValues = new ArrayList<Number>();
+        // List<Number> aggregatedValues = new ArrayList<Number>();
         final GisTypes typeOfGis;
         int totalWork;
         if (NeoUtils.getNodeType(gisNode, "").equals(NodeTypes.OSS.getId())) {
             typeOfGis = GisTypes.NETWORK;
-            select=Select.EXISTS;
+            select = Select.EXISTS;
             totalWork = 1000;
         } else {
             gisNode = NeoUtils.findGisNodeByChild(gisNode);
@@ -1454,11 +1453,11 @@ public class ReuseAnalyserView extends ViewPart {
             typeOfGis = geoNode.getGisType();
             totalWork = (int)geoNode.getCount() * 2;
         }
-        System.out.println("Starting to compute statistics for "+propertyName+" with estimated work size of "+totalWork);
-        monitor.beginTask("Calculating statistics for "+propertyName, totalWork);
+        System.out.println("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
+        monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
         TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
-        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
-                NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD,
+                Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
 
         Double min = null;
         Double max = null;
@@ -1542,9 +1541,8 @@ public class ReuseAnalyserView extends ViewPart {
                 }
             }
         }
-        
-        
-        if(missingPropertyCount>0) {
+
+        if (missingPropertyCount > 0) {
             System.out.println("Property '" + propertyName + "' not found for " + missingPropertyCount + " nodes");
         }
         runGcIfBig(totalWork);
@@ -1618,14 +1616,13 @@ public class ReuseAnalyserView extends ViewPart {
         }
         runGcIfBig(totalWork);
         if (isAggregatedProperty) {
-            travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
-                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD,
+                    Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             monitor.subTask("Building results from database");
             for (Node node : travers) {
                 Double value = null;
                 for (Column column : keySet) {
-                    value = value == null || select == Select.EXISTS ? getNodeValue(node, propertyName, select, column.minValue,
-                            column.range) : value;
+                    value = value == null || select == Select.EXISTS ? getNodeValue(node, propertyName, select, column.minValue, column.range) : value;
                     if (value != null && column.containsValue(value)) {
                         column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
                         Integer count = result.get(column);
@@ -1641,8 +1638,8 @@ public class ReuseAnalyserView extends ViewPart {
                     break;
             }
         } else if (typeOfGis == GisTypes.NETWORK || select == Select.EXISTS) {
-            travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
-                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD,
+                    Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             monitor.subTask("Building results from database");
             for (Node node : travers) {
                 if (node.hasProperty(propertyName)) {
@@ -1663,10 +1660,11 @@ public class ReuseAnalyserView extends ViewPart {
                             + (node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
                 }
                 monitor.worked(1);
-                if(monitor.isCanceled()) break;
+                if (monitor.isCanceled())
+                    break;
             }
         } else {
-            monitor.subTask("Building results from memory cache of "+mpMap.size()+" data");
+            monitor.subTask("Building results from memory cache of " + mpMap.size() + " data");
             for (Node node : mpMap.keySet()) {
                 Number mpValue = mpMap.get(node);
                 double value = mpValue.doubleValue();
@@ -1678,16 +1676,18 @@ public class ReuseAnalyserView extends ViewPart {
                         break;
                     }
                     monitor.worked(1);
-                    if(monitor.isCanceled()) break;
+                    if (monitor.isCanceled())
+                        break;
                 }
             }
         }
         runGcIfBig(totalWork);
-        // Now merge any gaps in the distribution into a single category (TODO: Prevent adjacency jumping this gap)
+        // Now merge any gaps in the distribution into a single category (TODO: Prevent adjacency
+        // jumping this gap)
         monitor.subTask("Resolving distribution gaps");
         Column prev_col = null;
         for (Column column : keySet) {
-            if(prev_col!=null && result.get(prev_col)==0 && result.get(column)==0) {
+            if (prev_col != null && result.get(prev_col) == 0 && result.get(column) == 0) {
                 column.merge(prev_col);
                 result.remove(prev_col);
 
@@ -1710,8 +1710,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @param monitor available
      * @return true if no error present
      */
-    private boolean createStringChart(Node gisNode, Node aggrNode, String propertyName, Distribute distribute, Select select,
-            IProgressMonitor monitor) {
+    private boolean createStringChart(Node gisNode, Node aggrNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
         Transaction tx = NeoUtils.beginTransaction();
         try {
             GisTypes gisTypes = NeoUtils.getGisType(gisNode, null);
@@ -1733,8 +1732,8 @@ public class ReuseAnalyserView extends ViewPart {
                 columns.add(column);
             }
             // linked node
-            Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(),
-                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD,
+                    Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             for (Node node : travers) {
                 if (node.hasProperty(propertyName)) {
                     String propertyVal = node.getProperty(propertyName).toString();
@@ -1744,15 +1743,15 @@ public class ReuseAnalyserView extends ViewPart {
                     }
                     for (Column column : columns) {
                         if (propertyVal.equals(column.propertyValue)) {
-                                column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
-                                break;
+                            column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
+                            break;
                         }
                     }
                 }
             }
             tx.success();
-           return true;
-        }finally{
+            return true;
+        } finally {
             tx.finish();
         }
     }
@@ -1801,10 +1800,8 @@ public class ReuseAnalyserView extends ViewPart {
      * @param monitor
      * @return
      */
-    private boolean computeTransmissionStatistics(Node neighbour, Node aggrNode, String propertyName2, Distribute distribute,
-            Select select, IProgressMonitor monitor) {
-        Node gisNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING)
-                .getOtherNode(neighbour);
+    private boolean computeTransmissionStatistics(Node neighbour, Node aggrNode, String propertyName2, Distribute distribute, Select select, IProgressMonitor monitor) {
+        Node gisNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING).getOtherNode(neighbour);
         final String neighbourName = NeoUtils.getSimpleNodeName(neighbour, "");
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
         // List<Number> aggregatedValues = new ArrayList<Number>();
@@ -1828,10 +1825,9 @@ public class ReuseAnalyserView extends ViewPart {
                 return result;
             }
         };
-        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator,
-                NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
 
-                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
 
         Double min = null;
         Double max = null;
@@ -1842,8 +1838,7 @@ public class ReuseAnalyserView extends ViewPart {
         // Collection<Node> trav = travers.getAllNodes();
         for (Node node : travers) {
             Double minValue = getTransmissionValue(node, neighbourName, propertyName, select, false);
-            Double maxValue = select == Select.EXISTS ? getTransmissionValue(node, neighbourName, propertyName, select, true)
-                    : minValue;
+            Double maxValue = select == Select.EXISTS ? getTransmissionValue(node, neighbourName, propertyName, select, true) : minValue;
             if (minValue == null || maxValue == null) {
                 continue;
             }
@@ -1902,14 +1897,13 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         runGcIfBig(totalWork);
-        travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator,
-                NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         monitor.subTask("Building results from database");
         for (Node node : travers) {
             Double value = null;
             for (Column column : keySet) {
-                value = value == null || select == Select.EXISTS ? getTransmissionValue(node, neighbourName, propertyName, select,
-                        column.minValue, column.range) : value;
+                value = value == null || select == Select.EXISTS ? getTransmissionValue(node, neighbourName, propertyName, select, column.minValue, column.range) : value;
                 if (value != null && column.containsValue(value)) {
                     Integer count = result.get(column);
                     column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
@@ -1951,10 +1945,8 @@ public class ReuseAnalyserView extends ViewPart {
      * @param monitor
      * @return
      */
-    private boolean computeNeighbourStatistics(Node neighbour, Node aggrNode, String propertyName2, Distribute distribute,
-            Select select, IProgressMonitor monitor) {
-        Node gisNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING).getOtherNode(
-                neighbour);
+    private boolean computeNeighbourStatistics(Node neighbour, Node aggrNode, String propertyName2, Distribute distribute, Select select, IProgressMonitor monitor) {
+        Node gisNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING).getOtherNode(neighbour);
         final String neighbourName = NeoUtils.getSimpleNodeName(neighbour, "");
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
         // List<Number> aggregatedValues = new ArrayList<Number>();
@@ -1978,8 +1970,8 @@ public class ReuseAnalyserView extends ViewPart {
                 return result;
             }
         };
-        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator,
-                NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
 
         Double min = null;
         Double max = null;
@@ -1990,8 +1982,7 @@ public class ReuseAnalyserView extends ViewPart {
         // Collection<Node> trav = travers.getAllNodes();
         for (Node node : travers) {
             Double minValue = getNeighbourValue(node, neighbourName, propertyName, select, false);
-            Double maxValue = select == Select.EXISTS ? getNeighbourValue(node, neighbourName, propertyName, select, true)
-                    : minValue;
+            Double maxValue = select == Select.EXISTS ? getNeighbourValue(node, neighbourName, propertyName, select, true) : minValue;
             if (minValue == null || maxValue == null) {
                 continue;
             }
@@ -2050,27 +2041,26 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         runGcIfBig(totalWork);
-        travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator,
-                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-            monitor.subTask("Building results from database");
-            for (Node node : travers) {
-                Double value = null;
-                for (Column column : keySet) {
-                value = value == null || select == Select.EXISTS ? getNeighbourValue(node, neighbourName, propertyName, select,
-                        column.minValue, column.range) : value;
-                    if (value != null && column.containsValue(value)) {
-                        Integer count = result.get(column);
+        travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        monitor.subTask("Building results from database");
+        for (Node node : travers) {
+            Double value = null;
+            for (Column column : keySet) {
+                value = value == null || select == Select.EXISTS ? getNeighbourValue(node, neighbourName, propertyName, select, column.minValue, column.range) : value;
+                if (value != null && column.containsValue(value)) {
+                    Integer count = result.get(column);
                     column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
-                        result.put(column, 1 + (count == null ? 0 : count));
-                        if (select != Select.EXISTS) {
-                            break;
-                        }
+                    result.put(column, 1 + (count == null ? 0 : count));
+                    if (select != Select.EXISTS) {
+                        break;
                     }
                 }
-                monitor.worked(1);
-                if (monitor.isCanceled())
-                    break;
             }
+            monitor.worked(1);
+            if (monitor.isCanceled())
+                break;
+        }
         runGcIfBig(totalWork);
         // Now merge any gaps in the distribution into a single category (TODO: Prevent adjacency
         // jumping this gap)
@@ -2091,8 +2081,7 @@ public class ReuseAnalyserView extends ViewPart {
 
     }
 
-    private Double getNeighbourValue(Node node, String neighbourName, String propertyName, Select select, Double minValue,
-            Double range) {
+    private Double getNeighbourValue(Node node, String neighbourName, String propertyName, Select select, Double minValue, Double range) {
         if (select != Select.EXISTS) {
             return getNeighbourValue(node, neighbourName, propertyName, select, true);
         }
@@ -2109,8 +2098,7 @@ public class ReuseAnalyserView extends ViewPart {
         return null;
     }
 
-    private Double getTransmissionValue(Node node, String neighbourName, String propertyName, Select select, Double minValue,
-            Double range) {
+    private Double getTransmissionValue(Node node, String neighbourName, String propertyName, Select select, Double minValue, Double range) {
         if (select != Select.EXISTS) {
             return getTransmissionValue(node, neighbourName, propertyName, select, true);
         }
@@ -2280,6 +2268,7 @@ public class ReuseAnalyserView extends ViewPart {
         }
         return null;
     }
+
     /**
      * @param propertyName
      * @return
@@ -2307,8 +2296,8 @@ public class ReuseAnalyserView extends ViewPart {
         int count = 0;
         for (Relationship relation : mpNode.getRelationships(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING)) {
             Node node = relation.getEndNode();
-                result = result + ((Number)node.getProperty(properties, new Double(0))).doubleValue();
-                count++;
+            result = result + ((Number)node.getProperty(properties, new Double(0))).doubleValue();
+            count++;
         }
         return count == 0 ? 0 : (double)result / (double)count;
     }
@@ -2353,8 +2342,7 @@ public class ReuseAnalyserView extends ViewPart {
             for (Relationship relation : prevCol.getNode().getRelationships(NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING)) {
                 node.createRelationshipTo(relation.getOtherNode(node), NetworkRelationshipTypes.AGGREGATE);
             }
-            Node parentMain = prevCol.getNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)
-                    .getOtherNode(prevCol.getNode());
+            Node parentMain = prevCol.getNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(prevCol.getNode());
             NeoUtils.deleteSingleNode(prevCol.getNode());
             node.setProperty(INeoConstants.PROPERTY_NAME_NAME, getColumnName());
             prevCol.setNode(null);
@@ -2452,6 +2440,7 @@ public class ReuseAnalyserView extends ViewPart {
 
         /**
          * Set this column to be a chart spacer (no data)
+         * 
          * @param value
          */
         public void setSpacer(boolean value) {
@@ -2517,7 +2506,7 @@ public class ReuseAnalyserView extends ViewPart {
                 return false;
             return true;
         }
-        
+
     }
 
     /**
@@ -2568,12 +2557,12 @@ public class ReuseAnalyserView extends ViewPart {
                         members.put(id + "-> " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
                     }
                     Node networkNode = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node);
-                    if (networkNode.hasRelationship(GeoNeoRelationshipTypes.PROPERTIES,Direction.OUTGOING)){
+                    if (networkNode.hasRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)) {
                         members.put(id + "(site data)", networkNode);
                     }
                 }
-            }else if (NodeTypes.OSS.checkNode(node)){
-                members.put(NeoUtils.getSimpleNodeName(node, ""), node); 
+            } else if (NodeTypes.OSS.checkNode(node)) {
+                members.put(NeoUtils.getSimpleNodeName(node, ""), node);
             }
         }
         return members.keySet().toArray(new String[] {});
@@ -2676,31 +2665,31 @@ public class ReuseAnalyserView extends ViewPart {
         dLabel.bottom = new FormAttachment(100, -2);
         colorRight.getButton().setLayoutData(dLabel);
 
-		dLabel = new FormData();
-		dLabel.left = new FormAttachment(threeBlend, 5);
-		dLabel.top = new FormAttachment(threeBlend, 5, SWT.CENTER);
-		lThreeBlend.setLayoutData(dLabel);
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(threeBlend, 5);
+        dLabel.top = new FormAttachment(threeBlend, 5, SWT.CENTER);
+        lThreeBlend.setLayoutData(dLabel);
 
-		dText = new FormData();
-		dText.left = new FormAttachment(colorRight.getButton(), 15);
-		dText.bottom = new FormAttachment(100, -2);
-		threeBlend.setLayoutData(dText);
-		// --->
-		dLabel = new FormData();
-		dLabel.left = new FormAttachment(lThreeBlend, 15);
-		dLabel.bottom = new FormAttachment(100, -2);
-		colorMiddle.getButton().setLayoutData(dLabel);
+        dText = new FormData();
+        dText.left = new FormAttachment(colorRight.getButton(), 15);
+        dText.bottom = new FormAttachment(100, -2);
+        threeBlend.setLayoutData(dText);
+        // --->
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(lThreeBlend, 15);
+        dLabel.bottom = new FormAttachment(100, -2);
+        colorMiddle.getButton().setLayoutData(dLabel);
 
         dLabel = new FormData();
         dLabel.left = new FormAttachment(colorMiddle.getButton(), 15);
         dLabel.top = new FormAttachment(threeBlend, 5, SWT.CENTER);
         ltblendInformation.setLayoutData(dLabel);
 
-		dText = new FormData();
-		dText.left = new FormAttachment(ltblendInformation, 5);
-		dText.bottom = new FormAttachment(100, -2);
-		ttblendInformation.setLayoutData(dText);
-		// --->
+        dText = new FormData();
+        dText.left = new FormAttachment(ltblendInformation, 5);
+        dText.bottom = new FormAttachment(100, -2);
+        ttblendInformation.setLayoutData(dText);
+        // --->
         // ---
         dLabel = new FormData();
         dLabel.left = new FormAttachment(lBlend, 15);
@@ -2724,7 +2713,6 @@ public class ReuseAnalyserView extends ViewPart {
         dText.bottom = new FormAttachment(100, -2);
         tSelectedInformation.setLayoutData(dText);
 
-
         dLabel = new FormData();
         dLabel.left = new FormAttachment(tSelectedInformation, 5);
         dLabel.top = new FormAttachment(spinAdj, 5, SWT.CENTER);
@@ -2741,7 +2729,7 @@ public class ReuseAnalyserView extends ViewPart {
         dChart.bottom = new FormAttachment(tSelectedInformation, -2);
         dChart.right = new FormAttachment(100, -5);
         chartFrame.setLayoutData(dChart);
-        
+
         FormData dReport = new FormData();
         dReport.left = new FormAttachment(ttblendInformation, 15);
         dReport.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
@@ -2762,9 +2750,10 @@ public class ReuseAnalyserView extends ViewPart {
      */
     private static final class PropertyReturnableEvalvator implements ReturnableEvaluator {
         private final HashSet<String> propertyList;
-        public PropertyReturnableEvalvator(){
+
+        public PropertyReturnableEvalvator() {
             super();
-            propertyList=new HashSet<String>();
+            propertyList = new HashSet<String>();
             propertyList.add(NodeTypes.M.getId());
             propertyList.add("mv");
             propertyList.add(NodeTypes.SECTOR.getId());
@@ -2774,18 +2763,20 @@ public class ReuseAnalyserView extends ViewPart {
             propertyList.add(NodeTypes.UTRAN_DATA.getId());
             propertyList.add(NodeTypes.GPEH_EVENT.getId());
         }
-        public PropertyReturnableEvalvator(NodeTypes propertyType){
+
+        public PropertyReturnableEvalvator(NodeTypes propertyType) {
             super();
-            propertyList=new HashSet<String>();
+            propertyList = new HashSet<String>();
             propertyList.add(propertyType.getId());
-        }       
+        }
+
         @Override
         public boolean isReturnableNode(TraversalPosition traversalposition) {
             Node curNode = traversalposition.currentNode();
             Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-            return type != null&&propertyList.contains(type);
-            }
+            return type != null && propertyList.contains(type);
         }
+    }
 
     /**
      * <p>
@@ -2824,14 +2815,14 @@ public class ReuseAnalyserView extends ViewPart {
                     NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setPalette");
 
                     try {
-                    if (aggrNode != null) {
-                        if (currentPalette != null) {
-                            aggrNode.setProperty(INeoConstants.PALETTE_NAME, currentPalette.getName());
-                        } else {
-                            aggrNode.removeProperty(INeoConstants.PALETTE_NAME);
+                        if (aggrNode != null) {
+                            if (currentPalette != null) {
+                                aggrNode.setProperty(INeoConstants.PALETTE_NAME, currentPalette.getName());
+                            } else {
+                                aggrNode.removeProperty(INeoConstants.PALETTE_NAME);
+                            }
                         }
-                    }
-                    return Status.OK_STATUS;
+                        return Status.OK_STATUS;
                     } finally {
                         tx.finish();
                     }
@@ -2846,7 +2837,6 @@ public class ReuseAnalyserView extends ViewPart {
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }
-
 
         PropertyCategoryDataset() {
             super();
@@ -2877,9 +2867,8 @@ public class ReuseAnalyserView extends ViewPart {
                     Transaction tx = NeoUtils.beginTransaction();
                     NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setAggrNode");
                     try {
-                        Iterator<Node> iteratorChild = aggrNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                                ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
-                                .iterator();
+                        Iterator<Node> iteratorChild = aggrNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
+                                NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
                         nodeList.clear();
                         while (iteratorChild.hasNext()) {
                             Node node = iteratorChild.next();
@@ -2944,7 +2933,7 @@ public class ReuseAnalyserView extends ViewPart {
                 return ((Number)((ChartNode)comparable1).getNode().getProperty(INeoConstants.PROPERTY_VALUE_NAME)).intValue();
             } catch (Exception e) {
                 // TODO Handle Exception
-                throw (RuntimeException) new RuntimeException( ).initCause( e );
+                throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }
 
@@ -3032,8 +3021,8 @@ public class ReuseAnalyserView extends ViewPart {
             }
             this.color = color;
             if (node != null) {
-                Job job=new Job("save color") {
-                    
+                Job job = new Job("save color") {
+
                     @Override
                     protected IStatus run(IProgressMonitor monitor) {
                         Transaction tx = NeoUtils.beginTransaction();
@@ -3052,7 +3041,7 @@ public class ReuseAnalyserView extends ViewPart {
                     }
                 };
                 job.schedule();
-//                job.join(); TODO test on necessary join
+                // job.join(); TODO test on necessary join
             }
         }
 
@@ -3092,17 +3081,11 @@ public class ReuseAnalyserView extends ViewPart {
      * updates list of gis nodes
      */
     public void updateGisNode() {
-        try {
-            setSelection(null);
-            String[] gisItems = getGisItems();
-            gisCombo.setItems(gisItems);
-            propertyCombo.setItems(new String[] {});
-            setVisibleForChart(false);
-        } catch (Exception e) {
-            e.printStackTrace();
-            // TODO Handle Exception
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
-        }
+        setSelection(null);
+        String[] gisItems = getGisItems();
+        gisCombo.setItems(gisItems);
+        propertyCombo.setItems(new String[] {});
+        setVisibleForChart(false);
     }
 
     /**
@@ -3157,12 +3140,14 @@ public class ReuseAnalyserView extends ViewPart {
         Assert.isLegal(bg != null);
         Assert.isLegal(fg != null);
         Assert.isLegal(factor >= -0.0001F && factor <= 1.0001F);
-        if(factor<0.0) factor = 0F;
-        if(factor>1.0) factor = 1F;
+        if (factor < 0.0)
+            factor = 0F;
+        if (factor > 1.0)
+            factor = 1F;
         float complement = 1.0F - factor;
-        return new RGB((int)(complement * bg.red + factor * fg.red), (int)(complement * bg.green + factor
-                * fg.green), (int)(complement * bg.blue + factor * fg.blue));
+        return new RGB((int)(complement * bg.red + factor * fg.red), (int)(complement * bg.green + factor * fg.green), (int)(complement * bg.blue + factor * fg.blue));
     }
+
     /**
      * Generates report based on selected values
      */
@@ -3171,27 +3156,26 @@ public class ReuseAnalyserView extends ViewPart {
         int i = 0;
         Node node = selectedGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
         Node projectNode = node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-//        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject((String)projectNode.getProperty("name"));
+        // IProject project =
+        // ResourcesPlugin.getWorkspace().getRoot().getProject((String)projectNode.getProperty("name"));
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];
-//        final String name = ProjectPlugin.getPlugin().getProjectRegistry().getCurrentProject().getName();
-//        final IWorkspace workspace = ResourcesPlugin.getWorkspace().;
-//        IResource resource = workspace.getRoot().findMember(new Path(name));
-//        final IProject project = resource.getProject();
+        // final String name =
+        // ProjectPlugin.getPlugin().getProjectRegistry().getCurrentProject().getName();
+        // final IWorkspace workspace = ResourcesPlugin.getWorkspace().;
+        // IResource resource = workspace.getRoot().findMember(new Path(name));
+        // final IProject project = resource.getProject();
 
         while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
             i++;
         }
         final String select = Select.findSelectByValue(cSelect.getText()).getDescription();
         final String distribute = Distribute.findEnumByValue(cDistribute.getText()).getDescription();
-        StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(" ")
-                .append(propertyCombo.getText()).append("' do\n  author '").append(System.getProperty("user.name")).append(
-                        "'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append(
-                        "'\n  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(
-                        propertyCombo.getText()).append(", with values distributed ").append(distribute).append(
-                        " and calculated using ").append(select)
-                .append("'\n  chart 'Distribution analysis' do\n self.statistics='").append(gisCombo.getText()).append(
-                        "'\n  self.property='").append(propertyCombo.getText()).append("'\n  self.distribute='").append(
-                        cDistribute.getText()).append("'\n  self.select='").append(cSelect.getText()).append("'\n  end\nend");
+        StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propertyCombo.getText()).append(
+                "' do\n  author '").append(System.getProperty("user.name")).append("'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append(
+                "'\n  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propertyCombo.getText()).append(", with values distributed ")
+                .append(distribute).append(" and calculated using ").append(select).append("'\n  chart 'Distribution analysis' do\n self.statistics='").append(
+                        gisCombo.getText()).append("'\n  self.property='").append(propertyCombo.getText()).append("'\n  self.distribute='").append(cDistribute.getText())
+                .append("'\n  self.select='").append(cSelect.getText()).append("'\n  end\nend");
         System.out.println("Repost script:\n" + sb.toString());
         InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
         try {
