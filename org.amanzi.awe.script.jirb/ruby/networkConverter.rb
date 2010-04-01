@@ -1,4 +1,4 @@
-require 'Neo4j'
+require 'neo4j'
 
 include Java
 include_class org.amanzi.neo.core.enums.NodeTypes
@@ -89,14 +89,12 @@ module Network
           
           if !have_headers
             #if no headers than initialize them
-            #Fake: add beamwidth to parsed headers
-            parseHeader header << "beamwidth"
+            parseHeader header
             have_headers = true
           end
           
-          #parse line with parameters
-          #Fake: set default beamwidth
-          parseLine line << "60.0"          
+          #parse line with parameters          
+          parseLine line       
         end
         
         commit true
