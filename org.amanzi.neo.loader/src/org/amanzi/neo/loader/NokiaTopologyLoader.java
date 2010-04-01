@@ -164,6 +164,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         }else{
             monitor = aMonitor;
         }
+        monitor.subTask(basename);
         mainTx = neo.beginTx();
         currentJobPr = 0;
         counter = 0;
@@ -173,8 +174,9 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
             initializeIndexes();
             gisNode = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.RADIO);
             networkNode = findOrCreateNetworkNode(gisNode);
-            File file = new File(filename);
-            monitor.subTask(basename);
+            int allJob = 100;
+            monitor.beginTask("Load Nokia topology", allJob);
+            File file = new File(filename);            
             try {
                 monitor.subTask(filename);
                 XMLReader rdr = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
@@ -465,8 +467,8 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         public IXmlTag endElement(String localName, StringBuilder chars) {
             if (localName.equals(getName())) {
                 saveData();
-                //getGisProperties(basename).incSaved();
                 updateTx();
+                updateMonitor();
                 return parent;
             } else {
                 throw new IllegalArgumentException("Wrong tag: " + localName);
