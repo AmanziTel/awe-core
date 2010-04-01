@@ -41,7 +41,7 @@ public abstract class DataRoot extends Base {
     DataRoot() {
         super();
         gis = null;
-        isLoadedGis = true;
+        isLoadedGis = false;
     }
 
     /**

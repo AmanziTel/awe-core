@@ -15,16 +15,26 @@ package org.amanzi.neo.core.database.entity;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.statistic_manager.DataStatisticManager;
 import org.eclipse.core.runtime.AssertionFailedException;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * <p>
@@ -39,6 +49,8 @@ public class NeoDataService {
     private static Map<String, Class< ? extends Base>> typeMap = new HashMap<String, Class< ? extends Base>>();
     static {
         typeMap.put(NodeTypes.GIS.getId(), Gis.class);
+        typeMap.put(NodeTypes.PROBE.getId(), Probe.class);
+        typeMap.put(NodeTypes.NETWORK.getId(), Network.class);
     }
 
     /**
@@ -63,7 +75,19 @@ public class NeoDataService {
             String type = (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
             Class< ? extends Base> klass = typeMap.get(type);
             if (klass == null) {
-                throw new AssertionFailedException("Node shuld fave correct type: " + node);
+                throw new AssertionFailedException("Node should fave correct type: " + node);
+            }
+            if (klass == Network.class) {
+                NetworkTypes netType = NetworkTypes.getNodeType(node, null);
+                switch (netType) {
+                case PROBE:
+                    klass = RadioNetwork.class;
+                    break;
+                case RADIO:
+                    klass = ProbeNetwork.class;
+                default:
+                    throw new AssertionFailedException("Node should fave correct type: " + node);
+                }
             }
             return createNewEntity(klass, node);
         } finally {
@@ -76,65 +100,77 @@ public class NeoDataService {
      * @param probeName
      * @return
      */
-    public Probe findOrCreateProbe(ProbeNetwork network, String probeName) {
-        return null;
-//         Transaction tx = beginTx();
-//         try {
-//         Collection<Probe> results = service.get(Probe.class, "name", probeName);
-//         if (results.isEmpty()) {
-//         Probe result=new Probe();
-//         result.setName(probeName);
-//         result.setParent(network);
-//         graph.persist(result);
-//         return result;
-//         } else {
-//         return results.iterator().next();
-//         }
-//         } finally {
-//         tx.finish();
-//         }
-    }
-
-    /**
-     * @param probe
-     * @param basename
-     * @return
-     */
-    public <T extends Network> T findOrCreateNetworkNode(Class<T> klas, String networkName) {
-        return null;
-//         Transaction tx = beginTx();
-//         try {
-//          DataRoot dataRoot=findDataRootByName(networkName);    
-//         if (dataRoot==null) {
-//         T result = createNewEntity(klas);
-//         Gis gis=new Gis();
-//         gis.setName(networkName);
-//         gis.setGisType(GisTypes.NETWORK);
-//         gis.setDataroot(result);
-//         graph.persist(gis);
-//         service.getReferenceNode().createRelationshipTo(graph.get(gis),GeoNeoRelationshipTypes.CHILD);
-//         service.getReferenceNode().createRelationshipTo(graph.get(result),GeoNeoRelationshipTypes.CHILD);
-//         return result;
-//         } else {
-//         return results.iterator().next();
-//         }
-//         } finally {
-//         tx.finish();
-//         }
-    }
-
-    /**
-     *
-     * @param networkName
-     * @return
-     */
-    public   DataRoot findDataRootByName(String networkName) {
+    public Probe findOrCreateProbe(ProbeNetwork network, final String probeName) {
         Transaction tx = beginTx();
-        try{
-            
-            return null;
-        }finally{
-            
+        try {
+            Iterator<Node> iterator = asNode(network).traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    if (currentPos.isStartNode()) {
+                        return false;
+                    }
+                    Base wrapper = getInstance(currentPos.currentNode());
+                    return ((wrapper instanceof Probe) && (probeName.equals(wrapper.getName())));
+                }
+            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+            if (iterator.hasNext()) {
+                return (Probe)getInstance(iterator.next());
+            } else {
+                Probe result = new Probe();
+                result.setRoot(network);
+                result.setName(probeName);
+                result.createAndSave(this);
+                tx.success();
+                return result;
+            }
+        } finally {
+            tx.finish();
+        }
+    }
+
+    public <T extends DataRoot> T findOrCreateDataNode(Class<T> klas, String networkName) {
+        Transaction tx = beginTx();
+        try {
+            DataRoot dataRoot = findDataRootByName(networkName);
+            if (dataRoot == null) {
+                Gis gis = new Gis();
+                gis.setName(networkName);                
+
+                T result = createNewEntity(klas);
+                result.setGis(gis);
+                //todo remove storing data type in gis node?
+                gis.setPropertyValue(INeoConstants.PROPERTY_GIS_TYPE_NAME,Network.class.isAssignableFrom(klas)? GisTypes.NETWORK.getHeader():GisTypes.DRIVE.getHeader());
+                result.setName(networkName);
+                gis.createAndSave(this);
+                result.createAndSave(this);
+                tx.success();
+                return result;
+            } else {
+                return (T)dataRoot;
+            }
+        } finally {
+            tx.finish();
+        }
+    }
+
+    public DataRoot findDataRootByName(final String dataRootName) {
+        Transaction tx = beginTx();
+        try {
+            Iterator<Node> iterator = getReferenceNode().traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(2), new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    if (currentPos.depth() != 2) {
+                        return false;
+                    }
+                    Base wrapper = getInstance(currentPos.currentNode());
+                    return (wrapper instanceof DataRoot && (dataRootName.equals(wrapper.getName())));
+                }
+            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+            return iterator.hasNext() ? (DataRoot)getInstance(iterator.next()) : null;
+        } finally {
+            tx.finish();
         }
     }
 
@@ -168,16 +204,17 @@ public class NeoDataService {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
+
     /**
      * Create new entity
      * 
      * @param <T>
-     * @param klas necessary class. should have constructor with  parameters:  Node , NeoDataService 
+     * @param klas necessary class. should have constructor with parameters: Node , NeoDataService
      * @return entity object
      */
     private <T> T createNewEntity(Class<T> klas, Node node) {
         try {
-            return klas.getConstructor(Node.class,NeoDataService.class).newInstance(node,this);
+            return klas.getConstructor(Node.class, NeoDataService.class).newInstance(node, this);
         } catch (IllegalArgumentException e) {
             // TODO Handle IllegalArgumentException
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -226,7 +263,6 @@ public class NeoDataService {
     }
 
     /**
-     *
      * @return
      */
     Node createNode() {

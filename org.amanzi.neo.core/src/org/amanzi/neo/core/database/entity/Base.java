@@ -136,7 +136,7 @@ public abstract class Base {
                 node.setProperty(key, value);
             }
             keys.add(key);
-            propertyMap.put(key, node.getProperty(key));
+            propertyMap.put(key, value);
         }
         for (String key : propertyMap.keySet()) {
             if (keys.contains(key)) {
@@ -159,6 +159,10 @@ public abstract class Base {
     void create(NeoDataService service) {
         assert node == null;
         node = service.createNode();
+        save();
+    }
+    void createAndSave(NeoDataService service){
+        create(service);
         save();
     }
 }

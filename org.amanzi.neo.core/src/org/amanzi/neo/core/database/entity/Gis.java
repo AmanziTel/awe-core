@@ -47,7 +47,7 @@ public class Gis extends Base {
     public Gis() {
         super();
         dataroot = null;
-        isLoadedDataroot = true;
+        isLoadedDataroot = false;
     }
 
     /**
