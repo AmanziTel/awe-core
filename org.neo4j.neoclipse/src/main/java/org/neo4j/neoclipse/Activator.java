@@ -242,8 +242,13 @@ public class Activator extends AbstractUIPlugin
         display.asyncExec(new Runnable() {
             @Override
             public void run() {
+                
                 IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NeoGraphViewPart.ID);
                 if (view == null) {
+                    return;
+                }
+                boolean partVisible = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().isPartVisible(view);
+                if(!partVisible){
                     return;
                 }
                 NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;

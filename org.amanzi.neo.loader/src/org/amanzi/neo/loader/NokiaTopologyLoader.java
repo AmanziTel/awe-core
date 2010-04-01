@@ -871,8 +871,9 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
          * @param attributes
          */
         private void initSite(Attributes attributes){
-            String name = getKeyFromDistName(1)+" (external)";
-            getSiteNode(name, false);
+            String name = getKeyFromDistName(1)+" (external UMTS cells)";
+            Node site = getSiteNode(name, false);
+            setSiteLocation(site, 0.0f, 0.0f);
         }
 
         @Override

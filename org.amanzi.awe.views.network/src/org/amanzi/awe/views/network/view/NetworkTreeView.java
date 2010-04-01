@@ -134,6 +134,7 @@ public class NetworkTreeView extends ViewPart {
     
     public static final String TRANSMISSION_VIEW_ID = "org.amanzi.awe.views.neighbours.views.TransmissionView";
     public static final String NEIGHBOUR_VIEW_ID = "org.amanzi.awe.views.neighbours.views.NeighboursView";
+    public static final String DB_GRAPH_VIEW_ID = "org.neo4j.neoclipse.view.NeoGraphViewPart";
 
     private static final String RENAME_MSG = "Enter new Name";
 
@@ -186,7 +187,7 @@ public class NetworkTreeView extends ViewPart {
                     if (viewer != event.getViewer()) {
                         return;
                     }
-                    showSelection(node);
+                    showSelection(node,true);
                     showSelectionOnMap(node);
                 }
             }
@@ -442,7 +443,7 @@ public class NetworkTreeView extends ViewPart {
             @Override
             public void run() {
                 IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-                showSelection((NeoNode)selection.getFirstElement());
+                showSelection((NeoNode)selection.getFirstElement(),false);
             }
 
             @Override
@@ -531,9 +532,14 @@ public class NetworkTreeView extends ViewPart {
      * 
      * @param nodeToSelect - selected node
      */
-    private void showSelection(NeoNode nodeToSelect) {
+    private void showSelection(NeoNode nodeToSelect, boolean isDrillDoun) {
         try {
-            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodeToSelect.getNode(), NetworkTreeView.NETWORK_TREE_VIEW_ID));
+            if (isDrillDoun) {
+                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                        new UpdateDrillDownEvent(nodeToSelect.getNode(), NetworkTreeView.NETWORK_TREE_VIEW_ID));
+            }else{
+                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DB_GRAPH_VIEW_ID,nodeToSelect.getNode()));
+            }
             showThisView();
         } catch (Exception e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
