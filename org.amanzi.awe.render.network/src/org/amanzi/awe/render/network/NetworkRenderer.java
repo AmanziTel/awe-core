@@ -405,12 +405,12 @@ public class NetworkRenderer extends RendererImpl {
                         for (Relationship relationship : node.getNode().getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                             Node child = relationship.getEndNode();
                             if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
-                                double azimuth = getDouble(child, "azimuth", Double.NaN);
-                                double beamwidth = Double.NaN;
-                                if (azimuth == Double.NaN) {
+                                Double azimuth = getDouble(child, "azimuth", Double.NaN);
+                                Double beamwidth = Double.NaN;
+                                if (azimuth.equals(Double.NaN)) {
                                     beamwidth = getDouble(child, "beamwidth", CIRCLE_BEAMWIDTH);
                                     if(beamwidth<CIRCLE_BEAMWIDTH){
-                                        azimuth = 0;
+                                        azimuth = 0.0;
                                         System.err.println("Error in render GeoNeo: azimuth is defined, but beamwidth less than "+CIRCLE_BEAMWIDTH);
                                     }
                                 }else{
