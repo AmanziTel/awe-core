@@ -16,6 +16,7 @@ package org.amanzi.neo.data_generator.utils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
+import java.util.List;
 
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
 
@@ -41,6 +42,7 @@ public class CommandCreator {
     public static final String CTICN = "<UNSOLICITED>|+CTICN";
     public static final String ATD = "atd";
     public static final String CTSDC = "AT+CTSDC";
+    public static final String CTXG = "+CTXG";
     
     private static final String ADD_COMAND_PREFIX = "~";
     private static final String OK_PARAMETER = "OK";
@@ -70,20 +72,13 @@ public class CommandCreator {
      * @param time Long.
      * @return CommandRow.
      */
-    public static CommandRow getCtsdcRow(Long time){
+    public static CommandRow getCtsdcRow(Long time, Integer... params){
         CommandRow row = new CommandRow(CTSDC);
         row.setTime(getDate(time));
         row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
-        row.getParams().add(0);
-        row.getParams().add(0);
-        row.getParams().add(0);
-        row.getParams().add(0);
-        row.getParams().add(0);
-        row.getParams().add(0);
-        row.getParams().add(0);
-        row.getParams().add(1);
-        row.getParams().add(0);
-        row.getParams().add(0);
+        for(Integer param : params){
+            row.getParams().add(param);
+        }
         return row;
     }
     
@@ -138,6 +133,25 @@ public class CommandCreator {
     }
     
     /**
+     * Row with 'atd' command.
+     *
+     * @param time Long.
+     * @param ctocp1 CommandRow (row of CTOCP command)
+     * @param ctocp2 CommandRow (row of CTOCP command)
+     * @param ctcc CommandRow (row of CTCC command)
+     * @return CommandRow.
+     */
+    public static CommandRow getAtdRow(Long time,CommandRow source, CommandRow ctcc, CommandRow ctxg){
+        CommandRow row = new CommandRow(source.getCommand());
+        row.setTime(getDate(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
+        row.getAdditional().add(ADD_COMAND_PREFIX+ctcc.getCommandAsString());
+        row.getAdditional().add(ctxg.getCommandAsString());
+        row.getAdditional().add(OK_PARAMETER);
+        return row;
+    }
+    
+    /**
      * Row with 'CTOCP' command.
      *
      * @param time Long.
@@ -163,16 +177,41 @@ public class CommandCreator {
      * @param time Long.
      * @return CommandRow.
      */
-    public static CommandRow getCtccRow(Long time){
+    public static CommandRow getCtccRow(Long time,Integer... params){
         CommandRow row = new CommandRow("+CTCC");
         row.setTime(getDate(time));
-        row.getParams().add(1); 
-        row.getParams().add(0);
-        row.getParams().add(0);
-        row.getParams().add(0);
-        row.getParams().add(0);
-        row.getParams().add(0);
-        row.getParams().add(1);
+        for(Integer param : params){
+            row.getParams().add(param);
+        }
+        return row;
+    }
+    
+    /**
+     * Row with 'CTXG' command.
+     *
+     * @param time Long.
+     * @return CommandRow.
+     */
+    public static CommandRow getCtxgRow(Integer... params){
+        CommandRow row = new CommandRow(CTXG);
+        for(Integer param : params){
+            row.getParams().add(param);
+        }
+        return row;
+    }
+    
+    /**
+     * Row with 'CTXG' command.
+     *
+     * @param time Long.
+     * @return CommandRow.
+     */
+    public static CommandRow getCtxgRow(String key,Integer... params){
+        CommandRow row = new CommandRow(CTXG);
+        for(Integer param : params){
+            row.getParams().add(param);
+        }
+        row.getParams().add(key);
         return row;
     }
 
@@ -191,12 +230,39 @@ public class CommandCreator {
         row.getParams().add(0);
         row.getParams().add(0);
         row.getParams().add(0);
-        row.getParams().add("0"+sourceNumber);
+        row.getParams().add(sourceNumber);
         row.getParams().add(0);
         row.getParams().add(0);
         row.getParams().add(0);
         row.getParams().add(0);
         row.getParams().add(1);
+        return row;
+    }
+    
+    /**
+     * Row with 'CTICN' command.
+     *
+     * @param time Long.
+     * @param sourceNumber String
+     * @return CommandRow.
+     */
+    public static CommandRow getCticnRow(Long time, String sourceNumber, CommandRow ctcc, CommandRow ctxg){
+        CommandRow row = new CommandRow(UNSOLICITED+"|"+CTICN);
+        row.setTime(new Date(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
+        row.getParams().add(2);
+        row.getParams().add(0);
+        row.getParams().add(0);
+        row.getParams().add(1);
+        row.getParams().add(sourceNumber);
+        row.getParams().add(1);
+        row.getParams().add(1);
+        row.getParams().add(0);
+        row.getParams().add(1);
+        row.getParams().add(1);
+        row.getAdditional().add(ctcc.getCommandAsString());
+        row.getAdditional().add(ctxg.getCommandAsString());
+        row.getAdditional().add(OK_PARAMETER);
         return row;
     }
     
@@ -264,11 +330,12 @@ public class CommandCreator {
      * @param time Long.
      * @return CommandRow.
      */
-    public static CommandRow getCtcrRow(Long time){
+    public static CommandRow getCtcrRow(Long time, Integer... params){
         CommandRow row = new CommandRow(CTCR);
         row.setTime(getDate(time));
-        row.getParams().add(1); 
-        row.getParams().add(1);
+        for(Integer param : params){
+            row.getParams().add(param);
+        }
         return row;
     }
     
@@ -373,14 +440,17 @@ public class CommandCreator {
      *
      * @return CommandRow.
      */
-    public static CommandRow getCtgsRow(){
+    public static CommandRow getCtgsRow(List<String> sourceParams, List<String> resParams){
         CommandRow row = new CommandRow(CTGS);
-        RandomValueGenerator generator = RandomValueGenerator.getGenerator();
-        int groupCount = generator.getIntegerValue(0, 26);
         String prefix = "";
-        for(int i=0;i<groupCount;i++){
-            row.getParams().add(prefix+generator.getIntegerValue(1, 7));
-            row.getParams().add("0"+generator.getLongValue(0L, 1000000L));
+        for(String param : sourceParams){
+            row.getParams().add(prefix+"1");
+            row.getParams().add("0"+param);
+            prefix = "|";
+        }
+        for(String param : resParams){
+            row.getParams().add(prefix+"4");
+            row.getParams().add("0"+param);
             prefix = "|";
         }
         return row;

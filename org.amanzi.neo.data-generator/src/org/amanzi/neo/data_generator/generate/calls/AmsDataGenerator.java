@@ -49,7 +49,6 @@ public abstract class AmsDataGenerator implements IDataGenerator{
     private static final long MAX_NETWORK_ID = 125000;
     
     private static final int CALL_DURATION_PERIODS_COUNT = 8;
-    private static final float[] CALL_DURATION_BORDERS = new float[]{0.01f,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
     
     private static final int MILLISECONDS = 1000;
     protected static final long HOUR = 60*60*MILLISECONDS;
@@ -180,7 +179,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
     private List<CallGroup> buildData(){
         List<CallGroup> data = initCallGroups();
         for(CallGroup pair : data){            
-            List<CallData> calls = buildCalls(pair.getSourceProbe(),pair.getReceiverProbes());
+            List<CallData> calls = buildCalls(pair);
             pair.setData(calls);
         }
         return data;
@@ -193,12 +192,12 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * @param receiver Integer
      * @return List of {@link CallData}
      */
-    private List<CallData> buildCalls(Integer source, List<Integer> receivers) {
+    private List<CallData> buildCalls(CallGroup group) {
         List<CallData> calls = new ArrayList<CallData>();
         HashMap<Integer, List<Long>> hourMap = buildHourMap();
         for(Integer hour : hourMap.keySet()){
             for(Long duration : hourMap.get(hour)){
-                CallData call = buildCall(source, receivers, hour, duration);
+                CallData call = buildCall(group, hour, duration);
                 calls.add(call);
             }
         }
@@ -214,7 +213,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * @param duration Long
      * @return {@link CallData}
      */
-    protected abstract CallData buildCall(Integer sourceNum, List<Integer> receiverNums, Integer hour, Long duration);
+    protected abstract CallData buildCall(CallGroup group, Integer hour, Long duration);
 
     /**
      * Returns random time in interval.
@@ -224,7 +223,14 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * @return Long
      */
     protected Long getRamdomTime(Long start, Long end) {
-        return getRandomGenerator().getLongValue(start, end);
+        if(start.equals(end)){
+            return start;
+        }
+        Long time = getRandomGenerator().getLongValue(start, end);
+        while((start-end>1)&&(time.equals(start)||time.equals(end))){
+            time = getRandomGenerator().getLongValue(start, end);
+        }
+        return time;
     }
     
     /**
@@ -258,15 +264,20 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * @return {@link CallGroup}
      */
     protected CallGroup getCallGroup(Integer source, Integer... receivers){
-        String sourceName = probes.get(source-1).getName();
+        String groupName = getRandomGenerator().getLongValue(0L, 100000L).toString();
+        ProbeInfo sourceProbeInfo = probes.get(source-1);
+        String sourceName = sourceProbeInfo.getName();
+        sourceProbeInfo.addSourceGroup(groupName);
         int resCount = receivers.length;
         List<Integer> receiverList = Arrays.asList(receivers);
         List<String> receiverNames = new ArrayList<String>(resCount);
         for(Integer receiver : receiverList){
-            String receiverName = probes.get(receiver-1).getName();
+            ProbeInfo resProbeInfo = probes.get(receiver-1);
+            resProbeInfo.addResGroup(groupName);
+            String receiverName = resProbeInfo.getName();
             receiverNames.add(receiverName);
-        }        
-        return new CallGroup(source, sourceName, receiverList,receiverNames);
+        }             
+        return new CallGroup(groupName, source, sourceName, receiverList,receiverNames);
     }
     
     /**
@@ -308,10 +319,16 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * @return Long[]
      */
     private Long[] getPeriodBorders(Integer period){
-        Long start = (long)(CALL_DURATION_BORDERS[period]*MILLISECONDS);
-        Long end = (long)(CALL_DURATION_BORDERS[period+1]*MILLISECONDS);
+        float[] durationBorders = getCallDurationBorders();
+        Long start = (long)(durationBorders[period]*MILLISECONDS);
+        Long end = (long)(durationBorders[period+1]*MILLISECONDS);
         return new Long[]{start,end};
     }
+    
+    /**
+     * @return Returns Call duration borders
+     */
+    protected abstract float[] getCallDurationBorders();
     
     /**
      * Build name for probe.
@@ -358,6 +375,9 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * @since 1.0.0
      */
     protected class ProbeInfo{
+        private List<String> sourceGroups = new ArrayList<String>();
+        private List<String> resGroups = new ArrayList<String>();
+        
         private String name;
         private String phoneNumber;
         private Integer localArea;
@@ -413,6 +433,37 @@ public abstract class AmsDataGenerator implements IDataGenerator{
             return frequency;
         }
         
+        /**
+         * Set group to source groups
+         *
+         * @param number
+         */
+        public void addSourceGroup(String number){
+            sourceGroups.add(number);
+        }
+        
+        /**
+         * @return Returns the source Gropes.
+         */
+        public List<String> getSourceGroups() {
+            return sourceGroups;
+        }
+        
+        /**
+         * Set group to receiver groups
+         *
+         * @param number
+         */
+        public void addResGroup(String number){
+            resGroups.add(number);
+        }
+        
+        /**
+         * @return Returns the receiver Gropes.
+         */
+        public List<String> getResGroups() {
+            return resGroups;
+        }
     }
 
 }

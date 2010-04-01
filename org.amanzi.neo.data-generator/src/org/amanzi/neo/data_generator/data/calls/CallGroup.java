@@ -17,8 +17,8 @@ import java.util.List;
 
 
 /**
- * Data saver for all calls of probes pair.
- * Attention: pairs A-B and B-A is different!
+ * Data saver for all calls of probes groups.
+ * Attention: groups A-B and B-A is different!
  * <p>
  *
  * </p>
@@ -26,6 +26,8 @@ import java.util.List;
  * @since 1.0.0
  */
 public class CallGroup {
+    
+    private String groupNumber;
     
     private Integer sourceProbe;
     private String sourceProbeName;
@@ -36,9 +38,14 @@ public class CallGroup {
     
     /**
      * Constructor.
-     * @param probeData HashMap<Integer, String> (probe numbers and names)
+     * @param aGroupNumber String (number for group calls)
+     * @param source Integer source probe
+     * @param sourceName String source name
+     * @param receivers List of receiver probes
+     * @param receiverNames List of receiver names
      */
-    public CallGroup(Integer source, String sourceName, List<Integer> receivers, List<String> receiverNames){
+    public CallGroup(String aGroupNumber, Integer source, String sourceName, List<Integer> receivers, List<String> receiverNames){
+        groupNumber = aGroupNumber;
         sourceProbe = source;
         sourceProbeName = sourceName;
         receiverProbes = receivers;
@@ -99,4 +106,10 @@ public class CallGroup {
         data = aData;
     }
 
+    /**
+     * @return Returns the groupNumber.
+     */
+    public String getGroupNumber() {
+        return groupNumber;
+    }
 }

@@ -74,7 +74,6 @@ public abstract class CallStatisticsTest {
     protected static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(TIMESTAMP_FORMAT);
     
     private static final int CALL_DURATION_PERIODS_COUNT = 8;
-    private static final float[] CALL_DURATION_BORDERS = new float[]{0,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
     
     private static final long MILLISECONDS = 1000;
     private static final long HOUR = 60*60*MILLISECONDS;
@@ -82,7 +81,9 @@ public abstract class CallStatisticsTest {
     
     protected static final String CTSDC_COMMAND = "AT+CTSDC";
     protected static final String ATA_COMMAND = "ATA";
+    protected static final String ATH_COMMAND = "ATH";
     protected static final String CTCC_COMMAND = "+CTCC";
+    protected static final String CTCR_COMMAND = "+CTCR";
     
     private static final String PROBE_NAME_PREFIX = "PROBE";
     
@@ -633,15 +634,21 @@ public abstract class CallStatisticsTest {
      * @return Integer
      */
     private Integer getDurationPeriod(Long duration){
+        float[] durationBorders = getCallDurationBorders();
         for(int i=0; i<CALL_DURATION_PERIODS_COUNT; i++){
-            float start = MILLISECONDS * CALL_DURATION_BORDERS[i];
-            float end = MILLISECONDS * CALL_DURATION_BORDERS[i+1];
+            float start = MILLISECONDS * durationBorders[i];
+            float end = MILLISECONDS * durationBorders[i+1];
             if(start<=duration && duration<end){
                 return i;
             }
         }
         return CALL_DURATION_PERIODS_COUNT;
     }
+    
+    /**
+     * @return Returns Call duration borders
+     */
+    protected abstract float[] getCallDurationBorders();
     
     /**
      * For saving call information builded by generated data.

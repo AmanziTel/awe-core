@@ -32,6 +32,8 @@ import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
  */
 public class IndividualCallsGenerator extends AmsDataGenerator {
     
+    private static final float[] CALL_DURATION_BORDERS = new float[]{0.01f,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
+    
     private static final String PAIR_DIRECTORY_POSTFIX = "IndividualCall";
 
     /**
@@ -48,13 +50,16 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
     }
     
     @Override
-    protected CallData buildCall(Integer sourceNum, List<Integer> receiverNums, Integer hour, Long duration){
+    protected CallData buildCall(CallGroup group, Integer hour, Long duration){
         Long startTime = getStartTime();
         Long networkIdentity = getNetworkIdentity();
         List<ProbeInfo> probes = getProbes();
         Long startHour = startTime+HOUR*hour;
         Long endHour = startTime+HOUR*(hour+1);
         Long start = getRamdomTime(startHour, endHour);
+        
+        Integer sourceNum = group.getSourceProbe();
+        List<Integer> receiverNums = group.getReceiverProbes();
         
         Long time = getRamdomTime(startHour, start);
         ProbeData source = getNewProbeData(time, sourceNum);
@@ -77,7 +82,7 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
         receiverCommands.add(CommandCreator.getAtCciRow(time,receiverCci));
         
         time = getRamdomTime(time, start);
-        CommandRow ctsdcRow = CommandCreator.getCtsdcRow(time);
+        CommandRow ctsdcRow = CommandCreator.getCtsdcRow(time,0,0,0,0,0,0,0,1,0,0);
         sourceCommands.add(ctsdcRow);
         sourceCommands.add(CommandCreator.getCtsdcRow(start,ctsdcRow));
         time = getRamdomTime(0L, duration);
@@ -89,7 +94,7 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
         CommandRow ctocp1 = CommandCreator.getCtocpRow(start+time);
         
         time = getRamdomTime(time, duration);
-        receiverCommands.add(CommandCreator.getCticnRow(start+time,source.getNumber()));
+        receiverCommands.add(CommandCreator.getCticnRow(start+time,"0"+source.getNumber()));
         time = getRamdomTime(time, duration);
         CommandRow ataRow = CommandCreator.getAtaRow(start+time);
         receiverCommands.add(ataRow);
@@ -97,7 +102,7 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
         
         time = getRamdomTime(time, duration);
         CommandRow ctocp2 = CommandCreator.getCtocpRow(start+time);
-        CommandRow ctcc = CommandCreator.getCtccRow(null);
+        CommandRow ctcc = CommandCreator.getCtccRow(null,1,0,0,0,0,0,1);
         sourceCommands.add(CommandCreator.getAtdRow(atdRow,ctocp1,ctocp2,ctcc));
         
         time = getRamdomTime(time, duration);
@@ -112,12 +117,12 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
         time = getRamdomTime(0L, rest);
         sourceCommands.add(CommandCreator.getAthRow(end+time));
         time = getRamdomTime(time, rest);
-        CommandRow ctcrRow = CommandCreator.getCtcrRow(end+time);
+        CommandRow ctcrRow = CommandCreator.getCtcrRow(end+time,1,1);
         time = getRamdomTime(time, rest);
         sourceCommands.add(CommandCreator.getAthRow(end+time,ctcrRow));            
         
         time = getRamdomTime(time, rest);
-        ctcrRow = CommandCreator.getCtcrRow(null);
+        ctcrRow = CommandCreator.getCtcrRow(null,1,1);
         receiverCommands.add(CommandCreator.getUnsoCtcrRow(end+time,ctcrRow));
         
         return new CallData(getKey(),source, receiver);
@@ -146,6 +151,11 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
             }
         }
         return result;
+    }
+
+    @Override
+    protected float[] getCallDurationBorders() {
+        return CALL_DURATION_BORDERS;
     }
 
 }

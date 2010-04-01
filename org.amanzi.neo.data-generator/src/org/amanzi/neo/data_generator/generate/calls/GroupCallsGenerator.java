@@ -24,13 +24,14 @@ import org.amanzi.neo.data_generator.utils.CommandCreator;
 
 /**
  * <p>
- * Generator for GroupCallsData. TODO more than two probes.
+ * Generator for GroupCallsData. 
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
 public class GroupCallsGenerator extends AmsDataGenerator{
     
+    private static final float[] CALL_DURATION_BORDERS = new float[]{0.05f,0.125f,0.25f,0.375f,0.5f,0.75f,1,2,5,1000};
     private static final String PAIR_DIRECTORY_POSTFIX = "GroupCall";
     
     private int maxGroupSize;
@@ -51,13 +52,16 @@ public class GroupCallsGenerator extends AmsDataGenerator{
     }
 
     @Override
-    protected CallData buildCall(Integer sourceNum, List<Integer> receiverNums, Integer hour, Long duration) {
-        Long startTime = getStartTime(); //TODO more than 2
+    protected CallData buildCall(CallGroup group, Integer hour, Long duration) {
+        Long startTime = getStartTime(); 
         Long networkIdentity = getNetworkIdentity();
         List<ProbeInfo> probes = getProbes();
         Long startHour = startTime+HOUR*hour;
         Long endHour = startTime+HOUR*(hour+1);
         Long start = getRamdomTime(startHour, endHour);
+        
+        Integer sourceNum = group.getSourceProbe();
+        List<Integer> receiverNums = group.getReceiverProbes();
         
         Long time = getRamdomTime(startHour, start);
         ProbeData source = getNewProbeData(time, sourceNum);
@@ -78,14 +82,15 @@ public class GroupCallsGenerator extends AmsDataGenerator{
         
         time = getRamdomTime(time, start);
         sourceCommands.add(CommandCreator.getAtCtgsRow(time));
-        CommandRow sourceCtgs = CommandCreator.getCtgsRow();
+        CommandRow sourceCtgs = CommandCreator.getCtgsRow(sourceInfo.getSourceGroups(),sourceInfo.getResGroups());
         sourceCommands.add(CommandCreator.getAtCtgsRow(time,sourceCtgs));
         
         for(int i=0; i<resCount; i++){
             List<CommandRow> receiverCommands = allReceiverCommands.get(i);
+            ProbeInfo resInfo = allReceiversInfo.get(i);
             time = getRamdomTime(time, start);
             receiverCommands.add(CommandCreator.getAtCtgsRow(time));
-            CommandRow receiverCtgs = CommandCreator.getCtgsRow();
+            CommandRow receiverCtgs = CommandCreator.getCtgsRow(resInfo.getSourceGroups(),resInfo.getResGroups());
             receiverCommands.add(CommandCreator.getAtCtgsRow(time,receiverCtgs));
         }
         
@@ -103,9 +108,54 @@ public class GroupCallsGenerator extends AmsDataGenerator{
             receiverCommands.add(CommandCreator.getAtCciRow(time,receiverCci));
         }
         
+        time = getRamdomTime(time, start);
+        CommandRow ctsdcRow = CommandCreator.getCtsdcRow(time,0,0,0,1,1,0,1,1,0,0);
+        sourceCommands.add(ctsdcRow);
+        sourceCommands.add(CommandCreator.getCtsdcRow(start,ctsdcRow));
+        
+        time = getRamdomTime(0L, duration);
+        CommandRow atdRow = CommandCreator.getAtdRow(start+time, group.getGroupNumber());
+        sourceCommands.add(atdRow);
+        
+        time = getRamdomTime(time, duration);
+        CommandRow ctcc1 = CommandCreator.getCtccRow(start+time, 2,1,1,0,0,1,1);
+        
+        CommandRow ctcc2 = CommandCreator.getCtccRow(null, 2,1,1,0,0,1,1);
+        String numKey = networkIdentity+"0"+sourceInfo.getPhoneNumber();
+        CommandRow ctxg = CommandCreator.getCtxgRow(numKey,2,3,0,0,1);
+        
+        Long time1 = getRamdomTime(time, duration);
+        for(int i=0; i<resCount; i++){
+            List<CommandRow> receiverCommands = allReceiverCommands.get(i);
+            Long time2 = getRamdomTime(time, time1);
+            receiverCommands.add(CommandCreator.getCticnRow(start+time2, numKey, ctcc2, ctxg));
+        }
+        
+        time = time1;        
+        sourceCommands.add(CommandCreator.getAtdRow(start+time, atdRow, ctcc1, CommandCreator.getCtxgRow(numKey,2,0,0,0)));
+        
+        time = getRamdomTime(time, duration);
+        sourceCommands.add(CommandCreator.getAthRow(start+time));
+        
+        Long end = start+duration;
+        CommandRow ctcrRow = CommandCreator.getCtcrRow(end,2,1);
+        Long rest = startTime+HOUR*(hour+1)-end;
+        if(rest<10){
+            rest = HOUR;
+        }
+        time = getRamdomTime(0L, rest);
+        sourceCommands.add(CommandCreator.getAthRow(end+time,ctcrRow));
+        
+        for(int i=0; i<resCount; i++){
+            List<CommandRow> receiverCommands = allReceiverCommands.get(i);
+            time = getRamdomTime(time, rest);
+            ctcrRow = CommandCreator.getCtcrRow(null,2,14);
+            receiverCommands.add(CommandCreator.getUnsoCtcrRow(end+time,ctcrRow));
+        }      
         
         return new CallData(getKey(),source, receivers);
     }
+    
 
     @Override
     protected String getDirectoryPostfix() {
@@ -132,12 +182,18 @@ public class GroupCallsGenerator extends AmsDataGenerator{
         return result;
     }
 
+    /**
+     * Build all possible gropes.
+     *
+     * @param size int Group size
+     * @return List<List<Integer>>
+     */
     private List<List<Integer>> buildAllGroups(int size){
         Integer probesCount = getProbesCount();
         List<List<Integer>> result = new ArrayList<List<Integer>>();
         if(size == 1){
             for(int i=1;i<=probesCount; i++){
-                List<Integer> group = new ArrayList<Integer>(1);
+                List<Integer> group = new ArrayList<Integer>(size);
                 group.add(i);
                 result.add(group);
             }
@@ -155,5 +211,10 @@ public class GroupCallsGenerator extends AmsDataGenerator{
             }
         }
         return result;
+    }
+
+    @Override
+    protected float[] getCallDurationBorders() {
+        return CALL_DURATION_BORDERS;
     }
 }

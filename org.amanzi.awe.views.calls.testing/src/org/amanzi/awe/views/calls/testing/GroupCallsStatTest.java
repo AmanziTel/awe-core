@@ -29,14 +29,16 @@ import org.junit.Test;
 
 /**
  * <p>
- * Tests for individual calls statistics.
+ * Tests call statistics for group calls.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class IndividualCallStatTest extends CallStatisticsTest{
+public class GroupCallsStatTest extends CallStatisticsTest{
     
-    private static final float[] CALL_DURATION_BORDERS = new float[]{0,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
+    private static final float[] CALL_DURATION_BORDERS = new float[]{0,0.125f,0.25f,0.375f,0.5f,0.75f,1,2,5,1000};
+
+    private int maxGroupSize = 3;
     
     /**
      * Prepare operations before execute test.
@@ -88,6 +90,7 @@ public class IndividualCallStatTest extends CallStatisticsTest{
      */
     @Test
     public void testCallStatisicsSeveralDays()throws IOException, ParseException{
+        maxGroupSize = 2;
         executeTest(48,3,3,2,6);
     }
     
@@ -106,27 +109,20 @@ public class IndividualCallStatTest extends CallStatisticsTest{
     public static void finishAll(){
         clearMainDirectory();
     }
-
-    @Override
-    protected IDataGenerator getDataGenerator(Integer aHours, Integer aDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes, String dataDir) {
-        IDataGenerator generator = DataGenerateManager.getIndividualAmsGenerator(dataDir, aHours,aDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-        return generator;
-    }
-
+    
     @Override
     protected Long getCallDuration(CallData call, Date start) throws ParseException {
-        ProbeData data = call.getReceiverProbes().get(0);
+        ProbeData data = call.getSourceProbe();
         for(CommandRow row : data.getCommands()){
-            if(row.getCommand().equalsIgnoreCase(CTCC_COMMAND)){
+            if(row.getCommand().equalsIgnoreCase(CTCR_COMMAND)){
                 return row.getTime().getTime()-start.getTime();
             }
-            if(row.getCommand().equalsIgnoreCase(ATA_COMMAND)){
+            if(row.getCommand().equalsIgnoreCase(ATH_COMMAND)){
                 for(Object add : row.getAdditional()){
                     if(add instanceof String){
                         String str = (String)add;
-                        if(str.contains(CTCC_COMMAND)){
-                           String timeStr = str.substring(1, str.indexOf(CTCC_COMMAND)-1); 
+                        if(str.contains(CTCR_COMMAND)){
+                           String timeStr = str.substring(1, str.indexOf(CTCR_COMMAND)-1); 
                            Date end = TIME_FORMATTER.parse(timeStr);
                            return end.getTime()-start.getTime();
                         }
@@ -146,6 +142,12 @@ public class IndividualCallStatTest extends CallStatisticsTest{
             }
         }
         return null;
+    }
+
+    @Override
+    protected IDataGenerator getDataGenerator(Integer aHours, Integer aDrift, Integer aCallsPerHour, Integer aCallPerHourVariance,
+            Integer aProbes, String dataDir) {
+        return DataGenerateManager.getGroupAmsGenerator(dataDir, aHours, aDrift, aCallsPerHour, aCallPerHourVariance, aProbes, maxGroupSize);
     }
 
     @Override
