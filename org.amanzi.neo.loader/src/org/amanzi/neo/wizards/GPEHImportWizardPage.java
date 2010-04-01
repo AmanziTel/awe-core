@@ -48,9 +48,9 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class GPEHImportWizardPage extends WizardPage {
-
+    private boolean manualDatasetEdit;
     private Combo dataset;
-    private final Object mon=new Object();
+    // private final Object mon=new Object();
     private final GraphDatabaseService service;
     protected String datasetName;
     private DirectoryFieldEditor editorDir;
@@ -76,6 +76,7 @@ public class GPEHImportWizardPage extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
+        manualDatasetEdit=false;
         final Composite main = new Composite(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
         Label label = new Label(main, SWT.LEFT);
@@ -88,7 +89,11 @@ public class GPEHImportWizardPage extends WizardPage {
 
             @Override
             public void modifyText(ModifyEvent e) {
+                if (!dataset.isEnabled()){
+                    return;
+                }
                 datasetName = dataset.getText();
+                manualDatasetEdit=!StringUtils.isEmpty(datasetName);
                 validateFinish();
             }
         });
@@ -96,7 +101,11 @@ public class GPEHImportWizardPage extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                if (!dataset.isEnabled()){
+                    return;
+                }
                 datasetName = dataset.getText();
+                manualDatasetEdit=true;
                 validateFinish();
             }
 
@@ -105,46 +114,57 @@ public class GPEHImportWizardPage extends WizardPage {
                 widgetSelected(e);
             }
         });
-
-        editorDir = new DirectoryEditor(NeoLoaderPluginMessages.GpehImportDirEditorTitle, NeoLoaderPluginMessages.AMSImport_directory, main); // NON-NLS-1
+        editorDir = new DirectoryEditor("editor", NeoLoaderPluginMessages.AMSImport_directory, main); // NON-NLS-1
+        editorDir.setEmptyStringAllowed(true);
         editorDir.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                if (StringUtils.isEmpty(datasetName)) {
-                    synchronized (mon) {
-                        datasetName = AMSImportWizardPage.getDatasetDefaultName(editorDir.getStringValue());
-                    }
-                        dataset.setText(datasetName);
+                if (!editorDir.getTextControl(main).isEnabled()) {
+                    return;
+                }
+                editorFile.setEnabled(false, main);
+                dataset.setEnabled(false);
+                if (!manualDatasetEdit) {
+                    datasetName = AMSImportWizardPage.getDatasetDefaultName(editorDir.getTextControl(main).getText());
+                    dataset.setText(datasetName);
                 }
                 String stringValue = editorDir.getStringValue();
                 if (StringUtils.isEmpty(stringValue)) {
-                  if (StringUtils.isEmpty(editorFile.getStringValue())){
-                      setFileName(stringValue);
-                  }
+                    if (StringUtils.isEmpty(editorFile.getStringValue())) {
+                        setFileName(stringValue);
+                    }
                 } else {
-                    editorFile.setStringValue("");
+                    editorFile.setStringValue(" ");
                     setFileName(stringValue);
                 }
+                dataset.setEnabled(true);
+                editorFile.setEnabled(true, main);
             }
         });
         editorFile = new FileFieldEditorExt(NeoLoaderPluginMessages.GpehImportDirEditorTitle, "Load single file: ", main);
+        editorFile.setEmptyStringAllowed(true);
         editorFile.setDefaulDirectory(DriveDialog.getDefaultDirectory());
         editorFile.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                if (StringUtils.isEmpty(datasetName)) {
-                    synchronized (mon) {
-                        datasetName = AMSImportWizardPage.getDatasetDefaultName(editorFile.getStringValue());
-                    }
+                if (!editorFile.getTextControl(main).isEnabled()) {
+                    return;
+                }
+                editorDir.setEnabled(false, main);
+                dataset.setEnabled(false);
+                if (!manualDatasetEdit) {
+                    datasetName = AMSImportWizardPage.getDatasetDefaultName(editorFile.getStringValue());
                     dataset.setText(datasetName);
                 }
                 String stringValue = editorFile.getStringValue();
                 if (StringUtils.isEmpty(stringValue)) {
-                  if (StringUtils.isEmpty(editorDir.getStringValue())){
-                      setFileName(stringValue);
-                  }
+                    if (StringUtils.isEmpty(editorDir.getStringValue())) {
+                        setFileName(stringValue);
+                    }
                 } else {
                     editorDir.setStringValue("");
                     setFileName(stringValue);
                 }
+                dataset.setEnabled(true);
+                editorDir.setEnabled(true, main);
             }
         });
         label = new Label(main, SWT.LEFT);
@@ -249,11 +269,11 @@ public class GPEHImportWizardPage extends WizardPage {
                 return false;
             }
             File file = new File(directory);
-            if (!( file.isAbsolute() && file.exists())) {
+            if (!(file.isAbsolute() && file.exists())) {
                 return false;
             }
-            //GPEH handle only directories
-            if (file.isFile()&&ossDirType.left()==OssType.GPEH){
+            // GPEH handle only directories
+            if (file.isFile() && ossDirType.left() == OssType.GPEH) {
                 return false;
             }
             Node ossNode = ossMap.get(datasetName);
