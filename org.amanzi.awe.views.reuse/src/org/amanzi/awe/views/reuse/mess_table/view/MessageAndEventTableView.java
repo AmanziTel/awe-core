@@ -23,7 +23,9 @@ import java.util.regex.Pattern;
 
 import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.mess_table.DataTypes;
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -68,6 +70,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -483,9 +486,9 @@ public class MessageAndEventTableView extends ViewPart {
      */
     private HashMap<String, DatasetInfo> initDatasetsInfo(){
         GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-        LinkedHashMap<String, Node> allDatasetNodes = NeoUtils.getAllDatasetNodes(service);
-        HashMap<String, DatasetInfo> result = new HashMap<String, DatasetInfo>(allDatasetNodes.size());
         Transaction tx = service.beginTx();
+        LinkedHashMap<String, Node> allDatasetNodes = getAllDatasetNodes(service);
+        HashMap<String, DatasetInfo> result = new HashMap<String, DatasetInfo>(allDatasetNodes.size());
         try{
             for(String key : allDatasetNodes.keySet()){
                 result.put(key, new DatasetInfo(allDatasetNodes.get(key),service));
@@ -493,6 +496,26 @@ public class MessageAndEventTableView extends ViewPart {
         }finally{
             tx.finish();
         }        
+        return result;
+    }
+    
+    /**
+     * Returns all dataset Nodes.
+     *
+     * @param service GraphDatabaseService service
+     * @return LinkedHashMap<String, Node>
+     */
+    private LinkedHashMap<String, Node> getAllDatasetNodes(GraphDatabaseService service){
+        LinkedHashMap<String, Node> result = NeoUtils.getAllDatasetNodes(service);
+        Node refNode = service.getReferenceNode();
+        for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
+            Node node = relationship.getEndNode();
+            if (NodeTypes.OSS.checkNode(node)) {
+                String id = NeoUtils.getSimpleNodeName(node, null);
+                result.put(id, node);
+            }
+        }
+
         return result;
     }
 

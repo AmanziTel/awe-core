@@ -35,7 +35,8 @@ public enum DataTypes {
     AMS(DriveTypes.AMS,NodeTypes.M),
     AMS_CALLS(DriveTypes.AMS_CALLS,NodeTypes.CALL),
     TEMS(DriveTypes.TEMS,NodeTypes.M),
-    MS(DriveTypes.MS,NodeTypes.M);
+    MS(DriveTypes.MS,NodeTypes.M),
+    OSS(null,NodeTypes.GPEH_EVENT);
     
     private DriveTypes type;
     private NodeTypes childType;
@@ -61,6 +62,9 @@ public enum DataTypes {
     
     public static DataTypes getTypeByNode(Node aNode, GraphDatabaseService service){
         DriveTypes key = NeoUtils.getDatasetType(aNode, service);
+        if(key==null && NodeTypes.OSS.checkNode(aNode)){
+            return OSS;
+        }
         for(DataTypes curr : values()){
             if(key.equals(curr.type)){
                 return curr;
