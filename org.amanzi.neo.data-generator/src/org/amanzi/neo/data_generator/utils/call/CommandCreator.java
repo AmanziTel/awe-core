@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.utils;
+package org.amanzi.neo.data_generator.utils.call;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
+import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
 
 /**
  * Creates command rows.

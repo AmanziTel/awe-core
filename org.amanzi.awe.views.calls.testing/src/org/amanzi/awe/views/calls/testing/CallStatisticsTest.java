@@ -81,9 +81,8 @@ public abstract class CallStatisticsTest {
     
     protected static final String CTSDC_COMMAND = "AT+CTSDC";
     protected static final String ATA_COMMAND = "ATA";
-    protected static final String ATH_COMMAND = "ATH";
+    protected static final String ATD_COMMAND = "atd";
     protected static final String CTCC_COMMAND = "+CTCC";
-    protected static final String CTCR_COMMAND = "+CTCR";
     
     private static final String PROBE_NAME_PREFIX = "PROBE";
     
@@ -208,6 +207,7 @@ public abstract class CallStatisticsTest {
      * Execute test with different parameters.
      *
      * @param aHours Integer (hours count)
+     * @param aDrift Integer (drift from 00:00)
      * @param aCallsPerHour Integer (count of calls per hour)
      * @param aCallPerHourVariance Integer (variance of count of calls per hour)
      * @param aProbes Integer (count of probes)
@@ -287,13 +287,18 @@ public abstract class CallStatisticsTest {
      * @param hours Integer (count of hours)
      */
     private void assertResult(HashMap<Integer, CallStatData> generated,CallStatistics statistics, Integer hours){
-        Node hourlyNode = statistics.getPeriodNode(CallTimePeriods.HOURLY, CallType.INDIVIDUAL);
+        Node hourlyNode = statistics.getPeriodNode(CallTimePeriods.HOURLY, getCallType());
         assertHourlyStatistics(hourlyNode,generated);
         if(hours>=24){
-            Node dailyNode = statistics.getPeriodNode(CallTimePeriods.DAILY, CallType.INDIVIDUAL);
+            Node dailyNode = statistics.getPeriodNode(CallTimePeriods.DAILY, getCallType());
             assertDailyStatistics(dailyNode,generated);
         }
     }
+    
+    /**
+     * @return Returns type of calls.
+     */
+    protected abstract CallType getCallType();
    
     /**
      * Assert hourly statistics.

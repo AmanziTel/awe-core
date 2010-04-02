@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.utils;
+package org.amanzi.neo.data_generator.utils.call;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,7 +32,7 @@ import org.amanzi.neo.data_generator.data.calls.ProbeData;
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class FileBuilder {
+public class CallFileBuilder {
     
     private static final String PAIR_DIRECTORY_PREFIX = "NA";
     private static final String PAIR_DIRECTORY_SEPARATOR = "_";
@@ -52,7 +52,7 @@ public class FileBuilder {
      * @param aPath String (path to save)
      * @param postfix String (pair directory postfix)
      */
-    public FileBuilder(String aPath, String postfix){
+    public CallFileBuilder(String aPath, String postfix){
         path = aPath;
         pairDirectoryPostfix = postfix;
     }

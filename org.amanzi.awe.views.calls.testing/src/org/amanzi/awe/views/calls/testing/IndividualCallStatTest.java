@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
@@ -104,7 +105,7 @@ public class IndividualCallStatTest extends CallStatisticsTest{
      */
     @AfterClass
     public static void finishAll(){
-        clearMainDirectory();
+        //clearMainDirectory();
     }
 
     @Override
@@ -151,6 +152,11 @@ public class IndividualCallStatTest extends CallStatisticsTest{
     @Override
     protected float[] getCallDurationBorders() {
         return CALL_DURATION_BORDERS;
+    }
+
+    @Override
+    protected CallType getCallType() {
+        return CallType.INDIVIDUAL;
     }
 
 }

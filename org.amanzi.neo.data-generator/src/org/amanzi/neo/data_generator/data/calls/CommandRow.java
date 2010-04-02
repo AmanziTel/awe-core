@@ -19,7 +19,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.amanzi.neo.data_generator.data.nemo.PointData;
-import org.amanzi.neo.data_generator.utils.CommandCreator;
+import org.amanzi.neo.data_generator.utils.call.CommandCreator;
+
 
 /**
  * Data saver for command row in probe file.

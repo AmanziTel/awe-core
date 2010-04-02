@@ -20,8 +20,8 @@ import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
-import org.amanzi.neo.data_generator.utils.CommandCreator;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
+import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 
 /**
  * <p>
@@ -107,7 +107,7 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
         
         time = getRamdomTime(time, duration);
         Long end = start+duration;
-        ctcc = CommandCreator.getCtccRow(end);
+        ctcc = CommandCreator.getCtccRow(end,1,0,0,0,0,0,1);
         receiverCommands.add(CommandCreator.getAtaRow(ataRow, ctcc));
         
         Long rest = startTime+HOUR*(hour+1)-end;

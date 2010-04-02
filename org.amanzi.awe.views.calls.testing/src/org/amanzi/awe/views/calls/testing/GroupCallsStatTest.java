@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
@@ -68,7 +69,7 @@ public class GroupCallsStatTest extends CallStatisticsTest{
      */
     @Test
     public void testCallStatisicsSeveralHours()throws IOException, ParseException{
-        executeTest(5,0,10,5,6);
+        executeTest(5,0,10,5,3); 
     }
 
     /**
@@ -79,7 +80,7 @@ public class GroupCallsStatTest extends CallStatisticsTest{
      */
     @Test
     public void testCallStatisicsOneDay()throws IOException, ParseException{
-        executeTest(24,3,5,3,6);
+        executeTest(24,3,5,3,3);
     }
     
     /**
@@ -91,7 +92,7 @@ public class GroupCallsStatTest extends CallStatisticsTest{
     @Test
     public void testCallStatisicsSeveralDays()throws IOException, ParseException{
         maxGroupSize = 2;
-        executeTest(48,3,3,2,6);
+        executeTest(48,3,3,2,3);
     }
     
     /**
@@ -114,16 +115,15 @@ public class GroupCallsStatTest extends CallStatisticsTest{
     protected Long getCallDuration(CallData call, Date start) throws ParseException {
         ProbeData data = call.getSourceProbe();
         for(CommandRow row : data.getCommands()){
-            if(row.getCommand().equalsIgnoreCase(CTCR_COMMAND)){
+            if(row.getCommand().equalsIgnoreCase(CTCC_COMMAND)){
                 return row.getTime().getTime()-start.getTime();
             }
-            if(row.getCommand().equalsIgnoreCase(ATH_COMMAND)){
+            if(row.getCommand().startsWith(ATD_COMMAND)){
                 for(Object add : row.getAdditional()){
                     if(add instanceof String){
                         String str = (String)add;
-                        if(str.contains(CTCR_COMMAND)){
-                           String timeStr = str.substring(1, str.indexOf(CTCR_COMMAND)-1); 
-                           Date end = TIME_FORMATTER.parse(timeStr);
+                        if(str.contains(CTCC_COMMAND)){
+                           Date end = row.getTime();
                            return end.getTime()-start.getTime();
                         }
                     }
@@ -153,6 +153,11 @@ public class GroupCallsStatTest extends CallStatisticsTest{
     @Override
     protected float[] getCallDurationBorders() {
         return CALL_DURATION_BORDERS;
+    }
+
+    @Override
+    protected CallType getCallType() {
+        return CallType.GROUP;
     }
 
 }

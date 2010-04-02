@@ -27,9 +27,9 @@ import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
-import org.amanzi.neo.data_generator.utils.CommandCreator;
-import org.amanzi.neo.data_generator.utils.FileBuilder;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
+import org.amanzi.neo.data_generator.utils.call.CommandCreator;
+import org.amanzi.neo.data_generator.utils.call.CallFileBuilder;
 
 /**
  * Generate AMS data (individual calls)
@@ -145,7 +145,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      */
     private void saveData(List<CallGroup> data) {
         try {
-            FileBuilder fileBuilder = new FileBuilder(directory,getDirectoryPostfix());
+            CallFileBuilder fileBuilder = new CallFileBuilder(directory,getDirectoryPostfix());
             fileBuilder.saveData(data);
         } catch (IOException e) {
             throw (RuntimeException) new RuntimeException( ).initCause( e );

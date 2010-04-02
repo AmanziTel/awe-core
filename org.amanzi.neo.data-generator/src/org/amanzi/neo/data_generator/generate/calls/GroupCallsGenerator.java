@@ -20,7 +20,7 @@ import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
-import org.amanzi.neo.data_generator.utils.CommandCreator;
+import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 
 /**
  * <p>
@@ -108,17 +108,17 @@ public class GroupCallsGenerator extends AmsDataGenerator{
             receiverCommands.add(CommandCreator.getAtCciRow(time,receiverCci));
         }
         
-        time = getRamdomTime(time, start);
-        CommandRow ctsdcRow = CommandCreator.getCtsdcRow(time,0,0,0,1,1,0,1,1,0,0);
+        CommandRow ctsdcRow = CommandCreator.getCtsdcRow(start,0,0,0,1,1,0,1,1,0,0);
         sourceCommands.add(ctsdcRow);
-        sourceCommands.add(CommandCreator.getCtsdcRow(start,ctsdcRow));
-        
         time = getRamdomTime(0L, duration);
+        sourceCommands.add(CommandCreator.getCtsdcRow(start+time,ctsdcRow));
+        
+        time = getRamdomTime(time, duration);
         CommandRow atdRow = CommandCreator.getAtdRow(start+time, group.getGroupNumber());
         sourceCommands.add(atdRow);
         
         time = getRamdomTime(time, duration);
-        CommandRow ctcc1 = CommandCreator.getCtccRow(start+time, 2,1,1,0,0,1,1);
+        CommandRow ctcc1 = CommandCreator.getCtccRow(time, 2,1,1,0,0,1,1);
         
         CommandRow ctcc2 = CommandCreator.getCtccRow(null, 2,1,1,0,0,1,1);
         String numKey = networkIdentity+"0"+sourceInfo.getPhoneNumber();
@@ -131,19 +131,20 @@ public class GroupCallsGenerator extends AmsDataGenerator{
             receiverCommands.add(CommandCreator.getCticnRow(start+time2, numKey, ctcc2, ctxg));
         }
         
-        time = time1;        
-        sourceCommands.add(CommandCreator.getAtdRow(start+time, atdRow, ctcc1, CommandCreator.getCtxgRow(numKey,2,0,0,0)));
-        
-        time = getRamdomTime(time, duration);
-        sourceCommands.add(CommandCreator.getAthRow(start+time));
-        
         Long end = start+duration;
-        CommandRow ctcrRow = CommandCreator.getCtcrRow(end,2,1);
+        sourceCommands.add(CommandCreator.getAtdRow(end, atdRow, ctcc1, CommandCreator.getCtxgRow(numKey,2,0,0,0)));
+        
         Long rest = startTime+HOUR*(hour+1)-end;
         if(rest<10){
             rest = HOUR;
         }
+        
         time = getRamdomTime(0L, rest);
+        sourceCommands.add(CommandCreator.getAthRow(end+time));
+        
+        time = getRamdomTime(time, rest);
+        CommandRow ctcrRow = CommandCreator.getCtcrRow(end+time,2,1);
+        time = getRamdomTime(time, rest);
         sourceCommands.add(CommandCreator.getAthRow(end+time,ctcrRow));
         
         for(int i=0; i<resCount; i++){
