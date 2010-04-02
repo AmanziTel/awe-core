@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.amanzi.neo.data_generator.data.nemo.PointData;
 import org.amanzi.neo.data_generator.utils.CommandCreator;
 
 /**
@@ -41,11 +42,13 @@ public class CommandRow {
     private String command;
     private List<Object> params = new ArrayList<Object>();
     private List<Object> additional = new ArrayList<Object>();
+    /** gps position for probe on this command */
+    private PointData pointData;
     
     /**
-     * Constructor.
-     * @param name String (command name)
-     */
+    * Constructor.
+    * @param name String (command name)
+    */
     public CommandRow(String name){
         command = name;
     }
@@ -178,6 +181,22 @@ public class CommandRow {
             result.append(COMMAND_SEPARATOR).append(param);
         }
         return result.toString();
+    }
+    
+    /** 
+     * Gets gps position for probe on this command
+     * @return gps position for probe on this command
+     */
+    public PointData getPointData() {
+        return pointData;
+    }
+    
+    /** 
+     * Sets gps position for probe on this command
+     * @param pointData gps position for probe on this command
+     */
+    public void setPointData(PointData pointData) {
+        this.pointData = pointData;
     }
 
 }

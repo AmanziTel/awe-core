@@ -64,6 +64,19 @@ public class RandomValueGenerator {
     }
     
     /**
+     * Returns random value from interval.
+     *
+     * @param start Double
+     * @param end Double
+     * @return Double
+     */
+    public Float getFloatValue(final Float start, final Float end)
+    {
+        checkParameters(start, end);
+        return start + (end - start) * ( (float) getRandomValue() );
+    }
+    
+    /**
      * Returns random boolean value.
      *
      * @return boolean.
