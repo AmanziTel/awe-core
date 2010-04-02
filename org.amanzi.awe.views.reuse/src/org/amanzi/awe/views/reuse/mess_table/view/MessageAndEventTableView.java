@@ -510,7 +510,8 @@ public class MessageAndEventTableView extends ViewPart {
         Node refNode = service.getReferenceNode();
         for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
             Node node = relationship.getEndNode();
-            if (NodeTypes.OSS.checkNode(node)) {
+            Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString(); //$NON-NLS-1$
+            if (NeoUtils.isGisNode(node) && type.equals(GisTypes.NETWORK.getHeader()) || NodeTypes.OSS.checkNode(node)) {
                 String id = NeoUtils.getSimpleNodeName(node, null);
                 result.put(id, node);
             }

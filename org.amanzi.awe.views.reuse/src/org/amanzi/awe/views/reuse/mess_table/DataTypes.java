@@ -13,7 +13,9 @@
 
 package org.amanzi.awe.views.reuse.mess_table;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -36,7 +38,8 @@ public enum DataTypes {
     AMS_CALLS(DriveTypes.AMS_CALLS,NodeTypes.CALL),
     TEMS(DriveTypes.TEMS,NodeTypes.M),
     MS(DriveTypes.MS,NodeTypes.M),
-    OSS(null,NodeTypes.GPEH_EVENT);
+    OSS(null,NodeTypes.GPEH_EVENT),
+    NETWORK(null,NodeTypes.SECTOR);
     
     private DriveTypes type;
     private NodeTypes childType;
@@ -62,8 +65,14 @@ public enum DataTypes {
     
     public static DataTypes getTypeByNode(Node aNode, GraphDatabaseService service){
         DriveTypes key = NeoUtils.getDatasetType(aNode, service);
-        if(key==null && NodeTypes.OSS.checkNode(aNode)){
-            return OSS;
+        if(key==null){
+            if(NodeTypes.OSS.checkNode(aNode)){
+                return OSS;
+            }
+            Object type = aNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
+            if(type.equals(GisTypes.NETWORK.getHeader())){
+                return NETWORK;
+            }
         }
         for(DataTypes curr : values()){
             if(key.equals(curr.type)){
