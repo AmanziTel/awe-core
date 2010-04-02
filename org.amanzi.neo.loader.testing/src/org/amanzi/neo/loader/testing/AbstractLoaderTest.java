@@ -209,6 +209,23 @@ public abstract class AbstractLoaderTest {
         }
         return result;
     }
+    
+    /**
+     * Convert string to list by BUNDLE_KEY_SEPERATOR
+     * @param aString
+     * @return List<String>
+     */
+    protected static List<Float> parceStringToFloatList(String aString){
+        if(aString==null||aString.length()==0){
+            return new ArrayList<Float>(0);
+        }
+        String[] splited = aString.split(BUNDLE_KEY_SEPERATOR);
+        List<Float> result = new ArrayList<Float>(splited.length);
+        for(String str : splited){
+            result.add(Float.parseFloat(str));
+        }
+        return result;
+    }
 	
 	/**
 	 * Convert string to boolean value (true - equals BUNDLE_KEY_TRUE).

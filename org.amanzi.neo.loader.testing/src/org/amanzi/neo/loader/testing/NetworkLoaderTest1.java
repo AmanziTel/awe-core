@@ -127,7 +127,7 @@ public class NetworkLoaderTest1 extends AbstractLoaderTest{
      */
     private void initDataBase(String aTestKey) throws IOException {
 		initProjectService();
-		networkLoader = new NetworkLoader(getNeo(), getFileDirectory() + getDbName(aTestKey));
+		networkLoader = new NetworkLoader(getNeo(), getFileDirectory() + getDbName(aTestKey), initIndex());
         networkLoader.setup();
         networkLoader.setLimit(1000);
         networkLoader.setCommitSize(1000);

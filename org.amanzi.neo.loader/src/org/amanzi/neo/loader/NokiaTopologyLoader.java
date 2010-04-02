@@ -39,6 +39,7 @@ import org.amanzi.neo.loader.sax_parsers.SkipTag;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
@@ -86,6 +87,25 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
     private Set<String> allNeibProperties = new HashSet<String>();
     private Set<String> intNeibProperties = new HashSet<String>();
     private Set<String> doubleNeibProperties = new HashSet<String>();
+    
+    /**
+     * Constructor.
+     * @param fileName file name
+     * @param network network(gis) name
+     * @param display Display
+     */
+    public NokiaTopologyLoader(String fileName, String network, Display display, LuceneIndexService index, GraphDatabaseService servise) {
+        initialize("Network", servise, fileName, display);
+        basename = network;
+        headers = getHeaderMap(1).headers;
+        handler = new ReadContentHandler(new LoadFactory());
+        if(index == null){
+            luceneInd = NeoServiceProvider.getProvider().getIndexService();
+        }else{
+            luceneInd = index;
+        }
+        addNetworkIndexes();
+    }
     
     /**
      * Constructor.
@@ -206,10 +226,12 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         GisProperties gisProperties = getGisProperties(basename);
         gisProperties.saveBBox();
         gisProperties.saveCRS();
-        try {
-            finishUpGis(getGisProperties(basename).getGis());
-        } catch (MalformedURLException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
+        if(!isTest()){           
+            try {
+                finishUpGis(getGisProperties(basename).getGis());
+            } catch (MalformedURLException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
         }
     }
     
@@ -217,6 +239,9 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
      * Save list of Neighbor properties in database
      */
     private void saveNeighbourFields() {
+        if(neighborNode==null){
+            return;
+        }
         Transaction tx = neo.beginTx();
         try {
             neighborNode.setProperty(INeoConstants.LIST_ALL_PROPERTIES, allNeibProperties.toArray(new String[0]));
@@ -806,6 +831,9 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         }
         
         private Integer getIntValue(StringBuilder chars){
+            if(chars==null){
+                return 0;
+            }
             return Integer.parseInt(chars.toString());
         }
         
