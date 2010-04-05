@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.awe.views.tree.drive.views.DriveTreeView;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.listener.IUpdateViewListener;
@@ -113,7 +114,8 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
     }
     
     private void updateView(UpdateDrillDownEvent event){
-        if(!event.getSource().equals(DriveTreeView.ID)){
+        String source = event.getSource();
+        if(!source.equals(DriveTreeView.ID)&& !source.contentEquals(NetworkTreeView.NETWORK_TREE_VIEW_ID)){
             Node node = event.getNodes().get(0);
             Node periodNode = event.getNodes().get(1);
             StructuredSelection selection = new StructuredSelection(new Object[] {new StatisticSelectionNode(node, periodNode)});

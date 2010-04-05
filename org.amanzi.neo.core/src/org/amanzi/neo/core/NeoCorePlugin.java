@@ -22,6 +22,7 @@ import org.amanzi.neo.core.database.listener.IUpdateViewListener;
 import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.database.services.UpdateViewManager;
 import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
+import org.amanzi.neo.core.database.services.events.ShowViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
@@ -67,7 +68,9 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
 	private UpdateViewManager updateBDManager;
 	private NeoDataService neoDataService;
 	private final Object neoDataMonitor=new Object();
-    final List<UpdateViewEventType> eventList = Arrays.asList(UpdateViewEventType.values());
+    private final List<UpdateViewEventType> eventList = Arrays.asList(UpdateViewEventType.values());
+    
+    private UpdateViewEvent lastExetutedEvent;
 
 
 	/**
@@ -197,23 +200,68 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
     @Override
     public void updateView(UpdateViewEvent event) {
         UpdateViewEventType type = event.getType();
-        // update NeoGraphViewPart
-        if(type.equals(UpdateViewEventType.DRILL_DOWN)){
+        if (!eventExecuted(event)) {
+            // update NeoGraphViewPart
+            switch (type) {
+            case DRILL_DOWN:
+                UpdateDrillDownEvent ddEvent = (UpdateDrillDownEvent)event;
+                if (!ddEvent.getSource().equals(NeoGraphViewPart.ID)) {
+                    Node node = ddEvent.getNodes().get(0);
+                    org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView(node);
+                }
+                break;
+            case SHOW_PREPARED_VIEW:
+                ShowPreparedViewEvent spvEvent = (ShowPreparedViewEvent)event;
+                if (spvEvent.isViewNeedUpdate(NeoGraphViewPart.ID)) {
+                    Node node = spvEvent.getNodes().get(0);
+                    org.neo4j.neoclipse.Activator.getDefault().showNeoGraphView(node);
+                }
+                break;
+            case SHOW_VIEW:
+                ShowViewEvent svEvent = (ShowViewEvent)event;
+                if (svEvent.isViewNeedUpdate(NeoGraphViewPart.ID)) {
+                    org.neo4j.neoclipse.Activator.getDefault().showNeoGraphView(null);
+                }
+                break;
+            default:
+                org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView();
+            }
+            lastExetutedEvent = event;
+        }
+    }
+    
+    private boolean eventExecuted(UpdateViewEvent event){
+        if(lastExetutedEvent==null){
+            return false;
+        }
+        if(lastExetutedEvent.equals(event)){
+            return true;
+        }
+        Node last = getNodeFromEvent(lastExetutedEvent);
+        if(last !=null){
+            Node current = getNodeFromEvent(event);
+            if(current == null){
+                return false;
+            }
+            return last.equals(current);
+        }
+        return false;
+    }
+    
+    private Node getNodeFromEvent(UpdateViewEvent event){
+        if(event instanceof UpdateDrillDownEvent){
             UpdateDrillDownEvent ddEvent = (UpdateDrillDownEvent)event;
             if (!ddEvent.getSource().equals(NeoGraphViewPart.ID)) {
-                Node node = ddEvent.getNodes().get(0);
-                org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView(node);
+                return ddEvent.getNodes().get(0);
             }
-            
-        }else if(type.equals(UpdateViewEventType.SHOW_PREPARED_VIEW)){
+        }
+        if(event instanceof ShowPreparedViewEvent){
             ShowPreparedViewEvent spvEvent = (ShowPreparedViewEvent)event;
             if (spvEvent.isViewNeedUpdate(NeoGraphViewPart.ID)) {
-                Node node = spvEvent.getNodes().get(0);
-                org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView(node);
+                return spvEvent.getNodes().get(0);
             }
-        }else{            
-            org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView();
         }
+        return null;
     }
 
     @Override

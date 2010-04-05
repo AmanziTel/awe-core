@@ -38,6 +38,8 @@ import org.osgi.framework.BundleContext;
  */
 public class NetworkTreePlugin extends AbstractUIPlugin implements IUpdateViewListener{
     
+    public static final String DRIVE_TREE_VIEW_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
+    
     private static final Collection<UpdateViewEventType> handedTypes;
     static {
         Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
@@ -123,7 +125,8 @@ public class NetworkTreePlugin extends AbstractUIPlugin implements IUpdateViewLi
     }
     
     private void updateView(UpdateDrillDownEvent event){
-        if(!event.getSource().equals(NetworkTreeView.NETWORK_TREE_VIEW_ID)){
+        String source = event.getSource();
+        if(!source.equals(NetworkTreeView.NETWORK_TREE_VIEW_ID)&& !source.equals(DRIVE_TREE_VIEW_ID)){
             Node node = event.getNodes().get(0);
             IViewPart viewNetwork = showTreeView();
             if (viewNetwork != null) {

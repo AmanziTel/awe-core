@@ -37,4 +37,8 @@ public abstract class UpdateViewEvent {
         return type;
     }
 
+    @Override
+    public String toString() {
+        return type==null?super.toString():type.toString();
+    }
 }

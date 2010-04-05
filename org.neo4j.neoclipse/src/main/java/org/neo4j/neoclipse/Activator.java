@@ -17,6 +17,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -228,6 +229,10 @@ public class Activator extends AbstractUIPlugin
                 if (view == null) {
                     return;
                 }
+                boolean partVisible = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().isPartVisible(view);
+                if(!partVisible){
+                    return;
+                }
                 NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
                 viewGraph.refresh();
             }
@@ -253,7 +258,35 @@ public class Activator extends AbstractUIPlugin
                 }
                 NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
                 viewGraph.showNodeOnEvent(aNode);
-                viewGraph.refresh();
+            }
+        });
+
+    }
+    
+    /**
+     *Updates NeoGraphView
+     */
+    public void showNeoGraphView(final Node aNode) {
+        Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                
+                IViewPart view = null;
+                try {
+                    view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NeoGraphViewPart.ID);
+                } catch (PartInitException e) {
+                   e.printStackTrace();
+                }
+                if (view == null) {
+                    return;
+                }
+                NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
+                if (aNode != null) {
+                    viewGraph.showNodeOnEvent(aNode);
+                }else{
+                    viewGraph.refresh();
+                }
             }
         });
 
