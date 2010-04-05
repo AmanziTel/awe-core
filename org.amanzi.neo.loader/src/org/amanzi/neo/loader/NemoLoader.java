@@ -34,6 +34,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
@@ -79,7 +80,26 @@ public class NemoLoader extends DriveLoader {
         possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
 
     }
-
+    
+    /**
+    * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
+    * @param time date to which time data will be appended
+    * @param filename of file to load
+    * @param dataset to add data to
+    */
+    public NemoLoader(final Calendar time,final String filename,final String dataset,final GraphDatabaseService neo)
+    {
+        _workDate = time;
+        driveType = DriveTypes.NEMO2;
+        initialize("Nemo", neo , filename, null, dataset);
+        headers = getHeaderMap(1).headers;
+        timeFormat = new SimpleDateFormat(TIME_FORMAT);
+        pointNode = null;
+        initializeKnownHeaders();
+        addDriveIndexes();
+        possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
+    }
+    
     /**
      * initialize headers
      */
