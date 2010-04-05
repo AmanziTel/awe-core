@@ -37,6 +37,7 @@ import org.junit.Test;
  */
 public class IndividualCallStatTest extends CallStatisticsTest{
     
+    //TODO: get values from Constants
     private static final float[] CALL_DURATION_BORDERS = new float[]{0,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
     
     /**
