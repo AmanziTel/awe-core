@@ -65,6 +65,15 @@ public class AMSCorrellator {
 		neoService = NeoServiceProvider.getProvider().getService();
 	}
 	
+	/**
+	 * Constructor for test purposes
+	 * @param neo - GraphDatabaseService (neo4j database)
+	 */
+	public AMSCorrellator(final GraphDatabaseService neo)
+	{
+	    neoService = neo;
+	}
+	
 	private MultiPropertyIndex<Double> realDatasetLocationIndex, callDatasetLocationIndex;
 
     private GisProperties gisProperFrom;
