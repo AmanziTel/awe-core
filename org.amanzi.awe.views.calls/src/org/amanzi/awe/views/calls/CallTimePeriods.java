@@ -80,7 +80,7 @@ public enum CallTimePeriods {
         }
     },
     // 1 month
-    MONTHLY("monthly", DAILY) {
+    MONTHLY("monthly", WEEKLY) {
         @Override
         public Long addPeriod(Long time) {
             return addOnePeriod(time, Calendar.MONTH);
