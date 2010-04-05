@@ -4,6 +4,7 @@ import java.util.Date;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,11 +30,14 @@ public class NemoDataGenerator implements IDataGenerator
     /** String TIME_FORMAT field */
     private static final String TIME_FORMAT = "HH:mm:ss.S";
     
+    /** Date format field. example - "7.10.2009" */
+    private static final String DATE_FORMAT = "dd.MM.yyyy";
+    
     /** Generated test asm data. */    
     private List<CallGroup> callGroups;
     
     /** Directory to which we save result  */
-    private String directory;
+    private String baseDirectoryPath;
     
     /** File name to which saved generated data */
     private String fileName;
@@ -41,8 +45,14 @@ public class NemoDataGenerator implements IDataGenerator
     /** Lines in generated test data */
     private List<PointData> generatedLines;
     
-    /** Format date to string */
+    /** Format date to time string (without date information) */
+    private SimpleDateFormat timeFormat;
+    
+    /** Format date to date string (without time information)  */
     private SimpleDateFormat dateFormat;
+    
+    /** Date for all nemo data */
+    private Date date;
         
     /**
      * Constructor
@@ -51,10 +61,11 @@ public class NemoDataGenerator implements IDataGenerator
     public NemoDataGenerator(final List<CallGroup> aCallGroups,final String aDirectory, final String aFileName)
     {
         callGroups = aCallGroups;
-        directory = aDirectory;
+        baseDirectoryPath = aDirectory;
         fileName = aFileName;
         generatedLines = new ArrayList<PointData>(30);
-        dateFormat = new SimpleDateFormat(TIME_FORMAT);
+        timeFormat = new SimpleDateFormat(TIME_FORMAT);
+        dateFormat = new SimpleDateFormat(DATE_FORMAT);
     }
     
     /**
@@ -84,6 +95,10 @@ public class NemoDataGenerator implements IDataGenerator
                     List<CommandRow> commands = data.getCommands();
                     for(CommandRow command : commands)
                     {
+                        if(date == null)
+                        {
+                            date = command.getTime();
+                        }
                         generateLine(command);
                     }
                 }
@@ -99,7 +114,7 @@ public class NemoDataGenerator implements IDataGenerator
     {
         //15:27:18.735 (используемый формат данных)
         Date time = command.getTime();
-        String timeString = dateFormat.format(time);
+        String timeString = timeFormat.format(time);
         Float longitude = getRandomGenerator().getFloatValue(25f , 45f);
         Float latitude = getRandomGenerator().getFloatValue( 20f , 50f );
         PointData pointData = new PointData(timeString , longitude, latitude );
@@ -109,20 +124,46 @@ public class NemoDataGenerator implements IDataGenerator
     
     private void saveToFile()
     {
-        File file = new File(directory + File.separator + fileName);        
-        file.deleteOnExit();
+        //first create directory for test
+        File dataDirectory = new File(baseDirectoryPath);
+        if(!dataDirectory.exists())
+        {
+            dataDirectory.mkdir();
+        }
+        File file = new File(baseDirectoryPath + File.separator + fileName);        
+        if(file.exists()){
+            throw new IllegalStateException("Dublicate file name <"+fileName+">.");
+        }
+        PrintWriter out = null;
         try
         {
+            file.createNewFile();
             FileOutputStream outputStream = new FileOutputStream(file);
-            PrintWriter out = new PrintWriter(outputStream);
+            out = new PrintWriter(outputStream);
+            if(date != null)
+            {
+                out.append("#START,15:27:17.145,,\"");
+                out.append(dateFormat.format(date));
+                out.append("\"\n");
+            }
             for(PointData pointData : generatedLines)
             {
-                out.append(pointData.toString());
+                out.append(pointData.toString() + "\n");
             }            
-            out.close();
         }
         catch (FileNotFoundException e) {
-            // todo inform logic 
+            // TODO: inform logic 
+        }
+        catch (IOException e) {
+            // TODO: inform logic
+        }
+        finally
+        {
+            if(out != null)
+            {
+                out.flush();
+                out.close();
+            }
         }
     }        
             
