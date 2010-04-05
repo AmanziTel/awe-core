@@ -109,7 +109,7 @@ public class GroupCallsGenerator extends AmsDataGenerator{
         }
         
         CommandRow ctsdcRow = CommandCreator.getCtsdcRow(start,0,0,0,1,1,0,1,1,0,0);
-        sourceCommands.add(ctsdcRow);
+        sourceCommands.add(ctsdcRow);        
         time = getRamdomTime(0L, duration);
         sourceCommands.add(CommandCreator.getCtsdcRow(start+time,ctsdcRow));
         
@@ -117,27 +117,26 @@ public class GroupCallsGenerator extends AmsDataGenerator{
         CommandRow atdRow = CommandCreator.getAtdRow(start+time, group.getGroupNumber());
         sourceCommands.add(atdRow);
         
-        time = getRamdomTime(time, duration);
-        CommandRow ctcc1 = CommandCreator.getCtccRow(time, 2,1,1,0,0,1,1);
-        
-        CommandRow ctcc2 = CommandCreator.getCtccRow(null, 2,1,1,0,0,1,1);
-        String numKey = networkIdentity+"0"+sourceInfo.getPhoneNumber();
-        CommandRow ctxg = CommandCreator.getCtxgRow(numKey,2,3,0,0,1);
-        
-        Long time1 = getRamdomTime(time, duration);
-        for(int i=0; i<resCount; i++){
-            List<CommandRow> receiverCommands = allReceiverCommands.get(i);
-            Long time2 = getRamdomTime(time, time1);
-            receiverCommands.add(CommandCreator.getCticnRow(start+time2, numKey, ctcc2, ctxg));
-        }
-        
         Long end = start+duration;
-        sourceCommands.add(CommandCreator.getAtdRow(end, atdRow, ctcc1, CommandCreator.getCtxgRow(numKey,2,0,0,0)));
+        CommandRow ctcc1 = CommandCreator.getCtccRow(end, 2,1,1,0,0,1,1);
         
         Long rest = startTime+HOUR*(hour+1)-end;
         if(rest<10){
             rest = HOUR;
         }
+        
+        CommandRow ctcc2 = CommandCreator.getCtccRow(null, 2,1,1,0,0,1,1);
+        String numKey = networkIdentity+"0"+sourceInfo.getPhoneNumber();
+        CommandRow ctxg = CommandCreator.getCtxgRow(numKey,2,3,0,0,1);
+        
+        time = getRamdomTime(0L, rest);
+        for(int i=0; i<resCount; i++){
+            List<CommandRow> receiverCommands = allReceiverCommands.get(i);
+            Long time1 = getRamdomTime(0L, time);
+            receiverCommands.add(CommandCreator.getCticnRow(end+time1, numKey, ctcc2, ctxg));
+        }
+        
+        sourceCommands.add(CommandCreator.getAtdRow(end+time, atdRow, ctcc1, CommandCreator.getCtxgRow(numKey,2,0,0,0)));
         
         time = getRamdomTime(0L, rest);
         sourceCommands.add(CommandCreator.getAthRow(end+time));

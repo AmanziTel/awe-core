@@ -38,6 +38,9 @@ public class AMSLoaderTest extends AbstractLoaderTest {
     
     private static final String DATA_SAVER_DIR = "neo_calls";
     
+    private static final int INDIVIDUAL = 0;
+    private static final int GROUP = 1;
+    
     private String dataDirectory;
     
     /**
@@ -86,8 +89,17 @@ public class AMSLoaderTest extends AbstractLoaderTest {
      * Tests load correct data base.
      */
     @Test
-    public void testCorrectLoading()throws IOException{
-        AMSLoader loader = initDataBase(BUNDLE_KEY_CORRECT);
+    public void testCorrectIndividualLoading()throws IOException{
+        AMSLoader loader = initDataBase("ind_"+BUNDLE_KEY_CORRECT);
+        assertLoader(loader);
+    }
+    
+    /**
+     * Tests load correct data base.
+     */
+    @Test
+    public void testCorrectGroupLoading()throws IOException{
+        AMSLoader loader = initDataBase("group_"+BUNDLE_KEY_CORRECT);
         assertLoader(loader);
     }
     
@@ -114,7 +126,18 @@ public class AMSLoaderTest extends AbstractLoaderTest {
      */
     private void generateDataFiles(String aTestKey) throws IOException {
         List<Integer> params = parceStringToIntegerList(getProperty("test_loader.gen_params."+aTestKey));
-        IDataGenerator generator = DataGenerateManager.getIndividualAmsGenerator(dataDirectory, params.get(0),params.get(1), params.get(2), params.get(3), params.get(4));
+        IDataGenerator generator;
+        Integer amsType = params.get(0);
+        switch (amsType) {
+        case INDIVIDUAL:
+            generator = DataGenerateManager.getIndividualAmsGenerator(dataDirectory, params.get(1),params.get(2), params.get(3), params.get(4), params.get(5));
+            break;
+        case GROUP:
+            generator = DataGenerateManager.getGroupAmsGenerator(dataDirectory, params.get(1),params.get(2), params.get(3), params.get(4), params.get(5),params.get(6));
+            break;
+        default:
+            throw new IllegalArgumentException("Unknoun AMS data type "+amsType+".");
+        }        
         generator.generate();
     }
     

@@ -248,7 +248,7 @@ public class CommandCreator {
      * @return CommandRow.
      */
     public static CommandRow getCticnRow(Long time, String sourceNumber, CommandRow ctcc, CommandRow ctxg){
-        CommandRow row = new CommandRow(UNSOLICITED+"|"+CTICN);
+        CommandRow row = new CommandRow(CTICN);
         row.setTime(new Date(time));
         row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
         row.getParams().add(2);

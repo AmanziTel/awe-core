@@ -58,7 +58,7 @@ public class GroupCallsStatTest extends CallStatisticsTest{
      */
     @Test
     public void testCallStatisicsOneHour()throws IOException, ParseException{
-        executeTest(1,5,10,5,6);
+        executeTest(1,5,2,1,3);
     }
     
     /**
@@ -108,7 +108,7 @@ public class GroupCallsStatTest extends CallStatisticsTest{
      */
     @AfterClass
     public static void finishAll(){
-        clearMainDirectory();
+        //clearMainDirectory();
     }
     
     @Override
@@ -123,8 +123,9 @@ public class GroupCallsStatTest extends CallStatisticsTest{
                     if(add instanceof String){
                         String str = (String)add;
                         if(str.contains(CTCC_COMMAND)){
-                           Date end = row.getTime();
-                           return end.getTime()-start.getTime();
+                            String timeStr = str.substring(1, str.indexOf(CTCC_COMMAND)-1); 
+                            Date end = TIME_FORMATTER.parse(timeStr);
+                            return end.getTime()-start.getTime();
                         }
                     }
                 }
