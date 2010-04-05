@@ -60,9 +60,9 @@ public class PointData {
     public String toString()
     {
         StringBuilder line = new StringBuilder();
-        line.append( "GPS,," );
+        line.append( "GPS," );
         line.append(time);
-        line.append(',');
+        line.append(",,");
         line.append(longitude);
         line.append(',');
         line.append(latitude);
