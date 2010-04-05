@@ -57,17 +57,7 @@ public class CallStatistics {
     /*
      * a Day period
      */
-    private static final long DAY = 24 * HOUR;
-    
-    /*
-     * a Week period
-     */
-    private static final long WEEK = 7 * DAY;
-    
-    /*
-     * a Month period
-     */
-    private static final long MONTH = 28 * DAY;
+    private static final long DAY = 24 * HOUR;    
     
     /*
      * Type of Statistics calculation
@@ -310,16 +300,12 @@ public class CallStatistics {
     }
     
     private CallTimePeriods getHighestPeriod(long minTime, long maxTime) {
-        long delta = CallTimePeriods.MONTHLY.getFirstTime(maxTime) - CallTimePeriods.MONTHLY.getFirstTime(minTime);
-        if (delta >= MONTH) {
+        long delta = CallTimePeriods.DAILY.getFirstTime(maxTime) - CallTimePeriods.DAILY.getFirstTime(minTime);
+        if (delta >= DAY) {
             return CallTimePeriods.MONTHLY;
         }
-        delta = CallTimePeriods.WEEKLY.getFirstTime(maxTime) - CallTimePeriods.WEEKLY.getFirstTime(minTime);
-        if (delta >= WEEK) {
-            return CallTimePeriods.WEEKLY;
-        }
-        delta = CallTimePeriods.DAILY.getFirstTime(maxTime) - CallTimePeriods.DAILY.getFirstTime(minTime);
-        if (delta >= DAY) {
+        delta = CallTimePeriods.HOURLY.getFirstTime(maxTime) - CallTimePeriods.HOURLY.getFirstTime(minTime);
+        if (delta >= HOUR) {
             return CallTimePeriods.DAILY;
         }
         
