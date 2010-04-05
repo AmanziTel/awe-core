@@ -170,7 +170,7 @@ public class MessageAndEventTableView extends ViewPart {
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cExpression.setLayoutData(layoutData);
         
-        table = new TableViewer(frame, SWT.VIRTUAL | SWT.BORDER );
+        table = new TableViewer(frame, SWT.VIRTUAL | SWT.BORDER | SWT.FULL_SELECTION );
         fData = new FormData();
         fData.left = new FormAttachment(0, 10);
         fData.right = new FormAttachment(100, -10);
@@ -178,6 +178,7 @@ public class MessageAndEventTableView extends ViewPart {
         fData.bottom = new FormAttachment(100, -10);
         table.getControl().setLayoutData(fData);
         table.getControl().setVisible(false);
+        getSite().setSelectionProvider(table);
         
         labelProvider = new TableLabelProvider();
         labelProvider.createTableColumns();
@@ -360,6 +361,7 @@ public class MessageAndEventTableView extends ViewPart {
         table.getTable().addListener (SWT.SetData, new Listener () {
             public void handleEvent (Event event) {
                 TableItem item = (TableItem) event.item;
+                table.getTable().deselectAll();
                 final int index = table.getTable().indexOf (item);
                 contentProvider.uploadData(null,index);
             }
@@ -850,10 +852,10 @@ public class MessageAndEventTableView extends ViewPart {
          * @param index int
          */
         public void uploadData(final InputTableData inputData, final int index) {
-            
+
             Job updateJob = new Job("Upload data to table job") {            
                 @Override
-                protected IStatus run(IProgressMonitor monitor) {
+                protected IStatus run(IProgressMonitor monitor) {                    
                     if((rows.size()-index)>PAGE_SIZE/4){
                         return Status.OK_STATUS;
                     }
