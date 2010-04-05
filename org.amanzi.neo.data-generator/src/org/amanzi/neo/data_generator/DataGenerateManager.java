@@ -13,9 +13,11 @@
 
 package org.amanzi.neo.data_generator;
 
+import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.GroupCallsGenerator;
 import org.amanzi.neo.data_generator.generate.calls.IndividualCallsGenerator;
+import org.amanzi.neo.data_generator.generate.nemo.NemoDataGenerator;
 import org.amanzi.neo.data_generator.generate.nokia.NokiaTopologyGenerator;
 
 
@@ -76,5 +78,14 @@ public class DataGenerateManager {
     public static IDataGenerator getNokiaTopologyGenerator(String aPath, String aFileName, Integer bscs, Integer sites, Integer sectors, 
             Integer extUmtsCount, Float[] latBorders, Float[] lonBorders){
         return new NokiaTopologyGenerator(aPath, aFileName, bscs, sites, sectors, extUmtsCount, latBorders, lonBorders);
+    }
+    
+    /**
+     * Returns generator for ams data
+     * @param data IDataGenerator generated ams data
+     * @return
+     */
+    public static IDataGenerator getNemoDataGenerator(GeneratedCallsData data, String aDirectory, String aFileName) {
+        return new NemoDataGenerator( data.getData() , aDirectory, aFileName);
     }
 }
