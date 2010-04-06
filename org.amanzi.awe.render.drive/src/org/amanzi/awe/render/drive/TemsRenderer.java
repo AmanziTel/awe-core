@@ -117,6 +117,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
     private final LuceneIndexService index;
     private boolean notMpLabel;
+    private int[] xPoints;
+    private int[] yPoints;
 
     private static int getIconSize(int size) {
         int lower = eventIconSizes[0];
@@ -183,14 +185,14 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         Envelope bounds = getRenderBounds();
         if (bounds == null) {
             bounds = this.context.getViewportModel().getBounds();
-            final Feature geoFilter =(Feature) getContext().getLayer().getBlackboard().get("GEO_FILTER");
-            if (geoFilter!=null){
-                bounds=bounds.intersection(geoFilter.getBounds());
-            }
         }
         Envelope bounds_transformed = null;
         if (bounds != null && transform_w2d != null) {
             bounds_transformed = JTS.transform(bounds, transform_w2d);
+            final Feature geoFilter =(Feature) getContext().getLayer().getBlackboard().get("GEO_FILTER");
+            if (geoFilter!=null){
+                bounds_transformed=bounds_transformed.intersection(geoFilter.getBounds());
+            }
         }
         return bounds_transformed;
     }
@@ -343,8 +345,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             if (geoFilter != null) {
                 final Coordinate[] coordinates = geoFilter.getDefaultGeometry().getCoordinates();
                 final int n = coordinates.length;
-                int[] xPoints = new int[n];
-                int[] yPoints = new int[n];
+                xPoints = new int[n];
+                yPoints = new int[n];
                 for (int i = 0; i < n; i++) {
                     try {
                          JTS.transform(coordinates[i], world_location, transform_d2w);
@@ -399,7 +401,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             break;
                         }
                         else{
-                            System.out.println("[DEBUG] node\t"+node.getId()+"\t"+node.getProperty("time")+"\t"+node+"\t"+node.getPropertyKeys());
                         GeoNode geoNode = new GeoNode(node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING).getEndNode());
                         Coordinate location = geoNode.getCoordinate();
                         if (bounds_transformed != null && !bounds_transformed.contains(location)) {
@@ -411,11 +412,16 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             continue;
                         }
                         java.awt.Point p = getContext().worldToPixel(world_location);
+                        if (geoFilter!=null && !insidePolygon(p)){
+                            continue;
+                        }
+                        
                        for (int i=0;i<groupFilters.length;i++) {
                            GroupFilter groupFilter=groupFilters[i];
                                 List<IFilter> filters = groupFilter.getFilters();
                                 for (int j = 0; j < filters.size(); j++) {
                                     IFilter filter = filters.get(j);
+                                    //TODO refactor - identical code
                                     if (filter instanceof CompositeFilter) {
                                         CompositeFilter cFilter = (CompositeFilter)filter;
                                         final String property = cFilter.getProperty();
@@ -592,6 +598,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     continue;
                 }
                 java.awt.Point p = getContext().worldToPixel(world_location);
+                if (geoFilter!=null && !insidePolygon(p)){
+                    continue;
+                }
                 if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
                     prev_p = p;
                     continue;
@@ -625,6 +634,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 }
 
                 java.awt.Point p = getContext().worldToPixel(world_location);
+                if (geoFilter!=null && !insidePolygon(p)){
+                    continue;
+                }
                 if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
                     prev_p = p;
                     continue;
@@ -809,6 +821,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     }
 
                     java.awt.Point p = getContext().worldToPixel(world_location);
+                    if (geoFilter!=null && !insidePolygon(p)){
+                        continue;
+                    }
                     if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
                         prev_p = p;
                         continue;
@@ -884,6 +899,26 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         }
     }
 
+    private boolean insidePolygon(Point point) {
+        int intersections = 0;
+        final int n = xPoints.length;
+        for (int i = 1; i < n; ++i) {
+          if (doesIntersect(point, xPoints[i],yPoints[i],xPoints[i-1],yPoints[i-1]))
+            ++intersections;
+        }
+        if (doesIntersect(point, xPoints[n-1],yPoints[n-1],xPoints[0],yPoints[0]))
+          ++intersections;
+        return (intersections % 2 != 0);
+    }
+    private boolean doesIntersect(Point point, int x1,int y1, int x2, int y2) {
+        if ((x2 < point.x && x1 >= point.x) ||
+            (x2 >= point.x && x1 < point.x)) {
+
+            double y = (y2 - y1) / (x2 - x1) * (point.x - x1) + y1;
+            return y > point.y;
+        }
+        return false;
+       }
     /**
      * Gets center of sector
      * 
