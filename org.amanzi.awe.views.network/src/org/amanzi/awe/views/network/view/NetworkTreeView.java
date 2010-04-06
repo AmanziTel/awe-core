@@ -15,12 +15,9 @@ package org.amanzi.awe.views.network.view;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -479,6 +476,9 @@ public class NetworkTreeView extends ViewPart {
      */
     protected void showSelectionOnMap(NeoNode node) {
         Node gis = getGisNode(node.getNode());
+        if (gis==null){
+            return;
+        }
         UpdatePropertiesAndMapEvent event = new UpdatePropertiesAndMapEvent(gis, null, false);
         event.setNeedCentered(true);
         if (!gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, "").toString().equalsIgnoreCase(("projected"))) {
