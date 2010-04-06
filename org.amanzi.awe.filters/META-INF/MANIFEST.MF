@@ -14,5 +14,6 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.filters,
+ org.amanzi.awe.filters.experimental,
  org.amanzi.awe.filters.tree,
  org.amanzi.awe.filters.views

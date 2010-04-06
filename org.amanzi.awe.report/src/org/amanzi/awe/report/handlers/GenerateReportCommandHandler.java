@@ -13,21 +13,31 @@
 
 package org.amanzi.awe.report.handlers;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.report.ReportPlugin;
+import org.amanzi.awe.report.model.Report;
+import org.amanzi.awe.report.model.ReportModel;
+import org.amanzi.awe.report.pdf.PDFPrintingEngine;
+import org.amanzi.awe.report.util.ReportUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
 import org.jruby.Ruby;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Pechko_E
  * @since 1.0.0
  */
@@ -35,24 +45,33 @@ public class GenerateReportCommandHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent arg0) throws ExecutionException {
-            final IMap activeMap = ApplicationGIS.getActiveMap();
-//            ApplicationGIS.getOpenMaps().iterator().hasNext()
-            if (activeMap!=ApplicationGIS.NO_MAP){
+        final ReportModel reportModel = new ReportModel();
+        final URL entry = Platform.getBundle(ReportPlugin.PLUGIN_ID).getEntry("ruby/reports");
+        String pathToReportsFolder;
+        try {
+            pathToReportsFolder = FileLocator.resolve(entry).getFile();
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
+        final File directory = new File(pathToReportsFolder);
+        final PDFPrintingEngine engine = new PDFPrintingEngine();
+        if (directory.isDirectory()){
+            final File[] files = directory.listFiles();
+            for (File file:files){
+                System.out.println("[DEBUG] file:\n"+file);
                 try {
-                final Ruby ruby = ReportPlugin.getDefault().getRubyRuntime();
-                String script = "report 'report0' do\n  map 'map0' do |map|\n map.active=true\n  end\nend";
-//            String script = "report";
-                System.out.println("script: "+script);
-                final IRubyObject evalScriptlet = ruby.evalScriptlet(script);
-//            System.out.println("[DEBUG] result="+evalScriptlet);
-            }catch (Exception e){
-                e.printStackTrace();
+                    final String script = ReportUtils.readScript(file.getPath());
+                    System.out.println("[DEBUG] script:\n"+script);
+                    reportModel.updateModel(script);
+                    final Report report = reportModel.getReport();
+                    engine.printReport(report);
+                } catch (IOException e) {
+                    // TODO Handle IOException
+                    throw (RuntimeException) new RuntimeException( ).initCause( e );
+                }
             }
-                
-            }else{
-                //show message
-                System.out.println("There is no active map!");
-            }
+        }
         return null;
     }
 

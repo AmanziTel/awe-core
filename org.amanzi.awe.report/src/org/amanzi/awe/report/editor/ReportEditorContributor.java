@@ -13,12 +13,16 @@
 
 package org.amanzi.awe.report.editor;
 
+import org.amanzi.awe.report.ReportPlugin;
+import org.amanzi.awe.report.model.ReportModel;
+import org.amanzi.awe.report.pdf.PDFPrintingEngine;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+
 
 /**
  * Class that contributes to toolbar
@@ -31,6 +35,7 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
     private AddTextAction addTextAction;
     private AddImageAction addImageAction;
     private AddChartAction addChartAction;
+    private PrintAction printAction;
     private ReportGUIEditor part;
 
     @Override
@@ -40,6 +45,7 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
             addTextAction.setEditor(part);
             addImageAction.setEditor(part);
             addChartAction.setEditor(part);
+            printAction.setEditor(part);
         }
     }
 
@@ -55,9 +61,11 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
         addTextAction = new AddTextAction();
         addImageAction = new AddImageAction();
         addChartAction = new AddChartAction();
+        printAction = new PrintAction();
         toolBarManager.add(addTextAction);
         toolBarManager.add(addImageAction);
         toolBarManager.add(addChartAction);
+        toolBarManager.add(printAction);
 
     }
 
@@ -162,6 +170,41 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
             StringBuffer sb = new StringBuffer("  chart 'chart0' do\n").append("    self.sheet='sheet1'\n").append("    self.categories=a1..a3\n")
             .append("  self.values=b1..b3\n  end\n");
             editor.addNewChart(sb.toString());
+        }
+
+    }
+    /**
+     * Class for an action that adds image to a report
+     * 
+     * @author Pechko_E
+     * @since 1.0.0
+     */
+    public class PrintAction extends Action {
+        private ReportGUIEditor editor;
+
+        /**
+         * Constructor
+         * 
+         */
+        public PrintAction() {
+            super("Print report", AbstractUIPlugin.imageDescriptorFromPlugin(ReportPlugin.PLUGIN_ID, "icons/pdf.png"));
+        }
+
+        /**
+         * Setter for editor field
+         * 
+         * @param editor
+         */
+        public void setEditor(ReportGUIEditor editor) {
+            this.editor = editor;
+
+        }
+
+        @Override
+        public void run() {
+            final ReportModel reportModel = editor.getReportModel();
+            final PDFPrintingEngine engine = new PDFPrintingEngine();
+            engine.printReport(reportModel.getReport());
         }
 
     }

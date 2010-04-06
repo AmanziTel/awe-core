@@ -40,8 +40,13 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.filters.AbstractFilter;
 import org.amanzi.awe.filters.FilterUtil;
+import org.amanzi.awe.filters.experimental.CompositeFilter;
+import org.amanzi.awe.filters.experimental.Filter;
+import org.amanzi.awe.filters.experimental.GroupFilter;
+import org.amanzi.awe.filters.experimental.IFilter;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
+import org.amanzi.awe.neostyle.ShapeType;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -55,6 +60,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.geotools.brewer.color.BrewerPalette;
+import org.geotools.feature.Feature;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -66,6 +72,7 @@ import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.index.lucene.LuceneIndexService;
 import org.opengis.referencing.FactoryException;
@@ -138,12 +145,16 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
     @Override
     public void render(Graphics2D destination, IProgressMonitor monitor) throws RenderException {
-        ILayer layer = getContext().getLayer();
-        // Are there any resources in the layer that respond to the GeoNeo class (should be the case
-        // if we found a Neo4J database with GeoNeo data)
-        IGeoResource resource = layer.findGeoResource(GeoNeo.class);
-        if (resource != null) {
-            renderGeoNeo(destination, resource, monitor);
+        try {
+            ILayer layer = getContext().getLayer();
+            // Are there any resources in the layer that respond to the GeoNeo class (should be the case
+            // if we found a Neo4J database with GeoNeo data)
+            IGeoResource resource = layer.findGeoResource(GeoNeo.class);
+            if (resource != null) {
+                renderGeoNeo(destination, resource, monitor);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -169,9 +180,13 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     }
 
     private Envelope getTransformedBounds() throws TransformException {
-        ReferencedEnvelope bounds = getRenderBounds();
+        Envelope bounds = getRenderBounds();
         if (bounds == null) {
             bounds = this.context.getViewportModel().getBounds();
+            final Feature geoFilter =(Feature) getContext().getLayer().getBlackboard().get("GEO_FILTER");
+            if (geoFilter!=null){
+                bounds=bounds.intersection(geoFilter.getBounds());
+            }
         }
         Envelope bounds_transformed = null;
         if (bounds != null && transform_w2d != null) {
@@ -202,6 +217,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         int fontSize = font.getSize();
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);
+        final List<Pair<ShapeType, List<Color>>> styles = neostyle.getStyles();
+        
+        final GroupFilter[] groupFilters =(GroupFilter[]) getContext().getLayer().getBlackboard().get("FILTER");
+     
         mpName = NeoStyleContent.DEF_MAIN_PROPERTY;
         msName = NeoStyleContent.DEF_SECONDARY_PROPERTY;
         eventIconSize = eventIconBaseSize;
@@ -318,6 +337,154 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.subTask("drawing");
             // single object for re-use in transform below (minimize object creation)
             Coordinate world_location = new Coordinate();
+//            final Feature geoFilter = getContext().getFeaturesInBbox(layer, bbox);
+            final Feature geoFilter =(Feature) getContext().getLayer().getBlackboard().get("GEO_FILTER");
+            System.out.println("[DEBUG] geo filter "+geoFilter);
+            if (geoFilter != null) {
+                final Coordinate[] coordinates = geoFilter.getDefaultGeometry().getCoordinates();
+                final int n = coordinates.length;
+                int[] xPoints = new int[n];
+                int[] yPoints = new int[n];
+                for (int i = 0; i < n; i++) {
+                    try {
+                         JTS.transform(coordinates[i], world_location, transform_d2w);
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    java.awt.Point p = getContext().worldToPixel(world_location);
+                    xPoints[i]=p.x;
+                    yPoints[i]=p.y;
+                }
+                Color oldColor=g.getColor();
+                g.setColor(Color.red);
+                g.drawPolygon(xPoints, yPoints, n);
+                g.setColor(oldColor);
+            }
+            if (groupFilters!=null){
+                try {
+                    Node gisNode = geoNeo.getMainGisNode();
+                    for (Node node : gisNode.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                            new ReturnableEvaluator() {
+
+                                @Override
+                                public boolean isReturnableNode(TraversalPosition currentPos) {
+                                    boolean result = false;
+                                    for (GroupFilter groupFilter : groupFilters) {
+                                        final List<IFilter> filters = groupFilter.getFilters();
+                                        Node currentNode = currentPos.currentNode();
+                                        final Iterable<String> propertyKeys = currentNode.getPropertyKeys();
+                                        if (!NeoUtils.isDriveMNode(currentNode))
+                                            return false;
+                                        for (IFilter filter : filters) {
+                                            if (filter instanceof CompositeFilter) {
+                                                CompositeFilter cFilter = (CompositeFilter)filter;
+                                                final String property = cFilter.getProperty();
+                                                if (currentNode.hasProperty(property)) {
+                                                    result = result || cFilter.accept(currentNode.getProperty(property));
+                                                }
+                                            } else if (filter instanceof Filter) {
+                                                Filter simpleFilter = (Filter)filter;
+                                                final String property = simpleFilter.getProperty();
+                                                if (currentNode.hasProperty(property)) {
+                                                    result = result || simpleFilter.accept(currentNode.getProperty(property));
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return result;
+                                }
+
+                            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING,GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        if (monitor.isCanceled()){
+                            break;
+                        }
+                        else{
+                            System.out.println("[DEBUG] node\t"+node.getId()+"\t"+node.getProperty("time")+"\t"+node+"\t"+node.getPropertyKeys());
+                        GeoNode geoNode = new GeoNode(node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING).getEndNode());
+                        Coordinate location = geoNode.getCoordinate();
+                        if (bounds_transformed != null && !bounds_transformed.contains(location)) {
+                            continue; // Don't draw points outside viewport
+                        }
+                        try {
+                            JTS.transform(location, world_location, transform_d2w);
+                        } catch (Exception e) {
+                            continue;
+                        }
+                        java.awt.Point p = getContext().worldToPixel(world_location);
+                       for (int i=0;i<groupFilters.length;i++) {
+                           GroupFilter groupFilter=groupFilters[i];
+                                List<IFilter> filters = groupFilter.getFilters();
+                                for (int j = 0; j < filters.size(); j++) {
+                                    IFilter filter = filters.get(j);
+                                    if (filter instanceof CompositeFilter) {
+                                        CompositeFilter cFilter = (CompositeFilter)filter;
+                                        final String property = cFilter.getProperty();
+                                        if (node.hasProperty(property)) {
+                                            final Object value = node.getProperty(property);
+                                            if (cFilter.accept(value)) {
+                                                Pair<ShapeType, List<Color>> shapeStyle = styles.get(i);
+                                                List<Color> colors = shapeStyle.r();
+                                                Color color = colors.get(j < colors.size() ? j : colors.size() - 1);
+                                                g.setColor(color);
+                                                // drawSize=10;
+                                                switch (shapeStyle.l()) {
+                                                case CIRCLE:
+                                                    int radius = 5;
+                                                    g.fillOval(p.x - radius, p.y - radius, 2 * radius, 2 * radius);
+                                                    break;
+                                                case RECTANGLE:
+                                                    g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
+                                                    break;
+                                                case TEXT:
+                                                    g.drawString(value.toString(), p.x, p.y - 5);
+                                                    break;
+                                                }
+
+                                            }
+                                        }
+                                    } else if (filter instanceof Filter) {
+                                        Filter simpleFilter = (Filter)filter;
+                                        final String property = simpleFilter.getProperty();
+                                        if (node.hasProperty(property)) {
+                                            final Object value = node.getProperty(property);
+                                            if (simpleFilter.accept(value)) {
+                                                Pair<ShapeType, List<Color>> shapeStyle = styles.get(i);
+                                                List<Color> colors = shapeStyle.r();
+                                                Color color = colors.get(j < colors.size() ? j : colors.size() - 1);
+                                                g.setColor(color);
+                                                switch (shapeStyle.l()) {
+                                                case CIRCLE:
+                                                    int radius = 5;
+                                                    g.fillOval(p.x - radius, p.y - radius, 2 * radius, 2 * radius);
+                                                    break;
+                                                case RECTANGLE:
+                                                    g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
+                                                    break;
+                                                case TEXT:
+                                                    g.drawString(value.toString(), p.x, p.y);
+                                                    break;
+                                                }
+
+                                            }
+                                        }
+                                    }
+                                }
+                        }
+//                        g.setColor(groupFilter.getColor(node));
+//                        g.fillOval(p.x - radius, p.y - radius, 2 * radius, 2 * radius);
+                        }
+                    }
+                    monitor.done();
+                    tx.finish();
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+                    finally {
+                    tx.finish();
+                }
+
+            }
+            else{
             java.awt.Point prev_p = null;
             java.awt.Point prev_l_p = null;
             java.awt.Point cached_l_p = null;
@@ -699,7 +866,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             System.out.println("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count
                     + " points");
             tx.success();
-        } catch (TransformException e) {
+            }//end if
+            } catch (TransformException e) {
             throw new RenderException(e);
         } catch (FactoryException e) {
             throw new RenderException(e);
@@ -915,8 +1083,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         if (drawFull) {
             g.setColor(fillColor);
             g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
-            g.setColor(borderColor);
-            g.drawRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
+//            g.setColor(borderColor);
+//            g.drawRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
 
         } else if (drawLite) {
             g.setColor(fillColor);

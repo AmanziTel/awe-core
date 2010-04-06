@@ -25,6 +25,8 @@ package org.amanzi.awe.report.model;
 public class ReportText implements IReportPart {
     private String text;
     private int index;
+    private int width=600;
+    private int height=400;
 
     /**
      * @param text
@@ -106,6 +108,35 @@ public class ReportText implements IReportPart {
             return false;
         return true;
     }
-    
+
+    /**
+     * @return Returns the width.
+     */
+    public int getWidth() {
+        return width;
+    }
+
+    /**
+     * @param width The width to set.
+     */
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    /**
+     * @return Returns the height.
+     */
+    public int getHeight() {
+        return height;
+    }
+
+    /**
+     * @param height The height to set.
+     */
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+
 
 }

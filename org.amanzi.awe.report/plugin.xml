@@ -3,9 +3,17 @@
 <plugin>
    <extension
          point="org.eclipse.ui.commands">
+      <command
+            id="org.amanzi.awe.report.command.GenerateReport"
+            name="Generate Reports">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
+      <handler
+            class="org.amanzi.awe.report.handlers.GenerateReportCommandHandler"
+            commandId="org.amanzi.awe.report.command.GenerateReport">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -15,7 +23,7 @@
                id="org.amanzi.awe.report.toolbar1">
             <command
                   commandId="org.amanzi.awe.report.command.GenerateReport"
-                  id="org.amanzi.awe.report.GenerateReport"
+                  id="org.amanzi.awe.report.command.GenerateReport"
                   label="Report">
             </command>
          </toolbar>

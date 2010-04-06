@@ -144,7 +144,7 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
         case PART_ADDED:
             guiEditor.createCompositeForPart(source);
             guiEditor.forceRepaint();
-            parts.add(source.getIndex(), (String)event.getData());
+            parts.add(index, (String)event.getData());
             generateScriptFromParts(parts, sb);
             break;
         case PART_MOVED_DOWN:
@@ -261,12 +261,17 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
             }
         }
         ArrayList<String> parts = new ArrayList<String>(positions.size() + 2);
+        if (positions.size()!=0){//report contains parts
         addLines(positions, lines, parts, 0, positions.get(0));
         for (int i = 0; i < positions.size() - 1; i++) {
             addLines(positions, lines, parts, positions.get(i), positions.get(i + 1));
         }
         addLines(positions, lines, parts, positions.get(positions.size() - 1), lines.length);
         parts.add(after_parts);
+        }else{
+            parts.add(0, before_parts);
+            parts.add(1, after_parts);
+        }
         return parts;
     }
 

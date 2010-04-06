@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.report.ReportPlugin;
 import org.amanzi.awe.report.model.events.IReportModelListener;
 import org.amanzi.awe.report.util.ReportUtils;
@@ -58,7 +59,15 @@ public class ReportModel {
     private String scriptInput;
     private Report report;
     private List<IReportModelListener> listeners = new ArrayList<IReportModelListener>(0);
-
+    private static final String GEO_NEO_CLASS="geo_neo_class";
+    public ReportModel() {
+        try {
+            initializeJRubyInterpreter();
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
     public ReportModel(String rubyProjectName) {
         try {
             initializeJRubyInterpreter();
@@ -102,6 +111,7 @@ public class ReportModel {
 
         HashMap<String, Object> globals = new HashMap<String, Object>();
         globals.put(REPORT_MODEL_RUBY_NAME, this);
+        globals.put(GEO_NEO_CLASS, GeoNeo.class);
         makeRubyGlobals(runtime, globals);
         Job initJob= new Job("Initializing Ruby runtime"){
 

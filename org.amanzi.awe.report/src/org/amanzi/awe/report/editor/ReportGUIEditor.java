@@ -13,15 +13,32 @@
 
 package org.amanzi.awe.report.editor;
 
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.imageio.ImageIO;
+
+import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.render.RenderException;
+import net.refractions.udig.project.ui.ApplicationGIS;
+import net.refractions.udig.project.ui.SelectionStyle;
+import net.refractions.udig.project.ui.ApplicationGIS.DrawMapParameter;
 
 import org.amanzi.awe.report.charts.Charts;
 import org.amanzi.awe.report.model.Chart;
 import org.amanzi.awe.report.model.IReportPart;
 import org.amanzi.awe.report.model.Report;
 import org.amanzi.awe.report.model.ReportImage;
+import org.amanzi.awe.report.model.ReportMap;
 import org.amanzi.awe.report.model.ReportModel;
 import org.amanzi.awe.report.model.ReportTable;
 import org.amanzi.awe.report.model.ReportText;
@@ -35,6 +52,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -117,7 +135,7 @@ public class ReportGUIEditor extends EditorPart  {
     @Override
     public void createPartControl(Composite parent) {
         this.parent = parent;
-        sc = new ScrolledComposite(parent, SWT.V_SCROLL);
+        sc = new ScrolledComposite(parent, SWT.V_SCROLL|SWT.H_SCROLL);
         GridLayout mainLayout = new GridLayout();
         sc.setLayout(new RowLayout(SWT.VERTICAL));
         frame = new Composite(sc, SWT.NONE);
@@ -168,7 +186,10 @@ public class ReportGUIEditor extends EditorPart  {
             addImagePart((ReportImage)part);
         } else if (part instanceof ReportTable) {
             addTablePart((ReportTable)part);
-        } else {
+        } else if (part instanceof ReportMap) {
+            addMapPart((ReportMap)part);
+        }
+        else {
             Composite currComposite = new Composite(frame, SWT.NONE);
             FillLayout mainLayout = new FillLayout(SWT.VERTICAL);
             currComposite.setLayout(mainLayout);
@@ -176,6 +197,42 @@ public class ReportGUIEditor extends EditorPart  {
             label.setText("Composite for " + part.getClass().getName() + " is not implemented yet");
             currComposite.layout();
             parts.add(currComposite);
+        }
+    }
+
+    private void addMapPart(ReportMap part) {
+        final Composite currComposite = createComposite(part);
+        IMap map = ((ReportMap)part).getMap();
+
+        BufferedImage bI = new BufferedImage(part.getWidth(), part.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics graphics2 = bI.getGraphics();
+        try {
+            File temp = File.createTempFile("map", ".png"); 
+            Dimension size = new Dimension(part.getWidth(), part.getHeight());
+            graphics2.setClip(1, 1, size.width - 2, size.height - 2);
+            java.awt.Dimension awtSize = new java.awt.Dimension(size.width, size.height);
+            ApplicationGIS.drawMap(new DrawMapParameter((Graphics2D)graphics2, awtSize, map, null, 90,
+                    SelectionStyle.EXCLUSIVE_ALL_SELECTION, null, true, true));
+            
+            ImageIO.write(bI, "png", temp);
+            
+            GridData data = new GridData(GridData.CENTER);
+//            data.widthHint = 600;
+
+            Image image = new Image(currComposite.getDisplay(), temp.getPath());
+            temp.delete();
+            Label lbl = new Label(currComposite, SWT.CENTER);
+            lbl.setImage(image);
+            lbl.setBackground(new Color(frame.getDisplay(), RGB_WHITE));
+            lbl.setLayoutData(data);
+//            Button btnEdit = new Button(currComposite, SWT.PUSH);
+//            btnEdit.setText("Edit");
+//            btnEdit.setEnabled(false);
+            parts.add(currComposite);
+            createContextMenu(lbl, (IReportPart)part);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -222,7 +279,9 @@ public class ReportGUIEditor extends EditorPart  {
      */
     private void addChartPart(final Chart chart) {
         final Composite currComposite = createContainer(chart);
-        GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
+        GridData data = new GridData(GridData.CENTER);
+        data.heightHint=chart.getHeight();
+        data.widthHint=chart.getWidth();
         currComposite.setLayoutData(data);
 //        DefaultCategoryDataset chartDataset = null;
 //        final AbstractDataset dataset = chart.getDataset();

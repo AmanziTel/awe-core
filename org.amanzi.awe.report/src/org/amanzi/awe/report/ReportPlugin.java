@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
@@ -89,6 +90,9 @@ public class ReportPlugin extends AbstractUIPlugin {
      */
     public static ReportPlugin getDefault() {
         return plugin;
+    }
+    public static ImageDescriptor getImageDescriptor(String imageFilePath){
+        return imageDescriptorFromPlugin(PLUGIN_ID, imageFilePath);
     }
 
     public synchronized Ruby getRubyRuntime() {

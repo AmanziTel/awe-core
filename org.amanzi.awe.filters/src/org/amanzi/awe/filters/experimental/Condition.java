@@ -11,24 +11,19 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.report.model;
+package org.amanzi.awe.filters.experimental;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
+ * Enumeration for conditions
+ * 
  * @author Pechko_E
  * @since 1.0.0
  */
-public enum ReportPartType {
-    TEXT("text"), CHART("chart"), IMAGE("image"), TABLE("table"),MAP("map");
+public enum Condition {
+    LT("<"), LE("<="), GT(">"), GE(">="), NE("!="), EQ("=="), IN("in"), HAS_PROPERTY("has property");
     private String text;
 
-    /**
-     * @param text
-     */
-    private ReportPartType(String text) {
+    private Condition(String text) {
         this.text = text;
     }
 
@@ -37,16 +32,6 @@ public enum ReportPartType {
      */
     public String getText() {
         return text;
-    }
-
-    public static String getTypesAsRegex() {
-        StringBuffer sb=new StringBuffer();
-        ReportPartType[] vals = values();
-        for (int i=0;i<vals.length;i++){
-            sb.append(vals[i].getText()).append(i<vals.length-1?"|":"");
-        }
-        return sb.toString();
-
     }
 
 }

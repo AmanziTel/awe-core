@@ -35,14 +35,14 @@ end
 include KPI
 #include Collection
 def allFormula
-  puts "KPI.ancestors"
-  puts "Module.nesting"
-  puts "KPI.instance_methods:"
-  puts KPI.instance_methods
-  puts "KPI::Collection.instance_methods"
-  puts KPI::Collection.instance_methods
-  puts "Collection.instance_methods"
-  puts Collection.instance_methods
+#  puts "KPI.ancestors"
+#  puts "Module.nesting"
+#  puts "KPI.instance_methods:"
+#  puts KPI.instance_methods
+#  puts "KPI::Collection.instance_methods"
+#  puts KPI::Collection.instance_methods
+#  puts "Collection.instance_methods"
+#  puts Collection.instance_methods
   KPI.instance_methods.sort
 end
 def init

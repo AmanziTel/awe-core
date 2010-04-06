@@ -20,7 +20,11 @@ Require-Bundle: org.eclipse.ui,
  org.jfree,
  org.eclipse.ui.ide,
  org.eclipse.ui.editors,
- org.eclipse.jface.text
+ org.eclipse.jface.text,
+ org.amanzi.awe.filters,
+ org.amanzi.awe.neostyle,
+ org.amanzi.awe.catalog.neo,
+ com.lowagie.itext
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.report.editor,
  org.amanzi.awe.report.model

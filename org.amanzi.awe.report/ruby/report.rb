@@ -7,6 +7,9 @@ require 'neo4j'
 require 'ruby/amanzi_neo4j'
 puts "require gis"
 require 'ruby/gis'
+require 'ruby/filters'
+require "ruby/style"
+
 puts "include classes"
 include_class org.amanzi.neo.core.database.nodes.CellID
 include_class org.amanzi.neo.core.service.NeoServiceProvider
@@ -16,6 +19,7 @@ include_class org.amanzi.awe.report.model.Chart
 include_class org.amanzi.awe.report.model.ReportText
 include_class org.amanzi.awe.report.model.ReportImage
 include_class org.amanzi.awe.report.model.ReportTable
+include_class org.amanzi.awe.report.model.ReportMap
 include_class org.amanzi.awe.report.charts.ChartType
 include_class org.amanzi.awe.report.charts.EventDataset
 include_class org.amanzi.awe.report.charts.Charts
@@ -270,28 +274,59 @@ include_class org.jfree.data.time.TimeSeriesCollection
     def text (new_text)
       addPart(ReportText.new(new_text))
     end
+    
+    def file (file_name)
+      setFile(file_name.to_s)
+    end
 
     def image (image_file_name)
       addPart(ReportImage.new(image_file_name))
     end
 
-    def table (title,&block)
+    def table (title,parameters=nil,&block)
       currTable=ReportTable.new(title)
       currTable.setup(&block)
+      currTable.height=parameters[:height] if !parameters.nil?
+      currTable.width=parameters[:width]  if !parameters.nil?
       addPart(currTable)
     end
 
-    def chart(name,&block)
+    def chart(name,parameters=nil,&block)
       begin
         currChart=Chart.new(name)
         currChart.setup(&block)
+        currChart.height=parameters[:height] if !parameters.nil?
+        currChart.width=parameters[:width] if !parameters.nil?
         addPart(currChart)
       rescue =>e
         puts "[Report.chart] An exception occured: #{e}"
       end
     end
+    
+    def map(title,parameters,&block)
+      udig_map=parameters[:map]
+      puts "map: #{udig_map.getID()}"
+      currMap=ReportMap.new(title,udig_map)
+      currMap.height=parameters[:height]
+      currMap.width=parameters[:width]
+      currMap.setup(&block)
+      addPart(currMap)
+    end
   end
+  
+class ReportMap
 
+  def setup(&block)
+    self.instance_eval &block
+    self
+  end
+  
+  def layers
+    map.layers
+  end
+end
+
+  
   class ReportTable
     include NodeUtils
 
@@ -462,8 +497,10 @@ include_class org.jfree.data.time.TimeSeriesCollection
             @datasets<<create_chart_dataset(@nodes,@categories,@values)
           elsif !@statistics.nil?
             dataset_node=find_dataset(@statistics)
+            puts "dataset_node #{dataset_node}"
             if !@property.nil? and !@distribute.nil? and !@select.nil?
-              aggr_node=find_aggr_node(find_dataset(@statistics),@property,@distribute,@select)
+              aggr_node=find_aggr_node(dataset_node,@property,@distribute,@select)
+              puts "aggr_node #{aggr_node}"
 #                            setDataset(create_chart_dataset_aggr(aggr_node))
               @datasets<<create_chart_dataset_aggr(aggr_node)
             end

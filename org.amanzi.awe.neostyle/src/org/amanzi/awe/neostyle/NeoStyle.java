@@ -13,6 +13,13 @@
 package org.amanzi.awe.neostyle;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.amanzi.awe.filters.experimental.GroupFilter;
+import org.amanzi.neo.core.utils.Pair;
 
 /**
  * <p>
@@ -39,6 +46,8 @@ public class NeoStyle {
     private Integer secondaryFontSize;
     private String mainProperty;
     private String secondaryProperty;
+    private List<Pair<ShapeType,List<Color>>> styles=new ArrayList<Pair<ShapeType,List<Color>>>();
+    private GroupFilter filter;
 
     /**
      * @return Returns the main property to use for labelling.
@@ -293,5 +302,28 @@ public class NeoStyle {
     public void setFontSize(Integer fontSize) {
         this.fontSize = fontSize;
     }
+
+    /**
+     * @return Returns the styles.
+     */
+    public List<Pair<ShapeType, List<Color>>> getStyles() {
+        return styles;
+    }
+    public void addStyle(ShapeType shape, Color[] colors){
+        styles.add(new Pair<ShapeType,List<Color>>(shape,new ArrayList<Color>(Arrays.asList(colors))));
+    }
+    public void clearStyle(){
+        styles.clear();
+    }
+public void addFilter(GroupFilter filter){
+    this.filter=filter;
+}
+
+/**
+ * @return Returns the filter.
+ */
+public GroupFilter getFilter() {
+    return filter;
+}
 
 }

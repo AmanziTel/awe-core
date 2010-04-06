@@ -2731,7 +2731,8 @@ public class ReuseAnalyserView extends ViewPart {
         chartFrame.setLayoutData(dChart);
 
         FormData dReport = new FormData();
-        dReport.left = new FormAttachment(ttblendInformation, 15);
+//        dReport.left = new FormAttachment(ttblendInformation, 15);
+        dReport.right=new FormAttachment(100,-2);
         dReport.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
         bReport.setLayoutData(dReport);
     }
@@ -3153,17 +3154,10 @@ public class ReuseAnalyserView extends ViewPart {
      */
     private void generateReport() {
         IFile file;
+        try {
         int i = 0;
         Node node = selectedGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
-        Node projectNode = node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-        // IProject project =
-        // ResourcesPlugin.getWorkspace().getRoot().getProject((String)projectNode.getProperty("name"));
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];
-        // final String name =
-        // ProjectPlugin.getPlugin().getProjectRegistry().getCurrentProject().getName();
-        // final IWorkspace workspace = ResourcesPlugin.getWorkspace().;
-        // IResource resource = workspace.getRoot().findMember(new Path(name));
-        // final IProject project = resource.getProject();
 
         while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
             i++;
@@ -3171,26 +3165,34 @@ public class ReuseAnalyserView extends ViewPart {
         final String select = Select.findSelectByValue(cSelect.getText()).getDescription();
         final String distribute = Distribute.findEnumByValue(cDistribute.getText()).getDescription();
         StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propertyCombo.getText()).append(
-                "' do\n  author '").append(System.getProperty("user.name")).append("'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append(
-                "'\n  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propertyCombo.getText()).append(", with values distributed ")
-                .append(distribute).append(" and calculated using ").append(select).append("'\n  chart 'Distribution analysis' do\n self.statistics='").append(
-                        gisCombo.getText()).append("'\n  self.property='").append(propertyCombo.getText()).append("'\n  self.distribute='").append(cDistribute.getText())
-                .append("'\n  self.select='").append(cSelect.getText()).append("'\n  end\nend");
-        System.out.println("Repost script:\n" + sb.toString());
+                "' do\n");
+        sb.append("  author '").append(System.getProperty("user.name")).append("'\n");
+        sb.append("  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
+        sb.append("  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propertyCombo.getText())
+                    .append(", with values distributed ").append(distribute).append(" and calculated using ").append(select)
+                    .append("'\n");
+        sb.append("  map 'Drive map', :map => GIS.maps.first.copy, :width => 600, :height => 400 do |m|\n");
+        sb.append("    layer = m.layers.find(:type => 'drive').first\n");
+        sb.append("  end\n");
+        sb.append("  chart 'Distribution analysis' do |chart| \n");
+        sb.append("    chart.statistics='").append(gisCombo.getText()).append("'\n");
+        sb.append("    chart.property='").append(propertyCombo.getText()).append("'\n");
+        sb.append("    chart.distribute='").append(cDistribute.getText()).append("'\n");
+        sb.append("    chart.select='").append(cSelect.getText()).append("'\n");
+        sb.append("  end\nend");
+        System.out.println("Report script:\n" + sb.toString());
         InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
-        try {
             file.create(is, true, null);
             is.close();
-        } catch (CoreException e) {
-            // TODO Handle CoreException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             // TODO Handle IOException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         try {
             getViewSite().getPage().openEditor(new FileEditorInput(file), ReportEditor.class.getName());
         } catch (PartInitException e) {
+            e.printStackTrace();
             // TODO Handle PartInitException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }

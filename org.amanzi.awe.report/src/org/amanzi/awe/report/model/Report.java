@@ -27,7 +27,7 @@ import org.amanzi.neo.core.utils.Pair;
  * <p>
  * </p>
  * 
- * @author user
+ * @author Pechko_E
  * @since 1.0.0
  */
 public class Report {
@@ -35,6 +35,7 @@ public class Report {
     private String name;
     private String date;
     private String author;
+    private String file;
     private List<IReportPart> parts = new ArrayList<IReportPart>(0);
     private List<IReportModelListener> listeners = new ArrayList<IReportModelListener>(0);
 
@@ -141,6 +142,20 @@ public class Report {
         return parts;
     }
 
+
+    /**
+     * @return Returns the file.
+     */
+    public String getFile() {
+        return file;
+    }
+
+    /**
+     * @param file The file to set.
+     */
+    public void setFile(String file) {
+        this.file = file;
+    }
 
     public String getScript() {
         StringBuffer sb=  new StringBuffer("report '").append(name).append("' do\n").append("author '").append(author).append("'\n").append("date '")

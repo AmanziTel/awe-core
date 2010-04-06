@@ -11,25 +11,20 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.report.model;
-
+package org.amanzi.awe.filters.experimental;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
- * @author user
+ * Enumeration for relations between filters
+ * 
+ * @author Pechko_E
  * @since 1.0.0
  */
-public interface IReportPart {
-    public String getScript();
-    public int getIndex();
-    public void setIndex(int index);
-    public ReportPartType getType();
-    public int getWidth();
-    public void setWidth(int width);
-    public int getHeight();
-    public void setHeight(int height);
-    
+public enum Relation {
+    AND("and"), OR("or");
+    private String text;
+
+    private Relation(String text) {
+        this.text = text;
+    }
+
 }
