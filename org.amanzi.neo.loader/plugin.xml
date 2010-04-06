@@ -120,7 +120,7 @@
                 id="org.amanzi.neo.loader.toolbar.ams">             
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadAMS"
-            icon="icons/16/drive.png"
+            icon="icons/16/call_analyser.png"
             id="org.amanzi.neo.loader.LoadAMS"
                    tooltip="Load Probe Data">
              </command>
