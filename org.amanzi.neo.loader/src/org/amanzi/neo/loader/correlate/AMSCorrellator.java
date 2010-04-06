@@ -56,6 +56,9 @@ public class AMSCorrellator {
 	 */
 	private GraphDatabaseService neoService;
 	
+	/** is executed in testing envinroment */
+	private boolean isTest = false;
+	
 	/**
 	 * Constructor.
 	 * 
@@ -72,6 +75,7 @@ public class AMSCorrellator {
 	public AMSCorrellator(final GraphDatabaseService neo)
 	{
 	    neoService = neo;
+	    isTest = true;
 	}
 	
 	private MultiPropertyIndex<Double> realDatasetLocationIndex, callDatasetLocationIndex;
@@ -93,8 +97,8 @@ public class AMSCorrellator {
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "correlate");
 		try {
 			initializeIndex(secondDataset);
-            Node gisFrom = NeoUtils.findGisNode(secondDataset);
-            Node disTo = NeoUtils.findGisNode(firstDataset);
+            Node gisFrom = !isTest ? NeoUtils.findGisNode(secondDataset) : NeoUtils.findGisNode(secondDataset, neoService) ;
+            Node disTo = !isTest ? NeoUtils.findGisNode(firstDataset) : NeoUtils.findGisNode(firstDataset, neoService);
             gisProperFrom = new GisProperties(gisFrom);
             gisProperTo = new GisProperties(disTo);
             gisProperFrom.initCRS();
@@ -102,7 +106,7 @@ public class AMSCorrellator {
             gisProperTo.saveCRS();
 			Node realDatasetNode = getDatasetNode(firstDataset);
 			String callDatasetName = getCallDatasetName(realDatasetNode, firstDataset);
-            Node gisToCall = NeoUtils.findGisNode(callDatasetName);
+            Node gisToCall = !isTest ? NeoUtils.findGisNode(callDatasetName) : NeoUtils.findGisNode(callDatasetName, neoService);
             gisProperToCall = new GisProperties(gisToCall);
             gisProperToCall.setCrs(gisProperFrom.getCrs());
             gisProperToCall.saveCRS();
@@ -132,7 +136,10 @@ public class AMSCorrellator {
 		}
 		finally {
 			tx.finish();
-			NeoServiceProvider.getProvider().commit();
+			if(!isTest)
+			{
+			    NeoServiceProvider.getProvider().commit();
+			}
 		}
 	}
 	
@@ -291,7 +298,7 @@ public class AMSCorrellator {
 	    Node virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(realDataset, DriveTypes.AMS_CALLS, neoService);
 	    
 	    if (virtualDataset != null) {
-	        return NeoUtils.getNodeName(virtualDataset);
+	        return !isTest ? NeoUtils.getNodeName(virtualDataset) : NeoUtils.getNodeName( virtualDataset , neoService );
 	    }
 	    else {
 	        return null;

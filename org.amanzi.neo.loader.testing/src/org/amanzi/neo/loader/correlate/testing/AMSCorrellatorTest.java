@@ -2,13 +2,13 @@ package org.amanzi.neo.loader.correlate.testing;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.List;
 
-import junit.framework.Assert;
-
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.DriveTypes;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
@@ -38,7 +39,11 @@ public class AMSCorrellatorTest {
     /** name of nemo dataset */
     private static final String PROBE_DATASET_NAME = "probe_data";
     
-    private static final String TEST_NETWORK_NAME = "test network"; 
+    /** name of test network */
+    private static final String TEST_NETWORK_NAME = "test network";
+    
+    /** name of test project node */
+    private static final String TEST_PROJECT_NAME = "project";
 
     /** neo4j database name */
     private static final String DATABASE_NAME = "neo_test";
@@ -75,7 +80,6 @@ public class AMSCorrellatorTest {
     
     /** drive dataset */
     private Node driveDataset;
-    
     
     /**
     * Prepare operations before execute test.
@@ -259,7 +263,44 @@ public class AMSCorrellatorTest {
         //than we need load generated data to neo4j
         loadProbeData(amsDataDirectoryPath);
         loadDriveData(nemoDataDirectoryPath + File.separator + NEMO_DATA_FILE_NAME);
+        addProjectNode();
+        correlateData();
     }
+    
+    /** 
+     * add project node to database. This is necessary because {@link AMSCorrellator}
+     * is used it to locate dataset nodes.
+     */
+    public void addProjectNode()
+    {
+        Transaction tx = neoDatabase.beginTx();
+        NeoUtils.addTransactionLog(tx, Thread.currentThread(), "create project node");
+        try
+        {
+            Node referenceNode = neoDatabase.getReferenceNode();
+            Node aweProjectNode = neoDatabase.createNode();
+            aweProjectNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, TEST_PROJECT_NAME);
+            aweProjectNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME , NodeTypes.AWE_PROJECT.getId() );
+            //add relationship to reference node
+            referenceNode.createRelationshipTo( aweProjectNode , SplashRelationshipTypes.AWE_PROJECT );
+            aweProjectNode.createRelationshipTo( probeDataset , NetworkRelationshipTypes.CHILD );
+            aweProjectNode.createRelationshipTo( driveDataset , NetworkRelationshipTypes.CHILD );
+            tx.success();
+        }
+        finally
+        {
+           tx.finish();
+        }
+    }
+    
+    /**
+     * Correlate probe and drive data
+     */
+    private void correlateData()
+    {
+         AMSCorrellator amsCorrellator = new AMSCorrellator(getNeo());
+         amsCorrellator.correlate( PROBE_DATASET_NAME , DRIVE_DATASET_NAME );
+    }    
     
     
     /**
