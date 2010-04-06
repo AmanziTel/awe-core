@@ -1238,11 +1238,11 @@ public class ReuseAnalyserView extends ViewPart {
      */
     protected void findOrCreateAggregateNodeInNewThread(final Node gisNode, final String propertyName) {
         // TODO restore focus after job execute or not necessary?
-        mainView.setEnabled(false);
         String select = cSelect.getText();
         if (!cSelect.isEnabled()) {
             select = Select.EXISTS.toString();
         }
+        mainView.setEnabled(false);
         ComputeStatisticsJob job = new ComputeStatisticsJob(gisNode, propertyName, cDistribute.getText(), select);
         job.schedule();
     }
@@ -2295,7 +2295,7 @@ public class ReuseAnalyserView extends ViewPart {
         Double result = new Double(0);
         int count = 0;
         for (Relationship relation : mpNode.getRelationships(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING)) {
-            Node node = relation.getEndNode();
+            Node node = relation.getOtherNode(mpNode);
             result = result + ((Number)node.getProperty(properties, new Double(0))).doubleValue();
             count++;
         }
