@@ -46,6 +46,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.index.lucene.LuceneIndexService;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -60,15 +61,23 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * <p>
  * Loader for UTRAN files
- * </p>
- * 
+ * </p>.
+ *
  * @author Cinkel_A
  * @since 1.0.0
  */
 public class UTRANLoader extends AbstractLoader {
+    
+    /** The Constant KEY_EVENT. */
     private static final int KEY_EVENT = 1;
+    
+    /** The Constant REG_EXP_XML. */
     protected static final String REG_EXP_XML = "^.+\\.((xml)|(XML))$";
+    
+    /** The Constant SUBNETWORK_TYPE. */
     private static final NodeTypes SUBNETWORK_TYPE = NodeTypes.BSC;;
+    
+    /** The Constant siteProperty. */
     private static final List<String> siteProperty;
     static {
         siteProperty = new LinkedList<String>();
@@ -78,23 +87,44 @@ public class UTRANLoader extends AbstractLoader {
         siteProperty.add("longitude");
         siteProperty.add("geoDatum");
     }
+    
+    /** The network. */
     public Node network;
+    
+    /** The headers. */
     private final LinkedHashMap<String, Header> headers;
+    
+    /** The handler. */
     private final ReadContentHandler handler;
     // private Node ossNode;
     // private Node fileNode;
+    /** The counter. */
     private int counter;
+    
+    /** The counter all. */
     private long counterAll;
+    
+    /** The in. */
     private CountingFileInputStream in;
+    
+    /** The current job pr. */
     private int currentJobPr;
+    
+    /** The monitor. */
     private IProgressMonitor monitor;
+    
+    /** The gis. */
     private Node gis;
+    
+    /** The index. */
     private final LuceneIndexService index;
+    
+    /** The sub network. */
     public Node subNetwork;
 
     /**
-     * Constructor
-     * 
+     * Constructor.
+     *
      * @param file - file name
      * @param datasetName - dataset name
      * @param display - Display
@@ -113,12 +143,37 @@ public class UTRANLoader extends AbstractLoader {
     }
 
     /**
-     *storing XML in database
-     * 
+     * Instantiates a new uTRAN loader.
+     *
+     * @param fileName the file name
+     * @param network the network
+     * @param display the display
+     * @param index the index
+     * @param servise the servise
+     */
+    public UTRANLoader(String fileName, String network, Display display, LuceneIndexService index, GraphDatabaseService servise) {
+        initialize("UTRANLoader", servise, fileName, display);
+        basename = network;
+        headers = getHeaderMap(KEY_EVENT).headers;
+        handler = new ReadContentHandler(new Factory());
+        if(index == null){
+            this.index = NeoServiceProvider.getProvider().getIndexService();
+        }  else{
+            this.index =index;
+        }
+        try {
+            addIndex(NodeTypes.SITE.getId(), NeoUtils.getLocationIndexProperty(basename));
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+    
+    /**
+     * storing XML in database.
+     *
      * @param file - XML file
-     * @throws SAXException
-     * @throws IOException
-     * @throws
+     * @throws SAXException the sAX exception
+     * @throws IOException Signals that an I/O exception has occurred.
      */
     private void storeFile(File file) throws SAXException, IOException {
         currentJobPr = 0;
@@ -134,7 +189,7 @@ public class UTRANLoader extends AbstractLoader {
     }
 
     /**
-     * update monitor description
+     * update monitor description.
      */
     public void updateMonitor() {
         int pr = in.percentage();
@@ -145,6 +200,12 @@ public class UTRANLoader extends AbstractLoader {
         }
     }
 
+    /**
+     * Run.
+     *
+     * @param monitor the monitor
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     @Override
     public void run(IProgressMonitor monitor) throws IOException {
         counter = 0;
@@ -199,20 +260,39 @@ public class UTRANLoader extends AbstractLoader {
         }
     }
 
+    /**
+     * Gets the storing node.
+     *
+     * @param key the key
+     * @return the storing node
+     */
     @Override
     protected Node getStoringNode(Integer key) {
         return gis;
     }
 
+    /**
+     * Need parce headers.
+     *
+     * @return true, if successful
+     */
     @Override
     protected boolean needParceHeaders() {
         return false;
     }
 
+    /**
+     * Parses the line.
+     *
+     * @param line the line
+     */
     @Override
     protected void parseLine(String line) {
     }
 
+    /**
+     * Finish up.
+     */
     @Override
     protected void finishUp() {
         super.finishUp();
@@ -226,6 +306,9 @@ public class UTRANLoader extends AbstractLoader {
         }
     }
 
+    /**
+     * Update tx.
+     */
     protected void updateTx() {
         counter++;
         counterAll++;
@@ -238,12 +321,20 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Factory for UTRAN xml files
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Cinkel_A
      * @since 1.0.0
      */
     public class Factory implements IXmlTagFactory {
+        
+        /**
+         * Creates the instance.
+         *
+         * @param tagName the tag name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag createInstance(String tagName, Attributes attributes) {
             if (tagName.equals(BulkCmConfigDataFile.TAG_NAME)) {
@@ -257,18 +348,32 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "bulkCmConfigDataFile" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class BulkCmConfigDataFile extends AbstractTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "bulkCmConfigDataFile";
 
+        /**
+         * Instantiates a new bulk cm config data file.
+         *
+         * @param attributes the attributes
+         */
         protected BulkCmConfigDataFile(Attributes attributes) {
             super(TAG_NAME, null);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             IXmlTag result = this;
@@ -289,18 +394,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "fileHeader" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class FileHeader extends AbstractTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "fileHeader";
 
+        /**
+         * Instantiates a new file header.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected FileHeader(Attributes attributes, IXmlTag parent) {
             super(TAG_NAME, parent);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             throw new UnsupportedOperationException();
@@ -308,10 +428,14 @@ public class UTRANLoader extends AbstractLoader {
 
     }
 
+    /**
+     * The Class AbstractNeoTag.
+     */
     public abstract class AbstractNeoTag extends org.amanzi.neo.loader.sax_parsers.AbstractNeoTag {
+        
         /**
-         * Constructor
-         * 
+         * Constructor.
+         *
          * @param tagName - tag name
          * @param parent - parent AbstractNeoTag
          * @param attributes - attributes of tag
@@ -321,8 +445,8 @@ public class UTRANLoader extends AbstractLoader {
         }
 
         /**
-         * Constructor
-         * 
+         * Constructor.
+         *
          * @param tagName - tag name
          * @param parent - parent node
          * @param lastChild -last child of parent node, if null, then child will be found
@@ -332,17 +456,34 @@ public class UTRANLoader extends AbstractLoader {
             super(tagName, parent, lastChild, attributes);
         }
 
+        /**
+         * Adds the child.
+         *
+         * @param childNode the child node
+         */
         @Override
         protected void addChild(org.amanzi.neo.loader.sax_parsers.AbstractNeoTag childNode) {
             getNode().createRelationshipTo(childNode.getNode(), GeoNeoRelationshipTypes.CHILD);
             lastChild = childNode.getNode();
         }
 
+        /**
+         * Adds the child.
+         *
+         * @param parent the parent
+         * @param lastChild the last child
+         */
         @Override
         protected void addChild(Node parent, Node lastChild) {
             parent.createRelationshipTo(getNode(), GeoNeoRelationshipTypes.CHILD);
         }
 
+        /**
+         * Creates the node.
+         *
+         * @param attributes the attributes
+         * @return the node
+         */
         @Override
         protected Node createNode(Attributes attributes) {
             Node node = neo.createNode();
@@ -361,18 +502,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "fileFooter" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class FileFooter extends AbstractTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "fileFooter";
 
+        /**
+         * Instantiates a new file footer.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected FileFooter(Attributes attributes, IXmlTag parent) {
             super(TAG_NAME, parent);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             throw new UnsupportedOperationException();
@@ -383,18 +539,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "configData" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class ConfigData extends AbstractTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "configData";
 
+        /**
+         * Instantiates a new config data.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected ConfigData(Attributes attributes, IXmlTag parent) {
             super(TAG_NAME, parent);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -416,16 +587,28 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "SubNetwork" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class SubNetwork extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "SubNetwork";
+        
+        /** The link necessary. */
         private boolean linkNecessary;
+        
+        /** The parent to return. */
         private final IXmlTag parentToReturn;
 
+        /**
+         * Adds the child.
+         *
+         * @param parent the parent
+         * @param lastChild the last child
+         */
         @Override
         protected void addChild(Node parent, Node lastChild) {
             if (linkNecessary) {
@@ -433,6 +616,11 @@ public class UTRANLoader extends AbstractLoader {
             }
         }
 
+        /**
+         * Adds the child.
+         *
+         * @param childNode the child node
+         */
         @Override
         protected void addChild(org.amanzi.neo.loader.sax_parsers.AbstractNeoTag childNode) {
             if (childNode instanceof SubNetwork) {
@@ -445,7 +633,11 @@ public class UTRANLoader extends AbstractLoader {
         }
 
         /**
-         * @param tagName
+         * Instantiates a new sub network.
+         *
+         * @param attributes the attributes
+         * @param mainNode the main node
+         * @param parentToReturn the parent to return
          */
         protected SubNetwork(Attributes attributes, Node mainNode, IXmlTag parentToReturn) {
             super(TAG_NAME, mainNode, null, attributes);
@@ -453,12 +645,24 @@ public class UTRANLoader extends AbstractLoader {
             linkNecessary = false;
         }
 
+        /**
+         * Instantiates a new sub network.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected SubNetwork(Attributes attributes, SubNetwork parent) {
             super(TAG_NAME, parent, attributes);
             this.parentToReturn = parent;
             linkNecessary = false;
         }
 
+        /**
+         * Creates the node.
+         *
+         * @param attributes the attributes
+         * @return the node
+         */
         @Override
         protected Node createNode(Attributes attributes) {
             String name = attributes.getValue("id");
@@ -478,6 +682,13 @@ public class UTRANLoader extends AbstractLoader {
             return node;
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -505,6 +716,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -520,16 +738,28 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "attributes" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class TagAttributes extends AbstractTag {
+        
+        /** The stack. */
         Stack<String> stack;
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "attributes";
+        
+        /** The need index. */
         private boolean needIndex;
 
+        /**
+         * Instantiates a new tag attributes.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected TagAttributes(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent);
             stack = new Stack<String>();
@@ -537,15 +767,24 @@ public class UTRANLoader extends AbstractLoader {
         }
 
         /**
-         * @param attributes
-         * @param subNetwork
-         * @param b
+         * Instantiates a new tag attributes.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         * @param needIndex the need index
          */
         public TagAttributes(Attributes attributes, AbstractNeoTag parent, boolean needIndex) {
             this(attributes, parent);
             this.needIndex = needIndex;
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -553,6 +792,13 @@ public class UTRANLoader extends AbstractLoader {
             return this;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -583,18 +829,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "MeContext" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class MeContext extends AbstractTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "MeContext";
 
+        /**
+         * Instantiates a new me context.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected MeContext(Attributes attributes, IXmlTag parent) {
             super(TAG_NAME, parent);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -611,6 +872,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -625,32 +893,55 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Default handler (temporary realization) skip all tag except VsDataContainer;
-     * </p>
-     * 
+     * </p>.
+     *
      * @author tsinkel_a
      * @since 1.0.0
      */
     public class DefaultHandlerTag implements IXmlTag {
+        
+        /** The parent. */
         private final IXmlTag parent;
 
         /**
-         * 
+         * Instantiates a new default handler tag.
+         *
+         * @param parent the parent
          */
         public DefaultHandlerTag(IXmlTag parent) {
             this.parent = parent;
 
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             return parent;
         }
 
+        /**
+         * Gets the name.
+         *
+         * @return the name
+         */
         @Override
         public String getName() {
             return this.getClass().getName();
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             IXmlTag result = this;
@@ -666,18 +957,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "ManagedElement" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class ManagedElement extends AbstractTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "ManagedElement";
 
+        /**
+         * Instantiates a new managed element.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected ManagedElement(Attributes attributes, IXmlTag parent) {
             super(TAG_NAME, parent);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -696,6 +1002,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -711,18 +1024,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "RncFunction" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class RncFunction extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "RncFunction";
 
+        /**
+         * Instantiates a new rnc function.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected RncFunction(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -741,6 +1069,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -756,21 +1091,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "UtranCell" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class UtranCell extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "UtranCell";
 
         /**
-         * @param tagName
+         * Instantiates a new utran cell.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
          */
         protected UtranCell(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -789,6 +1136,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -804,18 +1158,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "UtranRelation" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class UtranRelation extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "UtranRelation";
 
+        /**
+         * Instantiates a new utran relation.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected UtranRelation(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -830,6 +1199,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -844,18 +1220,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "GsmRelation" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class GsmRelation extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "GsmRelation";
 
+        /**
+         * Instantiates a new gsm relation.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected GsmRelation(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -870,6 +1261,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -885,21 +1283,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "IubLink" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class IubLink extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "IubLink";
 
         /**
-         * @param tagName
+         * Instantiates a new iub link.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
          */
         protected IubLink(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -914,6 +1324,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -929,18 +1346,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "NodeBFunction" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class NodeBFunction extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "NodeBFunction";
 
+        /**
+         * Instantiates a new node b function.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected NodeBFunction(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -955,6 +1387,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -970,18 +1409,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "ManagementNode" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class ManagementNode extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "ManagementNode";
 
+        /**
+         * Instantiates a new management node.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected ManagementNode(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -996,6 +1450,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -1011,21 +1472,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "IRPAgent" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class IRPAgent extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "IRPAgent";
 
         /**
-         * @param tagName
+         * Instantiates a new iRP agent.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
          */
         protected IRPAgent(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -1044,6 +1517,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -1059,21 +1539,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "BulkCmIRP" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class BulkCmIRP extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "BulkCmIRP";
 
         /**
-         * @param tagName
+         * Instantiates a new bulk cm irp.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
          */
         protected BulkCmIRP(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -1086,6 +1578,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -1101,18 +1600,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "AlarmIRP" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class AlarmIRP extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "AlarmIRP";
 
+        /**
+         * Instantiates a new alarm irp.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected AlarmIRP(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -1125,6 +1639,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -1140,18 +1661,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "NotificationIRP" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class NotificationIRP extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "NotificationIRP";
 
+        /**
+         * Instantiates a new notification irp.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected NotificationIRP(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -1164,6 +1700,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -1179,18 +1722,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "ExternalUtranCell" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class ExternalUtranCell extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "ExternalUtranCell";
 
+        /**
+         * Instantiates a new external utran cell.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
+         */
         protected ExternalUtranCell(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -1205,6 +1763,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -1220,21 +1785,33 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "ExternalGsmCell" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class ExternalGsmCell extends AbstractNeoTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "ExternalGsmCell";
 
         /**
-         * @param tagName
+         * Instantiates a new external gsm cell.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
          */
         protected ExternalGsmCell(Attributes attributes, AbstractNeoTag parent) {
             super(TAG_NAME, parent, attributes);
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             updateMonitor();
@@ -1249,6 +1826,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -1264,24 +1848,40 @@ public class UTRANLoader extends AbstractLoader {
     /**
      * <p>
      * Handler "VsDataContainer" tag
-     * </p>
-     * 
+     * </p>.
+     *
      * @author Tsinkel_A
      * @since 1.0.0
      */
     public class VsDataContainer extends AbstractTag {
+        
+        /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "VsDataContainer";
+        
+        /** The collector. */
         PropertyCollector collector;
+        
+        /** The attributes. */
         private Attributes attributes;
 
         /**
-         * @param tagName
+         * Instantiates a new vs data container.
+         *
+         * @param attributes the attributes
+         * @param parent the parent
          */
         protected VsDataContainer(Attributes attributes, IXmlTag parent) {
             super(TAG_NAME, parent);
             collector = null;
         }
 
+        /**
+         * Start element.
+         *
+         * @param localName the local name
+         * @param attributes the attributes
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
             this.attributes = attributes;
@@ -1299,6 +1899,13 @@ public class UTRANLoader extends AbstractLoader {
             return result;
         }
 
+        /**
+         * End element.
+         *
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             updateMonitor();
@@ -1311,7 +1918,7 @@ public class UTRANLoader extends AbstractLoader {
         }
 
         /**
-         *
+         * Handle collector.
          */
         private void handleCollector() {
             if (collector == null) {
@@ -1328,17 +1935,22 @@ public class UTRANLoader extends AbstractLoader {
     }
 
     /**
-     * @param name
-     * @return
+     * Find sub network.
+     *
+     * @param name the name
+     * @return the node
      */
     public Node findSubNetwork(String name) {
         return index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, SUBNETWORK_TYPE), name);
     }
 
     /**
-     * @param site
-     * @param collector
-     * @return
+     * Find or create sector.
+     *
+     * @param site the site
+     * @param collector the collector
+     * @param postfix the postfix
+     * @return the node
      */
     public Node findOrCreateSector(Node site, PropertyCollector collector, String postfix) {
         String name = NeoUtils.getNodeName(site) + postfix;
@@ -1376,8 +1988,10 @@ public class UTRANLoader extends AbstractLoader {
     }
 
     /**
-     * @param collector
-     * @return
+     * Find or create site.
+     *
+     * @param collector the collector
+     * @return the node
      */
     public Node findOrCreateSite(PropertyCollector collector) {
         PropertyCollector dataCol = collector.getSubCollectors().iterator().next();
