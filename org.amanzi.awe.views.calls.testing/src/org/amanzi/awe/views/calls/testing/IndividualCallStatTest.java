@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.amanzi.awe.views.calls.statistics.IStatisticsConstants;
+import org.amanzi.awe.views.calls.statistics.IndividualCallConstants;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.data.calls.CallData;
@@ -37,9 +39,6 @@ import org.junit.Test;
  */
 public class IndividualCallStatTest extends CallStatisticsTest{
     
-    //TODO: get values from Constants
-    private static final float[] CALL_DURATION_BORDERS = new float[]{0,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
-    
     /**
      * Prepare operations before execute test.
      */
@@ -47,6 +46,7 @@ public class IndividualCallStatTest extends CallStatisticsTest{
     public void prepareTests(){
         prepareMainDirectory();
         initProjectService();
+        initCallDurationBorders();
     }
     
     /**
@@ -79,7 +79,7 @@ public class IndividualCallStatTest extends CallStatisticsTest{
      */
     @Test
     public void testCallStatisicsOneDay()throws IOException, ParseException{
-        executeTest(24,3,5,3,6);
+        executeTest(DAY,3,5,3,6);
     }
     
     /**
@@ -90,7 +90,7 @@ public class IndividualCallStatTest extends CallStatisticsTest{
      */
     @Test
     public void testCallStatisicsSeveralDays()throws IOException, ParseException{
-        executeTest(48,3,3,2,6);
+        executeTest(DAY*2,3,3,2,6);
     }
     
     /**
@@ -106,7 +106,7 @@ public class IndividualCallStatTest extends CallStatisticsTest{
      */
     @AfterClass
     public static void finishAll(){
-        //clearMainDirectory();
+        clearMainDirectory();
     }
 
     @Override
@@ -151,13 +151,13 @@ public class IndividualCallStatTest extends CallStatisticsTest{
     }
 
     @Override
-    protected float[] getCallDurationBorders() {
-        return CALL_DURATION_BORDERS;
+    protected CallType getCallType() {
+        return CallType.INDIVIDUAL;
     }
 
     @Override
-    protected CallType getCallType() {
-        return CallType.INDIVIDUAL;
+    protected IStatisticsConstants getStatisticsConstants() {
+        return new IndividualCallConstants();
     }
 
 }

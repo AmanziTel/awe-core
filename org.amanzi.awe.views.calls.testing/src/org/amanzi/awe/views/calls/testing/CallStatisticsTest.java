@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.amanzi.awe.views.calls.CallTimePeriods;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
+import org.amanzi.awe.views.calls.statistics.IStatisticsConstants;
 import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -74,10 +75,10 @@ public abstract class CallStatisticsTest {
     protected static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(TIMESTAMP_FORMAT);
     
     private static final int CALL_DURATION_PERIODS_COUNT = 8;
+    private static final float MAX_CALL_DURATION = 1000;
     
     private static final long MILLISECONDS = 1000;
-    private static final long HOUR = 60*60*MILLISECONDS;
-    private static final long DAY = 24*HOUR;
+    protected static final int DAY = 24;
     
     protected static final String CTSDC_COMMAND = "AT+CTSDC";
     protected static final String ATA_COMMAND = "ATA";
@@ -90,6 +91,8 @@ public abstract class CallStatisticsTest {
     
     private static String mainDirectoryName;
     private static GraphDatabaseService neo;
+    
+    private float[] callDurationBorders;
     
     /**
      * Initialize project service.
@@ -288,10 +291,16 @@ public abstract class CallStatisticsTest {
      */
     private void assertResult(HashMap<Integer, CallStatData> generated,CallStatistics statistics, Integer hours){
         Node hourlyNode = statistics.getPeriodNode(CallTimePeriods.HOURLY, getCallType());
-        assertHourlyStatistics(hourlyNode,generated);
-        if(hours>=24){
+        assertPeriodStatistics(hourlyNode, CallTimePeriods.HOURLY, generated);
+        if(hours>1){
             Node dailyNode = statistics.getPeriodNode(CallTimePeriods.DAILY, getCallType());
-            assertDailyStatistics(dailyNode,generated);
+            assertPeriodStatistics(dailyNode, CallTimePeriods.DAILY, generated);
+        }
+        if(hours>DAY){
+            Node weekNode = statistics.getPeriodNode(CallTimePeriods.WEEKLY, getCallType());
+            assertPeriodStatistics(weekNode, CallTimePeriods.WEEKLY, generated);
+            Node monthNode = statistics.getPeriodNode(CallTimePeriods.MONTHLY, getCallType());
+            assertPeriodStatistics(monthNode, CallTimePeriods.MONTHLY, generated);
         }
     }
     
@@ -299,29 +308,55 @@ public abstract class CallStatisticsTest {
      * @return Returns type of calls.
      */
     protected abstract CallType getCallType();
-   
+    
     /**
-     * Assert hourly statistics.
+     * Assert statistics in period.
      *
-     * @param hourlyNode Node (root node for hourly statistics)
+     * @param statNode Node (root node for statistics)
+     * @param period CallTimePeriods (statistics period)
      * @param generated HashMap<Integer, CallStatData> (data that was generated)
      */
-    private void assertHourlyStatistics(Node hourlyNode,HashMap<Integer, CallStatData> generated){
-        assertFalse("Hourly node does not exists!",hourlyNode == null);
-        Traverser traverse = NeoUtils.getChildTraverser(hourlyNode);
+    private void assertPeriodStatistics(Node statNode,final CallTimePeriods period, HashMap<Integer, CallStatData> generated){
+        assertFalse(period.getId()+" node does not exists.",statNode==null);
+        assertUnderlyingStatCount(statNode, period);
+        Traverser traverse = NeoUtils.getChildTraverser(statNode);
         for(Node row : traverse.getAllNodes()){
-            assertRow(row, generated, true);
+            assertRow(row, generated, period);
         }
     }
-    
+
+    /**
+     * Assert underlying statistics nodes count.
+     *
+     * @param statNode Node (root node for statistics)
+     * @param period CallTimePeriods (statistics period)
+     */
+    private void assertUnderlyingStatCount(Node statNode, final CallTimePeriods period) {
+        final CallTimePeriods underlyingPeriod = period.getUnderlyingPeriod();
+        if(underlyingPeriod==null){
+            return;
+        }
+        Traverser underlyingTraverser = statNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                return NeoUtils.getNodeName(node,getNeo()).equalsIgnoreCase(underlyingPeriod.getId());
+            }
+        }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
+        List<Node> allUnderlying = new ArrayList<Node>(underlyingTraverser.getAllNodes());
+        int underlyingCount = allUnderlying.size();
+        assertEquals("Incorrect count of "+underlyingPeriod.getId()+" nodes linked to "+period.getId()+".",1,underlyingCount);
+    }
+   
     /**
      * Assert statistics row.
      *
      * @param row Node
      * @param generated HashMap<Integer, CallStatData> (data that was generated)
      * @param isHourly boolean (is it hourly statistics?)
+     * @param period CallTimePeriods (statistics period)
      */
-    private void assertRow(Node row,HashMap<Integer, CallStatData> generated, boolean isHourly){
+    private void assertRow(Node row,HashMap<Integer, CallStatData> generated, CallTimePeriods period){
         Traverser probeTraverse = row.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
@@ -335,18 +370,14 @@ public abstract class CallStatisticsTest {
         Node probe = allProbes.get(0);
         Integer prNum = getProbeNumber(probe);
         CallStatData callStatData = generated.get(prNum);
-        HashMap<StatisticsHeaders, Long> prData;
-        HashMap<StatisticsHeaders, Long> sourceData = null;
         Date rowTime = getRowTime(row);
-        if (isHourly) {
-            prData = callStatData.getStatisticsByHour(rowTime);
-        }
-        else{
-            prData = callStatData.getStatisticsByDay(rowTime);
+        HashMap<StatisticsHeaders, Long> prData = callStatData.getStatisticsByPeriod(rowTime, period);
+        HashMap<StatisticsHeaders, Long> sourceData = null;        
+        if (period.getUnderlyingPeriod()!=null) {
             sourceData = buildStatDataByNodes(row);
         }
         assertCells(row, prData, sourceData);
-        if(!isHourly){
+        if(period.getUnderlyingPeriod()!=null){
             assertCellsBySource(row);
         }
     }
@@ -386,7 +417,7 @@ public abstract class CallStatisticsTest {
     private void assertCellsBySource(Node aCell){
         Traverser cellTraverse = NeoUtils.getChildTraverser(aCell);
         for(Node cell : cellTraverse.getAllNodes()){
-            Traverser traverse = cell.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+            Traverser traverse = cell.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node = currentPos.currentNode();
@@ -396,7 +427,7 @@ public abstract class CallStatisticsTest {
             StatisticsHeaders header = StatisticsHeaders.getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             Long etalon = getCellsValue(traverse.getAllNodes(),header);
             Long value = getCellValue(cell, header);
-            assertEquals("Value in daily cell "+header+" is not conform to source.", etalon, value);
+            assertEquals("Value in cell "+header+" is not conform to source.", etalon, value);
         }
     }
     
@@ -458,7 +489,7 @@ public abstract class CallStatisticsTest {
      */
     private HashMap<StatisticsHeaders, Long> buildStatDataByNodes(Node row){
         HashMap<StatisticsHeaders, Long> result = new HashMap<StatisticsHeaders, Long>(ETALON_CELL_COUNT);
-        Traverser traverse = row.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+        Traverser traverse = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node node = currentPos.currentNode();
@@ -530,30 +561,6 @@ public abstract class CallStatisticsTest {
         }
         Integer value = (Integer)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
         return value.longValue();
-    }
-    
-    /**
-     * Assert daily statistics.
-     *
-     * @param dailyNode Node (root node for daily statistics)
-     * @param generated HashMap<Integer, CallStatData> (data that was generated)
-     */
-    private void assertDailyStatistics(Node dailyNode,HashMap<Integer, CallStatData> generated){
-        assertFalse("Daily node does not exists!",dailyNode == null);
-        Traverser hourlyTraverser = dailyNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                Node node = currentPos.currentNode();
-                return NeoUtils.getNodeName(node,getNeo()).equalsIgnoreCase("hourly");
-            }
-        }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
-        List<Node> allHourly = new ArrayList<Node>(hourlyTraverser.getAllNodes());
-        int hourlyCount = allHourly.size();
-        assertEquals("Incorrect count of hourly nodes linked to daily.",1,hourlyCount);
-        Traverser traverse = NeoUtils.getChildTraverser(dailyNode);
-        for(Node row : traverse.getAllNodes()){
-            assertRow(row, generated, false);
-        }
     }
     
     /**
@@ -639,7 +646,7 @@ public abstract class CallStatisticsTest {
      * @return Integer
      */
     private Integer getDurationPeriod(Long duration){
-        float[] durationBorders = getCallDurationBorders();
+        float[] durationBorders = callDurationBorders;
         for(int i=0; i<CALL_DURATION_PERIODS_COUNT; i++){
             float start = MILLISECONDS * durationBorders[i];
             float end = MILLISECONDS * durationBorders[i+1];
@@ -651,9 +658,27 @@ public abstract class CallStatisticsTest {
     }
     
     /**
-     * @return Returns Call duration borders
+     * Initialize Call duration borders.
      */
-    protected abstract float[] getCallDurationBorders();
+    protected void initCallDurationBorders(){
+        callDurationBorders = new float[CALL_DURATION_PERIODS_COUNT+2];
+        IStatisticsConstants constants = getStatisticsConstants();
+        callDurationBorders[0] = constants.getCallConnTimeP1();        
+        callDurationBorders[1] = constants.getCallConnTimeP2();
+        callDurationBorders[2] = constants.getCallConnTimeP3();
+        callDurationBorders[3] = constants.getCallConnTimeP4();
+        callDurationBorders[4] = constants.getCallConnTimeL1();
+        callDurationBorders[5] = constants.getCallConnTimeL2();
+        callDurationBorders[6] = constants.getCallConnTimeL3();
+        callDurationBorders[7] = constants.getCallConnTimeL4();
+        callDurationBorders[8] = constants.getCallConnTimeLimit();
+        callDurationBorders[9] = MAX_CALL_DURATION;
+    }
+    
+    /**
+     * @return Statistics constants for concrete type.
+     */
+    protected abstract IStatisticsConstants getStatisticsConstants();
     
     /**
      * For saving call information builded by generated data.
@@ -739,23 +764,14 @@ public abstract class CallStatisticsTest {
         }
         
         /**
-         * Build call statistics by hour.
+         * Build call statistics by period.
          *
          * @param start Date start time 
+         * @param period CallTimePeriods (statistics period)
          * @return HashMap<StatisticsHeaders, Long>
          */
-        public HashMap<StatisticsHeaders, Long> getStatisticsByHour(Date start){
-            return buildStatistics(start, new Date(start.getTime()+HOUR)); 
-        }
-        
-        /**
-         * Build call statistics by day.
-         *
-         * @param start Date start time 
-         * @return HashMap<StatisticsHeaders, Long>
-         */
-        public HashMap<StatisticsHeaders, Long> getStatisticsByDay(Date start){
-            return buildStatistics(start, new Date(start.getTime()+DAY));
+        public HashMap<StatisticsHeaders, Long> getStatisticsByPeriod(Date start, CallTimePeriods period){
+            return buildStatistics(start, new Date(period.addPeriod(start.getTime())));
         }
         
         /**

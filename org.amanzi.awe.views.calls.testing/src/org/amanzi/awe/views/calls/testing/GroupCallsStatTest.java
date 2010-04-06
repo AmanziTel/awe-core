@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.amanzi.awe.views.calls.statistics.GroupCallConstants;
+import org.amanzi.awe.views.calls.statistics.IStatisticsConstants;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.data.calls.CallData;
@@ -37,8 +39,6 @@ import org.junit.Test;
  */
 public class GroupCallsStatTest extends CallStatisticsTest{
     
-    private static final float[] CALL_DURATION_BORDERS = new float[]{0,0.125f,0.25f,0.375f,0.5f,0.75f,1,2,5,1000};
-
     private int maxGroupSize = 3;
     
     /**
@@ -80,7 +80,7 @@ public class GroupCallsStatTest extends CallStatisticsTest{
      */
     @Test
     public void testCallStatisicsOneDay()throws IOException, ParseException{
-        executeTest(24,3,5,3,3);
+        executeTest(DAY,3,5,3,3);
     }
     
     /**
@@ -92,7 +92,7 @@ public class GroupCallsStatTest extends CallStatisticsTest{
     @Test
     public void testCallStatisicsSeveralDays()throws IOException, ParseException{
         maxGroupSize = 2;
-        executeTest(48,3,3,2,3);
+        executeTest(DAY*2,3,3,2,3);
     }
     
     /**
@@ -108,7 +108,7 @@ public class GroupCallsStatTest extends CallStatisticsTest{
      */
     @AfterClass
     public static void finishAll(){
-        //clearMainDirectory();
+        clearMainDirectory();
     }
     
     @Override
@@ -152,13 +152,13 @@ public class GroupCallsStatTest extends CallStatisticsTest{
     }
 
     @Override
-    protected float[] getCallDurationBorders() {
-        return CALL_DURATION_BORDERS;
+    protected CallType getCallType() {
+        return CallType.GROUP;
     }
 
     @Override
-    protected CallType getCallType() {
-        return CallType.GROUP;
+    protected IStatisticsConstants getStatisticsConstants() {
+        return new GroupCallConstants();
     }
 
 }
