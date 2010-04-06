@@ -90,12 +90,8 @@ public class NokiaFileBuilder {
      * @param out PrintWriter
      */
     private void printTag(SavedTag tag, PrintWriter out){
-        if (tag.getData()==null) {
-            out.println(tag.getTagOpenString());
-        }else{
-            out.print(tag.getTagOpenString());
-        }
-        if (!tag.isEmpty()) {
+        out.println(tag.getTagOpenString());
+        if (!tag.isEmpty()&&tag.getData()==null) {
             for (SavedTag inner : tag.getInnerTags()) {
                 printTag(inner, out);
             }

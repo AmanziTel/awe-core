@@ -199,7 +199,7 @@ public class NokiaTopologyGenerator implements IDataGenerator {
      * @return String
      */
     private String buildName(String className){
-        return "TST"+className+getRandomGenerator().getLongValue(0L, 100L);
+        return "TST"+className+getRandomGenerator().getLongValue(0L, 1000L);
     }
     
     /**
@@ -243,10 +243,10 @@ public class NokiaTopologyGenerator implements IDataGenerator {
             SavedTag SMLS = getSMLCTag(data);
             String smlsName = SMLS.getAttribute(NokiaDataConstants.MO_ATTR_DIST_NAME);
             int locNum = 1;
+            List<SavedTag> locations = new ArrayList<SavedTag>();
             for(SiteData siteData : data.getSites()){
                 SavedTag BCF = getMOTag(siteData);
-                cmData.addInnerTag(BCF);                 
-                List<SavedTag> locations = new ArrayList<SavedTag>();
+                cmData.addInnerTag(BCF);
                 for(SectorData sectorData : siteData.getSectors()){
                     SavedTag BTS = getMOTag(sectorData);
                     cmData.addInnerTag(BTS);
@@ -372,7 +372,7 @@ public class NokiaTopologyGenerator implements IDataGenerator {
         properties.put("latMinutes", min.toString());
         rest = (rest-min)*60.0f;
         Integer sec = rest.intValue();
-        properties.put("latMinutes", sec.toString());
+        properties.put("latSeconds", sec.toString());
         Float lon = site.getLongitude();
         degr = lon.intValue();
         properties.put("lonDegrees", degr.toString());
@@ -381,7 +381,7 @@ public class NokiaTopologyGenerator implements IDataGenerator {
         properties.put("lonMinutes", min.toString());
         rest = (rest-min)*60.0f;
         sec = rest.intValue();
-        properties.put("lonMinutes", sec.toString());        
+        properties.put("lonSeconds", sec.toString());        
         return getMOTag(NokiaDataConstants.MO_LCSE,distName,id,properties);
     }
     

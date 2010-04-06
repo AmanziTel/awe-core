@@ -295,7 +295,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
     private void setSiteLocation(Node site, Float latitude, Float longitude) {
         Double oldLat = (Double)site.getProperty(INeoConstants.PROPERTY_LAT_NAME, 0.0);
         Double oldLon = (Double)site.getProperty(INeoConstants.PROPERTY_LON_NAME, 0.0);
-        if(oldLat == 0 || oldLon==0){
+        if(oldLat.equals(0.0) || oldLon.equals(0.0)){
             GisProperties gisProperties = getGisProperties(basename);
             gisProperties.updateBBox(latitude, longitude);
             if (gisProperties.getCrs() == null) {

@@ -28,7 +28,7 @@ public class SavedTag {
 
     private boolean empty;
     private String name;
-    private String data = "";
+    private String data = null;
     private HashMap<String, String> attributes;
     private List<SavedTag> innerTags;
     
@@ -112,6 +112,9 @@ public class SavedTag {
             result.append("/");
         }
         result.append(">");
+        if(data!=null){
+            result.append(data).append(getTagCloseString());
+        }
         return result.toString();
     }
     
@@ -121,6 +124,6 @@ public class SavedTag {
      * @return String
      */
     public String getTagCloseString(){
-        return data+"</"+name+">";
+        return "</"+name+">";
     }
 }
