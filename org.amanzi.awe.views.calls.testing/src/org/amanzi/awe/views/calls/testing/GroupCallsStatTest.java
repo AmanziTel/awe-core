@@ -48,6 +48,7 @@ public class GroupCallsStatTest extends CallStatisticsTest{
     public void prepareTests(){
         prepareMainDirectory();
         initProjectService();
+        initCallDurationBorders();
     }
     
     /**

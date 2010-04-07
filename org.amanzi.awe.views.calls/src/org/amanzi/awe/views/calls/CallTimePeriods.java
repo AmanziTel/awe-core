@@ -71,6 +71,11 @@ public enum CallTimePeriods {
         public Long getFirstTime(Long time) {
             GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
+            int dayInWeek = cl.get(Calendar.DAY_OF_WEEK);
+            int dayInMonth = cl.get(Calendar.DAY_OF_MONTH);
+            if(dayInMonth<dayInWeek){
+                cl.add(Calendar.DAY_OF_YEAR, -dayInMonth-1);
+            }
             cl.set(Calendar.DAY_OF_WEEK, 0);
             cl.set(Calendar.HOUR_OF_DAY, 0);
             cl.set(Calendar.MINUTE, 0);
