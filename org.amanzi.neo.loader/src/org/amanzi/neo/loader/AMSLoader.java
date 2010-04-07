@@ -1167,7 +1167,7 @@ public class AMSLoader extends DriveLoader {
 	            (currentProbeCalls.equals(callerProbeCalls))) ||
 	            ((call.getCallType() == CallType.INDIVIDUAL) &&
                 (!currentProbeCalls.equals(callerProbeCalls)))) {
-	            if ((call.getCallSetupEnd() == 0) && (call.getCallSetupBegin() < timestamp)) {
+	            if (((call.getCallSetupEnd() == 0)||call.getCallType() == CallType.GROUP) && (call.getCallSetupBegin() < timestamp)) {
 	                call.setCallSetupEndTime(timestamp);
 	            }
 	        }

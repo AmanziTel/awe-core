@@ -31,7 +31,7 @@ import org.amanzi.neo.data_generator.utils.call.CommandCreator;
  */
 public class GroupCallsGenerator extends AmsDataGenerator{
     
-    private static final float[] CALL_DURATION_BORDERS = new float[]{0.05f,0.125f,0.25f,0.375f,0.5f,0.75f,1,2,5,1000};
+    private static final float[] CALL_DURATION_BORDERS = new float[]{0.01f,0.125f,0.25f,0.375f,0.5f,0.75f,1,2,5,1000};
     private static final String PAIR_DIRECTORY_POSTFIX = "GroupCall";
     
     private int maxGroupSize;

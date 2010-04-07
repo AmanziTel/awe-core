@@ -39,6 +39,8 @@ import org.junit.Test;
  */
 public class GroupCallsStatTest extends CallStatisticsTest{
     
+    private static final String DEFAULT_COMMAND_PREFIX_WRITE = "Port.writeAT";
+    
     private int maxGroupSize = 3;
     
     /**
@@ -139,7 +141,9 @@ public class GroupCallsStatTest extends CallStatisticsTest{
     protected Date getCallStartTime(CallData call) {
         ProbeData data = call.getSourceProbe();
         for(CommandRow row : data.getCommands()){
-            if(row.getCommand().equalsIgnoreCase(CTSDC_COMMAND)){
+            String command = row.getCommand();
+            String prefix = row.getPrefix();
+            if(prefix.equalsIgnoreCase(DEFAULT_COMMAND_PREFIX_WRITE)&&command.equalsIgnoreCase(CTSDC_COMMAND)){
                 return row.getTime();
             }
         }
