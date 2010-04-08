@@ -128,7 +128,7 @@ public class NetworkTreePlugin extends AbstractUIPlugin implements IUpdateViewLi
         String source = event.getSource();
         if(!source.equals(NetworkTreeView.NETWORK_TREE_VIEW_ID)&& !source.equals(DRIVE_TREE_VIEW_ID)){
             Node node = event.getNodes().get(0);
-            IViewPart viewNetwork = showTreeView();
+            IViewPart viewNetwork = findTreeView();
             if (viewNetwork != null) {
                 NetworkTreeView networkView = (NetworkTreeView)viewNetwork;
                 networkView.selectNode(node);
@@ -146,6 +146,11 @@ public class NetworkTreePlugin extends AbstractUIPlugin implements IUpdateViewLi
             viewNetwork = null;
         }
         return viewNetwork;
+    }
+    
+    private IViewPart findTreeView() {
+        return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+        .findView(NetworkTreeView.NETWORK_TREE_VIEW_ID);
     }
     
     private void showPreparedView(ShowPreparedViewEvent event){

@@ -85,25 +85,38 @@ public class UpdateViewManager {
      * @param event UpdateDatabaseEvent
      */
     public void fireUpdateView(final UpdateViewEvent event) {
-		Object[] allListeners = getListeners().getListeners();
-		for (Object listener : allListeners) {
-			final IUpdateViewListener singleListener = (IUpdateViewListener) listener;
-			SafeRunner.run(new ISafeRunnable() {
-				@Override
+        if(event instanceof ShowViewEvent){
+            SafeRunner.run(new ISafeRunnable() {
+                @Override
                 public void run() throws Exception {
-				    if(event instanceof ShowViewEvent){
-				        showViewListener.updateView(event);
-				    }
-				    else if (singleListener.getType().contains(event.getType())) {
-                        singleListener.updateView(event);
-                    }
-				}
+                    showViewListener.updateView(event);
+                }
 
-				@Override
-				public void handleException(Throwable exception) {
-				}
-			});
-		}
+                @Override
+                public void handleException(Throwable exception) {
+                }
+            });
+        }else{
+    		Object[] allListeners = getListeners().getListeners();
+    		for (Object listener : allListeners) {
+    			final IUpdateViewListener singleListener = (IUpdateViewListener) listener;
+    			SafeRunner.run(new ISafeRunnable() {
+    				@Override
+                    public void run() throws Exception {
+    				    if(event instanceof ShowViewEvent){
+    				        showViewListener.updateView(event);
+    				    }
+    				    else if (singleListener.getType().contains(event.getType())) {
+                            singleListener.updateView(event);
+                        }
+    				}
+    
+    				@Override
+    				public void handleException(Throwable exception) {
+    				}
+    			});
+    		}
+        }
 	}
     
     /**

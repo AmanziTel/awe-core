@@ -15,6 +15,7 @@ package org.amanzi.awe.views.tree.drive;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.awe.views.tree.drive.views.DriveTreeView;
@@ -116,10 +117,17 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
     private void updateView(UpdateDrillDownEvent event){
         String source = event.getSource();
         if(!source.equals(DriveTreeView.ID)&& !source.contentEquals(NetworkTreeView.NETWORK_TREE_VIEW_ID)){
-            Node node = event.getNodes().get(0);
-            Node periodNode = event.getNodes().get(1);
-            StructuredSelection selection = new StructuredSelection(new Object[] {new StatisticSelectionNode(node, periodNode)});
-            IViewPart viewNetwork = showTreeView();
+            List<Node> nodes = event.getNodes();
+            StructuredSelection selection;
+            if (nodes.size()>1) {
+                Node node = nodes.get(0);
+                Node periodNode = nodes.get(1);
+                selection = new StructuredSelection(new Object[] {new StatisticSelectionNode(node, periodNode)});
+            }
+            else{
+                selection = new StructuredSelection(new Object[] {nodes.get(0)});
+            }
+            IViewPart viewNetwork = getTreeView();
             if (viewNetwork != null) {
                 Viewer networkView = (Viewer)viewNetwork.getSite().getSelectionProvider();
                 networkView.setSelection(selection, true);
@@ -137,6 +145,11 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
             viewNetwork = null;
         }
         return viewNetwork;
+    }
+    
+    private IViewPart getTreeView() {
+        return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+        .findView(DriveTreeView.ID);
     }
     
     private void showPreparedView(ShowPreparedViewEvent event){

@@ -24,6 +24,9 @@ import java.util.regex.Pattern;
 import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.mess_table.DataTypes;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.events.ShowViewEvent;
+import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -35,8 +38,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -45,9 +50,12 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -58,14 +66,17 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -84,6 +95,10 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class MessageAndEventTableView extends ViewPart {
+    
+    public static final String VIEW_ID = "org.amanzi.awe.views.reuse.mess_table.view.MessageAndEventTableView";
+    public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
+    public static final String DRIVE_TREE_VIEW_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
     
     private static final String EXPRESSION_NOT_EMPTY = "not empty";
     private static final String EXPRESSION_EMPTY = "empty";
@@ -114,6 +129,7 @@ public class MessageAndEventTableView extends ViewPart {
     private Action actClearFilter;
     
     private HashMap<String, DatasetInfo> datasets;
+    private Point point;
     
     private String initDataset;
     private String initProperty;
@@ -187,6 +203,7 @@ public class MessageAndEventTableView extends ViewPart {
         
         addListeners();
         initializeStartupProperties();
+        hookContextMenu();
     }
 
     /**
@@ -367,6 +384,25 @@ public class MessageAndEventTableView extends ViewPart {
             }
         });
 
+        table.getControl().addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseUp(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseDown(MouseEvent e) {
+                point = new Point(e.x, e.y);
+                fireDrillDown();
+            }
+
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                point = new Point(e.x, e.y);
+                fireDrillDown();
+            }
+        });
+        
         cDataset.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -403,6 +439,79 @@ public class MessageAndEventTableView extends ViewPart {
                 widgetSelected(e);
             }
         });
+    }
+    
+    /**
+     * Creates a popup menu
+     */
+    private void hookContextMenu() {
+        MenuManager menuMgr = new MenuManager("#PopupMenu");
+        menuMgr.setRemoveAllWhenShown(true);
+        menuMgr.addMenuListener(new IMenuListener() {
+            public void menuAboutToShow(IMenuManager manager) {
+                fillContextMenu(manager);
+            }
+        });
+        Menu menu = menuMgr.createContextMenu(table.getControl());
+        table.getControl().setMenu(menu);
+        getSite().registerContextMenu(menuMgr, table);
+    }
+    
+    /**
+     * Fills context menu
+     * 
+     * @param manager - menu manager
+     */
+    protected void fillContextMenu(IMenuManager manager) {
+        manager.add(new Action("Properties") {
+            @Override
+            public void run() {
+                showNodeProperties();
+            }
+        });
+    }
+    
+    /**
+     * Fire drill down event after select node.
+     */
+    private void fireDrillDown(){
+        if(point == null){
+            return;
+        }
+        TableItem item = table.getTable().getItem(point);
+        if(item == null){
+            return;
+        }
+        TableRowWrapper row = (TableRowWrapper)item.getData();
+        Node node = row.getNode();
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                new UpdateDrillDownEvent(node, VIEW_ID));
+        String currentTreeView = isNetworkNode(node)?NETWORK_TREE_VIEW_ID:DRIVE_TREE_VIEW_ID;
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                new ShowViewEvent(currentTreeView));
+    }
+    
+    /**
+     * Is node from network tree.
+     *
+     * @param node
+     * @return boolean
+     */
+    private boolean isNetworkNode(Node node){
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        NodeTypes type = NodeTypes.getNodeType(node, service);
+        return type!=null&&type.equals(NodeTypes.SECTOR);
+    }
+    
+    /**
+     * Show properties view for selected node.
+     */
+    private void showNodeProperties(){
+        try {
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
+        } catch (PartInitException e) {
+            NeoCorePlugin.error(null, e);
+        }
     }
     
     /**
@@ -906,6 +1015,7 @@ public class MessageAndEventTableView extends ViewPart {
                 values.add(value);
             }
             row.setValues(values);
+            row.setNode(node);
             return row;
         }
     }
@@ -1022,6 +1132,7 @@ public class MessageAndEventTableView extends ViewPart {
      */
     private class TableRowWrapper{
         private List<String> values;
+        private Node node;
         
         /**
          * @param values The values to set.
@@ -1041,6 +1152,20 @@ public class MessageAndEventTableView extends ViewPart {
                 return "";
             }
             return values.get(index);
+        }
+        
+        /**
+         * @return Returns the node.
+         */
+        public Node getNode() {
+            return node;
+        }
+        
+        /**
+         * @param node The node to set.
+         */
+        public void setNode(Node node) {
+            this.node = node;
         }
     }
     
