@@ -56,7 +56,6 @@ class LayerImpl
     puts block_given?
     gfilter=GroupFilter.new(property)
     gfilter.setup(&block)
-    #    getBlackboard().put("FILTER",[filter].to_java(GroupFilter))
     gfilter
   end
 
@@ -76,7 +75,6 @@ class LayerImpl
   end
 
   def filter=(filter)
-    puts "LayerImpl.filter="
     getBlackboard().put("FILTER",[filter].to_java(GroupFilter))
   end
 
@@ -124,7 +122,6 @@ end
 
 class MapIterator
   def initialize(collection)
-    #    puts "initialize"
     @collection=collection
   end
 
