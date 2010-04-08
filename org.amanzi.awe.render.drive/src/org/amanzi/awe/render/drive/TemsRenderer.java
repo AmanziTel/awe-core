@@ -784,8 +784,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                         // transform_w2d.inverse());
                                     }
                                     java.awt.Point pSite = getContext().worldToPixel(world_location);
-                                    pSite = getSectorCenter(g, sector, pSite);
-
+                                    if (drawFull) {
+                                        pSite = getSectorCenter(g, sector, pSite);
+                                    }
                                     Color oldColor = g.getColor();
                                     g.setColor(lineColor);
                                     g.drawLine(p.x, p.y, pSite.x, pSite.y);
