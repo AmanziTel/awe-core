@@ -1254,7 +1254,10 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
      * @return node id or null
      */
     private Long getSelectedProperty2(double crosshair) {
-        Integer result = getCrosshairIndex(xydatasets.get(1), crosshair);
+        Integer result = null;
+        if(xydatasets.size()>1){
+            result = getCrosshairIndex(xydatasets.get(1), crosshair);
+        }
         if (result != null) {
             return xydatasets.get(0).collection.getSeries(0).getDataItem(result).getValue().longValue();
         } else {
@@ -1270,7 +1273,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
      */
     private Long getSelectedProperty1(double crosshair) {
         Integer result = getCrosshairIndex(xydatasets.get(0), crosshair);
-        if (result != null) {
+        if (result != null && xydatasets.size()>1) {
             return xydatasets.get(1).collection.getSeries(0).getDataItem(result).getValue().longValue();
         } else {
             return null;
