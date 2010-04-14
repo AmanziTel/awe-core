@@ -103,7 +103,7 @@ public class EriccsonTopologyTest extends AbstractLoaderTest {
         String fileNameSmall = "utran.xml";
         String fileName = new File(dataDirectory, fileNameSmall).getPath();
         etalonGis = generateEtalonNetwork("etalonUtran",fileName);
-        DataGenerateManager.generateEriccsonTopology(fileName,etalonGis);
+        DataGenerateManager.generateEriccsonTopology(fileName,etalonGis, getNeo());
         UTRANLoader loader = new UTRANLoader(fileName, fileNameSmall, null, initIndex(), getNeo());
         loader.setLimit(5000);
 //        loader.run(new NullProgressMonitor());
