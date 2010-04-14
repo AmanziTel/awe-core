@@ -292,6 +292,10 @@ public class AMSCorrellator {
 	    catch (IOException e) {
 	        throw (RuntimeException)new RuntimeException().initCause(e);
 	    }
+	    catch (Throwable e) {
+            System.out.println(e.getMessage());
+            System.out.println("error in index operation. see trace for more information - " + e.getStackTrace());
+        }
 	}
 	
 	private String getCallDatasetName(Node realDataset, String realDatasetName) {
