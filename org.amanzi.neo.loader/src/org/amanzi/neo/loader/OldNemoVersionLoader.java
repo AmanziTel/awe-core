@@ -27,6 +27,7 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
@@ -64,6 +65,20 @@ public class OldNemoVersionLoader extends NemoLoader {
         driveType = DriveTypes.NEMO1;
         possibleFieldSepRegexes = new String[] {" ", "\t", ",", ";"};
     }
+    
+    /**
+     * Constructor for loading data in AWE, with specified neo4j database service and dataset, but no NeoService
+     * Note. Used only in test environments
+     * @param time - file time
+     * @param filename of file to load
+     * @param dataset to add data to
+     * @param neo neo4j service
+     */
+    public OldNemoVersionLoader(final Calendar time,final String filename,final String dataset,final GraphDatabaseService neo) {
+        super(time, filename, dataset, neo );
+        driveType = DriveTypes.NEMO1;
+        possibleFieldSepRegexes = new String[] {" ", "\t", ",", ";"};
+    }    
 
     @Override
     protected void parseLine(String line) {
