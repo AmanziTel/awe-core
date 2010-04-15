@@ -13,7 +13,10 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.amanzi.splash,
  org.amanzi.awe.report,
- org.neo4j.neoclipse;bundle-version="0.4.0"
+ org.neo4j.neoclipse;bundle-version="0.4.0",
+ org.amanzi.integrator.awe,
+ org.rubypeople.rdt.core,
+ org.rubypeople.rdt.ui
 Eclipse-LazyStart: true
 Bundle-ClassPath: .
 Export-Package: org.amanzi.awe.views.reuse,

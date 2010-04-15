@@ -42,7 +42,9 @@ import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.report.editor.ReportEditor;
 import org.amanzi.awe.views.reuse.Distribute;
+import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.awe.views.reuse.Select;
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -65,6 +67,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
@@ -86,6 +89,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.geotools.brewer.color.BrewerPalette;
@@ -115,6 +119,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
+import org.rubypeople.rdt.core.IRubyProject;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 /**
  * <p>
@@ -1239,6 +1245,8 @@ public class ReuseAnalyserView extends ViewPart {
     protected void findOrCreateAggregateNodeInNewThread(final Node gisNode, final String propertyName) {
         // TODO restore focus after job execute or not necessary?
         String select = cSelect.getText();
+        //TODO Pechko_E: during refactoring of the following code 
+        //refactor also generateReport()
         if (!cSelect.isEnabled()) {
             select = Select.EXISTS.toString();
         }
@@ -3156,45 +3164,69 @@ public class ReuseAnalyserView extends ViewPart {
         IFile file;
         try {
         int i = 0;
-        Node node = selectedGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];
+//        Node node = selectedGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+        //find or create AWE and RDT project
+        String aweProjectName = AWEProjectManager.getActiveProjectName();
+        IRubyProject rubyProject;
+        try {
+            rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+        } catch (CoreException e2) {
+            // TODO Handle CoreException
+            throw (RuntimeException)new RuntimeException().initCause(e2);
+        }
+
+        final IProject project = rubyProject.getProject();
 
         while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
             i++;
         }
-        final String select = Select.findSelectByValue(cSelect.getText()).getDescription();
+        //the following code depends on code from findOrCreateAggregateNodeInNewThread()
+        final Select select = !cSelect.isEnabled()?Select.EXISTS:Select.findSelectByValue(cSelect.getText());
         final String distribute = Distribute.findEnumByValue(cDistribute.getText()).getDescription();
-        StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propertyCombo.getText()).append(
+        final String propName = propertyCombo.getText();
+        StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propName).append(
                 "' do\n");
         sb.append("  author '").append(System.getProperty("user.name")).append("'\n");
         sb.append("  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
-        sb.append("  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propertyCombo.getText())
-                    .append(", with values distributed ").append(distribute).append(" and calculated using ").append(select)
+        sb.append("  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propName)
+                    .append(", with values distributed ").append(distribute).append(" and calculated using ").append(select.getDescription())
                     .append("'\n");
         sb.append("  map 'Drive map', :map => GIS.maps.first.copy, :width => 600, :height => 400 do |m|\n");
         sb.append("    layer = m.layers.find(:type => 'drive').first\n");
         sb.append("  end\n");
-        sb.append("  chart 'Distribution analysis' do |chart| \n");
+        sb.append("  chart '").append(propName).append("' do |chart| \n");
+        sb.append("    chart.domain_axis='Value'\n");
+        sb.append("    chart.range_axis='Count'\n");
         sb.append("    chart.statistics='").append(gisCombo.getText()).append("'\n");
-        sb.append("    chart.property='").append(propertyCombo.getText()).append("'\n");
+        sb.append("    chart.property='").append(propName).append("'\n");
         sb.append("    chart.distribute='").append(cDistribute.getText()).append("'\n");
-        sb.append("    chart.select='").append(cSelect.getText()).append("'\n");
+        sb.append("    chart.select='").append(select.toString()).append("'\n");
         sb.append("  end\nend");
         System.out.println("Report script:\n" + sb.toString());
         InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
             file.create(is, true, null);
             is.close();
+            getViewSite().getPage().openEditor(new FileEditorInput(file), ReportEditor.class.getName());
         } catch (Exception e) {
             e.printStackTrace();
-            // TODO Handle IOException
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            showErrorDlg(e);
         }
-        try {
-            getViewSite().getPage().openEditor(new FileEditorInput(file), ReportEditor.class.getName());
-        } catch (PartInitException e) {
-            e.printStackTrace();
-            // TODO Handle PartInitException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
+    }
+    /**
+     * Displays the error dialog for the exception
+     *
+     * @param e exception to be printed
+     */
+    private void showErrorDlg(final Exception e) {
+        final Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                ErrorDialog.openError(display.getActiveShell(), "Error", "Report can't be created due to the following error:",
+                        new Status(Status.ERROR, ReusePlugin.PLUGIN_ID, e.getClass().getName(), e));
+            }
+
+        });
     }
 }

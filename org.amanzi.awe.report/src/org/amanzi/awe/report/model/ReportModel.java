@@ -30,6 +30,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
@@ -215,15 +217,44 @@ public class ReportModel {
     }
 
    
-
+/**
+ * Updates report. Removes listeners from old report and add listeners to new one
+ *
+ * @param newReport a new report
+ */
     public void updateReport(Report newReport) {
         if (report != null) {
             report.removeAllReportListeners();
         }
         this.report = newReport;
-        for (IReportModelListener l : listeners) {
-            this.report.addReportListener(l);
+        if (report != null) {
+            for (IReportModelListener l : listeners) {
+                this.report.addReportListener(l);
+            }
         }
     }
-   
+    public void showErrorDlg(final String message, final String reason) {
+        final Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                ErrorDialog.openError(display.getActiveShell(), "Error", message,
+                        new Status(Status.ERROR, ReportPlugin.PLUGIN_ID,reason));
+            }
+
+        });
+    } 
+    public void showException(final String message, final Exception e) {
+        final Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                ErrorDialog.openError(display.getActiveShell(), "Error", message,
+                        new Status(Status.ERROR, ReportPlugin.PLUGIN_ID,e.getLocalizedMessage(),e));
+            }
+
+        });
+    } 
 }

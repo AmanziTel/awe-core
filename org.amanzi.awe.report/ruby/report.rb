@@ -292,15 +292,11 @@ include_class org.jfree.data.time.TimeSeriesCollection
     end
 
     def chart(name,parameters=nil,&block)
-      begin
         currChart=Chart.new(name)
         currChart.setup(&block)
         currChart.height=parameters[:height] if !parameters.nil?
         currChart.width=parameters[:width] if !parameters.nil?
         addPart(currChart)
-      rescue =>e
-        puts "[Report.chart] An exception occured: #{e}"
-      end
     end
     
     def map(title,parameters,&block)
@@ -438,7 +434,6 @@ end
 
     def select(name,params,&block)
       Neo4j::Transaction.run {
-        begin
           nodes=Search.new(name,params)
           nodes.instance_eval &block
           if @type==:time
@@ -462,16 +457,12 @@ end
               puts "Error: Only Strings or Arrays of Strings are supported for chart values!"
             end
           end
-        rescue =>e
-          puts e
-        end
       }
     end
 
     def setup(&block)
       self.instance_eval(&block) #if block_given?
       Neo4j::Transaction.run {
-        begin
           #JFreeChart specific settings
           if !@orientation.nil?
             if @orientation==:vertical
@@ -518,13 +509,9 @@ end
             plot.setDataset(@datasets[0])
           end
             setPlot(plot)
-        rescue =>e
-          puts "An exception occured during the chart setup: #{e}"
-        end
       }
       self
     end
-    #  transactional :find_dataset, :find_aggr_node, :create_chart_dataset
   end
 
   def method_missing(method_id, *args)
@@ -542,9 +529,10 @@ end
       report.setup(&block)
       $report_model.updateReport(report)
     rescue =>e
+      $report_model.showErrorDlg("A ruby exception occured during the report creation: #{e}",e.backtrace.join("\n"))
+#      $report_model.showException("A ruby exception occured during the report creation",e)
       puts e
     end
-    #  report
   end
 
   def chart(name,&block)

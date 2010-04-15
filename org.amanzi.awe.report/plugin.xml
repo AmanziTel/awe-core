@@ -34,10 +34,11 @@
       <editor
             class="org.amanzi.awe.report.editor.ReportEditor"
             contributorClass="org.amanzi.awe.report.editor.ReportEditorContributor"
-            extensions="rb,r"
+            default="true"
+            extensions="r"
             icon="icons/report.PNG"
             id="org.amanzi.awe.report.editor.ReportEditor"
-            name="Amanzi Reportt Editor">
+            name="Amanzi Report Editor">
       </editor>
    </extension>
    <extension
