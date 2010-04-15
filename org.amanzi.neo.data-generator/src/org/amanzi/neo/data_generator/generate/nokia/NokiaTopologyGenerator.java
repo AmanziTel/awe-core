@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.amanzi.neo.data_generator.data.IGeneratedData;
 import org.amanzi.neo.data_generator.data.nokia.AbstractTagData;
@@ -53,6 +54,9 @@ public class NokiaTopologyGenerator implements IDataGenerator {
     
     private List<SectorData> sectorsList;
     
+    private long nameCounter;
+    private long idCounter;
+    
     /**
      * Constructor.
      * @param aPath String (path to save file)
@@ -74,6 +78,8 @@ public class NokiaTopologyGenerator implements IDataGenerator {
         umtsCount = extUmtsCount;
         latitudeBorders = latBorders;
         longitudeBorders = lonBorders;
+        nameCounter = 0;
+        idCounter = 0;
     }
     
     @Override
@@ -127,9 +133,34 @@ public class NokiaTopologyGenerator implements IDataGenerator {
         for (int i = 0; i < realSiteCount; i++) {
             result.addSite(initSite(distName, i+1));
         }
+        int balCount = getRandomGenerator().getIntegerValue(1, 10);
+        for(int i=0; i<balCount; i++){
+            int freqCount = getRandomGenerator().getIntegerValue(1, 20); 
+            for (int j = 0; j < freqCount; j++) {
+                result.addBalFrequency(i, getRandomFrequency());
+            }
+        }
+        int malCount = getRandomGenerator().getIntegerValue(1, 10);
+        for(int i=0; i<malCount; i++){
+            int freqCount = getRandomGenerator().getIntegerValue(1, 20); 
+            for (int j = 0; j < freqCount; j++) {
+                result.addMalFrequency(i, getRandomFrequency());
+            }
+        }
         return result;
     }
     
+    private int getRandomFrequency(){
+        return getRandomGenerator().getLongValue(1L, 999L).intValue();
+    }
+    
+    /**
+     * Initialize site
+     *
+     * @param parentDist String (parent distName)
+     * @param number int
+     * @return SiteData
+     */
     private SiteData initSite(String parentDist, int number){
         String distName = parentDist+"/"+NokiaDataConstants.MO_BCF+"-"+number;
         Float lat = getRandomGenerator().getDoubleValue(latitudeBorders[0].doubleValue(), latitudeBorders[1].doubleValue()).floatValue();
@@ -199,7 +230,7 @@ public class NokiaTopologyGenerator implements IDataGenerator {
      * @return String
      */
     private String buildName(String className){
-        return "TST"+className+getRandomGenerator().getLongValue(0L, 1000L);
+        return "TST"+className+(nameCounter++);
     }
     
     /**
@@ -244,6 +275,16 @@ public class NokiaTopologyGenerator implements IDataGenerator {
             String smlsName = SMLS.getAttribute(NokiaDataConstants.MO_ATTR_DIST_NAME);
             int locNum = 1;
             List<SavedTag> locations = new ArrayList<SavedTag>();
+            HashMap<Integer, Set<Integer>> balFrequency = data.getBalFrequency();
+            for(Integer balNum : balFrequency.keySet()){
+               SavedTag bal = getFreqTag(data.getDistName(), NokiaDataConstants.MO_BAL, balNum+1, balFrequency.get(balNum));
+               cmData.addInnerTag(bal);
+            }
+            HashMap<Integer, Set<Integer>> malFrequency = data.getMalFrequency();
+            for(Integer malNum : malFrequency.keySet()){
+               SavedTag mal = getFreqTag(data.getDistName(), NokiaDataConstants.MO_MAL, malNum+1, malFrequency.get(malNum));
+               cmData.addInnerTag(mal);
+            }
             for(SiteData siteData : data.getSites()){
                 SavedTag BCF = getMOTag(siteData);
                 cmData.addInnerTag(BCF);
@@ -311,6 +352,32 @@ public class NokiaTopologyGenerator implements IDataGenerator {
     }
     
     /**
+     * Returns 'managedObject' tag by data.
+     *
+     * @param className  String (value for tag attribute 'class') 
+     * @param distName String (value for tag attribute 'distName')
+     * @param id String (value for tag attribute 'id')
+     * @param properties Map of properties.
+     * @return SavedTag
+     */
+    private SavedTag getMOTag(String className,String distName,String id, HashMap<String, String> properties,HashMap<String, Set<Integer>> lists){
+        SavedTag result = new SavedTag(NokiaDataConstants.TAG_MO, false);
+        result.addAttribute(NokiaDataConstants.ATTR_VERSION, "1.0");
+        result.addAttribute(NokiaDataConstants.MO_ATTR_CLASS, className);
+        result.addAttribute(NokiaDataConstants.MO_ATTR_DIST_NAME, distName);
+        result.addAttribute(NokiaDataConstants.MO_ATTR_ID, id);
+        for(String name : properties.keySet()){
+            SavedTag prop = getPropertyTag(name, properties.get(name));
+            result.addInnerTag(prop);
+        }
+        for(String name : lists.keySet()){
+            SavedTag list = getListTag(name, lists.get(name));
+            result.addInnerTag(list);
+        }
+        return result;
+    }
+    
+    /**
      * Get tag for property.
      *
      * @param name String
@@ -319,9 +386,28 @@ public class NokiaTopologyGenerator implements IDataGenerator {
      */
     private SavedTag getPropertyTag(String name, String value){
         SavedTag prop = new SavedTag(NokiaDataConstants.TAG_PROPERTY, false);
-        prop.addAttribute(NokiaDataConstants.P_ATTR_NAME, name);
+        if (name!=null && name.length()>0) {
+            prop.addAttribute(NokiaDataConstants.P_ATTR_NAME, name);
+        }
         prop.setData(value);
         return prop;
+    }
+    
+    /**
+     * Get tag for property.
+     *
+     * @param name String
+     * @param value String
+     * @return SavedTag
+     */
+    private SavedTag getListTag(String name, Set<Integer> values){
+        SavedTag list = new SavedTag(NokiaDataConstants.TAG_LIST, false);
+        list.addAttribute(NokiaDataConstants.P_ATTR_NAME, name);
+        for(Integer value : values){
+            SavedTag prop = getPropertyTag(null, value.toString());
+            list.addInnerTag(prop);
+        }
+        return list;
     }
     
     /**
@@ -346,7 +432,7 @@ public class NokiaTopologyGenerator implements IDataGenerator {
      * @return String
      */
     private String getMoId() {
-        String id = getRandomGenerator().getLongValue(0L, 100000L).toString();
+        String id = ""+(idCounter++);
         return id;
     }
     
@@ -355,6 +441,8 @@ public class NokiaTopologyGenerator implements IDataGenerator {
      *
      * @param site SiteData
      * @param sector SectorData
+     * @param smlcName String
+     * @param number int
      * @return SavedTag
      */
     private SavedTag getLCSETag(SiteData site, SectorData sector, String smlcName, int number){
@@ -400,6 +488,24 @@ public class NokiaTopologyGenerator implements IDataGenerator {
         properties.put("targetCellDN", neighbor.getDistName());
         properties.put(NokiaDataConstants.P_ATTR_NAME, neighbor.getProperties().get(NokiaDataConstants.P_ATTR_NAME));
         return getMOTag(className,distName,id,properties);
+    }
+    
+    /**
+     * Build BAL or MAL tag
+     *
+     * @param parentName String
+     * @param className String
+     * @param number int
+     * @param freqs Set of Integer
+     * @return SavedTag
+     */
+    private SavedTag getFreqTag(String parentName, String className, int number, Set<Integer> freqs){
+        String distName = parentName+"/"+className+"-"+number;
+        String id = getMoId();
+        HashMap<String, String> properties = new HashMap<String, String>();
+        HashMap<String, Set<Integer>> lists = new HashMap<String, Set<Integer>>();
+        lists.put("frequency", freqs);
+        return getMOTag(className, distName, id, properties, lists);
     }
     
     /**

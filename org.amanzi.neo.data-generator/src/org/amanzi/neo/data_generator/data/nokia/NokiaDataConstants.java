@@ -27,6 +27,7 @@ public class NokiaDataConstants {
     public static final String TAG_HEADER = "header";
     public static final String TAG_LOG = "log";
     public static final String TAG_MO = "managedObject";
+    public static final String TAG_LIST = "list";
     public static final String TAG_PROPERTY = "p";
 
     public static final String MO_BCF = "BCF";
@@ -39,6 +40,8 @@ public class NokiaDataConstants {
     public static final String MO_EWCE = "EWCE";
     public static final String MO_ADJW = "ADJW";
     public static final String MO_SMLC = "SMLC";
+    public static final String MO_BAL = "BAL";
+    public static final String MO_MAL = "MAL";
     
     public static final String ATTR_VERSION = "version";
     

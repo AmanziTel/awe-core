@@ -14,7 +14,10 @@
 package org.amanzi.neo.data_generator.data.nokia;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -26,6 +29,8 @@ import java.util.List;
 public class BSCData extends AbstractTagData{
 
     private List<SiteData> sites;
+    private HashMap<Integer,Set<Integer>> balFrequency;
+    private HashMap<Integer,Set<Integer>> malFrequency;
     
     /**
      * Constructor.
@@ -35,6 +40,8 @@ public class BSCData extends AbstractTagData{
     public BSCData(String aDistName, String anId) {
         super(NokiaDataConstants.MO_BSC, aDistName, anId);
         sites = new ArrayList<SiteData>();
+        balFrequency = new HashMap<Integer,Set<Integer>>();
+        malFrequency = new HashMap<Integer,Set<Integer>>();
     }
     
     /**
@@ -44,8 +51,56 @@ public class BSCData extends AbstractTagData{
         return sites;
     }
     
+    /**
+     * Add site.
+     *
+     * @param site SiteData
+     */
     public void addSite(SiteData site){
         sites.add(site);
     }
 
+    /**
+     * @return Returns the balFrequency.
+     */
+    public HashMap<Integer, Set<Integer>> getBalFrequency() {
+        return balFrequency;
+    }
+    
+    /**
+     * Add BAL frequency
+     *
+     * @param bal
+     * @param freq
+     */
+    public void addBalFrequency(Integer bal,Integer freq){
+       Set<Integer> freqs = balFrequency.get(bal); 
+       if(freqs == null){
+           freqs = new HashSet<Integer>();
+           balFrequency.put(bal, freqs);
+       }
+       freqs.add(freq);
+    }
+    
+    /**
+     * @return Returns the malFrequency.
+     */
+    public HashMap<Integer, Set<Integer>> getMalFrequency() {
+        return malFrequency;
+    }
+    
+    /**
+     * Add MAL frequency
+     *
+     * @param mal
+     * @param freq
+     */
+    public void addMalFrequency(Integer mal,Integer freq){
+       Set<Integer> freqs = malFrequency.get(mal); 
+       if(freqs == null){
+           freqs = new HashSet<Integer>();
+           malFrequency.put(mal, freqs);
+       }
+       freqs.add(freq);
+    }
 }

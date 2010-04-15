@@ -75,7 +75,7 @@ public class NokiaFileBuilder {
         PrintWriter out = new PrintWriter(fos);
         try{
             out.println(FILE_PREFIX);
-            printTag(aRoot, out);
+            printTag(aRoot, out,"");
         }
         finally{
             out.flush();
@@ -89,13 +89,13 @@ public class NokiaFileBuilder {
      * @param tag SavedTag (tag for print)
      * @param out PrintWriter
      */
-    private void printTag(SavedTag tag, PrintWriter out){
-        out.println(tag.getTagOpenString());
+    private void printTag(SavedTag tag, PrintWriter out, String tabs){
+        out.println(tabs+tag.getTagOpenString());
         if (!tag.isEmpty()&&tag.getData()==null) {
             for (SavedTag inner : tag.getInnerTags()) {
-                printTag(inner, out);
+                printTag(inner, out, tabs+"\t");
             }
-            out.println(tag.getTagCloseString());
+            out.println(tabs+tag.getTagCloseString());
         }
     }
 }

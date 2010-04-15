@@ -17,9 +17,12 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -61,7 +64,10 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @since 1.0.0
  */
 public class NokiaTopologyLoader extends AbstractLoader {
-private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+
+    private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    private static final String TAG_ATTR_NAME = "name";
+    private static final String LIST_NAME = "frequency";
     
     private final ReadContentHandler handler;
     private CountingFileInputStream inputStream;
@@ -79,9 +85,14 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
     private Node lastUmtsSite;
     private HashMap<String, Node> bscMap = new HashMap<String, Node>();
     private HashMap<String, Node> sectorMap = new HashMap<String, Node>();
+    private Set<String> sectorMissBalList = new HashSet<String>();
+    private Set<String> sectorMissUsedMalList = new HashSet<String>();
+    private Set<String> sectorMissUnderlayMalList = new HashSet<String>();
     private HashMap<String, Node> siteMap = new HashMap<String, Node>();
     private HashMap<String, Node> umtsSectorMap = new HashMap<String, Node>();
     private HashMap<String, Node> umtsSiteMap = new HashMap<String, Node>();
+    private HashMap<String, Set<Integer>> balMap = new HashMap<String, Set<Integer>>();
+    private HashMap<String, Set<Integer>> malMap = new HashMap<String, Set<Integer>>();
     private final LuceneIndexService luceneInd;
     
     private Set<String> allNeibProperties = new HashSet<String>();
@@ -146,7 +157,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
     * @return Node
     */
    private Node initNeighbour() {
-       Node result = NeoUtils.findNeighbour(gisNode, filename, neo);
+       Node result = NeoUtils.findNeighbour(gisNode, basename, neo);
        if (result != null) {
            return result;
        }
@@ -154,7 +165,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
        try {
            result = neo.createNode();
            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NEIGHBOUR.getId());
-           result.setProperty(INeoConstants.PROPERTY_NAME_NAME, filename);
+           result.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
            gisNode.createRelationshipTo(result, NetworkRelationshipTypes.NEIGHBOUR_DATA);
            tx.success();
            return result;
@@ -165,7 +176,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return null;
+        return gisNode;
     }
 
     @Override
@@ -313,7 +324,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         }
     }
 
-    private void addNeighborLink(HashMap<String, StringBuilder> properties, Node server, Node neighbour) {
+    private void addNeighborLink(HashMap<String, Object> properties, Node server, Node neighbour) {
         getNeighbourNode(); //initialize neighbors
         Relationship relation = server.createRelationshipTo(neighbour, NetworkRelationshipTypes.NEIGHBOUR);
         relation.setProperty(INeoConstants.NEIGHBOUR_NAME, filename);
@@ -321,7 +332,11 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
             if(key.equals("name")||key.equals("targetCellDN")){
                 continue;
             }
-            Object value = properties.get(key).toString();
+            Object value = properties.get(key);
+            if(!(value instanceof StringBuilder)){
+                continue;
+            }
+            value = value.toString();
             if(!key.equals("address")){
                 value = Integer.parseInt((String)value);
                 intNeibProperties.add(key);
@@ -341,6 +356,70 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
      */
     private void updateCount(Node serverNode, String name) {
         serverNode.setProperty(name, (Integer)serverNode.getProperty(name, 0) + 1);
+    }
+    
+    /**
+     * Pars object to integer value
+     *
+     * @param chars Object
+     * @return Integer
+     */
+    private Integer getIntValue(Object chars){
+        if(chars==null){
+            return 0;
+        }
+        return Integer.parseInt(chars.toString());
+    }
+    
+    private Integer setUsedMalFrequency(String bscKey,Node sector){
+        Set<Integer> freqSet = malMap.get(bscKey);
+        if(freqSet==null || freqSet.isEmpty()){
+            return null;
+        }        
+        Integer num = (Integer)sector.getProperty("usedMobileAllocIdUsed", null);
+        if(num==null || num>=freqSet.size()){
+            return null;
+        }
+        List<Integer> freqList = getSortedListBySet(freqSet);
+        Integer real = freqList.get(num);
+        setIndexPropertyNotParcedValue(headers, sector, "usedMobileAllocIdUsed", real.toString());
+        return real;
+    }
+    
+    private Integer setUnderlayMalFrequency(String bscKey,Node sector){
+        Set<Integer> freqSet = malMap.get(bscKey);
+        if(freqSet==null || freqSet.isEmpty()){
+            return null;
+        }        
+        Integer num = (Integer)sector.getProperty("underlayMaIdUsed", null);
+        if(num==null || num>=freqSet.size()){
+            return null;
+        }
+        List<Integer> freqList = getSortedListBySet(freqSet);
+        Integer real = freqList.get(num);
+        setIndexPropertyNotParcedValue(headers, sector, "underlayMaIdUsed", real.toString());
+        return real;
+    }
+    
+    private Integer setBalFrequency(String bscKey,Node sector){
+        Set<Integer> freqSet = balMap.get(bscKey);
+        if(freqSet==null || freqSet.isEmpty()){
+            return null;
+        }        
+        Integer num = (Integer)sector.getProperty("idleStateBcchAllocListId", null);
+        if(num==null || num>=freqSet.size()){
+            return null;
+        }
+        List<Integer> freqList = getSortedListBySet(freqSet);
+        Integer real = freqList.get(num);
+        setIndexPropertyNotParcedValue(headers, sector, "idleStateBcchAllocListId", real.toString());
+        return real;
+    }
+    
+    private List<Integer> getSortedListBySet(Set<Integer> set){
+        List<Integer> result = new ArrayList<Integer>(set);
+        Collections.sort(result);
+        return result;
     }
 
     /**
@@ -380,6 +459,8 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         private static final String EXCC_CLASS = "EXCC";
         private static final String EWCE_CLASS = "EWCE";
         private static final String ADJW_CLASS = "ADJW";
+        private static final String BAL_CLASS = "BAL";
+        private static final String MAL_CLASS = "MAL";
         
         public static final String TAG_NAME_CM = "cmData";
         public static final String TAG_NAME_HEADER = "header";
@@ -441,9 +522,46 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
             if(name.equals(ADJW_CLASS)){
                 return new ADJWTag(this,attributes);
             }
+            if(name.equals(BAL_CLASS)){
+                return new BALTag(this,attributes);
+            }
+            if(name.equals(MAL_CLASS)){
+                return new MALTag(this,attributes);
+            }
             return new SkipTag(this);
         }
-    }    
+    }  
+    
+    private abstract class PropertyContainerTag extends AbstractTag{
+
+        private HashMap<String, Object> properties;
+        
+        /**
+         * @param tagName
+         * @param parent
+         */
+        protected PropertyContainerTag(String tagName, IXmlTag parent) {
+            super(tagName, parent);
+            properties = new HashMap<String, Object>();
+        }
+        
+        /**
+         * Add parsed property.
+         *
+         * @param key
+         * @param value
+         */
+        public void addProperty(String key,Object value){
+            properties.put(key, value);
+        }
+        
+        /**
+         * @return Returns the properties.
+         */
+        public HashMap<String, Object> getProperties() {
+            return properties;
+        }
+    }
     
     /**
      * <p>
@@ -452,18 +570,16 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
      * @author Shcharbatsevich_A
      * @since 1.0.0
      */
-    private abstract class ManagedObjectTag extends AbstractTag{
+    private abstract class ManagedObjectTag extends PropertyContainerTag{
         
         protected static final String EXTERNAL_BSC = "BSC-0";
         
         public static final String TAG_NAME = "managedObject";
-        public static final String TAG_NAME_LIST = "list";        
         public static final String TAG_NAME_DEFAULTS = "defaults";
         private static final String TAG_ATTR_DIST_NAME = "distName";
 
         private String distName;
-        private HashMap<String, StringBuilder> properties;
-        
+
         /**
          * Constructor.
          * @param parent
@@ -471,12 +587,11 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         protected ManagedObjectTag(IXmlTag parent, Attributes attributes) {
             super(TAG_NAME, parent);
             distName = attributes.getValue(TAG_ATTR_DIST_NAME);
-            properties = new HashMap<String, StringBuilder>();
         }
 
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
-            if(localName.equals(TAG_NAME_LIST)){
+            if(localName.equals(ListTag.TAG_NAME)){
                 return new SkipTag(this);
             }
             if(localName.equals(PropertyTag.TAG_NAME)){
@@ -504,17 +619,6 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
          * Save parsed data.
          */
         protected abstract void saveData();
-        
-        
-        /**
-         * Add parsed property.
-         *
-         * @param key
-         * @param value
-         */
-        public void addProperty(String key,StringBuilder value){
-            properties.put(key, value);
-        }
         
         /**
          * @param distName The distName to set.
@@ -614,12 +718,6 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
             return getKeyFromDistName(1).equals(EXTERNAL_BSC);
         }
         
-        /**
-         * @return Returns the properties.
-         */
-        public HashMap<String, StringBuilder> getProperties() {
-            return properties;
-        }
     }
     
     /**
@@ -641,7 +739,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
         @Override
         protected void saveData() {
-            HashMap<String, StringBuilder> properties = getProperties();
+            HashMap<String, Object> properties = getProperties();
             String postfix = "";
             if(isExternal()){
                 postfix = " (external)";
@@ -650,7 +748,11 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
             Node bsc = getBSCNode(bscName);            
             for(String key : properties.keySet()){
                 Object old = bsc.getProperty(key, null);
-                Object newValue = properties.get(key).toString();
+                Object newValue = properties.get(key);
+                if(!(newValue instanceof StringBuilder)){
+                    continue;
+                }
+                newValue = newValue.toString();
                 if(!(key.equals("name")||key.equals("address")||key.equals("neSwRelease"))){                    
                     newValue = Integer.parseInt((String)newValue);
                 }
@@ -692,8 +794,8 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
             if(isExternal()){
                 postfix = " (external)";
             }
-            HashMap<String, StringBuilder> properties = getProperties();
-            StringBuilder nameValue = properties.get("name");            
+            HashMap<String, Object> properties = getProperties();
+            StringBuilder nameValue = (StringBuilder)properties.get("name");            
             String siteName = nameValue==null?(bcfKey+postfix):nameValue.toString();
             Node site = getSiteNode(siteName,true);
             Float latitude = Float.parseFloat(properties.get("latitude").toString());
@@ -704,7 +806,11 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
                     continue;
                 }
                 Object old = site.getProperty(key, null);
-                Object newValue = properties.get(key).toString();
+                Object newValue = properties.get(key);
+                if(!(newValue instanceof StringBuilder)){
+                    continue;
+                }
+                newValue = newValue.toString();
                 if(!(key.equals("name")||key.equals("address")||key.equals("lapdLinkName"))){                    
                     newValue = Integer.parseInt((String)newValue);
                 }
@@ -741,22 +847,35 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
         @Override
         protected void saveData() {
-            HashMap<String, StringBuilder> properties = getProperties();    
+            HashMap<String, Object> properties = getProperties(); 
             String sectorName = properties.get("name").toString();
             Node sector = getSectorNode(sectorName, true);
             for(String key : properties.keySet()){
                 Object old = sector.getProperty(key, null);
-                Object newValue = properties.get(key).toString();
-                if(!(key.equals("name")||key.equals("segmentName")
-                        ||key.equals("address")||key.equals("nwName"))){                    
-                    newValue = Integer.parseInt((String)newValue);
+                Object newValue = properties.get(key);
+                if(!(newValue instanceof StringBuilder)){
+                    continue;
                 }
                 if(old == null || !old.equals(newValue)){
-                    sector.setProperty(key, newValue);
+                    setIndexPropertyNotParcedValue(headers, sector, key, newValue.toString());
                     if(key.equals("name")){
                         luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
                     }
                 }
+            }
+            String bscKey = getKeyFromDistName(1);
+            String btsKey = bscKey+"_"+getKeyFromDistName(2)+"_"+getKeyFromDistName(3);
+            Integer real = setBalFrequency(bscKey, sector);
+            if(real == null){
+                sectorMissBalList.add(btsKey);
+            }
+            real = setUsedMalFrequency(bscKey, sector);
+            if(real == null){
+                sectorMissUsedMalList.add(btsKey);
+            }
+            real = setUnderlayMalFrequency(bscKey, sector);
+            if(real == null){
+                sectorMissUnderlayMalList.add(btsKey);
             }
         }
         
@@ -804,8 +923,8 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
         @Override
         protected void saveData() {
-            HashMap<String, StringBuilder> properties = getProperties();
-            StringBuilder propValue = properties.get("linkedCellDN");
+            HashMap<String, Object> properties = getProperties();
+            StringBuilder propValue = (StringBuilder)properties.get("linkedCellDN");
             if(propValue==null){
                 return;
             }
@@ -828,13 +947,6 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
             value = getIntValue(properties.get("antBearing"));
             key = "azimuth";
             setIndexProperty(headers, sector, key, value);
-        }
-        
-        private Integer getIntValue(StringBuilder chars){
-            if(chars==null){
-                return 0;
-            }
-            return Integer.parseInt(chars.toString());
         }
         
         private Float buildCoord(int degrees, int min, int sec){
@@ -862,14 +974,14 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
         @Override
         protected void saveData() {
-            HashMap<String, StringBuilder> properties = getProperties();
+            HashMap<String, Object> properties = getProperties();
             Node server = getSectorNode(getKeyFromDistName(3),true);
-            StringBuilder propValue = properties.get("targetCellDN");
+            StringBuilder propValue = (StringBuilder)properties.get("targetCellDN");
             if(propValue==null){
                 return;
             }
             setDistName(propValue.toString());
-            StringBuilder nameValue = properties.get("name");
+            StringBuilder nameValue = (StringBuilder)properties.get("name");
             String name = nameValue==null?getKeyFromDistName(3):nameValue.toString();
             Node neighbour = getSectorNode(name,true);
             addNeighborLink(properties, server, neighbour);
@@ -931,13 +1043,17 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
         @Override
         protected void saveData() {
-            HashMap<String, StringBuilder> properties = getProperties();    
+            HashMap<String, Object> properties = getProperties();    
             String postfix = " (external)";
             String sectorName = properties.get("name").toString()+postfix;
             Node sector = getSectorNode(sectorName, false);
             for(String key : properties.keySet()){
                 Object old = sector.getProperty(key, null);
-                Object newValue = properties.get(key).toString();
+                Object newValue = properties.get(key);
+                if(!(newValue instanceof StringBuilder)){
+                    continue;
+                }
+                newValue = newValue.toString();
                 if(!key.equals("name")){                    
                     newValue = Integer.parseInt((String)newValue);
                 } 
@@ -971,19 +1087,246 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
 
         @Override
         protected void saveData() {
-            HashMap<String, StringBuilder> properties = getProperties();
+            HashMap<String, Object> properties = getProperties();
             Node server = getSectorNode(getKeyFromDistName(3),true);
-            StringBuilder propValue = properties.get("targetCellDN");
+            StringBuilder propValue = (StringBuilder)properties.get("targetCellDN");
             if(propValue==null){
                 return;
             }
             setDistName(propValue.toString());
-            StringBuilder nameValue = properties.get("name");
+            StringBuilder nameValue = (StringBuilder)properties.get("name");
             String name = nameValue==null?getKeyFromDistName(2):nameValue.toString();
             Node neighbour = getSectorNode(name,false);            
             addNeighborLink(properties, server, neighbour);
         }
         
+    }
+    
+    /**
+     * <p>
+     * Tag for getting BAL (BCCH Allocation List) data.
+     * </p>
+     * @author Shcharbatsevich_a
+     * @since 1.0.0
+     */
+    private class BALTag extends ManagedObjectTag{
+
+        /**
+         * @param parent
+         * @param attributes
+         */
+        protected BALTag(IXmlTag parent, Attributes attributes) {
+            super(parent, attributes);
+        }
+        
+        @Override
+        public IXmlTag startElement(String localName, Attributes attributes) {
+            if(localName.equals(ListTag.TAG_NAME)){
+                return new ListTag(this,attributes);
+            }
+            if(localName.equals(PropertyTag.TAG_NAME)){
+                return new SkipTag(this);
+            }
+            if(localName.equals(TAG_NAME_DEFAULTS)){
+                return new SkipTag(this); 
+            }
+            throw new IllegalArgumentException("Wrong tag: " + localName);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void saveData() {
+            HashMap<String, Object> allProperties = getProperties();
+            Object listValue = allProperties.get(LIST_NAME);
+            if(listValue==null || !(listValue instanceof HashMap<?, ?>)){
+                return;
+            }
+            HashMap<String, Object> listMap = (HashMap<String, Object>)listValue;
+            String bscKey = getKeyFromDistName(1);
+            Set<Integer> freqSet = balMap.get(bscKey);
+            if(freqSet == null){
+                freqSet = new HashSet<Integer>();
+                balMap.put(bscKey, freqSet);
+            }
+            for(String key : listMap.keySet()){
+                Integer freq = getIntValue(listMap.get(key));
+                if(freq!=null){
+                    freqSet.add(freq);
+                }
+            }
+            HashMap<String, Node> sectors = getAllLoadedSectorsByBsc(bscKey);
+            if(sectors.isEmpty()){
+                return;
+            }
+            for(String key : sectors.keySet()){
+                Node sector = sectors.get(key);
+                Integer freqNum = setBalFrequency(bscKey, sector);
+                if(freqNum!=null){
+                    sectorMissBalList.remove(key);
+                }
+            }
+        }
+        
+        private HashMap<String, Node> getAllLoadedSectorsByBsc(String bscKey){
+            HashMap<String, Node> result = new HashMap<String, Node>();
+            for(String key : sectorMissBalList){
+                if(key.startsWith(bscKey)){
+                    result.put(key,sectorMap.get(key));
+                }
+            }
+            return result;
+        }
+        
+    }
+    
+    /**
+     * <p>
+     * Tag for getting MAL (Mobile Allocation List) data.
+     * </p>
+     * @author Shcharbatsevich_a
+     * @since 1.0.0
+     */
+    private class MALTag extends ManagedObjectTag{
+
+        /**
+         * @param parent
+         * @param attributes
+         */
+        protected MALTag(IXmlTag parent, Attributes attributes) {
+            super(parent, attributes);
+        }
+        
+        @Override
+        public IXmlTag startElement(String localName, Attributes attributes) {
+            if(localName.equals(ListTag.TAG_NAME)){
+                return new ListTag(this,attributes);
+            }
+            if(localName.equals(PropertyTag.TAG_NAME)){
+                return new SkipTag(this);
+            }
+            if(localName.equals(TAG_NAME_DEFAULTS)){
+                return new SkipTag(this); 
+            }
+            throw new IllegalArgumentException("Wrong tag: " + localName);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void saveData() {
+            HashMap<String, Object> allProperties = getProperties();
+            Object listValue = allProperties.get(LIST_NAME);
+            if(listValue==null || !(listValue instanceof HashMap<?, ?>)){
+                return;
+            }
+            HashMap<String, Object> listMap = (HashMap<String, Object>)listValue;
+            String bscKey = getKeyFromDistName(1);
+            Set<Integer> freqSet = malMap.get(bscKey);
+            if(freqSet == null){
+                freqSet = new HashSet<Integer>();
+                malMap.put(bscKey, freqSet);
+            }
+            for(String key : listMap.keySet()){
+                Integer freq = getIntValue(listMap.get(key));
+                if(freq!=null){
+                    freqSet.add(freq);
+                }
+            }
+            HashMap<String, Node> sectors = getAllLoadedSectorsByBscUsed(bscKey);
+            if(!sectors.isEmpty()){
+                for(String key : sectors.keySet()){
+                    Node sector = sectors.get(key);
+                    Integer freqNum = setUsedMalFrequency(bscKey, sector);
+                    if(freqNum!=null){
+                        sectorMissUsedMalList.remove(key);
+                    }
+                }
+            }
+            sectors = getAllLoadedSectorsByBscUnderlay(bscKey);
+            if(!sectors.isEmpty()){
+                for(String key : sectors.keySet()){
+                    Node sector = sectors.get(key);
+                    Integer freqNum = setUnderlayMalFrequency(bscKey, sector);
+                    if(freqNum!=null){
+                        sectorMissUnderlayMalList.remove(key);
+                    }
+                }
+            }
+        }
+        
+        /**
+         * Get all loaded sectors linked to current BSC, that miss used MAL data
+         *
+         * @param bscKey String
+         * @return HashMap<String, Node>
+         */
+        private HashMap<String, Node> getAllLoadedSectorsByBscUsed(String bscKey){
+            HashMap<String, Node> result = new HashMap<String, Node>();
+            for(String key : sectorMissUsedMalList){
+                if(key.startsWith(bscKey)){
+                    result.put(key,sectorMap.get(key));
+                }
+            }
+            return result;
+        }
+        
+        /**
+         * Get all loaded sectors linked to current BSC, that miss underlay MAL data
+         *
+         * @param bscKey String
+         * @return HashMap<String, Node>
+         */
+        private HashMap<String, Node> getAllLoadedSectorsByBscUnderlay(String bscKey){
+            HashMap<String, Node> result = new HashMap<String, Node>();
+            for(String key : sectorMissUnderlayMalList){
+                if(key.startsWith(bscKey)){
+                    result.put(key,sectorMap.get(key));
+                }
+            }
+            return result;
+        }
+        
+    }
+    
+    /**
+     * <p>
+     * Tag for list of properties.
+     * </p>
+     * @author Shcharbatsevich_a
+     * @since 1.0.0
+     */
+    private class ListTag extends PropertyContainerTag{
+        
+        public static final String TAG_NAME = "list";
+        private String listName;
+        private int propCount;
+        
+        /**
+         * @param tagName
+         * @param parent
+         */
+        protected ListTag(IXmlTag parent, Attributes attributes) {
+            super(TAG_NAME, parent);
+            listName = attributes.getValue(TAG_ATTR_NAME);
+            propCount = 0;
+        }
+
+        @Override
+        public IXmlTag startElement(String localName, Attributes attributes) {
+            if(localName.equals(PropertyTag.TAG_NAME)){
+                return new PropertyTag(this,"val"+(propCount++));
+            }
+            throw new IllegalArgumentException("Wrong tag: " + localName);
+        }
+
+        @Override
+        public IXmlTag endElement(String localName, StringBuilder chars) {
+            if (localName.equals(getName())) {
+                ((PropertyContainerTag)parent).addProperty(listName, getProperties());
+                return parent;
+            } else {
+                throw new IllegalArgumentException("Wrong tag: " + localName);
+            }
+        }
     }
    
     /**
@@ -995,20 +1338,28 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
      */
     private class PropertyTag extends AbstractTag{
         
-        private static final String TAG_ATTR_NAME = "name";
         public static final String TAG_NAME = "p";
         
-        private String name;
+        private String pName;
 
         /**
          * Constructor.
          * @param parent parent tag
-         * @param aNode Node for save property.
          * @param attributes tag attributes
          */
         protected PropertyTag(IXmlTag parent, Attributes attributes) {
             super(TAG_NAME, parent);
-            name = attributes.getValue(TAG_ATTR_NAME);
+            pName = attributes.getValue(TAG_ATTR_NAME);
+        }
+        
+        /**
+         * Constructor.
+         * @param parent
+         * @param aName
+         */
+        protected PropertyTag(IXmlTag parent, String aName) {
+            super(TAG_NAME, parent);
+            pName = aName;
         }
 
         @Override
@@ -1019,7 +1370,7 @@ private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xm
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             if (localName.equals(getName())) {
-                ((ManagedObjectTag)parent).addProperty(name, chars);
+                ((PropertyContainerTag)parent).addProperty(pName, chars);
                 return parent;
             } else {
                 throw new IllegalArgumentException("Wrong tag: " + localName);

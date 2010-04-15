@@ -199,14 +199,18 @@ public class MessageAndEventTableView extends ViewPart {
         table.getControl().setVisible(false);
         getSite().setSelectionProvider(table);
         
-        labelProvider = new TableLabelProvider();
-        labelProvider.createTableColumns();
-        contentProvider = new TableContentProvider();
-        table.setContentProvider(contentProvider);
+        initTableContent();
         
         addListeners();
         initializeStartupProperties();
         hookContextMenu();
+    }
+
+    private void initTableContent() {
+        labelProvider = new TableLabelProvider();
+        labelProvider.createTableColumns();
+        contentProvider = new TableContentProvider();
+        table.setContentProvider(contentProvider);
     }
 
     /**
@@ -611,8 +615,9 @@ public class MessageAndEventTableView extends ViewPart {
      * Update datasets.
      */
     public void updateDatasetNodes(){
-        initDatasetsInfo();
+        datasets = initDatasetsInfo();
         cDataset.setItems(getDatasets());
+        initTableContent();
     }
     
     @Override

@@ -12,8 +12,8 @@
             id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView">
       </view>
       <view
-            name="Message and Event tabular"
-            icon="icons/distribution.png"
+            name="Property Table"
+            icon="icons/properties.gif"
             category="org.amanzi.awe.script"
             class="org.amanzi.awe.views.reuse.mess_table.view.MessageAndEventTableView"
             id="org.amanzi.awe.views.reuse.views.MessageAndEventTableView">
