@@ -63,8 +63,8 @@ public class EventPropertySheetPage extends PropertySheetPage implements ISelect
 
         @Override
         public IPropertySource getPropertySource(Object arg0) {
-            if(arg0 instanceof Node){
-                return new EventPropertySource((Node)arg0);
+            if(arg0 instanceof MessageAndEventTableView.TableRowWrapper){
+                return new EventPropertySource(((MessageAndEventTableView.TableRowWrapper)arg0).getNode());
             }
             return null;
         }

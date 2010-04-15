@@ -78,6 +78,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -127,6 +128,8 @@ public class MessageAndEventTableView extends ViewPart {
     private Action actRollback;
     private Action actConfigure;
     private Action actClearFilter;
+    
+    private IPropertySheetPage propertySheetPage;
     
     private HashMap<String, DatasetInfo> datasets;
     private Point point;
@@ -393,13 +396,13 @@ public class MessageAndEventTableView extends ViewPart {
             @Override
             public void mouseDown(MouseEvent e) {
                 point = new Point(e.x, e.y);
-                fireDrillDown();
+                //fireDrillDown(); TODO Uncomment after solve problem with big data in TreeView
             }
 
             @Override
             public void mouseDoubleClick(MouseEvent e) {
                 point = new Point(e.x, e.y);
-                fireDrillDown();
+                //fireDrillDown(); TODO Uncomment after solve problem with big data in TreeView
             }
         });
         
@@ -469,6 +472,32 @@ public class MessageAndEventTableView extends ViewPart {
                 showNodeProperties();
             }
         });
+    }
+    
+    /**
+     * Returns (and creates is it need) property sheet page for this View
+     * 
+     * @return PropertySheetPage
+     */
+    private IPropertySheetPage getPropertySheetPage() {
+        if (propertySheetPage == null) {
+            propertySheetPage = new EventPropertySheetPage();
+        }
+
+        return propertySheetPage;
+    }
+
+    /**
+     * This is how the framework determines which interfaces we implement.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Object getAdapter(final Class key) {
+        if (key.equals(IPropertySheetPage.class)) {
+            return getPropertySheetPage();
+        } else {
+            return super.getAdapter(key);
+        }
     }
     
     /**
@@ -1130,7 +1159,7 @@ public class MessageAndEventTableView extends ViewPart {
      * @author Shcharbatsevich_A
      * @since 1.0.0
      */
-    private class TableRowWrapper{
+    public class TableRowWrapper{
         private List<String> values;
         private Node node;
         
@@ -1227,5 +1256,13 @@ public class MessageAndEventTableView extends ViewPart {
             initDatasets.put(dataset, props);
         }
         
+    }
+    
+    @Override
+    public void dispose() {
+        if (propertySheetPage != null) {
+            propertySheetPage.dispose();
+        }
+        super.dispose();
     }
 }
