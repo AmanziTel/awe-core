@@ -18,7 +18,11 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -204,8 +208,18 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
             String name = bscData.getProperties().get("name");
             Node bsc = getNodeByName(bscNodes, name);
             assertFalse("Not find BSC by name <"+name+"> (key <"+aTestKey+">).",bsc==null);
-            assertSites(aTestKey, name, bsc, bscData.getSites());
+            assertSites(aTestKey, name, bsc, bscData.getSites(), getFreqList(bscData.getBalFrequency()), getFreqList(bscData.getMalFrequency()));
         }
+    }
+    
+    private List<Integer> getFreqList(HashMap<Integer, Set<Integer>> freqs){
+        Set<Integer> all = new HashSet<Integer>();
+        for(Integer key : freqs.keySet()){
+            all.addAll(freqs.get(key));
+        }
+        List<Integer> result = new ArrayList<Integer>(all);
+        Collections.sort(result);
+        return result;
     }
     
     /**
@@ -222,7 +236,7 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
         }
         else{
             assertTrue("Network by key <"+aTestKey+"> must have an external cells",realCell!=null);
-            assertSectors("External UMTS cell by key <"+aTestKey+">.", getListOfNodes(realCell, NodeTypes.SECTOR, false), cellData.getSectors(), true);
+            assertSectors("External UMTS cell by key <"+aTestKey+">.", getListOfNodes(realCell, NodeTypes.SECTOR, false), cellData.getSectors(), true, null,null);
         }
     }
     
@@ -245,7 +259,7 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
      * @param bsc Node (root BSC)
      * @param data list of SiteData.
      */
-    private void assertSites(String aTestKey, String bscName, Node bsc, List<SiteData> data){
+    private void assertSites(String aTestKey, String bscName, Node bsc, List<SiteData> data, List<Integer> bals, List<Integer> mals){
         List<Node> sites = getListOfNodes(bsc, NodeTypes.SITE, false);
         assertEquals("Wrong count of Site nodes by BSC <"+bscName+"> key <"+aTestKey+">.",data.size(), sites.size());
         for(SiteData siteData : data){
@@ -259,7 +273,7 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
             real = (Double)site.getProperty(INeoConstants.PROPERTY_LON_NAME,0.0);
             assertEquals("Wrong longitude in Site <"+name+"> (BSC name <"+bscName+">, key <"+aTestKey+">).",etalon, real.floatValue());
             List<Node> sectors = getListOfNodes(site, NodeTypes.SECTOR, false);
-            assertSectors("Site name <"+name+">, BSC name <"+bscName+">, key <"+aTestKey+">", sectors, siteData.getSectors(), false);
+            assertSectors("Site name <"+name+">, BSC name <"+bscName+">, key <"+aTestKey+">", sectors, siteData.getSectors(), false, bals, mals);
         }
     }
     
@@ -271,7 +285,7 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
      * @param data list of SectorData
      * @param onlyCheckName boolean (not need check other data)
      */
-    private void assertSectors(String assertKey, List<Node> sectors, List<SectorData> data, boolean onlyCheckName){
+    private void assertSectors(String assertKey, List<Node> sectors, List<SectorData> data, boolean onlyCheckName, List<Integer> bals, List<Integer> mals){
         assertEquals("Wrong count of Secctor nodes by "+assertKey+".",data.size(), sectors.size());
         for(SectorData sectorData : data){
             String name = sectorData.getProperties().get("name");
@@ -284,8 +298,17 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
                 etalon = sectorData.getBeamwidth();
                 real = (Integer)sector.getProperty("beamwidth", null);
                 assertEquals("Wrong beamwidth in Sector <"+name+"> ("+assertKey+").",etalon, real);
+                etalon = bals.get(Integer.parseInt(sectorData.getProperties().get("idleStateBcchAllocListId")));
+                real = (Integer)sector.getProperty("idleStateBcchAllocListId", null);
+                assertEquals("Wrong idleStateBcchAllocListId in Sector <"+name+"> ("+assertKey+").",etalon, real);
+                etalon = mals.get(Integer.parseInt(sectorData.getProperties().get("usedMobileAllocIdUsed")));
+                real = (Integer)sector.getProperty("usedMobileAllocIdUsed", null);
+                assertEquals("Wrong usedMobileAllocIdUsed in Sector <"+name+"> ("+assertKey+").",etalon, real);
+                etalon = mals.get(Integer.parseInt(sectorData.getProperties().get("underlayMaIdUsed")));
+                real = (Integer)sector.getProperty("underlayMaIdUsed", null);
+                assertEquals("Wrong underlayMaIdUsed in Sector <"+name+"> ("+assertKey+").",etalon, real);
                 assertSectors("neighbor for Sector <"+name+">, "+assertKey, 
-                        getListOfNodes(sector, NodeTypes.SECTOR, true), sectorData.getNeighbors(), true);
+                        getListOfNodes(sector, NodeTypes.SECTOR, true), sectorData.getNeighbors(), true,null,null);
             }
         }
     }
