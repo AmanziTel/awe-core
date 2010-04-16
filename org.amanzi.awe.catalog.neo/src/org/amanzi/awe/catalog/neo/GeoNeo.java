@@ -27,6 +27,10 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -274,7 +278,35 @@ public class GeoNeo {
             }
         }
     }
+    public void setCRS(final CoordinateReferenceSystem newCRS){
 
+        Job job=new Job("setCRS"){
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                try{
+                Node gis = getMainGisNode();
+                String stringCRS = newCRS.getIdentifiers().iterator().next().toString();
+                System.out.println(stringCRS);
+                gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, stringCRS);
+                tx.success();
+                crs=newCRS;
+                bounds=null;
+                }finally{
+                    tx.finish();
+                }
+                return Status.OK_STATUS;
+            }
+            
+        };
+        job.schedule();
+        try {
+            job.join();
+        } catch (InterruptedException e) {
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
+    }
     /**
      * Find the bounding box for the data set as a ReferenceEnvelope. It uses the getCRS method to
      * find the reference system then looks for explicit "bbox" elements, and finally, if no bbox
@@ -283,6 +315,7 @@ public class GeoNeo {
      * 
      * @return ReferencedEnvelope for bounding box
      */
+    
     public ReferencedEnvelope getBounds() {
         if (bounds == null) {
             // Create Null envelope
