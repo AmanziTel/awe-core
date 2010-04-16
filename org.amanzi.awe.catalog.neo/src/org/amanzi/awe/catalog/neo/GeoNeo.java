@@ -278,6 +278,12 @@ public class GeoNeo {
             }
         }
     }
+    
+    /**
+     * Sets the CRS.
+     *
+     * @param newCRS the new CRS
+     */
     public void setCRS(final CoordinateReferenceSystem newCRS){
 
         Job job=new Job("setCRS"){
