@@ -101,6 +101,7 @@ public enum NodeTypes {
         }
     },
     SECTOR("sector"),
+    RNC("rnc"),
     NEIGHBOUR("neighbours"),
     MM("mm"),
     CALL("call"){
