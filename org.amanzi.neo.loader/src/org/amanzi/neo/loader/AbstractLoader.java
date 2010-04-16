@@ -70,6 +70,7 @@ import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
@@ -1864,7 +1865,7 @@ public abstract class AbstractLoader {
      * @param key - property key
      * @param value - value
      */
-    protected void setProperty(Node node, String key, Object value) {
+    protected void setProperty(PropertyContainer node, String key, Object value) {
         if (value != null) {
             node.setProperty(key, value);
         }

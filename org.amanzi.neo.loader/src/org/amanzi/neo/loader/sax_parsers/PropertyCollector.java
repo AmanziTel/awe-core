@@ -105,5 +105,34 @@ public class PropertyCollector implements IXmlTag {
     public List<PropertyCollector> getSubCollectors() {
         return subCollectors;
     }
+    
+    public PropertyCollector getSubCollectorByName(String name){
+        for (PropertyCollector col : subCollectors) {
+            if (col.getName().equals(name)){
+                return col;
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * Gets the recurcive sub collector by name.
+     *
+     * @param name the subtag name
+     * @return the recurcive sub collector by name
+     */
+    public PropertyCollector getRecurciveSubCollectorByName(String name) {
+        PropertyCollector result=getSubCollectorByName( name);
+        if (result==null){
+            for (PropertyCollector col : subCollectors) {
+                result=col.getRecurciveSubCollectorByName(name);
+                if (result!=null){
+                    return result;
+                }
+            } 
+        }
+        return result;
+    }
 
 }
