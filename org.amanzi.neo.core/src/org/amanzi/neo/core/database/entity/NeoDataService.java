@@ -26,10 +26,12 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.statistic_manager.DataStatisticManager;
+import org.amanzi.neo.core.utils.statistic_manager.Header;
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -135,12 +137,13 @@ public class NeoDataService {
             DataRoot dataRoot = findDataRootByName(networkName);
             if (dataRoot == null) {
                 Gis gis = new Gis();
-                gis.setName(networkName);                
+                gis.setName(networkName);
 
                 T result = createNewEntity(klas);
                 result.setGis(gis);
-                //todo remove storing data type in gis node?
-                gis.setPropertyValue(INeoConstants.PROPERTY_GIS_TYPE_NAME,Network.class.isAssignableFrom(klas)? GisTypes.NETWORK.getHeader():GisTypes.DRIVE.getHeader());
+                // todo remove storing data type in gis node?
+                gis.setPropertyValue(INeoConstants.PROPERTY_GIS_TYPE_NAME, Network.class.isAssignableFrom(klas) ? GisTypes.NETWORK.getHeader() : GisTypes.DRIVE
+                        .getHeader());
                 result.setName(networkName);
                 gis.createAndSave(this);
                 result.createAndSave(this);
@@ -251,8 +254,39 @@ public class NeoDataService {
         return service.beginTx();
     }
 
-    public DataStatisticManager loadStatistics(Class< ? extends Base> klass, Base root) {
-        return null;
+    public DataStatisticManager loadStatistics(Base root) {
+        try {
+            DataStatisticManager result = new DataStatisticManager();
+            Relationship propertyRelation = asNode(root).getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+            if (propertyRelation != null) {
+                Node property = propertyRelation.getOtherNode(asNode(root));
+                for (Relationship typeRel : property.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                    Node typeNode = typeRel.getOtherNode(property);
+                    Class< ? extends Object> klass;
+                    String typeName = NeoUtils.getNodeName(typeNode);
+                    klass = Class.forName(typeName);
+                    for (Relationship propertyRel:typeNode.getRelationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)){
+                        String propertyName=(String)propertyRel.getProperty("property");
+                        int countALL=(Integer)propertyRel.getProperty("count");
+                        Header header=new Header(propertyName,propertyName,1,klass);
+                        header.setCountALL(countALL);
+                        if (Number.class.isAssignableFrom(klass)){
+                            Double min=(Double)propertyRel.getProperty("min_value");
+                            Double max=(Double)propertyRel.getProperty("max_value");
+                            header.setMin(min);
+                            header.setMax(max);
+                        }
+                        HashMap<Object, Integer> valuesMap=new HashMap<Object, Integer>();
+                        Node valueNode=propertyRel.getOtherNode(typeNode);
+                        header.setValues(valuesMap);
+                    }
+                }
+            }
+            return result;
+        } catch (ClassNotFoundException e) {
+            // TODO Handle ClassNotFoundException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     /**

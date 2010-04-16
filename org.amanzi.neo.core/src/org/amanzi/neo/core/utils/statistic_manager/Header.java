@@ -64,7 +64,7 @@ public class Header {
      * @param index idex of header
      * @param headerTypes - knownType
      */
-    Header(String name, String key, int index, Class< ? extends Object> headerTypes) {
+    public Header(String name, String key, int index, Class< ? extends Object> headerTypes) {
         this.index = index;
 //        this.name = name;
         this.key = key;
@@ -242,5 +242,61 @@ public class Header {
      */
     public void dropStats() {
         values = null;
+    }
+
+    /**
+     * @return Returns the min.
+     */
+    public Double getMin() {
+        return min;
+    }
+
+    /**
+     * @param min The min to set.
+     */
+    public void setMin(Double min) {
+        this.min = min;
+    }
+
+    /**
+     * @return Returns the max.
+     */
+    public Double getMax() {
+        return max;
+    }
+
+    /**
+     * @param max The max to set.
+     */
+    public void setMax(Double max) {
+        this.max = max;
+    }
+
+    /**
+     * @return Returns the values.
+     */
+    public HashMap<Object, Integer> getValues() {
+        return values;
+    }
+
+    /**
+     * @param values The values to set.
+     */
+    public void setValues(HashMap<Object, Integer> values) {
+        this.values = values;
+    }
+
+    /**
+     * @return Returns the countALL.
+     */
+    public int getCountALL() {
+        return countALL;
+    }
+
+    /**
+     * @param countALL The countALL to set.
+     */
+    public void setCountALL(int countALL) {
+        this.countALL = countALL;
     }
 }
