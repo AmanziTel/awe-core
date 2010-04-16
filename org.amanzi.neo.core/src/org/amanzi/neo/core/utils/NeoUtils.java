@@ -57,6 +57,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -1976,5 +1977,53 @@ public class NeoUtils {
             }
         }
         return defaultColor;
+    }
+
+    /**
+     * Gets the neighbour relation.
+     *
+     * @param server the server
+     * @param neighbour the neighbour
+     * @param neighbourName the neighbour name
+     * @param service the service
+     * @return the neighbour relation
+     */
+    public static Relationship getNeighbourRelation(Node server, Node neighbour, String neighbourName, GraphDatabaseService service) {
+        Transaction tx = beginTx(service);
+        try {
+            Set<Relationship> allRelations = getRelations(server, neighbour, NetworkRelationshipTypes.NEIGHBOUR, service);
+            for (Relationship relation:allRelations){
+                if (relation.getProperty(INeoConstants.NEIGHBOUR_NAME,"").equals(neighbourName)){
+                    return relation;
+                }
+            }
+            return null;
+        } finally {
+            finishTx(tx);
+        }
+    }
+
+    /**
+     * Gets the relations set.
+     *
+     * @param from the 'from' node
+     * @param to the 'to' node
+     * @param relationType the relation type
+     * @param service the service
+     * @return the relations
+     */
+    public static Set<Relationship> getRelations(Node from, Node to, RelationshipType relationType, GraphDatabaseService service) {
+        Transaction tx = beginTx(service);
+        try {
+            Set<Relationship> result=new HashSet<Relationship>();
+            for (Relationship relation:from.getRelationships(relationType,Direction.OUTGOING)){
+                if (relation.getOtherNode(from).equals(to)){
+                    result.add(relation);
+                }
+            }
+            return result;
+        } finally {
+            finishTx(tx);
+        }
     }
 }
