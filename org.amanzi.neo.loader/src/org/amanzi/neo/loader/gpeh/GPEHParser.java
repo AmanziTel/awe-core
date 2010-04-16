@@ -388,10 +388,35 @@ public class GPEHParser {
         case STRING:
             Pair<String, Integer> result=readString(input, bitsLen);
             return new Pair<Object,Integer>(result.left(),result.right());
+        case BITARRAY:
+            return new Pair<Object,Integer>(readBitArray(input,bitsLen),bitsLen);
         default:
             break;
         }
         return null;
+    }
+
+
+    /**
+     * Read bit array.
+     *
+     * @param input the input
+     * @param bitsLen the bits len
+     * @return the byte[]
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
+    private static byte[] readBitArray(BitInputStream input, int bitsLen) throws IOException {
+        byte[] result=new byte[(int)Math.ceil((double)bitsLen/8)];
+        int count = 0;
+        int i=0;
+        while (count  < bitsLen) {
+            int readbit = Math.min(8, bitsLen-count);
+            int byteSymb = input.readRawInt(readbit);
+            result[i]=(byte)byteSymb;
+            count += readbit;
+            i++;
+        }
+        return result;
     }
 
     /**
