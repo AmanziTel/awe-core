@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -111,7 +112,7 @@ public class NokiaTopologyGenerator implements IDataGenerator {
             String id = getMoId();
             ExternalCellData externalCell = new ExternalCellData(distName, id);            
             for(int i= 0; i<umtsCount; i++){
-                externalCell.addSectror(initSector(distName, NokiaDataConstants.MO_EWCE, i+1));
+                externalCell.addSectror(initSector(distName, NokiaDataConstants.MO_EWCE, i+1, 0, 0));
             }
             result.setExternalCell(externalCell);
         }
@@ -129,10 +130,6 @@ public class NokiaTopologyGenerator implements IDataGenerator {
         String distName = NokiaDataConstants.MO_ATTR_PLMN_PREFIX+"/"+NokiaDataConstants.MO_BSC+"-"+number;
         BSCData result = new BSCData(distName, getMoId());
         result.addProperty(NokiaDataConstants.P_ATTR_NAME, buildName(NokiaDataConstants.MO_BSC));
-        int realSiteCount = getRandomGenerator().getIntegerValue(1, siteCount);
-        for (int i = 0; i < realSiteCount; i++) {
-            result.addSite(initSite(distName, i+1));
-        }
         int balCount = getRandomGenerator().getIntegerValue(1, 10);
         for(int i=0; i<balCount; i++){
             int freqCount = getRandomGenerator().getIntegerValue(1, 20); 
@@ -147,11 +144,25 @@ public class NokiaTopologyGenerator implements IDataGenerator {
                 result.addMalFrequency(i, getRandomFrequency());
             }
         }
+        balCount = getFrecCount(result.getBalFrequency());
+        malCount = getFrecCount(result.getMalFrequency());
+        int realSiteCount = getRandomGenerator().getIntegerValue(1, siteCount);
+        for (int i = 0; i < realSiteCount; i++) {
+            result.addSite(initSite(distName, i+1,balCount,malCount));
+        }        
         return result;
     }
     
     private int getRandomFrequency(){
         return getRandomGenerator().getLongValue(1L, 999L).intValue();
+    }
+    
+    private Integer getFrecCount(HashMap<Integer, Set<Integer>> freqs){
+        Set<Integer> all = new HashSet<Integer>();
+        for(Integer key : freqs.keySet()){
+            all.addAll(freqs.get(key));
+        }
+        return all.size();
     }
     
     /**
@@ -161,7 +172,7 @@ public class NokiaTopologyGenerator implements IDataGenerator {
      * @param number int
      * @return SiteData
      */
-    private SiteData initSite(String parentDist, int number){
+    private SiteData initSite(String parentDist, int number, int balCount, int malCount){
         String distName = parentDist+"/"+NokiaDataConstants.MO_BCF+"-"+number;
         Float lat = getRandomGenerator().getDoubleValue(latitudeBorders[0].doubleValue(), latitudeBorders[1].doubleValue()).floatValue();
         Float lon = getRandomGenerator().getDoubleValue(longitudeBorders[0].doubleValue(), longitudeBorders[1].doubleValue()).floatValue();
@@ -171,7 +182,7 @@ public class NokiaTopologyGenerator implements IDataGenerator {
         result.addProperty("longitude", "0");
         int realSectorCount = getRandomGenerator().getIntegerValue(1, sectorCount);
         for (int i = 0; i < realSectorCount; i++) {
-            result.addSectror(initSector(distName, NokiaDataConstants.MO_BTS, i+1));
+            result.addSectror(initSector(distName, NokiaDataConstants.MO_BTS, i+1, balCount, malCount));
         }
         return result;
     }
@@ -184,17 +195,21 @@ public class NokiaTopologyGenerator implements IDataGenerator {
      * @param number
      * @return SectorData
      */
-    private SectorData initSector(String parentDist, String className, int number){
+    private SectorData initSector(String parentDist, String className, int number, int balCount, int malCount){
         String distName = parentDist+"/"+className+"-"+number;
         SectorData result;        
         if(className.equals(NokiaDataConstants.MO_BTS)){
             Integer azimuth = getRandomGenerator().getIntegerValue(0, 359);
             Integer beamwidth = getRandomGenerator().getIntegerValue(10, 360);
             result = new SectorData(className, distName, getMoId(),azimuth,beamwidth);
+            result.addProperty("idleStateBcchAllocListId", getRandomGenerator().getIntegerValue(0, balCount-1).toString());
+            result.addProperty("usedMobileAllocIdUsed", getRandomGenerator().getIntegerValue(0, malCount-1).toString());
+            result.addProperty("underlayMaIdUsed", getRandomGenerator().getIntegerValue(0, malCount-1).toString());
         }else{
             result = new SectorData(className, distName, getMoId());
         }            
-        result.addProperty(NokiaDataConstants.P_ATTR_NAME, buildName(NokiaDataConstants.MO_BCF));
+        result.addProperty(NokiaDataConstants.P_ATTR_NAME, buildName(className));
+        sectorsList.add(result);
         return result;
     }
     

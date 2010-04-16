@@ -310,7 +310,7 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
         };
         Traverser traverser;
         if (isNeighbors) {
-            traverser = root.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator,
+            traverser = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, returnableEvaluator,
                     NetworkRelationshipTypes.NEIGHBOUR, Direction.OUTGOING);
         }else{
             traverser = root.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator,

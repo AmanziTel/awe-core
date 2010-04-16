@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -95,6 +96,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
     private HashMap<String, Set<Integer>> malMap = new HashMap<String, Set<Integer>>();
     private final LuceneIndexService luceneInd;
     
+    private String neighbourName;
     private Set<String> allNeibProperties = new HashSet<String>();
     private Set<String> intNeibProperties = new HashSet<String>();
     private Set<String> doubleNeibProperties = new HashSet<String>();
@@ -157,7 +159,8 @@ public class NokiaTopologyLoader extends AbstractLoader {
     * @return Node
     */
    private Node initNeighbour() {
-       Node result = NeoUtils.findNeighbour(gisNode, basename, neo);
+       neighbourName = basename;
+       Node result = NeoUtils.findNeighbour(gisNode, neighbourName, neo);
        if (result != null) {
            return result;
        }
@@ -165,7 +168,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
        try {
            result = neo.createNode();
            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NEIGHBOUR.getId());
-           result.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
+           result.setProperty(INeoConstants.PROPERTY_NAME_NAME, neighbourName);
            gisNode.createRelationshipTo(result, NetworkRelationshipTypes.NEIGHBOUR_DATA);
            tx.success();
            return result;
@@ -242,6 +245,9 @@ public class NokiaTopologyLoader extends AbstractLoader {
                 finishUpGis(getGisProperties(basename).getGis());
             } catch (MalformedURLException e) {
                 throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+            if (neighborNode!=null) {
+                sendUpdateEvent(UpdateViewEventType.NEIGHBOUR);
             }
         }
     }
@@ -321,13 +327,14 @@ public class NokiaTopologyLoader extends AbstractLoader {
             }
             site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
             site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
+            index(site);
         }
     }
 
     private void addNeighborLink(HashMap<String, Object> properties, Node server, Node neighbour) {
         getNeighbourNode(); //initialize neighbors
         Relationship relation = server.createRelationshipTo(neighbour, NetworkRelationshipTypes.NEIGHBOUR);
-        relation.setProperty(INeoConstants.NEIGHBOUR_NAME, filename);
+        relation.setProperty(INeoConstants.NEIGHBOUR_NAME, neighbourName);
         for(String key : properties.keySet()){
             if(key.equals("name")||key.equals("targetCellDN")){
                 continue;
@@ -344,7 +351,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
             relation.setProperty(key, value);
             allNeibProperties.add(key);
         }
-        String servCounName = NeoUtils.getNeighbourPropertyName(filename);
+        String servCounName = NeoUtils.getNeighbourPropertyName(neighbourName);
         updateCount(server, servCounName);
     }
     
@@ -679,7 +686,6 @@ public class NokiaTopologyLoader extends AbstractLoader {
                     }else{
                         lastUmtsSite = site;
                     }
-                    index(site);
                 }
                 if (isGsm) {
                     siteMap.put(bcfKey, site);
@@ -702,13 +708,13 @@ public class NokiaTopologyLoader extends AbstractLoader {
                 sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                 if(sector == null){
                     Node parent = getSiteNode(getKeyFromDistName(2),isGsm);
-                    sector = addChild(parent, NodeTypes.SECTOR, sectorName);
-                    index(sector);
+                    sector = addChild(parent, NodeTypes.SECTOR, sectorName);                    
                 }
                 if (isGsm) {
                     sectorMap.put(btsKey, sector);
                 }else{
                     umtsSectorMap.put(btsKey, sector);
+                    index(sector);
                 }
             }
             return sector;
@@ -947,6 +953,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
             value = getIntValue(properties.get("antBearing"));
             key = "azimuth";
             setIndexProperty(headers, sector, key, value);
+            index(sector);
         }
         
         private Float buildCoord(int degrees, int min, int sec){

@@ -14,7 +14,9 @@
 package org.amanzi.neo.data_generator.data.nokia;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -25,7 +27,7 @@ import java.util.List;
  */
 public class SectorData extends AbstractTagData{
     
-    private List<SectorData> neighbors;
+    private Set<SectorData> neighbors;
     private Integer azimuth;
     private Integer beamwidth;
 
@@ -36,7 +38,7 @@ public class SectorData extends AbstractTagData{
      */
     public SectorData(String aClass, String aDistName, String anId) {
         super(aClass, aDistName, anId);
-        neighbors = new ArrayList<SectorData>();
+        neighbors = new HashSet<SectorData>();
     }
     
     /**
@@ -46,7 +48,7 @@ public class SectorData extends AbstractTagData{
      */
     public SectorData(String aClass, String aDistName, String anId, Integer anAzimuth, Integer aBeamwidth) {
         super(aClass, aDistName, anId);
-        neighbors = new ArrayList<SectorData>();
+        neighbors = new HashSet<SectorData>();
         azimuth = anAzimuth;
         beamwidth = aBeamwidth;
     }
@@ -55,7 +57,7 @@ public class SectorData extends AbstractTagData{
      * @return Returns the sectors.
      */
     public List<SectorData> getNeighbors() {
-        return neighbors;
+        return new ArrayList<SectorData>(neighbors);
     }
     
     /**
