@@ -121,7 +121,7 @@ public enum Parameters {
     EVENT_PARAM_HANDOVER_TYPE(3),
     EVENT_PARAM_PDU_TYPE(5),
     EVENT_PARAM_MESSAGE_DIRECTION(2),
-    EVENT_PARAM_MESSAGE_CONTENTS(16384,Rules.STRING),
+    EVENT_PARAM_MESSAGE_CONTENTS(16384,Rules.BITARRAY),
     EVENT_PARAM_NO_OF_CM_USERS(8),
     EVENT_PARAM_REQUEST_TYPE(3),
     EVENT_PARAM_TRAFFIC_CLASS(2),
@@ -474,7 +474,7 @@ public enum Parameters {
      * @since 1.0.0
      */
     public enum Rules {
-        INTEGER, STRING, LONG;
+        INTEGER, STRING, LONG, BITARRAY;
     }
 
     /**
@@ -498,7 +498,7 @@ public enum Parameters {
      * @return
      */
     public boolean firstBitIsError() {
-        return rule!=Rules.STRING;
+        return rule!=Rules.STRING&&rule!=Rules.BITARRAY;
     }
     
 }
