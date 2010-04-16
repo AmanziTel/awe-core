@@ -285,7 +285,6 @@ public class GeoNeo {
      * @param newCRS the new CRS
      */
     public void setCRS(final CoordinateReferenceSystem newCRS){
-
         Job job=new Job("setCRS"){
 
             @Override
@@ -294,7 +293,6 @@ public class GeoNeo {
                 try{
                 Node gis = getMainGisNode();
                 String stringCRS = newCRS.getIdentifiers().iterator().next().toString();
-                System.out.println(stringCRS);
                 gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, stringCRS);
                 tx.success();
                 crs=newCRS;
