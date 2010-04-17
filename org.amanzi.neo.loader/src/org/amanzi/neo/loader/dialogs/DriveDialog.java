@@ -86,6 +86,9 @@ import org.neo4j.graphdb.Traverser;
  * @author Lagutko_N
  */
 public class DriveDialog {
+    /** String ASC_PAT_FILE field */
+    private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
+    private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
     /*
      * Names of supported files for Drive data
      */
@@ -124,6 +127,8 @@ public class DriveDialog {
     private final static GridLayout layoutOneColumnNotFixedWidth = new GridLayout(1, false);
 
     private static final int MAX_NEMO_LINE_READ = 50;
+
+
 	
 	/*
 	 * Shell of this Dialog
@@ -172,8 +177,8 @@ public class DriveDialog {
 	/*
 	 * Maps for storing name of file and path to file
 	 */
-	private HashMap<String, String> folderFiles = new HashMap<String, String>();
-    private Map<String, String> loadedFiles = new LinkedHashMap<String, String>();
+	private final HashMap<String, String> folderFiles = new HashMap<String, String>();
+    private final Map<String, String> loadedFiles = new LinkedHashMap<String, String>();
 
     private Button addAllFilesToLoaded;
 
@@ -190,7 +195,7 @@ public class DriveDialog {
      */
     private WizardPage wizardPage = null;
 
-    private LinkedHashMap<String, Node> dataset = new LinkedHashMap<String, Node>();
+    private final LinkedHashMap<String, Node> dataset = new LinkedHashMap<String, Node>();
 
     private Label ldataset;
 
@@ -519,7 +524,8 @@ public class DriveDialog {
 		//opens Dialog for choosing files
 		browseDialogButton.addSelectionListener(new SelectionAdapter() {
 			
-			public void widgetSelected(SelectionEvent e) {
+			@Override
+            public void widgetSelected(SelectionEvent e) {
 				// User has selected to open a single file
 		        FileDialog dlg = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
 				dlg.setText(NeoLoaderPluginMessages.DriveDialog_FileDialogTitle);
@@ -560,7 +566,8 @@ public class DriveDialog {
 		//adds selected files to files to load
 		addFilesToLoaded.addSelectionListener(new SelectionAdapter() {
 			
-			public void widgetSelected(SelectionEvent e) {
+			@Override
+            public void widgetSelected(SelectionEvent e) {
 				for (String fileName : folderFilesList.getSelection()) {
 					addFileToLoad(fileName);
 				}
@@ -570,6 +577,7 @@ public class DriveDialog {
 		
         addAllFilesToLoaded.addSelectionListener(new SelectionAdapter() {
 
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 for (String fileName : folderFilesList.getItems()) {
                     addFileToLoad(fileName);
@@ -581,7 +589,8 @@ public class DriveDialog {
 		//removes selected files from files to load
 		removeFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
 			
-			public void widgetSelected(SelectionEvent e) {
+			@Override
+            public void widgetSelected(SelectionEvent e) {
 				for (String fileName : filesToLoadList.getSelection()) {
 					removeFileToLoad(fileName);
 				}
@@ -590,6 +599,7 @@ public class DriveDialog {
 		});
         removeAllFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
 
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 for (String fileName : filesToLoadList.getItems()) {
                     removeFileToLoad(fileName);
@@ -601,7 +611,8 @@ public class DriveDialog {
 		//closes dialog
 		cancelButton.addSelectionListener(new SelectionAdapter() {
 			
-			public void widgetSelected(SelectionEvent e) {
+			@Override
+            public void widgetSelected(SelectionEvent e) {
 				dialogShell.close();
 			}
 			
@@ -610,7 +621,8 @@ public class DriveDialog {
 		//loads Drive data from chosen files		
 		loadButton.addSelectionListener(new SelectionAdapter() {
 			
-			public void widgetSelected(SelectionEvent e) {
+			@Override
+            public void widgetSelected(SelectionEvent e) {
 				runLoadingJob();				
 			}
 
@@ -853,7 +865,7 @@ public class DriveDialog {
         // roms data
         if (extension.equals("asc")) {
             CharSequence filename = file.getName();
-            Pattern p = Pattern.compile(".*_(\\d{6})_.*");
+            Pattern p = Pattern.compile(ASC_PAT_FILE);
             Matcher m = p.matcher(filename);
             if (m.matches()) {
                 String dateText = m.group(1);
@@ -873,8 +885,24 @@ public class DriveDialog {
 
         }// TEMS
         else if (extension.equals("fmt")) {
-            correctTime=false;
-            calendar.setTimeInMillis(file.lastModified());
+            CharSequence filename = file.getName();
+            Pattern p = Pattern.compile(FMT_PAT_FILE);
+            Matcher m = p.matcher(filename);
+            if (m.matches()) {
+                String dateText = m.group(1);
+                try {
+                    calendar.setTimeInMillis(new SimpleDateFormat("yyyy-MM-dd").parse(dateText).getTime());
+                    correctTime = true;
+                } catch (ParseException e) {
+                    NeoLoaderPlugin.error("Wrong filename format: " + filename);
+                    correctTime = false;
+                    calendar.setTimeInMillis(file.lastModified());
+                }
+            } else {
+                NeoLoaderPlugin.error("Wrong filename format: " + filename);
+                calendar.setTimeInMillis(file.lastModified());
+                correctTime = false;
+            }
         }// NEMO 1.86
         else if (extension.equals("dt1")) {
             try {
