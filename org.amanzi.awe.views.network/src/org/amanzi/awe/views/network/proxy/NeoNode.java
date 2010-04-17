@@ -42,6 +42,8 @@ import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 
 public class NeoNode {
     
+    public static int MAX_CHILDREN_COUNT = 1000;
+    
     /*
      * Constant for empty array of Nodes
      */
@@ -56,6 +58,7 @@ public class NeoNode {
      * Name of Node
      */
     protected String name;
+    protected int number;
 
     private ArrayList<NeoNode> children;
     
@@ -65,9 +68,10 @@ public class NeoNode {
      * @param node node
      */
 
-    public NeoNode(Node node) {
+    public NeoNode(Node node,int number) {
         this.node = node;
         this.name = NeoUtils.getFormatedNodeName(node, "");
+        this.number = number;
     }
     
     /**
@@ -95,6 +99,9 @@ public class NeoNode {
      */
     
     public NeoNode[] getChildren() {
+        if(number>MAX_CHILDREN_COUNT){
+            return NO_NODES;
+        }
         if(children==null) {
             children = new ArrayList<NeoNode>();
             Iterator<Node> childrens = null;
@@ -111,16 +118,16 @@ public class NeoNode {
             	childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
             							  NetworkRelationshipTypes.CHILD,Direction.OUTGOING).iterator();
             }
-            
+            int nextNum = number+1;
             while (childrens.hasNext()) {
-                children.add(new NeoNode(childrens.next()));
+                children.add(new NeoNode(childrens.next(), nextNum++));
             }
             if(children.size()==0) {
                 for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.MISSING,Direction.OUTGOING)){
-                    children.add(new NeoNode(relationship.getEndNode()));
+                    children.add(new NeoNode(relationship.getEndNode(),nextNum++));
                 }
                 for(Relationship relationship:node.getRelationships(NetworkRelationshipTypes.DIFFERENT,Direction.OUTGOING)){
-                    children.add(new NeoNode(relationship.getEndNode()));
+                    children.add(new NeoNode(relationship.getEndNode(),nextNum++));
                 }
             }
             Collections.sort(children, new NeoNodeComparator());
@@ -146,6 +153,13 @@ public class NeoNode {
     
     public Node getNode() {
         return node;
+    }
+    
+    /**
+     * @return Returns the number.
+     */
+    public int getNumber() {
+        return number;
     }
 
     /**

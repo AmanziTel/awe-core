@@ -50,8 +50,8 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
     /**
      * @param node
      */
-    public CallAnalyzisNeoNode(Node node) {
-        super(node);
+    public CallAnalyzisNeoNode(Node node, int number) {
+        super(node, number);
         
         type = NeoUtils.getNodeType(node);
         
@@ -63,8 +63,8 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         }        
     }
     
-    protected CallAnalyzisNeoNode(Node probeNode, Node statisticsNode) {
-        this(probeNode);
+    protected CallAnalyzisNeoNode(Node probeNode, Node statisticsNode, int number) {
+        this(probeNode, number);
         
         this.statisticsNode = statisticsNode; 
     }
@@ -114,11 +114,11 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         else {
             iterator = NeoUtils.getChildTraverser(node).iterator();
         }
-        int i = 0;
+        int nextNum = number+1;
         while (iterator.hasNext()) {
             Node child = iterator.next();
             // TODO refactoring
-            children.add(new CallAnalyzisNeoNode(child, node));
+            children.add(new CallAnalyzisNeoNode(child, node, nextNum++));
             // if (++i <= TRUNCATE_NODE) {
             // } else {
             // children.add(new AggregatesNode(child));
@@ -137,8 +137,9 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
      * @return
      */
     public NeoNode getParent() {
+        int nextNum = number+1;
         if (type.equals(NodeTypes.PROBE.getId())) {
-            return new CallAnalyzisNeoNode(statisticsNode, statisticsNode);
+            return new CallAnalyzisNeoNode(statisticsNode, statisticsNode, nextNum);
         } else if (type.equals(NodeTypes.S_ROW.getId())) {
             return new CallAnalyzisNeoNode(node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
@@ -146,9 +147,9 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return NeoUtils.isProbeNode(currentPos.currentNode());
                 }
-            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next(), statisticsNode);
+            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next(), statisticsNode, nextNum);
         } else {
-            return new CallAnalyzisNeoNode(NeoUtils.getParent(null, node), statisticsNode);
+            return new CallAnalyzisNeoNode(NeoUtils.getParent(null, node), statisticsNode, nextNum);
         }
     }
 

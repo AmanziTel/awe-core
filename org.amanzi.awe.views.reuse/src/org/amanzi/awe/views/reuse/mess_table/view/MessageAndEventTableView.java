@@ -400,13 +400,13 @@ public class MessageAndEventTableView extends ViewPart {
             @Override
             public void mouseDown(MouseEvent e) {
                 point = new Point(e.x, e.y);
-                //fireDrillDown(); TODO Uncomment after solve problem with big data in TreeView
+                fireDrillDown(); 
             }
 
             @Override
             public void mouseDoubleClick(MouseEvent e) {
                 point = new Point(e.x, e.y);
-                //fireDrillDown(); TODO Uncomment after solve problem with big data in TreeView
+                fireDrillDown(); 
             }
         });
         

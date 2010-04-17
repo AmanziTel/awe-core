@@ -45,19 +45,24 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
         Transaction tx = neoServiceProvider.getService().beginTx();
         try {
             if (element instanceof Node) {
-                element = new DriveNeoNode((Node)element);
+                element = new DriveNeoNode((Node)element, 0);
             }
             if (element instanceof IAdaptable) {
                 IAdaptable adapter = (IAdaptable)element;
                 Pair pair = (Pair)adapter.getAdapter(Pair.class);
                 if (pair.getLeft() instanceof Node && pair.getRight() instanceof Node) {
-                    CallAnalyzisNeoNode elem = new CallAnalyzisNeoNode((Node)pair.getLeft(), (Node)pair.getRight());
+                    CallAnalyzisNeoNode elem = new CallAnalyzisNeoNode((Node)pair.getLeft(), (Node)pair.getRight(),0);
                     return elem.getParent();
                 }
             }
 
             if (element instanceof NeoNode) {
-                Node node = ((NeoNode)element).getNode();
+                NeoNode neoNode = (NeoNode)element;
+                int curNum = neoNode.getNumber();
+                if(curNum>NeoNode.MAX_CHILDREN_COUNT){
+                    return null;
+                }
+                Node node = neoNode.getNode();
                 for (NeoNode child : getRoot().getChildren()) {
                     if (child.getNode().equals(node)) {
                         return getRoot();
@@ -66,7 +71,7 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
                 if (element instanceof CallAnalyzisNeoNode) {
                     return ((CallAnalyzisNeoNode)element).getParent();
                 }
-                    return findParent(new DriveNeoNode(NeoUtils.getParent(null, node)), node);
+                    return findParent(new DriveNeoNode(NeoUtils.getParent(null, node),curNum+1), node);
             } else {
                 return super.getParent(element);
             }

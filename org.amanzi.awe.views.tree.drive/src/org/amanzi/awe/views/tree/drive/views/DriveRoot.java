@@ -85,16 +85,20 @@ public class DriveRoot extends Root {
             // }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING,
             // NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
             // GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
+            int nextNum = number+1;
             for (Node node : datasets.values()) {
-                driveNodes.add(new DriveNeoNode(node));
+                driveNodes.add(new DriveNeoNode(node,nextNum++));
                 
                 //Lagutko, 3.02.2010, if we have a AMS Call Dataset than we should add Analyzis to tree
                 if (NeoUtils.getDatasetType(node, service) == DriveTypes.AMS_CALLS) {
                     Iterator<Relationship> analyzis = node.getRelationships(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING).iterator();
                     
                     while (analyzis.hasNext()) {
-                        driveNodes.add(new CallAnalyzisNeoNode(analyzis.next().getEndNode()));
+                        driveNodes.add(new CallAnalyzisNeoNode(analyzis.next().getEndNode(),nextNum++));
                     }
+                }
+                if(driveNodes.size()>MAX_CHILDREN_COUNT){
+                    break;
                 }
             }
 

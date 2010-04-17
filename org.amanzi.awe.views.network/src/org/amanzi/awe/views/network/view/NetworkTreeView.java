@@ -267,8 +267,8 @@ public class NetworkTreeView extends ViewPart {
      * @param node - node to select
      */
     public void selectNode(Node node) {
-        viewer.reveal(new NeoNode(node));
-        viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(node)}));
+        viewer.reveal(new NeoNode(node,0));
+        viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(node,0)}));
     }
 
     /**

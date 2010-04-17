@@ -81,7 +81,12 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
         Transaction tx = neoServiceProvider.getService().beginTx();
         try {
             if (element instanceof NeoNode) {
-                Node node = ((NeoNode)element).getNode();
+                NeoNode nodeElem = (NeoNode)element;
+                int curNumber = nodeElem.getNumber();
+                if(curNumber>NeoNode.MAX_CHILDREN_COUNT){
+                    return null;
+                }
+                Node node = nodeElem.getNode();                
                 Node referenceNode = neoServiceProvider.getService().getReferenceNode();
                 if (node.equals(referenceNode)) {
                     return null;
@@ -98,14 +103,14 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
                     for (Relationship relation : relationships) {
                         Node parentNode = relation.getOtherNode(node);
                         if (parentNode.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) || parentNode.equals(referenceNode)) {
-                            return new NeoNode(parentNode);
+                            return new NeoNode(parentNode,curNumber+1);
                         }
                     }
                     relationships = node.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
                     for (Relationship relation : relationships) {
                         Node parentNode = relation.getOtherNode(node);
                         if (parentNode.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) || parentNode.equals(referenceNode)) {
-                            return new NeoNode(parentNode);
+                            return new NeoNode(parentNode,curNumber+1);
                         }
                     }
                 }

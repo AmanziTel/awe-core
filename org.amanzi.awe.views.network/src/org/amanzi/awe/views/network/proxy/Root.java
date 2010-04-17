@@ -51,7 +51,7 @@ public class Root extends NeoNode {
      */
     
     public Root(NeoServiceProvider serviceProvider) {
-        super(serviceProvider.getService().getReferenceNode());
+        super(serviceProvider.getService().getReferenceNode(),1);
         this.serviceProvider = serviceProvider;
     }
     
@@ -109,19 +109,23 @@ public class Root extends NeoNode {
                     gisNode = node;
                 }
                 if (gisNode != null) {
+                    int nextNum = number+1;
                     for (Relationship gisRelationship : gisNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
                         node = gisRelationship.getEndNode();
                         if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.NETWORK.getId())) {
-                            networkNodes.add(new NeoNode(node));
+                            networkNodes.add(new NeoNode(node,nextNum++));
                             for (Relationship deltaRelationship : node.getRelationships(NetworkRelationshipTypes.DELTA_REPORT, Direction.INCOMING)) {
                                 Node deltaNode = deltaRelationship.getStartNode();
                                 String deltaName = (String)deltaNode.getProperty("name",null);
                                 if (!deltaNodes.containsKey(deltaName)) {
-                                    deltaNodes.put(deltaName,new NeoNode(deltaNode));
+                                    deltaNodes.put(deltaName,new NeoNode(deltaNode,nextNum++));
                                 }
                             }
                         }
                     }
+                }
+                if(networkNodes.size()+deltaNodes.hashCode()>MAX_CHILDREN_COUNT){
+                    break;
                 }
             }           
             

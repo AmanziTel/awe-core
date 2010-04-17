@@ -34,15 +34,15 @@ import org.neo4j.graphdb.Traverser.Order;
 public class AggregatesNode extends DriveNeoNode {
 
     // private final ArrayList<DriveNeoNode> subnodes;
-
+    
     /**
      * Constructor
      * 
      * @param subnodes - list of subnodes
      */
-    public AggregatesNode(Node firstNode) {
+    public AggregatesNode(Node firstNode, int nodeNumber) {
 		//for icons sets the first node
-        super(firstNode);
+        super(firstNode,nodeNumber);
         // this.subnodes = subnodes;
         // Collections.sort(this.subnodes, new NeoNodeComparator());
         // TODO compute size if necessary
@@ -52,17 +52,20 @@ public class AggregatesNode extends DriveNeoNode {
 	@Override
 	public NeoNode[] getChildren() {
         ArrayList<NeoNode> children = new ArrayList<NeoNode>();
-        children.add(new DriveNeoNode(getNode()));
-        Traverser traverse;
-        traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
-                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-        int i = 0;
-        for (Node node : traverse) {
-            if (++i <= TRUNCATE_NODE) {
-                children.add(new DriveNeoNode(node));
-            } else {
-                children.add(new AggregatesNode(node));
-                break;
+        int nextNum = number+1;
+        if (number<MAX_CHILDREN_COUNT) {
+            children.add(new DriveNeoNode(getNode(),nextNum++));
+            Traverser traverse;
+            traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
+                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            int i = 0;
+            for (Node node : traverse) {
+                if (++i <= TRUNCATE_NODE) {
+                    children.add(new DriveNeoNode(node,nextNum++));
+                } else {
+                    children.add(new AggregatesNode(node, nextNum++));
+                    break;
+                }
             }
         }
         return children.toArray(NO_NODES);

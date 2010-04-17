@@ -45,8 +45,8 @@ public class DriveNeoNode extends NeoNode {
      * 
      * @param node node
      */
-    public DriveNeoNode(Node node) {
-        super(node);
+    public DriveNeoNode(Node node, int number) {
+        super(node,number);
     }
 
     @Override
@@ -61,11 +61,12 @@ public class DriveNeoNode extends NeoNode {
             traverse = NeoUtils.getChildTraverser(node);
         }
         int i = 0;
+        int nextNum = number+1;
         for (Node node : traverse) {
             if (++i <= TRUNCATE_NODE) {
-                children.add(new DriveNeoNode(node));
+                children.add(new DriveNeoNode(node,nextNum++));
             } else {
-                children.add(new AggregatesNode(node));
+                children.add(new AggregatesNode(node, nextNum++));
                 break;
             }
         }        
