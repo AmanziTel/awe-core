@@ -78,6 +78,8 @@ public class UTRANLoader extends AbstractLoader {
 
     /** String EXT_GSM field */
     private static final String EXT_GSM = "extGSM";
+    private static final String UTRAN_SEC_TYPE = "utran";
+    private static final String GSM_SEC_TYPE = "gsm";
 
     /** The Constant KEY_EVENT. */
     private static final int KEY_EVENT = 1;
@@ -1264,14 +1266,6 @@ public class UTRANLoader extends AbstractLoader {
             collector = null;
             dataCollector = null;
             site = null;
-            defineSector();
-        }
-
-        /**
-         * Define sector.
-         */
-        private void defineSector() {
-            sector = findOrCreateSector(cellName);
         }
 
         /**
@@ -1370,9 +1364,22 @@ public class UTRANLoader extends AbstractLoader {
             if (collector == null) {
                 return;
             }
+            Integer ci=null;
+            Integer lac = null;
+            Map<String, String> map = collector.getPropertyMap();
+            String ciObj = map.get("cId");
+            if (ciObj != null) {
+                ci = Integer.valueOf(ciObj);
+                map.remove("cId");
+            }
+            String lacObj = map.get("lac");
+            if (lacObj != null) {
+                lac = Integer.valueOf(lacObj);
+                map.remove("lac");
+            }
+            sector=findOrCreateSector(cellName,ci,lac);
             Transaction tx = neo.beginTx();
             try {
-                Map<String, String> map = collector.getPropertyMap();
                 if (!sector.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
                     site = findOrCreateSite(collector);
                     site.createRelationshipTo(sector, GeoNeoRelationshipTypes.CHILD);
@@ -1459,7 +1466,7 @@ public class UTRANLoader extends AbstractLoader {
         protected UtranRelation(Attributes attributes, UtranCell parent) {
             super(TAG_NAME, parent);
             String adjUtranCellName = attributes.getValue("id");
-            adjSector = findOrCreateSector(adjUtranCellName);
+            adjSector = findOrCreateSector(adjUtranCellName,null,null);
             relation = addUtranNeighour(parent.sector, adjSector);
             collector = null;
         }
@@ -1554,7 +1561,7 @@ public class UTRANLoader extends AbstractLoader {
         protected GsmRelation(Attributes attributes, UtranCell parent) {
             super(TAG_NAME, parent);
             String adjUtranCellName = attributes.getValue("id");
-            adjSector = findOrCreateExternalGSMSector(adjUtranCellName);
+            adjSector = findOrCreateExternalGSMSector(adjUtranCellName,null,null);
             relation = addGsmNeighour(parent.sector, adjSector);
             collector = null;
         }
@@ -2290,19 +2297,33 @@ public class UTRANLoader extends AbstractLoader {
      * Find or create sector.
      * 
      * @param cellName the cell name
+     * @param lac 
+     * @param ci 
      * @return the node
      */
-    public Node findOrCreateSector(String cellName) {
+    public Node findOrCreateSector(String cellName, Integer ci, Integer lac) {
         Transaction tx = neo.beginTx();
         try {
-            String indexName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
-            Node sector = index.getSingleNode(indexName, cellName);
+            Node sector = NeoUtils.findSector(basename, ci, lac, cellName, true, index, neo);
             if (sector == null) {
                 sector = neo.createNode();
+                sector.setProperty(INeoConstants.SECTOR_TYPE, UTRAN_SEC_TYPE);
                 NodeTypes.SECTOR.setNodeType(sector, neo);
                 NeoUtils.setNodeName(sector, cellName, neo);
-                tx.success();
+                String indexName;
+                indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
                 index.index(sector, indexName, cellName);
+                if (ci!=null){
+                    indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+                    setIndexProperty(headers, sector, INeoConstants.PROPERTY_SECTOR_CI, ci);
+                    index.index(sector, indexName, ci);
+                }
+                if (lac!=null){
+                    indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR);
+                    setIndexProperty(headers, sector, INeoConstants.PROPERTY_SECTOR_LAC, lac);
+                    index.index(sector, indexName, lac);
+                }
+                tx.success();
                 updateTx();
             }
             return sector;
@@ -2357,11 +2378,10 @@ public class UTRANLoader extends AbstractLoader {
      * @param cellName the cell name
      * @return the node
      */
-    public Node findOrCreateExternalGSMSector(String cellName) {
+    public Node findOrCreateExternalGSMSector(String cellName, Integer ci, Integer lac) {
         Transaction tx = neo.beginTx();
         try {
-            String indexName = NeoUtils.getLuceneIndexKeyByProperty(basename+EXT_GSM, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
-            Node sector = index.getSingleNode(indexName, cellName);
+            Node sector = NeoUtils.findSector(basename, ci, lac, cellName, true, index, neo);
             if (sector == null) {
                 sector = neo.createNode();
                 int count=1;
@@ -2375,8 +2395,20 @@ public class UTRANLoader extends AbstractLoader {
                    rnc.createRelationshipTo(rncExtGsmSite,GeoNeoRelationshipTypes.CHILD);
                 }
                 rncExtGsmSite.createRelationshipTo(sector,GeoNeoRelationshipTypes.CHILD);
-                tx.success();
+                String indexName;
+                indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
                 index.index(sector, indexName, cellName);
+                if (ci!=null){
+                    indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+                    setIndexProperty(headers, sector, INeoConstants.PROPERTY_SECTOR_CI, ci);
+                    index.index(sector, indexName, ci);
+                }
+                if (lac!=null){
+                    indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR);
+                    setIndexProperty(headers, sector, INeoConstants.PROPERTY_SECTOR_LAC, lac);
+                    index.index(sector, indexName, lac);
+                }
+                tx.success();
                 updateTx(count);
             }
             return sector;
