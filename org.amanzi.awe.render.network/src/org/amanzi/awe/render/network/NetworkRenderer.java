@@ -78,7 +78,7 @@ import com.vividsolutions.jts.geom.Envelope;
 public class NetworkRenderer extends RendererImpl {
     /** double CIRCLE_BEAMWIDTH field */
     private static final double CIRCLE_BEAMWIDTH = 360.0;
-    private static final double DRFAULT_BEAMWIDTH = 10.0;
+    private static final double DEFAULT_BEAMWIDTH = 10.0;
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
     private static final Color COLOR_SITE_SELECTED = Color.CYAN;
@@ -158,6 +158,7 @@ public class NetworkRenderer extends RendererImpl {
         int maxSitesFull = 100;
         int maxSitesLite = 1000;
         int maxSymbolSize = 40;
+        double defaultBeamwidth = DEFAULT_BEAMWIDTH;
         Font font = g.getFont();
         int fontSize = font.getSize();
         int sectorFontSize = font.getSize();
@@ -190,6 +191,7 @@ public class NetworkRenderer extends RendererImpl {
                 maxSymbolSize = neostyle.getMaximumSymbolSize();
                 fontSize = neostyle.getFontSize();
                 sectorFontSize = neostyle.getSecondaryFontSize();
+                defaultBeamwidth = neostyle.getDefaultBeamwidth();
                 siteName = neostyle.getMainProperty();
                 sectorName = neostyle.getSecondaryProperty();
             } catch (Exception e) {
@@ -414,7 +416,7 @@ public class NetworkRenderer extends RendererImpl {
                                         System.err.println("Error in render GeoNeo: azimuth is defined, but beamwidth less than "+CIRCLE_BEAMWIDTH);
                                     }
                                 }else{
-                                    beamwidth = getDouble(child, "beamwidth", DRFAULT_BEAMWIDTH);
+                                    beamwidth = getDouble(child, "beamwidth", defaultBeamwidth);
                                 }                                
                                 Color colorToFill = getSectorColor(child, fillColor);
                                 borderColor = drawColor;

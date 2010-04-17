@@ -90,6 +90,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private ColorEditor cEdFillSite;
     private Label lMaxSymSize;
     private Spinner sMaxSymSize;
+    private Label lDefBeamwidth;
+    private Spinner sDefBeamwidth;
     private Label lIconOffset;
     private Spinner sIconOffset;
 
@@ -353,6 +355,21 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(tTransparency, 5);
         formData.right = new FormAttachment(100, -5);
         sMaxSymSize.setLayoutData(formData);
+        
+        lDefBeamwidth = new Label(grScale, SWT.NONE);
+        sDefBeamwidth = new Spinner(grScale, SWT.BORDER);
+        lDefBeamwidth.setText(Messages.Symbol_Def_Beam);
+
+        formData = new FormData();
+        formData.top = new FormAttachment(sDefBeamwidth, 5, SWT.CENTER);
+        formData.left = new FormAttachment(2);
+        lDefBeamwidth.setLayoutData(formData);
+
+        formData = new FormData();
+        formData.left = new FormAttachment(70, 10);
+        formData.top = new FormAttachment(sMaxSymSize, 5);
+        formData.right = new FormAttachment(100, -5);
+        sDefBeamwidth.setLayoutData(formData);
 
         lIconOffset = new Label(grScale, SWT.NONE);
         sIconOffset = new Spinner(grScale, SWT.BORDER);
@@ -365,7 +382,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
         formData = new FormData();
         formData.left = new FormAttachment(70, 10);
-        formData.top = new FormAttachment(sMaxSymSize, 5);
+        formData.top = new FormAttachment(sDefBeamwidth, 5);
         formData.right = new FormAttachment(100, -5);
         sIconOffset.setLayoutData(formData);
 
@@ -381,6 +398,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         tSymbolSize.setMinimum(1);
         tSymbolSize.setMaximum(10000);
         tTransparency.setMaximum(100);
+        sDefBeamwidth.setMinimum(10);
+        sDefBeamwidth.setMaximum(360);
         rButton1.addSelectionListener(new SelectionListener() {
             
             @Override
@@ -427,6 +446,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             tSymbolSize.setSelection(curStyle.getSymbolSize());
             tTransparency.setSelection(curStyle.getSymbolTransparency());
             sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
+            sDefBeamwidth.setSelection(curStyle.getDefaultBeamwidth());
             cFontSize.setText(String.valueOf(curStyle.getFontSize()));
             cSecondaryFontSize.setText(String.valueOf(curStyle.getSecondaryFontSize()));
             cSecondaryProperty.setItems(getSecondaryPropertyChoices());
@@ -530,6 +550,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         curStyle.setFontSize(getLabelFontSize());
         curStyle.setSectorFontSize(getSectorFontSize());
         curStyle.setMaximumSymbolSize(sMaxSymSize.getSelection());
+        curStyle.setDefaultBeamwidth(sDefBeamwidth.getSelection());
         curStyle.setIconOffset(sIconOffset.getSelection());
         curStyle.setMainProperty(cMainProperty.getText());
         curStyle.setSecondaryProperty(cSecondaryProperty.getText());

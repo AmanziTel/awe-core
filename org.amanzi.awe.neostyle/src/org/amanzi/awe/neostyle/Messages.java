@@ -35,6 +35,7 @@ public class Messages extends NLS {
     public static String Color_Fill_Site;
     public static String Color_Fill_Drive;
     public static String Symbol_Max_Size;
+    public static String Symbol_Def_Beam;
 
     public static String Font_Size;
     public static String Font_Size_Site;

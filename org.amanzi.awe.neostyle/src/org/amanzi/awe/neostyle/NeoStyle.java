@@ -41,6 +41,7 @@ public class NeoStyle {
     private Integer symbolSize;
     private Integer symbolTransparency;
     private Integer maximumSymbolSize;
+    private Integer defaultBeamwidth;
     private Integer iconOffset;
     private Integer fontSize;
     private Integer secondaryFontSize;
@@ -273,6 +274,20 @@ public class NeoStyle {
         this.maximumSymbolSize = maximumSymbolSize;
     }
 
+    /**
+     * @return Returns the defaultBeamwidth.
+     */
+    public int getDefaultBeamwidth() {
+        return defaultBeamwidth;
+    }
+    
+    /**
+     * @param defaultBeamwidth The defaultBeamwidth to set.
+     */
+    public void setDefaultBeamwidth(Integer defaultBeamwidth) {
+        this.defaultBeamwidth = defaultBeamwidth;
+    }
+    
     /**
      * @return the icon offset
      */

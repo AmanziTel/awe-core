@@ -55,6 +55,7 @@ public class NeoStyleContent extends StyleContent {
     /** Network sector font size */
     public static final Integer DEF_FONT_SIZE_SECTOR = 8;
     public static final Integer DEF_MAXIMUM_SYMBOL_SIZE = 40;
+    public static final Integer DEF_DEF_BEAMWIDTH = 10;
     public static final Integer DEF_ICON_OFFSET = 0;
     public static final Color DEF_COLOR_SITE = Color.DARK_GRAY;
     private static final String LINE_PRFX = "LINE_";
@@ -69,6 +70,7 @@ public class NeoStyleContent extends StyleContent {
     private static final String SYMBOL_SIZE = "SYMBOL_SIZE";
     private static final String SECTOR_TRANSPARENCY = "SECTOR_TRANSPARENCY";
     private static final String MAX_SYMB_SIZE = "MAXIMUM_SYMBOL_SIZE";
+    private static final String DEF_BEAMWIDTH = "DEF_BEAMWIDTH";
     private static final String ICON_OFFSET = "ICON_OFFSET";
     private static final String FONT_SIZE = "FONT_SIZE";
     private static final String FONT_SIZE_SECTOR = "FONT_SIZE_SECTOR";
@@ -96,6 +98,7 @@ public class NeoStyleContent extends StyleContent {
                 result.setSymbolTransparency(DEF_TRANSPARENCY);
                 result.setSiteFill(DEF_COLOR_SITE);
                 result.setMaximumSymbolSize(DEF_MAXIMUM_SYMBOL_SIZE);
+                result.setDefaultBeamwidth(DEF_DEF_BEAMWIDTH);
                 result.setIconOffset(DEF_ICON_OFFSET);
                 result.setFontSize(DEF_FONT_SIZE);
                 result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
@@ -132,6 +135,7 @@ public class NeoStyleContent extends StyleContent {
         result.setSymbolSize(memento.getInteger(SYMBOL_SIZE));
         result.setSymbolTransparency(memento.getInteger(SECTOR_TRANSPARENCY));
         result.setMaximumSymbolSize(memento.getInteger(MAX_SYMB_SIZE));
+        result.setDefaultBeamwidth(memento.getInteger(DEF_BEAMWIDTH));
         result.setIconOffset(memento.getInteger(ICON_OFFSET));
         result.setFontSize(memento.getInteger(FONT_SIZE));
         result.setSectorFontSize(memento.getInteger(FONT_SIZE_SECTOR));
@@ -180,6 +184,7 @@ public class NeoStyleContent extends StyleContent {
         memento.putInteger(SYMBOL_SIZE, style.getSymbolSize());
         memento.putInteger(SECTOR_TRANSPARENCY, style.getSymbolTransparency());
         memento.putInteger(MAX_SYMB_SIZE, style.getMaximumSymbolSize());
+        memento.putInteger(DEF_BEAMWIDTH, style.getDefaultBeamwidth());
         memento.putInteger(ICON_OFFSET, style.getIconOffset());
         memento.putInteger(FONT_SIZE, style.getFontSize());
         memento.putInteger(FONT_SIZE_SECTOR, style.getSecondaryFontSize());
