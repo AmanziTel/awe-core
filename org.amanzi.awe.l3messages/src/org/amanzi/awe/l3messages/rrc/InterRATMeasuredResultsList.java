@@ -34,7 +34,7 @@ import org.bn.types.*;
             }
         
             public InterRATMeasuredResultsList ( java.util.Collection<InterRATMeasuredResults> value ) {
-                setValue(value);
+                setValue(value);                
             }
                         
             public void setValue(java.util.Collection<InterRATMeasuredResults> value) {

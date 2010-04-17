@@ -7,3 +7,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: org.amanzi.awe.l3messages,
+ org.amanzi.awe.l3messages.rrc,
+ org.bn.types
+Bundle-Activator: org.amanzi.awe.l3messages.L3MessagesPlugin

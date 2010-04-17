@@ -13,12 +13,14 @@
 
 package org.amanzi.neo.loader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -30,11 +32,30 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.amanzi.awe.l3messages.MessageDecoder;
+import org.amanzi.awe.l3messages.rrc.CellMeasuredResults;
+import org.amanzi.awe.l3messages.rrc.EventResults;
+import org.amanzi.awe.l3messages.rrc.FrequencyInfo;
+import org.amanzi.awe.l3messages.rrc.FrequencyInfoFDD;
+import org.amanzi.awe.l3messages.rrc.FrequencyInfoTDD;
+import org.amanzi.awe.l3messages.rrc.IntegrityCheckInfo;
+import org.amanzi.awe.l3messages.rrc.InterFreqCellMeasuredResultsList;
+import org.amanzi.awe.l3messages.rrc.InterFreqMeasuredResults;
+import org.amanzi.awe.l3messages.rrc.InterFreqMeasuredResultsList;
+import org.amanzi.awe.l3messages.rrc.MeasuredResults;
+import org.amanzi.awe.l3messages.rrc.MeasuredResultsList;
+import org.amanzi.awe.l3messages.rrc.MeasuredResultsOnRACH;
+import org.amanzi.awe.l3messages.rrc.MeasurementIdentity;
+import org.amanzi.awe.l3messages.rrc.MeasurementReport;
+import org.amanzi.awe.l3messages.rrc.UL_DCCH_Message;
+import org.amanzi.awe.l3messages.rrc.UL_DCCH_MessageType;
+import org.amanzi.awe.l3messages.rrc.FrequencyInfo.ModeSpecificInfoChoiceType;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
+import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -210,7 +231,9 @@ public void printStats(boolean verbose) {
      */
     private void saveEvent(GPEHEvent eventFile) {
         for (Event event : eventFile.getEvents()) {
-            saveSingleEvent(event);
+            if (event.getId() == 8) {
+                saveSingleEvent(event);
+            }
         }
     }
 
@@ -226,7 +249,16 @@ public void printStats(boolean verbose) {
             setIndexProperty(headers, eventNode, INeoConstants.PROPERTY_NAME_NAME, event.getType().name());
             eventNode.setProperty(INeoConstants.PROPERTY_EVENT_ID, event.getType().getId());
             for (Map.Entry<Parameters, Object> entry : event.getProperties().entrySet()) {
-                setIndexProperty(headers, eventNode, entry.getKey().name(), entry.getValue());
+                //LN, 17.04.2010, if we parse a RRC Measurement Report that we should Decode Message
+                if (entry.getKey() == Parameters.EVENT_PARAM_MESSAGE_CONTENTS) {
+                    if (event.getId() == Events.RRC_MEASUREMENT_REPORT.getId()) {
+                        byte[] messageContent = (byte[])entry.getValue();
+                        UL_DCCH_Message message = MessageDecoder.getInstance().parseRRCMeasurementReport2(messageContent);                        
+                    }
+                }
+                else {
+                    setIndexProperty(headers, eventNode, entry.getKey().name(), entry.getValue());
+                }
             }
             Long timestamp = event.getFullTime(timestampOfDay);
             updateTimestampMinMax(KEY_EVENT, timestamp);

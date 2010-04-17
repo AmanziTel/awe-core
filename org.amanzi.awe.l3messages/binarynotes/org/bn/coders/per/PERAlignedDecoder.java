@@ -576,8 +576,7 @@ public class PERAlignedDecoder extends Decoder {
         skipAlignedBits(stream);
         int sizeOfString = decodeLength(elementInfo,stream);
         skipAlignedBits(stream);
-        int trailBits = 8 - sizeOfString%8;
-        trailBits = 0;
+        int trailBits = 8 - sizeOfString%8 == 0 ? 8 : sizeOfString%8;
         sizeOfString = sizeOfString/8;        
         if(sizeOfString >0 || ( sizeOfString == 0 && trailBits > 0)) {
             byte[] value = new byte[ trailBits > 0 ? sizeOfString+1: sizeOfString];
