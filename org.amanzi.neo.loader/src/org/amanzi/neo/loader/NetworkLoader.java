@@ -219,6 +219,8 @@ public class NetworkLoader extends AbstractLoader {
         addMainHeader("bsc", getPossibleHeaders(DataLoadPreferences.NH_BSC));
         addMainHeader("site", getPossibleHeaders(DataLoadPreferences.NH_SITE));
         addMainHeader("sector", getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
+        addMainHeader(INeoConstants.PROPERTY_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
+        addMainHeader(INeoConstants.PROPERTY_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
         addMainHeader("latitude", getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
         addMainHeader("longitude", getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
         // Stop statistics collection for properties we will not save to the sector
@@ -398,7 +400,14 @@ public class NetworkLoader extends AbstractLoader {
                 return value.toString();
             }
         }
-
+        private Integer getInteger(String key) {
+            Object value = lineData.get(key);
+            if (value instanceof Number) {
+                return ((Number)value).intValue();
+            } else {
+                return (Integer)value;
+            }
+        }
         private Float getFloat(String key) {
             Object value = lineData.get(key);
             if (value instanceof Integer) {
@@ -549,22 +558,31 @@ public class NetworkLoader extends AbstractLoader {
             }
             debug("New Sector: " + sectorField);
             // TODO check by necessary sector
-            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorIndexName);
+            Integer ci=networkHeader.getInteger(INeoConstants.PROPERTY_SECTOR_CI);
+            Integer lac=networkHeader.getInteger(INeoConstants.PROPERTY_SECTOR_LAC);
+//            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorIndexName);
+            Node sector = NeoUtils.findSector(basename, ci,lac,sectorIndexName,true,luceneInd,neo);
             if (sector != null) {
                 // TODO check
             } else {
                 sector = addChild(site, NodeTypes.SECTOR, sectorField);
+                if (ci!=null){
+                    sector.setProperty(INeoConstants.PROPERTY_SECTOR_CI, ci);
+                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
+                }
+                if (lac!=null){
+                    sector.setProperty(INeoConstants.PROPERTY_SECTOR_LAC, lac);
+                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
+                }
             }
             // TODO: deprecated sectorNumber in favour of saved data
             sectorNumber++;
             // header.parseLine(sector, fields);
             Map<String, Object> sectorData = networkHeader.getSectorData();
+
             for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
                 String key = entry.getKey();
                 sector.setProperty(key, entry.getValue());
-                if (INeoConstants.PROPERTY_SECTOR_LAC.equals(key)||INeoConstants.PROPERTY_SECTOR_CI.equals(key)){
-                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), entry.getValue());
-                }
             }
             getGisProperties(basename).incSaved();
             transaction.success();

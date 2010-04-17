@@ -65,7 +65,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @since 1.0.0
  */
 public class NokiaTopologyLoader extends AbstractLoader {
-
+    /** String FORMAT_STR field */
+    private static final String FORMAT_STR = "Node %s. Property %s. Old valus %s. New value %s not saved";
     private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
     private static final String TAG_ATTR_NAME = "name";
     private static final String LIST_NAME = "frequency";
@@ -84,22 +85,22 @@ public class NokiaTopologyLoader extends AbstractLoader {
     private Node neighborNode;
     private Node lastSite;
     private Node lastUmtsSite;
-    private HashMap<String, Node> bscMap = new HashMap<String, Node>();
-    private HashMap<String, Node> sectorMap = new HashMap<String, Node>();
-    private Set<String> sectorMissBalList = new HashSet<String>();
-    private Set<String> sectorMissUsedMalList = new HashSet<String>();
-    private Set<String> sectorMissUnderlayMalList = new HashSet<String>();
-    private HashMap<String, Node> siteMap = new HashMap<String, Node>();
-    private HashMap<String, Node> umtsSectorMap = new HashMap<String, Node>();
-    private HashMap<String, Node> umtsSiteMap = new HashMap<String, Node>();
-    private HashMap<String, Set<Integer>> balMap = new HashMap<String, Set<Integer>>();
-    private HashMap<String, Set<Integer>> malMap = new HashMap<String, Set<Integer>>();
+    private final HashMap<String, Node> bscMap = new HashMap<String, Node>();
+    private final HashMap<String, Node> sectorMap = new HashMap<String, Node>();
+    private final Set<String> sectorMissBalList = new HashSet<String>();
+    private final Set<String> sectorMissUsedMalList = new HashSet<String>();
+    private final Set<String> sectorMissUnderlayMalList = new HashSet<String>();
+    private final HashMap<String, Node> siteMap = new HashMap<String, Node>();
+    private final HashMap<String, Node> umtsSectorMap = new HashMap<String, Node>();
+    private final HashMap<String, Node> umtsSiteMap = new HashMap<String, Node>();
+    private final HashMap<String, Set<Integer>> balMap = new HashMap<String, Set<Integer>>();
+    private final HashMap<String, Set<Integer>> malMap = new HashMap<String, Set<Integer>>();
     private final LuceneIndexService luceneInd;
     
     private String neighbourName;
-    private Set<String> allNeibProperties = new HashSet<String>();
-    private Set<String> intNeibProperties = new HashSet<String>();
-    private Set<String> doubleNeibProperties = new HashSet<String>();
+    private final Set<String> allNeibProperties = new HashSet<String>();
+    private final Set<String> intNeibProperties = new HashSet<String>();
+    private final Set<String> doubleNeibProperties = new HashSet<String>();
     
     /**
      * Constructor.
@@ -302,7 +303,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
     
     protected void updateTx() {
         counter++;
-        counterAll++;
+        counterAll=bscMap.size()+sectorMap.size()+siteMap.size()+umtsSectorMap.size()+umtsSiteMap.size();
         if (counter > getCommitSize()) {
             commit(true);
             counter = 0;
@@ -333,8 +334,11 @@ public class NokiaTopologyLoader extends AbstractLoader {
 
     private void addNeighborLink(HashMap<String, Object> properties, Node server, Node neighbour) {
         getNeighbourNode(); //initialize neighbors
-        Relationship relation = server.createRelationshipTo(neighbour, NetworkRelationshipTypes.NEIGHBOUR);
-        relation.setProperty(INeoConstants.NEIGHBOUR_NAME, neighbourName);
+        Relationship relation = NeoUtils.getNeighbourRelation(server, neighbour, neighbourName, neo);
+        if (relation==null){
+            relation = server.createRelationshipTo(neighbour, NetworkRelationshipTypes.NEIGHBOUR);
+            relation.setProperty(INeoConstants.NEIGHBOUR_NAME, neighbourName);
+        }
         for(String key : properties.keySet()){
             if(key.equals("name")||key.equals("targetCellDN")){
                 continue;
@@ -541,7 +545,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
     
     private abstract class PropertyContainerTag extends AbstractTag{
 
-        private HashMap<String, Object> properties;
+        private final HashMap<String, Object> properties;
         
         /**
          * @param tagName
@@ -701,11 +705,12 @@ public class NokiaTopologyLoader extends AbstractLoader {
          *
          * @return Node.
          */
-        public Node getSectorNode(String sectorName, boolean isGsm){
+        public Node getSectorNode(String sectorName,Integer ci,Integer lac, boolean isGsm){
             String btsKey = getKeyFromDistName(1)+"_"+getKeyFromDistName(2)+(isGsm?("_"+getKeyFromDistName(3)):"");
             Node sector = isGsm?sectorMap.get(btsKey):umtsSectorMap.get(btsKey);
             if(sector == null){
-                sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+                sector=NeoUtils.findSector(basename, ci, lac, sectorName, false, luceneInd, neo);
+//                sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                 if(sector == null){
                     Node parent = getSiteNode(getKeyFromDistName(2),isGsm);
                     sector = addChild(parent, NodeTypes.SECTOR, sectorName);                    
@@ -767,9 +772,9 @@ public class NokiaTopologyLoader extends AbstractLoader {
                 }
                 if(old == null || !old.equals(newValue)){
                     bsc.setProperty(key, newValue);
-                    if(key.equals("name")){
-                        luceneInd.index(bsc, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
-                    }
+//                    if(key.equals("name")){
+//                        luceneInd.index(bsc, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
+//                    }
                 }
             }
         }
@@ -825,9 +830,9 @@ public class NokiaTopologyLoader extends AbstractLoader {
                 }                
                 if(old == null || !old.equals(newValue)){
                     site.setProperty(key, newValue);
-                    if(key.equals("name")){
-                        luceneInd.index(site, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
-                    }
+//                    if(key.equals("name")){
+//                        luceneInd.index(site, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
+//                    }
                 }
             }
         }
@@ -843,6 +848,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
      */
     private class SectorTag extends ManagedObjectTag{
 
+
         /**
          * Constructor.
          * @param parent
@@ -855,18 +861,47 @@ public class NokiaTopologyLoader extends AbstractLoader {
         protected void saveData() {
             HashMap<String, Object> properties = getProperties(); 
             String sectorName = properties.get("name").toString();
-            Node sector = getSectorNode(sectorName, true);
+            Integer ci=null;
+            Integer lac=null;
+            Object ciObj = properties.get("cellId");
+            if (ciObj!=null){
+                ci=Integer.valueOf(ciObj.toString());
+            }
+            Object lacObj = properties.get("locationAreaIdLAC");
+            if (lacObj!=null){
+                lac=Integer.valueOf(lacObj.toString());
+            }
+            
+            Node sector = getSectorNode(sectorName,ci,lac, true);
             for(String key : properties.keySet()){
-                Object old = sector.getProperty(key, null);
                 Object newValue = properties.get(key);
+                if (key.equals("cellId")){
+                    key=INeoConstants.PROPERTY_SECTOR_CI;
+                }else if (key.equals("locationAreaIdLAC")){
+                    key=INeoConstants.PROPERTY_SECTOR_LAC;
+                }else if (key.equals("name")){
+                    continue;
+                }
+                Object old = sector.getProperty(key, null);
                 if(!(newValue instanceof StringBuilder)){
                     continue;
                 }
-                if(old == null || !old.equals(newValue)){
-                    setIndexPropertyNotParcedValue(headers, sector, key, newValue.toString());
-                    if(key.equals("name")){
-                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
+                if(old == null){
+                    if (INeoConstants.PROPERTY_SECTOR_CI.equals(key)){
+                        setIndexProperty(headers, sector, key, ci);
+                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), ci);
+                        continue;
+                    }else if (INeoConstants.PROPERTY_SECTOR_LAC.equals(key)){
+                        setIndexProperty(headers, sector, key, lac);
+                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), lac);
+                        continue;
                     }
+                    setIndexPropertyNotParcedValue(headers, sector, key, newValue.toString());
+//                    if(key.equals("name")){
+//                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
+//                    }
+                }else if (!old.toString().equals(newValue.toString())){
+                    info(String.format(FORMAT_STR,sectorName,key,old,newValue));
                 }
             }
             String bscKey = getKeyFromDistName(1);
@@ -945,8 +980,17 @@ public class NokiaTopologyLoader extends AbstractLoader {
             sec = getIntValue(properties.get("lonSeconds"));
             Float longitude = buildCoord(degr, min, sec);
             setSiteLocation(site, latitude, longitude);
-            
-            Node sector = getSectorNode(getKeyFromDistName(3),true);
+            Integer ci=null;
+            Integer lac=null;
+            Object ciObj = properties.get("lcsGlobalIdCi");
+            if (ciObj!=null){
+                ci=Integer.valueOf(ciObj.toString());
+            }
+            Object lacObj = properties.get("lcsGlobalIdLac");
+            if (lacObj!=null){
+                lac=Integer.valueOf(lacObj.toString());
+            }
+            Node sector = getSectorNode(getKeyFromDistName(3),ci,lac,true);
             String key = "beamwidth";
             Integer value = getIntValue(properties.get("antHorHalfPwrBeam"));
             setIndexProperty(headers, sector, key, value);
@@ -957,8 +1001,8 @@ public class NokiaTopologyLoader extends AbstractLoader {
         }
         
         private Float buildCoord(int degrees, int min, int sec){
-            float mins = min+((float)sec)/60.0f;
-            return ((float)degrees)+mins/60.0f;
+            float mins = min+(sec)/60.0f;
+            return (degrees)+mins/60.0f;
         }
     }
     
@@ -982,7 +1026,8 @@ public class NokiaTopologyLoader extends AbstractLoader {
         @Override
         protected void saveData() {
             HashMap<String, Object> properties = getProperties();
-            Node server = getSectorNode(getKeyFromDistName(3),true);
+            //sector already saved in database
+            Node server = getSectorNode(getKeyFromDistName(3),null,null,true);
             StringBuilder propValue = (StringBuilder)properties.get("targetCellDN");
             if(propValue==null){
                 return;
@@ -990,7 +1035,17 @@ public class NokiaTopologyLoader extends AbstractLoader {
             setDistName(propValue.toString());
             StringBuilder nameValue = (StringBuilder)properties.get("name");
             String name = nameValue==null?getKeyFromDistName(3):nameValue.toString();
-            Node neighbour = getSectorNode(name,true);
+            Integer ci=null;
+            Integer lac=null;
+            Object ciObj = properties.get("adjacentCellIdCI");
+            if (ciObj!=null){
+                ci=Integer.valueOf(ciObj.toString());
+            }
+            Object lacObj = properties.get("adjacentCellIdLac");
+            if (lacObj!=null){
+                lac=Integer.valueOf(lacObj.toString());
+            }            
+            Node neighbour = getSectorNode(name,ci,lac,true);
             addNeighborLink(properties, server, neighbour);
         }
         
@@ -1051,30 +1106,52 @@ public class NokiaTopologyLoader extends AbstractLoader {
         @Override
         protected void saveData() {
             HashMap<String, Object> properties = getProperties();    
-            String postfix = " (external)";
+            String postfix = "";//" (external)";
             String sectorName = properties.get("name").toString()+postfix;
-            Node sector = getSectorNode(sectorName, false);
+            Integer ci=null;
+            Integer lac=null;
+            Object ciObj = properties.get("CId");
+            if (ciObj!=null){
+                ci=Integer.valueOf(ciObj.toString());
+            }
+            Object lacObj = properties.get("LAC");
+            if (lacObj!=null){
+                lac=Integer.valueOf(lacObj.toString());
+            }
+            Node sector = getSectorNode(sectorName,ci,lac, false);
             for(String key : properties.keySet()){
-                Object old = sector.getProperty(key, null);
                 Object newValue = properties.get(key);
+                if (key.equals("CId")){
+                    key=INeoConstants.PROPERTY_SECTOR_CI;
+                }else if (key.equals("LAC")){
+                    key=INeoConstants.PROPERTY_SECTOR_LAC;
+                }else if (key.equals("name")){
+                    continue;
+                }
+                Object old = sector.getProperty(key, null);
                 if(!(newValue instanceof StringBuilder)){
                     continue;
                 }
                 newValue = newValue.toString();
-                if(!key.equals("name")){                    
                     newValue = Integer.parseInt((String)newValue);
-                } 
-                if(old == null || !old.equals(newValue)){
-                    sector.setProperty(key, newValue);
-                    if(key.equals("name")){
-                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), newValue);
+                if(old == null ){
+                    if (INeoConstants.PROPERTY_SECTOR_CI.equals(key)){
+                        setIndexProperty(headers, sector, key, ci);
+                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), ci);
+                        continue;
+                    }else if (INeoConstants.PROPERTY_SECTOR_LAC.equals(key)){
+                        setIndexProperty(headers, sector, key, lac);
+                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), lac);
+                        continue;
                     }
-                }
+                    sector.setProperty(key, newValue);
+                }else if (!old.toString().equals(newValue.toString())){
+                    info(String.format(FORMAT_STR,sectorName,key,old,newValue));
+                } 
             }
         }
         
     }
-    
     /**
      * <p>
      * Tag for getting ADCE data (GSM to UMTS neighbors)
@@ -1084,7 +1161,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
      */
     private class ADJWTag extends ManagedObjectTag{
 
-        /**
+       /**
          * @param parent
          * @param attributes
          */
@@ -1095,7 +1172,8 @@ public class NokiaTopologyLoader extends AbstractLoader {
         @Override
         protected void saveData() {
             HashMap<String, Object> properties = getProperties();
-            Node server = getSectorNode(getKeyFromDistName(3),true);
+            //always stored in database
+            Node server = getSectorNode(getKeyFromDistName(3),null,null,true);
             StringBuilder propValue = (StringBuilder)properties.get("targetCellDN");
             if(propValue==null){
                 return;
@@ -1103,7 +1181,17 @@ public class NokiaTopologyLoader extends AbstractLoader {
             setDistName(propValue.toString());
             StringBuilder nameValue = (StringBuilder)properties.get("name");
             String name = nameValue==null?getKeyFromDistName(2):nameValue.toString();
-            Node neighbour = getSectorNode(name,false);            
+            Integer ci=null;
+            Integer lac=null;
+            Object ciObj = properties.get("AdjwCId");
+            if (ciObj!=null){
+                ci=Integer.valueOf(ciObj.toString());
+            }
+            Object lacObj = properties.get("lac");
+            if (lacObj!=null){
+                lac=Integer.valueOf(lacObj.toString());
+            } 
+            Node neighbour = getSectorNode(name,ci,lac,false);            
             addNeighborLink(properties, server, neighbour);
         }
         
@@ -1304,7 +1392,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
     private class ListTag extends PropertyContainerTag{
         
         public static final String TAG_NAME = "list";
-        private String listName;
+        private final String listName;
         private int propCount;
         
         /**
@@ -1347,7 +1435,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
         
         public static final String TAG_NAME = "p";
         
-        private String pName;
+        private final String pName;
 
         /**
          * Constructor.
