@@ -338,6 +338,7 @@ public class TEMSLoader extends DriveLoader {
                     mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
                     mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
                     mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP.getId());
+                    mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, time);
                     index(mp);
                     boolean haveEvents = false;
                     for (Map<String, Object> dataLine : data) {
@@ -486,7 +487,8 @@ public class TEMSLoader extends DriveLoader {
      * @return node name
      */
     private Object getMNodeName(Map<String, Object> dataLine) {
-        return "m";
+        Object timeNode = dataLine.get("time");
+        return timeNode == null ? "m" : timeNode.toString();
     }
 
     /**
