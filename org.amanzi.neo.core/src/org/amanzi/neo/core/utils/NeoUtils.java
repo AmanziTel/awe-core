@@ -64,6 +64,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.index.IndexHits;
+import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 
 /**
@@ -103,6 +105,7 @@ public class NeoUtils {
     public static String getNodeType(Node node, String defValue) {
         return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, defValue);
     }
+
     /**
      * gets node name
      * 
@@ -111,7 +114,7 @@ public class NeoUtils {
      * @return node name or defValue
      */
     public static String getNodeType(Node node) {
-        return getNodeType(node,null);
+        return getNodeType(node, null);
     }
 
     /**
@@ -818,7 +821,7 @@ public class NeoUtils {
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node curNode = currentPos.currentNode();
-                return  !currentPos.isStartNode()&&curNode.hasProperty(msName);
+                return !currentPos.isStartNode() && curNode.hasProperty(msName);
             }
         }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
         for (Node nodeMs : traverse) {
@@ -1981,7 +1984,7 @@ public class NeoUtils {
 
     /**
      * Gets the neighbour relation.
-     *
+     * 
      * @param server the server
      * @param neighbour the neighbour
      * @param neighbourName the neighbour name
@@ -1992,8 +1995,8 @@ public class NeoUtils {
         Transaction tx = beginTx(service);
         try {
             Set<Relationship> allRelations = getRelations(server, neighbour, NetworkRelationshipTypes.NEIGHBOUR, service);
-            for (Relationship relation:allRelations){
-                if (relation.getProperty(INeoConstants.NEIGHBOUR_NAME,"").equals(neighbourName)){
+            for (Relationship relation : allRelations) {
+                if (relation.getProperty(INeoConstants.NEIGHBOUR_NAME, "").equals(neighbourName)) {
                     return relation;
                 }
             }
@@ -2005,7 +2008,7 @@ public class NeoUtils {
 
     /**
      * Gets the relations set.
-     *
+     * 
      * @param from the 'from' node
      * @param to the 'to' node
      * @param relationType the relation type
@@ -2015,13 +2018,87 @@ public class NeoUtils {
     public static Set<Relationship> getRelations(Node from, Node to, RelationshipType relationType, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
-            Set<Relationship> result=new HashSet<Relationship>();
-            for (Relationship relation:from.getRelationships(relationType,Direction.OUTGOING)){
-                if (relation.getOtherNode(from).equals(to)){
+            Set<Relationship> result = new HashSet<Relationship>();
+            for (Relationship relation : from.getRelationships(relationType, Direction.OUTGOING)) {
+                if (relation.getOtherNode(from).equals(to)) {
                     result.add(relation);
                 }
             }
             return result;
+        } finally {
+            finishTx(tx);
+        }
+    }
+
+    /**
+     * Find sector by next rules: baseName  must be defined, ci or name must be defined (lac used only if ci!=null)
+     *
+     * @param baseName the base name
+     * @param ci the ci
+     * @param lac the lac
+     * @param name the name
+     * @param index the index 
+     * @param service the service
+     * @param returnFirsElement -will be handled only if (ci==null||(ac==null&&name==null)) true:  if result has multiple nodes - return first; false=if result has multiple nodes - return null
+     * @return the node
+     */
+    public static Node findSector(String baseName, Integer ci, Integer lac, String name, boolean returnFirsElement,LuceneIndexService index, GraphDatabaseService service) {
+        assert baseName != null &&( ci != null ||name!=null) && index != null;
+        Transaction tx = beginTx(service);
+        try {
+            if (ci==null){
+                String indexName = getLuceneIndexKeyByProperty(baseName, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
+                IndexHits<Node> nodesName = index.getNodes(indexName, name);   
+                Node sector=nodesName.size()>0?nodesName.next():null;
+                if (nodesName.size()==1){
+                    nodesName.close();
+                    return sector;
+                }else{
+                    nodesName.close();
+                    return returnFirsElement?sector:null;
+                }
+            }
+            String indexName = getLuceneIndexKeyByProperty(baseName, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+            IndexHits<Node> nodesCi = index.getNodes(indexName, ci);
+            if (lac==null&&name==null){
+                Node sector=nodesCi.size()>0?nodesCi.next():null;
+                if (nodesCi.size()==1){
+                    nodesCi.close();
+                    return sector;
+                }else{
+                    nodesCi.close();
+                    return returnFirsElement?sector:null;
+                }
+            }
+            boolean canCheck = true;
+            if (lac != null) {
+                canCheck = false;
+                for (Node sector : nodesCi) {
+                    if (sector.hasProperty(INeoConstants.PROPERTY_SECTOR_LAC)) {
+                        if (sector.getProperty(INeoConstants.PROPERTY_SECTOR_LAC).equals(lac)) {
+                            nodesCi.close();
+                            return sector;
+                        }
+                    } else {
+                        canCheck = true;
+                    }
+                }
+            }
+            if (canCheck) {
+                if (lac!=null){
+                    nodesCi.close(); 
+                    nodesCi = index.getNodes(indexName, ci);
+                }
+                if (name != null) {
+                    for (Node sector : nodesCi) {
+                        Object sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                        if (name.equals(sectorName)&&(lac==null||!sector.hasProperty(INeoConstants.PROPERTY_SECTOR_LAC))) {
+                            return sector;
+                        }
+                    }
+                }
+            }
+            return null;
         } finally {
             finishTx(tx);
         }
