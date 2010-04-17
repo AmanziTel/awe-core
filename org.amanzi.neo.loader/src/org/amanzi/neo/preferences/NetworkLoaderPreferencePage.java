@@ -64,6 +64,8 @@ public class NetworkLoaderPreferencePage extends FieldEditorPreferencePage imple
         
         width = 51;
         addField(new StringFieldEditor(DataLoadPreferences.NH_SECTOR, NeoLoaderPluginMessages.PrefNetwork_field_sector,width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NH_SECTOR_CI, NeoLoaderPluginMessages.PrefNetwork_field_sector_ci,width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NH_SECTOR_LAC, NeoLoaderPluginMessages.PrefNetwork_field_sector_lac,width, marginPanel));
         addField(new StringFieldEditor(DataLoadPreferences.NH_BEAMWIDTH, NeoLoaderPluginMessages.PrefNetwork_field_beamwidth, width,marginPanel));
         addField(new StringFieldEditor(DataLoadPreferences.NH_AZIMUTH, NeoLoaderPluginMessages.PrefNetwork_field_azimuth,width, marginPanel));        
         addField(new StringFieldEditor(DataLoadPreferences.NH_SITE, NeoLoaderPluginMessages.PrefNetwork_field_site,width, marginPanel));

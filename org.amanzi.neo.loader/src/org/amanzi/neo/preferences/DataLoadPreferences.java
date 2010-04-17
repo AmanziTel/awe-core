@@ -32,6 +32,8 @@ public class DataLoadPreferences {
     public static final String NH_BSC = "NH_BSC";
     public static final String NH_SITE = "NH_SITE";
     public static final String NH_SECTOR = "NH_SECTOR";
+    public static final String NH_SECTOR_CI = "NH_SECTOR_CI";
+    public static final String NH_SECTOR_LAC = "NH_SECTOR_LAC";
     public static final String NH_LATITUDE = "NH_LATITUDE";
     public static final String NH_LONGITUDE = "NH_LONGITUDE";
     public static final String DEFAULT_CHARSET = "DEFAULT_CHARSET";
@@ -69,6 +71,7 @@ public class DataLoadPreferences {
     
     
     public static final String PROPERY_LISTS = "PROPERY_LISTS";
+
 
     private DataLoadPreferences() {
 
