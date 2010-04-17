@@ -60,6 +60,8 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String PrefNetwork_field_bsc;
     public static String PrefNetwork_field_site;
     public static String PrefNetwork_field_sector;
+    public static String PrefNetwork_field_sector_ci;
+    public static String PrefNetwork_field_sector_lac;
     public static String PrefNetwork_field_latitude;
     public static String PrefNetwork_field_longitude;
     public static String PrefNetwork_field_beamwidth;
