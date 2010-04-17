@@ -19,6 +19,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -103,7 +104,7 @@ public class UTRANLoader extends AbstractLoader {
         siteProperty.add("longitude");
         siteProperty.add("geoDatum");
     }
-
+    private final Map<String,Integer[]>idMap=new HashMap<String,Integer[]>();
     /** The network. */
     public Node network;
 
@@ -162,6 +163,7 @@ public class UTRANLoader extends AbstractLoader {
     private final Set<String> gsmDoubleNeibProperties = new HashSet<String>();
 
     public Node rncExtGsmSite;
+    private boolean firstRel;
 
     /**
      * Constructor.
@@ -234,7 +236,7 @@ public class UTRANLoader extends AbstractLoader {
      * update monitor description.
      */
     public void updateMonitor() {
-        int pr = in.percentage();
+        int pr = in.percentage()/2;
         if (pr > currentJobPr) {
             info(String.format("parsed %s bytes\tcreated nodes %s", in.tell(), counterAll));
             monitor.worked(pr - currentJobPr);
@@ -287,6 +289,9 @@ public class UTRANLoader extends AbstractLoader {
                 try {
                     monitor.subTask(file.getName());
                     System.out.println(file.getName());
+                    firstRel=true;
+                    storeFile(singleFile);
+                    firstRel=false;
                     storeFile(singleFile);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -817,19 +822,19 @@ public class UTRANLoader extends AbstractLoader {
             updateMonitor();
             IXmlTag result = this;
             if (TagAttributes.TAG_NAME.equals(localName)) {
-                result = new DefaultHandlerTag(this);// new TagAttributes(attributes, this, false);
+                result = new SkipTag(this);// new TagAttributes(attributes, this, false);
             } else if (SubNetwork.TAG_NAME.equals(localName)) {
                 result = new SubNetwork(attributes, this);
             } else if (MeContext.TAG_NAME.equals(localName)) {
                 result = new MeContext(attributes, this);
             } else if (ManagementNode.TAG_NAME.equals(localName)) {
-                result = new DefaultHandlerTag(this);// new ManagementNode(attributes, this);
+                result = new SkipTag(this);// new ManagementNode(attributes, this);
             } else if (IRPAgent.TAG_NAME.equals(localName)) {
-                result = new DefaultHandlerTag(this);// new IRPAgent(attributes, this);
+                result = new SkipTag(this);// new IRPAgent(attributes, this);
             } else if (ExternalUtranCell.TAG_NAME.equals(localName)) {
-                result = new DefaultHandlerTag(this);// new ExternalUtranCell(attributes, this);
+                result = new SkipTag(this);// new ExternalUtranCell(attributes, this);
             } else if (ExternalGsmCell.TAG_NAME.equals(localName)) {
-                result = new DefaultHandlerTag(this);// new ExternalGsmCell(attributes, this);
+                result = new SkipTag(this);// new ExternalGsmCell(attributes, this);
             } else if (VsDataContainer.TAG_NAME.equals(localName)) {
                 result = new VsDataContainer(attributes, this);
             } else {
@@ -997,71 +1002,8 @@ public class UTRANLoader extends AbstractLoader {
         }
     }
 
-    /**
-     * <p>
-     * Default handler (temporary realization) skip all tag except VsDataContainer;
-     * </p>
-     * .
-     * 
-     * @author tsinkel_a
-     * @since 1.0.0
-     */
-    public class DefaultHandlerTag implements IXmlTag {
 
-        /** The parent. */
-        private final IXmlTag parent;
-
-        /**
-         * Instantiates a new default handler tag.
-         * 
-         * @param parent the parent
-         */
-        public DefaultHandlerTag(IXmlTag parent) {
-            this.parent = parent;
-
-        }
-
-        /**
-         * End element.
-         * 
-         * @param localName the local name
-         * @param chars the chars
-         * @return the IXmlTag tag
-         */
-        @Override
-        public IXmlTag endElement(String localName, StringBuilder chars) {
-            return parent;
-        }
-
-        /**
-         * Gets the name.
-         * 
-         * @return the name
-         */
-        @Override
-        public String getName() {
-            return this.getClass().getName();
-        }
-
-        /**
-         * Start element.
-         * 
-         * @param localName the local name
-         * @param attributes the attributes
-         * @return the IXmlTag tag
-         */
-        @Override
-        public IXmlTag startElement(String localName, Attributes attributes) {
-            IXmlTag result = this;
-            if (VsDataContainer.TAG_NAME.equals(localName)) {
-                result = new VsDataContainer(attributes, this);
-            } else {
-                result = new DefaultHandlerTag(this);
-            }
-            return result;
-        }
-    }
-
+  
     /**
      * <p>
      * Handler "ManagedElement" tag
@@ -1098,11 +1040,11 @@ public class UTRANLoader extends AbstractLoader {
             updateMonitor();
             IXmlTag result = this;
             if (TagAttributes.TAG_NAME.equals(localName)) {
-                result = new DefaultHandlerTag(this);// TagAttributes(attributes, this);
+                result = new SkipTag(this);// TagAttributes(attributes, this);
             } else if (RncFunction.TAG_NAME.equals(localName)) {
                 result = new RncFunction(attributes, this);
             } else if (NodeBFunction.TAG_NAME.equals(localName)) {
-                result = new DefaultHandlerTag(this);// new NodeBFunction(attributes, this);
+                result = new SkipTag(this);// new NodeBFunction(attributes, this);
             } else if (VsDataContainer.TAG_NAME.equals(localName)) {
                 result = new VsDataContainer(attributes, this);
             } else {
@@ -1174,16 +1116,20 @@ public class UTRANLoader extends AbstractLoader {
             updateMonitor();
             IXmlTag result = this;
             if (TagAttributes.TAG_NAME.equals(localName)) {
-                collector = new PropertyCollector(localName, this, true);
-                result = collector;// new TagAttributes(attributes, this);
+                if (firstRel) {
+                    collector = new PropertyCollector(localName, this, true);
+                    result = collector;// new TagAttributes(attributes, this);
+                } else {
+                    result = new SkipTag(this);
+                }
             } else {
                 handleCollector();
                 if (UtranCell.TAG_NAME.equals(localName)) {
                     result = new UtranCell(attributes, this);
                 } else if (IubLink.TAG_NAME.equals(localName)) {
-                    result = new DefaultHandlerTag(this);// new IubLink(attributes, this);
+                    result = new SkipTag(this);// new IubLink(attributes, this);
                 } else if (VsDataContainer.TAG_NAME.equals(localName)) {
-                    result = new DefaultHandlerTag(this);// new VsDataContainer(attributes, this);
+                    result = new SkipTag(this);// new VsDataContainer(attributes, this);
                 } else {
                     throw new IllegalArgumentException("Wrong tag: " + localName);
                 }
@@ -1266,6 +1212,12 @@ public class UTRANLoader extends AbstractLoader {
             collector = null;
             dataCollector = null;
             site = null;
+            if (firstRel){
+                sector=null;
+            }else{
+                Integer[] cilac = idMap.get(cellName);
+                sector=NeoUtils.findSector(basename,cilac[0] ,cilac[1],cellName, true,index,neo);
+            }
         }
 
         /**
@@ -1280,19 +1232,35 @@ public class UTRANLoader extends AbstractLoader {
             updateMonitor();
             IXmlTag result = this;
             if (TagAttributes.TAG_NAME.equals(localName)) {
-                collector = new PropertyCollector(localName, this, true);
-                result = collector;
+                if (firstRel) {
+                    collector = new PropertyCollector(localName, this, true);
+                    result = collector;
+                } else {
+                    result = new SkipTag(this);
+                }
             } else {
                 handleCollector();
                 handleDataCollector();
                 if (VsDataContainer.TAG_NAME.equals(localName)) {
-                    dataCollector = new PropertyCollector(localName, this, true);
-                    result = dataCollector;
+                    if (firstRel) {
+                        dataCollector = new PropertyCollector(localName, this, true);
+                        result = dataCollector;
+                    } else {
+                        result = new SkipTag(this);
+                    }
                 } else {
                     if (UtranRelation.TAG_NAME.equals(localName)) {
-                        result = new UtranRelation(attributes, this);
+                        if (firstRel) {
+                            result = new SkipTag(this);
+                        } else {
+                            result = new UtranRelation(attributes, this);
+                        }
                     } else if (GsmRelation.TAG_NAME.equals(localName)) {
-                        result = new GsmRelation(attributes, this);
+                        if (firstRel) {
+                            result = new GsmRelation(attributes, this);
+                        } else {
+                            result = new SkipTag(this);
+                        }
                     } else {
                         throw new IllegalArgumentException("Wrong tag: " + localName);
                     }
@@ -1377,6 +1345,7 @@ public class UTRANLoader extends AbstractLoader {
                 lac = Integer.valueOf(lacObj);
                 map.remove("lac");
             }
+            idMap.put(cellName, new Integer[]{ci,lac});
             sector=findOrCreateSector(cellName,ci,lac);
             Transaction tx = neo.beginTx();
             try {
@@ -1466,6 +1435,7 @@ public class UTRANLoader extends AbstractLoader {
         protected UtranRelation(Attributes attributes, UtranCell parent) {
             super(TAG_NAME, parent);
             String adjUtranCellName = attributes.getValue("id");
+            
             adjSector = findOrCreateSector(adjUtranCellName,null,null);
             relation = addUtranNeighour(parent.sector, adjSector);
             collector = null;
@@ -2240,7 +2210,7 @@ public class UTRANLoader extends AbstractLoader {
         public IXmlTag startElement(String localName, Attributes attributes) {
             this.attributes = attributes;
             updateMonitor();
-            IXmlTag result = new DefaultHandlerTag(this);
+            IXmlTag result = new SkipTag(this);
 
             // if (TagAttributes.TAG_NAME.equals(localName)) {
             // collector = new PropertyCollector(localName, this, true);
