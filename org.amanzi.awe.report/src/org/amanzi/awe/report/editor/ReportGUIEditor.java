@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.lang.model.type.ErrorType;
 
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.render.RenderException;
@@ -104,6 +105,7 @@ public class ReportGUIEditor extends EditorPart  {
     private ReportModel reportModel;
     private boolean isReportDataModified;
     private ScrolledComposite sc;
+    private Font errorFont;
     private static final RGB RGB_WHITE = new RGB(255, 255, 255);
     private static final String SAVE = "Save";
     private static final String EDIT = "Edit";
@@ -164,7 +166,19 @@ public class ReportGUIEditor extends EditorPart  {
             reportTitle = new Text(frame, SWT.SINGLE);
             reportTitle.setFont(new Font(frame.getDisplay(), "Arial", 16, SWT.BOLD));
             reportTitle.setText(report.getName());
-
+            // add errors if report has errors
+            if (report.hasErrors()){
+                errorFont = new Font(frame.getDisplay(), "Arial", 10, SWT.NORMAL);
+                
+                StringBuffer sb=new StringBuffer("Errors occurred during report creation:\n");
+                for (String error:report.getErrors()){
+                    sb.append("\n").append(error).append("\n");
+                }
+                Text error= new Text(frame, SWT.MULTI);
+                error.setFont(errorFont);
+                error.setForeground(new Color(frame.getDisplay(),255,0,0));
+                error.setText(sb.toString()); 
+            }
             for (int i = 0; i < reportParts.size(); i++) {
                 IReportPart part = reportParts.get(i);
                 createCompositeForPart(part);

@@ -32,6 +32,7 @@ import org.amanzi.neo.core.utils.Pair;
  */
 public class Report {
     public static final String FIRST_ARGUMENT="first_argument";
+    private List<String> errors=new ArrayList<String>(0);
     private String name;
     private String date;
     private String author;
@@ -324,4 +325,27 @@ public class Report {
         }
     }
 
+    /**
+     * Adds an error to the report error list
+     * 
+     * @param error error to be added
+     */
+    public void addError(String error) {
+        errors.add(error);
+    }
+
+    /**
+     * @return Returns the errors.
+     */
+    public List<String> getErrors() {
+        return errors;
+    }
+
+    /**
+     * Checks if report has errors or not
+     * @return true if report has errors, false otherwise
+     */
+    public boolean hasErrors() {
+        return errors.size() != 0;
+    }
 }

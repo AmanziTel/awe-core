@@ -272,7 +272,12 @@ include_class org.jfree.data.time.TimeSeriesCollection
     end
 
     def text (new_text)
+      begin
       addPart(ReportText.new(new_text))
+      rescue =>e
+        comment="#{getErrors().size+1}) the text '#{new_text}' was not added because of the error: #{e}\n"
+        addError(comment+e.backtrace.join("\n"))
+      end
     end
     
     def file (file_name)
@@ -280,26 +285,42 @@ include_class org.jfree.data.time.TimeSeriesCollection
     end
 
     def image (image_file_name)
+      begin
       addPart(ReportImage.new(image_file_name))
+      rescue =>e
+      comment="#{getErrors().size+1}) the image '#{image_file_name}' was not added because of the error: #{e}\n"
+      addError(comment+e.backtrace.join("\n"))
+      end
     end
 
     def table (title,parameters=nil,&block)
+      begin
       currTable=ReportTable.new(title)
       currTable.setup(&block)
       currTable.height=parameters[:height] if !parameters.nil?
       currTable.width=parameters[:width]  if !parameters.nil?
       addPart(currTable)
+      rescue =>e
+      comment="#{getErrors().size+1}) the table '#{title}' was not added because of the error: #{e}\n"
+      addError(comment+e.backtrace.join("\n"))
+      end
     end
 
     def chart(name,parameters=nil,&block)
+      begin
         currChart=Chart.new(name)
         currChart.setup(&block)
         currChart.height=parameters[:height] if !parameters.nil?
         currChart.width=parameters[:width] if !parameters.nil?
         addPart(currChart)
+      rescue =>e
+      comment="#{getErrors().size+1}) the chart '#{name}' was not added because of the error: #{e}\n"
+      addError(comment+e.backtrace.join("\n"))
+      end
     end
     
     def map(title,parameters,&block)
+      begin
       udig_map=parameters[:map]
       puts "map: #{udig_map.getID()}"
       currMap=ReportMap.new(title,udig_map)
@@ -307,6 +328,10 @@ include_class org.jfree.data.time.TimeSeriesCollection
       currMap.width=parameters[:width]
       currMap.setup(&block)
       addPart(currMap)
+      rescue =>e
+        comment="#{getErrors().size+1}) the map '#{title}' was not added because of the error: #{e}\n"
+        addError(comment+e.backtrace.join("\n"))
+      end
     end
   end
   
@@ -524,14 +549,16 @@ end
   end
 
   def report (name, &block)
-    begin
       report=Report.new(name)
+    begin
       report.setup(&block)
-      $report_model.updateReport(report)
     rescue =>e
-      $report_model.showErrorDlg("A ruby exception occured during the report creation: #{e}",e.backtrace.join("\n"))
-#      $report_model.showException("A ruby exception occured during the report creation",e)
+      comment="#{report.getErrors().size+1}) #{e}:\n"
+      report.addError(comment+e.backtrace.join("\n"))
+      $report_model.showErrorDlg("A ruby exception occurred during the report creation: #{e}",e.backtrace.join("\n"))
       puts e
+    ensure
+      $report_model.updateReport(report)
     end
   end
 
