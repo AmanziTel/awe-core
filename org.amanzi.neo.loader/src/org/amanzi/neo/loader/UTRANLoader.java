@@ -76,7 +76,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @since 1.0.0
  */
 public class UTRANLoader extends AbstractLoader {
-
+    private static final String FORMAT_STR = "Node %s. Property %s. Old valus %s. New value %s not saved";
     /** String EXT_GSM field */
     private static final String EXT_GSM = "extGSM";
     private static final String UTRAN_SEC_TYPE = "utran";
@@ -163,7 +163,7 @@ public class UTRANLoader extends AbstractLoader {
     private final Set<String> gsmDoubleNeibProperties = new HashSet<String>();
 
     public Node rncExtGsmSite;
-    private boolean firstRel;
+    private int perc;
 
     /**
      * Constructor.
@@ -221,13 +221,30 @@ public class UTRANLoader extends AbstractLoader {
      * @throws IOException Signals that an I/O exception has occurred.
      */
     private void storeFile(File file) throws SAXException, IOException {
+
         currentJobPr = 0;
         gis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.RADIO);
         updateTx();
         network = findOrCreateNetworkNode(gis);
         updateTx();
+        perc = 0;
+        idMap.clear();
+        createIdMap(file);
+        perc = 50;
         XMLReader rdr = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
         rdr.setContentHandler(handler);
+        in = new CountingFileInputStream(file);
+        rdr.parse(new InputSource(new BufferedInputStream(in, 64 * 1024)));
+    }
+
+    /**
+     * @param file
+     * @throws SAXException
+     * @throws IOException
+     */
+    private void createIdMap(File file) throws SAXException, IOException {
+        XMLReader rdr = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
+        rdr.setContentHandler(new ReadContentHandler(new FactoryId()));
         in = new CountingFileInputStream(file);
         rdr.parse(new InputSource(new BufferedInputStream(in, 64 * 1024)));
     }
@@ -236,7 +253,7 @@ public class UTRANLoader extends AbstractLoader {
      * update monitor description.
      */
     public void updateMonitor() {
-        int pr = in.percentage()/2;
+        int pr = in.percentage() / 2 + perc;
         if (pr > currentJobPr) {
             info(String.format("parsed %s bytes\tcreated nodes %s", in.tell(), counterAll));
             monitor.worked(pr - currentJobPr);
@@ -289,9 +306,6 @@ public class UTRANLoader extends AbstractLoader {
                 try {
                     monitor.subTask(file.getName());
                     System.out.println(file.getName());
-                    firstRel=true;
-                    storeFile(singleFile);
-                    firstRel=false;
                     storeFile(singleFile);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -541,6 +555,83 @@ public class UTRANLoader extends AbstractLoader {
             return null;
         }
 
+    }
+
+    public class FactoryId implements IXmlTagFactory {
+
+        /**
+         * Creates the instance.
+         * 
+         * @param tagName the tag name
+         * @param attributes the attributes
+         * @return the IXmlTag tag
+         */
+        @Override
+        public IXmlTag createInstance(String tagName, Attributes attributes) {
+            if (tagName.equals("UtranCell")) {
+                return new UtranTagCiLac(attributes);
+            }
+            return null;
+        }
+
+        public class UtranTagCiLac extends AbstractTag {
+
+            private String id;
+            private PropertyCollector collector;
+
+            /**
+             * @param tagName
+             * @param parent
+             */
+            protected UtranTagCiLac(Attributes attributes) {
+                super("UtranCell", null);
+                id = attributes.getValue("id");
+            }
+
+            @Override
+            public IXmlTag startElement(String localName, Attributes attributes) {
+                updateMonitor();
+                IXmlTag result = this;
+                if (TagAttributes.TAG_NAME.equals(localName)) {
+                    collector = new PropertyCollector(localName, this, true);
+                    result = collector;
+                } else {
+                    handleCollector();
+                    return null;
+                }
+                return result;
+
+            }
+
+            @Override
+            public IXmlTag endElement(String localName, StringBuilder chars) {
+                handleCollector();
+                return super.endElement(localName, chars);
+            }
+
+            private void handleCollector() {
+                if (collector == null) {
+                    return;
+                }
+                Integer ci = null;
+                Integer lac = null;
+                Map<String, String> map = collector.getPropertyMap();
+                String ciObj = map.get("cId");
+                if (ciObj != null) {
+                    ci = Integer.valueOf(ciObj);
+                    map.remove("cId");
+                }
+                String lacObj = map.get("lac");
+                if (lacObj != null) {
+                    lac = Integer.valueOf(lacObj);
+                    map.remove("lac");
+                }
+                idMap.put(id, new Integer[] {ci, lac});
+
+                collector = null;
+            }
+
+        }
     }
 
     /**
@@ -1116,12 +1207,8 @@ public class UTRANLoader extends AbstractLoader {
             updateMonitor();
             IXmlTag result = this;
             if (TagAttributes.TAG_NAME.equals(localName)) {
-                if (firstRel) {
                     collector = new PropertyCollector(localName, this, true);
                     result = collector;// new TagAttributes(attributes, this);
-                } else {
-                    result = new SkipTag(this);
-                }
             } else {
                 handleCollector();
                 if (UtranCell.TAG_NAME.equals(localName)) {
@@ -1212,12 +1299,8 @@ public class UTRANLoader extends AbstractLoader {
             collector = null;
             dataCollector = null;
             site = null;
-            if (firstRel){
-                sector=null;
-            }else{
                 Integer[] cilac = idMap.get(cellName);
                 sector=NeoUtils.findSector(basename,cilac[0] ,cilac[1],cellName, true,index,neo);
-            }
         }
 
         /**
@@ -1232,35 +1315,20 @@ public class UTRANLoader extends AbstractLoader {
             updateMonitor();
             IXmlTag result = this;
             if (TagAttributes.TAG_NAME.equals(localName)) {
-                if (firstRel) {
                     collector = new PropertyCollector(localName, this, true);
                     result = collector;
-                } else {
-                    result = new SkipTag(this);
-                }
             } else {
                 handleCollector();
-                handleDataCollector();
+                // handleDataCollector();
                 if (VsDataContainer.TAG_NAME.equals(localName)) {
-                    if (firstRel) {
-                        dataCollector = new PropertyCollector(localName, this, true);
-                        result = dataCollector;
-                    } else {
-                        result = new SkipTag(this);
-                    }
+                    result = new SkipTag(this);
+                    // dataCollector = new PropertyCollector(localName, this, true);
+                    // result = dataCollector;
                 } else {
                     if (UtranRelation.TAG_NAME.equals(localName)) {
-                        if (firstRel) {
-                            result = new SkipTag(this);
-                        } else {
                             result = new UtranRelation(attributes, this);
-                        }
                     } else if (GsmRelation.TAG_NAME.equals(localName)) {
-                        if (firstRel) {
                             result = new GsmRelation(attributes, this);
-                        } else {
-                            result = new SkipTag(this);
-                        }
                     } else {
                         throw new IllegalArgumentException("Wrong tag: " + localName);
                     }
@@ -1375,7 +1443,12 @@ public class UTRANLoader extends AbstractLoader {
             try {
                 for (Map.Entry<String, String> entry : map.entrySet()) {
                     String key = entry.getKey();
-                    setIndexPropertyNotParcedValue(headers, node, key, entry.getValue());
+                    if (!node.hasProperty(key)) {
+                        setIndexPropertyNotParcedValue(headers, node, key, entry.getValue());
+                    } else {
+                        String old = node.getProperty(key).toString();
+                        info(String.format(FORMAT_STR, cellName, key, old, entry.getValue()));
+                    }
                 }
             } finally {
                 tx.finish();
@@ -1392,7 +1465,7 @@ public class UTRANLoader extends AbstractLoader {
         @Override
         public IXmlTag endElement(String localName, StringBuilder chars) {
             handleCollector();
-            handleDataCollector();
+            // handleDataCollector();
             updateMonitor();
             if (localName.equals(TAG_NAME)) {
                 return parent;
@@ -1435,8 +1508,10 @@ public class UTRANLoader extends AbstractLoader {
         protected UtranRelation(Attributes attributes, UtranCell parent) {
             super(TAG_NAME, parent);
             String adjUtranCellName = attributes.getValue("id");
-            
-            adjSector = findOrCreateSector(adjUtranCellName,null,null);
+            Integer[] cilac = idMap.get(adjUtranCellName);
+            Integer ci = cilac == null ? null : cilac[0];
+            Integer lac = cilac == null ? null : cilac[1];
+            adjSector = findOrCreateSector(adjUtranCellName, ci, lac);
             relation = addUtranNeighour(parent.sector, adjSector);
             collector = null;
         }
