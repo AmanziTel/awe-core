@@ -225,6 +225,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
                 NeoLoaderPlugin.exception(e);
             }
             inputStream.close();
+            fixSite();
             saveProperties();
             saveNeighbourFields();
             finishUpIndexes();
@@ -235,6 +236,20 @@ public class NokiaTopologyLoader extends AbstractLoader {
         
     }
     
+    /**
+     *fake fix site because latitude/longitude can be not correct and site name can be uncorrect
+     * now we delete all site from siteMap which do not contains childs
+     */
+    private void fixSite() {
+        Transaction tx = neo.beginTx();
+        String siteindName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE);
+        try {
+            // siteindName.re
+        } finally {
+            tx.finish();
+        }
+    }
+
     @Override
     protected void finishUp() {
         super.finishUp();
