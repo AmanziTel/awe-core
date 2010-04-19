@@ -64,8 +64,8 @@ public class DataGenerateManager {
      * @param aProbes Integer (probes count)
      * @return AmsDataGenerator.
      */
-    public static IDataGenerator getIndividualAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour, Integer aCallPerHourVariance,
-            Integer aProbes) {
+    public static IDataGenerator getIndividualAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift,
+            Integer aCallsPerHour, Integer aCallPerHourVariance, Integer aProbes) {
         return new IndividualCallsGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
     }
 
@@ -81,8 +81,8 @@ public class DataGenerateManager {
      * @param aMaxGroupSize the a max group size
      * @return AmsDataGenerator.
      */
-    public static IDataGenerator getGroupAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour, Integer aCallPerHourVariance,
-            Integer aProbes, Integer aMaxGroupSize) {
+    public static IDataGenerator getGroupAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
+            Integer aCallPerHourVariance, Integer aProbes, Integer aMaxGroupSize) {
         return new GroupCallsGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes, aMaxGroupSize);
     }
 
@@ -99,8 +99,8 @@ public class DataGenerateManager {
      * @param lonBorders Float[] (must be like {min_longitude,max_longitude})
      * @return NokiaTopologyGenerator
      */
-    public static IDataGenerator getNokiaTopologyGenerator(String aPath, String aFileName, Integer bscs, Integer sites, Integer sectors, Integer extUmtsCount,
-            Float[] latBorders, Float[] lonBorders) {
+    public static IDataGenerator getNokiaTopologyGenerator(String aPath, String aFileName, Integer bscs, Integer sites,
+            Integer sectors, Integer extUmtsCount, Float[] latBorders, Float[] lonBorders) {
         return new NokiaTopologyGenerator(aPath, aFileName, bscs, sites, sectors, extUmtsCount, latBorders, lonBorders);
     }
 
@@ -143,27 +143,19 @@ public class DataGenerateManager {
             Node network = NeoDataUtils.createNode(propertyMap, neo);
             NeoDataUtils.createRelationship(result, network, "NEXT");
             propertyMap.clear();
-            propertyMap.put("name", "IL_R");
-            propertyMap.put("type", "bsc");
-            propertyMap.put("id", "IL_R");
-            propertyMap.put("userLabel", "IL_R");
-            Node bscRoot = NeoDataUtils.createNode(propertyMap, neo);
-            NeoDataUtils.createRelationship(network, bscRoot, "CHILD");
-            propertyMap.clear();
             propertyMap.put("name", "ERNBC1");
-            propertyMap.put("type", "bsc");
-            propertyMap.put("id", "ERNBC1");
+            propertyMap.put("type", "rnc");
             propertyMap.put("userLabel", "ERNBC1");
-            propertyMap.put("userDefinedNetworkType", "UTRAN");
-            Node bsc = NeoDataUtils.createNode(propertyMap, neo);
-            NeoDataUtils.createRelationship(bscRoot, bsc, "CHILD");
-            Node site = NeoDataUtils.createSite(bsc, "3043", 3290118.0, 5621767.0, neo);
+            Node rnc = NeoDataUtils.createNode(propertyMap, neo);
+            NeoDataUtils.createRelationship(network, rnc, "CHILD");
+
+            Node site = NeoDataUtils.createSite(rnc, "3043", 3290118.0, 5621767.0, neo);
             propertyMap.clear();
             propertyMap.put("name", "30431");
             propertyMap.put("type", "sector");
             propertyMap.put("azimuth", 335);
             propertyMap.put("userLabel", "ERNBC1");
-            propertyMap.put("userDefinedNetworkType", "UTRAN");
+            propertyMap.put("sector_type", "utran");
             Node sector = NeoDataUtils.createNode(propertyMap, neo);
             NeoDataUtils.createRelationship(site, sector, "CHILD");
             propertyMap.clear();
@@ -173,9 +165,11 @@ public class DataGenerateManager {
             tx.finish();
         }
     }
-    public static enum NeoRelationTypes implements RelationshipType{
-        CHILD,NEXT;
+
+    public static enum NeoRelationTypes implements RelationshipType {
+        CHILD, NEXT;
     }
+
     /**
      * @param fileName
      * @param etalonGis
@@ -183,43 +177,66 @@ public class DataGenerateManager {
      * @throws TransformerConfigurationException
      * @throws SAXException
      */
-    public static void generateEriccsonTopology(String fileName, Node etalonGis, EmbeddedGraphDatabase neo) throws IOException, TransformerConfigurationException, SAXException {
+    public static void generateEriccsonTopology(String fileName, Node etalonGis, EmbeddedGraphDatabase neo) throws IOException,
+            TransformerConfigurationException, SAXException {
         Transaction tx = neo.beginTx();
-        try {        
-        File file = new File(fileName);
-        PrintWriter out = new PrintWriter(file);
-        StreamResult streamResult = new StreamResult(out);
-        SAXTransformerFactory tf = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
-        TransformerHandler hd = tf.newTransformerHandler();
-        Transformer serializer = hd.getTransformer();
-        serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-        serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-        hd.setResult(streamResult);
-        hd.startDocument();
-        AttributesImpl atts = new AttributesImpl();
-        hd.startElement("", "", "bulkCmConfigDataFile", atts);
-        hd.startElement("", "", "fileHeader", atts);
-        hd.endElement("", "", "fileHeader");
-        hd.startElement("", "", "configData", atts);
-        Relationship rel = etalonGis.getSingleRelationship(NeoRelationTypes.NEXT,Direction.OUTGOING);
-        if (rel!=null){
-            Node network=rel.getOtherNode(etalonGis);
-            new EriccsonGenerator(hd,network).generate();
+        try {
+            File file = new File(fileName);
+            PrintWriter out = new PrintWriter(file);
+            StreamResult streamResult = new StreamResult(out);
+            SAXTransformerFactory tf = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
+            TransformerHandler hd = tf.newTransformerHandler();
+            Transformer serializer = hd.getTransformer();
+            serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+            hd.setResult(streamResult);
+            hd.startDocument();
+            AttributesImpl atts = new AttributesImpl();
+            atts.addAttribute("", "", "xmlns:un", "CDATA", "utranNrm.xsd");
+            atts.addAttribute("", "", "xmlns:xn", "CDATA", "genericNrm.xsd");
+            atts.addAttribute("", "", "xmlns:gn", "CDATA", "geranNrm.xsd");
+            atts.addAttribute("", "", "xmlns:es", "CDATA", "EricssonSpecificAttributes.6.9.xsd");
+            atts.addAttribute("", "", "xmlns", "CDATA", "configData.xsd");
+            hd.startElement("", "", "bulkCmConfigDataFile", atts);
+            atts.clear();
+            hd.startElement("", "", "fileHeader", atts);
+            hd.endElement("", "", "fileHeader");
+            atts.addAttribute("", "", "dnPrefix", "CDATA", "Undefined");
+            hd.startElement("", "", "configData", atts);
+            atts.clear();
+            atts.addAttribute("", "", "id", "CDATA", "IL_R");
+            hd.startElement("", "SubNetwork", "xn:SubNetwork", atts);
+            atts.clear();
+            atts.addAttribute("", "", "id", "CDATA", "3000");
+            hd.startElement("", "MeContext", "xn:MeContext", atts);
+            atts.clear();
+            atts.addAttribute("", "", "id", "CDATA", "1");
+            hd.startElement("", "ManagedElement", "xn:ManagedElement", atts);
+            atts.clear();
 
-        }
+            Relationship rel = etalonGis.getSingleRelationship(NeoRelationTypes.NEXT, Direction.OUTGOING);
+            if (rel != null) {
+                Node network = rel.getOtherNode(etalonGis);
+                new EriccsonGenerator(hd, network).generate();
 
-        hd.endElement("", "", "configData");
-        hd.endElement("", "", "bulkCmConfigDataFile");
-        hd.endDocument();
-        out.close();
+            }
+            hd.endElement("", "ManagedElement", "xn:ManagedElement");
+            hd.endElement("", "MeContext", "xn:MeContext");
+            hd.endElement("", "SubNetwork", "xn:SubNetwork");
+            hd.endElement("", "", "configData");
+            hd.endElement("", "", "bulkCmConfigDataFile");
+            hd.endDocument();
+            out.close();
         } finally {
             tx.finish();
         }
     }
-    private static class EriccsonGenerator{
+
+    private static class EriccsonGenerator {
 
         private final TransformerHandler hd;
         private final Node network;
+        private String siteId;
 
         /**
          * @param hd
@@ -231,52 +248,76 @@ public class DataGenerateManager {
         }
 
         /**
-         * @throws SAXException 
-         *
+         * @throws SAXException
          */
         public void generate() throws SAXException {
-           for (Relationship relation:network.getRelationships(NeoRelationTypes.CHILD,Direction.OUTGOING)){
-               generarteSubChild(relation.getOtherNode(network));
-           }
+            for (Relationship relation : network.getRelationships(NeoRelationTypes.CHILD, Direction.OUTGOING)) {
+                generarteSubChild(relation.getOtherNode(network));
+            }
         }
 
         /**
-         *
          * @param otherNode
-         * @throws SAXException 
+         * @throws SAXException
          */
         private void generarteSubChild(Node node) throws SAXException {
             AttributesImpl atts = new AttributesImpl();
-            String type=(String)node.getProperty("type","");
-            String name=(String)node.getProperty("name","");
+            String type = (String)node.getProperty("type", "");
+            String name = (String)node.getProperty("name", "");
             atts.clear();
-            if (type.equals("bsc")){
+            if (type.equals("rnc")) {
+                atts.addAttribute("", "", "id", "CDATA", "1");
+                hd.startElement("", "RncFunction", "un:RncFunction", atts);
+                atts.clear();
+                hd.startElement("", "attributes", "un:attributes", atts);
+                for (String key : node.getPropertyKeys()) {
+                    char[] chArr = node.getProperty(key).toString().toCharArray();
+                    if (key.equals("name")) {
+                        key = "userLabel";
+                    }
+                    hd.startElement("", key, "un:" + key, atts);
+                    hd.characters(chArr, 0, chArr.length);
+                    hd.endElement("", key, "un:" + key);
+                }
+                hd.endElement("", "attributes", "un:attributes");
+                for (Relationship relation : node.getRelationships(NeoRelationTypes.CHILD, Direction.OUTGOING)) {
+                    generarteSubChild(relation.getOtherNode(node));
+                }
+                hd.endElement("", "RncFunction", "un:RncFunction");
+            } else if (type.equals("site")) {
+                siteId = "SubNetwork=IL_R,MeContext=ERNBC1,ManagedElement=1,RncFunction=1,IubLink=IUB_" + name;
+                for (Relationship relation : node.getRelationships(NeoRelationTypes.CHILD, Direction.OUTGOING)) {
+                    generarteSubChild(relation.getOtherNode(node));
+                }
+            } else if (type.equals("sector")) {
+                atts.clear();
                 atts.addAttribute("", "", "id", "CDATA", name);
-                hd.startElement("", "SubNetwork", "xn:SubNetwork", atts);
-                for (Relationship relation:node.getRelationships(NeoRelationTypes.CHILD,Direction.OUTGOING)){
-                    generarteSubChild(relation.getOtherNode(node));
-                }
-                hd.endElement("", "SubNetwork", "xn:SubNetwork");
-            }else if (type.equals("site")){
-                for (Relationship relation:node.getRelationships(NeoRelationTypes.CHILD,Direction.OUTGOING)){
-                    generarteSubChild(relation.getOtherNode(node));
-                }               
-            }else if (type.equals("sector")){
-                hd.startElement("", "VsDataContainer", "xn:VsDataContainer", atts); 
+                hd.startElement("", "UtranCell", "un:UtranCell", atts);
                 atts.clear();
-                hd.startElement("", "attributes", "xn:attributes", atts); 
-                Node site=node.getSingleRelationship(NeoRelationTypes.CHILD,Direction.INCOMING).getOtherNode(node);
-                Double lat=(Double)site.getProperty("lat",null);
-                atts.clear();
-                if (lat!=null){
-                    hd.startElement("", "", "", atts);
+                hd.startElement("", "attributes", "un:attributes", atts);
+                hd.startElement("", "utranCellIubLink", "un:utranCellIubLink", atts);
+                final char[] charArray = siteId.toCharArray();
+                hd.characters(charArray, 0, charArray.length);
+                hd.endElement("", "utranCellIubLink", "un:utranCellIubLink");
+                for (String key : node.getPropertyKeys()) {
+                    char[] chArr = node.getProperty(key).toString().toCharArray();
+                    if (key.equals("name")) {
+                        key = "userLabel";
+                    } else if (key.equals("PROPERTY_SECTOR_CI")) {
+                        key = "cId";
+                    } else if (key.equals("PROPERTY_SECTOR_LAC")) {
+                        key = "lac";
+                    }
+                    hd.startElement("", key, "un:" + key, atts);
+                    hd.characters(chArr, 0, chArr.length);
+                    hd.endElement("", key, "un:" + key);
                 }
-                hd.endElement("", "attributes", "xn:attributes"); 
-                hd.endElement("", "VsDataContainer", "xn:VsDataContainer"); 
-            }else{
-                System.err.println(String.format("error type %s of node %s",type,node.toString()));
+                hd.endElement("", "attributes", "un:attributes");
+                hd.endElement("", "UtranCell", "un:UtranCell");
+            } else {
+                System.err.println(String.format("error type %s of node %s", type, node.toString()));
             }
         }
-        
+
     }
 }

@@ -13,12 +13,16 @@
 
 package org.amanzi.neo.data_generator.utils;
 
+import java.util.HashSet;
 import java.util.Map;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser.Order;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -110,9 +114,27 @@ public class NeoDataUtils {
      * @param value the value
      */
     private static void setPropertyIfNotNull(Node node, String propertyName, Object value) {
-        if (value==null){
+        if (value == null) {
             return;
         }
-        node.setProperty(propertyName,value);
+        node.setProperty(propertyName, value);
+    }
+
+    public static void compareNet(CompareResult result, Node net, Node etalonNet, GraphDatabaseService service,
+            Object... relationshipTypesAndDirections) {
+        Transaction tx = service.beginTx();
+        try {
+            if (net.equals(etalonNet)) {
+                result.setEquals(true);
+                return;
+            }
+            HashSet<Node> etalonSet = new HashSet<Node>(etalonNet.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    ReturnableEvaluator.ALL_BUT_START_NODE, relationshipTypesAndDirections).getAllNodes());
+            HashSet<Node> netSet = new HashSet<Node>(net.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    ReturnableEvaluator.ALL_BUT_START_NODE, relationshipTypesAndDirections).getAllNodes());
+            result.compareNodeSets(etalonSet, netSet, relationshipTypesAndDirections);
+        } finally {
+            tx.finish();
+        }
     }
 }

@@ -10,5 +10,6 @@ Export-Package: org.amanzi.neo.data_generator,
  org.amanzi.neo.data_generator.data.calls,
  org.amanzi.neo.data_generator.data.nemo,
  org.amanzi.neo.data_generator.data.nokia,
- org.amanzi.neo.data_generator.generate
+ org.amanzi.neo.data_generator.generate,
+ org.amanzi.neo.data_generator.utils
 Require-Bundle: org.neo4j;bundle-version="1.0.0"
