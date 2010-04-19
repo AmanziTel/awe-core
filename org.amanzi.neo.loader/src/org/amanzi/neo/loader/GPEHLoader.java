@@ -231,9 +231,10 @@ public void printStats(boolean verbose) {
      */
     private void saveEvent(GPEHEvent eventFile) {
         for (Event event : eventFile.getEvents()) {
-            if (event.getId() == 8) {
+            //Lagutko: fake - save only RRC Measurement Reports!!!
+//            if (event.getId() == 8) {
                 saveSingleEvent(event);
-            }
+//            }
         }
     }
 
