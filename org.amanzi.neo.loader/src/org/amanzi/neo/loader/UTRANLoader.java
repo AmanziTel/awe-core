@@ -247,6 +247,7 @@ public class UTRANLoader extends AbstractLoader {
         rdr.setContentHandler(new ReadContentHandler(new FactoryId()));
         in = new CountingFileInputStream(file);
         rdr.parse(new InputSource(new BufferedInputStream(in, 64 * 1024)));
+        in.close();
     }
 
     /**
@@ -419,11 +420,13 @@ public class UTRANLoader extends AbstractLoader {
         saveStatistics();
         getGisProperties(basename).saveBBox();
         getGisProperties(basename).saveCRS();
+        if (!isTest()) {
         try {
             DriveLoader.finishUpGis(getGisProperties(basename).getGis());
         } catch (MalformedURLException e) {
             // TODO Handle MalformedURLException
             throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         }
     }
 
@@ -616,7 +619,7 @@ public class UTRANLoader extends AbstractLoader {
                 Integer ci = null;
                 Integer lac = null;
                 Map<String, String> map = collector.getPropertyMap();
-                String ciObj = map.get("cId");
+                String ciObj = map.get("PROPERTY_SECTOR_CI");
                 if (ciObj != null) {
                     ci = Integer.valueOf(ciObj);
                     map.remove("cId");
@@ -2565,5 +2568,9 @@ public class UTRANLoader extends AbstractLoader {
             updateTx();
         }
         return node;
+    }
+
+    public Node getNetworkNode() {
+        return network;
     }
 }
