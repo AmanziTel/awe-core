@@ -15,15 +15,25 @@ package org.amanzi.neo.loader.testing;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.xml.transform.TransformerConfigurationException;
 
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.data_generator.DataGenerateManager;
+import org.amanzi.neo.data_generator.utils.CompareResult;
+import org.amanzi.neo.data_generator.utils.NeoDataUtils;
+import org.amanzi.neo.data_generator.utils.CompareResult.CompareNodes;
+import org.amanzi.neo.data_generator.utils.CompareResult.CompareProperties;
 import org.amanzi.neo.loader.UTRANLoader;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.xml.sax.SAXException;
 
@@ -59,7 +69,7 @@ public class EriccsonTopologyTest extends AbstractLoaderTest {
         dataDirectory = dir.getPath();
     }
 
-    private Node etalonGis;
+    private Node etalonNetwork;
 
     /**
      * initialize test
@@ -79,7 +89,29 @@ public class EriccsonTopologyTest extends AbstractLoaderTest {
     @Test
     public void testCorrectLoading()throws IOException, TransformerConfigurationException, SAXException{
         UTRANLoader loader = initDataBase();
-        assertLoader(loader);
+        loader.run(new NullProgressMonitor());
+        CompareResult result = new CompareResult(getNeo());
+
+        Set<String> idProperties = new HashSet<String>();
+        idProperties.add("name");
+        idProperties.add("type");
+        result.setIdProperties(idProperties);
+        NeoDataUtils.compareNet(result, loader.getNetworkNode(), etalonNetwork, getNeo(), GeoNeoRelationshipTypes.NEXT,
+                Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+        if (!result.isEquals()) {
+            Assert.assertTrue(result.getMissedNodes().isEmpty());
+            Assert.assertTrue(result.getMoredNodes().isEmpty());
+            for (CompareNodes comparedNodes : result.getDifNodes()) {
+                for (CompareProperties prop : comparedNodes.getDifProp()) {
+                    // lat lon not stored during load utran topology data, utranCellIubLink not
+                    // created in etalon data
+                    Assert.assertTrue(String.format("unexpected key: %s. Etalon value: %s ,loaded value: %s", prop.getKey(), prop
+                            .getEtalonValue(), prop.getNetValue()), prop.getKey().equals("lat")
+                            || prop.getKey().equals("lon") || prop.getKey().equals("utranCellIubLink"));
+                }
+            }
+        }
+
     }
     /**
      * Execute after even test. Clear data base.
@@ -102,7 +134,8 @@ public class EriccsonTopologyTest extends AbstractLoaderTest {
         initProjectService();
         String fileNameSmall = "utran.xml";
         String fileName = new File(dataDirectory, fileNameSmall).getPath();
-        etalonGis = generateEtalonNetwork("etalonUtran",fileName);
+        Node etalonGis = generateEtalonNetwork("etalonUtran", fileName);
+        etalonNetwork = etalonGis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(etalonGis);
         DataGenerateManager.generateEriccsonTopology(fileName,etalonGis, getNeo());
         UTRANLoader loader = new UTRANLoader(fileName, fileNameSmall, null, initIndex(), getNeo());
         loader.setLimit(5000);
