@@ -52,7 +52,6 @@ For more information and support visit http://www.amanzitel.com/page/AWE
 
    <features>
       <feature id="org.eclipse.rcp" version="3.3.3.r33x_r20080129-8y8eE9UEUWI6qujeED0xT7bc"/>
-      <feature id="org.eclipse.rcp.nls1" version="3.2.0.v200606220026"/>
       <feature id="net.refractions.udig_base" version="1.1.0"/>
       <feature id="net.refractions.udig_language" version="1.1.0"/>
       <feature id="net.refractions.udig_printing" version="1.1.0"/>
