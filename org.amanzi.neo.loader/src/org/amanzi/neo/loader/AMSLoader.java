@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -386,6 +387,8 @@ public class AMSLoader extends DriveLoader {
 	 */
 	private static final int CALL_DATASET_HEADER_INDEX = 1;
 	
+	protected static final String TIME_FORMAT = "HH:mm:ss";
+	
 	/*
 	 * Formatter for timestamp
 	 */
@@ -466,6 +469,8 @@ public class AMSLoader extends DriveLoader {
 	private String prevCommandName;
 
     private Node probeNode;
+    
+    private SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
 	
 	/**
 	 * Creates a loader
@@ -1259,11 +1264,14 @@ public class AMSLoader extends DriveLoader {
 			result = neo.createNode();
 			result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL.getId());
 			result.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+			String probeName = NeoUtils.getNodeName(probeCalls,neo);
+            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, getCallName(probeName, timestamp));
             updateTimestampMinMax(CALL_DATASET_HEADER_INDEX, timestamp);
 			index(result);
 			
 			//index for Probe Calls
-			MultiPropertyIndex<Long> callIndex = getProbeCallsIndex(NeoUtils.getNodeName(probeCalls,neo));
+			
+            MultiPropertyIndex<Long> callIndex = getProbeCallsIndex(probeName);
 			callIndex.add(result);
 			
 			//create relationship to M node
@@ -1290,6 +1298,11 @@ public class AMSLoader extends DriveLoader {
 		}
 		
 		return result;
+	}
+	
+	private String getCallName(String probeName, long timestamp){
+	    StringBuffer result = new StringBuffer(probeName.split(" ")[0]).append("_").append(timeFormat.format(new Date(timestamp)));
+	    return result.toString();
 	}
 
     @Override
