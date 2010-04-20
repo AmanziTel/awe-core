@@ -26,9 +26,9 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.neo4j.neoclipse.Activator;
-import org.neo4j.neoclipse.NeoIcons;
+import org.neo4j.neoclipse.Icons;
 import org.neo4j.neoclipse.decorate.UserIcons;
-import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
+import org.neo4j.neoclipse.preference.DecoratorPreferences;
 
 /**
  * Class that provides access to Neo icons
@@ -137,7 +137,7 @@ public class IconManager implements IPropertyChangeListener {
 	private void updateUserIcons(String newLocation) {
 		if (newLocation == null) {
             IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-            newLocation = store.getString(NeoDecoratorPreferences.NODE_ICON_LOCATION);
+            newLocation = store.getString(DecoratorPreferences.NODE_ICON_LOCATION);
         }
 
 		icons = new UserIcons(newLocation);
@@ -149,7 +149,7 @@ public class IconManager implements IPropertyChangeListener {
 
 	public void propertyChange(PropertyChangeEvent event) {
 		// if location of icons was changes than we must re-initialize UserIcons
-		if (event.getProperty().equals(NeoDecoratorPreferences.NODE_ICON_LOCATION)) {
+		if (event.getProperty().equals(DecoratorPreferences.NODE_ICON_LOCATION)) {
             updateUserIcons((String)event.getNewValue());
 
             for (Viewer singleViewer : viewers) {
@@ -185,13 +185,13 @@ public class IconManager implements IPropertyChangeListener {
             if (result == null) {
                 // if no such Image in UserIcons than search in NeoIcons
                 name = "TYPE_" + convertName(name);
-                result = NeoIcons.valueOf(name).image();
+                result = Icons.valueOf(name).image();
             }
 
             return result;
         } else {
             // if it's name of Root element than compute it
-            return NeoIcons.NEO_ROOT.image();
+            return Icons.NEO_ROOT.image();
         }
 	}
 	
@@ -201,7 +201,7 @@ public class IconManager implements IPropertyChangeListener {
 	 * @return rollback image
 	 */
 	public Image getRollbackImage() {
-	    return NeoIcons.ROLLBACK_ENABLED.image();
+	    return Icons.ROLLBACK_ENABLED.image();
 	}
 	
 	/**
@@ -210,7 +210,7 @@ public class IconManager implements IPropertyChangeListener {
 	 * @return commit image
 	 */
 	public Image getCommitImage() {
-	    return NeoIcons.COMMIT_ENABLED.image();
+	    return Icons.COMMIT_ENABLED.image();
 	}
 
     /**
@@ -219,7 +219,7 @@ public class IconManager implements IPropertyChangeListener {
      * @return commit image
      */
     public Image getNeoImage(String neoName) {
-        return NeoIcons.valueOf(neoName).image();
+        return Icons.valueOf(neoName).image();
     }
 	/**
 	 * Converts name of Type to name that provides by NeoIcons

@@ -67,7 +67,7 @@ import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.index.IndexHits;
 import org.neo4j.index.lucene.LuceneIndexService;
-import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
+import org.neo4j.neoclipse.preference.DecoratorPreferences;
 
 /**
  * <p>
@@ -1659,7 +1659,7 @@ public class NeoUtils {
     public static String getFormatedNodeName(Node node, String defName) {
         Transaction tx = beginTransaction();
         try {
-            String prefStore = org.neo4j.neoclipse.Activator.getDefault().getPreferenceStore().getString(NeoDecoratorPreferences.NODE_PROPERTY_NAMES);
+            String prefStore = org.neo4j.neoclipse.Activator.getDefault().getPreferenceStore().getString(DecoratorPreferences.NODE_PROPERTY_NAMES);
             StringBuilder values = new StringBuilder();
             for (String name : prefStore.split(",")) {
                 name = name.trim();

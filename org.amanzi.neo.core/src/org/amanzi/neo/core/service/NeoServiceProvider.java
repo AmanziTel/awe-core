@@ -23,11 +23,11 @@ import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.neoclipse.Activator;
-import org.neo4j.neoclipse.neo.NeoServiceEvent;
-import org.neo4j.neoclipse.neo.NeoServiceEventListener;
-import org.neo4j.neoclipse.neo.NeoServiceManager;
-import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
-import org.neo4j.neoclipse.preference.NeoPreferences;
+import org.neo4j.neoclipse.graphdb.GraphDbServiceEvent;
+import org.neo4j.neoclipse.graphdb.GraphDbServiceEventListener;
+import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
+import org.neo4j.neoclipse.preference.DecoratorPreferences;
+import org.neo4j.neoclipse.preference.Preferences;
 
 /**
  * Provider that give access to NeoService
@@ -51,12 +51,12 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     /*
      * NeoServiceManager
      */
-    private NeoServiceManager neoManager;
+    private GraphDbServiceManager neoManager;
     
     /*
      * Listener for NeoServiceManager events
      */
-    private NeoServiceEventListener defaultListener = new DefaultServiceListener();
+    private GraphDbServiceEventListener defaultListener = new DefaultServiceListener();
     
     /*
      * Listeners of NeoServiceProvider
@@ -146,11 +146,11 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     
     private void init() {
         if (neoService == null) {
-            neoService = Activator.getDefault().getNeoServiceSafely();
+            neoService = Activator.getDefault().getGraphDbServiceSafely();
         }
 
         if (neoManager == null) {
-            neoManager = Activator.getDefault().getNeoServiceManager();
+            neoManager = Activator.getDefault().getGraphDbServiceManager();
             neoManager.addServiceEventListener(defaultListener);
         }
         if (indexService == null) {
@@ -167,7 +167,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
         neoService = service;
 
         if (neoManager == null) {
-            neoManager = Activator.getDefault().getNeoServiceManager();
+            neoManager = Activator.getDefault().getGraphDbServiceManager();
             neoManager.addServiceEventListener(defaultListener);
         }
         if (indexService == null) {
@@ -185,9 +185,9 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     public String getDefaultDatabaseLocation() {
         if (databaseLocation == null) {
             IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-            databaseLocation = store.getString(NeoPreferences.DATABASE_RESOURCE_URI);
+            databaseLocation = store.getString(Preferences.DATABASE_RESOURCE_URI);
             if ((databaseLocation == null) || (databaseLocation.trim().isEmpty())) {
-                databaseLocation = store.getString(NeoPreferences.DATABASE_LOCATION);
+                databaseLocation = store.getString(Preferences.DATABASE_LOCATION);
             }
         }
         
@@ -279,10 +279,10 @@ public class NeoServiceProvider implements IPropertyChangeListener{
      * @since 1.0.0
      */
     
-    private class DefaultServiceListener implements NeoServiceEventListener {
+    private class DefaultServiceListener implements GraphDbServiceEventListener {
 
     	@SuppressWarnings("unchecked")
-        public void serviceChanged(NeoServiceEvent event) {
+        public void serviceChanged(GraphDbServiceEvent event) {
             //Lagutko, 12.10.2009, copy list of listeners to local variable
             ArrayList<INeoServiceProviderListener> copiedListener = (ArrayList<INeoServiceProviderListener>)listeners.clone();
             for (INeoServiceProviderListener listener : copiedListener) {
@@ -313,9 +313,9 @@ public class NeoServiceProvider implements IPropertyChangeListener{
 
     public void propertyChange(PropertyChangeEvent event) {
         //if location of icons was changes than we must re-initialize UserIcons
-        if (event.getProperty().equals(NeoDecoratorPreferences.DATABASE_LOCATION) ||
-            event.getProperty().equals(NeoPreferences.DATABASE_RESOURCE_URI) ||
-            event.getProperty().equals(NeoPreferences.DATABASE_LOCATION)) {
+        if (event.getProperty().equals(DecoratorPreferences.DATABASE_LOCATION) ||
+            event.getProperty().equals(Preferences.DATABASE_RESOURCE_URI) ||
+            event.getProperty().equals(Preferences.DATABASE_LOCATION)) {
             //if location of Database was changed than restart Neo
             Activator.getDefault().restartNeo();
             databaseLocation = null;
@@ -330,7 +330,7 @@ public class NeoServiceProvider implements IPropertyChangeListener{
     public void stopNeo() {
     	if (neoManager != null) {
     	    neoManager.commit();
-    		neoManager.stopNeoService();
+    		neoManager.stopGraphDbService();
     	}
     	if (indexService != null) {
     		indexService.shutdown();

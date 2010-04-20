@@ -26,7 +26,7 @@ import org.amanzi.neo.core.database.services.events.ShowViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.preferences.NeoPreferencesInitializer;
+import org.amanzi.neo.core.preferences.PreferencesInitializer;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
@@ -62,7 +62,7 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
 	 * Initializer for AWE-specific Neo Preferences
 	 */
 
-	private NeoPreferencesInitializer initializer = new NeoPreferencesInitializer();
+	private PreferencesInitializer initializer = new PreferencesInitializer();
 
 	private AweProjectService aweProjectService;
 	private UpdateViewManager updateBDManager;
@@ -115,7 +115,7 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
 	 * @return initializer of Neo Preferences
 	 */
 
-	public NeoPreferencesInitializer getInitializer() {
+	public PreferencesInitializer getInitializer() {
 		return initializer;
 	}
 
@@ -168,7 +168,7 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
 	 *            new initializer for NeoPreferences
 	 */
 
-	public void setInitializer(NeoPreferencesInitializer initializer) {
+	public void setInitializer(PreferencesInitializer initializer) {
 		this.initializer = initializer;
 	}
 

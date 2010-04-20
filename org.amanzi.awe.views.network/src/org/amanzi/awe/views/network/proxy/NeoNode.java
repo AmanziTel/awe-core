@@ -31,7 +31,6 @@ import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.Traverser.Order;
-import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 
 /**
  * Proxy class that provides access for Node, it's children and properties
