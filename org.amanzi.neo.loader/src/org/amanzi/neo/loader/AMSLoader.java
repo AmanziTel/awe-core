@@ -827,7 +827,8 @@ public class AMSLoader extends DriveLoader {
 			return;
 		}
 		
-		if (AMSCommandPackage.isAMSCommand(commandName) || (commandName.equals(UNSOLICITED))) {
+		boolean unsolicited = commandName.equals(UNSOLICITED);
+		if (AMSCommandPackage.isAMSCommand(commandName) || (unsolicited)) {
 			CommandSyntax syntax = AMSCommandPackage.getCommandSyntax(commandName);
 			if (syntax == CommandSyntax.SET) { 
 				int equalsIndex = commandName.indexOf("=");
@@ -840,7 +841,7 @@ public class AMSLoader extends DriveLoader {
 				return;
 			}
 			
-			boolean isCallCommand = processCommand(timestamp, command, syntax, tokenizer, false);
+			boolean isCallCommand = unsolicited ? true : processCommand(timestamp, command, syntax, tokenizer, false);
 			if (command != null) {
 				commandName = command.getName();
 			}
@@ -1121,9 +1122,7 @@ public class AMSLoader extends DriveLoader {
 			}
 		}
 		
-		if (!command.getName().equals(UNSOLICITED)) {
-			updateMNode(mNode, command.getName(), result);
-		}
+		updateMNode(mNode, command.getName(), result);		
 		
 		return isCallCommand;
 	}
