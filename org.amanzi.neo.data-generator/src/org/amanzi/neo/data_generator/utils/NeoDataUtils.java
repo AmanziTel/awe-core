@@ -119,6 +119,15 @@ public class NeoDataUtils {
         node.setProperty(propertyName, value);
     }
 
+    /**
+     * Compare net.
+     *
+     * @param result the result
+     * @param net the net
+     * @param etalonNet the etalon net
+     * @param service the service
+     * @param relationshipTypesAndDirections the relationship types and directions
+     */
     public static void compareNet(CompareResult result, Node net, Node etalonNet, GraphDatabaseService service,
             Object... relationshipTypesAndDirections) {
         Transaction tx = service.beginTx();
