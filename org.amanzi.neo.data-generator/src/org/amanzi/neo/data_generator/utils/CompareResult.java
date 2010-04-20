@@ -29,14 +29,16 @@ import org.neo4j.graphdb.Node;
  */
 public class CompareResult {
     private boolean equals;
-    private Set<String>idProperties;
-    private Set<Node> missedNodes = new HashSet<Node>();
-    private Set<Node> moredNodes = new HashSet<Node>();
-    private Set<CompareNodes> difNodes = new HashSet<CompareNodes>();
+    private Set<String> idProperties;
+    private final Set<Node> missedNodes = new HashSet<Node>();
+    private final Set<Node> moredNodes = new HashSet<Node>();
+    private final Set<CompareNodes> difNodes = new HashSet<CompareNodes>();
     GraphDatabaseService service;
 
     /**
+     * Instantiates a new compare result.
      * 
+     * @param service the service
      */
     public CompareResult(GraphDatabaseService service) {
         this.service = service;
@@ -49,8 +51,6 @@ public class CompareResult {
     public boolean isEquals() {
         return equals;
     }
-
-
 
     /**
      * @return Returns the idProperties.
@@ -67,9 +67,11 @@ public class CompareResult {
     }
 
     /**
-     * @param etalonSet
-     * @param netSet
-     * @param relationshipTypesAndDirections
+     * Compare 2 set of nodes
+     * 
+     * @param etalonSet the etalon set
+     * @param networkSet the network set
+     * @param relationshipTypesAndDirections the relationship types and directions
      */
     public void compareNodeSets(HashSet<Node> etalonSet, HashSet<Node> networkSet, Object[] relationshipTypesAndDirections) {
         HashSet<Node> netSet = new HashSet<Node>(networkSet);
@@ -90,8 +92,10 @@ public class CompareResult {
     }
 
     /**
-     * @param netNode
-     * @param etalonNode
+     * Compare nodes.
+     * 
+     * @param netNode the net node
+     * @param etalonNode the etalon node
      */
     private void compareNodes(Node netNode, Node etalonNode) {
         CompareNodes compare = new CompareNodes(netNode, etalonNode);
@@ -102,9 +106,11 @@ public class CompareResult {
     }
 
     /**
-     * @param netSet
-     * @param etalonNode
-     * @return
+     * Find node.
+     * 
+     * @param netSet the network set
+     * @param etalonNode the etalon node
+     * @return the node
      */
     private Node findNode(HashSet<Node> netSet, Node etalonNode) {
         if (idProperties == null) {
@@ -125,16 +131,26 @@ public class CompareResult {
         return null;
     }
 
+    /**
+     * <p>
+     * Compare nodes and contains result of comparing
+     * </p>
+     * 
+     * @author tsinkel_a
+     * @since 1.0.0
+     */
     public static class CompareNodes {
         // TODO add relation comparing!
-        private Node netNode;
-        private Node etalonNode;
+        private final Node netNode;
+        private final Node etalonNode;
         private final boolean equals;
-        private Set<CompareProperties> difProp;
+        private final Set<CompareProperties> difProp;
 
         /**
-         * @param netNode
-         * @param etalonNode
+         * Instantiates a new compare nodes.
+         * 
+         * @param netNode the net node
+         * @param etalonNode the etalon node
          */
         public CompareNodes(Node netNode, Node etalonNode) {
             super();
@@ -177,22 +193,31 @@ public class CompareResult {
 
     }
 
+    /**
+     * <p>
+     * Compare Properties and contains result of comparing
+     * </p>
+     * 
+     * @author tsinkel_a
+     * @since 1.0.0
+     */
     public static class CompareProperties {
-        private String key;
-        private Node netNode;
-        private Node etalonNode;
+        private final String key;
+        private final Node netNode;
+        private final Node etalonNode;
         private final boolean equals;
-        private Object netValue;
-        private Object etalonValue;
+        private final Object netValue;
+        private final Object etalonValue;
 
         /**
-         * @param key
-         * @param netNode
-         * @param etalonNode
+         * Instantiates a new compare properties.
+         * 
+         * @param key the key
+         * @param netNode the net node
+         * @param etalonNode the etalon node
          */
         public CompareProperties(String key, Node netNode, Node etalonNode) {
             super();
-
             this.key = key;
             this.netNode = netNode;
             this.etalonNode = etalonNode;
