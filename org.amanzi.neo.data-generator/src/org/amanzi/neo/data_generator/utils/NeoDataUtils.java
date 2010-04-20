@@ -24,10 +24,9 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.Traverser.Order;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
- * 
+ * Utility class for work with neo4j
  * </p>.
  *
  * @author tsinkel_a
