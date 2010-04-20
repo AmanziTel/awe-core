@@ -21,6 +21,7 @@ import org.amanzi.awe.report.model.events.IReportModelListener;
 import org.amanzi.awe.report.model.events.ReportEventType;
 import org.amanzi.awe.report.model.events.ReportModelEvent;
 import org.amanzi.neo.core.utils.Pair;
+import org.apache.log4j.Logger;
 
 /**
  * TODO Purpose of
@@ -31,14 +32,15 @@ import org.amanzi.neo.core.utils.Pair;
  * @since 1.0.0
  */
 public class Report {
+    private static final Logger LOGGER = Logger.getLogger(Report.class);
     public static final String FIRST_ARGUMENT="first_argument";
     private List<String> errors=new ArrayList<String>(0);
     private String name;
     private String date;
     private String author;
     private String file;
-    private List<IReportPart> parts = new ArrayList<IReportPart>(0);
-    private List<IReportModelListener> listeners = new ArrayList<IReportModelListener>(0);
+    private final List<IReportPart> parts = new ArrayList<IReportPart>(0);
+    private final List<IReportModelListener> listeners = new ArrayList<IReportModelListener>(0);
 
 
     /**
@@ -90,7 +92,7 @@ public class Report {
      * @param date The date to set.
      */
     public void setDate(String date) {
-        System.out.println("java setDate: " + date);
+        LOGGER.debug("java setDate: " + date);
         this.date = date;
     }
 
@@ -105,7 +107,7 @@ public class Report {
      * @param author The author to set.
      */
     public void setAuthor(String author) {
-        System.out.println("java setAuthor: " + author);
+        LOGGER.debug("java setAuthor: " + author);
         this.author = author;
     }
 
@@ -177,7 +179,7 @@ public class Report {
      * @param part - the part has been added
      */
     public void addPart(IReportPart part) {
-        System.out.println("Part was added: "+parts.size());
+        LOGGER.debug("Part was added: "+parts.size());
         part.setIndex(parts.size());
         parts.add(part);
     }

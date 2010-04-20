@@ -16,6 +16,7 @@ package org.amanzi.awe.views.kpi;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -41,6 +42,7 @@ import org.eclipse.swt.widgets.Text;
  * @since 1.0.0
  */
 public class SaveFormulaDialog extends Dialog {
+    private static final Logger LOGGER = Logger.getLogger(SaveFormulaDialog.class);
     protected static final String DEFAULT_EXTENSION = ".rb";
     private String text;
     private String formulaText;
@@ -171,7 +173,7 @@ public class SaveFormulaDialog extends Dialog {
                     String SCRIPT_FILE_REGEX = "([\\w|_|\\d]+)(.\\w+)?";
                     Matcher matcher = Pattern.compile(SCRIPT_FILE_REGEX).matcher(fileName);
                     if (fileName.matches(SCRIPT_FILE_REGEX)) {
-                        System.out.println("file name matches: " + fileName.matches(SCRIPT_FILE_REGEX));
+                        LOGGER.debug("file name matches: " + fileName.matches(SCRIPT_FILE_REGEX));
                         if (matcher.find()) {
                             String name = matcher.group(1);
                             String extension = matcher.group(2);
@@ -215,10 +217,10 @@ public class SaveFormulaDialog extends Dialog {
                         hasErrors = true;
                     } else {
                         // TODO validate if formula contains every parameter
-                        System.out.println("Parameters:");
+                        LOGGER.debug("Parameters:");
                         String[] params = parameters.split(",");
                         for (String param : params) {
-                            System.out.println("-> " + param);
+                            LOGGER.debug("-> " + param);
                         }
                         setParameters(parameters);
                     }
@@ -268,6 +270,7 @@ public class SaveFormulaDialog extends Dialog {
     /**
      * @return the text
      */
+    @Override
     public String getText() {
         return text;
     }
@@ -275,6 +278,7 @@ public class SaveFormulaDialog extends Dialog {
     /**
      * @param text the text to set
      */
+    @Override
     public void setText(String text) {
         this.text = text;
     }

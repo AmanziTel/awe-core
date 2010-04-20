@@ -45,6 +45,7 @@ import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.SplashEditorInput;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.views.importbuilder.ImportBuilderView;
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -62,7 +63,7 @@ import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 public class NeoSplashUtil {
-
+    private static final Logger LOGGER = Logger.getLogger(NeoSplashUtil.class);
 	/*
 	 * Name of SplashResourceEditor
 	 */
@@ -215,9 +216,9 @@ public class NeoSplashUtil {
 	public static void printCell(String title, Cell c)
 	{
 		if (isDebug == true){
-			System.out.print(title + ": ");
+			LOGGER.debug(title + ": ");
 
-			System.out.print(c.getCellID() + "\n");
+			LOGGER.debug(c.getCellID() + "\n");
 			//printCellList(c.getCellID() + " RFG list:", c.getRfgCells());
 			//printCellList(c.getCellID() + " RFD list:", c.getRfdCells());
 
@@ -239,12 +240,12 @@ public class NeoSplashUtil {
 	public static void printCellList(String title, ArrayList<Cell> list)
 	{
 		if (isDebug == true){
-			System.out.print(title + ": ");
+			LOGGER.debug(title + ": ");
 
 			for (int i=0;i<list.size();i++)
-				System.out.print(list.get(i).getCellID()+", ");
+				LOGGER.debug(list.get(i).getCellID()+", ");
 
-			System.out.print("\n");
+			LOGGER.debug("\n");
 		}
 	}
 
@@ -253,7 +254,7 @@ public class NeoSplashUtil {
 	public static void log(String s)
 	{
 		if (isDebug){
-			System.out.print(s);
+			LOGGER.debug(s);
 		}
 
 	}
@@ -261,7 +262,7 @@ public class NeoSplashUtil {
 	public static void logn(String s)
 	{
 		if (isDebug){
-			System.out.println(s);
+			LOGGER.debug(s);
 		}
 
 	}

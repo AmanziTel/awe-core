@@ -15,7 +15,6 @@ package org.amanzi.awe.views.reuse.views;
 import java.awt.Color;
 import java.awt.Paint;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -57,9 +56,9 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -88,7 +87,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
@@ -131,6 +129,8 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  * @since 1.0.0
  */
 public class ReuseAnalyserView extends ViewPart {
+    private static final Logger LOGGER = Logger.getLogger(ReuseAnalyserView.class);
+    
     /** String UNKNOWN_ERROR field */
     private static final String UNKNOWN_ERROR = "unknown error";
     /** String TOOL_TIP_LOG field */
@@ -756,7 +756,7 @@ public class ReuseAnalyserView extends ViewPart {
         GeoNeo geoNeo = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
         boolean isAggregated = geoNeo.getGisType() == GisTypes.DRIVE;
         // if (!isAggregated) {
-        // System.out.println("GIS '" + geoNeo + "' is not drive: " + geoNeo.getGisType());
+        // LOGGER.debug("GIS '" + geoNeo + "' is not drive: " + geoNeo.getGisType());
         // }
         return isAggregated;
     }
@@ -1461,7 +1461,7 @@ public class ReuseAnalyserView extends ViewPart {
             typeOfGis = geoNode.getGisType();
             totalWork = (int)geoNode.getCount() * 2;
         }
-        System.out.println("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
+        LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
         monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
         TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
         Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD,
@@ -1543,7 +1543,7 @@ public class ReuseAnalyserView extends ViewPart {
                         break;
                 } else {
                     missingPropertyCount++;
-                    // System.out.println("No such property '" + propertyName + "' for node "
+                    // LOGGER.debug("No such property '" + propertyName + "' for node "
                     // + (node.hasProperty("name") ? node.getProperty("name").toString() :
                     // node.toString()));
                 }
@@ -1551,7 +1551,7 @@ public class ReuseAnalyserView extends ViewPart {
         }
 
         if (missingPropertyCount > 0) {
-            System.out.println("Property '" + propertyName + "' not found for " + missingPropertyCount + " nodes");
+            LOGGER.debug("Property '" + propertyName + "' not found for " + missingPropertyCount + " nodes");
         }
         runGcIfBig(totalWork);
         monitor.subTask("Determining statistics type");
@@ -1664,7 +1664,7 @@ public class ReuseAnalyserView extends ViewPart {
                         }
                     }
                 } else {
-                    System.out.println("No such property '" + propertyName + "' for node "
+                    LOGGER.debug("No such property '" + propertyName + "' for node "
                             + (node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
                 }
                 monitor.worked(1);
@@ -1815,7 +1815,7 @@ public class ReuseAnalyserView extends ViewPart {
         // List<Number> aggregatedValues = new ArrayList<Number>();
         GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
         int totalWork = (int)geoNode.getCount() * 2;
-        System.out.println("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
+        LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
         monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
         TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
         ReturnableEvaluator returnableEvaluator = new ReturnableEvaluator() {
@@ -1960,7 +1960,7 @@ public class ReuseAnalyserView extends ViewPart {
         // List<Number> aggregatedValues = new ArrayList<Number>();
         GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
         int totalWork = (int)geoNode.getCount() * 2;
-        System.out.println("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
+        LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
         monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
         TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
         ReturnableEvaluator returnableEvaluator = new ReturnableEvaluator() {
@@ -3202,7 +3202,7 @@ public class ReuseAnalyserView extends ViewPart {
         sb.append("    chart.distribute='").append(cDistribute.getText()).append("'\n");
         sb.append("    chart.select='").append(select.toString()).append("'\n");
         sb.append("  end\nend");
-        System.out.println("Report script:\n" + sb.toString());
+        LOGGER.debug("Report script:\n" + sb.toString());
         InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
             file.create(is, true, null);
             is.close();

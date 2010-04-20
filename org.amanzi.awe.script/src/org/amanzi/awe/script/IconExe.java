@@ -10,8 +10,21 @@
  *******************************************************************************/
 package org.amanzi.awe.script;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+
+import org.apache.log4j.Logger;
 
 /**
  * Customize the icon of a Windows exe
@@ -25,6 +38,7 @@ import java.util.*;
  * Know To Start Programming 64-Bit Windows Systems".
  */
 public class IconExe {
+    private static final Logger LOGGER = Logger.getLogger(FeatureCollectionInfoOpRuby.class);
 	
 	 /**
 	 * Replace the Desktop icons provided in the Windows executable program
@@ -201,7 +215,7 @@ public class IconExe {
 		// DumpResources
 		int resourcesRVA = imageNtHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress;
 		if (resourcesRVA == 0) return new IconResInfo[0];
-		if (DEBUG) System.out.println("* Resources (RVA= "+resourcesRVA+")"); //$NON-NLS-1$ //$NON-NLS-2$
+		if (DEBUG) LOGGER.debug("* Resources (RVA= "+resourcesRVA+")"); //$NON-NLS-1$ //$NON-NLS-2$
 		IMAGE_SECTION_HEADER imageSectionHeader = new IMAGE_SECTION_HEADER();
 		int firstSectionOffset = imageNtHeadersOffset + IMAGE_NT_HEADERS.FIELD_OFFSET_OptionalHeader + imageNtHeaders.FileHeader.SizeOfOptionalHeader;
 		raf.seek(firstSectionOffset);
@@ -227,7 +241,7 @@ public class IconExe {
 	}
 
 void dumpResourceDirectory(RandomAccessFile raf, int imageResourceDirectoryOffset, int resourceBase, int delta, int type, int level, boolean rt_icon_root) throws IOException {
-	if (DEBUG) System.out.println("** LEVEL "+level); //$NON-NLS-1$
+	if (DEBUG) LOGGER.debug("** LEVEL "+level); //$NON-NLS-1$
 
 	IMAGE_RESOURCE_DIRECTORY imageResourceDirectory = new IMAGE_RESOURCE_DIRECTORY();
 	raf.seek(imageResourceDirectoryOffset);
@@ -237,11 +251,11 @@ void dumpResourceDirectory(RandomAccessFile raf, int imageResourceDirectoryOffse
 		String sType = ""+type; //$NON-NLS-1$
 		// level 1 resources are resource types
 		if (level == 1) {
-			System.out.println("___________________________"); //$NON-NLS-1$
+			LOGGER.debug("___________________________"); //$NON-NLS-1$
 			if (type == RT_ICON) sType = "RT_ICON"; //$NON-NLS-1$
 			if (type == RT_GROUP_ICON) sType = "RT_GROUP_ICON"; //$NON-NLS-1$
 		}
-		System.out.println("Resource Directory ["+sType+"]"+" (Named "+imageResourceDirectory.NumberOfNamedEntries+", ID "+imageResourceDirectory.NumberOfIdEntries+")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		LOGGER.debug("Resource Directory ["+sType+"]"+" (Named "+imageResourceDirectory.NumberOfNamedEntries+", ID "+imageResourceDirectory.NumberOfIdEntries+")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 	}
 
 	IMAGE_RESOURCE_DIRECTORY_ENTRY[] imageResourceDirectoryEntries = new IMAGE_RESOURCE_DIRECTORY_ENTRY[imageResourceDirectory.NumberOfIdEntries];
@@ -259,9 +273,9 @@ void dumpResourceDirectory(RandomAccessFile raf, int imageResourceDirectoryOffse
 			IMAGE_RESOURCE_DATA_ENTRY data = new IMAGE_RESOURCE_DATA_ENTRY();
 			raf.seek(imageResourceDirectoryEntries[i].OffsetToData + resourceBase);
 			read(raf, data);
-			if (DEBUG) System.out.println("Resource Id "+irde.Id+" Data Offset RVA "+data.OffsetToData+", Size "+data.Size); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			if (DEBUG) LOGGER.debug("Resource Id "+irde.Id+" Data Offset RVA "+data.OffsetToData+", Size "+data.Size); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			if (rt_icon_root) {
-				if (DEBUG) System.out.println("iconcnt "+iconCnt+" |"+iconInfo.length); //$NON-NLS-1$ //$NON-NLS-2$
+				if (DEBUG) LOGGER.debug("iconcnt "+iconCnt+" |"+iconInfo.length); //$NON-NLS-1$ //$NON-NLS-2$
 				iconInfo[iconCnt] = new IconResInfo();
 				iconInfo[iconCnt].data = parseIcon(raf, data.OffsetToData - delta, data.Size);
 				iconInfo[iconCnt].offset = data.OffsetToData - delta;
@@ -389,7 +403,7 @@ static byte[] loadData(BITMAPINFOHEADER bih, RandomAccessFile raf, int stride) t
 	if (cmp == 0) { // BMP_NO_COMPRESSION
 		raf.read(data);
 	} else {
-		if (DEBUG) System.out.println("ICO cannot be compressed?"); //$NON-NLS-1$
+		if (DEBUG) LOGGER.debug("ICO cannot be compressed?"); //$NON-NLS-1$
 	}
 	return data;
 }
@@ -941,6 +955,7 @@ public RGB(int red, int green, int blue) {
  *
  * @see #hashCode()
  */
+@Override
 public boolean equals (Object object) {
 	if (object == this) return true;
 	if (!(object instanceof RGB)) return false;
@@ -958,6 +973,7 @@ public boolean equals (Object object) {
  *
  * @see #equals(Object)
  */
+@Override
 public int hashCode () {
 	return (blue << 16) | (green << 8) | red;
 }
@@ -968,6 +984,7 @@ public int hashCode () {
  *
  * @return a string representation of the <code>RGB</code>
  */
+@Override
 public String toString () {
 	return "RGB {" + red + ", " + green + ", " + blue + "}"; //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ 
 
@@ -2631,7 +2648,8 @@ static class LEDataInputStream extends InputStream {
 		else throw new IllegalArgumentException();
 	}
 	
-	public void close() throws IOException {
+	@Override
+    public void close() throws IOException {
 		buf = null;
 		if (in != null) {
 			in.close();
@@ -2649,7 +2667,8 @@ static class LEDataInputStream extends InputStream {
 	/**
 	 * Answers how many bytes are available for reading without blocking
 	 */
-	public int available() throws IOException {
+	@Override
+    public int available() throws IOException {
 		if (buf == null) throw new IOException();
 		return (buf.length - pos) + in.available();
 	}
@@ -2657,7 +2676,8 @@ static class LEDataInputStream extends InputStream {
 	/**
 	 * Answer the next byte of the input stream.
 	 */
-	public int read() throws IOException {
+	@Override
+    public int read() throws IOException {
 		if (buf == null) throw new IOException();
 		position++;
 		if (pos < buf.length) return (buf[pos++] & 0xFF);
@@ -2668,7 +2688,8 @@ static class LEDataInputStream extends InputStream {
 	 * Don't imitate the JDK behaviour of reading a random number
 	 * of bytes when you can actually read them all.
 	 */
-	public int read(byte b[], int off, int len) throws IOException {
+	@Override
+    public int read(byte b[], int off, int len) throws IOException {
 		int result;
 		int left = len;
 		result = readData(b, off, len);
@@ -2960,6 +2981,7 @@ int decompressRLE8Data(byte[] src, int numBytes, int stride, byte[] dest, int de
 	}
 	return 1;
 }
+@Override
 boolean isFileFormat(LEDataInputStream stream) {
 	try {
 		byte[] header = new byte[18];
@@ -3021,6 +3043,7 @@ int[] loadFileHeader() {
 		SWT.error(SWT.ERROR_INVALID_IMAGE);
 	return header;
 }
+@Override
 ImageData[] loadFromByteStream() {
 	int[] fileHeader = loadFileHeader();
 	byte[] infoHeader = new byte[BMPHeaderFixedSize];
@@ -3162,6 +3185,7 @@ int iconSize(ImageData i) {
 	int paletteSize = i.palette.colors != null ? i.palette.colors.length * 4 : 0;
 	return WinBMPFileFormat.BMPHeaderFixedSize + paletteSize + dataSize;
 }
+@Override
 boolean isFileFormat(LEDataInputStream stream) {
 	try {
 		byte[] header = new byte[4];
@@ -3223,6 +3247,7 @@ int loadFileHeader(LEDataInputStream byteStream, boolean hasHeader) {
 		SWT.error(SWT.ERROR_INVALID_IMAGE);
 	return numIcons;
 }
+@Override
 ImageData[] loadFromByteStream() {
 	int numIcons = loadFileHeader(inputStream);
 	int[][] headers = loadIconHeaders(numIcons);

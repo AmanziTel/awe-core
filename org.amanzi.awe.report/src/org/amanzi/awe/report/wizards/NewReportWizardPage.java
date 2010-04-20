@@ -15,6 +15,7 @@ package org.amanzi.awe.report.wizards;
 
 import net.refractions.udig.project.internal.impl.RubyProjectImpl;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -48,10 +49,11 @@ import org.rubypeople.rdt.internal.ui.wizards.OpenNewRubyProjectWizardAction;
  * @since 1.0.0
  */
 public class NewReportWizardPage extends WizardPage {
+    private static final Logger LOGGER = Logger.getLogger(NewReportWizardPage.class);
 
     private Text containerText;
     private Text reportText;
-    private IStructuredSelection selection;
+    private final IStructuredSelection selection;
     public static final String REPORT_FILE_EXTENSION="r";
 
     protected NewReportWizardPage(IStructuredSelection selection) {
@@ -83,6 +85,7 @@ public class NewReportWizardPage extends WizardPage {
         Button button = new Button(container, SWT.PUSH);
         button.setText("Browse...");
         button.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 handleBrowse();
             }
@@ -103,6 +106,7 @@ public class NewReportWizardPage extends WizardPage {
         Button button1 = new Button(container, SWT.PUSH);
         button1.setText("New Ruby Project...");
         button1.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 new OpenNewRubyProjectWizardAction().run();
             }
@@ -165,14 +169,14 @@ public class NewReportWizardPage extends WizardPage {
 
     private void initialize() {
         if (selection != null && selection.isEmpty() == false && selection instanceof IStructuredSelection) {
-            IStructuredSelection ssel = (IStructuredSelection)selection;
+            IStructuredSelection ssel = selection;
 
-            System.out.println("ssel: " + ssel.toString());
+            LOGGER.debug("ssel: " + ssel.toString());
 
             if (ssel.size() > 1)
                 return;
             Object obj = ssel.getFirstElement();
-            System.out.println("obj: " + obj.toString());
+            LOGGER.debug("obj: " + obj.toString());
             String containerName = "";
             if (obj instanceof IResource) {
                 IContainer container;
@@ -181,7 +185,7 @@ public class NewReportWizardPage extends WizardPage {
                 else
                     container = ((IResource)obj).getParent();
 
-                System.out.println("container: " + container.getName());
+                LOGGER.debug("container: " + container.getName());
                 containerName = container.getFullPath().toString();
 
             } else if (obj instanceof RubyProjectImpl) {

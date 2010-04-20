@@ -25,6 +25,7 @@ import org.amanzi.awe.report.model.events.IReportModelListener;
 import org.amanzi.awe.report.util.ReportUtils;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -49,6 +50,7 @@ import org.jruby.runtime.load.LoadService;
  * @since 1.0.0
  */
 public class ReportModel {
+    private static final Logger LOGGER = Logger.getLogger(ReportModel.class);
     /**
      * Path to report script
      */
@@ -60,7 +62,7 @@ public class ReportModel {
     private Ruby runtime;
     private String scriptInput;
     private Report report;
-    private List<IReportModelListener> listeners = new ArrayList<IReportModelListener>(0);
+    private final List<IReportModelListener> listeners = new ArrayList<IReportModelListener>(0);
     private static final String GEO_NEO_CLASS="geo_neo_class";
     public ReportModel() {
         try {
@@ -119,9 +121,9 @@ public class ReportModel {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                System.out.println("[DEBUG]Initializing Ruby runtime...");
+                LOGGER.debug("[DEBUG]Initializing Ruby runtime...");
                 runtime.evalScriptlet(scriptInput);
-                System.out.println("[DEBUG]finished");
+                LOGGER.debug("[DEBUG]finished");
                 return Status.OK_STATUS;
             }
             

@@ -251,7 +251,7 @@ public class ExpandGraphLabel extends Figure implements ActionListener {
 		this.setPreferredSize(null);
 		this.label.setText(string);
 		this.add(label);
-		//System.out.println(this.label.getPreferredSize());
+		//LOGGER.debug(this.label.getPreferredSize());
 		this.layout.layout(this);
 		this.invalidate();
 		this.revalidate();

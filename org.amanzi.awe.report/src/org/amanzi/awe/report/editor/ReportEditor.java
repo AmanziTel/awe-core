@@ -22,6 +22,7 @@ import org.amanzi.awe.report.model.ReportPartType;
 import org.amanzi.awe.report.model.events.IReportModelListener;
 import org.amanzi.awe.report.model.events.ReportModelEvent;
 import org.amanzi.neo.core.utils.Pair;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
@@ -36,7 +37,7 @@ import org.rubypeople.rdt.internal.ui.rubyeditor.RubyEditor;
  * @since 1.0.0
  */
 public class ReportEditor extends MultiPageEditorPart implements IReportModelListener {
-
+    private static final Logger LOGGER = Logger.getLogger(ReportEditor.class);
     private RubyEditor textEditor;
     private ReportGUIEditor guiEditor;
     private ReportModel reportModel;
@@ -47,7 +48,7 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
         IEditorInput fei = getEditorInput();
         setPartName(fei.getName());
         String rubyProjectName = ((FileEditorInput)fei).getFile().getParent().getProject().getName();
-        System.out.println("Ruby project name for '"+((FileEditorInput)fei).getFile().getName()+"': "+rubyProjectName);
+        LOGGER.debug("Ruby project name for '"+((FileEditorInput)fei).getFile().getName()+"': "+rubyProjectName);
         reportModel = new ReportModel(rubyProjectName);
         reportModel.addReportListener(this);
         createGUIPage();
@@ -135,10 +136,10 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
 
     @Override
     public void reportChanged(ReportModelEvent event) {
-        System.out.println("reportChanged: " + event);
+        LOGGER.debug("reportChanged: " + event);
         ArrayList<String> parts = extractPartsFromScript(getText());
         StringBuffer sb = new StringBuffer();
-        IReportPart source = (IReportPart)event.getSource();
+        IReportPart source = event.getSource();
         final int index = source.getIndex() + 1;
         switch (event.getType()) {
         case PART_ADDED:
@@ -164,7 +165,7 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
             String hash = "\\s*(" + ReportPartType.getTypesAsRegex() + ")\\s*'\\w*',(\\s*\\w*\\=\\>['|:]?\\w*'?,?)*";
             if (pair.l().equals(Report.FIRST_ARGUMENT)) {
                 ReportPartType type = source.getType();
-                System.out.println("Part: " + part+"\n New value: "+pair.r());
+                LOGGER.debug("Part: " + part+"\n New value: "+pair.r());
                 switch (type){
                 case TEXT:
                 case IMAGE:
@@ -174,12 +175,12 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
                         parts.set(index, part.replaceAll(type.getText() + "\\s*'[\\w|\\s]*'", type.getText() + " '" + pair.r() + "'"));
                 }
             } else if (part.matches(closure)) {
-                System.out.println("Part matches closure syntax: " + part);
+                LOGGER.debug("Part matches closure syntax: " + part);
                 String oldString = new StringBuffer("self\\.").append(pair.l()).append("=[':]*\\w*[']*").toString();
                 String newString = new StringBuffer("self\\.").append(pair.l()).append("=").append(pair.r()).toString();
                 parts.set(index, part.replaceAll(oldString, newString));
             } else if (part.matches(hash)) {
-                System.out.println("Part matches hash syntax: " + part);
+                LOGGER.debug("Part matches hash syntax: " + part);
                 String oldString = new StringBuffer(pair.l()).append("\\=\\>['|:]?\\w*'?").toString();
                 String newString = new StringBuffer(pair.l()).append("=>").append(pair.r()).toString();
                 parts.set(index, part.replaceAll(oldString, newString));
@@ -188,7 +189,7 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
             generateScriptFromParts(parts, sb);
             break;
         }
-        System.out.println("===> New script: " + sb.toString());
+        LOGGER.debug("===> New script: " + sb.toString());
         setText(sb.toString());
     }
 
@@ -219,8 +220,8 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
         // script part #parts.size-1 - contains the keyword 'end'
         int index1 = ind1 + 1;
         int index2 = ind2 + 1;
-        System.out.println("parts[" + index1 + "]: " + parts.get(index1));
-        System.out.println("parts[" + index2 + "]: " + parts.get(index2));
+        LOGGER.debug("parts[" + index1 + "]: " + parts.get(index1));
+        LOGGER.debug("parts[" + index2 + "]: " + parts.get(index2));
         for (int i = 0; i < index1; i++) {
             sb.append(parts.get(i));
         }
@@ -248,15 +249,15 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
         String[] lines = before_parts.split("\n");
         int ind = 0;
         String PATTERN = new StringBuffer("\\s*(").append(ReportPartType.getTypesAsRegex()).append(")(.*)").toString();
-        // System.out.println(" PATTERN: "+PATTERN);
+        // LOGGER.debug(" PATTERN: "+PATTERN);
         while (ind < lines.length) {
             if (lines[ind].matches(PATTERN)) {
-                // System.out.println(" +++> "+lines[ind]);
+                // LOGGER.debug(" +++> "+lines[ind]);
                 positions.add(ind);
                 ind++;
             }
             while (ind < lines.length && !lines[ind].matches(PATTERN)) {
-                // System.out.println(" ---> "+lines[ind]);
+                // LOGGER.debug(" ---> "+lines[ind]);
                 ind++;
             }
         }

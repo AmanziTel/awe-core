@@ -52,6 +52,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -76,6 +77,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class NetworkRenderer extends RendererImpl {
+    private static final Logger LOGGER = Logger.getLogger(NetworkRenderer.class);
     /** double CIRCLE_BEAMWIDTH field */
     private static final double CIRCLE_BEAMWIDTH = 360.0;
     private static final double DEFAULT_BEAMWIDTH = 10.0;
@@ -214,14 +216,14 @@ public class NetworkRenderer extends RendererImpl {
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
-            System.out.println("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
+            LOGGER.debug("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
             filterSectors = FilterUtil.getFilterOfData(geoNeo.getMainGisNode(), neo);
             filterSites = FilterUtil.getFilterOfData(geoNeo.getMainGisNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(geoNeo.getMainGisNode()), neo);
             String starProperty = getSelectProperty(geoNeo);
             Pair<Point, Long> starPoint = getStarPoint();
             Node starNode = null;
             if(starPoint != null) {
-                System.out.println("Have star selection: "+starPoint);
+                LOGGER.debug("Have star selection: "+starPoint);
             }
             ArrayList<Pair<String,Integer>> multiOmnis = new ArrayList<Pair<String,Integer>>();
             aggNode = geoNeo.getAggrNode();
@@ -561,7 +563,7 @@ public class NetworkRenderer extends RendererImpl {
                     drawNeighbour(g, neiName, (Node)properties, lineColor, nodesMap,type);
                 }
             }
-            System.out.println("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
+            LOGGER.debug("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
             tx.success();
         } catch (TransformException e) {
             throw new RenderException(e);

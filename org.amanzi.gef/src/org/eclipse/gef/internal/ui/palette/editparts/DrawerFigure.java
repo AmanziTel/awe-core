@@ -199,7 +199,7 @@ public DrawerFigure(final Control control) {
 	 */
 //	collapseToggle.addMouseListener(new MouseListener.Stub(){
 //		public void mousePressed(MouseEvent me) {
-//			System.out.println("AAA");
+//			LOGGER.debug("AAA");
 //		}
 //	});
 

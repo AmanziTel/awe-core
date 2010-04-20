@@ -17,11 +17,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +25,6 @@ import javax.imageio.ImageIO;
 import javax.lang.model.type.ErrorType;
 
 import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.render.RenderException;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.SelectionStyle;
 import net.refractions.udig.project.ui.ApplicationGIS.DrawMapParameter;
@@ -43,6 +38,7 @@ import org.amanzi.awe.report.model.ReportMap;
 import org.amanzi.awe.report.model.ReportModel;
 import org.amanzi.awe.report.model.ReportTable;
 import org.amanzi.awe.report.model.ReportText;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -53,7 +49,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -96,7 +91,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
  * @since 1.0.0
  */
 public class ReportGUIEditor extends EditorPart  {
-
+    private static final Logger LOGGER = Logger.getLogger(ReportGUIEditor.class);
     private boolean isDirty;
     private Composite frame;
     private Composite parent;
@@ -216,7 +211,7 @@ public class ReportGUIEditor extends EditorPart  {
 
     private void addMapPart(ReportMap part) {
         final Composite currComposite = createComposite(part);
-        IMap map = ((ReportMap)part).getMap();
+        IMap map = (part).getMap();
 
         BufferedImage bI = new BufferedImage(part.getWidth(), part.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics graphics2 = bI.getGraphics();
@@ -243,7 +238,7 @@ public class ReportGUIEditor extends EditorPart  {
 //            btnEdit.setText("Edit");
 //            btnEdit.setEnabled(false);
             parts.add(currComposite);
-            createContextMenu(lbl, (IReportPart)part);
+            createContextMenu(lbl, part);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -275,7 +270,7 @@ public class ReportGUIEditor extends EditorPart  {
             }
         } catch (RuntimeException e) {
             // TODO Handle RuntimeException
-           System.out.println("Table can't be created due to the error: "+e.getMessage());
+           LOGGER.debug("Table can't be created due to the error: "+e.getMessage());
            e.printStackTrace();
         }
         table.setHeaderVisible(true);
@@ -322,7 +317,7 @@ public class ReportGUIEditor extends EditorPart  {
                         chart.setTitle(newTitleText);
                         reportModel.getReport().firePartPropertyChanged(chart, Report.FIRST_ARGUMENT, chart.getTitle());
                         // fireEvent
-                        System.out.println("title\t" + chart.getTitle());
+                        LOGGER.debug("title\t" + chart.getTitle());
                     }
                 }
                 Plot plotOld = jFreeChart.getPlot();
@@ -333,19 +328,19 @@ public class ReportGUIEditor extends EditorPart  {
                         chart.setOrientation(newOrientation);
                         final String newValue = ":"+(newOrientation.equals(PlotOrientation.HORIZONTAL)?"horizontal":"vertical");
                         reportModel.getReport().firePartPropertyChanged(chart, "orientation", newValue);
-                        System.out.println("orientation\t" + (newOrientation.equals(PlotOrientation.HORIZONTAL)?"horizontal":"vertical"));
+                        LOGGER.debug("orientation\t" + (newOrientation.equals(PlotOrientation.HORIZONTAL)?"horizontal":"vertical"));
                     }
                     String newDomainAxisLabel = ((CategoryPlot)plotOld).getDomainAxis().getLabel();
                     if (!newDomainAxisLabel.equals(chart.getDomainAxisLabel())){
                         chart.setDomainAxisLabel(newDomainAxisLabel);
                         reportModel.getReport().firePartPropertyChanged(chart, "domain_axis", "'"+chart.getDomainAxisLabel()+"'");
-                        System.out.println("domain_axis\t" + chart.getDomainAxisLabel());
+                        LOGGER.debug("domain_axis\t" + chart.getDomainAxisLabel());
                     }
                     String newRangeAxisLabel = ((CategoryPlot)plotOld).getRangeAxis().getLabel();
                     if (!newRangeAxisLabel.equals(chart.getRangeAxisLabel())){
                         chart.setRangeAxisLabel(newRangeAxisLabel);
                         reportModel.getReport().firePartPropertyChanged(chart, "range_axis", "'"+chart.getRangeAxisLabel()+"'");
-                        System.out.println("range_axis\t" + chart.getRangeAxisLabel());
+                        LOGGER.debug("range_axis\t" + chart.getRangeAxisLabel());
                     }
                 }
                 if (source instanceof XYPlot) {
@@ -498,7 +493,7 @@ public class ReportGUIEditor extends EditorPart  {
         lbl.setImage(image);
         lbl.setBackground(new Color(frame.getDisplay(), RGB_WHITE));
         lbl.setLayoutData(data);
-        createContextMenu(lbl, (IReportPart)imagePart);
+        createContextMenu(lbl, imagePart);
         Button btnEdit = new Button(currComposite, SWT.PUSH);
         btnEdit.setText("Edit");
         btnEdit.setEnabled(false);

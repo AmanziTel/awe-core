@@ -37,6 +37,7 @@ import org.amanzi.awe.report.model.IReportPart;
 import org.amanzi.awe.report.model.Report;
 import org.amanzi.awe.report.model.ReportMap;
 import org.amanzi.awe.report.model.ReportText;
+import org.apache.log4j.Logger;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 
@@ -57,6 +58,7 @@ import com.lowagie.text.pdf.PdfWriter;
  * @since 1.0.0
  */
 public class PDFPrintingEngine {
+    private static final Logger LOGGER = Logger.getLogger(PDFPrintingEngine.class);
     private int top;
     private int left;
     public void printReport(Report report) {
@@ -68,7 +70,7 @@ public class PDFPrintingEngine {
         if(fileName==null || fileName.length()==0){
             fileName=System.getProperty("user.home")+File.separator+"report"+System.currentTimeMillis()+".pdf";
         }
-        System.out.println("[DEBUG] filename "+fileName);
+        LOGGER.debug("[DEBUG] filename "+fileName);
         File outputPdfFile = new File(fileName);
         // try {
 

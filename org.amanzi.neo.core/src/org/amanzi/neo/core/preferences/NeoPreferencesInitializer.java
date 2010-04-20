@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
@@ -39,6 +40,7 @@ import org.neo4j.neoclipse.preference.NeoPreferences;
  */
 public class NeoPreferencesInitializer extends AbstractPreferenceInitializer
 		implements IStartup {
+    private static final Logger LOGGER = Logger.getLogger(NeoPreferencesInitializer.class);
 
 	@Override
 	public void initializeDefaultPreferences() {
@@ -62,7 +64,7 @@ public class NeoPreferencesInitializer extends AbstractPreferenceInitializer
                 URL dir = (URL)found;
                 if (!dir.getPath().contains("svn") && (dir.getPath().endsWith("/") || dir.getPath().endsWith("\\"))) {
                     String[] comps = dir.getPath().split("/");
-                    System.out.println("Found directory: " + comps[2]);
+                    LOGGER.debug("Found directory: " + comps[2]);
                     try {
                         URL fileDir = FileLocator.toFileURL(dir);
                         iconDirs.add(fileDir);

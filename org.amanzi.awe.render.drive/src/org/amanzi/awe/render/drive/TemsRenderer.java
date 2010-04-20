@@ -56,13 +56,13 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.geotools.brewer.color.BrewerPalette;
 import org.geotools.feature.Feature;
 import org.geotools.geometry.jts.JTS;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -92,6 +92,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 1.0.0
  */
 public class TemsRenderer extends RendererImpl implements Renderer {
+    private static final Logger LOGGER = Logger.getLogger(TemsRenderer.class);
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
     private AffineTransform base_transform = null; // save original graphics transform for repeated
@@ -136,7 +137,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             double ratio = (maxT - count) / (maxT - minT);
             iconSize = min + (int)(ratio * (max - min));
         } catch (Exception e) {
-            System.out.println("Error calculating icons sizes: " + e);
+            LOGGER.debug("Error calculating icons sizes: " + e);
         }
         return getIconSize(iconSize);
     }
@@ -341,7 +342,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             Coordinate world_location = new Coordinate();
 //            final Feature geoFilter = getContext().getFeaturesInBbox(layer, bbox);
             final Feature geoFilter =(Feature) getContext().getLayer().getBlackboard().get("GEO_FILTER");
-            System.out.println("[DEBUG] geo filter "+geoFilter);
+            LOGGER.debug("[DEBUG] geo filter "+geoFilter);
             if (geoFilter != null) {
                 final Coordinate[] coordinates = geoFilter.getDefaultGeometry().getCoordinates();
                 final int n = coordinates.length;
@@ -879,7 +880,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             if (indexNode != null) {
                 renderIndex(g, bounds_transformed, indexNode);
             }
-            System.out.println("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count
+            LOGGER.debug("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count
                     + " points");
             tx.success();
             }//end if
@@ -971,15 +972,15 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
     private Node getIndexNode(GeoNode node) {
         try {
-            System.out.println("Searching for index nodes on node: " + node.getName());
+            LOGGER.debug("Searching for index nodes on node: " + node.getName());
             Node endNode = node.getNode();
-            System.out.println("Searching for index nodes on node: id:" + endNode.getId() + ", name:"
+            LOGGER.debug("Searching for index nodes on node: id:" + endNode.getId() + ", name:"
                     + endNode.getProperty("name", null) + ", type:" + endNode.getProperty("type", null) + ", index:"
                     + endNode.getProperty("index", null) + ", level:" + endNode.getProperty("level", null) + ", max:"
                     + endNode.getProperty("max", null) + ", min:" + endNode.getProperty("min", null));
             for (Relationship relationship : node.getNode().getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.INCOMING)) {
                 endNode = relationship.getStartNode();
-                System.out.println("Trying possible index node: id:" + endNode.getId() + ", name:"
+                LOGGER.debug("Trying possible index node: id:" + endNode.getId() + ", name:"
                         + endNode.getProperty("name", null) + ", type:" + endNode.getProperty("type", null) + ", index:"
                         + endNode.getProperty("index", null) + ", level:" + endNode.getProperty("level", null) + ", max:"
                         + endNode.getProperty("max", null) + ", min:" + endNode.getProperty("min", null));

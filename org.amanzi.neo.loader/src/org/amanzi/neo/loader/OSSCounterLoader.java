@@ -32,6 +32,7 @@ import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -52,6 +53,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @since 1.0.0
  */
 public class OSSCounterLoader extends AbstractLoader {
+    private static final Logger LOGGER = Logger.getLogger(OSSCounterLoader.class);
     // temporary types, after structure definition will be refactored for using NodeTypes
     private final static String MD_TYPE = "md";
     private final static String MI_TYPE = "mi";
@@ -109,7 +111,7 @@ public class OSSCounterLoader extends AbstractLoader {
             for (File file : fileList) {
                 try {
                     monitor.subTask(file.getName());
-                    System.out.println(file.getName() );
+                    LOGGER.debug(file.getName() );
                     storeFile(file);
                     commit(true);
                     monitor.worked(1);

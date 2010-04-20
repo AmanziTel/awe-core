@@ -24,6 +24,7 @@ import java.util.List;
 
 import net.refractions.udig.catalog.URLUtils;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 
@@ -35,6 +36,7 @@ import org.eclipse.core.runtime.Platform;
  * @author craig
  */
 public class ScriptUtils {
+    private static final Logger LOGGER = Logger.getLogger(ScriptUtils.class);
     
     /*
      * Name of JRuby plugin
@@ -107,7 +109,7 @@ public class ScriptUtils {
 				globals.put(var, Class.forName(className));			
 			}
 			catch (ClassNotFoundException e) {
-				System.out.println("Error setting global Ruby variable for class '"+className+"': "+e.getMessage());
+				LOGGER.debug("Error setting global Ruby variable for class '"+className+"': "+e.getMessage());
 				//e.printStackTrace(System.out);
 			}
 		}

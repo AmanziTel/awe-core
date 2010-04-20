@@ -51,6 +51,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -123,6 +124,7 @@ import org.neo4j.neoclipse.Activator;
  */
 
 public class NetworkTreeView extends ViewPart {
+    private static final Logger LOGGER = Logger.getLogger(NetworkTreeView.class);
 
     /*
      * ID of this View
@@ -365,18 +367,18 @@ public class NetworkTreeView extends ViewPart {
                     }
                     NeoNode neoNode = element instanceof TreeItem ? (NeoNode)((TreeItem)element).getData() : (NeoNode)element;
                     neoNode.setName(valueStr);
-                    System.out.println(element);
+                    LOGGER.debug(element);
                 }
 
                 @Override
                 public Object getValue(Object element, String property) {
-                    System.out.println(element);
+                    LOGGER.debug(element);
                     return ((NeoNode)element).getNode().getProperty(INeoConstants.PROPERTY_NAME_NAME);
                 }
 
                 @Override
                 public boolean canModify(Object element, String property) {
-                    System.out.println(element);
+                    LOGGER.debug(element);
                     return !(element instanceof Root) && ((NeoNode)element).getNode().hasProperty(INeoConstants.PROPERTY_NAME_NAME);
                 }
             };
@@ -1096,9 +1098,9 @@ public class NetworkTreeView extends ViewPart {
                                 public boolean isReturnableNode(TraversalPosition currentPos) {
                                     Node cn = currentPos.currentNode();
                                     // if(orphans.size()<1){
-                                    // System.out.println("Checking node:
+                                    // LOGGER.debug("Checking node:
                                     // "+cn.getProperty("name",cn.toString()));
-                                    // System.out.println("\tnode id = "+cn.getId());
+                                    // LOGGER.debug("\tnode id = "+cn.getId());
                                     // }
                                     return cn.getId() == refId || cn.getId() == netId;
                                 }
@@ -1113,10 +1115,10 @@ public class NetworkTreeView extends ViewPart {
                     }
                     if (orphans.size() > 0) {
                         monitor.subTask("Fixing " + orphans.size() + " orphaned nodes");
-                        System.out.println("Found " + orphans.size() + " orphaned nodes from cancelled deletion");
+                        LOGGER.debug("Found " + orphans.size() + " orphaned nodes from cancelled deletion");
                         int count = 0;
                         for (String name : orphanNames) {
-                            System.out.println("\tOrphan: " + name);
+                            LOGGER.debug("\tOrphan: " + name);
                             if (count++ > 10)
                                 break;
                         }
@@ -1201,7 +1203,7 @@ public class NetworkTreeView extends ViewPart {
                         }
                     }
                     if (geoPrev != null && geoNext != null) {
-                        // System.out.println("Creating new geo-next relationship: " +
+                        // LOGGER.debug("Creating new geo-next relationship: " +
                         // geoPrev.getProperty("name", null) + " -("
                         // + GeoNeoRelationshipTypes.NEXT + ")-> " + geoNext.getProperty("name",
                         // null));
@@ -1602,7 +1604,7 @@ public class NetworkTreeView extends ViewPart {
             while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
                 i++;
             }
-            System.out.println("Repost script:\n" + sb.toString());
+            LOGGER.debug("Repost script:\n" + sb.toString());
             InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
             try {
                 file.create(is, true, null);
@@ -1723,7 +1725,7 @@ public class NetworkTreeView extends ViewPart {
                         if (entry.getValue().same()) {
                             identical.add(entry.getKey());
                             // } else {
-                            // System.out.println("Property changed for '"+entry.getKey()+"':
+                            // LOGGER.debug("Property changed for '"+entry.getKey()+"':
                             // "+entry.getValue());
                         }
                     }

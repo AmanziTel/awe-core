@@ -27,16 +27,14 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
-import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.AbstractSplashEditor;
 import org.amanzi.splash.utilities.NeoSplashUtil;
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -90,6 +88,7 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  * @since 1.0.0
  */
 public class KpiView extends ViewPart {
+    private static final Logger LOGGER = Logger.getLogger(KpiView.class);
 
     /** String TEST_TITLE field */
     private static final String TEST_TITLE = "Parsing script";
@@ -147,7 +146,7 @@ public class KpiView extends ViewPart {
 
     private Button bInit;
 
-	private String INIT_SCRIPT="init.rb";
+	private final String INIT_SCRIPT="init.rb";
 	
 	private String fileName="";
 	
@@ -155,9 +154,9 @@ public class KpiView extends ViewPart {
 	
 	private String parameters="";
 
-    private String LB_FORMULA_NAME="Formula name:";
+    private final String LB_FORMULA_NAME="Formula name:";
 
-    private String LB_PARAMETERS="Parameters:";
+    private final String LB_PARAMETERS="Parameters:";
 
     private Text txtFormulaName;
 
@@ -167,15 +166,15 @@ public class KpiView extends ViewPart {
 
     private Button btnCollections;
 
-    private String LB_ELEMENTS="elements";
+    private final String LB_ELEMENTS="elements";
 
-    private String LB_COLLECTIONS="collections";
+    private final String LB_COLLECTIONS="collections";
 
-    private String LB_TYPE="Type:";
+    private final String LB_TYPE="Type:";
 
-    private String ELEMENTS_SCRIPT="element_formulas.rb";
+    private final String ELEMENTS_SCRIPT="element_formulas.rb";
     
-    private String COLLECTIONS_SCRIPT="collection_formulas.rb";
+    private final String COLLECTIONS_SCRIPT="collection_formulas.rb";
 
 	/**
 	 * The constructor.
@@ -187,7 +186,8 @@ public class KpiView extends ViewPart {
 	 * This is a callback that will allow us
 	 * to create the viewer and initialize it.
 	 */
-	public void createPartControl(Composite parent) {
+	@Override
+    public void createPartControl(Composite parent) {
         Composite frame = new Composite(parent, SWT.NONE);
         FormLayout mainLayout = new FormLayout();
         frame.setLayout(mainLayout);
@@ -442,7 +442,7 @@ public class KpiView extends ViewPart {
             ArrayList<String> result = new ArrayList<String>();
             Ruby rubyRuntime = KPIPlugin.getDefault().getRubyRuntime();
             IRubyObject formula = rubyRuntime.evalScriptlet(getFormulaScript());
-            System.out.println(formula);
+            LOGGER.debug(formula);
             Object[] array = formula.convertToArray().toArray();
             for (Object met : array) {
                 result.add(met.toString());
@@ -473,7 +473,7 @@ public class KpiView extends ViewPart {
 			if (parseResult.getLeft()) {
 			    KPIPlugin.getDefault().getRubyRuntime().evalScriptlet(script);
 			    fillFormulas();
-			    System.out.println("fillFormulas");
+			    LOGGER.debug("fillFormulas");
 			} else {
 			    testError(parseResult.getRight().getLocalizedMessage());
 			}
@@ -611,9 +611,9 @@ public class KpiView extends ViewPart {
 //                            fileName = dialog.getFileName();
 //                            formulaName = dialog.getFormulaName();
 //                            parameters = dialog.getParameters();
-                            System.out.println(fileName);
-                            System.out.println(formulaName);
-                            System.out.println(parameters);
+                            LOGGER.debug(fileName);
+                            LOGGER.debug(formulaName);
+                            LOGGER.debug(parameters);
 
                             String aweProjectName = AWEProjectManager.getActiveProjectName();
                             IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
@@ -628,7 +628,7 @@ public class KpiView extends ViewPart {
                                 ByteArrayInputStream is = new ByteArrayInputStream(scriptText.getBytes());
                                 formulaScript.create(is, true, null);
                                 is.close();
-                                System.out.println("Formula script was created");
+                                LOGGER.debug("Formula script was created");
                             } else {
                                 ByteArrayInputStream is = new ByteArrayInputStream(scriptText.getBytes());
                                 formulaScript.setContents(is, IFile.FORCE, null);
@@ -641,7 +641,7 @@ public class KpiView extends ViewPart {
                                 IFile collectionsScript = folder.getFile(KPIUtils.COLLECTION_FORMULAS_SCRIPT);
                                 createOrUpdateScript(methodText, collectionsScript);
                             }else{
-                                System.out.println("Warning: Neither element type nor collection type selected!");
+                                LOGGER.debug("Warning: Neither element type nor collection type selected!");
                             }
                             IFile initScript = folder.getFile(INIT_SCRIPT);
                             if (!initScript.exists()){
@@ -658,7 +658,7 @@ public class KpiView extends ViewPart {
                                     createEmptyScriptFile(collectionsScript);
                                 } 
                                 testInitScriptAndRun(initScriptText);
-                                System.out.println("Init script was created");
+                                LOGGER.debug("Init script was created");
                             }else{
                                 StringBuffer sb = new StringBuffer();
                                 KPIUtils.readContentToStringBuffer(initScript.getContents(), sb);
@@ -678,7 +678,7 @@ public class KpiView extends ViewPart {
                 ByteArrayInputStream is = new ByteArrayInputStream(new String().getBytes());
                 scriptFile.create(is, true, null);
                 is.close();
-                System.out.println("Empty script "+scriptFile.getName()+" was created");
+                LOGGER.debug("Empty script "+scriptFile.getName()+" was created");
             }
 
 			private ByteArrayInputStream createOrUpdateFormulaScript(
@@ -708,7 +708,7 @@ public class KpiView extends ViewPart {
                     ByteArrayInputStream is = new ByteArrayInputStream(methodText.getBytes());
                     scriptFile.create(is, true, null);
                     is.close();
-                    System.out.println(scriptFile.getName()+" was created");
+                    LOGGER.debug(scriptFile.getName()+" was created");
                 }else{
                 KPIUtils.readContentToStringBuffer(scriptFile.getContents(), sb);
                 ByteArrayInputStream is = createOrUpdateFormulaScript(sb, methodText);
@@ -867,12 +867,12 @@ public class KpiView extends ViewPart {
         IWorkbenchWindow[] workbenchWindows = workbench.getWorkbenchWindows();
         for (IWorkbenchWindow window:workbenchWindows){
             IEditorPart activeEditor = window.getActivePage().getActiveEditor();
-            System.out.println("[DEBUG] activeEditor "+activeEditor);
+            LOGGER.debug("[DEBUG] activeEditor "+activeEditor);
             if (activeEditor instanceof AbstractSplashEditor){
                 AbstractSplashEditor splashEditor=(AbstractSplashEditor)activeEditor;
                 TableModel model = splashEditor.getTable().getModel();
                 if (model instanceof SplashTableModel){
-                  System.out.println("[DEBUG] model "+model);
+                  LOGGER.debug("[DEBUG] model "+model);
                   IRubyObject rubyObject = JavaEmbedUtils.javaToRuby(rubyRuntime, model);
                   rubyRuntime.getGlobalVariables().define("$tableModel", new ValueAccessor(rubyObject));
                 }
@@ -944,7 +944,8 @@ public class KpiView extends ViewPart {
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */
-	public void setFocus() {
+	@Override
+    public void setFocus() {
         editor.setFocus();
 	}
 

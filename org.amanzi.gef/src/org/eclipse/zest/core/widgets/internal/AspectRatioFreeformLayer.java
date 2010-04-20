@@ -78,7 +78,7 @@ public class AspectRatioFreeformLayer extends FreeformLayer implements ScalableF
 		this.heigthScale = scale;
 		revalidate();
 		repaint();
-		//System.out.println("Operation not supported");
+		//LOGGER.debug("Operation not supported");
 		//throw new RuntimeException("Operation not supported");
 	}
 

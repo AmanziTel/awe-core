@@ -17,6 +17,7 @@ import java.io.PrintStream;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
@@ -35,6 +36,7 @@ import org.osgi.framework.BundleContext;
  */
 
 public class NeoLoaderPlugin extends Plugin {
+    private static final Logger LOGGER = Logger.getLogger(NeoLoaderPlugin.class);
     /** String DEFAULT_CHARSET field */
     public static final String DEFAULT_CHARSET = "UTF-8";
     /*
@@ -89,7 +91,8 @@ public class NeoLoaderPlugin extends Plugin {
 		plugin = this;	
 	}
 	
-	public void start(BundleContext context) throws Exception {
+	@Override
+    public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
 		
@@ -100,7 +103,8 @@ public class NeoLoaderPlugin extends Plugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
-	public void stop(BundleContext context) throws Exception {
+	@Override
+    public void stop(BundleContext context) throws Exception {
         try {
             ((IPersistentPreferenceStore)getPreferenceStore()).save();
         } catch (IOException e) {
@@ -163,7 +167,7 @@ public class NeoLoaderPlugin extends Plugin {
 				getDefault().printToStream(line);
 			}
 		} else if(debug) {
-		    System.out.println(line);
+		    LOGGER.debug(line);
 		}
 	}
 	
@@ -179,7 +183,7 @@ public class NeoLoaderPlugin extends Plugin {
 				getDefault().printToStream(line);
 			}
         } else {
-            System.out.println(line);
+            LOGGER.debug(line);
 		}
 	}
 	
@@ -193,7 +197,7 @@ public class NeoLoaderPlugin extends Plugin {
 		if (loggingPossible) {
 			getDefault().printToStream(line);
         } else {
-            System.out.println(line);
+            LOGGER.debug(line);
 		}
 	}
 	

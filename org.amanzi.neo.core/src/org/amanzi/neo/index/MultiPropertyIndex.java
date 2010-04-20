@@ -11,6 +11,7 @@ import java.util.Random;
 
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -35,16 +36,18 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
  * @param <E> the type of the property to index, any standard numerical type
  */
 public class MultiPropertyIndex<E extends Object> {
-    private String[] properties;
+    private static final Logger LOGGER = Logger.getLogger(MultiPropertyIndex.class);
+    
+    private final String[] properties;
     private GraphDatabaseService neo;
     private E[] origin;
-    private MultiValueConverter<E> converter;
+    private final MultiValueConverter<E> converter;
     private Node root;
     private int step;
-    private ArrayList<IndexLevel> levels = new ArrayList<IndexLevel>();
+    private final ArrayList<IndexLevel> levels = new ArrayList<IndexLevel>();
     private int[] originIndices = null;
-    private ArrayList<Node> nodesToIndex = new ArrayList<Node>();
-    private String name;
+    private final ArrayList<Node> nodesToIndex = new ArrayList<Node>();
+    private final String name;
 
     public abstract class Linearizer<T extends Comparable<T>> {
         public T toLinear(T original) {
@@ -91,10 +94,12 @@ public class MultiPropertyIndex<E extends Object> {
     }
 
     public class DoubleLogLinearizer extends DoubleLinearizer {
+        @Override
         public Double toLinear(Double original) {
             return original;
         }
 
+        @Override
         public Double toOriginal(Double linear) {
             return linear;
         }
@@ -525,14 +530,14 @@ public class MultiPropertyIndex<E extends Object> {
     }
 
     private class SearchEvaluator implements StopEvaluator, ReturnableEvaluator {
-        private ArrayList<int[]> levelMin = new ArrayList<int[]>();
-        private ArrayList<int[]> levelMax = new ArrayList<int[]>();
+        private final ArrayList<int[]> levelMin = new ArrayList<int[]>();
+        private final ArrayList<int[]> levelMax = new ArrayList<int[]>();
         private Node currentNode = null;
         private boolean indexOnEdge = false;
         private boolean nodeInRange = false;
         private boolean nodeIsIndex = false;
-        private E[] min;
-        private E[] max;
+        private final E[] min;
+        private final E[] max;
         private int countNodes = 0;
         private int countResults = 0;
 
@@ -834,7 +839,7 @@ public class MultiPropertyIndex<E extends Object> {
     }
 
     private static void runTest(String name, MultiTestRunnable runnable) {
-        System.out.println("\nRunning test: " + name);
+        LOGGER.debug("\nRunning test: " + name);
         NeoCommitter neo = new NeoCommitter("../../testing/neo");
         PropertyIndex.MultiTimer timer = new PropertyIndex.MultiTimer("MultiPropertyIndex." + name);
         Transaction tx = neo.beginTx();
@@ -883,7 +888,7 @@ public class MultiPropertyIndex<E extends Object> {
             }
 
             private void runTimeSearch(MultiPropertyIndex<Long> propertyIndex) {
-                System.out.println("Searching using the time index");
+                LOGGER.debug("Searching using the time index");
                 boolean success = true;
                 long[] timestamps = new long[] {900034313, 900384737, 900706025, 901149104, 901446174, 901753047, 902055111,
                         902347491, 902717915, 903132290};
@@ -900,19 +905,19 @@ public class MultiPropertyIndex<E extends Object> {
                     double latitude = (Double)node.getProperty("latitude", null);
                     double longitude = (Double)node.getProperty("longitude", null);
                     if (timestamp != timestamps[index]) {
-                        System.out.println("\tFailed index=" + index + " on timestamps: " + timestamp + " != " + timestamps[index]);
+                        LOGGER.debug("\tFailed index=" + index + " on timestamps: " + timestamp + " != " + timestamps[index]);
                         success = false;
                     }
                     if (latitude != latitudes[index]) {
-                        System.out.println("\tFailed index=" + index + " on latitudes: " + latitude + " != " + latitudes[index]);
+                        LOGGER.debug("\tFailed index=" + index + " on latitudes: " + latitude + " != " + latitudes[index]);
                         success = false;
                     }
                     if (longitude != longitudes[index]) {
-                        System.out.println("\tFailed index=" + index + " on longitudes: " + longitude + " != " + longitudes[index]);
+                        LOGGER.debug("\tFailed index=" + index + " on longitudes: " + longitude + " != " + longitudes[index]);
                         success = false;
                     }
                     if (success) {
-                        System.out.println("\tPassed node index=" + index + " at timestamp=" + timestamp + " on location=("
+                        LOGGER.debug("\tPassed node index=" + index + " at timestamp=" + timestamp + " on location=("
                                 + latitude + ":" + longitude + ")");
                     }
                     index++;
@@ -920,7 +925,7 @@ public class MultiPropertyIndex<E extends Object> {
             }
 
             private void runLocationSearch(MultiPropertyIndex<Double> propertyIndex) {
-                System.out.println("Searching using the spatial location index");
+                LOGGER.debug("Searching using the spatial location index");
                 boolean success = true;
                 long[] timestamps = new long[] {1456600750, 1493972862, 1494352122, 1607557453, 1608056545, 1643605867, 1643991045,
                         3545397436L, 3627868075L};
@@ -941,21 +946,21 @@ public class MultiPropertyIndex<E extends Object> {
                     double longitude = (Double)node.getProperty("longitude", null);
                     double[] location = expected.get(timestamp);
                     if (location == null) {
-                        System.out.println("\tFailed index=" + index + " on timestamps: " + timestamp
+                        LOGGER.debug("\tFailed index=" + index + " on timestamps: " + timestamp
                                 + " not found in expected results");
                         success = false;
                     } else {
                         if (latitude != location[0]) {
-                            System.out.println("\tFailed index=" + index + " on latitudes: " + latitude + " != " + location[0]);
+                            LOGGER.debug("\tFailed index=" + index + " on latitudes: " + latitude + " != " + location[0]);
                             success = false;
                         }
                         if (longitude != location[1]) {
-                            System.out.println("\tFailed index=" + index + " on longitudes: " + longitude + " != " + location[1]);
+                            LOGGER.debug("\tFailed index=" + index + " on longitudes: " + longitude + " != " + location[1]);
                             success = false;
                         }
                     }
                     if (success) {
-                        System.out.println("\tPassed node index=" + index + " at timestamp=" + timestamp + " on location=("
+                        LOGGER.debug("\tPassed node index=" + index + " at timestamp=" + timestamp + " on location=("
                                 + latitude + ":" + longitude + ")");
                     }
                     index++;
@@ -1016,7 +1021,7 @@ public class MultiPropertyIndex<E extends Object> {
                         timeIndex.flush();
                         locationIndex.flush();
                         neo.commit();
-                        System.out.println("At " + timestamp + " (" + date + ") we have location: " + latitude + ":" + longitude);
+                        LOGGER.debug("At " + timestamp + " (" + date + ") we have location: " + latitude + ":" + longitude);
                         timer.mark("commit:" + i);
                     } else {
                         timer.mark(i);
@@ -1024,14 +1029,14 @@ public class MultiPropertyIndex<E extends Object> {
                     if (timestamp > 900000000) {
                         if (timeSearch.size() < 10) {
                             timeSearch.add(node);
-                            System.out.println("Time search result[" + node.getId() + "]: timestamp=" + timestamp + " location=("
+                            LOGGER.debug("Time search result[" + node.getId() + "]: timestamp=" + timestamp + " location=("
                                     + latitude + ":" + longitude + ")");
                         }
                     }
                     if (inBox(smallBox, longitude, latitude)) {
                         if (countInBox < 10) {
                             locationSearch.add(node);
-                            System.out.println("Location search result[" + node.getId() + "]: timestamp=" + timestamp
+                            LOGGER.debug("Location search result[" + node.getId() + "]: timestamp=" + timestamp
                                     + " location=(" + latitude + ":" + longitude + ")");
                         }
                         countInBox++;
@@ -1047,12 +1052,12 @@ public class MultiPropertyIndex<E extends Object> {
                 xsmallBox[3] -= 48 * height / 100;
                 printBox("Original small box", smallBox);
                 printBox("Calculated small box", xsmallBox);
-                System.out.println("Small box contained " + countInBox + " points");
-                System.out.println("Time search results: ");
+                LOGGER.debug("Small box contained " + countInBox + " points");
+                LOGGER.debug("Time search results: ");
                 printResults(timeSearch, "Time", "timestamp");
                 printResults(timeSearch, "Latitude", "latitude");
                 printResults(timeSearch, "longitude", "longitude");
-                System.out.println("Location search results: ");
+                LOGGER.debug("Location search results: ");
                 printResults(locationSearch, "Time", "timestamp");
                 printResults(locationSearch, "Latitude", "latitude");
                 printResults(locationSearch, "longitude", "longitude");
@@ -1070,7 +1075,7 @@ public class MultiPropertyIndex<E extends Object> {
             }
             sb.append(node.getProperty(property, null));
         }
-        System.out.println("\t" + sb.toString());
+        LOGGER.debug("\t" + sb.toString());
     }
 
     private static boolean inBox(double[] bbox, double x, double y) {
@@ -1084,9 +1089,9 @@ public class MultiPropertyIndex<E extends Object> {
     }
 
     private static void printBox(String name, double[] bbox) {
-        System.out.println(name + " has width=" + (bbox[2] - bbox[0]) + " and height=" + (bbox[3] - bbox[1]));
+        LOGGER.debug(name + " has width=" + (bbox[2] - bbox[0]) + " and height=" + (bbox[3] - bbox[1]));
         for (int i = 0; i < bbox.length; i++) {
-            System.out.println("\t" + bbox[i]);
+            LOGGER.debug("\t" + bbox[i]);
         }
     }
 }

@@ -9,6 +9,7 @@ import java.util.Random;
 
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
 import org.amanzi.neo.core.enums.RelationDeletableTypes;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -110,13 +111,15 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
  * @param <E> the type of the property to index, any standard numerical type
  */
 public class PropertyIndex<E extends Comparable<E>> {
-    private String property;
-    private GraphDatabaseService neo;
+    private static final Logger LOGGER = Logger.getLogger(PropertyIndex.class);
+    
+    private final String property;
+    private final GraphDatabaseService neo;
     private E origin;
-    private ValueConverter<E> converter;
+    private final ValueConverter<E> converter;
     private Node root;
-    private int step;
-    private ArrayList<IndexLevel> levels = new ArrayList<IndexLevel>();
+    private final int step;
+    private final ArrayList<IndexLevel> levels = new ArrayList<IndexLevel>();
 
     /**
      * Generic interface for calculating an index value from a data value. This is used for stepping
@@ -157,7 +160,7 @@ public class PropertyIndex<E extends Comparable<E>> {
      * constructor.
      */
     public static class LongConverter implements ValueConverter<Long> {
-        private long cluster;
+        private final long cluster;
 
         public LongConverter(long cluster) {
             this.cluster = cluster;
@@ -189,7 +192,7 @@ public class PropertyIndex<E extends Comparable<E>> {
      * constructor.
      */
     public static class IntegerConverter implements ValueConverter<Integer> {
-        private int cluster;
+        private final int cluster;
 
         public IntegerConverter(int cluster) {
             this.cluster = cluster;
@@ -221,7 +224,7 @@ public class PropertyIndex<E extends Comparable<E>> {
      * constructor.
      */
     public static class FloatConverter implements ValueConverter<Float> {
-        private float cluster;
+        private final float cluster;
 
         public FloatConverter(float cluster) {
             this.cluster = cluster;
@@ -254,7 +257,7 @@ public class PropertyIndex<E extends Comparable<E>> {
      * constructor.
      */
     public static class DoubleConverter implements ValueConverter<Double> {
-        private double cluster;
+        private final double cluster;
 
         public DoubleConverter(double cluster) {
             this.cluster = cluster;
@@ -621,14 +624,14 @@ public class PropertyIndex<E extends Comparable<E>> {
     }
 
     public static class MultiTimer {
-        private String name;
+        private final String name;
         private long lastTime;
-        private long firstTime;
+        private final long firstTime;
         private int count = 0;
         private int maxDiff = 0;
         private int diff = 0;
-        private HashMap<Integer, Integer> hist = new HashMap<Integer, Integer>();
-        private HashMap<Integer, Object> marks = new HashMap<Integer, Object>();
+        private final HashMap<Integer, Integer> hist = new HashMap<Integer, Integer>();
+        private final HashMap<Integer, Object> marks = new HashMap<Integer, Object>();
 
         public MultiTimer(String name) {
             this.name = name;
@@ -774,34 +777,34 @@ public class PropertyIndex<E extends Comparable<E>> {
      */
     private static void castAndFloorTests() {
         int max = 100;
-        float maxf = (float)max / 10.0f;
+        float maxf = max / 10.0f;
         float offf = maxf / 2.0f;
         /* Test that Math floor always works while (int) fails for negative values */
         for(int x=0;x<max;x++){
-            float fval = ((float)x)/maxf-offf;
+            float fval = (x)/maxf-offf;
             double dval = ((double)x)/maxf-offf;
             int[] i = new int[]{(int)fval,(int)Math.floor(fval),(int)dval,(int)Math.floor(dval)};
-            System.out.println("x["+x+"]: f["+fval+"]("+i[0]+","+i[1]+") \td["+dval+"]("+i[2]+","+i[3]+")");
+            LOGGER.debug("x["+x+"]: f["+fval+"]("+i[0]+","+i[1]+") \td["+dval+"]("+i[2]+","+i[3]+")");
         }
         /* Performance test */
         max = 1000000;
-        maxf = (float)max / 10.0f;
+        maxf = max / 10.0f;
         offf = maxf / 2.0f;
         long startTime = System.currentTimeMillis();
         for(int x=0;x<max;x++){
-            float fval = ((float)x)/maxf-offf;
+            float fval = (x)/maxf-offf;
             double dval = ((double)x)/maxf-offf;
             @SuppressWarnings("unused")
             int[] i = new int[]{(int)Math.floor(fval),(int)Math.floor(dval)};
 //                if(i[0]!=i[1]){
-//                    System.out.println("x["+x+"]: f["+fval+"]("+i[0]+") =! \td["+dval+"]("+i[1]+")");
+//                    LOGGER.debug("x["+x+"]: f["+fval+"]("+i[0]+") =! \td["+dval+"]("+i[1]+")");
 //                }
         }
         long endTime = System.currentTimeMillis();
-        System.out.println("Took "+(endTime-startTime)+"ms to perform 1m (int)Math.floor(val)");
+        LOGGER.debug("Took "+(endTime-startTime)+"ms to perform 1m (int)Math.floor(val)");
         startTime = System.currentTimeMillis();
         for(int x=0;x<max;x++){
-            float fval = ((float)x)/maxf-offf;
+            float fval = (x)/maxf-offf;
             double dval = ((double)x)/maxf-offf;
             @SuppressWarnings("unused")
             int[] i;
@@ -811,11 +814,11 @@ public class PropertyIndex<E extends Comparable<E>> {
                 i = new int[]{(int)fval,(int)dval};
             }
 //                if(i[0]!=i[1]){
-//                    System.out.println("x["+x+"]: f["+fval+"]("+i[0]+") =! \td["+dval+"]("+i[1]+")");
+//                    LOGGER.debug("x["+x+"]: f["+fval+"]("+i[0]+") =! \td["+dval+"]("+i[1]+")");
 //                }
         }
         endTime = System.currentTimeMillis();
-        System.out.println("Took "+(endTime-startTime)+"ms to perform 1m casts (int)val");
+        LOGGER.debug("Took "+(endTime-startTime)+"ms to perform 1m casts (int)val");
         return;
     }
 }

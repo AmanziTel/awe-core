@@ -27,6 +27,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -57,6 +58,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * @author craig
  */
 public class GeoNeo {
+    private static final Logger LOGGER = Logger.getLogger(GeoNeo.class);
     /** String NEIGH_RELATION field */
     public static final String NEIGH_RELATION = "NEIGH_RELATION";
     public static final String NEIGH_TYPE = "NEIGH_TYPE";
@@ -253,7 +255,7 @@ public class GeoNeo {
              searchBounds.getMaxY(), searchBounds.getMaxX()});
 
         } catch (Exception e) {
-            System.out.println("GeoNeo: Failed to search location index, doing exhaustive search: " + e);
+            LOGGER.debug("GeoNeo: Failed to search location index, doing exhaustive search: " + e);
             if (searchBounds == null) {
                 return gisNode.traverse(Traverser.Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
@@ -345,7 +347,7 @@ public class GeoNeo {
             if (this.bounds.isNull()) {
                 Transaction tx = this.neo.beginTx();
                 try {
-                    System.out.println("Re-determining bounding box for gis data: " + this.name);
+                    LOGGER.debug("Re-determining bounding box for gis data: " + this.name);
                     // Try to create envelope from any data referenced by the gisNode
                     for (GeoNode node : getGeoNodes(null)) {
                         // TODO: support high dimensions
@@ -363,7 +365,7 @@ public class GeoNeo {
                     NeoServiceProvider.getProvider().commit();
                 }
             }
-            // System.out.println("Determined bounding box for " + this.name + ": " + this.bounds);
+            // LOGGER.debug("Determined bounding box for " + this.name + ": " + this.bounds);
             // throw new RuntimeException("Escape a deadlock");
         }
         return bounds;

@@ -26,6 +26,7 @@ import java.util.zip.GZIPInputStream;
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.utils.Pair;
+import org.apache.log4j.Logger;
 import org.kc7bfi.jflac.io.BitInputStream;
 
 /**
@@ -37,6 +38,8 @@ import org.kc7bfi.jflac.io.BitInputStream;
  * @since 1.0.0
  */
 public class GPEHParser {
+    private static final Logger LOGGER = Logger.getLogger(GPEHParser.class);
+    
     public static GPEHMainFile parseMainFile(File mainFile) throws IOException {
         GPEHMainFile result = new GPEHMainFile(mainFile);
         InputStream in = new FileInputStream(mainFile);
@@ -56,7 +59,7 @@ public class GPEHParser {
         }
         for (org.amanzi.neo.loader.gpeh.GPEHMainFile.Record record : result.records) {
             for (Pair<String, String> pair : record.filters) {
-                System.out.println(pair.left() + "\t" + pair.right());
+                LOGGER.debug(pair.left() + "\t" + pair.right());
             }
         }
         return result;
@@ -129,7 +132,7 @@ public class GPEHParser {
         GPEHMainFile.Link link = new GPEHMainFile.Link();
         result.addLink(link);
         link.filePath = readAllString(input, 256);
-        System.out.println(link.filePath);
+        LOGGER.debug(link.filePath);
     }
 
     /**
@@ -274,8 +277,8 @@ public class GPEHParser {
         StringBuilder bits = new StringBuilder("");
         // String buf= readBits(bits,input,recordLen*8);
         // bits.insert(0, buf);
-        // System.out.println("--------");
-        // System.out.println(bits.toString());
+        // LOGGER.debug("--------");
+        // LOGGER.debug(bits.toString());
         event.scannerId = (Integer)readParameter(input, Parameters.EVENT_PARAM_SCANNER_ID).getLeft();
         event.hour = (Integer)readParameter(input, Parameters.EVENT_PARAM_TIMESTAMP_HOUR).getLeft();
         event.minute = (Integer)readParameter(input, Parameters.EVENT_PARAM_TIMESTAMP_MINUTE).getLeft();
@@ -308,17 +311,17 @@ public class GPEHParser {
         if (parseOk) {
             result.addEvent(event);
         } else {
-            // System.out.println("Event not parsed!\t"+event.id);
+            // LOGGER.debug("Event not parsed!\t"+event.id);
         }
         if (len < recLen) {
             input.skipBitsNoCRC(recLen - len);
             if (parseOk && len + 32 < recLen) {
-                System.out.println("Wrong parsing !\t" + event.id);
+                LOGGER.debug("Wrong parsing !\t" + event.id);
             }
         }else if (len>recLen){
             throw new UnexpectedException("to large");
         }
-        // System.out.println(event.id);
+        // LOGGER.debug(event.id);
         // readBits= readBits(bits,input,16);
         // event.ueContextId=Integer.valueOf(readBits, 2);
         // readBits= readBits(bits,input,7);
@@ -342,9 +345,9 @@ public class GPEHParser {
         // event.rncID4=Integer.valueOf(readBits, 2);
         //        
         // int len = (recordLen-3)*8-5-6-6-22-16-7-17-13-17-13-17-13-17-13;
-        // System.out.println(len);
+        // LOGGER.debug(len);
         // event.notParsed=readBits(bits,input,len);
-        // System.out.println(bits.toString());
+        // LOGGER.debug(bits.toString());
 
     }
 

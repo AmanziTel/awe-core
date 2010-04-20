@@ -27,6 +27,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.RubyProjectNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -61,6 +62,7 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  * @since 1.0.0
  */
 public class NewReportWizard extends NewRubyElementCreationWizard implements INewWizard {
+    private static final Logger LOGGER = Logger.getLogger(NewReportWizard.class);
 
     private NewReportWizardPage page;
 
@@ -72,18 +74,19 @@ public class NewReportWizard extends NewRubyElementCreationWizard implements INe
 
     @Override
     protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
-        System.out.println("--------> finishPage");
+        LOGGER.debug("--------> finishPage");
     }
 
     /**
      * This method is called when 'Finish' button is pressed in the wizard. We will create an
      * operation and run it using wizard as execution context.
      */
+    @Override
     public boolean performFinish() {
-        System.out.println("--------> performFinish");
+        LOGGER.debug("--------> performFinish");
         final String containerName = page.getContainerText().getText();
 
-        System.out.println("containerName: " + containerName);
+        LOGGER.debug("containerName: " + containerName);
 
         final String fileName = page.getReportText().getText();
         IRunnableWithProgress op = new IRunnableWithProgress() {

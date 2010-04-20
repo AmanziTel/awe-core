@@ -21,6 +21,8 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 /**
  * <p>
  * Utility class
@@ -30,6 +32,7 @@ import java.util.regex.Pattern;
  * @since 1.0.0
  */
 public class KPIUtils {
+    private static final Logger LOGGER = Logger.getLogger(KPIUtils.class);
     public static final String COLLECTION_FORMULAS_SCRIPT = "collection_formulas.rb";
     public static final String UTIL_FORMULAS_SCRIPT = "util_formulas.rb";
     public static final String ELEMENT_FORMULAS_SCRIPT="element_formulas.rb";
@@ -140,14 +143,14 @@ public class KPIUtils {
         int params = 1;
         int formulaName = 2;
         for (String[] test : tests) {
-            System.out.println("[DEBUG]----------------------");// TODO delete debug info
+            LOGGER.debug("[DEBUG]----------------------");// TODO delete debug info
             String methodText = KPIUtils.generateRubyMethod_old(test[formulaName], test[params], test[formulaText], "  ");
-            System.out.println(methodText);
+            LOGGER.debug(methodText);
             // inserting method into a script test
             for (String script : test3) {
                 String newScript = KPIUtils.insertOrUpdateRubyMethod(script, methodText);
-                System.out.println("[DEBUG]oldScript ->\n" + script);// TODO delete debug info
-                System.out.println("[DEBUG]newScript ->\n" + newScript);// TODO delete debug info
+                LOGGER.debug("[DEBUG]oldScript ->\n" + script);// TODO delete debug info
+                LOGGER.debug("[DEBUG]newScript ->\n" + newScript);// TODO delete debug info
 
             }
         }

@@ -675,7 +675,7 @@ public class GraphContainer extends GraphNode implements IContainer {
 		 *
 		viewport.setHorizontalRangeModel(new DefaultRangeModel() {
 			public void setAll(int min, int ext, int max) {
-				System.out.println("Max: " + max + " : current Max:  " + getMaximum());
+				LOGGER.debug("Max: " + max + " : current Max:  " + getMaximum());
 				if (max < getMaximum()) {
 					max = getMaximum();
 				}
@@ -684,7 +684,7 @@ public class GraphContainer extends GraphNode implements IContainer {
 
 			public void setMaximum(int maximum) {
 				// TODO Auto-generated method stub
-				System.out.println("Max: " + maximum + " : current Max:  " + getMaximum());
+				LOGGER.debug("Max: " + maximum + " : current Max:  " + getMaximum());
 				if (maximum < getMaximum()) {
 					return;
 				}

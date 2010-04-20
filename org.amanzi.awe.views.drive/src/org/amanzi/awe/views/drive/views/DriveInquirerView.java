@@ -53,6 +53,7 @@ import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -143,6 +144,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class DriveInquirerView  extends ViewPart implements IPropertyChangeListener {
+    private static final Logger LOGGER = Logger.getLogger(DriveInquirerView.class);
     
     /* Data constants */
     public static final String ID = "org.amanzi.awe.views.drive.views.DriveInquirerView"; //$NON-NLS-1$
@@ -523,6 +525,8 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
         if (lists.length > 1 && lists.length % 2 != 0) {
             displayErrorMessage(Messages.DriveInquirerView_16);
         }
+        if(lists.length == 1 && lists[0] == "")
+            return;
         for (int i = 0; i < lists.length; i += 2) {
             List<String> allPr = Arrays.asList(lists[i + 1].split(",")); //$NON-NLS-1$
             List<String> prsToAdd = new ArrayList<String>(allPr.size());
@@ -826,7 +830,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
         calendar.set(GregorianCalendar.HOUR_OF_DAY, dateStart.getHours());
         calendar.set(GregorianCalendar.MINUTE, dateStart.getMinutes());
         calendar.set(GregorianCalendar.SECOND, dateStart.getSeconds());
-        System.out.println("[DEBUG]calendar.getTimeInMillis()" + calendar.getTimeInMillis());// TODO //$NON-NLS-1$
+        LOGGER.debug("[DEBUG]calendar.getTimeInMillis()" + calendar.getTimeInMillis());// TODO //$NON-NLS-1$
         // delete
         // debug
         // info
@@ -843,7 +847,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
         Long delta_sec = 2L;
         Long delta_msec = delta_sec * 1000;
 
-        // System.out.println("time: "+dateStart.getHours()+":"+dateStart.getMinutes()+":"+dateStart.getSeconds());
+        // LOGGER.debug("time: "+dateStart.getHours()+":"+dateStart.getMinutes()+":"+dateStart.getSeconds());
         StringBuffer sb = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(System.getProperty("user.name")).append( //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 "'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n  chart 'Drive ").append(cDrive.getText()).append("' do\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         sb.append("    self.type=:time\n"); //$NON-NLS-1$
@@ -966,7 +970,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
         while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) { //$NON-NLS-1$ //$NON-NLS-2$
             i++;
         }
-        System.out.println("Report script:\n" + sb.toString()); //$NON-NLS-1$
+        LOGGER.debug("Report script:\n" + sb.toString()); //$NON-NLS-1$
         InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
         try {
             file.create(is, true, null);

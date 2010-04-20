@@ -29,6 +29,7 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.AbstractLoader.GisProperties;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -45,7 +46,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class AMSCorrellator {
-	
+    private static final Logger LOGGER = Logger.getLogger(AMSCorrellator.class);
 	/**
 	 * Index for Timestamps
 	 */
@@ -54,7 +55,7 @@ public class AMSCorrellator {
 	/**
 	 * Neo Service
 	 */
-	private GraphDatabaseService neoService;
+	private final GraphDatabaseService neoService;
 	
 	/** is executed in testing envinroment */
 	private boolean isTest = false;
@@ -293,8 +294,8 @@ public class AMSCorrellator {
 	        throw (RuntimeException)new RuntimeException().initCause(e);
 	    }
 	    catch (Throwable e) {
-            System.out.println(e.getMessage());
-            System.out.println("error in index operation. see trace for more information - " + e.getStackTrace());
+            LOGGER.debug(e.getMessage());
+            LOGGER.debug("error in index operation. see trace for more information - " + e.getStackTrace());
         }
 	}
 	

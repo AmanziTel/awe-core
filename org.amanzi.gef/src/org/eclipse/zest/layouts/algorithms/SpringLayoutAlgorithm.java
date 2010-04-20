@@ -503,7 +503,7 @@ public class SpringLayoutAlgorithm extends ContinuousLayoutAlgorithm {
         //setTempLocation(entityToConvert, new DisplayIndependentPoint(x, y));
 
         if (entityToConvert.getInternalX() < 0) {
-            // System.out.println("We have nodes less than 0 here!");
+            // LOGGER.debug("We have nodes less than 0 here!");
         }
 
     }

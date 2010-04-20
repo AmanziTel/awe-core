@@ -56,7 +56,7 @@ public Rectangle getFreeformExtent() {
 		host.translateToParent(freeformExtent);
 		freeformExtent.expand(insets);
 	}
-//	System.out.println("New extent calculated for " + host + " = " + freeformExtent);
+//	LOGGER.debug("New extent calculated for " + host + " = " + freeformExtent);
 	return freeformExtent;
 }
 

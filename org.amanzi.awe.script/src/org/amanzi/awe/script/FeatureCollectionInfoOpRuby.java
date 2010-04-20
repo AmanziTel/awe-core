@@ -15,20 +15,21 @@ package org.amanzi.awe.script;
 import java.io.FileReader;
 import java.net.URL;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.swt.widgets.Display;
-
-import net.refractions.udig.ui.operations.IOp;
-
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-public class FeatureCollectionInfoOpRuby implements IOp {
+import net.refractions.udig.ui.operations.IOp;
 
+import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.widgets.Display;
+
+public class FeatureCollectionInfoOpRuby implements IOp {
+    private static final Logger LOGGER = Logger.getLogger(FeatureCollectionInfoOpRuby.class);
     @SuppressWarnings("nls")
     public void op( Display display, Object target, IProgressMonitor monitor ) throws Exception {
         ClassLoader remember = Thread.currentThread().getContextClassLoader();
@@ -49,7 +50,7 @@ public class FeatureCollectionInfoOpRuby implements IOp {
             URL scriptURL = FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("feature_collection_op.rb"));
             rubyEngine.eval(new FileReader(scriptURL.getPath()), context);
         } catch (ScriptException e) {
-            System.out.println(e.toString()+": "+e.getFileName()+"["+e.getLineNumber()+":"+e.getColumnNumber()+"]: "+e.getMessage());
+            LOGGER.debug(e.toString()+": "+e.getFileName()+"["+e.getLineNumber()+":"+e.getColumnNumber()+"]: "+e.getMessage());
             e.printStackTrace();
         }finally{
             Thread.currentThread().setContextClassLoader(remember);

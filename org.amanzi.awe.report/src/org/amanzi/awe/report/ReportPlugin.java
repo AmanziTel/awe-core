@@ -1,10 +1,6 @@
 package org.amanzi.awe.report;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 
 import net.refractions.udig.project.internal.Map;
@@ -13,6 +9,7 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 import org.amanzi.awe.views.kpi.KPIPlugin;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.scripting.jruby.ScriptUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -37,7 +34,7 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  * The activator class controls the plug-in life cycle
  */
 public class ReportPlugin extends AbstractUIPlugin {
-
+    private static final Logger LOGGER = Logger.getLogger(ReportPlugin.class);
     // The plug-in ID
     public static final String PLUGIN_ID = "org.amanzi.awe.report";
 
@@ -65,11 +62,12 @@ public class ReportPlugin extends AbstractUIPlugin {
      * 
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
      */
+    @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
         //force to start udig.project.ui plugin
         Map noMap = ApplicationGIS.NO_MAP;
-        System.out.println("[DEBUG]ReportPlugin started");
+        LOGGER.debug("[DEBUG]ReportPlugin started");
         plugin = this;
     }
 
@@ -78,6 +76,7 @@ public class ReportPlugin extends AbstractUIPlugin {
      * 
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
+    @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
@@ -109,7 +108,7 @@ public class ReportPlugin extends AbstractUIPlugin {
     }
 
     private void initializeRubyRuntime() throws IOException {
-        System.out.println("initializeRubyRuntime");
+        LOGGER.debug("initializeRubyRuntime");
         RubyInstanceConfig config = new RubyInstanceConfig();
         config.setJRubyHome(ScriptUtils.getJRubyHome());
         config.setLoader(this.getClass().getClassLoader());
@@ -159,28 +158,28 @@ public class ReportPlugin extends AbstractUIPlugin {
             // path to 'ruby' folder of KPI plugin
             URL entry = Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry(RUBY);
             loadPaths[0] = FileLocator.resolve(entry).getFile();
-            System.out.println("load paths:"+ loadPaths[0]);
+            LOGGER.debug("load paths:"+ loadPaths[0]);
            
             // path to project 'kpi' folder
             final IProject project = rubyProject.getProject();
             final IFolder kpiFolder = project.getFolder(new Path(KPIPlugin.KPI_FOLDER));
             loadPaths[1]= kpiFolder.getLocation().toOSString();
-            System.out.println("load paths:"+ loadPaths[1]);
+            LOGGER.debug("load paths:"+ loadPaths[1]);
             
             //path to Report plugin folders
             entry=Platform.getBundle(ReportPlugin.PLUGIN_ID).getEntry(RUBY);
             loadPaths[2] = FileLocator.resolve(entry).getFile();
-            System.out.println("load paths:"+ loadPaths[2]);
+            LOGGER.debug("load paths:"+ loadPaths[2]);
             
             // path to project 'templates' folder
             final IFolder templatesFolder = project.getFolder(new Path(ReportPlugin.TEMPLATES_FOLDER));
             loadPaths[3]= templatesFolder.getLocation().toOSString();
-            System.out.println("load paths:"+ loadPaths[3]);
+            LOGGER.debug("load paths:"+ loadPaths[3]);
             
             // path to project 'reports' folder
             final IFolder reportsFolder = project.getFolder(new Path(ReportPlugin.REPORTS_FOLDER));
             loadPaths[4]= reportsFolder.getLocation().toOSString();
-            System.out.println("load paths:"+ loadPaths[4]);
+            LOGGER.debug("load paths:"+ loadPaths[4]);
         } catch (IOException e) {
             // TODO Handle IOException
             throw (RuntimeException)new RuntimeException().initCause(e);

@@ -18,9 +18,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -48,6 +45,7 @@ import org.amanzi.neo.loader.ams.commands.CTSDC;
 import org.amanzi.neo.loader.ams.commands.CommandSyntax;
 import org.amanzi.neo.loader.ams.commands.PESQ;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -68,7 +66,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class AMSLoader extends DriveLoader {
-	
+    private static final Logger LOGGER = Logger.getLogger(AMSLoader.class);
 
     /**
      * Class that calculates a general parameters of Call
@@ -633,7 +631,7 @@ public class AMSLoader extends DriveLoader {
         printStats(false);
 		
 		Long endTime = System.currentTimeMillis();
-		System.out.println("====================== Load time: "+(endTime-startTime)+"=============================");
+		LOGGER.debug("====================== Load time: "+(endTime-startTime)+"=============================");
 	}
 	
 	protected Transaction commit(Transaction tx) {

@@ -50,6 +50,7 @@ import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.graphics.RGB;
 import org.neo4j.graphdb.Direction;
@@ -79,9 +80,10 @@ import org.neo4j.neoclipse.preference.NeoDecoratorPreferences;
 public class NeoUtils {
     private static final String TIMESTAMP_INDEX_NAME = "Index-timestamp-";
     private static final String LOCATION_INDEX_NAME = "Index-location-";
-
+    private static final Logger LOGGER = Logger.getLogger(NeoUtils.class);
+    
     private NeoUtils() {
-
+        
     }
 
     /**
@@ -454,7 +456,7 @@ public class NeoUtils {
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
             List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(new URL("file://" + databaseLocation));
             for (IService service : services) {
-                System.out.println("Found catalog service: " + service);
+                LOGGER.debug("Found catalog service: " + service);
                 if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
                     catalog.replace(service.getIdentifier(), service);
                 } else {

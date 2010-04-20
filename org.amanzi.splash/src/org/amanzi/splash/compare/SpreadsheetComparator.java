@@ -24,6 +24,7 @@ import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.utilities.SpreadsheetCreator;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IPath;
 
 import com.eteks.openjeks.format.CellFormat;
@@ -36,6 +37,7 @@ import com.lowagie.text.Font;
  * @since 1.0.0
  */
 public class SpreadsheetComparator extends SpreadsheetCreator {
+    private static final Logger LOGGER = Logger.getLogger(SpreadsheetComparator.class);
     
     /**
      * Class that maps name of Header and Node in Line
@@ -51,7 +53,7 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
         /*
          * Number of Line 
          */
-        private int lineNumber;
+        private final int lineNumber;
         
         /**
          * Creates a SpreadsheetLine
@@ -93,7 +95,7 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
         /*
          * Names of Column Headers 
          */
-        private HashMap<Integer, Object> headerNames = new HashMap<Integer, Object>();
+        private final HashMap<Integer, Object> headerNames = new HashMap<Integer, Object>();
         
         /**
          * Creates a Iterator
@@ -136,47 +138,47 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
     /*
      * Node of First Spreadsheet
      */
-    private SpreadsheetNode firstSpreadsheet;
+    private final SpreadsheetNode firstSpreadsheet;
     
     /*
      * Node of Second Spreadsheet 
      */
-    private SpreadsheetNode secondSpreadsheet;
+    private final SpreadsheetNode secondSpreadsheet;
     
     /*
      * CellFormat with Green background
      */
-    private CellFormat greenCell;
+    private final CellFormat greenCell;
     
     /* 
      * Cell format with Yellow backgound
      */
-    private CellFormat yellowCell;
+    private final CellFormat yellowCell;
     
     /*
      * Cell Format for Blue background
      */
-    private CellFormat blueCell;
+    private final CellFormat blueCell;
     
     /*
      * Cell Format with Bold font
      */
-    private CellFormat boldFormat;
+    private final CellFormat boldFormat;
     
     /*
      * Cell Format with grey background
      */
-    private CellFormat greyCell;
+    private final CellFormat greyCell;
     
     /*
      * Indexes for new Columns
      */
-    private HashMap<String, Integer> newColumnIndexes = new HashMap<String, Integer>();
+    private final HashMap<String, Integer> newColumnIndexes = new HashMap<String, Integer>();
     
     /*
      * Number of changes per each column
      */
-    private HashMap<Integer, Integer> changesPerColumn = new HashMap<Integer, Integer>();
+    private final HashMap<Integer, Integer> changesPerColumn = new HashMap<Integer, Integer>();
 
     /**
      * Creates Comparator
@@ -252,7 +254,7 @@ public class SpreadsheetComparator extends SpreadsheetCreator {
         //add information about comparision
         addDeltaInformation();
         
-        System.out.println("Compare takes " + (System.currentTimeMillis() - before) + " ms");
+        LOGGER.debug("Compare takes " + (System.currentTimeMillis() - before) + " ms");
     }
     
     /**

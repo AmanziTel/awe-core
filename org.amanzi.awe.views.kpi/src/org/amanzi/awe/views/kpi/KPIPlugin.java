@@ -15,23 +15,17 @@ package org.amanzi.awe.views.kpi;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.utilities.NeoSplashUtil;
-import org.eclipse.core.resources.IFolder;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -52,13 +46,14 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  * The activator class controls the plug-in life cycle
  */
 public class KPIPlugin extends AbstractUIPlugin {
+    private static final Logger LOGGER = Logger.getLogger(KPIPlugin.class);
     /** AbstractLoader DEFAULT_DIRRECTORY_LOADER field */
     public static final String DEFAULT_DIRRECTORY_LOADER = "DEFAULT_DIRRECTORY_LOADER";
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.amanzi.awe.views.kpi";
     private static String CONSOLE_NAME = "NeoLoader Console";
     private static final int BUFFER = 0;
-    private Object synch = new Object();
+    private final Object synch = new Object();
     private PrintStream output = null;
     private PrintStream error = null;
 	// The shared instance
@@ -79,7 +74,8 @@ public class KPIPlugin extends AbstractUIPlugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
-	public void start(BundleContext context) throws Exception {
+	@Override
+    public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
         NeoServiceProvider.getProvider().getService();
@@ -101,7 +97,7 @@ public class KPIPlugin extends AbstractUIPlugin {
             String aweProjectName = AWEProjectManager.getActiveProjectName();
             IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
             String location = rubyProject.getResource().getLocation().toOSString();
-            System.out.println("[DEBUG] rubyProjectlocation " + location);
+            LOGGER.debug("[DEBUG] rubyProjectlocation " + location);
             loadPaths[0]=location;
             loadPaths[1]=location;
 //            Platform.getBundle("").getE
@@ -133,7 +129,7 @@ public class KPIPlugin extends AbstractUIPlugin {
                 tx.finish();
                 try {
                     runtime.evalScriptlet(script);
-                    System.out.println("INIT OK!");
+                    LOGGER.debug("INIT OK!");
                 } catch (Exception e) {
                     e.printStackTrace();
                     throw (RuntimeException)new RuntimeException().initCause(e);
@@ -196,7 +192,8 @@ public class KPIPlugin extends AbstractUIPlugin {
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
-	public void stop(BundleContext context) throws Exception {
+	@Override
+    public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
 	}

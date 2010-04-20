@@ -46,6 +46,7 @@ import org.amanzi.neo.loader.sax_parsers.PropertyCollector;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
 import org.amanzi.neo.loader.sax_parsers.SkipTag;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -76,6 +77,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @since 1.0.0
  */
 public class UTRANLoader extends AbstractLoader {
+    private static final Logger LOGGER = Logger.getLogger(UTRANLoader.class);
+    
     private static final String FORMAT_STR = "Node %s. Property %s. Old valus %s. New value %s not saved";
     /** String EXT_GSM field */
     private static final String EXT_GSM = "extGSM";
@@ -306,7 +309,7 @@ public class UTRANLoader extends AbstractLoader {
             for (File singleFile : fileList) {
                 try {
                     monitor.subTask(file.getName());
-                    System.out.println(file.getName());
+                    LOGGER.debug(file.getName());
                     storeFile(singleFile);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -579,7 +582,7 @@ public class UTRANLoader extends AbstractLoader {
 
         public class UtranTagCiLac extends AbstractTag {
 
-            private String id;
+            private final String id;
             private PropertyCollector collector;
 
             /**
@@ -2546,9 +2549,11 @@ public class UTRANLoader extends AbstractLoader {
         PropertyCollector dataCol = collector;// collector.getSubCollectors().iterator().next();
         String ref = dataCol.getPropertyMap().get("utranCellIubLink");
         if (ref == null) {
+
             // TODO remove after debug
-            System.err.println("site id not found");
+            LOGGER.debug("site id not found");
             return null;
+
         }
 
         Pattern pat = Pattern.compile("(^.*IUB_)(\\d+)([^\\d]*$)", Pattern.CASE_INSENSITIVE);

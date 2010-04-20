@@ -38,6 +38,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -57,6 +58,7 @@ import org.neo4j.graphdb.Traverser.Order;
  */
 
 public class AweProjectService {
+    private static final Logger LOGGER = Logger.getLogger(AweProjectService.class);
 
 	/*
 	 * NeoService Provider
@@ -1044,7 +1046,7 @@ public class AweProjectService {
         try {
             result = findReport(root, name);
             if (result == null) {
-                System.out.println("Report '"+name+"' was not found");
+                LOGGER.debug("Report '"+name+"' was not found");
                 result = new ReportNode(neoService.createNode());
                 result.setReportName(name);
                 root.addReport(result);

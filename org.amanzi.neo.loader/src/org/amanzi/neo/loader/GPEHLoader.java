@@ -13,14 +13,12 @@
 
 package org.amanzi.neo.loader;
 
-import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -34,28 +32,18 @@ import java.util.zip.GZIPInputStream;
 
 import org.amanzi.awe.l3messages.MessageDecoder;
 import org.amanzi.awe.l3messages.rrc.CellMeasuredResults;
-import org.amanzi.awe.l3messages.rrc.EventResults;
-import org.amanzi.awe.l3messages.rrc.FrequencyInfo;
-import org.amanzi.awe.l3messages.rrc.FrequencyInfoFDD;
-import org.amanzi.awe.l3messages.rrc.FrequencyInfoTDD;
 import org.amanzi.awe.l3messages.rrc.GSM_MeasuredResults;
-import org.amanzi.awe.l3messages.rrc.IntegrityCheckInfo;
-import org.amanzi.awe.l3messages.rrc.InterFreqCellMeasuredResultsList;
 import org.amanzi.awe.l3messages.rrc.InterFreqMeasuredResults;
 import org.amanzi.awe.l3messages.rrc.InterFreqMeasuredResultsList;
 import org.amanzi.awe.l3messages.rrc.InterRATMeasuredResults;
 import org.amanzi.awe.l3messages.rrc.InterRATMeasuredResultsList;
 import org.amanzi.awe.l3messages.rrc.IntraFreqMeasuredResultsList;
 import org.amanzi.awe.l3messages.rrc.MeasuredResults;
-import org.amanzi.awe.l3messages.rrc.MeasuredResultsList;
-import org.amanzi.awe.l3messages.rrc.MeasuredResultsOnRACH;
-import org.amanzi.awe.l3messages.rrc.MeasurementIdentity;
 import org.amanzi.awe.l3messages.rrc.MeasurementReport;
 import org.amanzi.awe.l3messages.rrc.UE_InternalMeasuredResults;
 import org.amanzi.awe.l3messages.rrc.UL_DCCH_Message;
 import org.amanzi.awe.l3messages.rrc.UL_DCCH_MessageType;
 import org.amanzi.awe.l3messages.rrc.CellMeasuredResults.ModeSpecificInfoChoiceType.FddSequenceType;
-import org.amanzi.awe.l3messages.rrc.FrequencyInfo.ModeSpecificInfoChoiceType;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -70,6 +58,7 @@ import org.amanzi.neo.loader.gpeh.GPEHMainFile;
 import org.amanzi.neo.loader.gpeh.GPEHParser;
 import org.amanzi.neo.loader.gpeh.GPEHEvent.Event;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.kc7bfi.jflac.io.BitInputStream;
@@ -86,6 +75,8 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class GPEHLoader extends AbstractLoader {
+    private static final Logger LOGGER = Logger.getLogger(GPEHLoader.class);
+    /** int KEY_EVENT field */
 	
 	/**
 	 * Prefixes for Property Names of Measurement Report values
@@ -186,7 +177,7 @@ public class GPEHLoader extends AbstractLoader {
                         long saveTime=0;
                         long parseTime=0;
                         monitor.setTaskName(subFile);
-                        System.out.println(subFile);
+                        LOGGER.debug(subFile);
                         GPEHEvent result = new GPEHEvent();
                         File file=new File(filename + File.separator + subFile);
                         InputStream in =new FileInputStream(file);

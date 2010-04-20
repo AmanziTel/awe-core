@@ -51,7 +51,7 @@ private void breakSubgraphCycles() {
 			Node node = (Node)noLefts.remove(noLefts.size() - 1);
 			node.sortValue = index++;
 			orderingGraphNodes.remove(node);
-//			System.out.println("removed:" + node);
+//			LOGGER.debug("removed:" + node);
 			NodeList rightOf = rightOf(node);
 			if (rightOf == null)
 				continue;
@@ -74,11 +74,11 @@ private void breakSubgraphCycles() {
 		if (cycleRoot != null) {
 			//break the cycle;
 			sortedInsert(noLefts, cycleRoot);
-//			System.out.println("breaking cycle with:" + cycleRoot);
+//			LOGGER.debug("breaking cycle with:" + cycleRoot);
 //			Display.getCurrent().beep();
 			cycleRoot.x = -1; //prevent x from ever reaching 0
 		} // else if (OGmembers.size() > 0)
-			//System.out.println("FAILED TO FIND CYCLE ROOT"); //$NON-NLS-1$
+			//LOGGER.debug("FAILED TO FIND CYCLE ROOT"); //$NON-NLS-1$
 	} while (cycleRoot != null);
 }
 

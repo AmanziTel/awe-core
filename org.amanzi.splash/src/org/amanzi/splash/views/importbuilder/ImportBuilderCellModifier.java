@@ -12,6 +12,8 @@
  */
 
 package org.amanzi.splash.views.importbuilder;
+
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.swt.widgets.TableItem;
 
@@ -22,7 +24,8 @@ import org.eclipse.swt.widgets.TableItem;
  */
 
 public class ImportBuilderCellModifier implements ICellModifier {
-	private ImportBuilderTableViewer tableViewer;
+    private static final Logger LOGGER = Logger.getLogger(ImportBuilderCellModifier.class);
+	private final ImportBuilderTableViewer tableViewer;
 
 	/**
 	 * Constructor 
@@ -84,10 +87,10 @@ public class ImportBuilderCellModifier implements ICellModifier {
 
 		switch (columnIndex) {
 		case 0 :  
-			System.out.println("property: " + property);
-			System.out.println("value: " + value);
-			//System.out.println("valueString: " + valueString);
-			System.out.println("filter: " + filter.getFilterHeading());
+			LOGGER.debug("property: " + property);
+			LOGGER.debug("value: " + value);
+			//LOGGER.debug("valueString: " + valueString);
+			LOGGER.debug("filter: " + filter.getFilterHeading());
 			
 			if (((Integer) value).intValue() >= 0){
 			valueString = tableViewer.getChoices(property)[((Integer) value).intValue()].trim();

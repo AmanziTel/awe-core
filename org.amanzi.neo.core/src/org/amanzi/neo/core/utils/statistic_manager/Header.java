@@ -15,6 +15,8 @@ package org.amanzi.neo.core.utils.statistic_manager;
 
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * <p>
@@ -24,6 +26,8 @@ import java.util.HashMap;
  * @since 1.0.0
  */
 public class Header {
+    private static final Logger LOGGER = Logger.getLogger(Header.class);
+    
     private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard
     // calculate spread after this number of data points
     int index;
@@ -218,7 +222,7 @@ public class Header {
             if (count == 0) {
                 if (values.size() >= MAX_PROPERTY_VALUE_COUNT) {
                     // Exceeded absolute threashold, drop map
-                    System.out.println("Property values exceeded maximum count, no longer tracking value set: " + this.key);
+                    LOGGER.debug("Property values exceeded maximum count, no longer tracking value set: " + this.key);
                     discard = true;
                 }
             }

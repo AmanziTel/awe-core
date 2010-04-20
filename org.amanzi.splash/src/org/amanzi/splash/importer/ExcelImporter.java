@@ -21,6 +21,7 @@ import java.util.Iterator;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.splash.swing.Cell;
+import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -40,7 +41,7 @@ import com.eteks.openjeks.format.CellFormat;
  * @since 1.0.0
  */
 public class ExcelImporter extends AbstractImporter {
-    
+    static private final Logger LOGGER = Logger.getLogger(ExcelImporter.class);
     /**
      * Parent Spreadsheet
      */
@@ -122,7 +123,7 @@ public class ExcelImporter extends AbstractImporter {
                 HSSFRow row = rows.next ();
 
                 //display row number in the console.
-                System.out.println ("Row No.: " + row.getRowNum ());
+                LOGGER.debug("Row No.: " + row.getRowNum ());
 
                 //once get a row its time to iterate through cells.
                 Iterator<HSSFCell> cells = row.cellIterator ();
@@ -137,7 +138,7 @@ public class ExcelImporter extends AbstractImporter {
                 {
                     HSSFCell cell = cells.next ();
 
-                    System.out.println ("Cell No.: " + cell.getCellNum ());
+                    LOGGER.debug("Cell No.: " + cell.getCellNum ());
                     
                     int C = cell.getCellNum();
                     
@@ -151,9 +152,9 @@ public class ExcelImporter extends AbstractImporter {
                     {
 
                         // cell type numeric.
-                        System.out.println ("====================================================");
-                        System.out.println ("Numeric value: " + cell.getNumericCellValue ());
-                        System.out.println ("====================================================");
+                        LOGGER.debug("====================================================");
+                        LOGGER.debug("Numeric value: " + cell.getNumericCellValue ());
+                        LOGGER.debug("====================================================");
                         String def = Double.toString(cell.getNumericCellValue());
                         
                         Cell c = new Cell(R, C, def, def, new CellFormat());
@@ -168,9 +169,9 @@ public class ExcelImporter extends AbstractImporter {
                     {
                         // cell type string.
                         HSSFRichTextString richTextString = cell.getRichStringCellValue ();
-                        System.out.println ("====================================================");
-                        System.out.println ("String value: " + richTextString.getString ());
-                        System.out.println ("====================================================");
+                        LOGGER.debug("====================================================");
+                        LOGGER.debug("String value: " + richTextString.getString ());
+                        LOGGER.debug("====================================================");
                         Cell c = new Cell(R,C,richTextString.getString (), richTextString.getString (), new CellFormat());
                         saveCell(c);
                         break;
@@ -186,9 +187,9 @@ public class ExcelImporter extends AbstractImporter {
                         
                         saveCell(c);
                         
-                        System.out.println ("====================================================");
-                        System.out.println ("Formula value: " + cellFormula);
-                        System.out.println ("====================================================");
+                        LOGGER.debug("====================================================");
+                        LOGGER.debug("Formula value: " + cellFormula);
+                        LOGGER.debug("====================================================");
 
                         break;
 
@@ -196,7 +197,7 @@ public class ExcelImporter extends AbstractImporter {
                     {
 
                         // types other than String and Numeric.
-                        System.out.println ("Type not supported.");
+                        LOGGER.debug("Type not supported.");
 
                         break;
                     }

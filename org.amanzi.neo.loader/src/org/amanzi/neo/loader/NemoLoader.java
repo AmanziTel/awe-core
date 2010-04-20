@@ -33,6 +33,7 @@ import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -47,6 +48,7 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class NemoLoader extends DriveLoader {
+    private static final Logger LOGGER = Logger.getLogger(NemoLoader.class);
     protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
 
     /** String EVENT_ID field */
@@ -162,7 +164,7 @@ public class NemoLoader extends DriveLoader {
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());
             GisProperties gisProperties = getGisProperties(dataset);
             gisProperties.updateBBox(lat, lon);
-            gisProperties.checkCRS((float)lat, (float)lon, null);
+            gisProperties.checkCRS(lat, lon, null);
             index(mp);
             transaction.success();
             pointNode = mp;
@@ -328,8 +330,8 @@ public class NemoLoader extends DriveLoader {
             try {
                 parParam = event.fill(getVersion(), parameters);
             } catch (Exception e1) {
-                System.out.println(eventId);
-                System.out.println(parameters.toString());
+                LOGGER.debug(eventId);
+                LOGGER.debug(parameters.toString());
                 // TODO Handle Exception
                 throw (RuntimeException) new RuntimeException( ).initCause( e1 );
             }

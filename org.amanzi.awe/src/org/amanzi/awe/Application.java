@@ -25,6 +25,7 @@ import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.splash.ui.SplashPlugin;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
@@ -43,7 +44,7 @@ import org.osgi.framework.Bundle;
  * @author craig
  */
 public class Application extends UDIGApplication implements IApplication {
-	
+    private static final Logger LOGGER = Logger.getLogger(Application.class);
 	/**
 	 * Create the AWE workbench advisor by using the UDIGWorkbenchAdvisor with
 	 * only the perspective changed to match the AWE requirements.
@@ -55,14 +56,16 @@ public class Application extends UDIGApplication implements IApplication {
 			/**
 			 * @see org.eclipse.ui.application.WorkbenchAdvisor#initialize(org.eclipse.ui.application.IWorkbenchConfigurer)
 			 */
-			public void initialize(IWorkbenchConfigurer configurer) {
+			@Override
+            public void initialize(IWorkbenchConfigurer configurer) {
 				super.initialize(configurer);
 				configurer.setSaveAndRestore(true);
 			}
 			/**
 			 * @see org.eclipse.ui.application.WorkbenchAdvisor#preStartup()
 			 */
-		    public void preStartup() {
+		    @Override
+            public void preStartup() {
 		        // Navigator view needs this
 		        WorkbenchAdapterBuilder.registerAdapters();
 		    }
@@ -108,7 +111,7 @@ public class Application extends UDIGApplication implements IApplication {
                         new URL("file://" + databaseLocation));
                 IService curService = null;
                 for (IService service : services) {
-                    System.out.println("Found catalog service: " + service);
+                    LOGGER.debug("Found catalog service: " + service);
                     curService = service;
                     if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
                         catalog.replace(service.getIdentifier(), service);

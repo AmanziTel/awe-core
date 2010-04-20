@@ -56,6 +56,7 @@ import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.CommonCRSPreferencePage;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceNode;
@@ -80,6 +81,9 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public abstract class AbstractLoader {
+    private static final Logger LOGGER = Logger.getLogger(AbstractLoader.class);
+//    private static final Logger LOGGER = Logger.getLogger(AbstractLoader.class);
+    
     /** AbstractLoader DEFAULT_DIRRECTORY_LOADER field */
     public static final String DEFAULT_DIRRECTORY_LOADER = "DEFAULT_DIRRECTORY_LOADER";
 
@@ -200,7 +204,7 @@ public abstract class AbstractLoader {
                     // drop the map or not
                     if (values.size() >= MAX_PROPERTY_VALUE_COUNT) {
                         // Exceeded absolute threashold, drop map
-                        System.out.println("Property values exceeded maximum count, no longer tracking value set: " + this.key);
+                        LOGGER.debug("Property values exceeded maximum count, no longer tracking value set: " + this.key);
                         discard = true;
                     }
                     // TODO if we do not use parse method this check will be
@@ -212,7 +216,7 @@ public abstract class AbstractLoader {
                     // if (spread > MAX_PROPERTY_VALUE_SPREAD) {
                     // // Exceeded maximum spread, too much property variety,
                     // drop map
-                    // System.out.println("Property shows excessive variation, no longer tracking value set: "
+                    // LOGGER.debug("Property shows excessive variation, no longer tracking value set: "
                     // + this.key);
                     // discard = true;
                     // }
@@ -1202,7 +1206,7 @@ public abstract class AbstractLoader {
             flushIndexes();
             mainTx.success();
             mainTx.finish();
-            // System.out.println("Commit: Memory: "+(Runtime.getRuntime().totalMemory()
+            // LOGGER.debug("Commit: Memory: "+(Runtime.getRuntime().totalMemory()
             // -
             // Runtime.getRuntime().freeMemory()));
             if (restart) {
@@ -1889,7 +1893,7 @@ public abstract class AbstractLoader {
                 result = null;
                 CommonCRSPreferencePage page = new CommonCRSPreferencePage();
                 try {
-                    System.out.println(gisProperties.getCrs().epsg);
+                    LOGGER.debug(gisProperties.getCrs().epsg);
                     page.setSelectedCRS(org.geotools.referencing.CRS.decode(gisProperties.getCrs().epsg));
                 } catch (NoSuchAuthorityCodeException e) {
                     NeoLoaderPlugin.exception(e);

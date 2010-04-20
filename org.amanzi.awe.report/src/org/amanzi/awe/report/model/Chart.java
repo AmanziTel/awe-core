@@ -19,6 +19,7 @@ import java.util.List;
 import org.amanzi.awe.report.charts.ChartType;
 import org.amanzi.neo.core.database.nodes.CellID;
 import org.amanzi.neo.core.utils.Pair;
+import org.apache.log4j.Logger;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.general.AbstractDataset;
@@ -32,6 +33,7 @@ import org.jfree.data.general.AbstractDataset;
  * @since 1.0.0
  */
 public class Chart implements IReportPart {
+    private static final Logger LOGGER = Logger.getLogger(Chart.class);
     private String name;
     private ChartType chartType;
     private Pair<CellID, CellID> categories;
@@ -40,7 +42,7 @@ public class Chart implements IReportPart {
     private String categoriesProperty;
     private String[] valuesProperties;
     private Long[] nodeIds;
-    private List<String> errors = new ArrayList<String>();
+    private final List<String> errors = new ArrayList<String>();
     private Plot plot;
     private AbstractDataset dataset;
     //JFReeChart settings
@@ -155,7 +157,7 @@ public class Chart implements IReportPart {
      * @param categoriesProperty The categoriesProperty to set.
      */
     public void setCategoriesProperty(String categoriesProperty) {
-        System.out.println("java setCategoriesProperty(" + categoriesProperty + ")");
+        LOGGER.debug("java setCategoriesProperty(" + categoriesProperty + ")");
         this.categoriesProperty = categoriesProperty;
     }
 
@@ -170,7 +172,7 @@ public class Chart implements IReportPart {
      * @param valuesProperties The valuesProperties to set.
      */
     public void setValuesProperties(String[] valuesProperties) {
-        System.out.println("java setValuesProperties(" + valuesProperties + ")");
+        LOGGER.debug("java setValuesProperties(" + valuesProperties + ")");
         this.valuesProperties = valuesProperties;
     }
 

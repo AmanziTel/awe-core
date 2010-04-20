@@ -45,6 +45,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -68,6 +69,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class StarTool extends AbstractModalTool {
+    private static final Logger LOGGER = Logger.getLogger(StarTool.class);
     /** StarTool BLACKBOARD_START_ANALYSER field */
     public static final String BLACKBOARD_START_ANALYSER = "org.amanzi.awe.tool.star.StarTool.analyser";
     /** StarTool BLACKBOARD_NODE_LIST field */
@@ -98,6 +100,7 @@ public class StarTool extends AbstractModalTool {
     /**
      * @see net.refractions.udig.project.ui.tool.AbstractTool#mouseDragged(net.refractions.udig.project.render.displayAdapter.MapMouseEvent)
      */
+    @Override
     public void mouseDragged(MapMouseEvent e) {
         if (dragging) {
             command.setTranslation(e.x- start.x, e.y - start.y);
@@ -119,7 +122,7 @@ public class StarTool extends AbstractModalTool {
                 blackboard = getContext().getSelectedLayer().getBlackboard();
                 blackboard.put(BLACKBOARD_START_ANALYSER, null);
                 if (drawSelectedSectorCommand != null) {
-                    System.out.println("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
+                    LOGGER.debug("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
                     drawSelectedSectorCommand.setValid(false);
                     getContext().sendASyncCommand(drawSelectedSectorCommand);
                     drawSelectedSectorCommand = null;
@@ -302,6 +305,7 @@ public class StarTool extends AbstractModalTool {
     /**
      * @see net.refractions.udig.project.ui.tool.AbstractTool#mousePressed(net.refractions.udig.project.render.displayAdapter.MapMouseEvent)
      */
+    @Override
     public void mousePressed(MapMouseEvent e) {
     	
         if (validModifierButtonCombo(e)) {
@@ -330,6 +334,7 @@ public class StarTool extends AbstractModalTool {
     /**
      * @see net.refractions.udig.project.ui.tool.AbstractTool#mouseReleased(net.refractions.udig.project.render.displayAdapter.MapMouseEvent)
      */
+    @Override
     public void mouseReleased(MapMouseEvent e) {
         boolean activateStar = true;
         if (dragging) {
@@ -415,6 +420,7 @@ public class StarTool extends AbstractModalTool {
     /**
      * @see net.refractions.udig.project.ui.tool.Tool#dispose()
      */
+    @Override
     public void dispose() {
         super.dispose();
     }
@@ -429,13 +435,13 @@ public class StarTool extends AbstractModalTool {
             if (selected == null || pair == null || !selected.right().equals(pair.right())) {
                 selected = pair;
                 if (drawSelectedSectorCommand != null) {
-                    System.out.println("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
+                    LOGGER.debug("Deleting old sector marker: " + drawSelectedSectorCommand.getValidArea());
                     drawSelectedSectorCommand.setValid(false);
                     // getContext().sendSyncCommand(drawSelectedSectorCommand);
                     drawSelectedSectorCommand = null;
                 }
                 if (pair != null) {
-                    System.out.println("Drawing sector marker at " + pair.left() + " near point " + e.getPoint());
+                    LOGGER.debug("Drawing sector marker at " + pair.left() + " near point " + e.getPoint());
                     final int x = pair.left().x - 3;
                     final int y = pair.left().y - 3;
                     // java.awt.geom.Ellipse2D r = new java.awt.geom.Ellipse2D.Float(x, y, 7, 7);
@@ -447,11 +453,11 @@ public class StarTool extends AbstractModalTool {
                     getContext().getViewportPane().repaint();
                     // getContext().getViewportPane().repaint(pair.left().x - 3, pair.left().y - 3,
                     // 10, 10);
-                    // System.out.println("refresh");
+                    // LOGGER.debug("refresh");
 
                     // selectedLayer.refresh(null);
                 } else {
-                    // System.out.println("No sector found near point "+e.getPoint());
+                    // LOGGER.debug("No sector found near point "+e.getPoint());
                 }
             }
 
@@ -466,8 +472,8 @@ public class StarTool extends AbstractModalTool {
      */
     private class PanAndInvalidate implements Command, NavCommand {
 
-        private NavCommand command;
-        private TranslateCommand expire;
+        private final NavCommand command;
+        private final TranslateCommand expire;
 
         PanAndInvalidate(NavCommand command, TranslateCommand expire) {
             this.command = command;
