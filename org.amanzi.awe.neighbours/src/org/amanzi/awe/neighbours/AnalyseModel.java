@@ -13,17 +13,8 @@
 
 package org.amanzi.awe.neighbours;
 
-import static org.amanzi.neo.core.enums.gpeh.Parameters.EVENT_PARAM_C_ID_1;
-import static org.amanzi.neo.core.enums.gpeh.Parameters.EVENT_PARAM_C_ID_2;
-import static org.amanzi.neo.core.enums.gpeh.Parameters.EVENT_PARAM_C_ID_3;
-import static org.amanzi.neo.core.enums.gpeh.Parameters.EVENT_PARAM_C_ID_4;
-import static org.amanzi.neo.core.enums.gpeh.Parameters.EVENT_PARAM_RNC_ID_1;
-import static org.amanzi.neo.core.enums.gpeh.Parameters.EVENT_PARAM_RNC_ID_2;
-import static org.amanzi.neo.core.enums.gpeh.Parameters.EVENT_PARAM_RNC_ID_3;
-import static org.amanzi.neo.core.enums.gpeh.Parameters.EVENT_PARAM_RNC_ID_4;
-import static org.amanzi.neo.core.enums.gpeh.Parameters.EVENT_PARAM_RNC_MODULE_ID;
-import static org.amanzi.neo.core.enums.gpeh.Parameters.EVENT_PARAM_UE_CONTEXT;
-
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,9 +26,12 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
+import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.amanzi.splash.utilities.SpreadsheetCreator;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -47,6 +41,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 /**
  * <p>
@@ -59,6 +55,7 @@ public class AnalyseModel {
     private static final String ANALYSE_RUBY_NAME = "analysing";
     private Node gpehNode;
     private final  List<Parameters> spreadsheetList;
+    private final  List<String> additionalColumn;
     private final  Set<Events> events;
 
     /**
@@ -85,17 +82,8 @@ public class AnalyseModel {
      */
     protected AnalyseModel() {
         spreadsheetList=new LinkedList<Parameters>();
+        additionalColumn=new LinkedList<String>();
         events=new LinkedHashSet<Events>();
-        spreadsheetList.add(EVENT_PARAM_UE_CONTEXT);
-        spreadsheetList.add(EVENT_PARAM_RNC_MODULE_ID);
-        spreadsheetList.add(EVENT_PARAM_C_ID_1);
-        spreadsheetList.add(EVENT_PARAM_RNC_ID_1);
-        spreadsheetList.add(EVENT_PARAM_C_ID_2);
-        spreadsheetList.add(EVENT_PARAM_RNC_ID_2);
-        spreadsheetList.add(EVENT_PARAM_C_ID_3);
-        spreadsheetList.add(EVENT_PARAM_RNC_ID_3);
-        spreadsheetList.add(EVENT_PARAM_C_ID_4);
-        spreadsheetList.add(EVENT_PARAM_RNC_ID_4);
     }
 
     /**
@@ -106,18 +94,65 @@ public class AnalyseModel {
      */
     public static AnalyseModel create(Node gpehNode, GraphDatabaseService neo) {
         AnalyseModel result=new AnalyseModel(gpehNode);
-        result.addEvents(Events.INTERNAL_SOHO_DS_MISSING_NEIGHBOUR,Events.INTERNAL_SOHO_DS_UNMONITORED_NEIGHBOUR,Events.INTERNAL_SOFT_HANDOVER_EVALUATION,Events.INTERNAL_SOFT_HANDOVER_EXECUTION);
+//        result.addEvents(Events.INTERNAL_SOHO_DS_MISSING_NEIGHBOUR,Events.INTERNAL_SOHO_DS_UNMONITORED_NEIGHBOUR,Events.INTERNAL_SOFT_HANDOVER_EVALUATION,Events.INTERNAL_SOFT_HANDOVER_EXECUTION);
+        result.addEvents(Events.RRC_MEASUREMENT_REPORT);
         return result;
     }
 
     /**
+     * @param monitor 
      * @param string
      * @return
      */
-    public SpreadsheetNode createSpreadSheet(String name, GraphDatabaseService service) {
+    public SpreadsheetNode createSpreadSheet(String name, GraphDatabaseService service, IProgressMonitor monitor) {
+       
         Transaction tx = service.beginTx();
         try {
+            try {
+                CSVWriter out=new CSVWriter(new FileWriter("c://event8.csv"));
+                List<String> outList=new LinkedList<String>();
+                int row=0;
+                for (Node eventNode : getEventsNodes()) {
+                    outList.clear();
+                    outList.add((String)eventNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+                    outList.add(eventNode.getProperty(INeoConstants.PROPERTY_EVENT_ID, "").toString());
+                    for (Parameters parameter : spreadsheetList) {
+                        outList.add(eventNode.getProperty(parameter.name(), "").toString());
+                    }
+                    for (String key:eventNode.getPropertyKeys()){
+                        if (additionalColumn.contains(key)){
+                            continue;
+                        }
+                        if (GpehReportUtil.isReportProperties(key)){
+                            additionalColumn.add(key);
+                        }
+                    }
+                    for (String key:additionalColumn){
+                        outList.add(GpehReportUtil.getPropertyRangeName(key, eventNode.getProperty(key, null)));
+                    }
+                    row++;
+                    out.writeNext(outList.toArray(new String[0]));
+                    monitor.setTaskName(String.format("Rows created: %s", row));
+            }
+                outList.clear();
+                outList.add("name");
+                outList.add("id");
+                for (Parameters parameter : spreadsheetList) {
+                    outList.add(parameter.name());
+                }
+                for (String key:additionalColumn){
+                    outList.add(key);
+                }
+                out.writeNext(outList.toArray(new String[0]));
+                out.close();
+            } catch (IOException e) {
+                // TODO Handle IOException
+                throw (RuntimeException) new RuntimeException( ).initCause( e );
+            }
             SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(ANALYSE_RUBY_NAME), name);
+            tx.success();
+            if (true) return creator.getSpreadsheet();
+//            SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(ANALYSE_RUBY_NAME), name);
             int column = 0;
             Cell cellToadd = new Cell(0, column, "", "EVENT name", null);
             creator.saveCell(cellToadd);
@@ -130,7 +165,20 @@ public class AnalyseModel {
                 column++;
                 creator.saveCell(cellToadd);
             }
+            int lastColumn =column;
             int row=1;
+            int maxWork=0;
+            int saveCount=0;
+            for (Node eventNode : getEventsNodes()) {
+                saveCount++;
+                if (saveCount>9999){
+                    saveCount=0;
+                    System.out.println(maxWork);
+                }
+                maxWork++;
+            }
+            monitor= SubMonitor.convert(monitor, maxWork);
+            long time = System.currentTimeMillis();
             for (Node eventNode : getEventsNodes()) {
                 column=0;
                 cellToadd = new Cell(row, column, "", eventNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""), null);
@@ -144,7 +192,37 @@ public class AnalyseModel {
                     creator.saveCell(cellToadd);
                     column++;
                 }
+                for (String key:eventNode.getPropertyKeys()){
+                    if (additionalColumn.contains(key)){
+                        continue;
+                    }
+                    if (GpehReportUtil.isReportProperties(key)){
+                        additionalColumn.add(key);
+                    }
+                }
+                for (String key:additionalColumn){
+                    cellToadd = new Cell(row, column, "", GpehReportUtil.getPropertyRangeName(key, eventNode.getProperty(key, null)), null);
+                    creator.saveCell(cellToadd);
+                    column++;                    
+                }
+                monitor.setTaskName(String.format("Rows created: %s", row));
+                saveCount++;
+                if (saveCount>1000){
+                    time=System.currentTimeMillis()-time;
+                    tx.success();
+                    tx.finish();
+                    saveCount=0;
+                    System.out.println("time of storing 1000 rows: "+time);
+                    time = System.currentTimeMillis();
+                    tx=service.beginTx();
+                }
+                monitor.worked(1);
                 row++;
+            }
+            monitor.setTaskName("modify header");
+            for (String key:additionalColumn) {
+                cellToadd = new Cell(0, ++lastColumn, "", key, null);
+                creator.saveCell(cellToadd);
             }
             tx.success();
             System.out.println(creator.getSpreadsheet().getUnderlyingNode().getId());
