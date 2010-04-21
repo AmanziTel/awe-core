@@ -37,6 +37,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.sax_parsers.AbstractTag;
@@ -167,6 +168,7 @@ public class UTRANLoader extends AbstractLoader {
 
     public Node rncExtGsmSite;
     private int perc;
+    private String scrCodeIndName;
 
     /**
      * Constructor.
@@ -181,6 +183,7 @@ public class UTRANLoader extends AbstractLoader {
         utranNeighbourNode = null;
         headers = getHeaderMap(KEY_EVENT).headers;
         handler = new ReadContentHandler(new Factory());
+        scrCodeIndName=NeoUtils.getLuceneIndexKeyByProperty(basename, GpehReportUtil.PRIMARY_SCR_CODE, NodeTypes.SECTOR);
         index = NeoServiceProvider.getProvider().getIndexService();
         try {
             addIndex(NodeTypes.SITE.getId(), NeoUtils.getLocationIndexProperty(basename));
@@ -1189,6 +1192,8 @@ public class UTRANLoader extends AbstractLoader {
         /** The id. */
         private final String id;
 
+        private String rncId;
+
         /**
          * Instantiates a new rnc function.
          * 
@@ -1238,6 +1243,7 @@ public class UTRANLoader extends AbstractLoader {
                 return;
             }
             rnc = findOrCreateRNC(id, collector);
+            rncId=collector.getPropertyMap().get("rncId");
             rncExtGsmSite=null;
             collector = null;
         }
@@ -1257,6 +1263,16 @@ public class UTRANLoader extends AbstractLoader {
             } else {
                 throw new UnsupportedOperationException();
             }
+        }
+
+
+        /**
+         * Gets the rnc id.
+         *
+         * @return the rnc id
+         */
+        public String getRncId() {
+            return rncId;
         }
 
     }
@@ -1298,7 +1314,7 @@ public class UTRANLoader extends AbstractLoader {
          * @param attributes the attributes
          * @param parent the parent
          */
-        protected UtranCell(Attributes attributes, IXmlTag parent) {
+        protected UtranCell(Attributes attributes, RncFunction parent) {
             super(TAG_NAME, parent);
             this.attr = attributes;
             cellName = attributes.getValue("id");
@@ -1430,7 +1446,9 @@ public class UTRANLoader extends AbstractLoader {
                 } else {
                     site = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
                 }
+                
                 storeProperty(sector, map);
+                sector.setProperty(GpehReportUtil.RNC_ID, ((RncFunction)parent).getRncId());
             } finally {
                 tx.finish();
             }
@@ -1449,11 +1467,17 @@ public class UTRANLoader extends AbstractLoader {
             try {
                 for (Map.Entry<String, String> entry : map.entrySet()) {
                     String key = entry.getKey();
+                    String value = entry.getValue();
                     if (!node.hasProperty(key)) {
-                        setIndexPropertyNotParcedValue(headers, node, key, entry.getValue());
-                    } else {
+                        if (key.equals("primaryScramblingCode")){
+                            node.setProperty(GpehReportUtil.PRIMARY_SCR_CODE, value); 
+                            index.index(node, scrCodeIndName, value);
+                        }else{
+                        setIndexPropertyNotParcedValue(headers, node, key, value);
+                        }
+                   } else {
                         String old = node.getProperty(key).toString();
-                        info(String.format(FORMAT_STR, cellName, key, old, entry.getValue()));
+                        info(String.format(FORMAT_STR, cellName, key, old, value));
                     }
                 }
             } finally {

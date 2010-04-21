@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +45,12 @@ import org.amanzi.awe.l3messages.rrc.UL_DCCH_MessageType;
 import org.amanzi.awe.l3messages.rrc.CellMeasuredResults.ModeSpecificInfoChoiceType.FddSequenceType;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.gpeh.GPEHEvent;
@@ -64,6 +64,7 @@ import org.eclipse.swt.widgets.Display;
 import org.kc7bfi.jflac.io.BitInputStream;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.index.lucene.LuceneIndexService;
 
 
 /**
@@ -78,26 +79,17 @@ public class GPEHLoader extends AbstractLoader {
     private static final Logger LOGGER = Logger.getLogger(GPEHLoader.class);
     /** int KEY_EVENT field */
 	
-	/**
-	 * Prefixes for Property Names of Measurement Report values
-	 */
-    private static final String GPEH_RRC_MR_BSIC_PREFIX = "MR_BSIC";
-	private static final String GPEH_RRC_MR_UE_TX_POWER_PREFIX = "MR_UE-TX-POWER";
-	private static final String GPEH_RRC_MR_RSCP_PREFIX = "MR_RSCP";
-	private static final String GPEH_RRC_MR_ECNO_PREFIX = "MR_ECNO";
-	
-	
 	/** int KEY_EVENT field */
     private static final int KEY_EVENT = 1;
     private final static Pattern mainFilePattern = Pattern.compile("(^.*)(_Mp0\\.)(.*$)");
     private static final int COUNT_LEN = 1000;
     private Node ossRoot;
     private Pair<Boolean, Node> mainNode;
-    private final Map<Integer, Node> cellMap;
+//    private final Map<Integer, Node> cellMap;
     private long timestampOfDay;
     private Node eventLastNode;
-    private Node cellRoot;
-    private Node lastCellNode;
+//    private Node cellRoot;
+//    private Node lastCellNode;
     private final LinkedHashMap<String, Header> headers;
     private int eventsCount;
     
@@ -109,7 +101,9 @@ public class GPEHLoader extends AbstractLoader {
     /*
      * Index of Ec/N0 Property in Event
      */
-    private int ecnoIndex;
+//    private int ecnoIndex;
+    private final LuceneIndexService luceneInd;
+    private final String eventIndName;
 
     /**
      * Constructor
@@ -121,9 +115,11 @@ public class GPEHLoader extends AbstractLoader {
         initialize("GPEH", null, directory, display);
         basename = datasetName;
         headers = getHeaderMap(KEY_EVENT).headers;
-        cellRoot = null;
-        lastCellNode = null;
-        cellMap=new HashMap<Integer,Node>();
+//        cellRoot = null;
+//        lastCellNode = null;
+//        cellMap=new HashMap<Integer,Node>();
+        luceneInd = NeoServiceProvider.getProvider().getIndexService();
+        eventIndName =NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.GPEH_EVENT);
     }
 
     @Override
@@ -135,7 +131,7 @@ public class GPEHLoader extends AbstractLoader {
     public void run(IProgressMonitor monitor) throws IOException {
         if (monitor != null)
             monitor.subTask(basename);
-        cellMap.clear();
+//        cellMap.clear();
         addIndex(NodeTypes.GPEH_EVENT.getId(), NeoUtils.getTimeIndexProperty(basename));
 
         Map<String, List<String>> fileList = getGPEHFile(filename);
@@ -144,15 +140,15 @@ public class GPEHLoader extends AbstractLoader {
         try {
             initializeIndexes();
             ossRoot = LoaderUtils.findOrCreateOSSNode(OssType.GPEH, basename, neo);
-            Pair<Node,Node> pair= LoaderUtils.findOrCreateGPEHCellRootNode(ossRoot, neo);
-            cellRoot=pair.getLeft();
-            lastCellNode=pair.getRight();
-            if (lastCellNode!=null){
-                //TODO use index?
-               for (Node cell:NeoUtils.getChildTraverser(cellRoot)){
-                   cellMap.put((Integer)cell.getProperty(INeoConstants.PROPERTY_SECTOR_CI,null),cell); 
-               }
-            }
+//            Pair<Node,Node> pair= LoaderUtils.findOrCreateGPEHCellRootNode(ossRoot, neo);
+//            cellRoot=pair.getLeft();
+//            lastCellNode=pair.getRight();
+//            if (lastCellNode!=null){
+//                //TODO use index?
+//               for (Node cell:NeoUtils.getChildTraverser(cellRoot)){
+//                   cellMap.put((Integer)cell.getProperty(INeoConstants.PROPERTY_SECTOR_CI,null),cell); 
+//               }
+//            }
             eventsCount=0;
             int perc = 0;
             int count=0;
@@ -249,9 +245,9 @@ public void printStats(boolean verbose) {
     private void saveEvent(GPEHEvent eventFile) {
         for (Event event : eventFile.getEvents()) {
             //Lagutko: fake - save only RRC Measurement Reports!!!
-//            if (event.getId() == 8) {
+            if (event.getId() == 8) {
                 saveSingleEvent(event);
-//            }
+            }
         }
     }
 
@@ -264,7 +260,8 @@ public void printStats(boolean verbose) {
         try {
             Node eventNode = neo.createNode();
             NodeTypes.GPEH_EVENT.setNodeType(eventNode, neo);
-            setIndexProperty(headers, eventNode, INeoConstants.PROPERTY_NAME_NAME, event.getType().name());
+            String name = event.getType().name();
+            setIndexProperty(headers, eventNode, INeoConstants.PROPERTY_NAME_NAME, name);
             eventNode.setProperty(INeoConstants.PROPERTY_EVENT_ID, event.getType().getId());
             for (Map.Entry<Parameters, Object> entry : event.getProperties().entrySet()) {
                 //LN, 17.04.2010, if we parse a RRC Measurement Report that we should Decode Message
@@ -283,10 +280,11 @@ public void printStats(boolean verbose) {
             updateTimestampMinMax(KEY_EVENT, timestamp);
             eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             NeoUtils.addChild(mainNode.getRight(), eventNode, eventLastNode, neo);
+            luceneInd.index(eventNode, eventIndName, name);
             tx.success();
             index(eventNode);
             eventLastNode = eventNode;
-            createCells(event,eventNode);
+//            createCells(event,eventNode);
         } finally {
             tx.finish();
         }
@@ -313,8 +311,8 @@ public void printStats(boolean verbose) {
     	
     	//initialize indexes of fields
     	rscpIndex = 1;
-    	ecnoIndex = 1;
-    	int bsicIndex = 1;
+//    	ecnoIndex = 1;
+//    	int bsicIndex = 1;
     	
     	if (messageType.isMeasurementReportSelected()) {
     		//get a MeasurementReport
@@ -325,6 +323,7 @@ public void printStats(boolean verbose) {
     			MeasuredResults result = report.getMeasuredResults();
     			
     			if (result.isInterFreqMeasuredResultsListSelected()) {
+    			    eventNode.setProperty(GpehReportUtil.MR_TYPE, GpehReportUtil.MR_TYPE_INTERF);
     				//process InterFreq Results
     				InterFreqMeasuredResultsList interFreqResultList = result.getInterFreqMeasuredResultsList();
     				
@@ -337,19 +336,21 @@ public void printStats(boolean verbose) {
     				}
     			}
     			else if (result.isInterRATMeasuredResultsListSelected()) {
+    			    eventNode.setProperty(GpehReportUtil.MR_TYPE, GpehReportUtil.MR_TYPE_IRAT);
     				//process InterRAT Results
     				InterRATMeasuredResultsList interRATResultList = result.getInterRATMeasuredResultsList();
     				for (InterRATMeasuredResults singleInterRatResults : interRATResultList.getValue()) {
     					if (singleInterRatResults.isGsmSelected()) {
     						for (GSM_MeasuredResults singleGSMResults : singleInterRatResults.getGsm().getValue()) {
     							if (singleGSMResults.getBsicReported().isVerifiedBSICSelected()) {
-    								eventNode.setProperty(GPEH_RRC_MR_BSIC_PREFIX + bsicIndex++, singleGSMResults.getBsicReported().getVerifiedBSIC());
+    								eventNode.setProperty(GpehReportUtil.GPEH_RRC_MR_BSIC_PREFIX + rscpIndex++, singleGSMResults.getBsicReported().getVerifiedBSIC());
     							}
     						}
     					}
     				}
     			}
     			else if (result.isIntraFreqMeasuredResultsListSelected()) {
+    			    eventNode.setProperty(GpehReportUtil.MR_TYPE, GpehReportUtil.MR_TYPE_INTRAF);
     				//process IntraFreq Results
     				IntraFreqMeasuredResultsList intraFreqResultList = result.getIntraFreqMeasuredResultsList();
     				for (CellMeasuredResults singleCellMeasuredResults : intraFreqResultList.getValue()) {
@@ -357,10 +358,11 @@ public void printStats(boolean verbose) {
     				}
     			}
     			else if (result.isUe_InternalMeasuredResultsSelected()) {
+    			    eventNode.setProperty(GpehReportUtil.MR_TYPE, GpehReportUtil.MR_TYPE_UE_INTERNAL);
     				//process UE Internal Results
     				UE_InternalMeasuredResults ueInternalResults = result.getUe_InternalMeasuredResults();
     				if (ueInternalResults.getModeSpecificInfo().isFddSelected()) {
-    					eventNode.setProperty(GPEH_RRC_MR_UE_TX_POWER_PREFIX, ueInternalResults.getModeSpecificInfo().getFdd().getUe_TransmittedPowerFDD().getValue());
+    					eventNode.setProperty(GpehReportUtil.GPEH_RRC_MR_UE_TX_POWER_PREFIX, ueInternalResults.getModeSpecificInfo().getFdd().getUe_TransmittedPowerFDD().getValue());
     				}
     			}
     			
@@ -377,14 +379,41 @@ public void printStats(boolean verbose) {
     private void saveCellMeasuredResults(CellMeasuredResults results, Node eventNode) {
     	if (results.getModeSpecificInfo().isFddSelected()) {
     		FddSequenceType fdd = results.getModeSpecificInfo().getFdd();
-    		
+    		Integer scramblingCode = fdd.getPrimaryCPICH_Info().getPrimaryScramblingCode().getValue();
+    		//store scramblingCode like string
+    		eventNode.setProperty(GpehReportUtil.GPEH_RRC_SCRAMBLING_PREFIX + rscpIndex++, scramblingCode.toString());               
     		if (fdd.isCpich_RSCPPresent()) {
-    			eventNode.setProperty(GPEH_RRC_MR_RSCP_PREFIX + rscpIndex++, fdd.getCpich_RSCP().getValue());    			
+    			Integer value = fdd.getCpich_RSCP().getValue();
+    			
+                eventNode.setProperty(GpehReportUtil.GPEH_RRC_MR_RSCP_PREFIX + rscpIndex++, value);    			
     		}
     		if (fdd.isCpich_Ec_N0Present()) {
-    			eventNode.setProperty(GPEH_RRC_MR_ECNO_PREFIX + ecnoIndex++, fdd.getCpich_Ec_N0().getValue());
+    			Integer value = fdd.getCpich_Ec_N0().getValue();
+                eventNode.setProperty(GpehReportUtil.GPEH_RRC_MR_ECNO_PREFIX + rscpIndex++, value);
     		}
     	}
+    }
+
+
+
+    /**
+     * Convert ecno value.
+     *
+     * @param value the value
+     * @return the integer
+     */
+    private Double convertECNOValue(Integer value) {
+        return -25.0+(double)value/2;
+    }
+
+    /**
+     * Convert rscp value.
+     *
+     * @param value the value
+     * @return the integer
+     */
+    private Integer convertRSCPValue(Integer value) {
+        return -115+value;
     }
 
     /**
@@ -393,27 +422,27 @@ public void printStats(boolean verbose) {
      * @param event - event 
      * @param eventNode - event node
      */
-    private void createCells(Event event, Node eventNode) {
-        Transaction tx = neo.beginTx();
-        try {
-            LinkedHashSet<Integer> cellsId = event.getCellId();
-            for (Integer cid : cellsId) {
-                Node cell = cellMap.get(cid);
-                if (cell == null) {
-                    cell = neo.createNode();
-                    NodeTypes.GPEH_CELL.setNodeType(cell, neo);
-                    cell.setProperty(INeoConstants.PROPERTY_SECTOR_CI, cid);
-                    cell.setProperty(INeoConstants.PROPERTY_NAME_NAME, cid.toString());
-                    NeoUtils.addChild(cellRoot, cell, lastCellNode, neo);
-                    lastCellNode = cell;
-                    cellMap.put(cid, cell);
-                }
-                cell.createRelationshipTo(eventNode, GeoNeoRelationshipTypes.EVENTS);
-            }
-        } finally {
-            tx.finish();
-        }
-    }
+//    private void createCells(Event event, Node eventNode) {
+//        Transaction tx = neo.beginTx();
+//        try {
+//            LinkedHashSet<Integer> cellsId = event.getCellId();
+//            for (Integer cid : cellsId) {
+//                Node cell = cellMap.get(cid);
+//                if (cell == null) {
+//                    cell = neo.createNode();
+//                    NodeTypes.GPEH_CELL.setNodeType(cell, neo);
+//                    cell.setProperty(INeoConstants.PROPERTY_SECTOR_CI, cid);
+//                    cell.setProperty(INeoConstants.PROPERTY_NAME_NAME, cid.toString());
+//                    NeoUtils.addChild(cellRoot, cell, lastCellNode, neo);
+//                    lastCellNode = cell;
+//                    cellMap.put(cid, cell);
+//                }
+//                cell.createRelationshipTo(eventNode, GeoNeoRelationshipTypes.EVENTS);
+//            }
+//        } finally {
+//            tx.finish();
+//        }
+//    }
 
     /**
      * save main file to node
