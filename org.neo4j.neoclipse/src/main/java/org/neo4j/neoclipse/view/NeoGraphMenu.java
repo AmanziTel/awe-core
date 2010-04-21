@@ -45,6 +45,7 @@ import org.neo4j.neoclipse.action.connect.StartAction;
 import org.neo4j.neoclipse.action.connect.StopAction;
 import org.neo4j.neoclipse.action.context.CommitAction;
 import org.neo4j.neoclipse.action.context.DeleteAction;
+import org.neo4j.neoclipse.action.context.PropertiesAction;
 import org.neo4j.neoclipse.action.context.RollbackAction;
 import org.neo4j.neoclipse.action.decorate.node.ShowNodeColorsAction;
 import org.neo4j.neoclipse.action.decorate.node.ShowNodeIconsAction;
@@ -247,6 +248,7 @@ public class NeoGraphMenu
     private final ShowReferenceNodeAction refNodeAction;
     private final RefreshAction refreshAction;
     private final DeleteAction deleteAction;
+    private final PropertiesAction propertiesAction;
     private final CommitAction commitAction;
     private final RollbackAction rollbackAction;
     // menu managers
@@ -312,6 +314,9 @@ public class NeoGraphMenu
         this.graphView = graphView;
         graphViewer = graphView.getViewer();
         deleteAction = new DeleteAction( graphView );
+        
+        propertiesAction = new PropertiesAction(graphView);
+        
         backAction = new GoBackAction( graphView );
         forwardAction = new GoForwardAction( graphView );
         decAction = new DecreaseTraversalDepthAction( graphView );
@@ -491,6 +496,7 @@ public class NeoGraphMenu
      */
     private void contributeContextActions( final MenuManager cm )
     {
+        cm.add(propertiesAction);
         cm.add( addRelMenuMgr );
         cm.add( addOutNodeMenuMgr );
         cm.add( addInNodeMenuMgr );

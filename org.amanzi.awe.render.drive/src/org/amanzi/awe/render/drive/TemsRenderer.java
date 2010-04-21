@@ -48,8 +48,10 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.awe.neostyle.ShapeType;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -624,7 +626,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     indexNode = getIndexNode(node);
                 }
                 Coordinate location = node.getCoordinate();
-
+                
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
                     continue; // Don't draw points outside viewport
                 }

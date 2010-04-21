@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -488,6 +490,7 @@ public class NetworkTreeView extends ViewPart {
         }
         event.setAutoZoom(autoZoom);
         event.setCoords(getCoords(node.getNode()));
+        event.setSelection(Collections.singleton(node.getNode()));
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
         if (autoZoom) {
             autoZoom = false; // only zoom first time, then rely on user to control zoom level
