@@ -2105,4 +2105,33 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
+
+
+    /**
+     * Find sector.
+     *
+     * @param baseName the base name
+     * @param ci the ci
+     * @param rnc the rnc
+     * @param luceneService the lucene service
+     * @param service the service
+     * @return the node
+     */
+    public static Node findSector(String baseName, Integer ci, String rnc, LuceneIndexService luceneService, GraphDatabaseService service) {
+        assert baseName != null && ci != null &&rnc!=null && luceneService != null;
+        Transaction tx = beginTx(service);
+        try {
+            String indexName = getLuceneIndexKeyByProperty(baseName, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+            IndexHits<Node> nodesCi = luceneService.getNodes(indexName, ci);
+            for (Node node:nodesCi){
+                Object rncId = node.getProperty(GpehReportUtil.RNC_ID,null);
+                if (rnc.equals(rncId)){
+                    return node;
+                }
+            }
+            return null;
+        }finally{
+            finishTx(tx);
+        }
+    }
 }
