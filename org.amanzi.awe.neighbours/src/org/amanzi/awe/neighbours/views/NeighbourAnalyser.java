@@ -16,9 +16,11 @@ package org.amanzi.awe.neighbours.views;
 import java.util.LinkedHashMap;
 
 import org.amanzi.awe.neighbours.AnalyseModel;
+import org.amanzi.awe.neighbours.gpeh.GpehReportCreator;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -42,7 +44,6 @@ import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
@@ -176,15 +177,11 @@ public class NeighbourAnalyser extends ViewPart {
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node= currentPos.currentNode();
-                    return NeoUtils.isGisNode(node)&&node.hasRelationship(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING);
+                    return NeoUtils.isGisNode(node)&&GisTypes.NETWORK==NeoUtils.getGisType(node, null);
                 }
             });
             for (Node node:gisWithNeighbour){
-                String id = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME,"");
-                for (Relationship ret : node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
-                    Node neigh = ret.getOtherNode(node);
-                    neighbour.put(id + ": " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
-                }
+                neighbour.put((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME), node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node));
             }
         }finally{
             tx.finish();
@@ -256,11 +253,12 @@ public class NeighbourAnalyser extends ViewPart {
      */
     protected void startAnalyse() {
         final Node gpehNode=gpeh.get(cGpeh.getText());
+        final Node netNode=neighbour.get(cNeighbour.getText());
         Job job=new Job("analyse") {
             
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                analyse(gpehNode);
+                analyse(gpehNode,netNode,monitor);
                 return Status.OK_STATUS;
             }
         };
@@ -272,11 +270,18 @@ public class NeighbourAnalyser extends ViewPart {
     /**
      * 
      * @param gpehNode
+     * @param netNode 
+     * @param monitor 
      * @return
      */
-    protected void analyse(Node gpehNode) {
+    protected void analyse(Node gpehNode, Node netNode, IProgressMonitor monitor) {
+        GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider().getIndexService());
+        creator.createMatrix();
+        if (true){
+            return;
+        }
         AnalyseModel model=AnalyseModel.create(gpehNode,neo);
-         final SpreadsheetNode spreadsheet = model.createSpreadSheet("event",neo);
+         final SpreadsheetNode spreadsheet = model.createSpreadSheet("event",neo,monitor);
          ActionUtil.getInstance().runTask(new Runnable() {
             
             @Override
