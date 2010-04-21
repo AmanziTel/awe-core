@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?pde version="3.1"?>
+<?pde version="3.5"?>
 
-<product name="Amanzi Wireless Explorer" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" useFeatures="true">
+<product name="Amanzi Wireless Explorer" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.amanzi.awe/nl/en/about.gif"/>
@@ -20,7 +20,8 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       </text>
    </aboutInfo>
 
-   <configIni use="default"/>
+   <configIni use="default">
+   </configIni>
 
    <launcherArgs>
       <vmArgs>-Xmx800M -XX:MaxPermSize=128m -Dosgi.parentClassloader=ext</vmArgs>
@@ -43,8 +44,8 @@ For more information and support visit http://www.amanzitel.com/page/AWE
    </launcher>
 
    <vm>
-      <linux type="jre">jre1.6.0_11_gdal</linux>
-      <windows type="jre">jre6</windows>
+      <linux>jre1.6.0_11_gdal</linux>
+      <windows>jre6</windows>
    </vm>
 
    <plugins>
@@ -60,7 +61,8 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <feature id="org.amanzi.awe_feature" version="1.0.0"/>
       <feature id="org.amanzi.splash_feature" version="1.0.0"/>
       <feature id="org.amanzi.splash.extras_feature" version="1.0.0.qualifier"/>
-      <feature id="org.neo4j.neoclipse_feature" version="0.4.0"/>
+      <feature id="org.neo4j.neoclipse.feature" version="0.4.1"/>
    </features>
+
 
 </product>
