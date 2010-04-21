@@ -43,7 +43,7 @@ import org.neo4j.graphdb.Traverser.Order;
  */
 public class CallAnalyzisNeoNode extends DriveNeoNode {
     
-    private String type;
+    private final String type;
     
     private Node statisticsNode;
 
@@ -103,7 +103,7 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             }).iterator();
         }
         else if (type.equals(NodeTypes.S_CELL.getId())) {
-            iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+            iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
                 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
@@ -111,7 +111,9 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
                 }
             }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
         }
-        else {
+        else if (type.equals(NodeTypes.CALL.getId())) {
+            iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,ReturnableEvaluator.ALL_BUT_START_NODE,ProbeCallRelationshipType.CALL_M, Direction.OUTGOING).iterator();
+        } else {
             iterator = NeoUtils.getChildTraverser(node).iterator();
         }
         int nextNum = number+1;
