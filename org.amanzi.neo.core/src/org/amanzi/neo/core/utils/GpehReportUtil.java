@@ -27,6 +27,20 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
 public class GpehReportUtil {
+    public static class MatrixProperties{
+        public static final String DISTANCE = "distance";
+        public static final String DEFINED_NBR = "defined_nbr";
+        public static final String NUM_REPORTS_FOR_BEST_CELL = "# of MR for best cell";
+        public static final String EC_NO_DELTA_PREFIX = "EcNo Delta";
+        public static final String RSCP_DELTA_PREFIX = "RSCP Delta";
+        public static final String POSITION_PREFIX = "Position";
+
+        /**
+         * hide constructor
+         */
+        private MatrixProperties() {
+        }
+    }
     /**
      * Prefixes for Property Names of Measurement Report values
      */
@@ -43,6 +57,7 @@ public class GpehReportUtil {
     public static final String MR_TYPE_UE_INTERNAL = "Ue_Internal";
     public static final String RNC_ID = "rncId";
     public static final String PRIMARY_SCR_CODE = "primaryScramblingCode";
+    public static final String REPORTS_ID = "report_id";
 
     /**
      * hide constructor
@@ -113,6 +128,33 @@ public class GpehReportUtil {
         return null;
     }
     public static enum ReportsRelations implements RelationshipType {
-        REPORTS,ICDM_INTRA_FR,ICDM_INTER_FR,ICDM_IRAT;
+        REPORTS,ICDM_INTRA_FR,ICDM_INTER_FR,ICDM_IRAT,BEST_CELL,SECOND_SELL,SOURCE_MATRIX_EVENT;
     }
+
+    /**
+     * Gets the table id.
+     *
+     * @param pscMain the psc main
+     * @param psc2 the psc2
+     * @return the table id
+     */
+    public static String getTableId(String pscMain, String psc2) {
+        return pscMain+"@"+psc2;
+    }
+
+    /**
+     * Gets the matrix lucene index name.
+     *
+     * @param networkName the network name
+     * @param gpehEventsName the gpeh events name
+     * @param type the type
+     * @return the matrix lucene index name
+     */
+    public static String getMatrixLuceneIndexName(String networkName, String gpehEventsName, String type) {
+        return getReportId(networkName, gpehEventsName).append("@").append(type).toString();
+    }
+    public static StringBuilder getReportId(String networkName, String gpehEventsName) {
+        return new StringBuilder(networkName).append("@").append(gpehEventsName);
+    }
+
 }
