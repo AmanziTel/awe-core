@@ -85,11 +85,8 @@ public class GPEHLoader extends AbstractLoader {
     private static final int COUNT_LEN = 1000;
     private Node ossRoot;
     private Pair<Boolean, Node> mainNode;
-//    private final Map<Integer, Node> cellMap;
     private long timestampOfDay;
     private Node eventLastNode;
-//    private Node cellRoot;
-//    private Node lastCellNode;
     private final LinkedHashMap<String, Header> headers;
     private int eventsCount;
     
@@ -98,10 +95,6 @@ public class GPEHLoader extends AbstractLoader {
      */
     private int rscpIndex;
     
-    /*
-     * Index of Ec/N0 Property in Event
-     */
-//    private int ecnoIndex;
     private final LuceneIndexService luceneInd;
     private final String eventIndName;
 
@@ -115,9 +108,6 @@ public class GPEHLoader extends AbstractLoader {
         initialize("GPEH", null, directory, display);
         basename = datasetName;
         headers = getHeaderMap(KEY_EVENT).headers;
-//        cellRoot = null;
-//        lastCellNode = null;
-//        cellMap=new HashMap<Integer,Node>();
         luceneInd = NeoServiceProvider.getProvider().getIndexService();
         eventIndName =NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.GPEH_EVENT);
     }
@@ -131,7 +121,6 @@ public class GPEHLoader extends AbstractLoader {
     public void run(IProgressMonitor monitor) throws IOException {
         if (monitor != null)
             monitor.subTask(basename);
-//        cellMap.clear();
         addIndex(NodeTypes.GPEH_EVENT.getId(), NeoUtils.getTimeIndexProperty(basename));
 
         Map<String, List<String>> fileList = getGPEHFile(filename);
@@ -140,20 +129,10 @@ public class GPEHLoader extends AbstractLoader {
         try {
             initializeIndexes();
             ossRoot = LoaderUtils.findOrCreateOSSNode(OssType.GPEH, basename, neo);
-//            Pair<Node,Node> pair= LoaderUtils.findOrCreateGPEHCellRootNode(ossRoot, neo);
-//            cellRoot=pair.getLeft();
-//            lastCellNode=pair.getRight();
-//            if (lastCellNode!=null){
-//                //TODO use index?
-//               for (Node cell:NeoUtils.getChildTraverser(cellRoot)){
-//                   cellMap.put((Integer)cell.getProperty(INeoConstants.PROPERTY_SECTOR_CI,null),cell); 
-//               }
-//            }
             eventsCount=0;
             int perc = 0;
             int count=0;
             for (Map.Entry<String, List<String>> entry : fileList.entrySet()) {
-//                long len = new File(filename + File.separator + entry.getKey()).length();
                 perc+= entry.getValue().size()+1;
             }
             monitor.beginTask("Load GPEH data", perc);
@@ -220,7 +199,6 @@ public class GPEHLoader extends AbstractLoader {
                             info(String.format("\ttotal time\t\t%s\n\t\tparce time\t%s\n\t\tsave time\t%s",timeAll,parseTime,saveTime));   
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
                     // TODO add more information
                     NeoLoaderPlugin.error(e.getLocalizedMessage());
                 }
@@ -244,7 +222,7 @@ public void printStats(boolean verbose) {
      */
     private void saveEvent(GPEHEvent eventFile) {
         for (Event event : eventFile.getEvents()) {
-            //Lagutko: fake - save only RRC Measurement Reports!!!
+            //TODO: Lagutko: fake - save only RRC Measurement Reports!!!
             if (event.getId() == 8) {
                 saveSingleEvent(event);
             }
@@ -284,11 +262,12 @@ public void printStats(boolean verbose) {
             tx.success();
             index(eventNode);
             eventLastNode = eventNode;
-//            createCells(event,eventNode);
         } finally {
             tx.finish();
         }
     }
+    
+    int number = 0;
     
     /**
      * Save parsed result of RRC Measurement Report 
@@ -302,6 +281,8 @@ public void printStats(boolean verbose) {
     		return;
     	}
     	
+    	number++;
+    	
     	UL_DCCH_MessageType messageType = message.getMessage();
     	
     	if (messageType == null) {
@@ -311,8 +292,6 @@ public void printStats(boolean verbose) {
     	
     	//initialize indexes of fields
     	rscpIndex = 0;
-//    	ecnoIndex = 1;
-//    	int bsicIndex = 1;
     	
     	if (messageType.isMeasurementReportSelected()) {
     		//get a MeasurementReport
@@ -396,57 +375,7 @@ public void printStats(boolean verbose) {
     		}
     	}
     }
-
-
-
-    /**
-     * Convert ecno value.
-     *
-     * @param value the value
-     * @return the integer
-     */
-    private Double convertECNOValue(Integer value) {
-        return -25.0+(double)value/2;
-    }
-
-    /**
-     * Convert rscp value.
-     *
-     * @param value the value
-     * @return the integer
-     */
-    private Integer convertRSCPValue(Integer value) {
-        return -115+value;
-    }
-
-    /**
-     *Create Cells 
-     *finds or create cells and links with event
-     * @param event - event 
-     * @param eventNode - event node
-     */
-//    private void createCells(Event event, Node eventNode) {
-//        Transaction tx = neo.beginTx();
-//        try {
-//            LinkedHashSet<Integer> cellsId = event.getCellId();
-//            for (Integer cid : cellsId) {
-//                Node cell = cellMap.get(cid);
-//                if (cell == null) {
-//                    cell = neo.createNode();
-//                    NodeTypes.GPEH_CELL.setNodeType(cell, neo);
-//                    cell.setProperty(INeoConstants.PROPERTY_SECTOR_CI, cid);
-//                    cell.setProperty(INeoConstants.PROPERTY_NAME_NAME, cid.toString());
-//                    NeoUtils.addChild(cellRoot, cell, lastCellNode, neo);
-//                    lastCellNode = cell;
-//                    cellMap.put(cid, cell);
-//                }
-//                cell.createRelationshipTo(eventNode, GeoNeoRelationshipTypes.EVENTS);
-//            }
-//        } finally {
-//            tx.finish();
-//        }
-//    }
-
+    
     /**
      * save main file to node
      * 
