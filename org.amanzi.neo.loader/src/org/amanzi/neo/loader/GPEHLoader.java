@@ -310,7 +310,7 @@ public void printStats(boolean verbose) {
     	}
     	
     	//initialize indexes of fields
-    	rscpIndex = 1;
+    	rscpIndex = 0;
 //    	ecnoIndex = 1;
 //    	int bsicIndex = 1;
     	
@@ -330,7 +330,8 @@ public void printStats(boolean verbose) {
     				for (InterFreqMeasuredResults singleInterFreqResult : interFreqResultList.getValue()) {
     					if (singleInterFreqResult.isInterFreqCellMeasuredResultsListPresent()) {
     						for (CellMeasuredResults singleCellMeasuredResult : singleInterFreqResult.getInterFreqCellMeasuredResultsList().getValue()) {
-    							saveCellMeasuredResults(singleCellMeasuredResult, eventNode);
+    						    rscpIndex++;
+    						    saveCellMeasuredResults(singleCellMeasuredResult, eventNode);
     						}
     					}
     				}
@@ -343,7 +344,8 @@ public void printStats(boolean verbose) {
     					if (singleInterRatResults.isGsmSelected()) {
     						for (GSM_MeasuredResults singleGSMResults : singleInterRatResults.getGsm().getValue()) {
     							if (singleGSMResults.getBsicReported().isVerifiedBSICSelected()) {
-    								eventNode.setProperty(GpehReportUtil.GPEH_RRC_MR_BSIC_PREFIX + rscpIndex++, singleGSMResults.getBsicReported().getVerifiedBSIC());
+    							    rscpIndex++;
+    								eventNode.setProperty(GpehReportUtil.GPEH_RRC_MR_BSIC_PREFIX + rscpIndex, singleGSMResults.getBsicReported().getVerifiedBSIC());
     							}
     						}
     					}
@@ -354,7 +356,8 @@ public void printStats(boolean verbose) {
     				//process IntraFreq Results
     				IntraFreqMeasuredResultsList intraFreqResultList = result.getIntraFreqMeasuredResultsList();
     				for (CellMeasuredResults singleCellMeasuredResults : intraFreqResultList.getValue()) {
-    					saveCellMeasuredResults(singleCellMeasuredResults, eventNode);
+    				    rscpIndex++;
+    				    saveCellMeasuredResults(singleCellMeasuredResults, eventNode);
     				}
     			}
     			else if (result.isUe_InternalMeasuredResultsSelected()) {
@@ -381,15 +384,15 @@ public void printStats(boolean verbose) {
     		FddSequenceType fdd = results.getModeSpecificInfo().getFdd();
     		Integer scramblingCode = fdd.getPrimaryCPICH_Info().getPrimaryScramblingCode().getValue();
     		//store scramblingCode like string
-    		eventNode.setProperty(GpehReportUtil.GPEH_RRC_SCRAMBLING_PREFIX + rscpIndex++, scramblingCode.toString());               
+    		eventNode.setProperty(GpehReportUtil.GPEH_RRC_SCRAMBLING_PREFIX + rscpIndex, scramblingCode.toString());               
     		if (fdd.isCpich_RSCPPresent()) {
     			Integer value = fdd.getCpich_RSCP().getValue();
     			
-                eventNode.setProperty(GpehReportUtil.GPEH_RRC_MR_RSCP_PREFIX + rscpIndex++, value);    			
+                eventNode.setProperty(GpehReportUtil.GPEH_RRC_MR_RSCP_PREFIX + rscpIndex, value);    			
     		}
     		if (fdd.isCpich_Ec_N0Present()) {
     			Integer value = fdd.getCpich_Ec_N0().getValue();
-                eventNode.setProperty(GpehReportUtil.GPEH_RRC_MR_ECNO_PREFIX + rscpIndex++, value);
+                eventNode.setProperty(GpehReportUtil.GPEH_RRC_MR_ECNO_PREFIX + rscpIndex, value);
     		}
     	}
     }
