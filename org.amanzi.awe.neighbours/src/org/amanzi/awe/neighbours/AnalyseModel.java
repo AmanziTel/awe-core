@@ -116,6 +116,7 @@ public class AnalyseModel {
                     outList.clear();
                     outList.add((String)eventNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
                     outList.add(eventNode.getProperty(INeoConstants.PROPERTY_EVENT_ID, "").toString());
+                    outList.add(eventNode.getProperty(GpehReportUtil.MR_TYPE, "").toString());
                     for (Parameters parameter : spreadsheetList) {
                         outList.add(eventNode.getProperty(parameter.name(), "").toString());
                     }
@@ -137,6 +138,7 @@ public class AnalyseModel {
                 outList.clear();
                 outList.add("name");
                 outList.add("id");
+                outList.add("report type");
                 for (Parameters parameter : spreadsheetList) {
                     outList.add(parameter.name());
                 }

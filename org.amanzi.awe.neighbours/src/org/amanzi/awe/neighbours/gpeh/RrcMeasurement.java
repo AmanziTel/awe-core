@@ -13,10 +13,11 @@
 
 package org.amanzi.awe.neighbours.gpeh;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
- * Contains information about Rnc Measurement 
- * </p>
+ * Contains information about Rnc Measurement
+ * </p>.
  *
  * @author tsinkel_a
  * @since 1.0.0
@@ -24,7 +25,7 @@ package org.amanzi.awe.neighbours.gpeh;
 public class RrcMeasurement {
     
     /** The scrambling. */
-    Integer scrambling;
+    String scrambling;
     
     /** The rscp. */
     Integer rscp;
@@ -33,6 +34,9 @@ public class RrcMeasurement {
     Integer ecNo;
     /** The BSIC. */
     Integer bsic;
+
+    /** The position. */
+    private int position;
 
     /**
      * Instantiates a new rrc measurement.
@@ -49,7 +53,7 @@ public class RrcMeasurement {
      * @param ecNo the ec no
      * @param bsic the bsic
      */
-    public RrcMeasurement(Integer scrambling, Integer rscp, Integer ecNo,Integer bsic) {
+    public RrcMeasurement(String scrambling, Integer rscp, Integer ecNo,Integer bsic) {
         super();
         this.scrambling = scrambling;
         this.rscp = rscp;
@@ -62,7 +66,7 @@ public class RrcMeasurement {
      *
      * @return the scrambling
      */
-    public Integer getScrambling() {
+    public String getScrambling() {
         return scrambling;
     }
 
@@ -71,7 +75,7 @@ public class RrcMeasurement {
      *
      * @param scrambling the new scrambling
      */
-    public void setScrambling(Integer scrambling) {
+    public void setScrambling(String scrambling) {
         this.scrambling = scrambling;
     }
 
@@ -127,6 +131,25 @@ public class RrcMeasurement {
      */
     public void setBsic(Integer bsic) {
         this.bsic = bsic;
+    }
+
+
+    /**
+     * Sets the position.
+     *
+     * @param position the new position
+     */
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    /**
+     * Gets the position.
+     *
+     * @return the position
+     */
+    public int getPosition() {
+        return position;
     }
     
 }

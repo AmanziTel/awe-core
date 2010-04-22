@@ -15,41 +15,69 @@ package org.amanzi.awe.neighbours.gpeh;
 
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.GpehReportUtil.ReportsRelations;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * TODO Purpose of
  * <p>
+ * Gpeh report model
  * </p>
- * 
+ *
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class GpehReportModel {
+    
+    /** The network name. */
     private final String networkName;
+    
+    /** The gpeh events name. */
     private final String gpehEventsName;
+    
+    /** The service. */
     private final GraphDatabaseService service;
+    
+    /** The intra frequency icdm. */
     private IntraFrequencyICDM intraFrequencyICDM;
-    private IProgressMonitor monitor;
+    
+    /** The network. */
     private final Node network;
+    
+    /** The gpeh. */
     private final Node gpeh;
+    
+    /** The root. */
     private Node root;
+    
+    /** The crs. */
+    private final CoordinateReferenceSystem crs;
 
+    /**
+     * Instantiates a new gpeh report model.
+     *
+     * @param network the network
+     * @param gpeh the gpeh
+     * @param service the service
+     */
     GpehReportModel(Node network, Node gpeh, GraphDatabaseService service) {
         this.network = network;
         this.gpeh = gpeh;
+        
         networkName = NeoUtils.getNodeName(network, service);
+        crs=NeoUtils.getCRS(NeoUtils.findGisNodeByChild(network, service),service);
         gpehEventsName = NeoUtils.getNodeName(gpeh, service);
         this.service = service;
         intraFrequencyICDM = null;
         init();
     }
 
+    /**
+     * Inits the.
+     */
     private void init() {
         Transaction tx = service.beginTx();
         try {
@@ -60,6 +88,11 @@ public class GpehReportModel {
         }
     }
 
+    /**
+     * Find root node.
+     *
+     * @return the node
+     */
     public Node findRootNode() {
         if (root == null) {
             for (Relationship relation : network.getRelationships(ReportsRelations.REPORTS)) {
@@ -73,6 +106,11 @@ public class GpehReportModel {
         return root;
     }
 
+    /**
+     * Find intra frequency icdm.
+     *
+     * @return the intra frequency icdm
+     */
     public IntraFrequencyICDM findIntraFrequencyICDM() {
         if (getRoot() == null) {
             return null;
@@ -85,30 +123,60 @@ public class GpehReportModel {
         return intraFrequencyICDM;
     }
 
+    /**
+     * Gets the root.
+     *
+     * @return the root
+     */
     public Node getRoot() {
         return root;
     }
 
+    /**
+     * Gets the intra frequency icdm.
+     *
+     * @return the intra frequency icdm
+     */
     public IntraFrequencyICDM getIntraFrequencyICDM() {
         return intraFrequencyICDM;
     }
 
+    /**
+     * The Class AbstractICDM.
+     */
     private abstract class AbstractICDM {
+        
+        /** The main node. */
         protected final Node mainNode;
 
+        /**
+         * Instantiates a new abstract icdm.
+         *
+         * @param mainNode the main node
+         */
         AbstractICDM(Node mainNode) {
             this.mainNode = mainNode;
         }
 
+        /**
+         * Gets the main node.
+         *
+         * @return the main node
+         */
         public Node getMainNode() {
             return root;
         }
     }
 
+    /**
+     * The Class IntraFrequencyICDM.
+     */
     public class IntraFrequencyICDM extends AbstractICDM {
 
         /**
-         * @param mainNode
+         * Instantiates a new intrafrequency matrix.
+         *
+         * @param mainNode the main node
          */
         IntraFrequencyICDM(Node mainNode) {
             super(mainNode);
@@ -116,20 +184,49 @@ public class GpehReportModel {
 
     }
 
+    /**
+     * Gets the network.
+     *
+     * @return the network
+     */
     public Node getNetwork() {
         return network;
     }
 
+    /**
+     * Gets the gpeh.
+     *
+     * @return the gpeh
+     */
     public Node getGpeh() {
         return gpeh;
     }
 
+    /**
+     * Gets the network name.
+     *
+     * @return the network name
+     */
     public String getNetworkName() {
         return networkName;
     }
 
+    /**
+     * Gets the gpeh events name.
+     *
+     * @return the gpeh events name
+     */
     public String getGpehEventsName() {
         return gpehEventsName;
+    }
+
+    /**
+     * Gets the crs.
+     *
+     * @return the crs
+     */
+    public CoordinateReferenceSystem getCrs() {
+        return crs;
     }
 
 }
