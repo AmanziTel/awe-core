@@ -195,6 +195,7 @@ public class GpehReportCreator {
                     monitor.setTaskName(String.format("Handle %s events, create table rows %s, ttotal time: %s, average time: %s",countEvent,countRow,time2,time2/countEvent));
             }
             tx.success();
+            model.findIntraFrequencyICDM();
         } finally {
             tx.finish();
         }
@@ -745,7 +746,6 @@ public class GpehReportCreator {
             tx.success();
             System.out.println(creator.getSpreadsheet().getUnderlyingNode().getId());
             return creator.getSpreadsheet();
-
         }finally{
             tx.finish();
         }

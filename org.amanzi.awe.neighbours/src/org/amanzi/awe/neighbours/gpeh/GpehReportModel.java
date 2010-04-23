@@ -172,7 +172,7 @@ public class GpehReportModel {
          * @return the main node
          */
         public Node getMainNode() {
-            return root;
+            return mainNode;
         }
     }
 
