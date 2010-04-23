@@ -34,6 +34,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -108,11 +109,11 @@ public class GpehReportDialog extends Dialog {
         createContents(shell);
         shell.pack();
 
-        // calculate location
-        // Point size = parentShell.getSize();
-        // int dlgWidth = shell.getSize().x;
-        // int dlgHeight = shell.getSize().y;
-        // shell.setLocation(100, 100);
+//         calculate location
+        Point size = parentShell.getSize();
+        int dlgWidth = shell.getSize().x;
+        int dlgHeight = shell.getSize().y;
+        shell.setLocation((size.x - dlgWidth) / 2, (size.y - dlgHeight) / 2);
         shell.open();
 
         // wait
