@@ -13,19 +13,27 @@
 
 package org.amanzi.awe.neighbours.gpeh;
 
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.GpehReportUtil.MatrixProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil.ReportsRelations;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Gpeh report model
- * </p>
+ * </p>.
  *
  * @author tsinkel_a
  * @since 1.0.0
@@ -173,6 +181,9 @@ public class GpehReportModel {
      */
     public class IntraFrequencyICDM extends AbstractICDM {
 
+        private final String idName;
+
+
         /**
          * Instantiates a new intrafrequency matrix.
          *
@@ -180,6 +191,143 @@ public class GpehReportModel {
          */
         IntraFrequencyICDM(Node mainNode) {
             super(mainNode);
+            idName=GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(), GpehReportUtil.MR_TYPE_INTRAF);
+        }
+
+
+        /**
+         * Gets the row traverser.
+         *
+         * @return the row traverser
+         */
+        public Traverser getRowTraverser() {
+            return getMainNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING);
+        }
+        /**
+         * Gets the best cell name.
+         *
+         * @param row the row
+         * @return the best cell name
+         */
+        public String getBestCellName(Node row) {
+            String result=NeoUtils.getNodeName(getBestCell(row));
+            return result;
+        }
+
+        /**
+         * Gets the best cell.
+         *
+         * @param row the row
+         * @return the best cell
+         */
+        public Node getBestCell(Node row) {
+            return row.getSingleRelationship(ReportsRelations.BEST_CELL, Direction.OUTGOING).getOtherNode(row);
+        }
+
+
+        /**
+         * Gets the best cell psc.
+         *
+         * @param row the row
+         * @return the best cell psc
+         */
+        public String getBestCellPSC(Node row) {
+            return (String)getBestCell(row).getProperty(GpehReportUtil.PRIMARY_SCR_CODE,"");
+        }
+        
+        /**
+         * Gets the interfering cell psc.
+         *
+         * @param row the row
+         * @return the interfering cell psc
+         */
+        public String getInterferingCellPSC(Node row) {
+            return (String)getInterferingCell(row).getProperty(GpehReportUtil.PRIMARY_SCR_CODE,"");
+        }
+
+        /**
+         * Gets the interfering cell name.
+         *
+         * @param row the row
+         * @return the interfering cell name
+         */
+        public String getInterferingCellName(Node row) {
+            String result=NeoUtils.getNodeName(getInterferingCell(row));
+            return result;
+        }
+
+        /**
+         * Gets the interfering cell.
+         *
+         * @param row the row
+         * @return the interfering cell
+         */
+        public Node getInterferingCell(Node row) {
+            return row.getSingleRelationship(ReportsRelations.SECOND_SELL, Direction.OUTGOING).getOtherNode(row);
+        }
+
+
+        /**
+         * Gets the num mr for best cell.
+         *
+         * @param row the row
+         * @return the num mr for best cell
+         */
+        public Integer getNumMRForBestCell(Node row) {
+            //TODO add cache if necessary - it will be not large
+            int count=0;
+            Iterable<Relationship> rel = getBestCell(row).getRelationships(ReportsRelations.BEST_CELL,Direction.INCOMING);
+            for (Relationship relationship : rel) {
+                if (relationship.getProperty(GpehReportUtil.REPORTS_ID,"").equals(idName)){
+                    count++;
+                }
+            }
+            return count;
+        }
+
+
+
+        /**
+         * Gets the num mr for interfering cell.
+         *
+         * @param row the row
+         * @return the num mr for interfering cell
+         */
+        public Integer getNumMRForInterferingCell(Node row) {
+            //TODO add cache if necessary - it will be not large
+            int count=0;
+            Iterable<Relationship> rel = getInterferingCell(row).getRelationships(ReportsRelations.SECOND_SELL,Direction.INCOMING);
+            for (Relationship relationship : rel) {
+                if (relationship.getProperty(GpehReportUtil.REPORTS_ID,"").equals(idName)){
+                    count++;
+                }
+            }
+            return count;
+        }
+
+
+
+        /**
+         * Gets the deltaecno.
+         *
+         * @param i the number
+         * @param row the row
+         * @return the delta ecno
+         */
+        public Integer getDeltaEcNo(int i, Node row) {
+            assert i>=1&&i<=5&&row!=null;
+            return (Integer)row.getProperty(MatrixProperties.EC_NO_DELTA_PREFIX+i,0);
+        }
+
+
+
+        public Integer getDeltaRSCP(int i, Node row) {
+            assert i>=1&&i<=5&&row!=null;
+            return (Integer)row.getProperty(MatrixProperties.RSCP_DELTA_PREFIX+i,0);
+        }
+        public Integer getPosition(int i, Node row) {
+            assert i>=1&&i<=5&&row!=null;
+            return (Integer)row.getProperty(MatrixProperties.POSITION_PREFIX+i,0);
         }
 
     }
@@ -228,5 +376,8 @@ public class GpehReportModel {
     public CoordinateReferenceSystem getCrs() {
         return crs;
     }
+
+
+
 
 }

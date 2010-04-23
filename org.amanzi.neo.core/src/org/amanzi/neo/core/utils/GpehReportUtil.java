@@ -58,6 +58,7 @@ public class GpehReportUtil {
     public static final String RNC_ID = "rncId";
     public static final String PRIMARY_SCR_CODE = "primaryScramblingCode";
     public static final String REPORTS_ID = "report_id";
+    public static final String RUBY_PROJECT_NAME = "gpeh_report";
 
     /**
      * hide constructor
@@ -153,6 +154,14 @@ public class GpehReportUtil {
     public static String getMatrixLuceneIndexName(String networkName, String gpehEventsName, String type) {
         return getReportId(networkName, gpehEventsName).append("@").append(type).toString();
     }
+    
+    /**
+     * Gets the report id.
+     *
+     * @param networkName the network name
+     * @param gpehEventsName the gpeh events name
+     * @return the report id
+     */
     public static StringBuilder getReportId(String networkName, String gpehEventsName) {
         return new StringBuilder(networkName).append("@").append(gpehEventsName);
     }
