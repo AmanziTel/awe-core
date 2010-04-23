@@ -221,8 +221,8 @@ public class NetworkLoader extends AbstractLoader {
         addMainHeader("sector", getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
         addMainHeader(INeoConstants.PROPERTY_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
         addMainHeader(INeoConstants.PROPERTY_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
-        addMainHeader("latitude", getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
-        addMainHeader("longitude", getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
+        addMainHeader(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
+        addMainHeader(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
         // Stop statistics collection for properties we will not save to the sector
         addNonDataHeaders(1, mainHeaders);
 
@@ -418,11 +418,11 @@ public class NetworkLoader extends AbstractLoader {
         }
 
         private Float getLat() {
-            return getFloat("latitude");
+            return getFloat(INeoConstants.PROPERTY_LAT_NAME);
         }
 
         private Float getLon() {
-            return getFloat("longitude");
+            return getFloat(INeoConstants.PROPERTY_LON_NAME);
         }
 
         private Map<String, Object> getSectorData() {
