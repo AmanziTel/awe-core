@@ -62,6 +62,7 @@
     <module>org.amanzi.splash</module>
     <module>org.amanzi.splash-feature</module>
     <module>org.amanzi.splash.extras-feature</module>
+    <module>org.apache.log4j</module>
     <module>org.epic.regexp</module>
     <module>org.jfree</module>
     <module>org.jruby</module>
