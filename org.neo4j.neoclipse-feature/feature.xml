@@ -217,11 +217,4 @@ libraries, licensed under the Eclipse Public License,
          version="0.4.1"
          unpack="false"/>
 
-   <plugin
-         id="org.neo4j.neoclipse.doc"
-         download-size="234"
-         install-size="234"
-         version="0.2.0"
-         unpack="false"/>
-
 </feature>

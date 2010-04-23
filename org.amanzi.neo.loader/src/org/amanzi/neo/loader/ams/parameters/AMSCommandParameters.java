@@ -16,10 +16,8 @@ package org.amanzi.neo.loader.ams.parameters;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 
 /**
- * TODO Purpose of 
- * <p>
+ * Parameters of AMS Command
  *
- * </p>
  * @author Lagutko_N
  * @since 1.0.0
  */
@@ -510,6 +508,9 @@ public enum AMSCommandParameters {
         LONG;
     }
     
+    /*
+     *     
+     */
     private String name;
     
     private ParameterType type;
