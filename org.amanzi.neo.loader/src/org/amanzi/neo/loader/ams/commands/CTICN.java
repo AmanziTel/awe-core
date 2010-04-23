@@ -13,8 +13,7 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
-import java.util.HashMap;
-import java.util.StringTokenizer;
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 
 /**
@@ -37,11 +36,16 @@ class CTICN extends AbstractAMSCommand {
 
 	@Override
 	protected void initializeParameters() {
-	}
-
-	@Override
-	protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
-		return null;
+	    parameters.add(AMSCommandParameters.CC_INSTANCE);
+	    parameters.add(AMSCommandParameters.CALL_STATUS);
+	    parameters.add(AMSCommandParameters.AI_SERVICE);
+	    parameters.add(AMSCommandParameters.CALLING_PARTY_IDENT_TYPE);
+	    parameters.add(AMSCommandParameters.CALLING_PARTY_IDENT);
+	    parameters.add(AMSCommandParameters.HOOK);
+	    parameters.add(AMSCommandParameters.SIMPLEX);
+	    parameters.add(AMSCommandParameters.END_TO_END_ENCRYPTION);
+	    parameters.add(AMSCommandParameters.COMMS_TYPE);
+	    parameters.add(AMSCommandParameters.SLOTS_CODEC);
 	}
 
 	@Override

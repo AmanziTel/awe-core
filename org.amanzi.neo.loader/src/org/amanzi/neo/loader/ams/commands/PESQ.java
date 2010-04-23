@@ -13,8 +13,7 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
-
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
  * PESQ command
@@ -24,12 +23,7 @@ import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
  */
 public class PESQ extends AbstractAMSCommand {
 	
-	/** String ESTIMATED_DELAY field */
-    public static final String ESTIMATED_DELAY = "estimated delay";
-    
-    /** String PESQ_LISTENING_QUALITIY field */
-    public static final String PESQ_LISTENING_QUALITIY = "PESQ Listening Qualitiy";
-    /*
+	/*
 	 * Name of command
 	 */
 	private static final String COMMAND_NAME = "PESQ";
@@ -51,11 +45,11 @@ public class PESQ extends AbstractAMSCommand {
 
 	@Override
 	protected void initializeParameters() {
-	    parameters.add(new AMSCommandParameter(PESQ_LISTENING_QUALITIY, ParamterType.FLOAT));
-	    parameters.add(new AMSCommandParameter("PESQ Threshold", ParamterType.FLOAT));
-	    parameters.add(new AMSCommandParameter("Average Symmetrical Disturbance", ParamterType.FLOAT));
-	    parameters.add(new AMSCommandParameter("Average Asymmetrical Distrurbance", ParamterType.FLOAT));
-	    parameters.add(new AMSCommandParameter(ESTIMATED_DELAY, ParamterType.FLOAT));
+	    parameters.add(AMSCommandParameters.PESQ_LISTENING_QUALITIY);
+	    parameters.add(AMSCommandParameters.PESQ_THRESHOLD);
+	    parameters.add(AMSCommandParameters.AVERAGE_SYMMETRICAL_DISTURBANCE);
+	    parameters.add(AMSCommandParameters.AVERAGE_ASYMMETRICAL_DISTURBANCE);
+	    parameters.add(AMSCommandParameters.ESTIMATED_DELAY);
 	}
 
 	@Override

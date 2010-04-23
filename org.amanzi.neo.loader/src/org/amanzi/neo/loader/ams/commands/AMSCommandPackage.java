@@ -31,7 +31,7 @@ public class AMSCommandPackage {
 	
 	static {
 		registerCommand(new CCI());
-		registerCommand(new CBS());
+		registerCommand(new CBC());
 		registerCommand(new CSQ());
 		registerCommand(new CNUM());
 		registerCommand(new CTSDC());

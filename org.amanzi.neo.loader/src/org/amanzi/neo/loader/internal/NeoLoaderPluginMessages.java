@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.loader.internal;
 
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import org.eclipse.osgi.util.NLS;
@@ -124,11 +125,98 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String CRSdialog_button_CANSEL;
     public static String CRSdialog_label_Select;
     
+    public static String CBC_BCS_0;
+    public static String CBC_BCS_2;
+    
+    public static String CME_Error_2;
+    public static String CME_Error_3;
+    public static String CME_Error_4;
+    public static String CME_Error_20;
+    public static String CME_Error_24;
+    public static String CME_Error_25;
+    public static String CME_Error_26;
+    public static String CME_Error_27;
+    public static String CME_Error_30;
+    public static String CME_Error_32;
+    public static String CME_Error_33;
+    public static String CME_Error_34;
+    public static String CME_Error_35;
+    public static String CME_Error_36;
+    public static String CME_Error_37;
+    public static String CME_Error_100;
+    public static String CME_Error_512;
+    public static String CME_Error_513;
+    public static String CME_Error_514;
+    public static String CME_Error_515;
+    public static String CME_Error_516;
+    public static String CME_Error_517;
+    public static String CME_Error_518;    
+    
+    public static String CNUM_Number_Type_0;
+    public static String CNUM_Number_Type_1;
+    public static String CNUM_Number_Type_2;
+    public static String CNUM_Number_Type_3;
+    
+    public static String CTCC_Hook_0;
+    public static String CTCC_Hook_1;
+    public static String CTCC_Simplex_0;
+    public static String CTCC_Simplex_1;
+    public static String CTCC_AI_service_0;
+    public static String CTCC_AI_service_1; 
+    public static String CTCC_AI_service_2;
+    public static String CTCC_AI_service_5;
+    public static String CTCC_End_to_end_encryption_0;
+    public static String CTCC_End_to_end_encryption_1;
+    public static String CTCC_Comms_Type_0;
+    public static String CTCC_Comms_Type_1;
+    public static String CTCC_Comms_Type_3;
+    public static String CTCC_Slots_Codec_0;
+    public static String CTCC_Slots_Codec_1;
+    
+    public static String CTCR_Disconnect_Cause_0;
+    public static String CTCR_Disconnect_Cause_1;
+    public static String CTCR_Disconnect_Cause_2;
+    public static String CTCR_Disconnect_Cause_3;
+    public static String CTCR_Disconnect_Cause_4;
+    public static String CTCR_Disconnect_Cause_5;
+    public static String CTCR_Disconnect_Cause_6;
+    public static String CTCR_Disconnect_Cause_7;
+    public static String CTCR_Disconnect_Cause_8;
+    public static String CTCR_Disconnect_Cause_9;
+    public static String CTCR_Disconnect_Cause_10;
+    public static String CTCR_Disconnect_Cause_11;
+    public static String CTCR_Disconnect_Cause_12;
+    public static String CTCR_Disconnect_Cause_13;
+    public static String CTCR_Disconnect_Cause_14;
+    public static String CTCR_Disconnect_Cause_15;
+    public static String CTCR_Disconnect_Cause_16;
+    public static String CTCR_Disconnect_Cause_17;
+    public static String CTCR_Disconnect_Cause_18;
+    public static String CTCR_Disconnect_Cause_19;
+    public static String CTCR_Disconnect_Cause_20;
+    
+    public static String CTICN_Call_Status_0;
+    
+    public static String CTICN_Calling_Party_Ident_Type_0;
+    public static String CTICN_Calling_Party_Ident_Type_1;
+    
+    public static String CTSDC_Area_0;
+    
+    public static String CTSDC_RxTx_0;
+    public static String CTSDC_RxTx_1;
+    
+    public static String CTSDC_Priority_0;
+    public static String CTSDC_Priority_n;
+    
     private NeoLoaderPluginMessages() {
     }
 
     public static ResourceBundle getResourceBundle() {
         return resourceBundle;
+    }
+    
+    public static String getFormattedString(String key, Object ... args) {
+        return MessageFormat.format(key, (Object[])args);
     }
 
     static {

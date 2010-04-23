@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.loader.actions;
 
-import org.amanzi.neo.wizards.NeighbourImportWizard;
+import org.amanzi.neo.wizards.NetworkSiteImportWizard;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -43,7 +43,7 @@ public class NewNeighbourAction implements IWorkbenchWindowActionDelegate {
 
     @Override
     public void run(IAction action) {
-        IImportWizard wizard = new NeighbourImportWizard();
+        IImportWizard wizard = new NetworkSiteImportWizard();
         wizard.init(window.getWorkbench(), null);
         Shell parent = window.getShell();
         WizardDialog dialog = new WizardDialog(parent, wizard);

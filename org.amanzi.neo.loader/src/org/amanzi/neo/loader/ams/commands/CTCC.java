@@ -13,9 +13,7 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
-import java.util.HashMap;
-import java.util.StringTokenizer;
-
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
  * CTCC command
@@ -37,11 +35,14 @@ class CTCC extends AbstractAMSCommand {
 
 	@Override
 	protected void initializeParameters() {
-	}
-
-	@Override
-	protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
-		return null;
+	    parameters.add(AMSCommandParameters.CC_INSTANCE);
+	    parameters.add(AMSCommandParameters.HOOK);
+	    parameters.add(AMSCommandParameters.SIMPLEX);
+	    parameters.add(AMSCommandParameters.AI_SERVICE);
+	    parameters.add(AMSCommandParameters.END_TO_END_ENCRYPTION);
+	    parameters.add(AMSCommandParameters.COMMS_TYPE);
+	    parameters.add(AMSCommandParameters.SLOTS_CODEC);
+	    parameters.add(AMSCommandParameters.PROPRIETARY);
 	}
 
 	@Override

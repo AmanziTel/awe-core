@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
+
 /**
  * Abstract class that describes AMS command
  * 
@@ -43,7 +45,7 @@ public abstract class AbstractAMSCommand {
 	/*
 	 * List of parameters in command
 	 */
-	protected ArrayList<AMSCommandParameter> parameters = new ArrayList<AMSCommandParameter>();
+	protected ArrayList<AMSCommandParameters> parameters = new ArrayList<AMSCommandParameters>();
 	
 	public AbstractAMSCommand() {
 		initializeParameters();
@@ -90,7 +92,7 @@ public abstract class AbstractAMSCommand {
         
         StringTokenizer parametersTokenizer = new StringTokenizer(tokenizer.nextToken(getResultDelimiter()), getParamterDelimiter());
         
-        for (AMSCommandParameter singleParameter : parameters) {
+        for (AMSCommandParameters singleParameter : parameters) {
             if (!parametersTokenizer.hasMoreTokens()) {
                 break;
             }

@@ -540,34 +540,6 @@ public class NeighbourLoader {
         }
 
         /**
-         * get Id1 (CI+LAC) of node
-         * 
-         * @param node node
-         * @return id
-         */
-        public static String getId1(Node node) {
-            Object ci = node.getProperty(CI_HEADER, null);
-            if (ci == null) {
-                return null;
-            }
-            Object lac = node.getProperty(LAC_HEADER, null);
-            if (lac == null) {
-                return null;
-            }
-            return ci.toString() + "\t" + lac.toString();
-        }
-
-        /**
-         * get Id2 (BTS_NAME)
-         * 
-         * @param node node
-         * @return id
-         */
-        public static String getId2(Node node) {
-            return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
-        }
-
-        /**
          * Sets the properties of sector
          * 
          * @param fields array of values

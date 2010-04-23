@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
  * AT+CCI command
@@ -35,15 +35,15 @@ public class CCI extends AbstractAMSCommand {
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new AMSCommandParameter("MNI", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("RSSI", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("BER", ParamterType.FLOAT));
-		parameters.add(new AMSCommandParameter("LA", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("F", ParamterType.FLOAT));
-		parameters.add(new AMSCommandParameter("C1", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("BNC_LA", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("BNC_C2", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("BNC_RSSI", ParamterType.INTEGER));
+		parameters.add(AMSCommandParameters.MNI);
+		parameters.add(AMSCommandParameters.RSSI);
+		parameters.add(AMSCommandParameters.BER);
+		parameters.add(AMSCommandParameters.LA);
+		parameters.add(AMSCommandParameters.F);
+		parameters.add(AMSCommandParameters.C1);
+		parameters.add(AMSCommandParameters.BNC_LA);
+		parameters.add(AMSCommandParameters.BNC_C2);
+		parameters.add(AMSCommandParameters.BNC_RSSI);
 	}
 
 	@Override

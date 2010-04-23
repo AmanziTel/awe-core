@@ -63,9 +63,7 @@ import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Direction;
@@ -87,9 +85,6 @@ public abstract class AbstractLoader {
     /** AbstractLoader DEFAULT_DIRRECTORY_LOADER field */
     public static final String DEFAULT_DIRRECTORY_LOADER = "DEFAULT_DIRRECTORY_LOADER";
 
-    /** String LOAD_NETWORK_TITLE field */
-    private static final String LOAD_NETWORK_TITLE = "Load Network";
-    private static final String LOAD_NETWORK_MSG = "This network is already loaded into the database.\nDo you wish to overwrite the data?";
     protected Map<Integer, HeaderMaps> headersMap = new HashMap<Integer, HeaderMaps>();
     private String typeName = "CSV";
     protected GraphDatabaseService neo;
@@ -1615,26 +1610,6 @@ public abstract class AbstractLoader {
      */
     protected Node findOrCreateNetworkNode(Node gisNode) {
         return NeoUtils.findOrCreateNetworkNode(gisNode, basename, filename, neo);
-    }
-
-    private static boolean askIfOverwrite() {
-        int resultMsg = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
-            int result;
-
-            @Override
-            public void run() {
-                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
-                msg.setText(LOAD_NETWORK_TITLE);
-                msg.setMessage(LOAD_NETWORK_MSG);
-                result = msg.open();                
-            }
-
-            @Override
-            public Integer getValue() {
-                return new Integer(result);
-            }
-        });
-        return resultMsg == SWT.YES;
     }
 
     /**

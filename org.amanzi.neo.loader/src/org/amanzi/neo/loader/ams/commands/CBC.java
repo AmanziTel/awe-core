@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
  * AT+CBS command
@@ -21,12 +21,12 @@ import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
  * @author Lagutko_N
  * @since 1.0.0
  */
-class CBS extends AbstractAMSCommand {
+class CBC extends AbstractAMSCommand {
 	
 	/*
 	 * Name of command
 	 */
-	private static final String COMMAND_NAME = "CBS";
+	private static final String COMMAND_NAME = "CBC";
 	
 	@Override
 	public String getName() {
@@ -35,10 +35,10 @@ class CBS extends AbstractAMSCommand {
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new AMSCommandParameter("BCS", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("BCL", ParamterType.INTEGER));
+		parameters.add(AMSCommandParameters.BCS);
+		parameters.add(AMSCommandParameters.BCL);
 	}
-
+	
 	@Override
 	public boolean isCallCommand() {
 		return false;

@@ -274,11 +274,6 @@ public class GPEHParser {
     public static void parseEvent(BitInputStream input, GPEHEvent result, int recordLen) throws IOException {
         GPEHEvent.Event event = new GPEHEvent.Event();
 
-        StringBuilder bits = new StringBuilder("");
-        // String buf= readBits(bits,input,recordLen*8);
-        // bits.insert(0, buf);
-        // LOGGER.debug("--------");
-        // LOGGER.debug(bits.toString());
         event.scannerId = (Integer)readParameter(input, Parameters.EVENT_PARAM_SCANNER_ID).getLeft();
         event.hour = (Integer)readParameter(input, Parameters.EVENT_PARAM_TIMESTAMP_HOUR).getLeft();
         event.minute = (Integer)readParameter(input, Parameters.EVENT_PARAM_TIMESTAMP_MINUTE).getLeft();

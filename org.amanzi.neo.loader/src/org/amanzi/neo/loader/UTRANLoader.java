@@ -57,7 +57,6 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.lucene.LuceneIndexService;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -81,11 +80,8 @@ public class UTRANLoader extends AbstractLoader {
     private static final Logger LOGGER = Logger.getLogger(UTRANLoader.class);
     
     private static final String FORMAT_STR = "Node %s. Property %s. Old valus %s. New value %s not saved";
-    /** String EXT_GSM field */
-    private static final String EXT_GSM = "extGSM";
     private static final String UTRAN_SEC_TYPE = "utran";
-    private static final String GSM_SEC_TYPE = "gsm";
-
+    
     /** The Constant KEY_EVENT. */
     private static final int KEY_EVENT = 1;
 
@@ -307,7 +303,6 @@ public class UTRANLoader extends AbstractLoader {
                 }
             }
             int allJob = fileList.size() * 100;
-            int currentPos = 0;
             monitor.beginTask("Load UTRAN files", allJob);
             for (File singleFile : fileList) {
                 try {
@@ -1291,8 +1286,6 @@ public class UTRANLoader extends AbstractLoader {
         /** The Constant TAG_NAME. */
         public static final String TAG_NAME = "UtranCell";
 
-        /** The attr. */
-        private final Attributes attr;
         /** The collector. */
         PropertyCollector collector;
 
@@ -1301,9 +1294,6 @@ public class UTRANLoader extends AbstractLoader {
 
         /** The sector. */
         Node sector;
-
-        /** The data collector. */
-        private PropertyCollector dataCollector;
 
         /** The site. */
         private Node site;
@@ -1316,10 +1306,8 @@ public class UTRANLoader extends AbstractLoader {
          */
         protected UtranCell(Attributes attributes, RncFunction parent) {
             super(TAG_NAME, parent);
-            this.attr = attributes;
             cellName = attributes.getValue("id");
             collector = null;
-            dataCollector = null;
             site = null;
                 Integer[] cilac = idMap.get(cellName);
                 sector=NeoUtils.findSector(basename,cilac[0] ,cilac[1],cellName, true,index,neo);
@@ -1357,62 +1345,6 @@ public class UTRANLoader extends AbstractLoader {
                 }
             }
             return result;
-        }
-
-        /**
-         * Handle data collector.
-         */
-        private void handleDataCollector() {
-            if (dataCollector == null) {
-                return;
-            }
-            PropertyCollector attrCol = dataCollector.getSubCollectorByName("attributes");
-            Map<String, String> map = attrCol.getPropertyMap();
-            String type = map.get("vsDataType");
-            if (type.equals("vsDataUtranCell")) {
-                if (site.hasProperty(INeoConstants.PROPERTY_LON_NAME)) {
-                    return;
-                }
-                PropertyCollector col = attrCol.getSubCollectorByName("vsDataUtranCell");
-                if (col != null) {
-                    col = col.getSubCollectorByName("antennaPosition");
-                    if (col != null) {
-                        map = col.getPropertyMap();
-                        String lon = map.get("longitude");
-                        Float longitude = null;
-                        if (lon != null) {
-                            longitude = Float.parseFloat(lon) / 3600;
-                            site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
-                        }
-
-                        String lat = map.get("latitude");
-                        Float latitude = null;
-                        if (lat != null) {
-                            latitude = Float.parseFloat(lat) / 3600;
-                            site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
-                        }
-                        if (lat != null && lon != null) {
-                            GisProperties gisProperties = getGisProperties(basename);
-                            gisProperties.updateBBox(latitude, longitude);
-                            if (gisProperties.getCrs() == null && latitude != null && longitude != null) {
-                                gisProperties.checkCRS(latitude, longitude, null);
-                                if (!isTest() && gisProperties.getCrs() != null) {
-                                    CoordinateReferenceSystem crs = askCRSChoise(gisProperties);
-                                    if (crs != null) {
-                                        gisProperties.setCrs(crs);
-                                        gisProperties.saveCRS();
-                                    }
-                                }
-                            }
-                            index(site);
-                        }
-                    }
-                }
-            } else {
-                // TODO what we should storing like properties of sector node?
-                // storeProperty(sector,map);
-            }
-            dataCollector = null;
         }
 
         /**
@@ -2290,9 +2222,6 @@ public class UTRANLoader extends AbstractLoader {
         /** The collector. */
         PropertyCollector collector;
 
-        /** The attributes. */
-        private Attributes attributes;
-
         /**
          * Instantiates a new vs data container.
          * 
@@ -2313,7 +2242,6 @@ public class UTRANLoader extends AbstractLoader {
          */
         @Override
         public IXmlTag startElement(String localName, Attributes attributes) {
-            this.attributes = attributes;
             updateMonitor();
             IXmlTag result = new SkipTag(this);
 

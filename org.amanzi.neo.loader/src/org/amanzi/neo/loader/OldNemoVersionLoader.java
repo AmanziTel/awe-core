@@ -189,13 +189,7 @@ public class OldNemoVersionLoader extends NemoLoader {
 
         private String longitude;
         private String latitude;
-        // TODO should we store this property in node?
-        private String height;
-        private String distance;
-        private String GPSstatus;
-        private String satelites;
-        private String velocity;
-
+        
         /**
          * @param parcedLine
          */
@@ -208,11 +202,6 @@ public class OldNemoVersionLoader extends NemoLoader {
             eventId = parcedLine.get(0);
             longitude = parcedLine.get(1);
             latitude = parcedLine.get(2);
-            height = parcedLine.get(3);
-            distance = parcedLine.get(4);
-            GPSstatus = parcedLine.get(5);
-            satelites = parcedLine.get(6);
-            velocity = parcedLine.get(7);
             time = parcedLine.get(8);
             event = NemoEvents.getEventById(eventId);
             contextId = null;

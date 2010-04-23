@@ -13,6 +13,12 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
+/**
+ * Syntax of Command by AMS Specification
+ * 
+ * @author Lagutko_N
+ * @since 1.0.0
+ */
 public enum CommandSyntax {
 	READ, SET, EXECUTE;
 }

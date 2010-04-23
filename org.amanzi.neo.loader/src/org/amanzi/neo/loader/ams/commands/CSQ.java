@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
  * AT+CSQ command
@@ -35,8 +35,8 @@ class CSQ extends AbstractAMSCommand {
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new AMSCommandParameter("RSSI", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("BER", ParamterType.FLOAT));		
+		parameters.add(AMSCommandParameters.RSSI);
+		parameters.add(AMSCommandParameters.BER);		
 	}
 
 	@Override

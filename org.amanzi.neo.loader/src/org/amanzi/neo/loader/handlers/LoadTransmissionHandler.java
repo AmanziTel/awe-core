@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.loader.handlers;
 
-import org.amanzi.neo.wizards.TransmissionImportWizard;
+import org.amanzi.neo.wizards.NetworkSiteImportWizard;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -36,7 +36,7 @@ public class LoadTransmissionHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-        IImportWizard wizard = new TransmissionImportWizard();
+        IImportWizard wizard = new NetworkSiteImportWizard();
         wizard.init(workbenchWindow.getWorkbench(), null);
         Shell parent = workbenchWindow.getShell();
         WizardDialog dialog = new WizardDialog(parent, wizard);

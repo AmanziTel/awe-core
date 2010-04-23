@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
  * CME ERROR command
@@ -35,9 +35,9 @@ class CME extends AbstractAMSCommand {
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new AMSCommandParameter("error code", ParamterType.INTEGER));
+		parameters.add(AMSCommandParameters.ERROR_CODE);
 	}
-
+	
 	@Override
 	public boolean isCallCommand() {
 		return true;

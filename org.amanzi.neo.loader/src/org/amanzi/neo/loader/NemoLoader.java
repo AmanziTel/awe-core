@@ -318,6 +318,7 @@ public class NemoLoader extends DriveLoader {
         /**
          *create parsedParameters - list of parsed parameters of event.
          */
+        @SuppressWarnings("unchecked")
         protected void analyseKnownParameters(Map<String, Header> statisticHeaders) {
             if (parameters.isEmpty()) {
                 return;

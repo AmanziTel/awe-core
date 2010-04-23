@@ -699,33 +699,7 @@ public class DriveDialog {
 		LoadDriveJob job = new LoadDriveJob(dialogShell.getDisplay());
 		job.schedule(50);
 	}	
-	/**
-	 * FileFilter for Drive data files
-	 * 
-	 * @author Lagutko_N
-	 *
-	 */
 	
-	private class DriveFileFilter implements FileFilter {
-	    String extension;
-	    public DriveFileFilter(String extension) {
-	        this.extension = extension;
-	    }
-
-		public boolean accept(File pathname) {
-            if (pathname.getName().toLowerCase().endsWith(extension.toLowerCase())) {
-                return true;
-            }
-            return false;
-        }				
-	}
-	
-
-    // private void setExtension(String extension) {
-    // this.extension = extension;
-    // }
-    
-
 	/**
 	 * Loads Drive data from files
 	 * @param extension2 

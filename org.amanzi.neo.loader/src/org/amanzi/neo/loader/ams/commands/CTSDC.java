@@ -13,7 +13,8 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
+
 
 
 /**
@@ -24,12 +25,7 @@ import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
  */
 public class CTSDC extends AbstractAMSCommand {
 	
-    public static final String SIMPLEX = "simplex";
-    public static final String HOOK = "hook";
-    public static final String COMMS_TYPE = "comms_type";
-    public static final String SLOTS = "slots/codec";
-    
-	/*
+    /*
 	 * Command name
 	 */
 	public static final String COMMAND_NAME = "CTSDC";
@@ -41,17 +37,16 @@ public class CTSDC extends AbstractAMSCommand {
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new AMSCommandParameter("AI Service", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("called party ident type", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("area", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter(HOOK, ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter(SIMPLEX, ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("end-to-end encryption", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter(COMMS_TYPE, ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter(SLOTS, ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("RqTx", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("priority", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("CLIR control", ParamterType.INTEGER));
+		parameters.add(AMSCommandParameters.AI_SERVICE);
+		parameters.add(AMSCommandParameters.CALLING_PARTY_IDENT_TYPE);
+		parameters.add(AMSCommandParameters.AREA);
+		parameters.add(AMSCommandParameters.HOOK);
+		parameters.add(AMSCommandParameters.SIMPLEX);
+		parameters.add(AMSCommandParameters.END_TO_END_ENCRYPTION);
+		parameters.add(AMSCommandParameters.COMMS_TYPE);
+		parameters.add(AMSCommandParameters.SLOTS_CODEC);
+		parameters.add(AMSCommandParameters.RX_TX);
+		parameters.add(AMSCommandParameters.PRIORITY);
 	}
 
 	@Override

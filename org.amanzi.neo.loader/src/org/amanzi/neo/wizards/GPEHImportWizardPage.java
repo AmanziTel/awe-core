@@ -224,31 +224,7 @@ public class GPEHImportWizardPage extends WizardPage {
         // TODO implement!
         if (true) {
             return;
-        }
-        if (StringUtils.isEmpty(directory)) {
-            return;
-        }
-        // File file = new File(directory);
-        // if (!(file.isDirectory() && file.isAbsolute() && file.exists())) {
-        // return;
-        // }
-        // List<File> files = LoaderUtils.getAllFiles(directory, new FileFilter() {
-        //            
-        // @Override
-        // public boolean accept(File arg0) {
-        // return true;
-        // }
-        // });
-        // if (files.isEmpty()){
-        // return;
-        // }
-        // File fileToAnalyse = files.get(0);
-        // if (Pattern.matches(".*\\.(xml|XML)$", fileToAnalyse.getName())){
-        // ossDirType=new Pair<OssType, Exception>(OssType.COUNTER, null);
-        // }else{
-        // ossDirType=new Pair<OssType, Exception>(OssType.GPEH, null);
-        // }
-        // cOssType.setText(ossDirType.getLeft().getId());
+        }        
     }
 
     /**

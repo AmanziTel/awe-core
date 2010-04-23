@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-import org.amanzi.neo.loader.ams.commands.AMSCommandParameter.ParamterType;
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
  * AT+CNUM command
@@ -39,9 +39,9 @@ class CNUM extends AbstractAMSCommand {
 
 	@Override
 	protected void initializeParameters() {
-		parameters.add(new AMSCommandParameter("num type", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("Called Party Identity", ParamterType.INTEGER));
-		parameters.add(new AMSCommandParameter("Alpha", ParamterType.STRING));
+		parameters.add(AMSCommandParameters.NUMBER_TYPE);
+		parameters.add(AMSCommandParameters.CALLED_PARTY_IDENTITY);
+		parameters.add(AMSCommandParameters.ALPHA);
 	}
 
 	@Override
@@ -56,9 +56,12 @@ class CNUM extends AbstractAMSCommand {
 			
 			for (int i = 0; i < parameters.size(); i++) {
 				Object value = null;
-				AMSCommandParameter parameter = parameters.get(i);
+				AMSCommandParameters parameter = parameters.get(i);
 				if (parametersTokenizer.hasMoreTokens()) {
 					value = parameter.parseString(parametersTokenizer.nextToken());
+					if (value == null) {
+					    continue;
+					}
 				}
 				
 				ArrayList<Object> resultList = (ArrayList<Object>)result.get(parameter.getName());

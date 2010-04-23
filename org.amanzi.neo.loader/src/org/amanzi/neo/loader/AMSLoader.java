@@ -44,7 +44,7 @@ import org.amanzi.neo.loader.ams.commands.AbstractAMSCommand;
 import org.amanzi.neo.loader.ams.commands.CCI;
 import org.amanzi.neo.loader.ams.commands.CTSDC;
 import org.amanzi.neo.loader.ams.commands.CommandSyntax;
-import org.amanzi.neo.loader.ams.commands.PESQ;
+import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -837,7 +837,7 @@ public class AMSLoader extends DriveLoader {
 			CommandSyntax syntax = AMSCommandPackage.getCommandSyntax(commandName);
 			if (syntax == CommandSyntax.SET) { 
 				int equalsIndex = commandName.indexOf("=");
-				tokenizer = new StringTokenizer(commandName.substring(equalsIndex).trim());
+				tokenizer = new StringTokenizer(commandName.substring(equalsIndex + 1).trim());
 				commandName = commandName.substring(0, equalsIndex);
 			}
 			
@@ -1176,8 +1176,8 @@ public class AMSLoader extends DriveLoader {
 	        break;
 	    case PESQ:
 	        if (call != null) {
-	            call.addLq((Float)properties.get(PESQ.PESQ_LISTENING_QUALITIY));
-	            call.addDelay((Float)properties.get(PESQ.ESTIMATED_DELAY));
+	            call.addLq((Float)properties.get(AMSCommandParameters.PESQ_LISTENING_QUALITIY.getName()));
+	            call.addDelay((Float)properties.get(AMSCommandParameters.ESTIMATED_DELAY.getName()));
 	        }
 	        break;
 	    case CALL_TERMINATION_BEGIN:
@@ -1190,6 +1190,10 @@ public class AMSLoader extends DriveLoader {
 	            call.setCallTerminationEnd(timestamp);
 	        }
 	        break;
+	    case ERROR:
+	        if (call != null) {
+	            call.error(timestamp);
+	        }
 	    }
 	    
 	    if (call != null) {
@@ -1352,9 +1356,9 @@ public class AMSLoader extends DriveLoader {
     
     private boolean isGroupCall(HashMap<String, Object> parameters) {
         Integer trueValue = new Integer(1);
-        return (parameters.get(CTSDC.COMMS_TYPE).equals(trueValue) &&
-                parameters.get(CTSDC.HOOK).equals(trueValue) &&
-                parameters.get(CTSDC.SIMPLEX).equals(trueValue) &&
-                parameters.get(CTSDC.SLOTS).equals(trueValue));
+        return (parameters.get(AMSCommandParameters.COMMS_TYPE.getName()).equals(trueValue) &&
+                parameters.get(AMSCommandParameters.HOOK.getName()).equals(trueValue) &&
+                parameters.get(AMSCommandParameters.SIMPLEX).equals(trueValue) &&
+                parameters.get(AMSCommandParameters.SLOTS_CODEC.getName()).equals(trueValue));
     }
 }
