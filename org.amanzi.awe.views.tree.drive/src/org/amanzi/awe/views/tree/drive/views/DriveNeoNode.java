@@ -40,6 +40,7 @@ public class DriveNeoNode extends NeoNode {
     /** int TRUNCATE_NODE field */
     protected static final int TRUNCATE_NODE =20 ;
 
+
     /**
      * Constructor
      * 
