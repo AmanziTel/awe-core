@@ -18,6 +18,7 @@ import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.GpehReportUtil.MatrixProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil.ReportsRelations;
+import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -210,7 +211,11 @@ public class GpehReportModel {
          * @return the best cell name
          */
         public String getBestCellName(Node row) {
-            String result=NeoUtils.getNodeName(getBestCell(row));
+            Node bestCell = getBestCell(row);
+            String result=(String)bestCell.getProperty("userLabel","");
+            if (StringUtil.isEmpty(result)){
+                 result=NeoUtils.getNodeName(bestCell);
+            }
             return result;
         }
 
@@ -252,7 +257,11 @@ public class GpehReportModel {
          * @return the interfering cell name
          */
         public String getInterferingCellName(Node row) {
-            String result=NeoUtils.getNodeName(getInterferingCell(row));
+            Node cell = getInterferingCell(row);
+            String result=(String)cell.getProperty("userLabel","");
+            if (StringUtil.isEmpty(result)){
+                 result=NeoUtils.getNodeName(cell);
+            }
             return result;
         }
 

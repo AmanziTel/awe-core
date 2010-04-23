@@ -365,7 +365,7 @@ public class GpehReportCreator {
      * @return the node
      */
     private Node findOrCreateTableNode(MeasurementCell bestCell, MeasurementCell sector, Node tableRoot, String type) {
-        String id = GpehReportUtil.getTableId(String.valueOf(bestCell.getMeasurement().getScrambling()), String.valueOf(sector.getMeasurement().getScrambling()));
+        String id = GpehReportUtil.getTableId(String.valueOf(bestCell.getCell().getId()), String.valueOf(sector.getCell().getId()));
         String indexName = GpehReportUtil.getMatrixLuceneIndexName(model.getNetworkName(), model.getGpehEventsName(), type);
         Transaction tx = service.beginTx();
         try {
@@ -676,7 +676,7 @@ public class GpehReportCreator {
             for (Node tblRow : matrix.getRowTraverser()) {
                 monitor.subTask("create row "+row);
                 column=0;
-                String bestCellName=matrix.getBestCellName(tblRow);
+                String bestCellName=matrix.getBestCellName(tblRow)+"<"+matrix.getBestCell(tblRow).getId()+">";
                 cellToadd = new Cell(row, column, "", bestCellName, null);
                 creator.saveCell(cellToadd);
                 column++;
@@ -739,7 +739,6 @@ public class GpehReportCreator {
                     time = System.currentTimeMillis();
                     tx=service.beginTx();
                 }
-                monitor.worked(1);
                 row++;
             }
             monitor.setTaskName("modify header");
