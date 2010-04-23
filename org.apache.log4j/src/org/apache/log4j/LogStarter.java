@@ -18,7 +18,7 @@ public class LogStarter extends AbstractUIPlugin {
 	 * The constructor
 	 */
 	public LogStarter() {
-	    initializeLogger();
+
 	}
 	
     private void initializeLogger(){
@@ -29,16 +29,19 @@ public class LogStarter extends AbstractUIPlugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
-	public void start(BundleContext context) throws Exception {
+	@Override
+    public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+	    initializeLogger();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
-	public void stop(BundleContext context) throws Exception {
+	@Override
+    public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
 	}
