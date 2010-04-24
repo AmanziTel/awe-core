@@ -914,6 +914,7 @@ public class AMSLoader extends DriveLoader {
 	private void updateMNode(Node mNode, String commandName, HashMap<String, Object> parameters) {
 		LinkedHashMap<String, Header> headers = getHeaderMap(REAL_DATASET_HEADER_INDEX).headers;
 		mNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, commandName);
+        setProperty(headers, mNode, INeoConstants.PROPERTY_TYPE_EVENT, commandName);
 		if (parameters != null) {
 			for (String name : parameters.keySet()) {
 				Object value = parameters.get(name);
