@@ -19,6 +19,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.amanzi.splash.swing.Cell;
 
@@ -32,9 +33,11 @@ import org.amanzi.splash.swing.Cell;
  */
 public class CellSelection implements Transferable, ClipboardOwner {
     private static final int CELL = 0;
+    private static final int STRING = 1;
     public static final DataFlavor CELL_DATA_FLAVOR = new DataFlavor(Cell.class, "Splash Cell");
-    private static final DataFlavor[] flavors = {CELL_DATA_FLAVOR};
+    private static final DataFlavor[] flavors = {CELL_DATA_FLAVOR, DataFlavor.stringFlavor};
     private SelectedCellsSet cell;
+    private String stringData;
 
     /**
      * @param cell
@@ -42,33 +45,60 @@ public class CellSelection implements Transferable, ClipboardOwner {
     public CellSelection(SelectedCellsSet cell) {
         super();
         this.cell = cell;
+        this.stringData = getStringDataByCellSet(cell);
     }
 
-@Override
-public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+    /**
+     * @param cell2
+     * @return
+     */
+    private String getStringDataByCellSet(SelectedCellsSet cellsSet) {
+        ArrayList<Cell> cels = cellsSet.getCells();
+        StringBuilder result = new StringBuilder();
+        int curRow = cellsSet.getRow();
+        int curCol = cellsSet.getColumn();
+        for (Cell curCell : cels) {
+            int cellRow = curCell.getRow();
+            int cellCol = curCell.getColumn();
+            for (; curRow < cellRow; curRow++) {
+                result.append("\n");
+                curCol = cellsSet.getColumn();
+            }
+            for (; curCol < cellCol; curCol++) {
+                result.append("\t");
+            }
+            result.append(curCell.getValue().toString());
+        }
+        return result.toString();
+    }
+
+    @Override
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (flavor.equals(flavors[CELL])) {
             return (Object)cell;
+        } else if (flavor.equals(flavors[STRING])) {
+            return stringData;
         } else {
             throw new UnsupportedFlavorException(flavor);
         }
-}
+    }
 
-@Override
-public DataFlavor[] getTransferDataFlavors() {
+    @Override
+    public DataFlavor[] getTransferDataFlavors() {
         return (DataFlavor[])flavors.clone();
-}
+    }
 
-@Override
-public boolean isDataFlavorSupported(DataFlavor flavor) {
+    @Override
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
         for (int i = 0; i < flavors.length; i++) {
             if (flavor.equals(flavors[i])) {
                 return true;
             }
         }
-    return false;
-}
+        return false;
+    }
 
-@Override
-public void lostOwnership(Clipboard clipboard, Transferable contents) {
-}
+    @Override
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    }
 }
