@@ -15,6 +15,7 @@ package org.amanzi.awe.neighbours.gpeh;
 
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -154,12 +155,12 @@ public class GpehReportCreator {
                 countEvent++;
                 Set<Node> activeSet = getActiveSet(eventNode);
                 Set<RrcMeasurement> measSet = getRncMeasurementSet(eventNode);
-                MeasurementCell bestCell = getBestCell(activeSet, measSet);
+                String type = (String)eventNode.getProperty(GpehReportUtil.MR_TYPE, "");
+                MeasurementCell bestCell = getBestCell(activeSet, measSet,type);
                 if (bestCell == null) {
                     LOGGER.debug(String.format("Event node: %s, not found best cell", eventNode));
                     continue;
                 }
-                String type = (String)eventNode.getProperty(GpehReportUtil.MR_TYPE, "");
                 Node tableRoot;
                 if (type.equals(GpehReportUtil.MR_TYPE_INTERF)) {
                     tableRoot = interFMatrix;
@@ -213,8 +214,7 @@ public class GpehReportCreator {
      */
     private void handleTableNode(Node tableNode, String type, MeasurementCell bestCell, MeasurementCell sector) {
         if (type.equals(GpehReportUtil.MR_TYPE_INTERF)) {
-            // TODO implement
-            LOGGER.error("Not handled InterFreq event");
+            handleInterFrTableNode(tableNode,bestCell,sector);
             return;
         } else if (type.equals(GpehReportUtil.MR_TYPE_INTRAF)) {
              handleIntraFrTableNode(tableNode,bestCell,sector);
@@ -230,6 +230,143 @@ public class GpehReportCreator {
     }
 
 
+
+
+    /**
+     * Handle inter fr table node.
+     *
+     * @param tableNode the table node
+     * @param bestCell the best cell
+     * @param sector the sector
+     */
+    private void handleInterFrTableNode(Node tableNode, MeasurementCell bestCell, MeasurementCell sector) {
+        Transaction tx = service.beginTx();
+        try{
+            //Physical distance in meters 
+            if (!tableNode.hasProperty(MatrixProperties.DISTANCE)&&model.getCrs()!=null){
+                double dist = CRS.distance(bestCell.getCoordinate(), sector.getCoordinate(), model.getCrs());
+                tableNode.setProperty(MatrixProperties.DISTANCE, dist);
+            }
+            //Defined NBR   TRUE when Interfering Cell is defined neighboring cell,
+            //FALSE when Interfering Cell is not defined as neighboring cell
+
+            if (!tableNode.hasProperty(MatrixProperties.DEFINED_NBR)){
+                Set<Relationship> relations = NeoUtils.getRelations(bestCell.getCell(), sector.getCell(), NetworkRelationshipTypes.NEIGHBOUR, service);
+                boolean def=!relations.isEmpty();
+                tableNode.setProperty(MatrixProperties.DEFINED_NBR,def);
+            }
+            //Tier Distance - not created
+            
+            //# of MR for best cell
+            //can find - calculate count of relation
+            
+            //# of MR for Interfering cell
+            //can find - calculate count of relation
+            
+            Integer ecNo = sector.getMeasurement().getEcNo();
+            
+            if (ecNo>=37){//>=-6dB
+                updateCounter(tableNode,MatrixProperties.EC_NO_PREFIX+1);
+            }
+            if (ecNo>=31){//>=-9
+                updateCounter(tableNode,MatrixProperties.EC_NO_PREFIX+2);
+                
+            }
+            if (ecNo>=25){//>=-12
+                updateCounter(tableNode,MatrixProperties.EC_NO_PREFIX+3);
+                
+            }
+            if (ecNo>=19){//>=-15
+                updateCounter(tableNode,MatrixProperties.EC_NO_PREFIX+4);
+                
+            }
+            if (ecNo>=13){//>=-18
+                updateCounter(tableNode, MatrixProperties.EC_NO_PREFIX + 5);
+            }
+            if (sector.getMeasurement().getRscp() != null) {
+                Integer rscp = bestCell.getMeasurement().getRscp();
+                if (ecNo > 21) {// >-14
+                    if (rscp < 11) {// <-105
+                        updateCounter(tableNode, "RSCP1_14");//MatrixProperties.getRSCPECNOPropertyName(1, 14));
+                    }
+                    if (rscp < 21) {// <-95
+                        updateCounter(tableNode, "RSCP2_14");//MatrixProperties.getRSCPECNOPropertyName(2, 14));
+                    }
+                    if (rscp < 31) {// <-85
+                        updateCounter(tableNode, "RSCP3_14");//MatrixProperties.getRSCPECNOPropertyName(3, 14));
+                    }
+                    if (rscp < 41) {// <-75
+                        updateCounter(tableNode, "RSCP4_14");//MatrixProperties.getRSCPECNOPropertyName(4, 14));
+                    }
+                    if (rscp >= 41) {// >=-75
+                        updateCounter(tableNode, "RSCP5_14");//MatrixProperties.getRSCPECNOPropertyName(5, 14));
+                    }
+                }
+                if (ecNo>29){//>-10
+                    if (rscp < 11) {// <-105
+                        updateCounter(tableNode, "RSCP1_10");//MatrixProperties.getRSCPECNOPropertyName(1, 10));
+                    }
+                    if (rscp < 21) {// <-95
+                        updateCounter(tableNode, "RSCP2_10");//MatrixProperties.getRSCPECNOPropertyName(2, 10));
+                    }
+                    if (rscp < 31) {// <-85
+                        updateCounter(tableNode, "RSCP3_10");//MatrixProperties.getRSCPECNOPropertyName(3, 10));
+                    }
+                    if (rscp < 41) {// <-75
+                        updateCounter(tableNode, "RSCP4_10");//MatrixProperties.getRSCPECNOPropertyName(4, 10));
+                    }
+                    if (rscp >= 41) {// >=-75
+                        updateCounter(tableNode,"RSCP5_10");// MatrixProperties.getRSCPECNOPropertyName(5, 10));
+                    }                    
+                }
+            } else {
+                LOGGER.error("No found rscp" + bestCell + "\t" + sector);
+            }
+            int deltaPosition = sector.getMeasurement().getPosition() - bestCell.getMeasurement().getPosition();
+            if (deltaPosition < 0) {
+                LOGGER.error("wrong best cell position: " + bestCell.getMeasurement().getPosition());
+                deltaPosition = -deltaPosition;
+            }
+            if (sector.getMeasurement().getPosition()==1){
+                if (ecNo<=6){
+                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+1); 
+                }else{
+                    LOGGER.error("found sector with position 2 but wrong delta"+ecNo);  
+                }
+            }else  if (sector.getMeasurement().getPosition()==2){
+                if (ecNo<=6){
+                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+2); 
+                }else{
+                    LOGGER.error("found sector with position 3 but wrong delta"+ecNo);  
+                }
+            }else  if (sector.getMeasurement().getPosition()==3){
+                if (ecNo<=8){
+                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+3); 
+                }else{
+                    LOGGER.error("found sector with position 3 but wrong delta"+ecNo);  
+                }
+            }else  if (sector.getMeasurement().getPosition()==4){
+                if (ecNo<=8){
+                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+4); 
+                }else{
+                    LOGGER.error("found sector with position 3 but wrong delta"+ecNo);  
+                }
+            }else  if (sector.getMeasurement().getPosition()==5){
+                if (ecNo<=8){
+                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+5); 
+                }else{
+                    LOGGER.error("found sector with position 3 but wrong delta"+ecNo);  
+                }
+            }
+            tx.success();
+        } catch (Exception e) {
+            // TODO Handle FactoryException
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }finally{
+            tx.finish();
+        }
+
+    }
 
     /**
      * Handle intra fr table node.
@@ -265,34 +402,38 @@ public class GpehReportCreator {
             double deltaDbm = (double)Math.abs(bestCell.getMeasurement().getEcNo()-sector.getMeasurement().getEcNo())/2;
             if (deltaDbm<=3){
                 updateCounter(tableNode,MatrixProperties.EC_NO_DELTA_PREFIX+1);
-            }else if (deltaDbm<=6){
+            }
+            if (deltaDbm<=6){
                 updateCounter(tableNode,MatrixProperties.EC_NO_DELTA_PREFIX+2);
                 
-            }else if (deltaDbm<=9){
+            }
+            if (deltaDbm<=9){
                 updateCounter(tableNode,MatrixProperties.EC_NO_DELTA_PREFIX+3);
                 
-            }else if (deltaDbm<=12){
+            }
+            if (deltaDbm<=12){
                 updateCounter(tableNode,MatrixProperties.EC_NO_DELTA_PREFIX+4);
                 
-            }else if (deltaDbm<=15){
+            }
+            if (deltaDbm<=15){
                 updateCounter(tableNode,MatrixProperties.EC_NO_DELTA_PREFIX+5);
-            }else{
-                LOGGER.error("Node "+tableNode+" large delta "+deltaDbm);
             }
             if (bestCell.getMeasurement().getRscp()!=null&&sector.getMeasurement().getRscp()!=null){
                 double deltaRscp= (double)Math.abs(bestCell.getMeasurement().getRscp()-sector.getMeasurement().getRscp())/1;  
                 if (deltaRscp<=3){
                     updateCounter(tableNode,MatrixProperties.RSCP_DELTA_PREFIX+1);
-                }else if (deltaRscp<=6){
+                }
+                if (deltaRscp<=6){
                     updateCounter(tableNode,MatrixProperties.RSCP_DELTA_PREFIX+2);
-                }else if (deltaRscp<=9){
+                }
+                if (deltaRscp<=9){
                     updateCounter(tableNode,MatrixProperties.RSCP_DELTA_PREFIX+3);
-                }else if (deltaRscp<=12){
+                }
+                if (deltaRscp<=12){
                     updateCounter(tableNode,MatrixProperties.RSCP_DELTA_PREFIX+4);
-                }else if (deltaRscp<=15){
+                }
+                if (deltaRscp<=15){
                     updateCounter(tableNode,MatrixProperties.RSCP_DELTA_PREFIX+5);
-                }else{
-                    LOGGER.error("Node "+tableNode+" large delta "+deltaDbm);
                 }
             }else{
                 LOGGER.error("No found rscp"+bestCell+"\t"+sector); 
@@ -441,9 +582,15 @@ public class GpehReportCreator {
      * 
      * @param activeSet the active set
      * @param measSet the meas set
+     * @param type 
      * @return the best cell
      */
-    private MeasurementCell getBestCell(Set<Node> activeSet, Set<RrcMeasurement> measSet) {
+    private MeasurementCell getBestCell(Set<Node> activeSet, Set<RrcMeasurement> measSet, String type) {
+        if (type.equals(GpehReportUtil.MR_TYPE_INTERF)||type.equals(GpehReportUtil.MR_TYPE_IRAT)){
+            Iterator<Node> iterator = activeSet.iterator();
+            MeasurementCell bestCell=iterator.hasNext()?new MeasurementCell(iterator.next()):null;
+            return bestCell;
+        }
         MeasurementCell bestCell = null;
         if (activeSet.isEmpty()) {
             return bestCell;
@@ -676,39 +823,52 @@ public class GpehReportCreator {
             for (Node tblRow : matrix.getRowTraverser()) {
                 monitor.subTask("create row "+row);
                 column=0;
-                String bestCellName=matrix.getBestCellName(tblRow)+"<"+matrix.getBestCell(tblRow).getId()+">";
+                //Serving cell name
+                String bestCellName=matrix.getBestCellName(tblRow);
                 cellToadd = new Cell(row, column, "", bestCellName, null);
                 creator.saveCell(cellToadd);
                 column++;
+                //"Serving PSC"
                 String value=matrix.getBestCellPSC(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++;
-                
+                //Interfering cell name
                 value=matrix.getInterferingCellName(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++;
-                
+                //Interfering PSC
                 value=matrix.getInterferingCellPSC(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++; 
-                
+                //Defined NBR
+                value=String.valueOf(matrix.isDefinedNbr(tblRow));
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++; 
+                //Distance
+                value=String.valueOf(matrix.getDistance(tblRow));
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++; 
+                //Tier Distance
+                value=String.valueOf("N/A");
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++; 
+                //# of MR for best cell
                 value=String.valueOf(matrix.getNumMRForBestCell(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++; 
-                
+                //# of MR for Interfering cell
                 value=String.valueOf(matrix.getNumMRForInterferingCell(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++; 
-                
-                value=String.valueOf(matrix.getNumMRForInterferingCell(tblRow));
-                cellToadd = new Cell(row, column, "", value, null);
-                creator.saveCell(cellToadd);
-                column++;               
+                //Delta EcNo 1-5               
                 for (int i=1;i<=5;i++){
                     value=String.valueOf(matrix.getDeltaEcNo(i,tblRow));  
                     cellToadd = new Cell(row, column, "", value, null);
@@ -741,7 +901,6 @@ public class GpehReportCreator {
                 }
                 row++;
             }
-            monitor.setTaskName("modify header");
             tx.success();
             System.out.println(creator.getSpreadsheet().getUnderlyingNode().getId());
             return creator.getSpreadsheet();

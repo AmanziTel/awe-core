@@ -182,6 +182,7 @@ public class GpehReportModel {
      */
     public class IntraFrequencyICDM extends AbstractICDM {
 
+        /** The id name. */
         private final String idName;
 
 
@@ -330,13 +331,52 @@ public class GpehReportModel {
 
 
 
+        /**
+         * Gets the delta rscp.
+         *
+         * @param i the i
+         * @param row the row
+         * @return the delta rscp
+         */
         public Integer getDeltaRSCP(int i, Node row) {
             assert i>=1&&i<=5&&row!=null;
             return (Integer)row.getProperty(MatrixProperties.RSCP_DELTA_PREFIX+i,0);
         }
+        
+        /**
+         * Gets the position.
+         *
+         * @param i the i
+         * @param row the row
+         * @return the position
+         */
         public Integer getPosition(int i, Node row) {
             assert i>=1&&i<=5&&row!=null;
             return (Integer)row.getProperty(MatrixProperties.POSITION_PREFIX+i,0);
+        }
+
+
+
+        /**
+         * Checks if is defined nbr.
+         *
+         * @param tblRow the tbl row
+         * @return the boolean
+         */
+        public Boolean isDefinedNbr(Node tblRow) {
+            return (Boolean)tblRow.getProperty(MatrixProperties.DEFINED_NBR,false);
+        }
+
+
+
+        /**
+         * Gets the distance.
+         *
+         * @param tblRow the tbl row
+         * @return the distance
+         */
+        public Double getDistance(Node tblRow) {
+            return (Double)tblRow.getProperty(MatrixProperties.DISTANCE,null);
         }
 
     }
