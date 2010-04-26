@@ -22,7 +22,7 @@ package org.amanzi.awe.neighbours.gpeh;
  * @since 1.0.0
  */
 public enum GpehReportType {
-    IDCM_INTRA("INTRA-FREQUENCY ICDM");
+    IDCM_INTRA("INTRA-FREQUENCY ICDM"), IDCM_INTER("INTER-FREQUENCY ICDM");
     private final String id;
     private GpehReportType(String id){
         this.id = id;

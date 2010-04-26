@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.amanzi.awe.neighbours.gpeh.GpehReportModel.InterFrequencyICDM;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.IntraFrequencyICDM;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
@@ -707,7 +708,7 @@ public class GpehReportCreator {
      * @param spreadsheetName the spreadsheet name
      * @return the spreadsheet node
      */
-    public SpreadsheetNode createIntaIDCMSpreadSheet(String spreadsheetName) {
+    public SpreadsheetNode createIntraIDCMSpreadSheet(String spreadsheetName) {
         createMatrix();
         GpehReportModel mdl = getReportModel();
         IntraFrequencyICDM matrix = mdl.getIntraFrequencyICDM();
@@ -883,7 +884,7 @@ public class GpehReportCreator {
         //TODO implement
         createMatrix();
         GpehReportModel mdl = getReportModel();
-        IntraFrequencyICDM matrix = mdl.getIntraFrequencyICDM();
+        InterFrequencyICDM matrix = mdl.getInterFrequencyICDM();
         Transaction tx = service.beginTx();
         try{
             SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(GpehReportUtil.RUBY_PROJECT_NAME), spreadsheetName);
@@ -895,10 +896,16 @@ public class GpehReportCreator {
             cellToadd = new Cell(0, column, "", "Serving PSC", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "Interfering cell name", null);
+            cellToadd = new Cell(0, column, "", "Serving cell UARFCN", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Overlapping cell name", null);
             creator.saveCell(cellToadd);
             column++;
             cellToadd = new Cell(0, column, "", "Interfering PSC", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Overlapping cell UARCFN", null);
             creator.saveCell(cellToadd);
             column++;
             cellToadd = new Cell(0, column, "", "Defined NBR", null);
@@ -916,49 +923,49 @@ public class GpehReportCreator {
             cellToadd = new Cell(0, column, "", "# of MR for Interfering cell", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "EcNo Delta1", null);
+            cellToadd = new Cell(0, column, "", "EcNo 1", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "EcNo Delta2", null);
+            cellToadd = new Cell(0, column, "", "EcNo 2", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "EcNo Delta3", null);
+            cellToadd = new Cell(0, column, "", "EcNo 3", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "EcNo Delta4", null);
+            cellToadd = new Cell(0, column, "", "EcNo 4", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "EcNo Delta 5", null);
+            cellToadd = new Cell(0, column, "", "EcNo 5", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "RSCP Delta1", null);
+            cellToadd = new Cell(0, column, "", "RSCP1_14", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "RSCP Delta2", null);
+            cellToadd = new Cell(0, column, "", "RSCP2_14", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "RSCP Delta3", null);
+            cellToadd = new Cell(0, column, "", "RSCP3_14", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "RSCP Delta4", null);
+            cellToadd = new Cell(0, column, "", "RSCP4_14", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "RSCP Delta5", null);
+            cellToadd = new Cell(0, column, "", "RSCP5_14", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "Position1", null);
+            cellToadd = new Cell(0, column, "", "RSCP1_10", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "Position2", null);
+            cellToadd = new Cell(0, column, "", "RSCP2_10", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "Position3", null);
+            cellToadd = new Cell(0, column, "", "RSCP3_10", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "Position4", null);
+            cellToadd = new Cell(0, column, "", "RSCP4_10", null);
             creator.saveCell(cellToadd);
             column++;
-            cellToadd = new Cell(0, column, "", "Position5", null);
+            cellToadd = new Cell(0, column, "", "RSCP5_10", null);
             creator.saveCell(cellToadd);
             column++;
             int row=1;
@@ -977,6 +984,11 @@ public class GpehReportCreator {
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++;
+                // Serving cell UARFCN
+                value = matrix.getBestCellUARFCN(tblRow);
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++;
                 //Interfering cell name
                 value=matrix.getInterferingCellName(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
@@ -987,6 +999,11 @@ public class GpehReportCreator {
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++; 
+                // Interfering cell UARFCN
+                value = matrix.getInterferingCellUARFCN(tblRow);
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++;
                 //Defined NBR
                 value=String.valueOf(matrix.isDefinedNbr(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
@@ -1014,23 +1031,24 @@ public class GpehReportCreator {
                 column++; 
                 //Delta EcNo 1-5               
                 for (int i=1;i<=5;i++){
-                    value=String.valueOf(matrix.getDeltaEcNo(i,tblRow));  
+                    value = String.valueOf(matrix.getEcNo(i, tblRow));
                     cellToadd = new Cell(row, column, "", value, null);
                     creator.saveCell(cellToadd);
                     column++; 
                 }
                 for (int i=1;i<=5;i++){
-                    value=String.valueOf(matrix.getDeltaRSCP(i,tblRow));  
+                    value = String.valueOf(matrix.getRSCP(i, 14, tblRow));
                     cellToadd = new Cell(row, column, "", value, null);
                     creator.saveCell(cellToadd);
                     column++; 
                 }
                 for (int i=1;i<=5;i++){
-                    value=String.valueOf(matrix.getPosition(i,tblRow));  
+                    value = String.valueOf(matrix.getRSCP(i, 10, tblRow));
                     cellToadd = new Cell(row, column, "", value, null);
                     creator.saveCell(cellToadd);
                     column++; 
                 }
+
               monitor.setTaskName(String.format("Rows created: %s", row));
 
                 saveCount++;

@@ -56,40 +56,41 @@ import org.neo4j.graphdb.Traverser;
 /**
  * <p>
  * Dialog for GPEG report
- * </p>.
- *
+ * </p>
+ * .
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class GpehReportDialog extends Dialog {
-    
+
     /** The status. */
     protected int status = SWT.CANCEL;
-    
+
     /** The c gpeh. */
     private Combo cGpeh;
-    
+
     /** The c network. */
     private Combo cNetwork;
-    
+
     /** The btn save. */
     private Button btnSave;
-    
+
     /** The gpeh. */
     private LinkedHashMap<String, Node> gpeh;
-    
+
     /** The neo. */
     private final GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
-    
+
     /** The network. */
     private LinkedHashMap<String, Node> network;
-    
+
     /** The c report type. */
     private Combo cReportType;
 
     /**
      * Instantiates a new gpeh report dialog.
-     *
+     * 
      * @param parent the parent
      */
     public GpehReportDialog(Shell parent) {
@@ -98,7 +99,7 @@ public class GpehReportDialog extends Dialog {
 
     /**
      * Open.
-     *
+     * 
      * @return the int
      */
     public int open() {
@@ -109,7 +110,7 @@ public class GpehReportDialog extends Dialog {
         createContents(shell);
         shell.pack();
 
-//         calculate location
+        // calculate location
         Point size = parentShell.getSize();
         int dlgWidth = shell.getSize().x;
         int dlgHeight = shell.getSize().y;
@@ -128,7 +129,7 @@ public class GpehReportDialog extends Dialog {
 
     /**
      * Creates the contents.
-     *
+     * 
      * @param shell the shell
      * @return the control
      */
@@ -161,8 +162,8 @@ public class GpehReportDialog extends Dialog {
         layoutData.grabExcessHorizontalSpace = true;
         layoutData.minimumWidth = 200;
         cReportType.setLayoutData(layoutData);
-        
-        btnSave=new Button(shell, SWT.PUSH);
+
+        btnSave = new Button(shell, SWT.PUSH);
         btnSave.setText(Messages.NeighbourAnalyser_7);
         btnSave.addSelectionListener(new SelectionAdapter() {
 
@@ -189,12 +190,12 @@ public class GpehReportDialog extends Dialog {
 
         });
         SelectionListener listener = new SelectionListener() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 validateStartButton();
             }
-            
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
@@ -213,31 +214,43 @@ public class GpehReportDialog extends Dialog {
     protected void generateReport() {
         final Node gpehNode = gpeh.get(cGpeh.getText());
         final Node netNode = network.get(cNetwork.getText());
+        final GpehReportType repType = GpehReportType.getEnumById(cReportType.getText());
         Job job = new Job("generate Report") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                createReport(gpehNode, netNode, monitor);
+                createReport(gpehNode, netNode, repType, monitor);
                 return Status.OK_STATUS;
             }
         };
         job.schedule();
     }
 
-
     /**
      * Creates the report.
-     *
+     * 
      * @param gpehNode the gpeh node
      * @param netNode the net node
+     * @param repType report type
      * @param monitor the monitor
      */
-    protected void createReport(Node gpehNode, Node netNode, IProgressMonitor monitor) {
-        GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider()
-                .getIndexService());
+    protected void createReport(Node gpehNode, Node netNode, GpehReportType repType, IProgressMonitor monitor) {
+        GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(),
+                NeoServiceProvider.getProvider().getIndexService());
         creator.setMonitor(monitor);
         creator.createMatrix();
-        final SpreadsheetNode spreadsheet = creator.createIntaIDCMSpreadSheet("IntraMatrix");
+        final SpreadsheetNode spreadsheet;
+        switch (repType) {
+        case IDCM_INTRA:
+            spreadsheet = creator.createIntraIDCMSpreadSheet("IntraMatrix");
+            break;
+        case IDCM_INTER:
+            spreadsheet = creator.createInterIDCMSpreadSheet("InterMatrix");
+            break;
+        default:
+            return;
+            // break;
+        }
         ActionUtil.getInstance().runTask(new Runnable() {
 
             @Override
@@ -256,7 +269,6 @@ public class GpehReportDialog extends Dialog {
         formReportType();
         validateStartButton();
     }
-
 
     /**
      * Form report type.
@@ -279,11 +291,12 @@ public class GpehReportDialog extends Dialog {
 
     /**
      * is input valid?.
-     *
+     * 
      * @return result
      */
     private boolean isValidInput() {
-        return gpeh.get(cGpeh.getText()) != null && network.get(cNetwork.getText()) != null&&GpehReportType.getEnumById(cReportType.getText())!=null;
+        return gpeh.get(cGpeh.getText()) != null && network.get(cNetwork.getText()) != null
+                && GpehReportType.getEnumById(cReportType.getText()) != null;
     }
 
     /**
@@ -302,15 +315,14 @@ public class GpehReportDialog extends Dialog {
                 }
             });
             for (Node node : gisWithNeighbour) {
-                network.put((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME), node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
-                        .getOtherNode(node));
+                network.put((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME), node.getSingleRelationship(
+                        GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node));
             }
         } finally {
             tx.finish();
         }
         cNetwork.setItems(network.keySet().toArray(new String[0]));
     }
-
 
     /**
      * Form gpeh.

@@ -200,6 +200,72 @@ public class GpehReportModel {
         }
 
         /**
+         * Gets the num mr for best cell.
+         * 
+         * @param row the row
+         * @return the num mr for best cell
+         */
+        public Integer getNumMRForBestCell(Node row) {
+            // TODO add cache if necessary - it will be not large
+            int count = 0;
+            Iterable<Relationship> rel = getBestCell(row).getRelationships(ReportsRelations.BEST_CELL, Direction.INCOMING);
+            for (Relationship relationship : rel) {
+                if (relationship.getProperty(GpehReportUtil.REPORTS_ID, "").equals(idName)) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        /**
+         * Gets the num mr for interfering cell.
+         * 
+         * @param row the row
+         * @return the num mr for interfering cell
+         */
+        public Integer getNumMRForInterferingCell(Node row) {
+            // TODO add cache if necessary - it will be not large
+            int count = 0;
+            Iterable<Relationship> rel = getInterferingCell(row).getRelationships(ReportsRelations.SECOND_SELL, Direction.INCOMING);
+            for (Relationship relationship : rel) {
+                if (relationship.getProperty(GpehReportUtil.REPORTS_ID, "").equals(idName)) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        /**
+         * Gets the distance.
+         * 
+         * @param tblRow the tbl row
+         * @return the distance
+         */
+        public Double getDistance(Node tblRow) {
+            return (Double)tblRow.getProperty(MatrixProperties.DISTANCE, null);
+        }
+
+        /**
+         * Gets the best cell.
+         * 
+         * @param row the row
+         * @return the best cell
+         */
+        public Node getBestCell(Node row) {
+            return row.getSingleRelationship(ReportsRelations.BEST_CELL, Direction.OUTGOING).getOtherNode(row);
+        }
+
+
+        /**
+         * Gets the best cell psc.
+         * 
+         * @param row the row
+         * @return the best cell psc
+         */
+        public String getBestCellPSC(Node row) {
+            return (String)getBestCell(row).getProperty(GpehReportUtil.PRIMARY_SCR_CODE, "");
+        }
+        /**
          * Gets the main node.
          *
          * @return the main node
@@ -215,36 +281,6 @@ public class GpehReportModel {
         public Traverser getRowTraverser() {
             return getMainNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING);
         }
-    }
-    public class InterFrequencyICDM extends AbstractICDM {
-
-        /**
-         * @param mainNode
-         */
-        InterFrequencyICDM(Node mainNode) {
-            super(mainNode,GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(), GpehReportUtil.MR_TYPE_INTERF));
-        }
-        
-    }
-    /**
-     * The Class IntraFrequencyICDM.
-     */
-    public class IntraFrequencyICDM extends AbstractICDM {
-
-
-
-
-        /**
-         * Instantiates a new intrafrequency matrix.
-         *
-         * @param mainNode the main node
-         */
-        IntraFrequencyICDM(Node mainNode) {
-            super(mainNode,GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(), GpehReportUtil.MR_TYPE_INTRAF));
-        }
-
-
-
         /**
          * Gets the best cell name.
          *
@@ -260,26 +296,7 @@ public class GpehReportModel {
             return result;
         }
 
-        /**
-         * Gets the best cell.
-         *
-         * @param row the row
-         * @return the best cell
-         */
-        public Node getBestCell(Node row) {
-            return row.getSingleRelationship(ReportsRelations.BEST_CELL, Direction.OUTGOING).getOtherNode(row);
-        }
 
-
-        /**
-         * Gets the best cell psc.
-         *
-         * @param row the row
-         * @return the best cell psc
-         */
-        public String getBestCellPSC(Node row) {
-            return (String)getBestCell(row).getProperty(GpehReportUtil.PRIMARY_SCR_CODE,"");
-        }
         
         /**
          * Gets the interfering cell psc.
@@ -316,44 +333,62 @@ public class GpehReportModel {
             return row.getSingleRelationship(ReportsRelations.SECOND_SELL, Direction.OUTGOING).getOtherNode(row);
         }
 
+        /**
+         * Checks if is defined nbr.
+         * 
+         * @param tblRow the tbl row
+         * @return the boolean
+         */
+        public Boolean isDefinedNbr(Node tblRow) {
+            return (Boolean)tblRow.getProperty(MatrixProperties.DEFINED_NBR, false);
+        }
+    }
+
+    public class InterFrequencyICDM extends AbstractICDM {
 
         /**
-         * Gets the num mr for best cell.
-         *
-         * @param row the row
-         * @return the num mr for best cell
+         * @param mainNode
          */
-        public Integer getNumMRForBestCell(Node row) {
-            //TODO add cache if necessary - it will be not large
-            int count=0;
-            Iterable<Relationship> rel = getBestCell(row).getRelationships(ReportsRelations.BEST_CELL,Direction.INCOMING);
-            for (Relationship relationship : rel) {
-                if (relationship.getProperty(GpehReportUtil.REPORTS_ID,"").equals(idName)){
-                    count++;
-                }
-            }
-            return count;
+        InterFrequencyICDM(Node mainNode) {
+            super(mainNode, GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(),
+                    GpehReportUtil.MR_TYPE_INTERF));
+        }
+
+        public Integer getEcNo(int prefix, Node tblRow) {
+            return (Integer)tblRow.getProperty(MatrixProperties.EC_NO_PREFIX + prefix, 0);
+        }
+
+        public Integer getRSCP(int prfx1, int prfx2, Node tblRow) {
+            return (Integer)tblRow.getProperty(MatrixProperties.getRSCPECNOPropertyName(prfx1, prfx2), 0);
+        }
+
+        public String getBestCellUARFCN(Node tblRow) {
+            return getBestCell(tblRow).getProperty("uarfcnDl", "").toString();
+        }
+
+        public String getInterferingCellUARFCN(Node tblRow) {
+            return getInterferingCell(tblRow).getProperty("uarfcnDl", "").toString();
+        }
+
+    }
+
+    /**
+     * The Class IntraFrequencyICDM.
+     */
+    public class IntraFrequencyICDM extends AbstractICDM {
+
+        /**
+         * Instantiates a new intrafrequency matrix.
+         * 
+         * @param mainNode the main node
+         */
+        IntraFrequencyICDM(Node mainNode) {
+            super(mainNode, GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(),
+                    GpehReportUtil.MR_TYPE_INTRAF));
         }
 
 
 
-        /**
-         * Gets the num mr for interfering cell.
-         *
-         * @param row the row
-         * @return the num mr for interfering cell
-         */
-        public Integer getNumMRForInterferingCell(Node row) {
-            //TODO add cache if necessary - it will be not large
-            int count=0;
-            Iterable<Relationship> rel = getInterferingCell(row).getRelationships(ReportsRelations.SECOND_SELL,Direction.INCOMING);
-            for (Relationship relationship : rel) {
-                if (relationship.getProperty(GpehReportUtil.REPORTS_ID,"").equals(idName)){
-                    count++;
-                }
-            }
-            return count;
-        }
 
 
 
@@ -393,30 +428,6 @@ public class GpehReportModel {
         public Integer getPosition(int i, Node row) {
             assert i>=1&&i<=5&&row!=null;
             return (Integer)row.getProperty(MatrixProperties.POSITION_PREFIX+i,0);
-        }
-
-
-
-        /**
-         * Checks if is defined nbr.
-         *
-         * @param tblRow the tbl row
-         * @return the boolean
-         */
-        public Boolean isDefinedNbr(Node tblRow) {
-            return (Boolean)tblRow.getProperty(MatrixProperties.DEFINED_NBR,false);
-        }
-
-
-
-        /**
-         * Gets the distance.
-         *
-         * @param tblRow the tbl row
-         * @return the distance
-         */
-        public Double getDistance(Node tblRow) {
-            return (Double)tblRow.getProperty(MatrixProperties.DISTANCE,null);
         }
 
     }
