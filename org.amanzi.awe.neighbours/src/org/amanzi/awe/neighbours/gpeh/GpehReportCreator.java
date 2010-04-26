@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.amanzi.awe.neighbours.gpeh.GpehReportModel.InterFrequencyICDM;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.IntraFrequencyICDM;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
@@ -874,9 +873,10 @@ public class GpehReportCreator {
         }
     }
     public SpreadsheetNode createInterIDCMSpreadSheet(String spreadsheetName) {
+        //TODO implement
         createMatrix();
         GpehReportModel mdl = getReportModel();
-        InterFrequencyICDM matrix = mdl.getInterFrequencyICDM();
+        IntraFrequencyICDM matrix = mdl.getIntraFrequencyICDM();
         Transaction tx = service.beginTx();
         try{
             SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(GpehReportUtil.RUBY_PROJECT_NAME), spreadsheetName);
