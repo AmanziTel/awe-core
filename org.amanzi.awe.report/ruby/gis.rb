@@ -7,7 +7,7 @@ include_class 'net.refractions.udig.project.ui.ApplicationGIS'
 include_class 'org.amanzi.awe.neostyle.NeoStyleContent'
 include_class 'org.amanzi.awe.filters.experimental.GroupFilter'
 
-#include_class 'org.amanzi.awe.catalog.neo.GeoNeo'
+include_class 'org.amanzi.awe.catalog.neo.GeoNeo'
 
 include_class 'org.geotools.feature.DefaultFeature'
 include_class 'org.geotools.data.FeatureSource'
@@ -41,6 +41,7 @@ end
 class LayerImpl
   def style=(style)
     neo_style=getStyleBlackboard().get(NeoStyleContent::ID)
+    puts neo_style
     neo_style.clearStyle()
     style.styles.each do |shape,color_scheme|
       neo_style.addStyle(shape,color_scheme.colors.to_java(java.awt.Color))
@@ -50,9 +51,8 @@ class LayerImpl
   def geo_filter=(feature)
     getBlackboard().put("GEO_FILTER",feature)
   end
-  
+
   def group_filter(property=nil,&block)
-    puts "LayerImpl.group_filter"
     puts block_given?
     gfilter=GroupFilter.new(property)
     gfilter.setup(&block)
@@ -60,13 +60,11 @@ class LayerImpl
   end
 
   def filters(&block)
-    puts "LayerImpl.filters"
     self.instance_eval &block
     getBlackboard().put("FILTER",@filters.to_java(GroupFilter))
   end
 
   def add(filter)
-    puts "LayerImpl.add"
     if @filters.nil?
       @filters=[filter]
     else
@@ -78,9 +76,13 @@ class LayerImpl
     getBlackboard().put("FILTER",[filter].to_java(GroupFilter))
   end
 
-  #  def blackboard
-  #    getBlackboard()
-  #  end
+  def aggregation=(aggr_node)
+    resource = findGeoResource(GeoNeo.java_class)
+    if !resource.nil?
+      geoNeo=resource.resolve(GeoNeo.java_class,nil)
+      geoNeo.setAggrNode(aggr_node)
+    end
+  end
 end
 
 include_class 'net.refractions.udig.project.internal.impl.MapImpl'

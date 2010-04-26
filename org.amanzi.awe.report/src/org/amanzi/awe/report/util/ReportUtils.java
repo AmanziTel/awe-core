@@ -20,6 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.amanzi.awe.report.ReportPlugin;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+
 /**
  * TODO Purpose of
  * <p>
@@ -40,4 +46,22 @@ public class ReportUtils {
         reader.close();
         return sb.toString();
     }
+    /**
+     * Displays an error message
+     *
+     * @param message the error message to be displayed
+     * @param reason the reason of the message
+     */
+    public static void showErrorDlg(final String message, final String reason) {
+        final Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                ErrorDialog.openError(display.getActiveShell(), "Error", message,
+                        new Status(Status.ERROR, ReportPlugin.PLUGIN_ID,reason));
+            }
+
+        });
+    } 
 }

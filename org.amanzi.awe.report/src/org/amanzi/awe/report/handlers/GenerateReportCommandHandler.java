@@ -52,22 +52,23 @@ public class GenerateReportCommandHandler extends AbstractHandler {
         }
         final File directory = new File(pathToReportsFolder);
         final PDFPrintingEngine engine = new PDFPrintingEngine();
-        if (directory.isDirectory()){
-            final File[] files = directory.listFiles();
-            for (File file:files){
-                LOGGER.debug("[DEBUG] file:\n"+file);
-                try {
-                    final String script = ReportUtils.readScript(file.getPath());
-                    LOGGER.debug("[DEBUG] script:\n"+script);
-                    reportModel.updateModel(script);
-                    final Report report = reportModel.getReport();
-                    engine.printReport(report);
-                } catch (IOException e) {
-                    // TODO Handle IOException
-                    throw (RuntimeException) new RuntimeException( ).initCause( e );
-                }
-            }
-        }
+//        if (directory.isDirectory()){
+//            final File[] files = directory.listFiles();
+//            for (File file:files){
+//                LOGGER.debug("[DEBUG] file:\n"+file);
+//                try {
+//                    final String script = ReportUtils.readScript(file.getPath());
+//                    LOGGER.debug("[DEBUG] script:\n"+script);
+//                    reportModel.updateModel(script);
+//                    final Report report = reportModel.getReport();
+//                    engine.printReport(report);
+//                } catch (IOException e) {
+//                    // TODO Handle IOException
+//                    throw (RuntimeException) new RuntimeException( ).initCause( e );
+//                }
+//            }
+//        }
+        reportModel.updateModel("automation");
         return null;
     }
 

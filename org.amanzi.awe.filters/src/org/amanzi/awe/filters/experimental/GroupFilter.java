@@ -41,4 +41,12 @@ public class GroupFilter {
         return filters;
     }
 
+    /**
+     * @return Returns the property.
+     */
+    public String getProperty() {
+        return property;
+    }
+    
+
 }

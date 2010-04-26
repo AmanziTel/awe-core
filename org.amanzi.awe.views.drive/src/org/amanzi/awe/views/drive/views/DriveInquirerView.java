@@ -835,8 +835,8 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
         // debug
         // info
 
-        final String TRAVERSE_NEXT_ALL = "traverse(:outgoing, :NEXT, :all)\n"; //$NON-NLS-1$
-        final String TRAVERSE_CHILD_1 = "traverse(:outgoing, :CHILD, 1)\n"; //$NON-NLS-1$
+        final String TRAVERSE_NEXT_ALL = "traverse(:outgoing, :all, :NEXT,:CHILD)\n"; //$NON-NLS-1$
+        final String TRAVERSE_CHILD_1 = "traverse(:outgoing, 1, :CHILD)\n"; //$NON-NLS-1$
         // TODO fix when drive loader will be fixed
         // Long
         // start_time=(((dateStart.getHours()-2L)*60+dateStart.getMinutes())*60+dateStart.getSeconds())*1000;
@@ -983,7 +983,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         try {
-            getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.splash.editors.ReportEditor"); //$NON-NLS-1$
+            getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.awe.report.editor.ReportEditor"); //$NON-NLS-1$
         } catch (PartInitException e) {
             // TODO Handle PartInitException
             throw (RuntimeException)new RuntimeException().initCause(e);

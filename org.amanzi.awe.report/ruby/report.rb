@@ -9,7 +9,8 @@ puts "require gis"
 require 'ruby/gis'
 require 'ruby/filters'
 require "ruby/style"
-
+#todo delete
+require 'ruby/auto/report_aggregation'
 puts "include classes"
 include_class org.amanzi.neo.core.database.nodes.CellID
 include_class org.amanzi.neo.core.service.NeoServiceProvider
@@ -23,6 +24,8 @@ include_class org.amanzi.awe.report.model.ReportMap
 include_class org.amanzi.awe.report.charts.ChartType
 include_class org.amanzi.awe.report.charts.EventDataset
 include_class org.amanzi.awe.report.charts.Charts
+include_class org.amanzi.awe.report.util.ReportUtils
+include_class org.amanzi.awe.report.pdf.PDFPrintingEngine
 
 include_class org.jfree.data.category.DefaultCategoryDataset;
 include_class org.jfree.chart.plot.PlotOrientation
@@ -146,19 +149,19 @@ include_class org.jfree.data.time.TimeSeriesCollection
       @params=params
     end
 
-    def traverse(direction, relation, depth)
+    def traverse(direction, depth, *relation)
       new_traversers=[]
       if direction==:outgoing
         @traversers.each do |traverser|
-          new_traversers<<traverser.outgoing(relation).depth(depth)
+          new_traversers<<traverser.outgoing(*relation).depth(depth)
         end
       elsif direction==:incoming
         @traversers.each do |traverser|
-          new_traversers<<traverser.incoming(relation).depth(depth)
+          new_traversers<<traverser.incoming(*relation).depth(depth)
         end
       else #both
         @traversers.each do |traverser|
-          new_traversers<<traverser.both(relation).depth(depth)
+          new_traversers<<traverser.both(*relation).depth(depth)
         end
       end
       @traversers=new_traversers
@@ -333,6 +336,11 @@ include_class org.jfree.data.time.TimeSeriesCollection
         addError(comment+e.backtrace.join("\n"))
       end
     end
+    def save
+      engine=PDFPrintingEngine.new
+      engine.printReport(self)
+      puts "Report '#{@name}' saved"
+    end
   end
   
 class ReportMap
@@ -413,9 +421,8 @@ end
       }
     end
 
-    def select(name,params,&block)
+    def select(name,params=nil,&block)
       Neo4j::Transaction.run {
-        begin
 #          puts "======> [ReportTable.select]"
           nodes=Search.new(name,params)
           nodes.instance_eval &block
@@ -433,9 +440,6 @@ end
             addRow(row.to_java(java.lang.String))
           end
           setHeaders(@properties.to_java(java.lang.String)) if @properties.is_a? Array
-        rescue =>e
-          puts e
-        end
       }
     end
 
@@ -555,29 +559,36 @@ end
     rescue =>e
       comment="#{report.getErrors().size+1}) #{e}:\n"
       report.addError(comment+e.backtrace.join("\n"))
-      $report_model.showErrorDlg("A ruby exception occurred during the report creation: #{e}",e.backtrace.join("\n"))
+      ReportUtils::showErrorDlg("A ruby exception occurred during the report creation: #{e}",e.backtrace.join("\n"))
       puts e
     ensure
-      $report_model.updateReport(report)
+      report
     end
   end
 
   def chart(name,&block)
     begin
-      puts "module method called"
       currChart=Chart.new(name)
       currChart.setup(&block)
       $report_model.createPart(currChart)
     rescue =>e
-      puts "[chart(name,&block)] an exception occured: #{e}"
+      ReportUtils::showErrorDlg("A ruby exception occurred: #{e}",e.backtrace.join("\n"))
     end
   end
 
-  def text (new_text)
+def text (new_text)
+  begin
     $report_model.createPart(ReportText.new(new_text))
+  rescue =>e
+    ReportUtils::showErrorDlg("A ruby exception occurred: #{e}",e.backtrace.join("\n"))
   end
+end
 
-  def image (image_file_name)
+def image (image_file_name)
+  begin
     $report_model.createPart(ReportImage.new(image_file_name))
+  rescue =>e
+    ReportUtils::showErrorDlg("A ruby exception occurred: #{e}",e.backtrace.join("\n"))
   end
+end
 

@@ -37,6 +37,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.internal.runtime.ValueAccessor;
+import org.jruby.java.proxies.JavaProxy;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.LoadService;
@@ -158,6 +159,21 @@ public class ReportModel {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 final IRubyObject res = runtime.evalScriptlet(scriptInput);
+                if (res instanceof JavaProxy){
+                    Object unwrapped = ((JavaProxy)res).unwrap();
+                    if (unwrapped instanceof Report){
+                        Report newReport=(Report)unwrapped;
+                        if (report != null) {
+                            report.removeAllReportListeners();
+                        }
+                        report = newReport;
+                        if (report != null) {
+                            for (IReportModelListener l : listeners) {
+                                report.addReportListener(l);
+                            }
+                        }
+                    }
+                }
                 return Status.OK_STATUS;
             }
             

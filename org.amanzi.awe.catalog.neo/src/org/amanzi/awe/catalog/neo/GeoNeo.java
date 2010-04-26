@@ -605,4 +605,14 @@ public class GeoNeo {
     public void setProperty(String key, Object value) {
         properties.put(key, value);
     }
+
+    /**
+     * Sets the aggregation node
+     * @param aggrNode The aggrNode to set.
+     */
+    public void setAggrNode(Node aggrNode) {
+        this.aggrNode = aggrNode;
+    }
+
+
 }

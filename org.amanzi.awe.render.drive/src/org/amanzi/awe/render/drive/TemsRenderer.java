@@ -222,7 +222,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         int fontSize = font.getSize();
         IStyleBlackboard style = getContext().getLayer().getStyleBlackboard();
         NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);
-        final List<Pair<ShapeType, List<Color>>> styles = neostyle.getStyles();
+        final List<Pair<ShapeType, List<Color>>> styles = neostyle!=null?neostyle.getStyles():new ArrayList<Pair<ShapeType, List<Color>>>(0);
         
         final GroupFilter[] groupFilters =(GroupFilter[]) getContext().getLayer().getBlackboard().get("FILTER");
      
@@ -404,6 +404,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             break;
                         }
                         else{
+                            if (!node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING)){
+                                LOGGER.debug("Node "+node.getId()+" has no location relationship");
+                                continue;
+                            }
                         GeoNode geoNode = new GeoNode(node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING).getEndNode());
                         Coordinate location = geoNode.getCoordinate();
                         if (bounds_transformed != null && !bounds_transformed.contains(location)) {

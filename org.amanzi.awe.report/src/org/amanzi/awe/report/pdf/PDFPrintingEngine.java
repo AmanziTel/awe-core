@@ -66,9 +66,11 @@ public class PDFPrintingEngine {
         final Rectangle paperSize = PageSize.A4;
         Rectangle paperRectangle = paperSize;
         Document document = new Document(paperRectangle, 0f, 0f, 0f, 0f);
-        String fileName=report.getFile();
+        String fileName=System.getProperty("user.home")+File.separator;
         if(fileName==null || fileName.length()==0){
-            fileName=System.getProperty("user.home")+File.separator+"report"+System.currentTimeMillis()+".pdf";
+            fileName+=System.getProperty("user.home")+File.separator+"report"+System.currentTimeMillis()+".pdf";
+        }else{
+            fileName+=report.getFile(); 
         }
         LOGGER.debug("[DEBUG] filename "+fileName);
         File outputPdfFile = new File(fileName);
@@ -81,7 +83,12 @@ public class PDFPrintingEngine {
             document.open();
             PdfContentByte cb = writer.getDirectContent();
             Graphics2D graphics = cb.createGraphics(paperRectangle.getWidth(), paperRectangle.getHeight());
-
+            final Paragraph title = new Paragraph(report.getName());
+            title.setIndentationLeft(30);
+            title.setIndentationRight(30);
+            title.setAlignment(Paragraph.ALIGN_CENTER);
+            document.add(title);
+            
             final List<IReportPart> parts = report.getParts();
             for (IReportPart part : parts) {
                 if (part instanceof ReportMap) {
