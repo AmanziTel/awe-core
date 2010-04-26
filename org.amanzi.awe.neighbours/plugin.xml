@@ -16,21 +16,6 @@
             id="org.amanzi.awe.neighbours.views.NeighbourAnalyser">
       </view>
    </extension>
-      <extension
-         point="org.eclipse.ui.perspectiveExtensions">
-      <perspectiveExtension
-            targetID="org.amanzi.awe.perspective">
-         <view
-               id="org.amanzi.awe.neighbours.views.NeighbourAnalyser"
-               relationship="stack"
-               relative="net.refractions.udig.catalog.ui.CatalogView"
-               visible="true">
-         </view>
-         <viewShortcut
-               id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView">
-         </viewShortcut>
-      </perspectiveExtension>
-   </extension>
    <extension
           point="org.eclipse.ui.commands">
        <category

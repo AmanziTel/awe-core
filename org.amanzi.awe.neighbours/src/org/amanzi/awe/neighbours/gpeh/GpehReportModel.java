@@ -52,6 +52,7 @@ public class GpehReportModel {
     
     /** The intra frequency icdm. */
     private IntraFrequencyICDM intraFrequencyICDM;
+    private InterFrequencyICDM interFrequencyICDM;
     
     /** The network. */
     private final Node network;
@@ -91,10 +92,30 @@ public class GpehReportModel {
         Transaction tx = service.beginTx();
         try {
             findRootNode();
-            findIntraFrequencyICDM();
+            findMatrixNodes();
         } finally {
             tx.finish();
         }
+    }
+
+    public void findMatrixNodes() {
+        findIntraFrequencyICDM();
+        findInterFrequencyICDM();
+    }
+
+    /**
+     *
+     */
+    public InterFrequencyICDM findInterFrequencyICDM() {
+        if (getRoot() == null) {
+            return null;
+        }
+        if (interFrequencyICDM != null) {
+            return interFrequencyICDM;
+        }
+        Relationship rel = getRoot().getSingleRelationship(ReportsRelations.ICDM_INTER_FR, Direction.OUTGOING);
+        interFrequencyICDM = rel == null ? null : new InterFrequencyICDM(rel.getOtherNode(getRoot()));
+        return interFrequencyICDM;
     }
 
     /**
@@ -149,12 +170,22 @@ public class GpehReportModel {
     public IntraFrequencyICDM getIntraFrequencyICDM() {
         return intraFrequencyICDM;
     }
+    
+    /**
+     * Gets the inter frequency icdm.
+     *
+     * @return the inter frequency icdm
+     */
+    public InterFrequencyICDM getInterFrequencyICDM() {
+        return interFrequencyICDM;
+    }
 
     /**
      * The Class AbstractICDM.
      */
     private abstract class AbstractICDM {
-        
+        /** The id name. */
+        protected final String idName;      
         /** The main node. */
         protected final Node mainNode;
 
@@ -163,8 +194,9 @@ public class GpehReportModel {
          *
          * @param mainNode the main node
          */
-        AbstractICDM(Node mainNode) {
+        AbstractICDM(Node mainNode,String idName) {
             this.mainNode = mainNode;
+            this.idName = idName;
         }
 
         /**
@@ -175,28 +207,6 @@ public class GpehReportModel {
         public Node getMainNode() {
             return mainNode;
         }
-    }
-
-    /**
-     * The Class IntraFrequencyICDM.
-     */
-    public class IntraFrequencyICDM extends AbstractICDM {
-
-        /** The id name. */
-        private final String idName;
-
-
-        /**
-         * Instantiates a new intrafrequency matrix.
-         *
-         * @param mainNode the main node
-         */
-        IntraFrequencyICDM(Node mainNode) {
-            super(mainNode);
-            idName=GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(), GpehReportUtil.MR_TYPE_INTRAF);
-        }
-
-
         /**
          * Gets the row traverser.
          *
@@ -205,6 +215,36 @@ public class GpehReportModel {
         public Traverser getRowTraverser() {
             return getMainNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING);
         }
+    }
+    public class InterFrequencyICDM extends AbstractICDM {
+
+        /**
+         * @param mainNode
+         */
+        InterFrequencyICDM(Node mainNode) {
+            super(mainNode,GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(), GpehReportUtil.MR_TYPE_INTERF));
+        }
+        
+    }
+    /**
+     * The Class IntraFrequencyICDM.
+     */
+    public class IntraFrequencyICDM extends AbstractICDM {
+
+
+
+
+        /**
+         * Instantiates a new intrafrequency matrix.
+         *
+         * @param mainNode the main node
+         */
+        IntraFrequencyICDM(Node mainNode) {
+            super(mainNode,GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(), GpehReportUtil.MR_TYPE_INTRAF));
+        }
+
+
+
         /**
          * Gets the best cell name.
          *

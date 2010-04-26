@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.amanzi.awe.neighbours.gpeh.GpehReportModel.InterFrequencyICDM;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.IntraFrequencyICDM;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
@@ -196,7 +197,7 @@ public class GpehReportCreator {
                     monitor.setTaskName(String.format("Handle %s events, create table rows %s, ttotal time: %s, average time: %s",countEvent,countRow,time2,time2/countEvent));
             }
             tx.success();
-            model.findIntraFrequencyICDM();
+            model. findMatrixNodes();
         } finally {
             tx.finish();
         }
@@ -321,42 +322,6 @@ public class GpehReportCreator {
                 }
             } else {
                 LOGGER.error("No found rscp" + bestCell + "\t" + sector);
-            }
-            int deltaPosition = sector.getMeasurement().getPosition() - bestCell.getMeasurement().getPosition();
-            if (deltaPosition < 0) {
-                LOGGER.error("wrong best cell position: " + bestCell.getMeasurement().getPosition());
-                deltaPosition = -deltaPosition;
-            }
-            if (sector.getMeasurement().getPosition()==1){
-                if (ecNo<=6){
-                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+1); 
-                }else{
-                    LOGGER.error("found sector with position 2 but wrong delta"+ecNo);  
-                }
-            }else  if (sector.getMeasurement().getPosition()==2){
-                if (ecNo<=6){
-                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+2); 
-                }else{
-                    LOGGER.error("found sector with position 3 but wrong delta"+ecNo);  
-                }
-            }else  if (sector.getMeasurement().getPosition()==3){
-                if (ecNo<=8){
-                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+3); 
-                }else{
-                    LOGGER.error("found sector with position 3 but wrong delta"+ecNo);  
-                }
-            }else  if (sector.getMeasurement().getPosition()==4){
-                if (ecNo<=8){
-                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+4); 
-                }else{
-                    LOGGER.error("found sector with position 3 but wrong delta"+ecNo);  
-                }
-            }else  if (sector.getMeasurement().getPosition()==5){
-                if (ecNo<=8){
-                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+5); 
-                }else{
-                    LOGGER.error("found sector with position 3 but wrong delta"+ecNo);  
-                }
             }
             tx.success();
         } catch (Exception e) {
@@ -740,6 +705,178 @@ public class GpehReportCreator {
         createMatrix();
         GpehReportModel mdl = getReportModel();
         IntraFrequencyICDM matrix = mdl.getIntraFrequencyICDM();
+        Transaction tx = service.beginTx();
+        try{
+            SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(GpehReportUtil.RUBY_PROJECT_NAME), spreadsheetName);
+            int column = 0;
+            monitor.subTask("create header");
+            Cell cellToadd = new Cell(0, column, "", "Serving cell name", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Serving PSC", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Interfering cell name", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Interfering PSC", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Defined NBR", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Distance", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Tier Distance", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "# of MR for best cell", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "# of MR for Interfering cell", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "EcNo Delta1", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "EcNo Delta2", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "EcNo Delta3", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "EcNo Delta4", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "EcNo Delta 5", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "RSCP Delta1", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "RSCP Delta2", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "RSCP Delta3", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "RSCP Delta4", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "RSCP Delta5", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Position1", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Position2", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Position3", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Position4", null);
+            creator.saveCell(cellToadd);
+            column++;
+            cellToadd = new Cell(0, column, "", "Position5", null);
+            creator.saveCell(cellToadd);
+            column++;
+            int row=1;
+            int saveCount=0;
+            long time = System.currentTimeMillis();
+            for (Node tblRow : matrix.getRowTraverser()) {
+                monitor.subTask("create row "+row);
+                column=0;
+                //Serving cell name
+                String bestCellName=matrix.getBestCellName(tblRow);
+                cellToadd = new Cell(row, column, "", bestCellName, null);
+                creator.saveCell(cellToadd);
+                column++;
+                //"Serving PSC"
+                String value=matrix.getBestCellPSC(tblRow);
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++;
+                //Interfering cell name
+                value=matrix.getInterferingCellName(tblRow);
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++;
+                //Interfering PSC
+                value=matrix.getInterferingCellPSC(tblRow);
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++; 
+                //Defined NBR
+                value=String.valueOf(matrix.isDefinedNbr(tblRow));
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++; 
+                //Distance
+                value=String.valueOf(matrix.getDistance(tblRow));
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++; 
+                //Tier Distance
+                value=String.valueOf("N/A");
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++; 
+                //# of MR for best cell
+                value=String.valueOf(matrix.getNumMRForBestCell(tblRow));
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++; 
+                //# of MR for Interfering cell
+                value=String.valueOf(matrix.getNumMRForInterferingCell(tblRow));
+                cellToadd = new Cell(row, column, "", value, null);
+                creator.saveCell(cellToadd);
+                column++; 
+                //Delta EcNo 1-5               
+                for (int i=1;i<=5;i++){
+                    value=String.valueOf(matrix.getDeltaEcNo(i,tblRow));  
+                    cellToadd = new Cell(row, column, "", value, null);
+                    creator.saveCell(cellToadd);
+                    column++; 
+                }
+                for (int i=1;i<=5;i++){
+                    value=String.valueOf(matrix.getDeltaRSCP(i,tblRow));  
+                    cellToadd = new Cell(row, column, "", value, null);
+                    creator.saveCell(cellToadd);
+                    column++; 
+                }
+                for (int i=1;i<=5;i++){
+                    value=String.valueOf(matrix.getPosition(i,tblRow));  
+                    cellToadd = new Cell(row, column, "", value, null);
+                    creator.saveCell(cellToadd);
+                    column++; 
+                }
+                monitor.setTaskName(String.format("Rows created: %s", row));
+                
+                saveCount++;
+                if (saveCount>1000){
+                    time=System.currentTimeMillis()-time;
+                    tx.success();
+                    tx.finish();
+                    saveCount=0;
+                    System.out.println("time of storing 1000 rows: "+time);
+                    time = System.currentTimeMillis();
+                    tx=service.beginTx();
+                }
+                row++;
+            }
+            tx.success();
+            System.out.println(creator.getSpreadsheet().getUnderlyingNode().getId());
+            return creator.getSpreadsheet();
+        }finally{
+            tx.finish();
+        }
+    }
+    public SpreadsheetNode createInterIDCMSpreadSheet(String spreadsheetName) {
+        createMatrix();
+        GpehReportModel mdl = getReportModel();
+        InterFrequencyICDM matrix = mdl.getInterFrequencyICDM();
         Transaction tx = service.beginTx();
         try{
             SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(GpehReportUtil.RUBY_PROJECT_NAME), spreadsheetName);
