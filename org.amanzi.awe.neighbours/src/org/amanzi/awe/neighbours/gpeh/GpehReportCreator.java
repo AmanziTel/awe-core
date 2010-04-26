@@ -14,8 +14,8 @@
 package org.amanzi.awe.neighbours.gpeh;
 
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -151,6 +151,7 @@ public class GpehReportCreator {
             long countEvent=0;
             countRow=0;
             long time=System.currentTimeMillis();
+            long countTx = 0;
             for (Node eventNode : luceneService.getNodes(eventIndName, Events.RRC_MEASUREMENT_REPORT.name())) {
                 countEvent++;
                 Set<Node> activeSet = getActiveSet(eventNode);
@@ -164,8 +165,6 @@ public class GpehReportCreator {
                 Node tableRoot;
                 if (type.equals(GpehReportUtil.MR_TYPE_INTERF)) {
                     tableRoot = interFMatrix;
-                 // TODO remove after
-                    continue;
                 } else if (type.equals(GpehReportUtil.MR_TYPE_INTRAF)) {
                     tableRoot = intraFMatrix;
                 } else if (type.equals(GpehReportUtil.MR_TYPE_IRAT)) {
@@ -178,20 +177,27 @@ public class GpehReportCreator {
                     continue;
                 }
                 for (RrcMeasurement measurement : measSet) {
-                    if (measurement.getScrambling() == null || measurement.getScrambling().equals(bestCell.getMeasurement().getScrambling())
+                    if (measurement.getScrambling() == null
+                            || (bestCell.getMeasurement() != null && measurement.getScrambling().equals(
+                                    bestCell.getMeasurement().getScrambling()))
                             || measurement.getEcNo() == null) {
                         continue;
                     }
                     MeasurementCell sector = findClosestSector(bestCell, measurement, scrCodeIndName);
-                    if (sector == null) {
+                    if (sector == null || sector.getCell().equals(bestCell.getCell())) {
                         LOGGER.debug("Sector not found for PSC " + measurement.getScrambling());
                         continue;
                     }
                     Node tableNode = findOrCreateTableNode(bestCell, sector, tableRoot, type);
                     tableNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_MATRIX_EVENT);
                     handleTableNode(tableNode,type,bestCell,sector);
+                    if (++countTx > 2000) {
+                        countTx = 0;
+                        tx.success();
+                        tx.finish();
+                        tx = service.beginTx();
+                    }
                 }
-                
                 long time2 = System.currentTimeMillis()-time;
                     monitor.setTaskName(String.format("Handle %s events, create table rows %s, ttotal time: %s, average time: %s",countEvent,countRow,time2,time2/countEvent));
             }
@@ -284,7 +290,7 @@ public class GpehReportCreator {
                 updateCounter(tableNode, MatrixProperties.EC_NO_PREFIX + 5);
             }
             if (sector.getMeasurement().getRscp() != null) {
-                Integer rscp = bestCell.getMeasurement().getRscp();
+                Integer rscp = sector.getMeasurement().getRscp();
                 if (ecNo > 21) {// >-14
                     if (rscp < 11) {// <-105
                         updateCounter(tableNode, "RSCP1_14");//MatrixProperties.getRSCPECNOPropertyName(1, 14));
@@ -553,6 +559,7 @@ public class GpehReportCreator {
         if (type.equals(GpehReportUtil.MR_TYPE_INTERF)||type.equals(GpehReportUtil.MR_TYPE_IRAT)){
             Iterator<Node> iterator = activeSet.iterator();
             MeasurementCell bestCell=iterator.hasNext()?new MeasurementCell(iterator.next()):null;
+            setupLocation(bestCell);
             return bestCell;
         }
         MeasurementCell bestCell = null;
@@ -666,7 +673,7 @@ public class GpehReportCreator {
      * @return the active set
      */
     private Set<Node> getActiveSet(Node eventNode) {
-        Set<Node> result = new HashSet<Node>();
+        Set<Node> result = new LinkedHashSet<Node>();
         for (int id = 1; id <= 4; id++) {
             Integer ci = (Integer)eventNode.getProperty("EVENT_PARAM_C_ID_" + id, null);
             Integer rnc = (Integer)eventNode.getProperty("EVENT_PARAM_RNC_ID_" + id, null);

@@ -16,7 +16,6 @@ package org.amanzi.awe.neighbours.views;
 import java.util.LinkedHashMap;
 
 import org.amanzi.awe.neighbours.AnalyseModel;
-import org.amanzi.awe.neighbours.gpeh.GpehReportCreator;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -275,11 +274,6 @@ public class NeighbourAnalyser extends ViewPart {
      * @return
      */
     protected void analyse(Node gpehNode, Node netNode, IProgressMonitor monitor) {
-        GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider().getIndexService());
-        creator.createMatrix();
-        if (true){
-            return;
-        }
         AnalyseModel model=AnalyseModel.create(gpehNode,neo);
          final SpreadsheetNode spreadsheet = model.createSpreadSheet("event",neo,monitor);
          ActionUtil.getInstance().runTask(new Runnable() {
