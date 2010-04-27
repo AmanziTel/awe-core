@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.neighbours.gpeh;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -188,6 +191,7 @@ public class GpehReportModel {
         protected final String idName;      
         /** The main node. */
         protected final Node mainNode;
+        protected final Map<Node,Integer> bestCellNumCashe=new HashMap<Node,Integer>();
 
         /**
          * Instantiates a new abstract icdm.
@@ -197,6 +201,7 @@ public class GpehReportModel {
         AbstractICDM(Node mainNode,String idName) {
             this.mainNode = mainNode;
             this.idName = idName;
+            bestCellNumCashe.clear();
         }
 
         /**
@@ -206,14 +211,24 @@ public class GpehReportModel {
          * @return the num mr for best cell
          */
         public Integer getNumMRForBestCell(Node row) {
-            // TODO add cache if necessary - it will be not large
+            
+            // using cache //TODO store cache values like properties in node
             int count = 0;
-            Iterable<Relationship> rel = getBestCell(row).getRelationships(ReportsRelations.BEST_CELL, Direction.INCOMING);
+            Node bestCell = getBestCell(row);
+            Integer result = bestCellNumCashe.get(bestCell);
+            if (result!=null){
+                return result;
+            }
+            Iterable<Relationship> rel = bestCell.getRelationships(ReportsRelations.BEST_CELL, Direction.INCOMING);
             for (Relationship relationship : rel) {
                 if (relationship.getProperty(GpehReportUtil.REPORTS_ID, "").equals(idName)) {
-                    count++;
+                    Node tableNode=relationship.getOtherNode(bestCell);
+                    for (Relationship rel2:tableNode.getRelationships(ReportsRelations.SOURCE_MATRIX_EVENT,Direction.OUTGOING)){
+                        count++; 
+                    }
                 }
             }
+            bestCellNumCashe.put(bestCell, count);
             return count;
         }
 
@@ -226,12 +241,15 @@ public class GpehReportModel {
         public Integer getNumMRForInterferingCell(Node row) {
             // TODO add cache if necessary - it will be not large
             int count = 0;
-            Iterable<Relationship> rel = getInterferingCell(row).getRelationships(ReportsRelations.SECOND_SELL, Direction.INCOMING);
-            for (Relationship relationship : rel) {
-                if (relationship.getProperty(GpehReportUtil.REPORTS_ID, "").equals(idName)) {
-                    count++;
+                for (Relationship rel2:row.getRelationships(ReportsRelations.SOURCE_MATRIX_EVENT,Direction.OUTGOING)){
+                    count++; 
                 }
-            }
+//            Iterable<Relationship> rel = getInterferingCell(row).getRelationships(ReportsRelations.SECOND_SELL, Direction.INCOMING);
+//            for (Relationship relationship : rel) {
+//                if (relationship.getProperty(GpehReportUtil.REPORTS_ID, "").equals(idName)) {
+//                    count++;
+//                }
+//            }
             return count;
         }
 
