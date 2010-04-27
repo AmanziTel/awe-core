@@ -21,9 +21,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
@@ -361,13 +364,20 @@ public class NemoLoader extends DriveLoader {
                 }
                 _workDate.setTime(date);
             }
-            parsedParameters.putAll(parParam);
+            //Pechko_E make property names Ruby-compatible
+           Set<Entry<String, Object>> entrySet = parParam.entrySet();
+           //TODO Check may be a new map is unnecessary and we can use parsedParameters
+           Map<String, Object> parParamCleaned=new HashMap<String, Object>(parParam.size());
+           for (Entry<String, Object> entry:entrySet){
+               parParamCleaned.put(AbstractLoader.cleanHeader(entry.getKey()), entry.getValue());
+           }
+           parsedParameters.putAll(parParamCleaned);
             if (statisticHeaders == null) {
                 return;
             }
-            for (String key : parParam.keySet()) {
+            for (String key : parParamCleaned.keySet()) {
                 if (!statisticHeaders.containsKey(key)) {
-                    Object value = parParam.get(key);
+                    Object value = parParamCleaned.get(key);
                     if (value == null) {
                         continue;
                     }
