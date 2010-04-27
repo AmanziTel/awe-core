@@ -13,17 +13,20 @@
 package org.amanzi.awe.neighbours.views;
 
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.amanzi.awe.neighbours.AnalyseModel;
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.splash.utilities.NeoSplashUtil;
+import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -40,13 +43,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
+import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 
 public class NeighbourAnalyser extends ViewPart {
@@ -274,15 +283,79 @@ public class NeighbourAnalyser extends ViewPart {
      * @return
      */
     protected void analyse(Node gpehNode, Node netNode, IProgressMonitor monitor) {
-        AnalyseModel model=AnalyseModel.create(gpehNode,neo);
-         final SpreadsheetNode spreadsheet = model.createSpreadSheet("event",neo,monitor);
-         ActionUtil.getInstance().runTask(new Runnable() {
+        Transaction tx = neo.beginTx();
+        try {
+            Node gisNode = NeoUtils.findGisNodeByChild(netNode);
+            // Node otherNode=null;
+            // for (Relationship relation :
+            // gisNode.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA,
+            // Direction.OUTGOING)) {
+            // otherNode = relation.getOtherNode(gisNode);
+            // if ((NeoUtils.getSimpleNodeName(otherNode, null).equals("utran relation"))){
+            // break;
+            // }
+            // }
+            String[] fields = new PropertyHeader(gisNode).getNeighbourAllFields("utran relation");
+            Traverser traverse = netNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
             
             @Override
-            public void run() {
-                NeoSplashUtil.openSpreadsheet(spreadsheet);
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+               Node node=currentPos.currentNode();
+               for (Relationship rel:node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR,Direction.OUTGOING)){
+                   if (rel.getProperty(INeoConstants.NEIGHBOUR_NAME,"").equals("utran relation")){
+                       return true;
+                   }
+               }
+                return false;
             }
-        },true);
+        }, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING,GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING);
+            try {
+                CSVWriter out = new CSVWriter(new FileWriter("c:/utranRelation.csv"));
+                List<String> outList = new LinkedList<String>();
+                outList.add("Serv cell name");
+                outList.add("Neighbour cell name");
+                outList.addAll(Arrays.asList(fields));
+                out.writeNext(outList.toArray(new String[0]));
+                for (Node servNode : traverse) {
+
+                    String result = (String)servNode.getProperty("userLabel", "");
+                    if (StringUtil.isEmpty(result)) {
+                        result = NeoUtils.getNodeName(servNode);
+                    }
+                    for (Relationship rel : NeoUtils.getNeighbourRelations(servNode, "utran relation")) {
+                        Node neigh = rel.getOtherNode(servNode);
+                        outList.clear();
+                        outList.add(result);
+                        result = (String)neigh.getProperty("userLabel", "");
+                        if (StringUtil.isEmpty(result)) {
+                            result = NeoUtils.getNodeName(neigh);
+                        }
+                        outList.add(result);
+                        for (String field : fields) {
+                            outList.add(rel.getProperty(field, "").toString());
+                        }
+                        out.writeNext(outList.toArray(new String[0]));
+                    }
+
+                }
+                out.close();
+
+            } catch (IOException e) {
+                // TODO Handle IOException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        } finally {
+            tx.finish();
+        }
+        // AnalyseModel model=AnalyseModel.create(gpehNode,neo);
+        // final SpreadsheetNode spreadsheet = model.createSpreadSheet("event",neo,monitor);
+        // ActionUtil.getInstance().runTask(new Runnable() {
+        //            
+        // @Override
+        // public void run() {
+        // NeoSplashUtil.openSpreadsheet(spreadsheet);
+        // }
+        // },true);
 
     }
 
