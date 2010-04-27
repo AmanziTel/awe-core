@@ -75,9 +75,12 @@ def filter(root_node,type_name,options={})
   #options.merge! 'type' => type_name
   root_node.outgoing(:CHILD, :NEXT).depth(:all).filter do
     node_properties = props # defined in Neo4j::NodeMixin
-    #puts "node  is event node #{props["event_type"]}"
     if node_properties["type"]==type_name
-      options.keys.find{|key| options[key]==true ? node_properties[key] : (options[key].is_a? Regexp) ? node_properties[key]=~ options[key]:node_properties[key]==options[key]}
+      if options.length!=0
+        options.keys.find{|key| options[key]==true ? node_properties[key] : (options[key].is_a? Regexp) ? node_properties[key]=~ options[key]:node_properties[key]==options[key]}
+      else
+        true
+      end
     else
       false
     end
