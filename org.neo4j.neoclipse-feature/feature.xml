@@ -221,7 +221,7 @@ libraries, licensed under the Eclipse Public License,
          id="org.neo4j.neoclipse"
          download-size="0"
          install-size="0"
-         version="0.4.1.awe"
+         version="0.4.1"
          unpack="false"/>
 
    <plugin

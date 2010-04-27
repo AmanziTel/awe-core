@@ -2,11 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Neoclipse
 Bundle-SymbolicName: org.neo4j.neoclipse;singleton:=true
-Bundle-Version: 0.4.1.awe
+Bundle-Version: 0.4.1
 Bundle-Activator: org.neo4j.neoclipse.Activator
 Bundle-Vendor: Neo4j.org
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ClassPath: .,
  lib/geronimo-jta_1.1_spec-1.1.1.jar,
  lib/lucene-core-2.9.1.jar,
@@ -59,3 +58,4 @@ Export-Package: org.neo4j.neoclipse,
  org.neo4j.neoclipse.preference,
  org.neo4j.neoclipse.property,
  org.neo4j.neoclipse.view
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

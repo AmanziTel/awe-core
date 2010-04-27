@@ -9,6 +9,6 @@
   </parent>
   <groupId>AWE_build</groupId>
   <artifactId>org.neo4j.neoclipse</artifactId>
-  <version>0.4.1.awe</version>
+  <version>0.4.1</version>
   <packaging>eclipse-plugin</packaging>
 </project>
