@@ -67,16 +67,21 @@ end
 def events(options=nil)
 options ||= {}
 unless options.is_a? Hash
-options = {:event => options.to_s}
+options = {"event_type" => (options.is_a? Regexp) ? options :options.to_s,"event_id" => (options.is_a? Regexp) ? options :options.to_s}
 end
-NodeSet.new filter($drive_root_node,'ms', {:event => true}.merge(options))
+NodeSet.new filter($drive_root_node,'m', options)
 end
 def filter(root_node,type_name,options={})
-options.merge! 'type' => type_name
-root_node.outgoing(:CHILD, :NEXT).depth(:all).filter do
-node_properties = props # defined in Neo4j::NodeMixin
-options.keys.find{|key| options[key]==true ? node_properties[key] : node_properties[key] === options[key]}
-end
+  #options.merge! 'type' => type_name
+  root_node.outgoing(:CHILD, :NEXT).depth(:all).filter do
+    node_properties = props # defined in Neo4j::NodeMixin
+    #puts "node  is event node #{props["event_type"]}"
+    if node_properties["type"]==type_name
+      options.keys.find{|key| options[key]==true ? node_properties[key] : (options[key].is_a? Regexp) ? node_properties[key]=~ options[key]:node_properties[key]==options[key]}
+    else
+      false
+    end
+  end
 end
 
 

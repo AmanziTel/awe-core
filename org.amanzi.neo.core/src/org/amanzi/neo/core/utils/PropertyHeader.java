@@ -309,7 +309,10 @@ public class PropertyHeader {
                     if (currentPos.isStartNode()) {
                         return false;
                     }
-                    return "event_type".equals(currentPos.lastRelationshipTraversed().getProperty(RELATION_PROPERTY, ""));
+                    Object property = currentPos.lastRelationshipTraversed().getProperty(RELATION_PROPERTY, "");
+                    //Pechko_E event property name for TEMS and ROMES is "event_type"
+                    //Pechko_E for Nemo is "event_id"
+                    return "event_type".equals(property)||"event_id".equals(property);
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)
                     .iterator();

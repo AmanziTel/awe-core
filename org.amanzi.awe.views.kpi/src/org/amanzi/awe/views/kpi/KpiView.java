@@ -15,6 +15,7 @@ package org.amanzi.awe.views.kpi;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 
 import javax.swing.table.TableModel;
@@ -768,15 +769,17 @@ public class KpiView extends ViewPart {
             }
             Node drivNode = drives.get(driveNode.getText());
             if (drivNode != null) {
-                result.add("messages");
-                String[] fields = new PropertyHeader(drivNode).getNumericFields();
-                for (String string : fields) {
-                    result.add("messages." + string);
-                }
+                //TODO Pechko_E add properties correctly 
+//                result.add("messages");
+//                String[] fields = new PropertyHeader(drivNode).getNumericFields();
+//                for (String string : fields) {
+//                    result.add("messages." + string);
+//                }
                 result.add("events");
-                fields = new PropertyHeader(drivNode).getNumericFields();
-                for (String string : fields) {
-                    result.add("events." + string);
+//                fields = new PropertyHeader(drivNode).getNumericFields();
+                Collection<String> events = new PropertyHeader(drivNode).getEvents();
+                for (String string : events) {
+                    result.add("events('" + string+"')");
                 }
             }
 
