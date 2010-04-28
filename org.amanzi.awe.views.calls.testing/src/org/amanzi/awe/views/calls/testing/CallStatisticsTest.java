@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import org.amanzi.awe.views.calls.CallTimePeriods;
+import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.IStatisticsConstants;
 import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;

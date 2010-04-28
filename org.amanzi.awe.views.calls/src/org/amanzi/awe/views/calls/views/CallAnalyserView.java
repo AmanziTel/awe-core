@@ -17,7 +17,7 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
-import org.amanzi.awe.views.calls.CallTimePeriods;
+import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.views.calls.ExportSpreadsheetWizard;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
