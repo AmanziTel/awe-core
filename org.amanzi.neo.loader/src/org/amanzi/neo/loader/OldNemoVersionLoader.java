@@ -152,7 +152,7 @@ public class OldNemoVersionLoader extends NemoLoader {
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon.doubleValue());
             GisProperties gisProperties = getGisProperties(dataset);
             gisProperties.updateBBox(lat, lon);
-            gisProperties.checkCRS((float)lat, (float)lon, null);
+            gisProperties.checkCRS(lat, lon, null);
             // debug("Added measurement point: " + propertiesString(mp));
             index(mp);
             transaction.success();
@@ -213,7 +213,7 @@ public class OldNemoVersionLoader extends NemoLoader {
 
         @Override
         public void store(Node msNode, Map<String, Header> statisticHeaders) {
-            storeProperties(msNode, EVENT_ID, eventId, statisticHeaders);
+            storeProperties(msNode, INeoConstants.PROPERTY_TYPE_EVENT, eventId, statisticHeaders);
             storeProperties(msNode, INeoConstants.PROPERTY_TIME_NAME, time, statisticHeaders);
             // TODO store header if necessary
             for (String key : parsedParameters.keySet()) {

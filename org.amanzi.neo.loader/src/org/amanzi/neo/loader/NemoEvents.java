@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -7980,7 +7982,18 @@ public enum NemoEvents {
             return null;
         }
 
-        return Integer.parseInt(value);
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            Pattern pat=Pattern.compile("(^\\d+)(\\.)(0+$)");
+            Matcher mat = pat.matcher(value);
+            if (mat.find(0)){
+                return Integer.parseInt(mat.group(1));  
+            }else{
+                //throw exception
+                return Integer.parseInt(value);
+            }
+        }
     }
     
     /**

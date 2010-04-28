@@ -109,7 +109,7 @@ public class NemoLoader extends DriveLoader {
      * initialize headers
      */
     protected void initializeKnownHeaders() {
-        headers.put(EVENT_ID, new StringHeader(new Header(EVENT_ID, EVENT_ID, 0)));
+        headers.put(INeoConstants.PROPERTY_TYPE_EVENT, new StringHeader(new Header(INeoConstants.PROPERTY_TYPE_EVENT, INeoConstants.PROPERTY_TYPE_EVENT, 0)));
         // headers.put(TIME, new Header(TIME, TIME, 1));
         // MappedHeaderRule mapRule = new MappedHeaderRule("timestamp", TIME, new
         // DateTimeMapper(TIME_FORMAT));
@@ -412,7 +412,7 @@ public class NemoLoader extends DriveLoader {
          * @param statisticHeaders - statistic headers
          */
         public void store(Node msNode, Map<String, Header> statisticHeaders) {
-            storeProperties(msNode, EVENT_ID, eventId, statisticHeaders);
+            storeProperties(msNode, INeoConstants.PROPERTY_TYPE_EVENT, eventId, statisticHeaders);
             storeProperties(msNode, INeoConstants.PROPERTY_TIME_NAME, time, statisticHeaders);
             storeProperties(msNode, INeoConstants.EVENT_CONTEXT_ID, contextId.toArray(new Integer[0]), null);
             for (String key : parsedParameters.keySet()) {
