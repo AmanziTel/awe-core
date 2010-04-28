@@ -16,7 +16,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.table.TableModel;
 
@@ -35,7 +40,12 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -355,7 +365,7 @@ public class KpiView extends ViewPart {
         formulaList.setLayoutData(layoutDataPr);
         layoutDataPr = new GridData(GridData.FILL_VERTICAL | GridData.GRAB_VERTICAL | GridData.FILL_HORIZONTAL);
         layoutDataPr.horizontalSpan = 1;
-        propertyList = new List(right, SWT.BORDER | SWT.V_SCROLL);
+        propertyList = new List(right, SWT.BORDER | SWT.V_SCROLL|SWT.H_SCROLL);
         propertyList.setLayoutData(layoutDataPr);
         // TODO implement save function
         bSave.setVisible(false);
@@ -747,13 +757,13 @@ public class KpiView extends ViewPart {
         Long driveId = drivNode == null ? null : drivNode.getId();
         KPIPlugin.getDefault().setDriveId(driveId);
         runScript("init");
-        fillPropertyListList();
+        fillPropertyList();
     }
 
     /**
      *
      */
-    private void fillPropertyListList() {
+    private void fillPropertyList() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
             ArrayList<String> result = new ArrayList<String>();
@@ -770,19 +780,32 @@ public class KpiView extends ViewPart {
             Node drivNode = drives.get(driveNode.getText());
             if (drivNode != null) {
                 //TODO Pechko_E add properties correctly 
-//                result.add("messages");
-//                String[] fields = new PropertyHeader(drivNode).getNumericFields();
-//                for (String string : fields) {
-//                    result.add("messages." + string);
-//                }
-                result.add("events");
+                String[] fields = new PropertyHeader(drivNode).getNumericFields();
+                if (fields.length!=0)
+                result.add("properties");
+                for (String string : fields) {
+                    result.add("properties." + string);
+                }
 //                fields = new PropertyHeader(drivNode).getNumericFields();
                 Collection<String> events = new PropertyHeader(drivNode).getEvents();
-                for (String string : events) {
-                    result.add("events('" + string+"')");
+                if (events.size()!=0)
+                    result.add("events");
+                Set<String> regexes=new HashSet<String>();
+                for (String event : events) {
+                    Matcher matcher = Pattern.compile("(.*)(?=\\s\\[.*)").matcher(event);
+                    if (matcher.find()){
+                        String e = matcher.group(0);
+                        regexes.add(e.replace("(", "\\(").replace(")", "\\)")+" \\[.*\\]");
+                    }
+                    if (regexes.isEmpty()){
+                        result.add("events('" + event+"')");
+                    }
+                }
+                for (String regex:regexes){
+                    result.add("events(/" + regex+"/)");
                 }
             }
-
+            Collections.sort(result);
             propertyList.setItems(result.toArray(new String[0]));
         } finally {
             tx.finish();
@@ -865,7 +888,7 @@ public class KpiView extends ViewPart {
      *run script
      */
     protected void runScript() {
-        Ruby rubyRuntime = KPIPlugin.getDefault().getRubyRuntime();
+        final Ruby rubyRuntime = KPIPlugin.getDefault().getRubyRuntime();
         IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow[] workbenchWindows = workbench.getWorkbenchWindows();
         for (IWorkbenchWindow window:workbenchWindows){
@@ -882,15 +905,22 @@ public class KpiView extends ViewPart {
                 
             }
         }
-        IRubyObject result;
-        try {
-            result = rubyRuntime.evalScriptlet(getScriptText());
-            outputResult(result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            outputError(e);
-        }
+        final Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
 
+            @Override
+            public void run() {
+                IRubyObject result;
+                try {
+                    result = rubyRuntime.evalScriptlet(getScriptText());
+                    outputResult(result);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    outputError(e);
+                }
+            }
+
+        });
     }
 
     /**

@@ -48,11 +48,15 @@ end
 def init
   networkid=KPIPlugin.getDefault.getNetworkId
   $network_root_node=if networkid==nil then nil else Neo4j.load_node(networkid) end
-puts $network_root_node
-driveId=KPIPlugin.getDefault.getDriveId
-$drive_root_node=if driveId==nil then nil else Neo4j.load_node(driveId) end	
+  #puts $network_root_node
+  driveId=KPIPlugin.getDefault.getDriveId
+  $drive_root_node=if driveId==nil then nil else Neo4j.load_node(driveId) end
 
-puts $drive_root_node
+  #puts $drive_root_node
+  if !$drive_root_node.nil?
+    name=$drive_root_node["name"]
+    $event_property=name=~/\.asc|\.FMT/?"event_type":"event_id"
+  end
 end
 
 def sites(options={})
@@ -61,15 +65,15 @@ end
 def sectors(options={})
 NodeSet.new filter($network_root_node,'sector', options)
 end
-def messages(options={})
-NodeSet.new filter($drive_root_node,'ms', options)
+def properties(options={})
+NodeSet.new filter($drive_root_node,'m', options)
 end
 def events(options=nil)
-options ||= {}
+options ||= {$event_property =>true}
 unless options.is_a? Hash
-options = {"event_type" => (options.is_a? Regexp) ? options :options.to_s,"event_id" => (options.is_a? Regexp) ? options :options.to_s}
+options = {$event_property => (options.is_a? Regexp) ? options :options.to_s}
 end
-NodeSet.new filter($drive_root_node,'m', options)
+  NodeSet.new filter($drive_root_node,'m', options)
 end
 def filter(root_node,type_name,options={})
   #options.merge! 'type' => type_name
@@ -77,7 +81,13 @@ def filter(root_node,type_name,options={})
     node_properties = props # defined in Neo4j::NodeMixin
     if node_properties["type"]==type_name
       if options.length!=0
-        options.keys.find{|key| options[key]==true ? node_properties[key] : (options[key].is_a? Regexp) ? node_properties[key]=~ options[key]:node_properties[key]==options[key]}
+        result=true
+        #TODO should work like AND
+#                options.keys.find{|key| options[key]==true ? node_properties[key] : (options[key].is_a? Regexp) ? node_properties[key]=~ options[key]:node_properties[key]==options[key]}
+        options.keys.each do |key|
+            result&&=options[key]==true ? node_properties[key] : (options[key].is_a? Regexp) ? node_properties[key]=~ options[key]:node_properties[key]==options[key]
+        end
+        result
       else
         true
       end
