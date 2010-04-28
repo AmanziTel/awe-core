@@ -97,7 +97,7 @@ public class GpehReportCreator {
         monitor=new NullProgressMonitor();
         model = new GpehReportModel(network, gpeh, service);
     }
-
+    
     /**
      * Gets the report model.
      * 

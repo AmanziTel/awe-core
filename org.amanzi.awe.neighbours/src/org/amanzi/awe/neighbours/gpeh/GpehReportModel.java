@@ -494,7 +494,9 @@ public class GpehReportModel {
     public CoordinateReferenceSystem getCrs() {
         return crs;
     }
-
+    public class CellRscpAnalisis{
+        
+    }
 
 
 
