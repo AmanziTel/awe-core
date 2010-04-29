@@ -12,7 +12,9 @@
  */
 package org.amanzi.neo.core;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +29,8 @@ import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.preferences.PreferencesInitializer;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
@@ -46,156 +50,167 @@ import org.osgi.framework.BundleContext;
 
 public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
 
-	/*
-	 * Plugin's ID
-	 */
+    /*
+     * Plugin's ID
+     */
 
-	private static final String ID = "org.amanzi.neo.core";
+    private static final String ID = "org.amanzi.neo.core";
 
-	/*
-	 * Plugin variable
-	 */
+    /*
+     * Plugin variable
+     */
 
-	static private NeoCorePlugin plugin;
+    static private NeoCorePlugin plugin;
 
-	/*
-	 * Initializer for AWE-specific Neo Preferences
-	 */
+    /*
+     * Initializer for AWE-specific Neo Preferences
+     */
 
-	private PreferencesInitializer initializer = new PreferencesInitializer();
+    private PreferencesInitializer initializer = new PreferencesInitializer();
 
-	private AweProjectService aweProjectService;
-	private UpdateViewManager updateBDManager;
-	private NeoDataService neoDataService;
-	private final Object neoDataMonitor=new Object();
+    private AweProjectService aweProjectService;
+    private UpdateViewManager updateBDManager;
+    private NeoDataService neoDataService;
+    private final Object neoDataMonitor = new Object();
     private final List<UpdateViewEventType> eventList = Arrays.asList(UpdateViewEventType.values());
-    
+
     private UpdateViewEvent lastExetutedEvent;
 
-
-	/**
-	 * Constructor for SplashPlugin.
-	 */
-	public NeoCorePlugin() {
-		super();
-		plugin = this;
-	}
-
-	@Override
-    public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-		updateBDManager = new UpdateViewManager();
-        updateBDManager.addListener(this);
+    /**
+     * Constructor for SplashPlugin.
+     */
+    public NeoCorePlugin() {
+        super();
+        plugin = this;
     }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext
-	 * )
-	 */
-	@Override
+    @Override
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        plugin = this;
+        updateBDManager = new UpdateViewManager();
+        updateBDManager.addListener(this);
+
+        URL url = getBundle().getEntry("/logCinfig.properties");
+        System.out.println(url);
+        URL rUrl = FileLocator.toFileURL(url);
+        System.out.println(rUrl);
+        System.out.println(rUrl.getPath());
+        System.out.println(new File(rUrl.toURI()).getAbsolutePath());
+        
+        PropertyConfigurator.configure(rUrl);
+//        PropertyConfigurator.configure(FileLocator.resolve(url));
+        Logger.getLogger(this.getClass()).debug("test");
+        System.out.println("PZDC!");
+        // File file = new File("/log4j.xml");
+        // System.out.println(file.getAbsolutePath());
+        // BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+        // String line;
+        // while ((line = bufferedReader.readLine()) != null) {
+        // System.out.println(line);
+        // }
+        // bufferedReader.close();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext )
+     */
+    @Override
     public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		super.stop(context);
-	}
+        plugin = null;
+        super.stop(context);
+    }
 
-	/**
-	 * Returns the shared instance.
-	 */
-	public static NeoCorePlugin getDefault() {
-		return plugin;
-	}
+    /**
+     * Returns the shared instance.
+     */
+    public static NeoCorePlugin getDefault() {
+        return plugin;
+    }
 
-	/**
-	 * Returns initializer of NeoPreferences
-	 * 
-	 * @return initializer of Neo Preferences
-	 */
+    /**
+     * Returns initializer of NeoPreferences
+     * 
+     * @return initializer of Neo Preferences
+     */
 
-	public PreferencesInitializer getInitializer() {
-		return initializer;
-	}
+    public PreferencesInitializer getInitializer() {
+        return initializer;
+    }
 
-	/**
-	 * 
-	 * @return awe project service
-	 */
-	public AweProjectService getProjectService() {
-	    if (aweProjectService == null) {
-	        aweProjectService = new AweProjectService();
-	    }
-	    return aweProjectService;
-	}
-	/**
-	 * get service
-	 * @return awe project service
-	 */
-	public NeoDataService getNeoDataService() {
-		if (neoDataService == null) {
-		    synchronized (neoDataMonitor) {
-		        if (neoDataService == null) {
-		            neoDataService = new NeoDataService();
-		        }
+    /**
+     * @return awe project service
+     */
+    public AweProjectService getProjectService() {
+        if (aweProjectService == null) {
+            aweProjectService = new AweProjectService();
+        }
+        return aweProjectService;
+    }
+
+    /**
+     * get service
+     * 
+     * @return awe project service
+     */
+    public NeoDataService getNeoDataService() {
+        if (neoDataService == null) {
+            synchronized (neoDataMonitor) {
+                if (neoDataService == null) {
+                    neoDataService = new NeoDataService();
+                }
             }
-		}
-		return neoDataService;
-	}
-	
-	/**
-	 * Initialize project service for tests.
-	 * @param aNeo NeoService
-	 * @author Shcharbatsevich_A
-	 */
-	public void initProjectService(GraphDatabaseService aNeo){
-		aweProjectService = new AweProjectService(aNeo);
-	}
+        }
+        return neoDataService;
+    }
 
-	/**
-	 * 
-	 * @return UpdateBDManager
-	 */
-	public UpdateViewManager getUpdateViewManager() {
-		return updateBDManager;
-	}
-	
-	/**
-	 * Sets initializer of NeoPreferences
-	 * 
-	 * @param initializer
-	 *            new initializer for NeoPreferences
-	 */
+    /**
+     * Initialize project service for tests.
+     * 
+     * @param aNeo NeoService
+     * @author Shcharbatsevich_A
+     */
+    public void initProjectService(GraphDatabaseService aNeo) {
+        aweProjectService = new AweProjectService(aNeo);
+    }
 
-	public void setInitializer(PreferencesInitializer initializer) {
-		this.initializer = initializer;
-	}
+    /**
+     * @return UpdateBDManager
+     */
+    public UpdateViewManager getUpdateViewManager() {
+        return updateBDManager;
+    }
 
-	/**
-	 * Print a message and information about exception to Log
-	 * 
-	 * @param message
-	 *            message
-	 * @param e
-	 *            exception
-	 */
+    /**
+     * Sets initializer of NeoPreferences
+     * 
+     * @param initializer new initializer for NeoPreferences
+     */
 
-	public static void error(String message, Throwable e) {
-		getDefault().getLog().log(
-				new Status(IStatus.ERROR, ID, 0,
-						message == null ? "" : message, e)); //$NON-NLS-1$
-	}
-	
-	public String getNeoPluginLocation() {
-	    try {
-	        return FileLocator.resolve(Platform.getBundle("org.neo4j").getEntry(".")).getFile();
-	    }
-	    catch (IOException e) {
-	        error(null, e);
-	        return null;
-	    }
-	}
+    public void setInitializer(PreferencesInitializer initializer) {
+        this.initializer = initializer;
+    }
+
+    /**
+     * Print a message and information about exception to Log
+     * 
+     * @param message message
+     * @param e exception
+     */
+
+    public static void error(String message, Throwable e) {
+        getDefault().getLog().log(new Status(IStatus.ERROR, ID, 0, message == null ? "" : message, e)); //$NON-NLS-1$
+    }
+
+    public String getNeoPluginLocation() {
+        try {
+            return FileLocator.resolve(Platform.getBundle("org.neo4j").getEntry(".")).getFile();
+        } catch (IOException e) {
+            error(null, e);
+            return null;
+        }
+    }
 
     @Override
     public void updateView(UpdateViewEvent event) {
@@ -229,33 +244,33 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
             lastExetutedEvent = event;
         }
     }
-    
-    private boolean eventExecuted(UpdateViewEvent event){
-        if(lastExetutedEvent==null){
+
+    private boolean eventExecuted(UpdateViewEvent event) {
+        if (lastExetutedEvent == null) {
             return false;
         }
-        if(lastExetutedEvent.equals(event)){
+        if (lastExetutedEvent.equals(event)) {
             return true;
         }
         Node last = getNodeFromEvent(lastExetutedEvent);
-        if(last !=null){
+        if (last != null) {
             Node current = getNodeFromEvent(event);
-            if(current == null){
+            if (current == null) {
                 return false;
             }
             return last.equals(current);
         }
         return false;
     }
-    
-    private Node getNodeFromEvent(UpdateViewEvent event){
-        if(event instanceof UpdateDrillDownEvent){
+
+    private Node getNodeFromEvent(UpdateViewEvent event) {
+        if (event instanceof UpdateDrillDownEvent) {
             UpdateDrillDownEvent ddEvent = (UpdateDrillDownEvent)event;
             if (!ddEvent.getSource().equals(NeoGraphViewPart.ID)) {
                 return ddEvent.getNodes().get(0);
             }
         }
-        if(event instanceof ShowPreparedViewEvent){
+        if (event instanceof ShowPreparedViewEvent) {
             ShowPreparedViewEvent spvEvent = (ShowPreparedViewEvent)event;
             if (spvEvent.isViewNeedUpdate(NeoGraphViewPart.ID)) {
                 return spvEvent.getNodes().get(0);
