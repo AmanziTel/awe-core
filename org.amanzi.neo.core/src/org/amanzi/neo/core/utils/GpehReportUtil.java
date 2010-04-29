@@ -16,7 +16,10 @@ package org.amanzi.neo.core.utils;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.math.DoubleRange;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -29,6 +32,16 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
 public class GpehReportUtil {
+    
+    /**
+     * The Class CellReportsProperties.
+     */
+    public static class CellReportsProperties {
+        
+        /** The Constant PERIOD_ID. */
+        public static final String PERIOD_ID = "period_id";
+        public static final String RNSP_ARRAY = "rnsp_arr";
+    }
 
     /**
      * The Class MatrixProperties.
@@ -250,7 +263,9 @@ public class GpehReportUtil {
         /** The SECON d_ sell. */
         SECOND_SELL,
         /** The SOURC e_ matri x_ event. */
-        SOURCE_MATRIX_EVENT;
+        SOURCE_MATRIX_EVENT,
+        /** The CEL l_ rsc p_ analysys. */
+        CELL_RSCP_ANALYSYS;
     }
 
     /**
@@ -285,6 +300,31 @@ public class GpehReportUtil {
      */
     public static StringBuilder getReportId(String networkName, String gpehEventsName) {
         return new StringBuilder(networkName).append("@").append(gpehEventsName);
+    }
+
+
+    /**
+     * Find prefix.
+     *
+     * @param gpehEvent the gpeh event
+     * @param psc the psc
+     * @param service the service
+     * @return the integer
+     */
+    public static Integer findPrefix(Node gpehEvent, String psc, GraphDatabaseService service) {
+        Transaction tx = service.beginTx();
+        try {
+            int i = 0;
+            String psc2;
+            while ((psc2 = (String)gpehEvent.getProperty(GpehReportUtil.GPEH_RRC_SCRAMBLING_PREFIX + (++i), null)) != null) {
+                if (psc.equals(psc2)) {
+                    return i;
+                }
+            }
+            return null;
+        } finally {
+            tx.finish();
+        }
     }
 
 }
