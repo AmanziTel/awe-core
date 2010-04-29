@@ -23,7 +23,7 @@ import org.neo4j.graphdb.RelationshipType;
  * enum of periods for call time
  * </p>
  * 
- * @author TsAr
+ * @author Tsinkel_A
  * @since 1.0.0
  */
 public enum CallTimePeriods {
