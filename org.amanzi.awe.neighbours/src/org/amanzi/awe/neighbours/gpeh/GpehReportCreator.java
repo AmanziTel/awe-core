@@ -21,6 +21,11 @@ import java.util.TreeSet;
 
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.InterFrequencyICDM;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.IntraFrequencyICDM;
+import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistic.IStatisticElement;
+import org.amanzi.awe.statistic.IStatisticHandler;
+import org.amanzi.awe.statistic.IStatisticStore;
+import org.amanzi.awe.statistic.TimePeriodStructureCreator;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -29,6 +34,8 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.core.utils.GpehReportUtil.CellReportsProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil.MatrixProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil.ReportsRelations;
 import org.amanzi.splash.swing.Cell;
@@ -42,7 +49,12 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.index.IndexHits;
 import org.neo4j.index.lucene.LuceneIndexService;
 
@@ -74,10 +86,10 @@ public class GpehReportCreator {
 
     /** The gpeh. */
     private final Node gpeh;
-    
+
     /** The monitor. */
     private IProgressMonitor monitor;
-    
+
     /** The count row. */
     private int countRow;
 
@@ -94,10 +106,10 @@ public class GpehReportCreator {
         this.gpeh = gpeh;
         this.service = service;
         this.luceneService = luceneService;
-        monitor=new NullProgressMonitor();
+        monitor = new NullProgressMonitor();
         model = new GpehReportModel(network, gpeh, service);
     }
-    
+
     /**
      * Gets the report model.
      * 
@@ -131,6 +143,62 @@ public class GpehReportCreator {
     }
 
     /**
+     * Creates the rscp cell report.
+     *
+     * @param periods the periods
+     */
+    public void createRSCPCellReport(CallTimePeriods periods) {
+        if (model.getCellRscpAnalisis(periods) != null) {
+            return;
+        }
+        if (periods != CallTimePeriods.HOURLY) {
+            createRSCPCellReport(CallTimePeriods.HOURLY);
+        }
+        assert !"main".equals(Thread.currentThread().getName());
+        Transaction tx = service.beginTx();
+        Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+        try {
+            createMatrix();
+            Node parentNode = service.createNode();
+            parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
+            model.getRoot().createRelationshipTo(parentNode, ReportsRelations.CELL_RSCP_ANALYSYS);
+            final String id = GpehReportUtil.getMatrixLuceneIndexName(model.getNetworkName(), model.getGpehEventsName(), GpehReportUtil.MR_TYPE_INTRAF);
+            GPEHStatHandler handler = new GPEHStatHandler(id);
+            handler.setPeriod(periods);
+            Traverser traverse = network.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node curNode = currentPos.currentNode();
+
+                    if (!curNode.hasRelationship(ReportsRelations.BEST_CELL, Direction.INCOMING)) {
+                        return false;
+                    }
+                    for (Relationship rel : curNode.getRelationships(ReportsRelations.BEST_CELL, Direction.INCOMING)) {
+                        if (rel.getProperty(GpehReportUtil.REPORTS_ID, "").equals(id)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            for (Node bestCell : traverse) {
+                long time = System.currentTimeMillis();
+                handler.setBestCell(bestCell);
+                String bestCellName = String.valueOf(bestCell.getId());
+                TimePeriodStructureCreator creator = new TimePeriodStructureCreator(parentNode, bestCellName, minMax.getLeft(), minMax.getRight(), periods, handler,
+                        handler, service);
+                creator.createStructure();
+                time=System.currentTimeMillis()-time;
+                monitor.setTaskName("Create sructure for best cell "+bestCellName+" time: "+time);
+            }
+            model.findCellRscpAnalisis(periods);
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
      * Creates the matrix.
      */
     public void createMatrix() {
@@ -149,16 +217,16 @@ public class GpehReportCreator {
             model.getRoot().createRelationshipTo(iRATMatrix, ReportsRelations.ICDM_IRAT);
             String eventIndName = NeoUtils.getLuceneIndexKeyByProperty(model.getGpehEventsName(), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.GPEH_EVENT);
             String scrCodeIndName = NeoUtils.getLuceneIndexKeyByProperty(model.getNetworkName(), GpehReportUtil.PRIMARY_SCR_CODE, NodeTypes.SECTOR);
-            long countEvent=0;
-            countRow=0;
-            long time=System.currentTimeMillis();
+            long countEvent = 0;
+            countRow = 0;
+            long time = System.currentTimeMillis();
             long countTx = 0;
             for (Node eventNode : luceneService.getNodes(eventIndName, Events.RRC_MEASUREMENT_REPORT.name())) {
                 countEvent++;
                 Set<Node> activeSet = getActiveSet(eventNode);
                 Set<RrcMeasurement> measSet = getRncMeasurementSet(eventNode);
                 String type = (String)eventNode.getProperty(GpehReportUtil.MR_TYPE, "");
-                MeasurementCell bestCell = getBestCell(activeSet, measSet,type);
+                MeasurementCell bestCell = getBestCell(activeSet, measSet, type);
                 if (bestCell == null) {
                     LOGGER.debug(String.format("Event node: %s, not found best cell", eventNode));
                     continue;
@@ -179,8 +247,7 @@ public class GpehReportCreator {
                 }
                 for (RrcMeasurement measurement : measSet) {
                     if (measurement.getScrambling() == null
-                            || (bestCell.getMeasurement() != null && measurement.getScrambling().equals(
-                                    bestCell.getMeasurement().getScrambling()))
+                            || (bestCell.getMeasurement() != null && measurement.getScrambling().equals(bestCell.getMeasurement().getScrambling()))
                             || measurement.getEcNo() == null) {
                         continue;
                     }
@@ -191,7 +258,7 @@ public class GpehReportCreator {
                     }
                     Node tableNode = findOrCreateTableNode(bestCell, sector, tableRoot, type);
                     tableNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_MATRIX_EVENT);
-                    handleTableNode(tableNode,type,bestCell,sector);
+                    handleTableNode(tableNode, type, bestCell, sector);
                     if (++countTx > 2000) {
                         countTx = 0;
                         tx.success();
@@ -199,21 +266,21 @@ public class GpehReportCreator {
                         tx = service.beginTx();
                     }
                 }
-                long time2 = System.currentTimeMillis()-time;
-                    monitor.setTaskName(String.format("Handle %s events, create table rows %s, ttotal time: %s, average time: %s",countEvent,countRow,time2,time2/countEvent));
+                long time2 = System.currentTimeMillis() - time;
+                monitor.setTaskName(String.format("Handle %s events, create table rows %s, ttotal time: %s, average time: %s", countEvent, countRow, time2, time2
+                        / countEvent));
             }
             tx.success();
-            model. findMatrixNodes();
+            model.findMatrixNodes();
         } finally {
             tx.finish();
         }
 
     }
 
-
     /**
      * Handle table node.
-     *
+     * 
      * @param tableNode the table node
      * @param type the type
      * @param bestCell the best cell
@@ -221,11 +288,11 @@ public class GpehReportCreator {
      */
     private void handleTableNode(Node tableNode, String type, MeasurementCell bestCell, MeasurementCell sector) {
         if (type.equals(GpehReportUtil.MR_TYPE_INTERF)) {
-            handleInterFrTableNode(tableNode,bestCell,sector);
+            handleInterFrTableNode(tableNode, bestCell, sector);
             return;
         } else if (type.equals(GpehReportUtil.MR_TYPE_INTRAF)) {
-             handleIntraFrTableNode(tableNode,bestCell,sector);
-             return;
+            handleIntraFrTableNode(tableNode, bestCell, sector);
+            return;
         } else if (type.equals(GpehReportUtil.MR_TYPE_IRAT)) {
             // TODO implement
             LOGGER.error("Not handled Irat event");
@@ -233,98 +300,105 @@ public class GpehReportCreator {
         } else {
             throw new IllegalArgumentException();
         }
-        
+
     }
-
-
-
 
     /**
      * Handle inter fr table node.
-     *
+     * 
      * @param tableNode the table node
      * @param bestCell the best cell
      * @param sector the sector
      */
     private void handleInterFrTableNode(Node tableNode, MeasurementCell bestCell, MeasurementCell sector) {
         Transaction tx = service.beginTx();
-        try{
-            //Physical distance in meters 
-            if (!tableNode.hasProperty(MatrixProperties.DISTANCE)&&model.getCrs()!=null){
+        try {
+            // Physical distance in meters
+            if (!tableNode.hasProperty(MatrixProperties.DISTANCE) && model.getCrs() != null) {
                 double dist = CRS.distance(bestCell.getCoordinate(), sector.getCoordinate(), model.getCrs());
                 tableNode.setProperty(MatrixProperties.DISTANCE, dist);
             }
-            //Defined NBR   TRUE when Interfering Cell is defined neighboring cell,
-            //FALSE when Interfering Cell is not defined as neighboring cell
+            // Defined NBR TRUE when Interfering Cell is defined neighboring cell,
+            // FALSE when Interfering Cell is not defined as neighboring cell
 
-            if (!tableNode.hasProperty(MatrixProperties.DEFINED_NBR)){
+            if (!tableNode.hasProperty(MatrixProperties.DEFINED_NBR)) {
                 Set<Relationship> relations = NeoUtils.getRelations(bestCell.getCell(), sector.getCell(), NetworkRelationshipTypes.NEIGHBOUR, service);
-                boolean def=!relations.isEmpty();
-                tableNode.setProperty(MatrixProperties.DEFINED_NBR,def);
+                boolean def = !relations.isEmpty();
+                tableNode.setProperty(MatrixProperties.DEFINED_NBR, def);
             }
-            //Tier Distance - not created
-            
-            //# of MR for best cell
-            //can find - calculate count of relation
-            
-            //# of MR for Interfering cell
-            //can find - calculate count of relation
-            
+            // Tier Distance - not created
+
+            // # of MR for best cell
+            // can find - calculate count of relation
+
+            // # of MR for Interfering cell
+            // can find - calculate count of relation
+
             Integer ecNo = sector.getMeasurement().getEcNo();
-            
-            if (ecNo>=37){//>=-6dB
-                updateCounter(tableNode,MatrixProperties.EC_NO_PREFIX+1);
+
+            if (ecNo >= 37) {// >=-6dB
+                updateCounter(tableNode, MatrixProperties.EC_NO_PREFIX + 1);
             }
-            if (ecNo>=31){//>=-9
-                updateCounter(tableNode,MatrixProperties.EC_NO_PREFIX+2);
-                
+            if (ecNo >= 31) {// >=-9
+                updateCounter(tableNode, MatrixProperties.EC_NO_PREFIX + 2);
+
             }
-            if (ecNo>=25){//>=-12
-                updateCounter(tableNode,MatrixProperties.EC_NO_PREFIX+3);
-                
+            if (ecNo >= 25) {// >=-12
+                updateCounter(tableNode, MatrixProperties.EC_NO_PREFIX + 3);
+
             }
-            if (ecNo>=19){//>=-15
-                updateCounter(tableNode,MatrixProperties.EC_NO_PREFIX+4);
-                
+            if (ecNo >= 19) {// >=-15
+                updateCounter(tableNode, MatrixProperties.EC_NO_PREFIX + 4);
+
             }
-            if (ecNo>=13){//>=-18
+            if (ecNo >= 13) {// >=-18
                 updateCounter(tableNode, MatrixProperties.EC_NO_PREFIX + 5);
             }
             if (sector.getMeasurement().getRscp() != null) {
                 Integer rscp = sector.getMeasurement().getRscp();
                 if (ecNo > 21) {// >-14
                     if (rscp < 11) {// <-105
-                        updateCounter(tableNode, "RSCP1_14");//MatrixProperties.getRSCPECNOPropertyName(1, 14));
+                        updateCounter(tableNode, "RSCP1_14");// MatrixProperties.getRSCPECNOPropertyName(1,
+                        // 14));
                     }
                     if (rscp < 21) {// <-95
-                        updateCounter(tableNode, "RSCP2_14");//MatrixProperties.getRSCPECNOPropertyName(2, 14));
+                        updateCounter(tableNode, "RSCP2_14");// MatrixProperties.getRSCPECNOPropertyName(2,
+                        // 14));
                     }
                     if (rscp < 31) {// <-85
-                        updateCounter(tableNode, "RSCP3_14");//MatrixProperties.getRSCPECNOPropertyName(3, 14));
+                        updateCounter(tableNode, "RSCP3_14");// MatrixProperties.getRSCPECNOPropertyName(3,
+                        // 14));
                     }
                     if (rscp < 41) {// <-75
-                        updateCounter(tableNode, "RSCP4_14");//MatrixProperties.getRSCPECNOPropertyName(4, 14));
+                        updateCounter(tableNode, "RSCP4_14");// MatrixProperties.getRSCPECNOPropertyName(4,
+                        // 14));
                     }
                     if (rscp >= 41) {// >=-75
-                        updateCounter(tableNode, "RSCP5_14");//MatrixProperties.getRSCPECNOPropertyName(5, 14));
+                        updateCounter(tableNode, "RSCP5_14");// MatrixProperties.getRSCPECNOPropertyName(5,
+                        // 14));
                     }
                 }
-                if (ecNo>29){//>-10
+                if (ecNo > 29) {// >-10
                     if (rscp < 11) {// <-105
-                        updateCounter(tableNode, "RSCP1_10");//MatrixProperties.getRSCPECNOPropertyName(1, 10));
+                        updateCounter(tableNode, "RSCP1_10");// MatrixProperties.getRSCPECNOPropertyName(1,
+                        // 10));
                     }
                     if (rscp < 21) {// <-95
-                        updateCounter(tableNode, "RSCP2_10");//MatrixProperties.getRSCPECNOPropertyName(2, 10));
+                        updateCounter(tableNode, "RSCP2_10");// MatrixProperties.getRSCPECNOPropertyName(2,
+                        // 10));
                     }
                     if (rscp < 31) {// <-85
-                        updateCounter(tableNode, "RSCP3_10");//MatrixProperties.getRSCPECNOPropertyName(3, 10));
+                        updateCounter(tableNode, "RSCP3_10");// MatrixProperties.getRSCPECNOPropertyName(3,
+                        // 10));
                     }
                     if (rscp < 41) {// <-75
-                        updateCounter(tableNode, "RSCP4_10");//MatrixProperties.getRSCPECNOPropertyName(4, 10));
+                        updateCounter(tableNode, "RSCP4_10");// MatrixProperties.getRSCPECNOPropertyName(4,
+                        // 10));
                     }
                     if (rscp >= 41) {// >=-75
-                        updateCounter(tableNode,"RSCP5_10");// MatrixProperties.getRSCPECNOPropertyName(5, 10));
-                    }                    
+                        updateCounter(tableNode, "RSCP5_10");// MatrixProperties.getRSCPECNOPropertyName(5,
+                        // 10));
+                    }
                 }
             } else {
                 LOGGER.error("No found rscp" + bestCell + "\t" + sector);
@@ -332,8 +406,8 @@ public class GpehReportCreator {
             tx.success();
         } catch (Exception e) {
             // TODO Handle FactoryException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
-        }finally{
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } finally {
             tx.finish();
         }
 
@@ -341,129 +415,128 @@ public class GpehReportCreator {
 
     /**
      * Handle intra fr table node.
-     *
+     * 
      * @param tableNode the table node
      * @param bestCell the best cell
      * @param sector the sector
      */
     private void handleIntraFrTableNode(Node tableNode, MeasurementCell bestCell, MeasurementCell sector) {
         Transaction tx = service.beginTx();
-        try{
-            //Physical distance in meters 
-            if (!tableNode.hasProperty(MatrixProperties.DISTANCE)&&model.getCrs()!=null){
+        try {
+            // Physical distance in meters
+            if (!tableNode.hasProperty(MatrixProperties.DISTANCE) && model.getCrs() != null) {
                 double dist = CRS.distance(bestCell.getCoordinate(), sector.getCoordinate(), model.getCrs());
                 tableNode.setProperty(MatrixProperties.DISTANCE, dist);
             }
-            //Defined NBR   TRUE when Interfering Cell is defined neighboring cell,
-            //FALSE when Interfering Cell is not defined as neighboring cell
+            // Defined NBR TRUE when Interfering Cell is defined neighboring cell,
+            // FALSE when Interfering Cell is not defined as neighboring cell
 
-            if (!tableNode.hasProperty(MatrixProperties.DEFINED_NBR)){
+            if (!tableNode.hasProperty(MatrixProperties.DEFINED_NBR)) {
                 Set<Relationship> relations = NeoUtils.getRelations(bestCell.getCell(), sector.getCell(), NetworkRelationshipTypes.NEIGHBOUR, service);
-                boolean def=!relations.isEmpty();
-                tableNode.setProperty(MatrixProperties.DEFINED_NBR,def);
+                boolean def = !relations.isEmpty();
+                tableNode.setProperty(MatrixProperties.DEFINED_NBR, def);
             }
-            //Tier Distance - not created
-            
-            //# of MR for best cell
-            //can find - calculate count of relation
-            
-            //# of MR for Interfering cell
-            //can find - calculate count of relation
-            
-            double deltaDbm = (double)Math.abs(bestCell.getMeasurement().getEcNo()-sector.getMeasurement().getEcNo())/2;
-            if (deltaDbm<=3){
-                updateCounter(tableNode,MatrixProperties.EC_NO_DELTA_PREFIX+1);
+            // Tier Distance - not created
+
+            // # of MR for best cell
+            // can find - calculate count of relation
+
+            // # of MR for Interfering cell
+            // can find - calculate count of relation
+
+            double deltaDbm = (double)Math.abs(bestCell.getMeasurement().getEcNo() - sector.getMeasurement().getEcNo()) / 2;
+            if (deltaDbm <= 3) {
+                updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 1);
             }
-            if (deltaDbm<=6){
-                updateCounter(tableNode,MatrixProperties.EC_NO_DELTA_PREFIX+2);
-                
+            if (deltaDbm <= 6) {
+                updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 2);
+
             }
-            if (deltaDbm<=9){
-                updateCounter(tableNode,MatrixProperties.EC_NO_DELTA_PREFIX+3);
-                
+            if (deltaDbm <= 9) {
+                updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 3);
+
             }
-            if (deltaDbm<=12){
-                updateCounter(tableNode,MatrixProperties.EC_NO_DELTA_PREFIX+4);
-                
+            if (deltaDbm <= 12) {
+                updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 4);
+
             }
-            if (deltaDbm<=15){
-                updateCounter(tableNode,MatrixProperties.EC_NO_DELTA_PREFIX+5);
+            if (deltaDbm <= 15) {
+                updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 5);
             }
-            if (bestCell.getMeasurement().getRscp()!=null&&sector.getMeasurement().getRscp()!=null){
-                double deltaRscp= (double)Math.abs(bestCell.getMeasurement().getRscp()-sector.getMeasurement().getRscp())/1;  
-                if (deltaRscp<=3){
-                    updateCounter(tableNode,MatrixProperties.RSCP_DELTA_PREFIX+1);
+            if (bestCell.getMeasurement().getRscp() != null && sector.getMeasurement().getRscp() != null) {
+                double deltaRscp = (double)Math.abs(bestCell.getMeasurement().getRscp() - sector.getMeasurement().getRscp()) / 1;
+                if (deltaRscp <= 3) {
+                    updateCounter(tableNode, MatrixProperties.RSCP_DELTA_PREFIX + 1);
                 }
-                if (deltaRscp<=6){
-                    updateCounter(tableNode,MatrixProperties.RSCP_DELTA_PREFIX+2);
+                if (deltaRscp <= 6) {
+                    updateCounter(tableNode, MatrixProperties.RSCP_DELTA_PREFIX + 2);
                 }
-                if (deltaRscp<=9){
-                    updateCounter(tableNode,MatrixProperties.RSCP_DELTA_PREFIX+3);
+                if (deltaRscp <= 9) {
+                    updateCounter(tableNode, MatrixProperties.RSCP_DELTA_PREFIX + 3);
                 }
-                if (deltaRscp<=12){
-                    updateCounter(tableNode,MatrixProperties.RSCP_DELTA_PREFIX+4);
+                if (deltaRscp <= 12) {
+                    updateCounter(tableNode, MatrixProperties.RSCP_DELTA_PREFIX + 4);
                 }
-                if (deltaRscp<=15){
-                    updateCounter(tableNode,MatrixProperties.RSCP_DELTA_PREFIX+5);
+                if (deltaRscp <= 15) {
+                    updateCounter(tableNode, MatrixProperties.RSCP_DELTA_PREFIX + 5);
                 }
-            }else{
-                LOGGER.error("No found rscp"+bestCell+"\t"+sector); 
+            } else {
+                LOGGER.error("No found rscp" + bestCell + "\t" + sector);
             }
-            int deltaPosition = sector.getMeasurement().getPosition()-bestCell.getMeasurement().getPosition();
-            if (deltaPosition<0){
-                LOGGER.error("wrong best cell position: "+bestCell.getMeasurement().getPosition());  
-                deltaPosition=-deltaPosition;
+            int deltaPosition = sector.getMeasurement().getPosition() - bestCell.getMeasurement().getPosition();
+            if (deltaPosition < 0) {
+                LOGGER.error("wrong best cell position: " + bestCell.getMeasurement().getPosition());
+                deltaPosition = -deltaPosition;
             }
-            if (sector.getMeasurement().getPosition()==1){
-                if (deltaDbm<=6){
-                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+1); 
-                }else{
-                    LOGGER.error("found sector with position 2 but wrong delta"+deltaDbm);  
+            if (sector.getMeasurement().getPosition() == 1) {
+                if (deltaDbm <= 6) {
+                    updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 1);
+                } else {
+                    LOGGER.error("found sector with position 2 but wrong delta" + deltaDbm);
                 }
-            }else  if (sector.getMeasurement().getPosition()==2){
-                if (deltaDbm<=6){
-                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+2); 
-                }else{
-                    LOGGER.error("found sector with position 3 but wrong delta"+deltaDbm);  
+            } else if (sector.getMeasurement().getPosition() == 2) {
+                if (deltaDbm <= 6) {
+                    updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 2);
+                } else {
+                    LOGGER.error("found sector with position 3 but wrong delta" + deltaDbm);
                 }
-            }else  if (sector.getMeasurement().getPosition()==3){
-                if (deltaDbm<=8){
-                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+3); 
-                }else{
-                    LOGGER.error("found sector with position 3 but wrong delta"+deltaDbm);  
+            } else if (sector.getMeasurement().getPosition() == 3) {
+                if (deltaDbm <= 8) {
+                    updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 3);
+                } else {
+                    LOGGER.error("found sector with position 3 but wrong delta" + deltaDbm);
                 }
-            }else  if (sector.getMeasurement().getPosition()==4){
-                if (deltaDbm<=8){
-                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+4); 
-                }else{
-                    LOGGER.error("found sector with position 3 but wrong delta"+deltaDbm);  
+            } else if (sector.getMeasurement().getPosition() == 4) {
+                if (deltaDbm <= 8) {
+                    updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 4);
+                } else {
+                    LOGGER.error("found sector with position 3 but wrong delta" + deltaDbm);
                 }
-            }else  if (sector.getMeasurement().getPosition()==5){
-                if (deltaDbm<=8){
-                    updateCounter(tableNode,MatrixProperties.POSITION_PREFIX+5); 
-                }else{
-                    LOGGER.error("found sector with position 3 but wrong delta"+deltaDbm);  
+            } else if (sector.getMeasurement().getPosition() == 5) {
+                if (deltaDbm <= 8) {
+                    updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 5);
+                } else {
+                    LOGGER.error("found sector with position 3 but wrong delta" + deltaDbm);
                 }
             }
             tx.success();
         } catch (Exception e) {
             // TODO Handle FactoryException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
-        }finally{
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } finally {
             tx.finish();
         }
-        
-    }
 
+    }
 
     /**
      * Update counter.
-     *
+     * 
      * @param tableNode the table node
      * @param propertyName the property name
      */
     private void updateCounter(Node tableNode, String propertyName) {
-        Integer c=(Integer)tableNode.getProperty(propertyName,0);
+        Integer c = (Integer)tableNode.getProperty(propertyName, 0);
         tableNode.setProperty(propertyName, ++c);
     }
 
@@ -484,7 +557,7 @@ public class GpehReportCreator {
             Node result = luceneService.getSingleNode(indexName, id);
             if (result == null) {
                 assert !"main".equals(Thread.currentThread().getName());
-                result=service.createNode();
+                result = service.createNode();
                 tableRoot.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
                 Relationship rel = result.createRelationshipTo(bestCell.getCell(), ReportsRelations.BEST_CELL);
                 rel.setProperty(GpehReportUtil.REPORTS_ID, indexName);
@@ -550,16 +623,16 @@ public class GpehReportCreator {
 
     /**
      * Gets the best cell.
-     * 
+     *
      * @param activeSet the active set
      * @param measSet the meas set
-     * @param type 
+     * @param type the type
      * @return the best cell
      */
     private MeasurementCell getBestCell(Set<Node> activeSet, Set<RrcMeasurement> measSet, String type) {
-        if (type.equals(GpehReportUtil.MR_TYPE_INTERF)||type.equals(GpehReportUtil.MR_TYPE_IRAT)){
+        if (type.equals(GpehReportUtil.MR_TYPE_INTERF) || type.equals(GpehReportUtil.MR_TYPE_IRAT)) {
             Iterator<Node> iterator = activeSet.iterator();
-            MeasurementCell bestCell=iterator.hasNext()?new MeasurementCell(iterator.next()):null;
+            MeasurementCell bestCell = iterator.hasNext() ? new MeasurementCell(iterator.next()) : null;
             setupLocation(bestCell);
             return bestCell;
         }
@@ -634,10 +707,10 @@ public class GpehReportCreator {
 
             @Override
             public int compare(RrcMeasurement o1, RrcMeasurement o2) {
-                if (o1.getEcNo()==null){
+                if (o1.getEcNo() == null) {
                     return 1;
                 }
-                if (o2.getEcNo()==null){
+                if (o2.getEcNo() == null) {
                     return -1;
                 };
                 return o2.getEcNo().compareTo(o1.getEcNo());
@@ -660,9 +733,9 @@ public class GpehReportCreator {
                 break;
             }
         }
-        int i=0;
-        for (RrcMeasurement meas:result){
-            meas.setPosition(++i); 
+        int i = 0;
+        for (RrcMeasurement meas : result) {
+            meas.setPosition(++i);
         }
         return result;
     }
@@ -689,22 +762,19 @@ public class GpehReportCreator {
         return result;
     }
 
-
     /**
      * Sets the monitor.
-     *
+     * 
      * @param monitor the new monitor
      */
     public void setMonitor(IProgressMonitor monitor) {
-        assert monitor!=null;
+        assert monitor != null;
         this.monitor = monitor;
     }
 
-
-
     /**
      * Creates the inta idcm spread sheet.
-     *
+     * 
      * @param spreadsheetName the spreadsheet name
      * @return the spreadsheet node
      */
@@ -713,7 +783,7 @@ public class GpehReportCreator {
         GpehReportModel mdl = getReportModel();
         IntraFrequencyICDM matrix = mdl.getIntraFrequencyICDM();
         Transaction tx = service.beginTx();
-        try{
+        try {
             SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(GpehReportUtil.RUBY_PROJECT_NAME), spreadsheetName);
             int column = 0;
             monitor.subTask("create header");
@@ -789,104 +859,111 @@ public class GpehReportCreator {
             cellToadd = new Cell(0, column, "", "Position5", null);
             creator.saveCell(cellToadd);
             column++;
-            int row=1;
-            int saveCount=0;
+            int row = 1;
+            int saveCount = 0;
             long time = System.currentTimeMillis();
             for (Node tblRow : matrix.getRowTraverser()) {
-                monitor.subTask("create row "+row);
-                column=0;
-                //Serving cell name
-                String bestCellName=matrix.getBestCellName(tblRow);
+                monitor.subTask("create row " + row);
+                column = 0;
+                // Serving cell name
+                String bestCellName = matrix.getBestCellName(tblRow);
                 cellToadd = new Cell(row, column, "", bestCellName, null);
                 creator.saveCell(cellToadd);
                 column++;
-                //"Serving PSC"
-                String value=matrix.getBestCellPSC(tblRow);
+                // "Serving PSC"
+                String value = matrix.getBestCellPSC(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++;
-                //Interfering cell name
-                value=matrix.getInterferingCellName(tblRow);
+                // Interfering cell name
+                value = matrix.getInterferingCellName(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++;
-                //Interfering PSC
-                value=matrix.getInterferingCellPSC(tblRow);
+                // Interfering PSC
+                value = matrix.getInterferingCellPSC(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //Defined NBR
-                value=String.valueOf(matrix.isDefinedNbr(tblRow));
+                column++;
+                // Defined NBR
+                value = String.valueOf(matrix.isDefinedNbr(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //Distance
-                value=String.valueOf(matrix.getDistance(tblRow));
+                column++;
+                // Distance
+                value = String.valueOf(matrix.getDistance(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //Tier Distance
-                value=String.valueOf("N/A");
+                column++;
+                // Tier Distance
+                value = String.valueOf("N/A");
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //# of MR for best cell
-                value=String.valueOf(matrix.getNumMRForBestCell(tblRow));
+                column++;
+                // # of MR for best cell
+                value = String.valueOf(matrix.getNumMRForBestCell(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //# of MR for Interfering cell
-                value=String.valueOf(matrix.getNumMRForInterferingCell(tblRow));
+                column++;
+                // # of MR for Interfering cell
+                value = String.valueOf(matrix.getNumMRForInterferingCell(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //Delta EcNo 1-5               
-                for (int i=1;i<=5;i++){
-                    value=String.valueOf(matrix.getDeltaEcNo(i,tblRow));  
+                column++;
+                // Delta EcNo 1-5
+                for (int i = 1; i <= 5; i++) {
+                    value = String.valueOf(matrix.getDeltaEcNo(i, tblRow));
                     cellToadd = new Cell(row, column, "", value, null);
                     creator.saveCell(cellToadd);
-                    column++; 
+                    column++;
                 }
-                for (int i=1;i<=5;i++){
-                    value=String.valueOf(matrix.getDeltaRSCP(i,tblRow));  
+                for (int i = 1; i <= 5; i++) {
+                    value = String.valueOf(matrix.getDeltaRSCP(i, tblRow));
                     cellToadd = new Cell(row, column, "", value, null);
                     creator.saveCell(cellToadd);
-                    column++; 
+                    column++;
                 }
-                for (int i=1;i<=5;i++){
-                    value=String.valueOf(matrix.getPosition(i,tblRow));  
+                for (int i = 1; i <= 5; i++) {
+                    value = String.valueOf(matrix.getPosition(i, tblRow));
                     cellToadd = new Cell(row, column, "", value, null);
                     creator.saveCell(cellToadd);
-                    column++; 
+                    column++;
                 }
                 monitor.setTaskName(String.format("Rows created: %s", row));
-                
+
                 saveCount++;
-                if (saveCount>1000){
-                    time=System.currentTimeMillis()-time;
+                if (saveCount > 1000) {
+                    time = System.currentTimeMillis() - time;
                     tx.success();
                     tx.finish();
-                    saveCount=0;
-                    System.out.println("time of storing 1000 rows: "+time);
+                    saveCount = 0;
+                    System.out.println("time of storing 1000 rows: " + time);
                     time = System.currentTimeMillis();
-                    tx=service.beginTx();
+                    tx = service.beginTx();
                 }
                 row++;
             }
             tx.success();
             System.out.println(creator.getSpreadsheet().getUnderlyingNode().getId());
             return creator.getSpreadsheet();
-        }finally{
+        } finally {
             tx.finish();
         }
     }
+
+    /**
+     * Creates the inter idcm spread sheet.
+     *
+     * @param spreadsheetName the spreadsheet name
+     * @return the spreadsheet node
+     */
     public SpreadsheetNode createInterIDCMSpreadSheet(String spreadsheetName) {
-        //TODO implement
+        // TODO implement
         createMatrix();
         GpehReportModel mdl = getReportModel();
         InterFrequencyICDM matrix = mdl.getInterFrequencyICDM();
         Transaction tx = service.beginTx();
-        try{
+        try {
             SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(GpehReportUtil.RUBY_PROJECT_NAME), spreadsheetName);
             int column = 0;
             monitor.subTask("create header");
@@ -968,19 +1045,19 @@ public class GpehReportCreator {
             cellToadd = new Cell(0, column, "", "RSCP5_10", null);
             creator.saveCell(cellToadd);
             column++;
-            int row=1;
-            int saveCount=0;
+            int row = 1;
+            int saveCount = 0;
             long time = System.currentTimeMillis();
             for (Node tblRow : matrix.getRowTraverser()) {
-                monitor.subTask("create row "+row);
-                column=0;
-                //Serving cell name
-                String bestCellName=matrix.getBestCellName(tblRow);
+                monitor.subTask("create row " + row);
+                column = 0;
+                // Serving cell name
+                String bestCellName = matrix.getBestCellName(tblRow);
                 cellToadd = new Cell(row, column, "", bestCellName, null);
                 creator.saveCell(cellToadd);
                 column++;
-                //"Serving PSC"
-                String value=matrix.getBestCellPSC(tblRow);
+                // "Serving PSC"
+                String value = matrix.getBestCellPSC(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++;
@@ -989,86 +1066,233 @@ public class GpehReportCreator {
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++;
-                //Interfering cell name
-                value=matrix.getInterferingCellName(tblRow);
+                // Interfering cell name
+                value = matrix.getInterferingCellName(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++;
-                //Interfering PSC
-                value=matrix.getInterferingCellPSC(tblRow);
+                // Interfering PSC
+                value = matrix.getInterferingCellPSC(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
+                column++;
                 // Interfering cell UARFCN
                 value = matrix.getInterferingCellUARFCN(tblRow);
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
                 column++;
-                //Defined NBR
-                value=String.valueOf(matrix.isDefinedNbr(tblRow));
+                // Defined NBR
+                value = String.valueOf(matrix.isDefinedNbr(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //Distance
-                value=String.valueOf(matrix.getDistance(tblRow));
+                column++;
+                // Distance
+                value = String.valueOf(matrix.getDistance(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //Tier Distance
-                value=String.valueOf("N/A");
+                column++;
+                // Tier Distance
+                value = String.valueOf("N/A");
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //# of MR for best cell
-                value=String.valueOf(matrix.getNumMRForBestCell(tblRow));
+                column++;
+                // # of MR for best cell
+                value = String.valueOf(matrix.getNumMRForBestCell(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //# of MR for Interfering cell
-                value=String.valueOf(matrix.getNumMRForInterferingCell(tblRow));
+                column++;
+                // # of MR for Interfering cell
+                value = String.valueOf(matrix.getNumMRForInterferingCell(tblRow));
                 cellToadd = new Cell(row, column, "", value, null);
                 creator.saveCell(cellToadd);
-                column++; 
-                //Delta EcNo 1-5               
-                for (int i=1;i<=5;i++){
+                column++;
+                // Delta EcNo 1-5
+                for (int i = 1; i <= 5; i++) {
                     value = String.valueOf(matrix.getEcNo(i, tblRow));
                     cellToadd = new Cell(row, column, "", value, null);
                     creator.saveCell(cellToadd);
-                    column++; 
+                    column++;
                 }
-                for (int i=1;i<=5;i++){
+                for (int i = 1; i <= 5; i++) {
                     value = String.valueOf(matrix.getRSCP(i, 14, tblRow));
                     cellToadd = new Cell(row, column, "", value, null);
                     creator.saveCell(cellToadd);
-                    column++; 
+                    column++;
                 }
-                for (int i=1;i<=5;i++){
+                for (int i = 1; i <= 5; i++) {
                     value = String.valueOf(matrix.getRSCP(i, 10, tblRow));
                     cellToadd = new Cell(row, column, "", value, null);
                     creator.saveCell(cellToadd);
-                    column++; 
+                    column++;
                 }
 
-              monitor.setTaskName(String.format("Rows created: %s", row));
+                monitor.setTaskName(String.format("Rows created: %s", row));
 
                 saveCount++;
-                if (saveCount>1000){
-                    time=System.currentTimeMillis()-time;
+                if (saveCount > 1000) {
+                    time = System.currentTimeMillis() - time;
                     tx.success();
                     tx.finish();
-                    saveCount=0;
-                    System.out.println("time of storing 1000 rows: "+time);
+                    saveCount = 0;
+                    System.out.println("time of storing 1000 rows: " + time);
                     time = System.currentTimeMillis();
-                    tx=service.beginTx();
+                    tx = service.beginTx();
                 }
                 row++;
             }
             tx.success();
             System.out.println(creator.getSpreadsheet().getUnderlyingNode().getId());
             return creator.getSpreadsheet();
-        }finally{
+        } finally {
             tx.finish();
         }
     }
-    
+
+    /**
+     * The Class GPEHStatHandler.
+     */
+    public class GPEHStatHandler implements IStatisticHandler, IStatisticStore {
+
+        /** The period. */
+        private CallTimePeriods period;
+        
+        /** The best cell. */
+        private Node bestCell;
+        
+        /** The rel id. */
+        private final String relId;
+
+        private String psc;
+
+        /**
+         * Instantiates a new gPEH stat handler.
+         *
+         * @param relId the rel id
+         */
+        GPEHStatHandler(String relId) {
+            this.relId = relId;
+
+        }
+
+        /**
+         * Gets the statisics.
+         *
+         * @param periodTime the period time
+         * @param periodEnd the period end
+         * @return the statisics
+         */
+        @Override
+        public IStatisticElement getStatisics(final Long periodTime, final Long periodEnd) {
+            // do not compute statistic
+            return new IStatisticElement() {
+
+                @Override
+                public long getStartTime() {
+                    return periodTime;
+                }
+
+                @Override
+                public CallTimePeriods getPeriod() {
+                    return period;
+                }
+
+                @Override
+                public long getEndTime() {
+                    return periodEnd;
+                }
+            };
+        }
+
+        /**
+         * Sets the best cell.
+         *
+         * @param bestCell the new best cell
+         */
+        public void setBestCell(Node bestCell) {
+            this.bestCell = bestCell;
+            psc=(String)bestCell.getProperty(GpehReportUtil.PRIMARY_SCR_CODE);
+        }
+
+        /**
+         * Sets the period.
+         *
+         * @param period the new period
+         */
+        public void setPeriod(CallTimePeriods period) {
+            this.period = period;
+        }
+
+        /**
+         * Store statistic element.
+         *
+         * @param statElem the stat elem
+         * @param node the node
+         */
+        @Override
+        public void storeStatisticElement(IStatisticElement statElem, Node node) {
+            int[] rncpAr=new int[92];
+            final long begin = statElem.getStartTime();
+            final long end = statElem.getEndTime();
+            if (statElem.getPeriod() != CallTimePeriods.HOURLY) {
+                storeStatisticElementByHourlyStat(statElem, node);
+                return;
+            }
+           Traverser gpehEventTraverser = bestCell.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+
+                @Override
+                public boolean isStopNode(TraversalPosition currentPos) {
+                    Relationship rel = currentPos.lastRelationshipTraversed();
+                    if (rel == null) {
+                        return false;
+                    }
+                    if (rel.isType(ReportsRelations.BEST_CELL)) {
+                        return !rel.getProperty(GpehReportUtil.REPORTS_ID, "").equals(relId);
+                    }
+                    return false;
+                }
+            }, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Relationship rel = currentPos.lastRelationshipTraversed();
+                    if (rel == null || !rel.isType(ReportsRelations.SOURCE_MATRIX_EVENT)) {
+                        return false;
+                    }
+                    Long time = NeoUtils.getNodeTime(currentPos.currentNode());
+                    return time != null && time >= begin && time <= end;
+                }
+            }, ReportsRelations.BEST_CELL, Direction.INCOMING, ReportsRelations.SOURCE_MATRIX_EVENT, Direction.OUTGOING);
+           for (Node gpehEvent:gpehEventTraverser){
+               Integer prfix = GpehReportUtil.findPrefix(gpehEvent,psc,service);
+               if (prfix==null){
+                   LOGGER.error("Not found psc "+psc+" in node "+gpehEvent);
+                   continue;
+               }
+               Integer rnsp = (Integer)gpehEvent.getProperty(GpehReportUtil.GPEH_RRC_MR_RSCP_PREFIX+prfix,null);
+               if (rnsp!=null){
+                   Integer count=rncpAr[rnsp];
+                   count=count==null?1:count+1;
+                   rncpAr[rnsp]=count;;
+               }else{
+                   LOGGER.debug("Not found rnsp for best cell in node "+gpehEvent);
+               }
+           }
+           node.setProperty(CellReportsProperties.RNSP_ARRAY, rncpAr);
+        }
+
+
+        /**
+         * Store statistic element by hourly stat.
+         *
+         * @param statElem the stat elem
+         * @param node the node
+         */
+        private void storeStatisticElementByHourlyStat(IStatisticElement statElem, Node node) {
+        }
+
+    }
+
+    public SpreadsheetNode createRSCPCellSpreadSheet(String string, CallTimePeriods period) {
+        return null;
+    }
 }

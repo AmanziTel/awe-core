@@ -16,8 +16,6 @@ package org.amanzi.awe.statistic;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import org.neo4j.graphdb.RelationshipType;
-
 /**
  * <p>
  * enum of periods for call time
@@ -44,10 +42,10 @@ public enum CallTimePeriods {
             return cl.getTimeInMillis();
         }
 
-        @Override
-        public RelationshipType getPeriodRelation() {
-            return Relations.TP_HOUR;
-        }
+//        @Override
+//        public RelationshipType getPeriodRelation() {
+//            return Relations.TP_HOUR;
+//        }
     },
     // 1 day
     DAILY("daily", HOURLY) {
@@ -67,10 +65,10 @@ public enum CallTimePeriods {
             return cl.getTimeInMillis();
         }
 
-        @Override
-        public RelationshipType getPeriodRelation() {
-            return Relations.TP_DAY;
-        }
+//        @Override
+//        public RelationshipType getPeriodRelation() {
+//            return Relations.TP_DAY;
+//        }
     },
     // 1 week
     WEEKLY("weekly", DAILY) {
@@ -96,10 +94,10 @@ public enum CallTimePeriods {
             return cl.getTimeInMillis();
         }
 
-        @Override
-        public RelationshipType getPeriodRelation() {
-            return Relations.TP_WEEKLY;
-        }
+//        @Override
+//        public RelationshipType getPeriodRelation() {
+//            return Relations.TP_WEEKLY;
+//        }
     },
     // 1 month
     MONTHLY("monthly", WEEKLY) {
@@ -120,10 +118,30 @@ public enum CallTimePeriods {
             return cl.getTimeInMillis();
         }
 
+//        @Override
+//        public RelationshipType getPeriodRelation() {
+//            return Relations.TP_MOUNTH;
+//        }
+    },ALL("total",HOURLY){
+
         @Override
-        public RelationshipType getPeriodRelation() {
-            return Relations.TP_MOUNTH;
+        public Long addPeriod(Long time) {
+            return Long.MAX_VALUE;
         }
+
+        @Override
+        public Long getFirstTime(Long time) {
+            return time;
+        }
+        @Override
+        public Long getLastTime(Long time) {
+            return time;
+        }
+//        @Override
+//        public RelationshipType getPeriodRelation() {
+//            return null;
+//        }
+        
     };
     private final String id;
 
@@ -201,9 +219,9 @@ public enum CallTimePeriods {
         return cl.getTimeInMillis();
     }
 
-    public abstract RelationshipType getPeriodRelation();
-
-    public static enum Relations implements RelationshipType {
-        TP_HOUR, TP_DAY, TP_WEEKLY, TP_MOUNTH
-    }
+//    public abstract RelationshipType getPeriodRelation();
+//
+//    public static enum Relations implements RelationshipType {
+//        TP_HOUR, TP_DAY, TP_WEEKLY, TP_MOUNTH
+//    }
 }

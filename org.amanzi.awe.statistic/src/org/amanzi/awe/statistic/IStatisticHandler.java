@@ -28,6 +28,6 @@ public interface IStatisticHandler {
      * @param periodEnd
      * @return
      */
-    IStatisticElement getStatisics(Long periodTime, Long periodEnd);
+    IStatisticElement getStatisics(final Long periodTime, final Long periodEnd);
 
 }

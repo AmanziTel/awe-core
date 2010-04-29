@@ -14,11 +14,14 @@
 package org.amanzi.awe.neighbours.gpeh;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
+import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.GpehReportUtil.CellReportsProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil.MatrixProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil.ReportsRelations;
 import org.hsqldb.lib.StringUtil;
@@ -29,6 +32,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -37,41 +41,47 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
  * <p>
  * Gpeh report model
- * </p>.
- *
+ * </p>
+ * .
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class GpehReportModel {
-    
+
     /** The network name. */
     private final String networkName;
-    
+
     /** The gpeh events name. */
     private final String gpehEventsName;
-    
+
     /** The service. */
     private final GraphDatabaseService service;
-    
+
     /** The intra frequency icdm. */
     private IntraFrequencyICDM intraFrequencyICDM;
+    
+    /** The inter frequency icdm. */
     private InterFrequencyICDM interFrequencyICDM;
     
+    /** The cell rscp analisis. */
+    private final Map<CallTimePeriods, CellRscpAnalisis> cellRscpAnalisis = new HashMap<CallTimePeriods, CellRscpAnalisis>();
+
     /** The network. */
     private final Node network;
-    
+
     /** The gpeh. */
     private final Node gpeh;
-    
+
     /** The root. */
     private Node root;
-    
+
     /** The crs. */
     private final CoordinateReferenceSystem crs;
 
     /**
      * Instantiates a new gpeh report model.
-     *
+     * 
      * @param network the network
      * @param gpeh the gpeh
      * @param service the service
@@ -79,9 +89,9 @@ public class GpehReportModel {
     GpehReportModel(Node network, Node gpeh, GraphDatabaseService service) {
         this.network = network;
         this.gpeh = gpeh;
-        
+
         networkName = NeoUtils.getNodeName(network, service);
-        crs=NeoUtils.getCRS(NeoUtils.findGisNodeByChild(network, service),service);
+        crs = NeoUtils.getCRS(NeoUtils.findGisNodeByChild(network, service), service);
         gpehEventsName = NeoUtils.getNodeName(gpeh, service);
         this.service = service;
         intraFrequencyICDM = null;
@@ -96,18 +106,34 @@ public class GpehReportModel {
         try {
             findRootNode();
             findMatrixNodes();
+            findCellAnalysis();
         } finally {
             tx.finish();
         }
     }
 
+
+    /**
+     * Find cell analysis.
+     */
+    public void findCellAnalysis() {
+        for (CallTimePeriods period:new CallTimePeriods[]{CallTimePeriods.HOURLY,CallTimePeriods.DAILY,CallTimePeriods.ALL}){
+            findCellRscpAnalisis(period);
+        }
+    }
+
+    /**
+     * Find matrix nodes.
+     */
     public void findMatrixNodes() {
         findIntraFrequencyICDM();
         findInterFrequencyICDM();
     }
 
     /**
+     * Find inter frequency icdm.
      *
+     * @return the inter frequency icdm
      */
     public InterFrequencyICDM findInterFrequencyICDM() {
         if (getRoot() == null) {
@@ -123,7 +149,7 @@ public class GpehReportModel {
 
     /**
      * Find root node.
-     *
+     * 
      * @return the node
      */
     public Node findRootNode() {
@@ -141,7 +167,7 @@ public class GpehReportModel {
 
     /**
      * Find intra frequency icdm.
-     *
+     * 
      * @return the intra frequency icdm
      */
     public IntraFrequencyICDM findIntraFrequencyICDM() {
@@ -157,8 +183,42 @@ public class GpehReportModel {
     }
 
     /**
-     * Gets the root.
+     * Find cell rscp analisis.
      *
+     * @param periods the periods
+     * @return the cell rscp analisis
+     */
+    public CellRscpAnalisis findCellRscpAnalisis(final CallTimePeriods periods) {
+        if (getRoot() == null) {
+            return null;
+        }
+        CellRscpAnalisis analys = cellRscpAnalisis.get(periods);
+        if (analys != null) {
+            return analys;
+        }
+
+        Relationship rel = getRoot().getSingleRelationship(ReportsRelations.CELL_RSCP_ANALYSYS, Direction.OUTGOING);
+        Iterator<Node> iter = getRoot().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return currentPos.notStartNode()&&currentPos.currentNode().getProperty(CellReportsProperties.PERIOD_ID,"").equals(periods.getId());
+            }
+        }, ReportsRelations.CELL_RSCP_ANALYSYS, Direction.OUTGOING).iterator();
+        
+        Node mainNode = iter.hasNext() ? iter.next() : null;
+        if (mainNode != null) {
+            analys = new CellRscpAnalisis(mainNode, periods);
+            cellRscpAnalisis.put(periods, analys);
+            return analys;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Gets the root.
+     * 
      * @return the root
      */
     public Node getRoot() {
@@ -167,16 +227,16 @@ public class GpehReportModel {
 
     /**
      * Gets the intra frequency icdm.
-     *
+     * 
      * @return the intra frequency icdm
      */
     public IntraFrequencyICDM getIntraFrequencyICDM() {
         return intraFrequencyICDM;
     }
-    
+
     /**
      * Gets the inter frequency icdm.
-     *
+     * 
      * @return the inter frequency icdm
      */
     public InterFrequencyICDM getInterFrequencyICDM() {
@@ -184,21 +244,34 @@ public class GpehReportModel {
     }
 
     /**
+     * Gets the cell rscp analisis.
+     *
+     * @param periods the periods
+     * @return the cell rscp analisis
+     */
+    public CellRscpAnalisis getCellRscpAnalisis(CallTimePeriods periods) {
+        return cellRscpAnalisis.get(periods);
+    }
+
+    /**
      * The Class AbstractICDM.
      */
     private abstract class AbstractICDM {
         /** The id name. */
-        protected final String idName;      
+        protected final String idName;
         /** The main node. */
         protected final Node mainNode;
-        protected final Map<Node,Integer> bestCellNumCashe=new HashMap<Node,Integer>();
+        
+        /** The best cell num cashe. */
+        protected final Map<Node, Integer> bestCellNumCashe = new HashMap<Node, Integer>();
 
         /**
          * Instantiates a new abstract icdm.
          *
          * @param mainNode the main node
+         * @param idName the id name
          */
-        AbstractICDM(Node mainNode,String idName) {
+        AbstractICDM(Node mainNode, String idName) {
             this.mainNode = mainNode;
             this.idName = idName;
             bestCellNumCashe.clear();
@@ -211,20 +284,20 @@ public class GpehReportModel {
          * @return the num mr for best cell
          */
         public Integer getNumMRForBestCell(Node row) {
-            
-            // using cache //TODO store cache values like properties in node
+
+            // using cache //TODO store cache values like properties in node - it more faster
             int count = 0;
             Node bestCell = getBestCell(row);
             Integer result = bestCellNumCashe.get(bestCell);
-            if (result!=null){
+            if (result != null) {
                 return result;
             }
             Iterable<Relationship> rel = bestCell.getRelationships(ReportsRelations.BEST_CELL, Direction.INCOMING);
             for (Relationship relationship : rel) {
                 if (relationship.getProperty(GpehReportUtil.REPORTS_ID, "").equals(idName)) {
-                    Node tableNode=relationship.getOtherNode(bestCell);
-                    for (Relationship rel2:tableNode.getRelationships(ReportsRelations.SOURCE_MATRIX_EVENT,Direction.OUTGOING)){
-                        count++; 
+                    Node tableNode = relationship.getOtherNode(bestCell);
+                    for (Relationship rel2 : tableNode.getRelationships(ReportsRelations.SOURCE_MATRIX_EVENT, Direction.OUTGOING)) {
+                        count++;
                     }
                 }
             }
@@ -239,17 +312,19 @@ public class GpehReportModel {
          * @return the num mr for interfering cell
          */
         public Integer getNumMRForInterferingCell(Node row) {
-            // TODO add cache if necessary - it will be not large
+            // ODO store cache values like properties in node - it more faster
             int count = 0;
-                for (Relationship rel2:row.getRelationships(ReportsRelations.SOURCE_MATRIX_EVENT,Direction.OUTGOING)){
-                    count++; 
-                }
-//            Iterable<Relationship> rel = getInterferingCell(row).getRelationships(ReportsRelations.SECOND_SELL, Direction.INCOMING);
-//            for (Relationship relationship : rel) {
-//                if (relationship.getProperty(GpehReportUtil.REPORTS_ID, "").equals(idName)) {
-//                    count++;
-//                }
-//            }
+            for (Relationship rel2 : row.getRelationships(ReportsRelations.SOURCE_MATRIX_EVENT, Direction.OUTGOING)) {
+                count++;
+            }
+            // Iterable<Relationship> rel =
+            // getInterferingCell(row).getRelationships(ReportsRelations.SECOND_SELL,
+            // Direction.INCOMING);
+            // for (Relationship relationship : rel) {
+            // if (relationship.getProperty(GpehReportUtil.REPORTS_ID, "").equals(idName)) {
+            // count++;
+            // }
+            // }
             return count;
         }
 
@@ -273,7 +348,6 @@ public class GpehReportModel {
             return row.getSingleRelationship(ReportsRelations.BEST_CELL, Direction.OUTGOING).getOtherNode(row);
         }
 
-
         /**
          * Gets the best cell psc.
          * 
@@ -283,67 +357,69 @@ public class GpehReportModel {
         public String getBestCellPSC(Node row) {
             return (String)getBestCell(row).getProperty(GpehReportUtil.PRIMARY_SCR_CODE, "");
         }
+
         /**
          * Gets the main node.
-         *
+         * 
          * @return the main node
          */
         public Node getMainNode() {
             return mainNode;
         }
+
         /**
          * Gets the row traverser.
-         *
+         * 
          * @return the row traverser
          */
         public Traverser getRowTraverser() {
-            return getMainNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING);
+            return getMainNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,
+                    Direction.OUTGOING);
         }
+
         /**
          * Gets the best cell name.
-         *
+         * 
          * @param row the row
          * @return the best cell name
          */
         public String getBestCellName(Node row) {
             Node bestCell = getBestCell(row);
-            String result=(String)bestCell.getProperty("userLabel","");
-            if (StringUtil.isEmpty(result)){
-                 result=NeoUtils.getNodeName(bestCell);
+            String result = (String)bestCell.getProperty("userLabel", "");
+            if (StringUtil.isEmpty(result)) {
+                result = NeoUtils.getNodeName(bestCell);
             }
             return result;
         }
 
-
-        
         /**
          * Gets the interfering cell psc.
-         *
+         * 
          * @param row the row
          * @return the interfering cell psc
          */
         public String getInterferingCellPSC(Node row) {
-            return (String)getInterferingCell(row).getProperty(GpehReportUtil.PRIMARY_SCR_CODE,"");
+            return (String)getInterferingCell(row).getProperty(GpehReportUtil.PRIMARY_SCR_CODE, "");
         }
 
         /**
          * Gets the interfering cell name.
-         *
+         * 
          * @param row the row
          * @return the interfering cell name
          */
         public String getInterferingCellName(Node row) {
             Node cell = getInterferingCell(row);
-            String result=(String)cell.getProperty("userLabel","");
-            if (StringUtil.isEmpty(result)){
-                 result=NeoUtils.getNodeName(cell);
+            String result = (String)cell.getProperty("userLabel", "");
+            if (StringUtil.isEmpty(result)) {
+                result = NeoUtils.getNodeName(cell);
             }
             return result;
         }
 
         /**
          * Gets the interfering cell.
-         *
+         * 
          * @param row the row
          * @return the interfering cell
          */
@@ -362,28 +438,59 @@ public class GpehReportModel {
         }
     }
 
+    /**
+     * The Class InterFrequencyICDM.
+     */
     public class InterFrequencyICDM extends AbstractICDM {
 
         /**
-         * @param mainNode
+         * Instantiates a new inter frequency icdm.
+         *
+         * @param mainNode the main node
          */
         InterFrequencyICDM(Node mainNode) {
-            super(mainNode, GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(),
-                    GpehReportUtil.MR_TYPE_INTERF));
+            super(mainNode, GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(), GpehReportUtil.MR_TYPE_INTERF));
         }
 
+        /**
+         * Gets the ec no.
+         *
+         * @param prefix the prefix
+         * @param tblRow the tbl row
+         * @return the ec no
+         */
         public Integer getEcNo(int prefix, Node tblRow) {
             return (Integer)tblRow.getProperty(MatrixProperties.EC_NO_PREFIX + prefix, 0);
         }
 
+        /**
+         * Gets the rSCP.
+         *
+         * @param prfx1 the prfx1
+         * @param prfx2 the prfx2
+         * @param tblRow the tbl row
+         * @return the rSCP
+         */
         public Integer getRSCP(int prfx1, int prfx2, Node tblRow) {
             return (Integer)tblRow.getProperty(MatrixProperties.getRSCPECNOPropertyName(prfx1, prfx2), 0);
         }
 
+        /**
+         * Gets the best cell uarfcn.
+         *
+         * @param tblRow the tbl row
+         * @return the best cell uarfcn
+         */
         public String getBestCellUARFCN(Node tblRow) {
             return getBestCell(tblRow).getProperty("uarfcnDl", "").toString();
         }
 
+        /**
+         * Gets the interfering cell uarfcn.
+         *
+         * @param tblRow the tbl row
+         * @return the interfering cell uarfcn
+         */
         public String getInterferingCellUARFCN(Node tblRow) {
             return getInterferingCell(tblRow).getProperty("uarfcnDl", "").toString();
         }
@@ -401,58 +508,50 @@ public class GpehReportModel {
          * @param mainNode the main node
          */
         IntraFrequencyICDM(Node mainNode) {
-            super(mainNode, GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(),
-                    GpehReportUtil.MR_TYPE_INTRAF));
+            super(mainNode, GpehReportUtil.getMatrixLuceneIndexName(getNetworkName(), getGpehEventsName(), GpehReportUtil.MR_TYPE_INTRAF));
         }
-
-
-
-
-
 
         /**
          * Gets the deltaecno.
-         *
+         * 
          * @param i the number
          * @param row the row
          * @return the delta ecno
          */
         public Integer getDeltaEcNo(int i, Node row) {
-            assert i>=1&&i<=5&&row!=null;
-            return (Integer)row.getProperty(MatrixProperties.EC_NO_DELTA_PREFIX+i,0);
+            assert i >= 1 && i <= 5 && row != null;
+            return (Integer)row.getProperty(MatrixProperties.EC_NO_DELTA_PREFIX + i, 0);
         }
-
-
 
         /**
          * Gets the delta rscp.
-         *
+         * 
          * @param i the i
          * @param row the row
          * @return the delta rscp
          */
         public Integer getDeltaRSCP(int i, Node row) {
-            assert i>=1&&i<=5&&row!=null;
-            return (Integer)row.getProperty(MatrixProperties.RSCP_DELTA_PREFIX+i,0);
+            assert i >= 1 && i <= 5 && row != null;
+            return (Integer)row.getProperty(MatrixProperties.RSCP_DELTA_PREFIX + i, 0);
         }
-        
+
         /**
          * Gets the position.
-         *
+         * 
          * @param i the i
          * @param row the row
          * @return the position
          */
         public Integer getPosition(int i, Node row) {
-            assert i>=1&&i<=5&&row!=null;
-            return (Integer)row.getProperty(MatrixProperties.POSITION_PREFIX+i,0);
+            assert i >= 1 && i <= 5 && row != null;
+            return (Integer)row.getProperty(MatrixProperties.POSITION_PREFIX + i, 0);
         }
 
     }
 
     /**
      * Gets the network.
-     *
+     * 
      * @return the network
      */
     public Node getNetwork() {
@@ -461,7 +560,7 @@ public class GpehReportModel {
 
     /**
      * Gets the gpeh.
-     *
+     * 
      * @return the gpeh
      */
     public Node getGpeh() {
@@ -470,7 +569,7 @@ public class GpehReportModel {
 
     /**
      * Gets the network name.
-     *
+     * 
      * @return the network name
      */
     public String getNetworkName() {
@@ -479,7 +578,7 @@ public class GpehReportModel {
 
     /**
      * Gets the gpeh events name.
-     *
+     * 
      * @return the gpeh events name
      */
     public String getGpehEventsName() {
@@ -488,16 +587,73 @@ public class GpehReportModel {
 
     /**
      * Gets the crs.
-     *
+     * 
      * @return the crs
      */
     public CoordinateReferenceSystem getCrs() {
         return crs;
     }
-    public class CellRscpAnalisis{
+
+    /**
+     * The Class AnalysisByPeriods.
+     */
+    private abstract class AnalysisByPeriods {
+
+        /** The period. */
+        protected final CallTimePeriods period;
         
+        /** The main node. */
+        protected final Node mainNode;
+        
+        /** The id name. */
+        protected String idName;
+
+        /**
+         * Instantiates a new analysis by periods.
+         *
+         * @param mainNode the main node
+         * @param period the period
+         */
+        public AnalysisByPeriods(Node mainNode, CallTimePeriods period) {
+            this.period = period;
+            this.mainNode = mainNode;
+        }
+
+        /**
+         * Gets the period.
+         *
+         * @return the period
+         */
+        public CallTimePeriods getPeriod() {
+            return period;
+        }
+
+        /**
+         * Gets the main node.
+         *
+         * @return the main node
+         */
+        public Node getMainNode() {
+            return mainNode;
+        }
+
     }
 
+    /**
+     * The Class CellRscpAnalisis.
+     */
+    public class CellRscpAnalisis extends AnalysisByPeriods {
 
+        /**
+         * Instantiates a new cell rscp analisis.
+         *
+         * @param mainNode the main node
+         * @param period the period
+         */
+        public CellRscpAnalisis(Node mainNode, CallTimePeriods period) {
+            super(mainNode, period);
+        }
+
+    }
 
 }

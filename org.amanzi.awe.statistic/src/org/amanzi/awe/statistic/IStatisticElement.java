@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.statistic;
 
-import org.neo4j.graphdb.Node;
 
 /**
  * <p>
@@ -23,9 +22,11 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public interface IStatisticElement {
+
     long getStartTime();
-    CallTimePeriods getPeriods();
-    Iterable<Node> getSource();
+    long getEndTime();
+    CallTimePeriods getPeriod();
+//    Iterable<Node> getSource();
     // boolean shouldCreate();
     // Map<String, Object> getData();
 

@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import org.amanzi.awe.neighbours.gpeh.GpehReportCreator;
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
 import org.amanzi.awe.neighbours.views.Messages;
+import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -72,6 +73,9 @@ public class GpehReportDialog extends Dialog {
 
     /** The c network. */
     private Combo cNetwork;
+    
+    /** The c periods. */
+    private Combo cPeriods;
 
     /** The btn save. */
     private Button btnSave;
@@ -87,6 +91,9 @@ public class GpehReportDialog extends Dialog {
 
     /** The c report type. */
     private Combo cReportType;
+
+    /** The period. */
+    private LinkedHashMap<String, CallTimePeriods> period;
 
     /**
      * Instantiates a new gpeh report dialog.
@@ -162,6 +169,15 @@ public class GpehReportDialog extends Dialog {
         layoutData.grabExcessHorizontalSpace = true;
         layoutData.minimumWidth = 200;
         cReportType.setLayoutData(layoutData);
+        
+        label = new Label(shell, SWT.NONE);
+        label.setText("Report period");
+        cPeriods = new Combo(shell, SWT.DROP_DOWN | SWT.READ_ONLY);
+        layoutData = new GridData();
+        layoutData.horizontalSpan = 2;
+        layoutData.grabExcessHorizontalSpace = true;
+        layoutData.minimumWidth = 200;
+        cPeriods.setLayoutData(layoutData);
 
         btnSave = new Button(shell, SWT.PUSH);
         btnSave.setText(Messages.NeighbourAnalyser_7);
@@ -215,11 +231,12 @@ public class GpehReportDialog extends Dialog {
         final Node gpehNode = gpeh.get(cGpeh.getText());
         final Node netNode = network.get(cNetwork.getText());
         final GpehReportType repType = GpehReportType.getEnumById(cReportType.getText());
+        final CallTimePeriods period = this.period.get(cPeriods.getText());
         Job job = new Job("generate Report") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                createReport(gpehNode, netNode, repType, monitor);
+                createReport(gpehNode, netNode, repType,period, monitor);
                 return Status.OK_STATUS;
             }
         };
@@ -232,9 +249,10 @@ public class GpehReportDialog extends Dialog {
      * @param gpehNode the gpeh node
      * @param netNode the net node
      * @param repType report type
+     * @param period 
      * @param monitor the monitor
      */
-    protected void createReport(Node gpehNode, Node netNode, GpehReportType repType, IProgressMonitor monitor) {
+    protected void createReport(Node gpehNode, Node netNode, GpehReportType repType, CallTimePeriods period, IProgressMonitor monitor) {
         GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(),
                 NeoServiceProvider.getProvider().getIndexService());
         creator.setMonitor(monitor);
@@ -247,6 +265,10 @@ public class GpehReportDialog extends Dialog {
         case IDCM_INTER:
             spreadsheet = creator.createInterIDCMSpreadSheet("InterMatrix");
             break;
+            case CELL_RSCP_ANALYSIS:
+                creator.createRSCPCellReport(period);
+                spreadsheet = creator.createRSCPCellSpreadSheet("RSCPCell",period);
+                return;
         default:
             return;
             // break;
@@ -268,6 +290,19 @@ public class GpehReportDialog extends Dialog {
         formNetwork();
         formReportType();
         validateStartButton();
+        formPeriods();
+    }
+
+
+    /**
+     * Form periods.
+     */
+    private void formPeriods() {
+        period=new LinkedHashMap<String,CallTimePeriods>();
+        period.put("Hourly",CallTimePeriods.HOURLY);
+        period.put("Daily",CallTimePeriods.DAILY);
+        period.put("Total",CallTimePeriods.ALL);
+        cPeriods.setItems(period.keySet().toArray(new String[0]));
     }
 
     /**

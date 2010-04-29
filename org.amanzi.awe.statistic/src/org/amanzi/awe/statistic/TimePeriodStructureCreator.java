@@ -64,7 +64,7 @@ public class TimePeriodStructureCreator {
             Node lastNode = null;
             Long periodTime = startTime;
             do {
-                Long periodEnd = period.getLastTime(periodTime);
+                Long periodEnd =period==CallTimePeriods.ALL?endTime:period.getLastTime(periodTime);
                 IStatisticElement statElem = sourceHandler.getStatisics(periodTime, periodEnd);
                 if (statElem != null) {
                     Node node=service.createNode();
