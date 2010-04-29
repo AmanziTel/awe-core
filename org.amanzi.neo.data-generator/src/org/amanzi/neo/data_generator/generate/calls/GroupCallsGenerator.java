@@ -153,6 +153,18 @@ public class GroupCallsGenerator extends AmsDataGenerator{
             receiverCommands.add(CommandCreator.getUnsoCtcrRow(end+time,ctcrRow));
         }      
         
+        Long time1 = time;
+        Long time2 = time;
+        for(int i=0;i<6;i++){            
+            time1 = getRamdomTime(time1, rest);
+            sourceCommands.add(CommandCreator.getPESQRow(time1));
+            time2 = getRamdomTime(time2, rest);
+            for(int j=0; j<resCount; j++){
+                List<CommandRow> receiverCommands = allReceiverCommands.get(j);
+                receiverCommands.add(CommandCreator.getPESQRow(time2));
+            }
+        }
+        
         return new CallData(getKey(),source, receivers);
     }
     

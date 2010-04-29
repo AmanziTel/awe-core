@@ -23,7 +23,8 @@ package org.amanzi.neo.core.enums;
  */
 public enum CallProperties {
 
-    SETUP_DURATION("setup_duration"), CALL_RESULT("call_result") {
+    SETUP_DURATION("setup_duration"), 
+    CALL_RESULT("call_result") {
         @Override
         public boolean needMappedCount() {
             return true;
@@ -33,7 +34,11 @@ public enum CallProperties {
     TERMINATION_DURATION("termination_duration"),
     CALL_DURATION("call_duration"),
     LQ("Listening quality"),
-    DELAY("Audio delay");
+    DELAY("Audio delay"),
+    MESS_RECEIVE_TIME("message received time"),
+    MESS_ACKNOWLEDGE_TIME("message acknowledge time"),
+    ALM_MESSAGE_DELAY("alarm delay"),
+    ALM_FIRST_MESS_DELAY("first alarm delay");
 
     private final String id;
 
@@ -94,7 +99,7 @@ public enum CallProperties {
     }
 
     public enum CallType {
-        INDIVIDUAL, GROUP;
+        INDIVIDUAL, GROUP, SDS, TSM, ALARM, EMERGENCY, HELP;
     }
     
     

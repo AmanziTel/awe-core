@@ -11,7 +11,8 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.calls.statistics;
+package org.amanzi.awe.views.calls.statistics.constants;
+
 
 /**
  * TODO Purpose of
@@ -21,7 +22,7 @@ package org.amanzi.awe.views.calls.statistics;
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class GroupCallConstants implements IStatisticsConstants {
+public class GroupCallConstants implements ICallStatisticsConstants {
 
     public final float GROUP_CALL_CONN_TIME_P1 = 0;
     public final float GROUP_CALL_CONN_TIME_P2 = 0.125f;

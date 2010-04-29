@@ -44,6 +44,7 @@ public class CommandCreator {
     public static final String ATD = "atd";
     public static final String CTSDC = "AT+CTSDC";
     public static final String CTXG = "+CTXG";
+    public static final String PESQ = "PESQ.run";
     
     private static final String ADD_COMAND_PREFIX = "~";
     private static final String OK_PARAMETER = "OK";
@@ -454,6 +455,18 @@ public class CommandCreator {
             row.getParams().add("0"+param);
             prefix = "|";
         }
+        return row;
+    }
+    
+    public static CommandRow getPESQRow(Long time){
+        CommandRow row = new CommandRow(PESQ);
+        row.setTime(new Date(time));
+        RandomValueGenerator generator = RandomValueGenerator.getGenerator();
+        row.getAdditional().add(formatDoubleValue(generator.getDoubleValue(0.0, 5.0), 7));
+        row.getAdditional().add(formatDoubleValue(generator.getDoubleValue(100.0, 999.0), 7));
+        row.getAdditional().add(formatDoubleValue(generator.getDoubleValue(100.0, 999.0), 7));
+        row.getAdditional().add(formatDoubleValue(generator.getDoubleValue(100.0, 999.0), 7));
+        row.getAdditional().add(formatDoubleValue(generator.getDoubleValue(0.0, 1.0), 7));
         return row;
     }
     

@@ -124,6 +124,14 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
         time = getRamdomTime(time, rest);
         ctcrRow = CommandCreator.getCtcrRow(null,1,1);
         receiverCommands.add(CommandCreator.getUnsoCtcrRow(end+time,ctcrRow));
+        Long time1 = time;
+        Long time2 = time;
+        for(int i=0;i<6;i++){            
+            time1 = getRamdomTime(time1, rest);
+            sourceCommands.add(CommandCreator.getPESQRow(time1));
+            time2 = getRamdomTime(time2, rest);
+            receiverCommands.add(CommandCreator.getPESQRow(time2));
+        }
         
         return new CallData(getKey(),source, receiver);
     }

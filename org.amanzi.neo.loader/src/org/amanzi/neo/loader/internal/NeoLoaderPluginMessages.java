@@ -208,6 +208,54 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String CTSDC_Priority_0;
     public static String CTSDC_Priority_n;
     
+    public static String CTSDS_access_priority_low;
+    public static String CTSDS_access_priority_high;
+    public static String CTSDS_access_priority_emer;
+    public static String CTSDS_ai_service_12;
+    public static String CTSDS_ai_service_13;
+    public static String CTSDS_ai_service_28;
+    public static String CTSDS_ai_service_29;
+    
+    public static String CMGS_STATUS_stored_unsent;
+    public static String CMGS_STATUS_stored_sent;
+    public static String CMGS_STATUS_deleted_unsent;
+    public static String CMGS_STATUS_deleted_sent;
+    
+    public static String CTSG_group_selected;
+    public static String CTSG_group_not_scanned;
+    public static String CTSG_group_psg_low;
+    public static String CTSG_group_psg_normal;
+    public static String CTSG_group_psg_high;
+    public static String CTSG_group_locked;
+    public static String CTSG_group_always_scanned;
+    
+    public static String CDTXC_tx_rq_allowed;
+    public static String CDTXC_tx_rq_not_allowed;
+    
+    public static String CTXG_tx_granted;
+    public static String CTXG_tx_not_granted;
+    public static String CTXG_tx_queued;
+    public static String CTXG_tx_granted_another;
+    
+    public static String ATE_echo_off;
+    public static String ATE_echo_on;
+    
+    public static String ATQ_terminal_off;
+    public static String ATQ_terminal_on;
+    
+    public static String ATS0_answer_0;
+    public static String ATS0_answer_n;
+    
+    public static String CREG_registered_status_0;
+    public static String CREG_registered_status_1;
+    public static String CREG_registered_status_2;
+    public static String CREG_registered_status_3;
+    
+    public static String CSPDCS_not_detected;
+    public static String CSPDCS_detected;
+    public static String CSPDCS_no_restriction;
+    public static String CSPDCS_restriction;
+    
     private NeoLoaderPluginMessages() {
     }
 

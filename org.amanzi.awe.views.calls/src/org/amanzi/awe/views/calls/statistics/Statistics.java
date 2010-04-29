@@ -16,7 +16,7 @@ package org.amanzi.awe.views.calls.statistics;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
+import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -44,21 +44,22 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
      */
     public void updateHeaderWithCall(StatisticsHeaders header, Object value, Node sourceNode) {
         boolean added = false;
-        switch (header.getType()) {
-        case COUNT:
-            added = updateHeaderCount(header, (Integer)value);
-            break;
-        case SUM:
-            added = updateHeaderSum(header, (Float)value);
-            break;
-        case MIN:
-            added = updateHeaderMin(header, (Float)value);
-            break;
-        case MAX:
-            added = updateHeaderMax(header, (Float)value);
-            break;      
+        if (value!=null) {
+            switch (header.getType()) {
+            case COUNT:
+                added = updateHeaderCount(header, (Integer)value);
+                break;
+            case SUM:
+                added = updateHeaderSum(header, (Float)value);
+                break;
+            case MIN:
+                added = updateHeaderMin(header, (Float)value);
+                break;
+            case MAX:
+                added = updateHeaderMax(header, (Float)value);
+                break;
+            }
         }
-        
         if (added) {
             updateSourceNodes(header, sourceNode);
         }

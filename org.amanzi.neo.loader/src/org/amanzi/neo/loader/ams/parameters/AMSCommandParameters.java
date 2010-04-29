@@ -252,6 +252,14 @@ public enum AMSCommandParameters {
                 return NeoLoaderPluginMessages.CTCC_AI_service_2;
             case 5:
                 return NeoLoaderPluginMessages.CTCC_AI_service_5;
+            case 12:
+                return NeoLoaderPluginMessages.CTSDS_ai_service_12;
+            case 13:
+                return NeoLoaderPluginMessages.CTSDS_ai_service_13;
+            case 28:
+                return NeoLoaderPluginMessages.CTSDS_ai_service_28;
+            case 29:
+                return NeoLoaderPluginMessages.CTSDS_ai_service_29;
             default:
                 //TODO: log error message
                 return null;
@@ -403,7 +411,7 @@ public enum AMSCommandParameters {
         }
     },
     
-    CALLING_PARTY_IDENT("calling_party_ident", ParameterType.LONG) {
+    CALLING_PARTY_IDENT("calling_party_ident", ParameterType.STRING) {
         @Override
         public Object convert(Object rawValue) {
             return rawValue;
@@ -418,6 +426,24 @@ public enum AMSCommandParameters {
             switch (area) {
             case 0:
                 return NeoLoaderPluginMessages.CTSDC_Area_0;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    
+    ACCESS_PRIORITY("access priority",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer priority = (Integer)rawValue;
+            switch (priority) {
+            case 0:
+                return NeoLoaderPluginMessages.CTSDS_access_priority_low;
+            case 1:
+                return NeoLoaderPluginMessages.CTSDS_access_priority_high;
+            case 2:
+                return NeoLoaderPluginMessages.CTSDS_access_priority_emer;
             default:
                 //TODO: log error message
                 return null;
@@ -493,7 +519,327 @@ public enum AMSCommandParameters {
         public Object convert(Object rawValue) {
             return rawValue;
         }
-    };
+    },
+    PEI_POSITION("pei_position", ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    CALLED_PARTY_ID("called_party_id",ParameterType.STRING) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    USER_INFO_LENGTH("user_info_length",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    SDS_INSTANCE("sds_instance",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    SDS_STATUS("sds_status",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer status = (Integer)rawValue;
+            
+            switch (status) {
+            case 2:
+                return NeoLoaderPluginMessages.CMGS_STATUS_stored_unsent;
+            case 3:
+                return NeoLoaderPluginMessages.CMGS_STATUS_stored_sent;
+            case 8:
+                return NeoLoaderPluginMessages.CMGS_STATUS_deleted_unsent;
+            case 9:
+                return NeoLoaderPluginMessages.CMGS_STATUS_deleted_sent;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    MESSAGE_REFERENCE("message_reference",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    NC_NUMBER("number",ParameterType.INTEGER){
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    NC_C2("C2",ParameterType.INTEGER){
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    GROUP_TYPE("group_type",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 1:
+                return NeoLoaderPluginMessages.CTSG_group_selected;
+            case 2:
+                return NeoLoaderPluginMessages.CTSG_group_not_scanned;
+            case 3:
+                return NeoLoaderPluginMessages.CTSG_group_psg_low;
+            case 4:
+                return NeoLoaderPluginMessages.CTSG_group_psg_normal;
+            case 5:
+                return NeoLoaderPluginMessages.CTSG_group_psg_high;
+            case 6:
+                return NeoLoaderPluginMessages.CTSG_group_locked;
+            case 7:
+                return NeoLoaderPluginMessages.CTSG_group_always_scanned;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    GSSI("gssi",ParameterType.STRING) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    TX_RQ_PRMSN("TxRqPrmsn",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CDTXC_tx_rq_allowed;
+            case 1:
+                return NeoLoaderPluginMessages.CDTXC_tx_rq_not_allowed;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    TX_GRANT("TxGrant",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CTXG_tx_granted;
+            case 1:
+                return NeoLoaderPluginMessages.CTXG_tx_not_granted;
+            case 2:
+                return NeoLoaderPluginMessages.CTXG_tx_queued;
+            case 3:
+                return NeoLoaderPluginMessages.CTXG_tx_granted_another;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    ECHO_STATE("echo state",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.ATE_echo_off;
+            case 1:
+                return NeoLoaderPluginMessages.ATE_echo_on;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    TERMINAL_STATE("terminal state",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.ATQ_terminal_off;
+            case 1:
+                return NeoLoaderPluginMessages.ATQ_terminal_on;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    AUTO_ANSWER("automatic answer", ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer priority = (Integer)rawValue;
+            
+            if (priority == 0) {
+                return NeoLoaderPluginMessages.CTSDC_Priority_0;
+            }
+            else if ((priority > 0) && (priority <= 255)) {
+                return NeoLoaderPluginMessages.getFormattedString(NeoLoaderPluginMessages.CTSDC_Priority_n, priority);                
+            }
+            else {
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    ESCAPE_SEQUENCE("escape sequence",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    COMMAND_TERMINATION("command termination",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    LINE_TERMINATION("line termination",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    DELETE_CHARACTER("delete character",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    VOLUME_VALUE("volume",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    REGISTERED_STATUS("registered status",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CREG_registered_status_0;
+            case 1:
+                return NeoLoaderPluginMessages.CREG_registered_status_1;
+            case 2:
+                return NeoLoaderPluginMessages.CREG_registered_status_2;
+            case 3:
+                return NeoLoaderPluginMessages.CREG_registered_status_3;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    DMO_GATEWAY("DMO Gateway",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CSPDCS_not_detected;
+            case 1:
+                return NeoLoaderPluginMessages.CSPDCS_detected;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    DMO_GATEWAY_RESTRICTIONS("DMO Gateway restrictions",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CSPDCS_no_restriction;
+            case 1:
+                return NeoLoaderPluginMessages.CSPDCS_restriction;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    DMO_REPEATER("DMO Repeater",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CSPDCS_not_detected;
+            case 1:
+                return NeoLoaderPluginMessages.CSPDCS_detected;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    UTC_SECONDS("UTC seconds",ParameterType.LONG) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    YEAR("year",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    LOCAL_TIME_OFFSET_SIGN("local time offset sign",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    LOCAL_TIME_OFFSET("local time offset",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    ALWAYS_ATTACHED_FOLDER("always attached folder",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    FOLDER_NUMBER("folder number",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    FOLDER_NAME("folder name",ParameterType.STRING) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    };    
+    
     
     /**
      * Type of parameter

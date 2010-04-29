@@ -1,6 +1,8 @@
 package org.amanzi.awe.views.calls.views;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,8 +21,9 @@ import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.views.calls.ExportSpreadsheetWizard;
+import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
+import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
-import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
@@ -28,7 +31,6 @@ import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -162,8 +164,9 @@ public class CallAnalyserView extends ViewPart {
             try {
                 Traverser sRowTraverser = inputWr.getSrowTraverser(service);
                 if (sRowTraverser != null) {
+                    StatisticsCallType callType = StatisticsCallType.getTypeById(cCallType.getText());
                     for (Node sRow : inputWr.getSrowTraverser(service)) {
-                        elements.add(new PeriodWrapper(sRow));
+                        elements.add(new PeriodWrapper(sRow,callType));
                     }
                 }
             } finally {
@@ -209,9 +212,10 @@ public class CallAnalyserView extends ViewPart {
      */
     class ViewLabelProvider extends LabelProvider implements ITableLabelProvider, ITableColorProvider {
 
+        private List<TableColumn> columns = new ArrayList<TableColumn>();
 
         public String getColumnText(Object obj, int index) {
-            if (obj instanceof PeriodWrapper) {
+            if (obj instanceof PeriodWrapper && index<columnHeaders.size()) {
                 PeriodWrapper period = (PeriodWrapper)obj;
                 return columnHeaders.get(index).getValue(period, index);
             } else {
@@ -254,26 +258,34 @@ public class CallAnalyserView extends ViewPart {
                         widgetSelected(e);
                     }
                 });
+                columns.add(col);
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText(COL_HOST);
                 columnHeaders.add(new ColumnHeaders(col, null));
                 col.setWidth(DEF_SIZE);
-
+                columns.add(col);
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText(INeoConstants.PROBE_LA);
                 columnHeaders.add(new ColumnHeaders(col, null));
-
                 col.setWidth(DEF_SIZE);
+                columns.add(col);
                 column = new TableViewerColumn(tableViewer, SWT.LEFT);
                 col = column.getColumn();
                 col.setText(INeoConstants.PROBE_F);
                 columnHeaders.add(new ColumnHeaders(col, null));
                 col.setWidth(DEF_SIZE);
+                columns.add(col);
                 // TODO move creation of group of single property in one method
                 //
-                for (StatisticsHeaders columnHeader : StatisticsHeaders.values()) {
+                StatisticsCallType callType = StatisticsCallType.INDIVIDUAL;
+                for(StatisticsCallType type : StatisticsCallType.values()){
+                    if(type.getHeaders().size()>callType.getHeaders().size()){
+                        callType = type;
+                    }
+                }
+                for (StatisticsHeaders columnHeader : callType.getHeaders()) {
                     column = new TableViewerColumn(tableViewer, SWT.LEFT);
                     col = column.getColumn();             
                     String title = columnHeader.getTitle();
@@ -282,8 +294,17 @@ public class CallAnalyserView extends ViewPart {
                     columnHeaders.add(new ColumnHeaders(col, columnHeader));
                     col.setWidth(gc.textExtent(title).x + 20);
                     gc.dispose();
+                    columns.add(col);
                 }
             }
+            addSotrListeners();
+            tabl.setHeaderVisible(true);
+            tabl.setLinesVisible(true);
+            tableViewer.setLabelProvider(this);
+            tableViewer.refresh();
+        }
+
+        private void addSotrListeners() {
             for (int i=0;i<columnHeaders.size();i++) {
                 final int ind = i;
                 columnHeaders.get(i).getColumn().addSelectionListener(new SelectionListener() {
@@ -304,6 +325,31 @@ public class CallAnalyserView extends ViewPart {
                     }
                 });
             }
+        }
+        
+        public void updateHeaders(StatisticsCallType callType){
+            Table tabl = tableViewer.getTable();
+            columnHeaders = new ArrayList<ColumnHeaders>();
+            columnHeaders.add(new ColumnHeaders(columns.get(0), null));
+            columnHeaders.add(new ColumnHeaders(columns.get(1), null));
+            columnHeaders.add(new ColumnHeaders(columns.get(2), null));
+            columnHeaders.add(new ColumnHeaders(columns.get(3), null));
+            int lastNum = 4;
+            for(StatisticsHeaders header : callType.getHeaders()){
+                TableColumn column = columns.get(lastNum++);
+                String title = header.getTitle();
+                GC gc = new GC(column.getParent());
+                column.setText(header.getTitle());
+                columnHeaders.add(new ColumnHeaders(column, header));
+                column.setWidth(gc.textExtent(title).x + 20);
+                gc.dispose();
+            }
+            for(int i=lastNum; i<columns.size(); i++){
+                TableColumn column = columns.get(i);
+                column.setText("");
+                column.setWidth(0); //hide not needed columns
+            }
+            addSotrListeners();
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
             tableViewer.setLabelProvider(this);
@@ -550,15 +596,15 @@ public class CallAnalyserView extends ViewPart {
      * 
      * @param callTypes
      */
-    private void formCallType(Set<CallType> callTypesSet) {
+    private void formCallType(Set<StatisticsCallType> callTypesSet) {
         List<String> callTypes=new ArrayList<String>();
-        for (CallType callType : callTypesSet) {
+        for (StatisticsCallType callType : callTypesSet) {
             callTypes.add(callType.toString());
         }
         cCallType.setItems(callTypes.toArray(new String[0]));
     }
     
-    private void formCallType(CallType callType) {
+    private void formCallType(StatisticsCallType callType) {
         List<String> callTypes=new ArrayList<String>();
         callTypes.add(callType.toString());
         
@@ -761,6 +807,8 @@ public class CallAnalyserView extends ViewPart {
      *change period
      */
     protected void changePeriod() {
+        StatisticsCallType callType = StatisticsCallType.getTypeById(cCallType.getText());
+        labelProvider.updateHeaders(callType);
         updateTable(false);
     }
     
@@ -768,7 +816,9 @@ public class CallAnalyserView extends ViewPart {
      *change period
      */
     protected void changeCallType() {
-        CallType callType = CallType.valueOf(cCallType.getText());
+        StatisticsCallType callType = StatisticsCallType.getTypeById(cCallType.getText());
+        columnHeaders = new ArrayList<ColumnHeaders>();
+        labelProvider.updateHeaders(callType);
         Node drive = callDataset.get(cDrive.getText());
         if (cProbe.getText().isEmpty()) {
             formProbeCall(drive, callType);
@@ -777,7 +827,7 @@ public class CallAnalyserView extends ViewPart {
             String probeName = cProbe.getText();
             formProbeCall(drive, callType);
             if ((probeName.equals("ALL")) ||(!probeName.isEmpty() &&
-                NeoUtils.hasCallsOfType(drive, callType, probeName))) {                
+                NeoUtils.hasCallsOfType(drive, callType.getId(), probeName))) {                
                 cProbe.setText(probeName);
                 updateTable(false);
             }            
@@ -825,9 +875,9 @@ public class CallAnalyserView extends ViewPart {
         
         try {
             CallStatistics statistics = new CallStatistics(drive, NeoServiceProvider.getProvider().getService());
-            Set<CallType> callTypes = statistics.getStatisticNode().keySet();
+            Set<StatisticsCallType> callTypes = statistics.getStatisticNode().keySet();
             if (callTypes.size() == 1) {
-                CallType type = callTypes.iterator().next();
+                StatisticsCallType type = callTypes.iterator().next();
                 formCallType(type);
                 formProbeCall(drive, type);
             }
@@ -847,14 +897,14 @@ public class CallAnalyserView extends ViewPart {
      * 
      * @param drive - drive dataset
      */
-    private void formProbeCall(Node drive, CallType callType) {
+    private void formProbeCall(Node drive, StatisticsCallType callType) {
         probeCallDataset.clear();
         probeCallDataset.put(KEY_ALL, null);
         if ((drive != null) && (callType != null)) {
             GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
-                Collection<Node> allProbesOfDataset = NeoUtils.getAllProbesOfDataset(drive, callType);
+                Collection<Node> allProbesOfDataset = NeoUtils.getAllProbesOfDataset(drive, callType.getId());
                 for (Node probe : allProbesOfDataset) {
                     probeCallDataset.put(NeoUtils.getNodeName(probe), probe);
                 }
@@ -979,15 +1029,15 @@ public class CallAnalyserView extends ViewPart {
          * @param endTime - end time
          * @param indexPartName - index name
          */
-        public PeriodWrapper(Node sRow) {
+        public PeriodWrapper(Node sRow, StatisticsCallType callType) {
             super();
             this.sRow = sRow;
             mappedValue.clear();
             for (Node node : NeoUtils.getChildTraverser(sRow)) {
                 String name = NeoUtils.getNodeName(node);
-                StatisticsHeaders header = StatisticsHeaders.findById(name);
+                StatisticsHeaders header = callType.getHeaderByTitle(name);
                 if (header != null) {
-                    mappedValue.put(header, node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, ERROR_VALUE).toString());
+                    mappedValue.put(header, getFormattedValue(node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, ERROR_VALUE)));
                 }
             }
             probeNode = sRow.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -1002,6 +1052,19 @@ public class CallAnalyserView extends ViewPart {
             Number la = (Number)probeNode.getProperty(INeoConstants.PROBE_LA, null);
             probeF = f == null ? "" : f.toString();
             probeLA = la == null ? "" : la.toString();
+        }
+        
+        private String getFormattedValue(Object value){
+            if(value instanceof Float){
+                BigDecimal decValue = new BigDecimal(((Float)value).doubleValue());
+                if (decValue.equals(BigDecimal.ZERO)) {
+                    decValue = decValue.setScale(1);
+                }else{
+                    decValue = decValue.setScale(3, RoundingMode.HALF_EVEN);
+                }
+                return decValue.toString();
+            }
+            return value.toString();
         }
 
         /**
@@ -1069,7 +1132,7 @@ public class CallAnalyserView extends ViewPart {
         private Node probe;
         private Node drive;
         private CallTimePeriods periods;
-        private CallType callType;
+        private StatisticsCallType callType;
         private Node periodNode;
         
         private boolean showEmpty;
@@ -1091,7 +1154,7 @@ public class CallAnalyserView extends ViewPart {
                 this.callType = null;
             }
             else {
-                this.callType = CallType.valueOf(callType);
+                this.callType = StatisticsCallType.getTypeById(callType);
             }
         }
 
@@ -1102,7 +1165,7 @@ public class CallAnalyserView extends ViewPart {
 
             try {
                 CallStatistics statistic = new CallStatistics(drive, service);
-                periodNode = statistic.getPeriodNode(periods, callType);
+                periodNode = statistic.getPeriodNode(periods, StatisticsCallType.getTypeById(callType.toString()));
                 
                 if (showEmpty) {
                     return null;

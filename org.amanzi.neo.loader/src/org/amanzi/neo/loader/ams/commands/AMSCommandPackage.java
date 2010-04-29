@@ -45,6 +45,31 @@ public class AMSCommandPackage {
 		registerCommand(new CME());
 		registerCommand(new PESQ());
 		registerCommand(new CTICN());
+		registerCommand(new ATCMGS());
+		registerCommand(new CDTXC());
+		registerCommand(new CGPS());
+		registerCommand(new CNCI());
+		registerCommand(new CTSDS());
+		registerCommand(new CTSDSR());
+		registerCommand(new CTSG());
+		registerCommand(new CTXG());
+		registerCommand(new CTXI());
+		registerCommand(new CMGS());
+		registerCommand(new ATE());
+		registerCommand(new ATI());
+		registerCommand(new ATO());
+		registerCommand(new ATQ());
+		registerCommand(new ATS0());
+		registerCommand(new ATS2());
+		registerCommand(new ATS3());
+		registerCommand(new ATS4());
+		registerCommand(new ATS5());
+		registerCommand(new ATV());
+		registerCommand(new ATZ());
+		registerCommand(new CLVL());
+		registerCommand(new CREG());
+		registerCommand(new CSPDCS());
+		registerCommand(new CSPICPN());
 	}
 	
 	/**

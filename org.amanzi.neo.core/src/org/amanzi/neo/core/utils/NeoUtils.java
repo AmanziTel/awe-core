@@ -1579,6 +1579,24 @@ public class NeoUtils {
         case GROUP:
             propertyName = "has_group_calls";
             break;
+        case SDS:
+            propertyName = "has_sds_calls";
+            break;
+        case TSM:
+            propertyName = "has_tsm_calls";
+            break;
+        case ALARM:
+            propertyName = "has_alarm_calls";
+            break;
+        case EMERGENCY:
+            propertyName = "has_emergency_calls";
+            break;
+        case HELP:
+            propertyName = "has_help_calls";
+            break;
+        default:
+            NeoCorePlugin.error("Unknown call type "+type+".", null);
+            return new ArrayList<Node>();
         }
         final String finalName = propertyName;
 

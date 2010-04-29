@@ -11,7 +11,8 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.calls.statistics;
+package org.amanzi.awe.views.calls.statistics.constants;
+
 
 /**
  * TODO Purpose of 
@@ -21,7 +22,7 @@ package org.amanzi.awe.views.calls.statistics;
  * @author lagutko_n
  * @since 1.0.0
  */
-public interface IStatisticsConstants {
+public interface ICallStatisticsConstants extends IStatisticsConstants{
     
     public static final int MILLISECONDS_FACTOR = 1000;
 

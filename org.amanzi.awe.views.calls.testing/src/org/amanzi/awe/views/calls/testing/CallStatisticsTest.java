@@ -25,15 +25,16 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
+import org.amanzi.awe.views.calls.enums.StatisticsType;
+import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
-import org.amanzi.awe.views.calls.statistics.IStatisticsConstants;
-import org.amanzi.awe.views.calls.statistics.CallStatistics.StatisticsHeaders;
+import org.amanzi.awe.views.calls.statistics.constants.ICallStatisticsConstants;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
@@ -74,25 +75,27 @@ public abstract class CallStatisticsTest {
     protected static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
     protected static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(TIMESTAMP_FORMAT);
     
-    private static final int CALL_DURATION_PERIODS_COUNT = 8;
+    private static final int PERIODS_COUNT = 8;
     private static final float MAX_CALL_DURATION = 1000;
     
-    private static final long MILLISECONDS = 1000;
+    protected static final long MILLISECONDS = 1000;
     protected static final int DAY = 24;
     
     protected static final String CTSDC_COMMAND = "AT+CTSDC";
     protected static final String ATA_COMMAND = "ATA";
     protected static final String ATD_COMMAND = "atd";
     protected static final String CTCC_COMMAND = "+CTCC";
+    protected static final String ATH_COMMAND = "ATH";
+    protected static final String CTCR_COMMAND = "+CTCR";
+    protected static final String PESQ_COMMAND = "PESQ.run";
     
     private static final String PROBE_NAME_PREFIX = "PROBE";
-    
-    private static final int ETALON_CELL_COUNT = 13;
     
     private static String mainDirectoryName;
     private static GraphDatabaseService neo;
     
     private float[] callDurationBorders;
+    private float[] audioQualityBorders;
     
     /**
      * Initialize project service.
@@ -221,7 +224,7 @@ public abstract class CallStatisticsTest {
             Integer aCallsPerHour, Integer aCallPerHourVariance,
             Integer aProbes)throws IOException, ParseException{
         String dataDir = getDataDirectoryName();
-        HashMap<Integer, CallStatData> generated = generateDataFiles(aHours,aDrift,aCallsPerHour,aCallPerHourVariance,aProbes, dataDir);
+        HashMap<Integer, ProbeStat> generated = generateDataFiles(aHours,aDrift,aCallsPerHour,aCallPerHourVariance,aProbes, dataDir);
         Node datasetNode = loadData(dataDir);
         Transaction tx = getNeo().beginTx();
         try {
@@ -245,12 +248,12 @@ public abstract class CallStatisticsTest {
      * @throws IOException (problem in data generation)
      * @throws ParseException (problem in gets etalon parameters)
      */
-    private HashMap<Integer, CallStatData> generateDataFiles(Integer aHours, Integer aDrift, 
+    private HashMap<Integer, ProbeStat> generateDataFiles(Integer aHours, Integer aDrift, 
             Integer aCallsPerHour, Integer aCallPerHourVariance,
             Integer aProbes, String dataDir) throws IOException, ParseException {
         IDataGenerator generator = getDataGenerator(aHours, aDrift, aCallsPerHour, aCallPerHourVariance, aProbes, dataDir);
         List<CallGroup> generated = ((GeneratedCallsData)generator.generate()).getData();
-        return buildStatisticsByGenerated(generated);
+        return buildStatisticsByGenerated(generated, aHours);
     }
 
     /**
@@ -289,7 +292,7 @@ public abstract class CallStatisticsTest {
      * @param statistics CallStatistics (for check)
      * @param hours Integer (count of hours)
      */
-    private void assertResult(HashMap<Integer, CallStatData> generated,CallStatistics statistics, Integer hours){
+    private void assertResult(HashMap<Integer, ProbeStat> generated,CallStatistics statistics, Integer hours){
         Node hourlyNode = statistics.getPeriodNode(CallTimePeriods.HOURLY, getCallType());
         assertPeriodStatistics(hourlyNode, CallTimePeriods.HOURLY, generated);
         if(hours>1){
@@ -307,7 +310,7 @@ public abstract class CallStatisticsTest {
     /**
      * @return Returns type of calls.
      */
-    protected abstract CallType getCallType();
+    protected abstract StatisticsCallType getCallType();
     
     /**
      * Assert statistics in period.
@@ -316,7 +319,7 @@ public abstract class CallStatisticsTest {
      * @param period CallTimePeriods (statistics period)
      * @param generated HashMap<Integer, CallStatData> (data that was generated)
      */
-    private void assertPeriodStatistics(Node statNode,final CallTimePeriods period, HashMap<Integer, CallStatData> generated){
+    private void assertPeriodStatistics(Node statNode,final CallTimePeriods period, HashMap<Integer, ProbeStat> generated){
         assertFalse(period.getId()+" node does not exists.",statNode==null);
         assertUnderlyingStatCount(statNode, period);
         Traverser traverse = NeoUtils.getChildTraverser(statNode);
@@ -356,7 +359,7 @@ public abstract class CallStatisticsTest {
      * @param isHourly boolean (is it hourly statistics?)
      * @param period CallTimePeriods (statistics period)
      */
-    private void assertRow(Node row,HashMap<Integer, CallStatData> generated, CallTimePeriods period){
+    private void assertRow(Node row,HashMap<Integer, ProbeStat> generated, CallTimePeriods period){
         Traverser probeTraverse = row.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
@@ -369,10 +372,10 @@ public abstract class CallStatisticsTest {
         assertEquals("Incorrect count of probes linked to s_row.",1,probesCount);
         Node probe = allProbes.get(0);
         Integer prNum = getProbeNumber(probe);
-        CallStatData callStatData = generated.get(prNum);
+        ProbeStat statData = generated.get(prNum);
         Date rowTime = getRowTime(row);
-        HashMap<StatisticsHeaders, Long> prData = callStatData.getStatisticsByPeriod(rowTime, period);
-        HashMap<StatisticsHeaders, Long> sourceData = null;        
+        HashMap<StatisticsHeaders, Number> prData = statData.getStatisticsByPeriod(period).getRowValuesForCheck(rowTime);
+        HashMap<StatisticsHeaders, Number> sourceData = null;        
         if (period.getUnderlyingPeriod()!=null) {
             sourceData = buildStatDataByNodes(row);
         }
@@ -389,23 +392,13 @@ public abstract class CallStatisticsTest {
      * @param etalon HashMap<StatisticsHeaders, Long> (values by generated data)
      * @param source HashMap<StatisticsHeaders, Long> (values by source data, null if statistics is hourly)
      */
-    private void assertCells(Node row, HashMap<StatisticsHeaders, Long> etalon, HashMap<StatisticsHeaders, Long> source){
-        HashMap<StatisticsHeaders, Long> cells = buildCellDataMap(row);
+    private void assertCells(Node row, HashMap<StatisticsHeaders, Number> etalon, HashMap<StatisticsHeaders, Number> source){
+        HashMap<StatisticsHeaders, Number> cells = buildCellDataMap(row);
         int cellCount = cells.size();
-        assertEquals("Wrong cell count.",ETALON_CELL_COUNT, cellCount);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.CALL_ATTEMPT_COUNT);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SUCC_SETUP_COUNT);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TM_Z1_P1);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TM_Z1_P2);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TM_Z1_P3);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TM_Z1_P4);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TM_Z1_L1);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TM_Z1_L2);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TM_Z1_L3);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TM_Z1_L4);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TIME_MIN);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TIME_MAX);
-        assertCellValue(etalon, source, cells, StatisticsHeaders.SETUP_TOTAL_DUR);
+        assertEquals("Wrong cell count.",getCallType().getHeaders().size(), cellCount);
+        for(StatisticsHeaders header : getCallType().getHeaders()){
+            assertCellValue(etalon, source, cells, header);
+        }
     }
     
     /**
@@ -424,9 +417,9 @@ public abstract class CallStatisticsTest {
                     return currentPos.depth()>0&&NodeTypes.getNodeType(node, neo).equals(NodeTypes.S_CELL);
                 }            
             }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
-            StatisticsHeaders header = StatisticsHeaders.getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-            Long etalon = getCellsValue(traverse.getAllNodes(),header);
-            Long value = getCellValue(cell, header);
+            StatisticsHeaders header = getCallType().getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            Number etalon = getCellsValue(traverse.getAllNodes(),header);
+            Number value = getCellValue(cell, header);
             assertEquals("Value in cell "+header+" is not conform to source.", etalon, value);
         }
     }
@@ -438,27 +431,34 @@ public abstract class CallStatisticsTest {
      * @param header cell header.
      * @return Long.
      */
-    private Long getCellsValue(Collection<Node> cells, StatisticsHeaders header){
-        Long result = null;
+    private Number getCellsValue(Collection<Node> cells, StatisticsHeaders header){
+        Number result = null;
         for(Node cell : cells){
-            Long value = getCellValue(cell, header);
+            Number value = getCellValue(cell, header);
             if(result == null){
                 result = value;
                 continue;
             }
-            if(header.equals(StatisticsHeaders.SETUP_TIME_MIN)){
-                if(value<result){
+            switch (header.getType()) {
+            case MAX:
+                if(value.doubleValue()>value.doubleValue()){
                     result = value;
                 }
-                continue;
-            }
-            if(header.equals(StatisticsHeaders.SETUP_TIME_MAX)){
-                if(value>result){
+                break;
+            case MIN:
+                if(value.doubleValue()<result.doubleValue()){
                     result = value;
                 }
-                continue;
+                break;
+            case SUM:
+                result = result.floatValue()+value.floatValue();
+                break;
+            case COUNT:
+                result = result.longValue()+value.longValue();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown header type: "+header.getType()+".");
             }
-            result+=value;
         }
         return result==null?0L:result;
     }
@@ -471,9 +471,9 @@ public abstract class CallStatisticsTest {
      * @param cells HashMap<StatisticsHeaders, Long> (real values)
      * @param cellType StatisticsHeaders (cell header)
      */
-    private void assertCellValue(HashMap<StatisticsHeaders, Long> etalon, HashMap<StatisticsHeaders, Long> source,
-            HashMap<StatisticsHeaders, Long> cells, StatisticsHeaders cellType) {
-        Long assertionValue = cells.get(cellType);
+    private void assertCellValue(HashMap<StatisticsHeaders, Number> etalon, HashMap<StatisticsHeaders, Number> source,
+            HashMap<StatisticsHeaders, Number> cells, StatisticsHeaders cellType) {
+        Number assertionValue = cells.get(cellType);
         assertFalse("Cell "+cellType+" not found.",assertionValue == null);
         assertEquals("Wrong value in cell "+cellType+".", etalon.get(cellType), assertionValue);
         if(source!=null){
@@ -487,8 +487,8 @@ public abstract class CallStatisticsTest {
      * @param row Node (source row)
      * @return HashMap<StatisticsHeaders, Long>
      */
-    private HashMap<StatisticsHeaders, Long> buildStatDataByNodes(Node row){
-        HashMap<StatisticsHeaders, Long> result = new HashMap<StatisticsHeaders, Long>(ETALON_CELL_COUNT);
+    private HashMap<StatisticsHeaders, Number> buildStatDataByNodes(Node row){
+        HashMap<StatisticsHeaders, Number> result = new HashMap<StatisticsHeaders, Number>(getCallType().getHeaders().size());
         Traverser traverse = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
@@ -499,30 +499,39 @@ public abstract class CallStatisticsTest {
         Collection<Node> allNodes = traverse.getAllNodes();
         assertFalse("Daily row has no sourses!",allNodes.isEmpty());
         for(Node sRow : allNodes){
-           HashMap<StatisticsHeaders, Long> cellMap = buildCellDataMap(sRow);
-           for(StatisticsHeaders header : StatisticsHeaders.values()){
-               Long currValue = cellMap.get(header);
+           HashMap<StatisticsHeaders, Number> cellMap = buildCellDataMap(sRow);
+           for(StatisticsHeaders header : getCallType().getHeaders()){
+               Number currValue = cellMap.get(header);
                if(currValue == null){
                    continue;
                }
-               Long resValue = result.get(header);
+               Number resValue = result.get(header);
                if(resValue == null){
                    result.put(header, currValue);
                    continue;
                }
-               if(header.equals(StatisticsHeaders.SETUP_TIME_MIN)){
-                   if(resValue==0||(currValue>0&&currValue<resValue)){                       
-                       result.put(header, currValue);                       
+               switch (header.getType()) {
+               case MAX:
+                   if(currValue.doubleValue()>resValue.doubleValue()){
+                       result.put(header, currValue);
                    }
-                   continue;
-               }
-               if(header.equals(StatisticsHeaders.SETUP_TIME_MAX)){
-                   if(currValue>resValue){
-                       result.put(header, currValue);                       
+                   break;
+               case MIN:
+                   if(resValue.equals(0)||(currValue.doubleValue()<resValue.doubleValue())){
+                       result.put(header, currValue);
                    }
-                   continue;
+                   break;
+               case SUM:
+                   resValue = resValue.floatValue()+currValue.floatValue();
+                   result.put(header, resValue);
+                   break;
+               case COUNT:
+                   resValue = resValue.longValue()+currValue.longValue();
+                   result.put(header, resValue);
+                   break;
+               default:
+                   throw new IllegalArgumentException("Unknown header type: "+header.getType()+".");
                }
-               result.put(header, resValue+currValue);
            }
         }
         return result;
@@ -534,12 +543,12 @@ public abstract class CallStatisticsTest {
      * @param row Node
      * @return HashMap<StatisticsHeaders, Long>
      */
-    private HashMap<StatisticsHeaders, Long> buildCellDataMap(Node row){
-        HashMap<StatisticsHeaders, Long> result = new HashMap<StatisticsHeaders, Long>();
+    private HashMap<StatisticsHeaders, Number> buildCellDataMap(Node row){
+        HashMap<StatisticsHeaders, Number> result = new HashMap<StatisticsHeaders, Number>();
         Traverser traverse = NeoUtils.getChildTraverser(row);
         for(Node cell : traverse.getAllNodes()){
-            StatisticsHeaders header = StatisticsHeaders.getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-            Long value = getCellValue(cell, header);
+            StatisticsHeaders header = getCallType().getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            Number value = getCellValue(cell, header);
             result.put(header, value);
         }
         return result;
@@ -552,12 +561,11 @@ public abstract class CallStatisticsTest {
      * @param header StatisticsHeaders
      * @return Long
      */
-    private Long getCellValue(Node cell, StatisticsHeaders header){
-        if(header.equals(StatisticsHeaders.SETUP_TIME_MAX)
-                ||header.equals(StatisticsHeaders.SETUP_TIME_MIN)
-                ||header.equals(StatisticsHeaders.SETUP_TOTAL_DUR)){
-            Float value = MILLISECONDS*(Float)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
-            return Math.round(value.doubleValue());
+    private Number getCellValue(Node cell, StatisticsHeaders header){
+        if(header.getType().equals(StatisticsType.MAX)
+                ||header.getType().equals(StatisticsType.MIN)
+                ||header.getType().equals(StatisticsType.SUM)){
+            return (Float)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
         }
         Integer value = (Integer)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
         return value.longValue();
@@ -598,28 +606,152 @@ public abstract class CallStatisticsTest {
     /**
      * Build statistics by generated data.
      *
-     * @param generated List of CallPairs
-     * @return HashMap<Integer, CallStatData>
+     * @param generated List of CallGroups
+     * @param hours int (count of hours)
+     * @return HashMapHashMap<Integer, ProbeStat>
      * @throws ParseException (problem in gets parameters)
      */
-    private HashMap<Integer, CallStatData> buildStatisticsByGenerated(List<CallGroup> generated)throws ParseException{
-        HashMap<Integer, CallStatData> result = new HashMap<Integer, CallStatData>();
-        for(CallGroup pair : generated){
-            Integer source = pair.getSourceProbe();
-            CallStatData data = result.get(source);
-            if(data == null){
-                data = new CallStatData();
-                result.put(source, data);
+    private HashMap<Integer, ProbeStat> buildStatisticsByGenerated(List<CallGroup> generated, int hours)throws ParseException{
+        if(hours> DAY){
+            return buildStatistcsByPeriod(generated, CallTimePeriods.MONTHLY);
+        }
+        if(hours>1){
+            return buildStatistcsByPeriod(generated, CallTimePeriods.DAILY);
+        }
+        return buildStatistcsByPeriod(generated, CallTimePeriods.HOURLY);
+    }
+    
+    /**
+     * Build statistics by period.
+     *
+     * @param generated List of CallGroups
+     * @param period CallTimePeriods
+     * @return HashMap<Integer, ProbeStat>
+     */
+    private HashMap<Integer, ProbeStat> buildStatistcsByPeriod(List<CallGroup> generated, CallTimePeriods period) throws ParseException{
+        if(period.equals(CallTimePeriods.HOURLY)){
+            return buildHourlyStatistics(generated);
+        }
+        CallTimePeriods undPeriod = period.getUnderlyingPeriod();
+        HashMap<Integer, ProbeStat> statistics = buildStatistcsByPeriod(generated, undPeriod);        
+        for(Integer probe : statistics.keySet()){
+            ProbeStat curr = statistics.get(probe);
+            curr.addStatistcs(collectStatisticsByUnderling(curr.getStatisticsByPeriod(undPeriod), period));
+        }
+        return statistics;
+    }
+    
+    /**
+     * Get Statistics from underling
+     *
+     * @param undStatistics PeriodStat (underling statistics)
+     * @param period CallTimePeriods (current period)
+     * @return PeriodStat
+     */
+    private PeriodStat collectStatisticsByUnderling(PeriodStat undStatistics, CallTimePeriods period){
+        List<Date> times = undStatistics.getAllTimesSorted();
+        PeriodStat result = new PeriodStat(period);
+        Date start = times.get(0);
+        Date lastDate = times.get(times.size()-1);
+        start = new Date(period.getFirstTime(start.getTime()));
+        Date end = new Date(period.addPeriod(start.getTime()));
+        do{
+            List<HashMap<StatisticsHeaders, Number>> dataInBorders = undStatistics.getDataInBorders(start, end);
+            if (!dataInBorders.isEmpty()) {
+                HashMap<StatisticsHeaders, Number> newRow = new HashMap<StatisticsHeaders, Number>();
+                for (HashMap<StatisticsHeaders, Number> row : dataInBorders) {
+                    updateStatRow(newRow, row);
+                }
+                result.addRow(start, newRow);
             }
-            for(CallData call : pair.getData()){
-                Date start = getCallStartTime(call);
-                Long duration = getCallDuration(call, start);
-                Integer periode = getDurationPeriod(duration);
-                data.addCall(periode, start, duration);
+            start = end;
+            end = new Date(period.addPeriod(start.getTime()));
+        }while(end.before(lastDate));
+        return result;
+    }
+    
+    /**
+     * Build Hourly statistics from generated data
+     *
+     * @param generated List of CallGroups
+     * @return HashMap<Integer, ProbeStat>
+     */
+    private HashMap<Integer, ProbeStat> buildHourlyStatistics(List<CallGroup> generated) throws ParseException{
+        HashMap<Integer, ProbeStat> result = new HashMap<Integer, ProbeStat>();
+        for(CallGroup group : generated){
+            Integer probe = group.getSourceProbe();
+            ProbeStat stat = result.get(probe);
+            if(stat == null){
+                stat = new ProbeStat(probe);
+                result.put(probe, stat);
+            }
+            PeriodStat periodStat = stat.getStatisticsByPeriod(CallTimePeriods.HOURLY);
+            if(periodStat == null){
+                periodStat = new PeriodStat(CallTimePeriods.HOURLY);
+                stat.addStatistcs(periodStat);
+            }
+            for(CallData call : group.getData()){
+                Date start = new Date(CallTimePeriods.HOURLY.getFirstTime(getCallStartTime(call).getTime()));
+                HashMap<StatisticsHeaders, Number> newValues = getStatValuesFromCall(call);
+                HashMap<StatisticsHeaders, Number> rowValues = periodStat.getRowValues(start);
+                if(rowValues==null){
+                    periodStat.addRow(start, newValues);
+                    continue;
+                }
+                updateStatRow(rowValues, newValues);
             }
         }
         return result;
     }
+    
+    /**
+     * Update statistics row
+     *
+     * @param updated HashMap<StatisticsHeaders, Long>
+     * @param source HashMap<StatisticsHeaders, Long>
+     */
+    private void updateStatRow(HashMap<StatisticsHeaders, Number> updated, HashMap<StatisticsHeaders, Number> source){
+        for(StatisticsHeaders header : getCallType().getHeaders()){
+            Number updValue = updated.get(header);
+            Number sourceValue = source.get(header);
+            if(updValue == null){
+                updated.put(header, sourceValue);
+                continue;
+            }
+            if(sourceValue == null){
+                continue;
+            }
+            switch (header.getType()) {
+            case MAX:
+                if(sourceValue.doubleValue()>updValue.doubleValue()){
+                    updValue = sourceValue;
+                }
+                break;
+            case MIN:
+                if(sourceValue.doubleValue()<updValue.doubleValue()){
+                    updValue = sourceValue;
+                }
+                break;
+            case SUM:
+                updValue = updValue.floatValue()+sourceValue.floatValue();
+                break;
+            case COUNT:
+                updValue = updValue.longValue()+sourceValue.longValue();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown header type: "+header.getType()+".");
+            }
+            updated.put(header, updValue);
+        }
+    }
+    
+    /**
+     * Get statistics values from call data.
+     *
+     * @param call CallData
+     * @return HashMap<StatisticsHeaders, Long>
+     */
+    protected abstract HashMap<StatisticsHeaders, Number> getStatValuesFromCall(CallData call) throws ParseException;
     
     /**
      * Gets time of call starts.
@@ -630,14 +762,34 @@ public abstract class CallStatisticsTest {
     protected abstract Date getCallStartTime(CallData call);
     
     /**
-     * Gets call duration.
+     * Gets call setup duration.
      *
-     * @param data ProbeData
+     * @param call CallData
      * @param start Date (call start)
-     * @return
+     * @return Long
      * @throws ParseException (problem in gets parameters)
      */
-    protected abstract Long getCallDuration(CallData call, Date start)throws ParseException;
+    protected abstract Float getCallSetupDuration(CallData call, Date start)throws ParseException;
+    
+    /**
+     * Gets call duration.
+     *
+     * @param call CallData
+     * @param start Date (call start)
+     * @return Long
+     * @throws ParseException (problem in gets parameters)
+     */
+    protected abstract Float getCallDuration(CallData call, Date start)throws ParseException;    
+    
+    /**
+     * Gets call audio quality.
+     *
+     * @param call CallData
+     * @param start Date (call start)
+     * @return Long
+     * @throws ParseException (problem in gets parameters)
+     */
+    protected abstract List<Float> getCallAudioQualitySorted(CallData call);
     
     /**
      * Gets number of call duration period.
@@ -645,24 +797,66 @@ public abstract class CallStatisticsTest {
      * @param duration Long
      * @return Integer
      */
-    private Integer getDurationPeriod(Long duration){
+    protected Integer getSetupDurationPeriod(Float duration){
         float[] durationBorders = callDurationBorders;
-        for(int i=0; i<CALL_DURATION_PERIODS_COUNT; i++){
-            float start = MILLISECONDS * durationBorders[i];
-            float end = MILLISECONDS * durationBorders[i+1];
+        for(int i=0; i<PERIODS_COUNT; i++){
+            float start = durationBorders[i];
+            float end = durationBorders[i+1];
             if(start<=duration && duration<end){
                 return i;
             }
         }
-        return CALL_DURATION_PERIODS_COUNT;
+        return PERIODS_COUNT;
+    }
+    
+    /**
+     * Gets number of call duration period.
+     *
+     * @param duration Long
+     * @return Integer
+     */
+    protected Integer getAudioQualityPeriod(Float audioQuality){
+        for(int i=0; i<PERIODS_COUNT; i++){
+            float start = audioQualityBorders[i+1];
+            float end = audioQualityBorders[i];
+            if(start<=audioQuality && audioQuality<end){
+                return i;
+            }
+        }
+        return PERIODS_COUNT-1;
+    }
+    
+    protected HashMap<Integer, List<Float>> getAudioMap(List<Float> audioQuality){
+        HashMap<Integer, List<Float>> result = new HashMap<Integer, List<Float>>(PERIODS_COUNT);
+        for(Float curr : audioQuality){
+            Integer period = getAudioQualityPeriod(curr);
+            List<Float> list = result.get(period);
+            if(list==null){
+                list = new ArrayList<Float>();
+                result.put(period, list);
+            }
+            list.add(curr);
+        }
+        return result;
+    }
+    
+    protected Float getSumFromList(List<Float> list){
+        if(list==null||list.isEmpty()){
+            return null;
+        }
+        Float result = 0f;
+        for(Float curr : list){
+            result+=curr;
+        }
+        return result;
     }
     
     /**
      * Initialize Call duration borders.
      */
-    protected void initCallDurationBorders(){
-        callDurationBorders = new float[CALL_DURATION_PERIODS_COUNT+2];
-        IStatisticsConstants constants = getStatisticsConstants();
+    protected void initCallBorders(){
+        callDurationBorders = new float[PERIODS_COUNT+2];
+        ICallStatisticsConstants constants = getStatisticsConstants();
         callDurationBorders[0] = constants.getCallConnTimeP1();        
         callDurationBorders[1] = constants.getCallConnTimeP2();
         callDurationBorders[2] = constants.getCallConnTimeP3();
@@ -673,214 +867,151 @@ public abstract class CallStatisticsTest {
         callDurationBorders[7] = constants.getCallConnTimeL4();
         callDurationBorders[8] = constants.getCallConnTimeLimit();
         callDurationBorders[9] = MAX_CALL_DURATION;
+        audioQualityBorders = new float[PERIODS_COUNT+1];
+        audioQualityBorders[0] = constants.getIndivCallQualMax();        
+        audioQualityBorders[1] = constants.getIndivCallQualP1();
+        audioQualityBorders[2] = constants.getIndivCallQualP2();
+        audioQualityBorders[3] = constants.getIndivCallQualP3();
+        audioQualityBorders[4] = constants.getIndivCallQualP4();
+        audioQualityBorders[5] = constants.getIndivCallQualL1();
+        audioQualityBorders[6] = constants.getIndivCallQualL2();
+        audioQualityBorders[7] = constants.getIndivCallQualL3();
+        audioQualityBorders[8] = constants.getIndivCallQualMin();
     }
     
     /**
      * @return Statistics constants for concrete type.
      */
-    protected abstract IStatisticsConstants getStatisticsConstants();
+    protected abstract ICallStatisticsConstants getStatisticsConstants();
     
     /**
-     * For saving call information builded by generated data.
      * <p>
-     *
+     *  To keep all statistics for one probe.
      * </p>
      * @author Shcharbatsevich_A
      * @since 1.0.0
      */
-    protected class CallStatData{
+    public static class ProbeStat{
         
-        /**
-         * All calls:
-         * Key: period number, Value: Map - key: Start time, value: duration.
-         */
-        private HashMap<Integer, HashMap<Date, Long>> data = new HashMap<Integer, HashMap<Date,Long>>();
+        private Integer probeKey;
+        private HashMap<CallTimePeriods, PeriodStat> data;
         
-        /**
-         * Get all calls by duration period.
-         *
-         * @param periode Integer (call duration period number)
-         * @param calls HashMap<Integer, HashMap<Date, Long>>
-         * @return HashMap<Date, Long>
-         */
-        private HashMap<Date, Long> getAllCallsFrom(Integer periode,HashMap<Integer, HashMap<Date, Long>> calls){
-            return calls.get(periode);
+        public ProbeStat(Integer probe) {
+            probeKey = probe;
+            data = new HashMap<CallTimePeriods, PeriodStat>();
         }
         
         /**
-         * Returns calls count.
-         *
-         * @param calls HashMap<Integer, HashMap<Date, Long>>
-         * @return Integer.
+         * @return Returns the probeKey.
          */
-        private Integer getCallCount(HashMap<Integer, HashMap<Date, Long>> calls){
-            int result = 0;
-            for(int i=0;i<=CALL_DURATION_PERIODS_COUNT;i++){
-                result+=getCallCount(i,calls);
+        public Integer getProbeKey() {
+            return probeKey;
+        }
+        
+        public PeriodStat getStatisticsByPeriod(CallTimePeriods period){
+            return data.get(period);
+        }
+        
+        public void addStatistcs(PeriodStat statistics){
+            data.put(statistics.getPeriod(), statistics);
+        }
+    }
+    
+    /**
+     * <p>
+     * To keep information about statistics in period for one probe.
+     * </p>
+     * @author Shcharbatsevich_A
+     * @since 1.0.0
+     */
+    public class PeriodStat{
+        
+        private CallTimePeriods period;
+        private HashMap<Date, HashMap<StatisticsHeaders, Number>> data;
+        
+        public PeriodStat(CallTimePeriods periodKey) {
+            period = periodKey;
+            data = new HashMap<Date, HashMap<StatisticsHeaders,Number>>();
+        }
+        
+        /**
+         * @return Returns the period.
+         */
+        public CallTimePeriods getPeriod() {
+            return period;
+        }
+        
+        /**
+         * 
+         *
+         * @param time
+         * @param header
+         * @param value
+         */
+        public void addRow(Date time, HashMap<StatisticsHeaders, Number> row){
+            data.put(time, row);
+        }
+        
+        /**
+         * Get values map from row.
+         *
+         * @param timeKey Date
+         * @return HashMap<StatisticsHeaders, Number> 
+         */
+        public HashMap<StatisticsHeaders, Number> getRowValues(Date timeKey){
+            return data.get(timeKey);
+        }
+        
+        /**
+         * Get values map from row.
+         *
+         * @param timeKey Date
+         * @return HashMap<StatisticsHeaders, Long> 
+         */
+        public HashMap<StatisticsHeaders, Number> getRowValuesForCheck(Date timeKey){
+            HashMap<StatisticsHeaders, Number> real = data.get(timeKey);
+            HashMap<StatisticsHeaders, Number> result = new HashMap<StatisticsHeaders, Number>();
+            for(StatisticsHeaders header : getCallType().getHeaders()){
+                Number value = real.get(header);
+                if(value == null){
+                    value = 0;
+                }
+                switch (header.getType()) {
+                case MAX:
+                case MIN:
+                case SUM:
+                    result.put(header, value.floatValue());
+                    break;
+                case COUNT:
+                    result.put(header, value.longValue());
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown header type: "+header.getType()+".");
+                }
             }
             return result;
         }
         
-        /**
-         * Returns setup calls count.
-         *
-         * @param calls HashMap<Integer, HashMap<Date, Long>>
-         * @return Integer.
-         */
-        private Integer getSetupCount(HashMap<Integer, HashMap<Date, Long>> calls){
-            int result = 0;
-            for(int i=0;i<CALL_DURATION_PERIODS_COUNT;i++){
-                result+=getCallCount(i,calls);
-            }
+        public List<Date> getAllTimesSorted(){
+            List<Date> result = new ArrayList<Date>(data.keySet());
+            Collections.sort(result);
             return result;
         }
         
-        /**
-         * Returns calls count in period.
-         *
-         * @param periode Integer
-         * @param calls HashMap<Integer, HashMap<Date, Long>>
-         * @return Integer
-         */
-        private Integer getCallCount(Integer periode,HashMap<Integer, HashMap<Date, Long>> calls){
-            HashMap<Date, Long> allCallsFrom = getAllCallsFrom(periode,calls);
-            return allCallsFrom==null?0:allCallsFrom.size();
-        }
-        
-        /**
-         * Add new call to data.
-         *
-         * @param periode Integer call duration period number
-         * @param start Date call start time
-         * @param duration Long call duration
-         */
-        public void addCall(Integer periode, Date start, Long duration){
-            HashMap<Date, Long> calls = getAllCallsFrom(periode,data);
-            if(calls == null){
-                calls = new HashMap<Date, Long>();
-                data.put(periode, calls);
+        public List<HashMap<StatisticsHeaders, Number>> getDataInBorders(Date start, Date end){
+            List<HashMap<StatisticsHeaders, Number>> result = new ArrayList<HashMap<StatisticsHeaders, Number>>();
+            List<Date> allTimes = getAllTimesSorted();
+            int num = 0;
+            Date curr = allTimes.get(num++);
+            while (curr.before(start)&&num<allTimes.size()) {
+                curr = allTimes.get(num++);
             }
-            calls.put(start, duration);
-        }
-        
-        /**
-         * Build call statistics by period.
-         *
-         * @param start Date start time 
-         * @param period CallTimePeriods (statistics period)
-         * @return HashMap<StatisticsHeaders, Long>
-         */
-        public HashMap<StatisticsHeaders, Long> getStatisticsByPeriod(Date start, CallTimePeriods period){
-            return buildStatistics(start, new Date(period.addPeriod(start.getTime())));
-        }
-        
-        /**
-         * Build call statistics by time period.
-         *
-         * @param start Date
-         * @param end Date
-         * @return HashMap<StatisticsHeaders, Long>
-         */
-        private HashMap<StatisticsHeaders, Long> buildStatistics(Date start, Date end){
-            HashMap<StatisticsHeaders, Long> result = new HashMap<StatisticsHeaders, Long>();
-            HashMap<Integer, HashMap<Date, Long>> calls = getCallsInPeriod(start, end);
-            result.put(StatisticsHeaders.CALL_ATTEMPT_COUNT, getCallCount(calls).longValue());
-            result.put(StatisticsHeaders.SUCC_SETUP_COUNT, getSetupCount(calls).longValue());
-            result.put(StatisticsHeaders.SETUP_TM_Z1_P1, getCallCount(0,calls).longValue());
-            result.put(StatisticsHeaders.SETUP_TM_Z1_P2, getCallCount(1,calls).longValue());
-            result.put(StatisticsHeaders.SETUP_TM_Z1_P3, getCallCount(2,calls).longValue());
-            result.put(StatisticsHeaders.SETUP_TM_Z1_P4, getCallCount(3,calls).longValue());
-            result.put(StatisticsHeaders.SETUP_TM_Z1_L1, getCallCount(4,calls).longValue());
-            result.put(StatisticsHeaders.SETUP_TM_Z1_L2, getCallCount(5,calls).longValue());
-            result.put(StatisticsHeaders.SETUP_TM_Z1_L3, getCallCount(6,calls).longValue());
-            result.put(StatisticsHeaders.SETUP_TM_Z1_L4, getCallCount(7,calls).longValue());
-            result.put(StatisticsHeaders.SETUP_TIME_MIN, getMinTime(calls));
-            result.put(StatisticsHeaders.SETUP_TIME_MAX, getMaxTime(calls));
-            result.put(StatisticsHeaders.SETUP_TOTAL_DUR, getTotalTime(calls));
-            return result;
-        }
-        
-        /**
-         * Gets minimal duration time in calls.
-         *
-         * @param calls HashMap<Integer, HashMap<Date, Long>>
-         * @return Long
-         */
-        private Long getMinTime(HashMap<Integer, HashMap<Date, Long>> calls){
-            for(int i=0; i<CALL_DURATION_PERIODS_COUNT; i++){
-                HashMap<Date, Long> callsInPeriode = getAllCallsFrom(i, calls);
-                if (callsInPeriode!=null && !callsInPeriode.isEmpty()) {
-                    List<Long> times = new ArrayList<Long>(callsInPeriode.values());
-                    Collections.sort(times);
-                    return times.get(0);
-                }
-            }
-            return 0L;
-        }
-        
-        /**
-         * Gets maximal duration time in calls.
-         *
-         * @param calls HashMap<Integer, HashMap<Date, Long>>
-         * @return Long
-         */
-        private Long getMaxTime(HashMap<Integer, HashMap<Date, Long>> calls){
-            for(int i=CALL_DURATION_PERIODS_COUNT-1; i>=0; i--){
-                HashMap<Date, Long> callsInPeriode = getAllCallsFrom(i, calls);
-                if (callsInPeriode!=null && !callsInPeriode.isEmpty()) {
-                    List<Long> times = new ArrayList<Long>(callsInPeriode.values());
-                    Collections.sort(times);
-                    return times.get(times.size()-1);
-                }
-            }
-            return 0L;
-        }
-        
-        /**
-         * Gets total duration time in calls.
-         *
-         * @param calls HashMap<Integer, HashMap<Date, Long>>
-         * @return Long
-         */
-        private Long getTotalTime(HashMap<Integer, HashMap<Date, Long>> calls){
-            Float result = 0.0f;
-            for(int i=0;i<CALL_DURATION_PERIODS_COUNT;i++){
-                HashMap<Date, Long> callsInPeriode = getAllCallsFrom(i, calls);
-                if (callsInPeriode!=null) {
-                    for (Long time : callsInPeriode.values()) {
-                        result += (float)time/MILLISECONDS; //to solve rounding problem
-                    }
-                }
-            }
-            result = result*MILLISECONDS;
-            return Math.round(result.doubleValue());
-        }
-        
-        /**
-         * Gets all calls in time period.
-         *
-         * @param start Date
-         * @param end Date
-         * @return HashMap<Integer, HashMap<Date, Long>>
-         */
-        private HashMap<Integer, HashMap<Date, Long>> getCallsInPeriod(Date start, Date end){
-            HashMap<Integer, HashMap<Date,Long>> result = new HashMap<Integer, HashMap<Date,Long>>();
-            for(int i=0;i<=CALL_DURATION_PERIODS_COUNT;i++){
-                HashMap<Date, Long> callsInPeriode = getAllCallsFrom(i, data);
-                if (callsInPeriode!=null) {
-                    for (Date date : callsInPeriode.keySet()) {
-                        if ((start.before(date)||start.equals(date)) && date.before(end)) {
-                            HashMap<Date, Long> found = result.get(i);
-                            if (found == null) {
-                                found = new HashMap<Date, Long>();
-                                result.put(i, found);
-                            }
-                            found.put(date, callsInPeriode.get(date));
-                        }
-                    }
-                }
+            while (curr.before(end)&&num<allTimes.size()){
+                result.add(data.get(curr));
+                curr = allTimes.get(num++);
             }
             return result;
         }
     }
+
 }

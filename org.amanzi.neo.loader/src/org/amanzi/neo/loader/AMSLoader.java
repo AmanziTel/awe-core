@@ -35,6 +35,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -46,6 +47,7 @@ import org.amanzi.neo.loader.ams.commands.CTSDC;
 import org.amanzi.neo.loader.ams.commands.CommandSyntax;
 import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -327,14 +329,18 @@ public class AMSLoader extends DriveLoader {
 	 */
 	private enum CallEvents {
 	    CALL_SETUP_BEGIN("AT+CTSDC"),		
-		CALL_TERMINATION_BEGIN("ATH"),
+	    CALL_TERMINATION_BEGIN("ATH"),
 		TERMINATION_END("CTCR"),
 		INCOMING_CALL_SETUP_BEGIN("ATA"),
 		CALL_SETUP_END("CTCC"),
 		ERROR("CME ERROR"),
 		PESQ("PESQ"),
 		OUTGOING_CALL("atd"),
-		INCOMING_CALL("CTICN");
+		INCOMING_CALL("CTICN"),
+		SEND_MESSAGE_BEGIN("AT+CMGS"),
+	    SEND_MESSAGE_END("CTSDSR"),
+	    MESS_SETUP_BEGIN("AT+CTSDS"),
+	    MESS_ACKN_GET("CMGS");
 		
 		/*
 		 * Name of Command that causes this Event
@@ -782,6 +788,7 @@ public class AMSLoader extends DriveLoader {
 	
 	@Override
 	protected void parseLine(String line) {
+	    System.out.println("Parse line: "+line);
 	    if (newDirectory) {
 	        saveCall(call);
 	        newDirectory = false;
@@ -1090,7 +1097,7 @@ public class AMSLoader extends DriveLoader {
 	 * @return is this command was a Call Command
 	 */
 	private boolean processCommand(String timestamp, AbstractAMSCommand command, CommandSyntax syntax, StringTokenizer tokenizer, boolean callCommandResult) {
-		//try to parse timestamp
+	    //try to parse timestamp
 		long timestampValue;
 		try {
 			timestampValue = timestampFormat.parse(timestamp).getTime();
@@ -1152,10 +1159,13 @@ public class AMSLoader extends DriveLoader {
             callerProbeCalls = currentProbeCalls;
 	        call.setCallSetupBeginTime(timestamp);
 	        
-	        if (isGroupCall(properties)) {
+	        if(isEmergencyCall(properties)){
+	            call.setCallType(CallType.EMERGENCY); 
+	        } else if (isHelpCall(properties)){
+	            call.setCallType(CallType.HELP);
+	        } else if (isGroupCall(properties)) {
 	            call.setCallType(CallType.GROUP);
-	        }
-	        else {
+	        } else {
 	            call.setCallType(CallType.INDIVIDUAL);
 	        }
 	        
@@ -1166,9 +1176,9 @@ public class AMSLoader extends DriveLoader {
 	            call.setCallResult(CallProperties.CallResult.SUCCESS);
 	            call.setCallSetupEndTime(timestamp);
 	        }
-	        else if (((call.getCallType() == CallType.GROUP) &&
+	        else if ((((call.getCallType() == CallType.GROUP)||(call.getCallType().equals(CallType.EMERGENCY))) &&
 	            (currentProbeCalls.equals(callerProbeCalls))) ||
-	            ((call.getCallType() == CallType.INDIVIDUAL) &&
+	            (((call.getCallType() == CallType.INDIVIDUAL)||(call.getCallType() == CallType.HELP)) &&
                 (!currentProbeCalls.equals(callerProbeCalls)))) {
 	            if (((call.getCallSetupEnd() == 0)||call.getCallType() == CallType.GROUP) && (call.getCallSetupBegin() < timestamp)) {
 	                call.setCallSetupEndTime(timestamp);
@@ -1195,6 +1205,41 @@ public class AMSLoader extends DriveLoader {
 	        if (call != null) {
 	            call.error(timestamp);
 	        }
+	        break;
+	    case MESS_SETUP_BEGIN:
+	        if (call == null) {
+                call = new Call();
+                call.setCallSetupBeginTime(timestamp);
+            }
+	        call.setCallerProbe(currentProbeCalls);
+            callerProbeCalls = currentProbeCalls;
+            if (isTSMMessage(properties)) {
+                call.setCallType(CallType.TSM);
+            }else if (isAlarmMessage(properties)) {
+                call.setCallType(CallType.ALARM);
+            }else{
+                call.setCallType(CallType.SDS);
+            }
+            break;
+	    case SEND_MESSAGE_BEGIN:
+	        if (call != null) {
+	            call.setCallSetupEndTime(timestamp);
+            }
+	        break;
+	    case SEND_MESSAGE_END:
+	        if(call!=null){
+                call.setCallTerminationBegin(timestamp);
+                call.setCallResult(CallResult.SUCCESS);
+            }
+	        break;
+	    case MESS_ACKN_GET:
+	        if(call!=null){
+                call.setCallTerminationEnd(timestamp);
+                call.setCallResult(CallResult.SUCCESS);
+            }
+	        break;
+	    default:
+	        NeoCorePlugin.error("Unknown call event "+event+".", null);
 	    }
 	    
 	    if (call != null) {
@@ -1206,43 +1251,26 @@ public class AMSLoader extends DriveLoader {
 	/**
 	 * Creates a Call node and sets properties
 	 */
-	private void saveCall(Call call) {
-	    if ((call != null) && (call.getCallType() != null)) {
+	private void saveCall(Call call) {	    
+        if ((call != null) && (call.getCallType() != null)) {
+            CallType callType = call.getCallType();
 	        Transaction tx = neo.beginTx();
 	        try {
-	            Node probeCallNode = call.getCallerProbe();
-	            Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
-			
-	            long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
-	            long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
-	            long callDuration = call.getCallTerminationEnd() - call.getCallSetupBegin();
-			
-	            LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
-			
-	            setProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), setupDuration);
-	            setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
-	            setProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
-	            setProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), callDuration);
-	            setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
-	            
-	            callNode.setProperty(CallProperties.LQ.getId(), call.getLq().toArray(new Float[] {}));
-                callNode.setProperty(CallProperties.DELAY.getId(), call.getDelay().toArray(new Float[] {}));
-                
-                callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
-                
-                for (Node calleeProbe : call.getCalleeProbes()) {
-                    callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
-                }
-                
-                switch (call.getCallType()) {
-                case GROUP:
-                    probeCallNode.setProperty("has_group_calls", true);
-                    break;
+	            switch (callType) {
                 case INDIVIDUAL:
-                    probeCallNode.setProperty("has_individual_calls", true);
+                case GROUP:
+                case EMERGENCY:
+                case HELP:
+                    storeRealCall(call);
                     break;
+                case SDS:
+                case TSM:
+                case ALARM:
+                    storeMessageCall(call);
+                    break;
+                default:
+                    NeoCorePlugin.error("Unknown call type "+callType+".", null);
                 }
-                
                 tx.success();
 	        }
 	        catch (Exception e) {
@@ -1254,6 +1282,84 @@ public class AMSLoader extends DriveLoader {
 	        }
 		}
 	}
+
+    private void storeRealCall(Call call) {
+        Node probeCallNode = call.getCallerProbe();
+        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
+
+        long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
+        long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
+        long callDuration = call.getCallTerminationEnd() - call.getCallSetupBegin();
+
+        LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
+
+        setProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), setupDuration);
+        setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
+        setProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
+        setProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), callDuration);
+        setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
+        
+        callNode.setProperty(CallProperties.LQ.getId(), call.getLq().toArray(new Float[] {}));
+        callNode.setProperty(CallProperties.DELAY.getId(), call.getDelay().toArray(new Float[] {}));
+        
+        callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
+        
+        for (Node calleeProbe : call.getCalleeProbes()) {
+            callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
+        }
+        
+        switch (call.getCallType()) {
+        case GROUP:
+            probeCallNode.setProperty("has_group_calls", true);
+            break;
+        case INDIVIDUAL:
+            probeCallNode.setProperty("has_individual_calls", true);
+            break;
+        case EMERGENCY:
+            probeCallNode.setProperty("has_emergency_calls", true);
+            break;
+        case HELP:
+            probeCallNode.setProperty("has_help_calls", true);
+            break;
+        }
+    }
+    
+    private void storeMessageCall(Call call) {
+        Node probeCallNode = call.getCallerProbe();
+        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
+
+        long receivedTime = call.getCallTerminationBegin() - call.getCallSetupEnd();
+        long acknTime = call.getCallTerminationEnd()-call.getCallTerminationBegin();
+        
+        LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
+
+        if (call.getCallType().equals(CallType.ALARM)) {
+            setProperty(headers, callNode, CallProperties.ALM_MESSAGE_DELAY.getId(), receivedTime);
+            setProperty(headers, callNode, CallProperties.ALM_FIRST_MESS_DELAY.getId(), acknTime);
+        } else {
+            setProperty(headers, callNode, CallProperties.MESS_RECEIVE_TIME.getId(), receivedTime);
+            setProperty(headers, callNode, CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), acknTime);
+        }
+        setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
+        setProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
+        
+        callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
+        
+        for (Node calleeProbe : call.getCalleeProbes()) {
+            callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
+        }
+        switch (call.getCallType()) {
+        case SDS:
+            probeCallNode.setProperty("has_sds_calls", true);
+            break;
+        case TSM:
+            probeCallNode.setProperty("has_tsm_calls", true);
+            break;
+        case ALARM:
+            probeCallNode.setProperty("has_alarm_calls", true);
+            break;
+        }        
+    }
 
 	/**
 	 * Creates new Call Node
@@ -1356,10 +1462,26 @@ public class AMSLoader extends DriveLoader {
     }
     
     private boolean isGroupCall(HashMap<String, Object> parameters) {
-        Integer trueValue = new Integer(1);
-        return (parameters.get(AMSCommandParameters.COMMS_TYPE.getName()).equals(trueValue) &&
-                parameters.get(AMSCommandParameters.HOOK.getName()).equals(trueValue) &&
-                parameters.get(AMSCommandParameters.SIMPLEX).equals(trueValue) &&
-                parameters.get(AMSCommandParameters.SLOTS_CODEC.getName()).equals(trueValue));
+        return (parameters.get(AMSCommandParameters.COMMS_TYPE.getName()).equals(NeoLoaderPluginMessages.CTCC_Comms_Type_1) &&
+                parameters.get(AMSCommandParameters.HOOK.getName()).equals(NeoLoaderPluginMessages.CTCC_Hook_1) &&
+                parameters.get(AMSCommandParameters.SIMPLEX.getName()).equals(NeoLoaderPluginMessages.CTCC_Simplex_1) &&
+                parameters.get(AMSCommandParameters.SLOTS_CODEC.getName()).equals(NeoLoaderPluginMessages.CTCC_Slots_Codec_1));
+    }
+    
+    private boolean isTSMMessage(HashMap<String, Object> parameters) {
+        return (parameters.get(AMSCommandParameters.AI_SERVICE.getName()).equals(NeoLoaderPluginMessages.CTSDS_ai_service_13)&&
+                !parameters.get(AMSCommandParameters.ACCESS_PRIORITY.getName()).equals(NeoLoaderPluginMessages.CTSDS_access_priority_emer));
+    }
+    
+    private boolean isAlarmMessage(HashMap<String, Object> parameters) {
+        return parameters.get(AMSCommandParameters.ACCESS_PRIORITY.getName()).equals(NeoLoaderPluginMessages.CTSDS_access_priority_emer);
+    }
+    
+    private boolean isEmergencyCall(HashMap<String, Object> parameters) {//TODO correct priority
+        return (isGroupCall(parameters)&&!parameters.get(AMSCommandParameters.PRIORITY.getName()).equals(NeoLoaderPluginMessages.CTSDC_Priority_0));
+    }
+    
+    private boolean isHelpCall(HashMap<String, Object> parameters) {//TODO correct priority
+        return (!isGroupCall(parameters)&&!parameters.get(AMSCommandParameters.PRIORITY.getName()).equals(NeoLoaderPluginMessages.CTSDC_Priority_0));
     }
 }
