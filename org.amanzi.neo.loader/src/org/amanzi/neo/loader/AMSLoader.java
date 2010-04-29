@@ -1176,7 +1176,8 @@ public class AMSLoader extends DriveLoader {
 	            call.setCallResult(CallProperties.CallResult.SUCCESS);
 	            call.setCallSetupEndTime(timestamp);
 	        }
-	        else if ((((call.getCallType() == CallType.GROUP)||(call.getCallType().equals(CallType.EMERGENCY))) &&
+	        else if ((call.getCallType()!=null)&&
+	                (((call.getCallType() == CallType.GROUP)||(call.getCallType().equals(CallType.EMERGENCY))) &&
 	            (currentProbeCalls.equals(callerProbeCalls))) ||
 	            (((call.getCallType() == CallType.INDIVIDUAL)||(call.getCallType() == CallType.HELP)) &&
                 (!currentProbeCalls.equals(callerProbeCalls)))) {
@@ -1208,9 +1209,9 @@ public class AMSLoader extends DriveLoader {
 	        break;
 	    case MESS_SETUP_BEGIN:
 	        if (call == null) {
-                call = new Call();
-                call.setCallSetupBeginTime(timestamp);
+                call = new Call();                
             }
+	        call.setCallSetupBeginTime(timestamp);
 	        call.setCallerProbe(currentProbeCalls);
             callerProbeCalls = currentProbeCalls;
             if (isTSMMessage(properties)) {
@@ -1227,10 +1228,11 @@ public class AMSLoader extends DriveLoader {
             }
 	        break;
 	    case SEND_MESSAGE_END:
-	        if(call!=null){
-                call.setCallTerminationBegin(timestamp);
-                call.setCallResult(CallResult.SUCCESS);
+	        if(call==null){
+                call = new Call();
             }
+	        call.setCallTerminationBegin(timestamp);
+            call.setCallResult(CallResult.SUCCESS);
 	        break;
 	    case MESS_ACKN_GET:
 	        if(call!=null){
