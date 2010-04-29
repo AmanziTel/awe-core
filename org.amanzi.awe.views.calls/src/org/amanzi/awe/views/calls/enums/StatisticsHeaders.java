@@ -1973,8 +1973,8 @@ public enum StatisticsHeaders {
      * @param callNode Node (call)
      * @return Float[]
      */
-    protected Float[] getCallAudioQuality(Node callNode){
-        return (Float[])callNode.getProperty(CallProperties.LQ.getId()); 
+    protected float[] getCallAudioQuality(Node callNode){
+        return (float[])callNode.getProperty(CallProperties.LQ.getId()); 
     }
     
     /**
@@ -1988,7 +1988,7 @@ public enum StatisticsHeaders {
      * @return list of Float
      */
     protected List<Float> getAllGoodQualities(Node callNode, Float start, Float end, boolean inclStart, boolean inclEnd){
-        Float[] callAudioQualities = getCallAudioQuality(callNode);
+        float[] callAudioQualities = getCallAudioQuality(callNode);
         List<Float> good = new ArrayList<Float>(callAudioQualities.length);
         for(float callAudioQuality : callAudioQualities){
             if(isValueInBorders(callAudioQuality, start, end, inclStart, inclEnd)){
