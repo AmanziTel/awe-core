@@ -266,6 +266,8 @@ public class GpehReportDialog extends Dialog {
             spreadsheet = creator.createInterIDCMSpreadSheet("InterMatrix");
             break;
             case CELL_RSCP_ANALYSIS:
+                //TODO remove after implementing and testing
+                if (true)return;
                 creator.createRSCPCellReport(period);
                 spreadsheet = creator.createRSCPCellSpreadSheet("RSCPCell",period);
                 return;
