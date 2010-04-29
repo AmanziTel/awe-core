@@ -837,9 +837,6 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
 
         final String TRAVERSE_NEXT_ALL = "traverse(:outgoing, :all, :NEXT,:CHILD)\n"; //$NON-NLS-1$
         final String TRAVERSE_CHILD_1 = "traverse(:outgoing, 1, :CHILD)\n"; //$NON-NLS-1$
-        // TODO fix when drive loader will be fixed
-        // Long
-        // start_time=(((dateStart.getHours()-2L)*60+dateStart.getMinutes())*60+dateStart.getSeconds())*1000;
         Long start_time = calendar.getTimeInMillis();
         Long end_time = start_time + sLength.getSelection() * 60 * 1000;
         if (selectedTime == null)
@@ -847,9 +844,10 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
         Long delta_sec = 2L;
         Long delta_msec = delta_sec * 1000;
 
-        // LOGGER.debug("time: "+dateStart.getHours()+":"+dateStart.getMinutes()+":"+dateStart.getSeconds());
         StringBuffer sb = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(System.getProperty("user.name")).append( //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                "'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n  chart 'Drive ").append(cDrive.getText()).append("' do\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                "'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
+        sb.append("  map 'Drive map', :map => GIS.maps.first.copy, :width => 600, :height => 400 do |m|\nend\n");
+        sb.append("  chart 'Drive ").append(cDrive.getText()).append("' do\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         sb.append("    self.type=:time\n"); //$NON-NLS-1$
 
         // event dataset
