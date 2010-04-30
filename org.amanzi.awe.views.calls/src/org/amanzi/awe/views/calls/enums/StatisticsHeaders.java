@@ -318,9 +318,22 @@ public enum StatisticsHeaders {
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
             if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualLimit(), callConstants.getIndivCallQualMax(), true, true);
+                /*List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualLimit(), callConstants.getIndivCallQualMax(), true, true);
                 if(!good.isEmpty()){
                     return 1;
+                }*/
+                float[] audioQuality = getCallAudioQuality(callNode);
+                if (audioQuality.length>0) {
+                    float result = audioQuality[0];
+                    for (float quality : audioQuality) {
+                        if (result > quality) {
+                            result = quality;
+                        }
+                    }
+                    if (isValueInBorders(result, callConstants.getIndivCallQualLimit(), callConstants.getIndivCallQualMax(), true,
+                            true)) {
+                        return 1;
+                    }
                 }
             }
             return null;
