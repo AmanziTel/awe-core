@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -128,12 +129,12 @@ public class AMSLoader extends DriveLoader {
 		/*
 		 * Listening quality
 		 */
-		private final ArrayList<Float> lq = new ArrayList<Float>();
+		private float[] lq = new float[0];
 		
 		/*
 		 * Audio delay
 		 */
-		private final ArrayList<Float> delay = new ArrayList<Float>();
+		private float[] delay = new float[0];
 		
 		/**
 		 * Default constructor
@@ -253,7 +254,7 @@ public class AMSLoader extends DriveLoader {
         /**
          * @return Returns the lq.
          */
-        public ArrayList<Float> getLq() {
+        public float[] getLq() {
             return lq;
         }
 
@@ -261,13 +262,27 @@ public class AMSLoader extends DriveLoader {
          * @param lq The lq to set.
          */
         public void addLq(float lq) {
-            this.lq.add(lq);
+            this.lq = addToArray(this.lq, lq);
+        }
+        
+        /**
+         * Add new element to Array
+         *
+         * @param original original Array
+         * @param value value to add
+         * @return changed array
+         */
+        private float[] addToArray(float[] original, float value) {
+            float[] result = new float[original.length + 1];
+            result = Arrays.copyOf(this.lq, result.length);
+            result[result.length - 1] = value;
+            return result;
         }
 
         /**
          * @return Returns the delay.
          */
-        public ArrayList<Float> getDelay() {
+        public float[] getDelay() {
             return delay;
         }
 
@@ -275,7 +290,7 @@ public class AMSLoader extends DriveLoader {
          * @param delay The delay to set.
          */
         public void addDelay(float delay) {
-            this.delay.add(delay);
+            this.delay = addToArray(this.delay, delay);
         }
 
         /**
@@ -1301,8 +1316,8 @@ public class AMSLoader extends DriveLoader {
         setProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), callDuration);
         setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
         
-        callNode.setProperty(CallProperties.LQ.getId(), call.getLq().toArray(new Float[] {}));
-        callNode.setProperty(CallProperties.DELAY.getId(), call.getDelay().toArray(new Float[] {}));
+        callNode.setProperty(CallProperties.LQ.getId(), call.getLq());
+        callNode.setProperty(CallProperties.DELAY.getId(), call.getDelay());
         
         callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
         
@@ -1322,6 +1337,15 @@ public class AMSLoader extends DriveLoader {
             break;
         case HELP:
             probeCallNode.setProperty("has_help_calls", true);
+            break;
+        case ALARM:
+            probeCallNode.setProperty("has_alarm_calls", true);
+            break;
+        case SDS:
+            probeCallNode.setProperty("has_sds_calls", true);
+            break;
+        case TSM: 
+            probeCallNode.setProperty("has_tsm_calls", true);
             break;
         }
     }

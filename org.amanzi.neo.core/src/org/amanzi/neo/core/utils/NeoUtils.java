@@ -1539,6 +1539,14 @@ public class NeoUtils {
         }
     }
 
+    /**
+     * Calculates is Probe has Calls of choosen type in current dataset
+     *
+     * @param datasetNode Dataset to check
+     * @param type type of Calls
+     * @param probeName name of Probe
+     * @return  
+     */
     public static boolean hasCallsOfType(Node datasetNode, CallType type, final String probeName) {
         String propertyName = null;
         switch (type) {
@@ -1547,6 +1555,21 @@ public class NeoUtils {
             break;
         case GROUP:
             propertyName = "has_group_calls";
+            break;
+        case EMERGENCY:
+            propertyName = "has_emergency_calls";
+            break;
+        case HELP:
+            propertyName = "has_help_calls";
+            break;
+        case ALARM:
+            propertyName = "has_alarm_calls";
+            break;
+        case SDS:
+            propertyName = "has_sds_calls";
+            break;
+        case TSM: 
+            propertyName = "has_tsm_calls";
             break;
         }
         final String finalName = propertyName;
