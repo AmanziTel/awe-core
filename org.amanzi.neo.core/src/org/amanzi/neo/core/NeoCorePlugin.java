@@ -12,7 +12,6 @@
  */
 package org.amanzi.neo.core;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -29,7 +28,6 @@ import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.preferences.PreferencesInitializer;
-import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
@@ -90,17 +88,17 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
         plugin = this;
         updateBDManager = new UpdateViewManager();
         updateBDManager.addListener(this);
-
+        //TODO need solution to use log4j libraries from separate plugin but not from udig libraries
         URL url = getBundle().getEntry("/logCinfig.properties");
-        System.out.println(url);
+//        System.out.println(url);
         URL rUrl = FileLocator.toFileURL(url);
-        System.out.println(rUrl);
-        System.out.println(rUrl.getPath());
-        System.out.println(new File(rUrl.toURI()).getAbsolutePath());
+//        System.out.println(rUrl);
+//        System.out.println(rUrl.getPath());
+//        System.out.println(new File(rUrl.toURI()).getAbsolutePath());
         
         PropertyConfigurator.configure(rUrl);
 
-        Logger.getLogger(this.getClass()).debug("test");
+//        Logger.getLogger(this.getClass()).debug("test");
     }
 
     /*
