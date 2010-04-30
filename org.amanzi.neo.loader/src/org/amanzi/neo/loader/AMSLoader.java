@@ -228,9 +228,9 @@ public class AMSLoader extends DriveLoader {
 		public void setCallTerminationEnd(long callTerminationEnd) {
 			callParameters.set(this.callTerminationEnd, callTerminationEnd);
 			
-			if ((call.getCallTerminationBegin() == 0) &&
-			    (call.getCallSetupEnd() == 0)) {
-			    call.setCallSetupEndTime(callTerminationEnd);
+			if ((getCallTerminationBegin() == 0) &&
+			    (getCallSetupEnd() == 0)) {
+			    setCallSetupEndTime(callTerminationEnd);
 			}
 			
 			lastProccessedParameter = this.callTerminationEnd;
@@ -484,6 +484,8 @@ public class AMSLoader extends DriveLoader {
 	private boolean newDirectory;
 	
 	private Call call;
+	private List<Call> messages;
+	private CallType loadedType;
 	
 	private String prevCommandTimestamp;
 	
@@ -640,7 +642,7 @@ public class AMSLoader extends DriveLoader {
                 updateProbeCache(probeName);
             }
         
-            saveCall(call);
+            saveData();
             saveProperties();
             finishUpIndexes();
             finishUp();
@@ -805,9 +807,10 @@ public class AMSLoader extends DriveLoader {
 	protected void parseLine(String line) {
 	    System.out.println("Parse line: "+line);
 	    if (newDirectory) {
-	        saveCall(call);
+	        saveData();
 	        newDirectory = false;
 	        call = null;
+	        messages = null;
 	    }
 	    
 		StringTokenizer tokenizer = new StringTokenizer(line, "|");
@@ -1165,42 +1168,43 @@ public class AMSLoader extends DriveLoader {
 	private void processCallEvent(Node relatedNode, CallEvents event, long timestamp, HashMap<String, Object> properties) {
 	    switch (event) {	   
 	    case CALL_SETUP_BEGIN:
-	        if (call == null) {
-	            call = new Call();
-	            call.setCallResult(CallProperties.CallResult.SUCCESS);
-	        }
-	        
-	        call.setCallerProbe(currentProbeCalls);
-            callerProbeCalls = currentProbeCalls;
-	        call.setCallSetupBeginTime(timestamp);
-	        
-	        if(isEmergencyCall(properties)){
-	            call.setCallType(CallType.EMERGENCY); 
-	        } else if (isHelpCall(properties)){
-	            call.setCallType(CallType.HELP);
-	        } else if (isGroupCall(properties)) {
-	            call.setCallType(CallType.GROUP);
-	        } else {
-	            call.setCallType(CallType.INDIVIDUAL);
-	        }
-	        
+	        if (messages == null) {
+                if (call == null) {
+                    call = new Call();
+                    call.setCallResult(CallProperties.CallResult.SUCCESS);
+                }
+                call.setCallerProbe(currentProbeCalls);
+                callerProbeCalls = currentProbeCalls;
+                call.setCallSetupBeginTime(timestamp);
+                if (isEmergencyCall(properties)) {
+                    call.setCallType(CallType.EMERGENCY);
+                } else if (isHelpCall(properties)) {
+                    call.setCallType(CallType.HELP);
+                } else if (isGroupCall(properties)) {
+                    call.setCallType(CallType.GROUP);
+                } else {
+                    call.setCallType(CallType.INDIVIDUAL);
+                }
+            }
             break;
 	    case CALL_SETUP_END:
-	        if (call == null) {
-	            call = new Call();
-	            call.setCallResult(CallProperties.CallResult.SUCCESS);
-	            call.setCallSetupEndTime(timestamp);
-	        }
-	        else if ((call.getCallType()!=null)&&
-	                (((call.getCallType() == CallType.GROUP)||(call.getCallType().equals(CallType.EMERGENCY))) &&
-	            (currentProbeCalls.equals(callerProbeCalls))) ||
-	            (((call.getCallType() == CallType.INDIVIDUAL)||(call.getCallType() == CallType.HELP)) &&
-                (!currentProbeCalls.equals(callerProbeCalls)))) {
-	            if (((call.getCallSetupEnd() == 0)||call.getCallType() == CallType.GROUP) && (call.getCallSetupBegin() < timestamp)) {
-	                call.setCallSetupEndTime(timestamp);
-	            }
-	        }
-	        break;
+	        if (messages==null) {
+                if (call == null) {
+                    call = new Call();
+                    call.setCallResult(CallProperties.CallResult.SUCCESS);
+                    call.setCallSetupEndTime(timestamp);
+                } else if ((call.getCallType() != null)
+                        && (((call.getCallType() == CallType.GROUP) || (call.getCallType().equals(CallType.EMERGENCY))) && (currentProbeCalls
+                                .equals(callerProbeCalls)))
+                        || (((call.getCallType() == CallType.INDIVIDUAL) || (call.getCallType() == CallType.HELP)) && (!currentProbeCalls
+                                .equals(callerProbeCalls)))) {
+                    if (((call.getCallSetupEnd() == 0) || call.getCallType() == CallType.GROUP)
+                            && (call.getCallSetupBegin() < timestamp)) {
+                        call.setCallSetupEndTime(timestamp);
+                    }
+                }
+            }
+            break;
 	    case PESQ:
 	        if (call != null) {
 	            call.addLq((Float)properties.get(AMSCommandParameters.PESQ_LISTENING_QUALITIY.getName()));
@@ -1223,36 +1227,89 @@ public class AMSLoader extends DriveLoader {
 	        }
 	        break;
 	    case MESS_SETUP_BEGIN:
-	        if (call == null) {
-                call = new Call();                
+	        if (messages == null) {
+                messages = new ArrayList<Call>();                
             }
-	        call.setCallSetupBeginTime(timestamp);
-	        call.setCallerProbe(currentProbeCalls);
-            callerProbeCalls = currentProbeCalls;
-            if (isTSMMessage(properties)) {
-                call.setCallType(CallType.TSM);
+	        if (isTSMMessage(properties)) {
+                loadedType = CallType.TSM;
             }else if (isAlarmMessage(properties)) {
-                call.setCallType(CallType.ALARM);
+                loadedType = CallType.ALARM;
             }else{
-                call.setCallType(CallType.SDS);
+                loadedType = CallType.SDS;
             }
-            break;
+	        boolean add = false;
+            for(Call message : messages){
+                if(message.getCallSetupBegin()==0){
+                    message.setCallSetupBeginTime(timestamp);
+                    message.setCallerProbe(currentProbeCalls);
+                    message.setCallType(loadedType);
+                    add = true;
+                    break;
+                }
+            }
+            if(!add){
+                Call message = new Call();
+                message.setCallSetupBeginTime(timestamp);
+                message.setCallerProbe(currentProbeCalls);
+                message.setCallType(loadedType);
+                messages.add(message);
+            }
+	        callerProbeCalls = currentProbeCalls;
+	        break;
 	    case SEND_MESSAGE_BEGIN:
-	        if (call != null) {
-	            call.setCallSetupEndTime(timestamp);
+	        if (messages != null) {
+	            boolean added = false;
+	            for(Call message : messages){
+                    if(message.getCallSetupEnd()==0){
+                        message.setCallSetupEndTime(timestamp);
+                        added = true;
+                        break;
+                    }
+                }
+	            if(!added){
+	                Call message = new Call();	                
+	                message.setCallSetupEndTime(timestamp);
+	                messages.add(message);
+	            }
             }
 	        break;
 	    case SEND_MESSAGE_END:
-	        if(call==null){
-                call = new Call();
+	        if(messages==null){
+	            messages = new ArrayList<Call>();
             }
-	        call.setCallTerminationBegin(timestamp);
-            call.setCallResult(CallResult.SUCCESS);
+	        boolean founded = false;
+            for(Call message : messages){
+                if(message.getCallTerminationBegin()==0){
+                    message.setCallTerminationBegin(timestamp);
+                    message.setCallResult(CallResult.SUCCESS);
+                    founded = true;
+                    break;
+                }
+            }
+            if(!founded){
+                Call message = new Call();
+                message.setCallTerminationBegin(timestamp);
+                message.setCallResult(CallResult.SUCCESS);
+                messages.add(message);
+            }
 	        break;
 	    case MESS_ACKN_GET:
-	        if(call!=null){
-                call.setCallTerminationEnd(timestamp);
-                call.setCallResult(CallResult.SUCCESS);
+	        if(messages!=null){
+	            boolean added = false;
+	            for(Call message : messages){
+	                if(message.getCallTerminationEnd()==0){
+	                    message.setCallTerminationEnd(timestamp);
+	                    message.setCallResult(CallResult.SUCCESS);
+	                    added = true;
+	                    break;
+	                }
+	            }
+	            if(!added){
+	                Call message = new Call();
+	                message.setCallTerminationEnd(timestamp);
+	                message.setCallResult(CallResult.SUCCESS);
+	                messages.add(message);
+	            }
             }
 	        break;
 	    default:
@@ -1262,6 +1319,21 @@ public class AMSLoader extends DriveLoader {
 	    if (call != null) {
 	        call.addRelatedNode(relatedNode);
 	        call.addCalleeProbe(currentProbeCalls);
+	    }
+	    if (messages!=null){
+	        for(Call message : messages){
+	            message.addRelatedNode(relatedNode);
+	            message.addCalleeProbe(currentProbeCalls);
+            }
+	    }
+	}
+	
+	private void saveData(){
+	    saveCall(call);
+	    if(messages!=null&&!messages.isEmpty()){
+	        for(Call message : messages){
+	            saveCall(message);
+	        }
 	    }
 	}
 	
