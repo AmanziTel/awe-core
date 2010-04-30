@@ -99,17 +99,8 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
         System.out.println(new File(rUrl.toURI()).getAbsolutePath());
         
         PropertyConfigurator.configure(rUrl);
-//        PropertyConfigurator.configure(FileLocator.resolve(url));
+
         Logger.getLogger(this.getClass()).debug("test");
-        System.out.println("PZDC!");
-        // File file = new File("/log4j.xml");
-        // System.out.println(file.getAbsolutePath());
-        // BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-        // String line;
-        // while ((line = bufferedReader.readLine()) != null) {
-        // System.out.println(line);
-        // }
-        // bufferedReader.close();
     }
 
     /*
