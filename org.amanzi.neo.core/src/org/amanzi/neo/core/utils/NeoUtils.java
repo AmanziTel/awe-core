@@ -1548,31 +1548,7 @@ public class NeoUtils {
      * @return  
      */
     public static boolean hasCallsOfType(Node datasetNode, CallType type, final String probeName) {
-        String propertyName = null;
-        switch (type) {
-        case INDIVIDUAL:
-            propertyName = "has_individual_calls";
-            break;
-        case GROUP:
-            propertyName = "has_group_calls";
-            break;
-        case EMERGENCY:
-            propertyName = "has_emergency_calls";
-            break;
-        case HELP:
-            propertyName = "has_help_calls";
-            break;
-        case ALARM:
-            propertyName = "has_alarm_calls";
-            break;
-        case SDS:
-            propertyName = "has_sds_calls";
-            break;
-        case TSM: 
-            propertyName = "has_tsm_calls";
-            break;
-        }
-        final String finalName = propertyName;
+        final String finalName = type.getProperty();
 
         Iterator<Node> probeCalls = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
@@ -1594,34 +1570,7 @@ public class NeoUtils {
      * @return all Probe Nodes
      */
     public static Collection<Node> getAllProbesOfDataset(Node datasetNode, CallType type) {
-        String propertyName = null;
-        switch (type) {
-        case INDIVIDUAL:
-            propertyName = "has_individual_calls";
-            break;
-        case GROUP:
-            propertyName = "has_group_calls";
-            break;
-        case SDS:
-            propertyName = "has_sds_calls";
-            break;
-        case TSM:
-            propertyName = "has_tsm_calls";
-            break;
-        case ALARM:
-            propertyName = "has_alarm_calls";
-            break;
-        case EMERGENCY:
-            propertyName = "has_emergency_calls";
-            break;
-        case HELP:
-            propertyName = "has_help_calls";
-            break;
-        default:
-            NeoCorePlugin.error("Unknown call type "+type+".", null);
-            return new ArrayList<Node>();
-        }
-        final String finalName = propertyName;
+        final String finalName = type.getProperty();
 
         ArrayList<Node> nodes = new ArrayList<Node>();
         Iterator<Node> probeCalls = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {

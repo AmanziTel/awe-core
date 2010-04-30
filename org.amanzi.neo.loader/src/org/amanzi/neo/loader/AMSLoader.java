@@ -1325,29 +1325,7 @@ public class AMSLoader extends DriveLoader {
             callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
         }
         
-        switch (call.getCallType()) {
-        case GROUP:
-            probeCallNode.setProperty("has_group_calls", true);
-            break;
-        case INDIVIDUAL:
-            probeCallNode.setProperty("has_individual_calls", true);
-            break;
-        case EMERGENCY:
-            probeCallNode.setProperty("has_emergency_calls", true);
-            break;
-        case HELP:
-            probeCallNode.setProperty("has_help_calls", true);
-            break;
-        case ALARM:
-            probeCallNode.setProperty("has_alarm_calls", true);
-            break;
-        case SDS:
-            probeCallNode.setProperty("has_sds_calls", true);
-            break;
-        case TSM: 
-            probeCallNode.setProperty("has_tsm_calls", true);
-            break;
-        }
+        probeCallNode.setProperty(call.getCallType().getProperty(), true);
     }
     
     private void storeMessageCall(Call call) {
@@ -1374,17 +1352,8 @@ public class AMSLoader extends DriveLoader {
         for (Node calleeProbe : call.getCalleeProbes()) {
             callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
         }
-        switch (call.getCallType()) {
-        case SDS:
-            probeCallNode.setProperty("has_sds_calls", true);
-            break;
-        case TSM:
-            probeCallNode.setProperty("has_tsm_calls", true);
-            break;
-        case ALARM:
-            probeCallNode.setProperty("has_alarm_calls", true);
-            break;
-        }        
+        
+        probeCallNode.setProperty(call.getCallType().getProperty(), true);
     }
 
 	/**
