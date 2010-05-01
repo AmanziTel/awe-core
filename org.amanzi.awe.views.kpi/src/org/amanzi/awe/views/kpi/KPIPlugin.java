@@ -62,6 +62,8 @@ public class KPIPlugin extends AbstractUIPlugin {
     private Ruby runtime;
     private Long networkId;
     private Long driveId;
+    private Long directoryId;
+    private Long counterId;
     public static final String KPI_FOLDER="kpi";
     private static final String JRUBY_PATH_RUBY_NAME = "jrubyPath";	
 	/**
@@ -254,6 +256,20 @@ public class KPIPlugin extends AbstractUIPlugin {
     }
 
     /**
+     * 
+     * @param directoryId
+     */
+    public void setDirectoryId(Long directoryId) {
+        this.directoryId = directoryId;
+    }
+    /**
+     * 
+     * @param counterId
+     */
+    public void setCounterId(Long counterId) {
+        this.counterId = counterId;
+    }
+    /**
      * @return Returns the networkId.
      */
     public Long getNetworkId() {
@@ -265,6 +281,18 @@ public class KPIPlugin extends AbstractUIPlugin {
      */
     public Long getDriveId() {
         return driveId;
+    }
+    /**
+     * @return Returns the driveId.
+     */
+    public Long getDirectoryId() {
+        return directoryId;
+    }
+    /**
+     * @return Returns the driveId.
+     */
+    public Long getCounterId() {
+        return counterId;
     }
 
     public String getDirectory() {
@@ -281,4 +309,5 @@ public class KPIPlugin extends AbstractUIPlugin {
     public void setDirectory(String newDirectory) {
         getPluginPreferences().setValue(DEFAULT_DIRRECTORY_LOADER, newDirectory);
     }
+
 }

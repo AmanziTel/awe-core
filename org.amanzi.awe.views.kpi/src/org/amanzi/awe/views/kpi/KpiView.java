@@ -27,6 +27,7 @@ import javax.swing.table.TableModel;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -40,12 +41,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -125,6 +121,10 @@ public class KpiView extends ViewPart {
     private static final String LB_NETWORK = "Network:";
 
     private static final String LB_DRIVE = "Drive:";
+    
+    private final String LB_DIRECTORY="Directory:";
+    
+    private final String LB_COUNTER_FILE="Counter file:";
 
     private static final String B_SAVE = "Save";
 
@@ -147,12 +147,20 @@ public class KpiView extends ViewPart {
 
     private Combo driveNode;
 
+    private Combo directoriesNode;
+    
+    private Combo counterFilesNode;
+    
     private List propertyList;
 
     private LinkedHashMap<String, Node> networks = new LinkedHashMap<String, Node>();
 
     private LinkedHashMap<String, Node> drives = new LinkedHashMap<String, Node>();
 
+    private LinkedHashMap<String, Node> directories= new LinkedHashMap<String, Node>();
+    
+    private LinkedHashMap<String, Node> counters= new LinkedHashMap<String, Node>();
+    
     private Button bSave;
 
     private Button bInit;
@@ -187,6 +195,9 @@ public class KpiView extends ViewPart {
     
     private final String COLLECTIONS_SCRIPT="collection_formulas.rb";
 
+
+
+
 	/**
 	 * The constructor.
 	 */
@@ -202,10 +213,8 @@ public class KpiView extends ViewPart {
         Composite frame = new Composite(parent, SWT.NONE);
         FormLayout mainLayout = new FormLayout();
         frame.setLayout(mainLayout);
-        Composite top = new Composite(frame, SWT.NONE);
 
         Composite bottom = new Composite(frame, SWT.NONE);
-        Composite right = new Composite(frame, SWT.NONE);
         editor = new Text(frame, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         bRun = new Button(bottom, SWT.PUSH);
         bRun.setText(B_RUN);
@@ -219,12 +228,25 @@ public class KpiView extends ViewPart {
         bInit = new Button(bottom, SWT.PUSH);
         bInit.setText(B_INIT);
         bInit.setImage(KPIPlugin.getImageDescriptor("icons/init.png").createImage());
+       
+        Composite top = new Composite(frame, SWT.NONE);
+        
         Label labelNetwork = new Label(top, SWT.LEFT);
         labelNetwork.setText(LB_NETWORK);
         networkNode = new Combo(top, SWT.DROP_DOWN | SWT.READ_ONLY);
+        
         Label labelDrive = new Label(top, SWT.LEFT);
         labelDrive.setText(LB_DRIVE);
         driveNode = new Combo(top, SWT.DROP_DOWN | SWT.READ_ONLY);
+        
+        Label labelDirectory = new Label(top, SWT.LEFT);
+        labelDirectory.setText(LB_DIRECTORY);
+        directoriesNode = new Combo(top, SWT.DROP_DOWN | SWT.READ_ONLY);
+        
+        Label labelCounterFile = new Label(top, SWT.LEFT);
+        labelCounterFile.setText(LB_COUNTER_FILE);
+        counterFilesNode= new Combo(top, SWT.DROP_DOWN | SWT.READ_ONLY);
+        
         /*Label labelFormulaName = new Label(top, SWT.LEFT);
         labelFormulaName.setText(LB_FORMULA_NAME);
         txtFormulaName=new Text(top, SWT.SINGLE);
@@ -239,6 +261,7 @@ public class KpiView extends ViewPart {
         btnCollections=new Button(top,SWT.RADIO);
         btnCollections.setText(LB_COLLECTIONS);*/
         // top
+        Composite right = new Composite(frame, SWT.NONE);
         FormData layoutData = new FormData();
         layoutData.top = new FormAttachment(0, 2);
         layoutData.left = new FormAttachment(0, 2);
@@ -254,20 +277,42 @@ public class KpiView extends ViewPart {
 
         layoutData = new FormData();
         layoutData.top = new FormAttachment(0, 2);
-        layoutData.left = new FormAttachment(labelNetwork, 5);
-        layoutData.right = new FormAttachment(50, -5);
+        layoutData.left = new FormAttachment(labelCounterFile, 5);
+        layoutData.right = new FormAttachment(100, -5);
         networkNode.setLayoutData(layoutData);
 
         layoutData = new FormData();
-        layoutData.top = new FormAttachment(driveNode, 5, SWT.CENTER);
-        layoutData.left = new FormAttachment(networkNode, 10);
+        layoutData.top = new FormAttachment(driveNode, 15, SWT.CENTER);
+        layoutData.left = new FormAttachment(0, 2);
         labelDrive.setLayoutData(layoutData);
 
         layoutData = new FormData();
-        layoutData.top = new FormAttachment(0, 2);
-        layoutData.left = new FormAttachment(labelDrive, 5);
+        layoutData.top = new FormAttachment(networkNode, 2);
+        layoutData.left = new FormAttachment(labelCounterFile, 5);
         layoutData.right = new FormAttachment(100, -5);
         driveNode.setLayoutData(layoutData);
+        
+        layoutData = new FormData();
+        layoutData.top = new FormAttachment(directoriesNode, 15, SWT.CENTER);
+        layoutData.left = new FormAttachment(0, 2);
+        labelDirectory.setLayoutData(layoutData);
+        
+        layoutData = new FormData();
+        layoutData.top = new FormAttachment(driveNode, 2);
+        layoutData.left = new FormAttachment(labelCounterFile, 5);
+        layoutData.right = new FormAttachment(100, -5);
+        directoriesNode.setLayoutData(layoutData);
+        
+        layoutData = new FormData();
+        layoutData.top = new FormAttachment(counterFilesNode, 15, SWT.CENTER);
+        layoutData.left = new FormAttachment(0, 2);
+        labelCounterFile.setLayoutData(layoutData);
+        
+        layoutData = new FormData();
+        layoutData.top = new FormAttachment(directoriesNode, 2);
+        layoutData.left = new FormAttachment(labelCounterFile, 5);
+        layoutData.right = new FormAttachment(100, -5);
+        counterFilesNode.setLayoutData(layoutData);
         /*
         layoutData=new FormData();
         layoutData.top=new FormAttachment(networkNode, 2);
@@ -327,7 +372,6 @@ public class KpiView extends ViewPart {
         layoutData.bottom = new FormAttachment(100, -2);
         layoutData.left = new FormAttachment(60, 2);
         layoutData.right = new FormAttachment(100, -2);
-        layoutData.right = new FormAttachment(100, -2);
         right.setLayoutData(layoutData);
 
         // editor
@@ -380,8 +424,8 @@ public class KpiView extends ViewPart {
     private void fillList() {
         fillFormulas();
         networkNode.setItems(getAllNetworks());
-        driveNode.setItems(getAllDrive());
-
+        driveNode.setItems(getAllDrives());
+        directoriesNode.setItems(getAllCounterDirectories());
     }
 
     /**
@@ -394,7 +438,7 @@ public class KpiView extends ViewPart {
     /**
      * @return
      */
-    private String[] getAllDrive() {
+    private String[] getAllDrives() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
             GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
@@ -412,6 +456,51 @@ public class KpiView extends ViewPart {
                 }
             }
             return drives.keySet().toArray(new String[] {});
+        } finally {
+            tx.finish();
+        }
+    }
+    /**
+     * Gets counter directories
+     * @return counter directories
+     */
+    private String[] getAllCounterDirectories() {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            Node refNode = service.getReferenceNode();
+            directories = new LinkedHashMap<String, Node>();
+            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(GisTypes.OSS.getHeader())) {
+                    String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                    directories.put(id, node);
+                }
+            }
+            return directories.keySet().toArray(new String[] {});
+        } finally {
+            tx.finish();
+        }
+    }
+    /**
+     * Gets counter directories
+     * @return counter directories
+     */
+    private String[] getAllCounterFiles() {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            Node directoryNode = directories.get(directoriesNode.getText());
+            counters = new LinkedHashMap<String, Node>();
+            for (Relationship relationship : directoryNode.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)) {
+                    String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                    counters.put(id, node);
+                }
+            }
+            return counters.keySet().toArray(new String[] {});
         } finally {
             tx.finish();
         }
@@ -583,6 +672,15 @@ public class KpiView extends ViewPart {
         };
         networkNode.addSelectionListener(listener);
         driveNode.addSelectionListener(listener);
+        counterFilesNode.addSelectionListener(listener);
+        directoriesNode.addSelectionListener(new SelectionAdapter(){
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                    counterFilesNode.setItems(getAllCounterFiles());
+            }
+            
+        });
         bInit.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -747,21 +845,31 @@ public class KpiView extends ViewPart {
     }
 
     /**
-     *
+     * Fills property list and saves ids to KPIPlugin fields
      */
     protected void formPropertyList() {
         Node netNode = networks.get(networkNode.getText());
         Long networkId = netNode == null ? null : netNode.getId();
         KPIPlugin.getDefault().setNetworkId(networkId);
+       
         Node drivNode = drives.get(driveNode.getText());
         Long driveId = drivNode == null ? null : drivNode.getId();
         KPIPlugin.getDefault().setDriveId(driveId);
+        
+        Node dirNode = directories.get(directoriesNode.getText());
+        Long dirId = dirNode == null ? null : dirNode.getId();
+        KPIPlugin.getDefault().setDirectoryId(dirId);
+        
+        Node countNode = counters.get(counterFilesNode.getText());
+        Long countId = countNode == null ? null : countNode.getId();
+        KPIPlugin.getDefault().setCounterId(countId);
+        
         runScript("init");
         fillPropertyList();
     }
 
     /**
-     *
+     * Fills property list on the base of user selection
      */
     private void fillPropertyList() {
         Transaction tx = NeoUtils.beginTransaction();
@@ -804,6 +912,15 @@ public class KpiView extends ViewPart {
                 for (String regex:regexes){
                     result.add("events(/" + regex+"/)");
                 }
+            }
+            Node dirNode = directories.get(directoriesNode.getText());
+            if (dirNode != null) {
+                String[] counters = new PropertyHeader(dirNode).getNumericFields();
+                if (counters.length!=0)
+                    result.add("counters");
+                    for (String counter : counters) {
+                        result.add("counters." + counter);
+                    }
             }
             Collections.sort(result);
             propertyList.setItems(result.toArray(new String[0]));

@@ -846,7 +846,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
 
         StringBuffer sb = new StringBuffer("report 'Drive ").append(cDrive.getText()).append("' do\n  author '").append(System.getProperty("user.name")).append( //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 "'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
-        sb.append("  map 'Drive map', :map => GIS.maps.first.copy, :width => 600, :height => 400 do |m|\nend\n");
+        sb.append("  map 'Drive map', :map => GIS.maps.first.copy, :width => 600, :height => 400 do |m|\n  end\n");
         sb.append("  chart 'Drive ").append(cDrive.getText()).append("' do\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         sb.append("    self.type=:time\n"); //$NON-NLS-1$
 

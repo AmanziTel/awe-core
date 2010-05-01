@@ -26,7 +26,9 @@ public enum GisTypes {
     /** GisTypes Network */
     NETWORK("network"),
     /** GisTypes TEMS */
-    DRIVE("drive");
+    DRIVE("drive"),
+    /** GisTypes OSS */
+    OSS("oss");
 
     private String header;
 

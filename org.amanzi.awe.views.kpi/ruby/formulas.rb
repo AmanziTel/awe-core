@@ -10,7 +10,11 @@ module KPI
   end
 
   def count(data)
-    if data.respond_to? 'each'
+    if data.respond_to? 'count_internal'
+      puts "data.respond_to? 'count'"
+      puts data.count_internal
+    end
+      if data.respond_to? 'each'
       s=0
       data.each do |element|
         s+=1

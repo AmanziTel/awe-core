@@ -57,6 +57,9 @@ def init
     name=$drive_root_node["name"]
     $event_property=name=~/\.asc|\.FMT/?"event_type":"event_id"
   end
+  
+  counterId=KPIPlugin.getDefault.getCounterId
+  $counter_root_node=if counterId==nil then nil else Neo4j.load_node(counterId) end
 end
 
 def sites(options={})
@@ -67,6 +70,9 @@ NodeSet.new filter($network_root_node,'sector', options)
 end
 def properties(options={})
 NodeSet.new filter($drive_root_node,'m', options)
+end
+def counters(options={})
+NodeSet.new filter($counter_root_node,'mv', options)
 end
 def events(options=nil)
 options ||= {$event_property =>true}
@@ -109,7 +115,7 @@ def each
       yield node
 }
 end
-def count
+def count_internal
 puts "NodeSet.count"
 num=0
 @traverser.each{|n| num+=1}
@@ -132,7 +138,7 @@ def each
   yield node.props[@property]
 end
 end
-def count
+def count_internal
   puts "PropertySet.count"
 num=0
 @node_set.each{|n|
