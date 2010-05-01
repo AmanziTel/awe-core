@@ -99,7 +99,23 @@ public enum CallProperties {
     }
 
     public enum CallType {
-        INDIVIDUAL, GROUP, SDS, TSM, ALARM, EMERGENCY, HELP;
+        INDIVIDUAL("has_individual_calls"), 
+        GROUP("has_group_calls"), 
+        SDS("has_sds"), 
+        TSM("has_tsm"), 
+        ALARM("has_alarm"), 
+        EMERGENCY("has_emergency"), 
+        HELP("has_help");
+        
+        private String hasCallsProperty;
+        
+        private CallType(String hasCallsProperty) {
+        	this.hasCallsProperty = hasCallsProperty;
+        }
+        
+        public String getProperty() {
+        	return hasCallsProperty;
+        }
     }
     
     
