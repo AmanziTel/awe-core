@@ -53,6 +53,7 @@ public class APDLoader extends AbstractLoader {
         initialize("APD", null, directory, display);
         basename = datasetName;
         headers = getHeaderMap(1).headers;
+        needParceHeader = true;
     }
 
     @Override
