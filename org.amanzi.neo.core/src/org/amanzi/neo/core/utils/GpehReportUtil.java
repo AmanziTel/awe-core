@@ -32,12 +32,12 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class GpehReportUtil {
-    
+
     /**
      * The Class CellReportsProperties.
      */
     public static class CellReportsProperties {
-        
+
         /** The Constant PERIOD_ID. */
         public static final String PERIOD_ID = "period_id";
         public static final String RNSP_ARRAY = "rnsp_arr";
@@ -265,7 +265,9 @@ public class GpehReportUtil {
         /** The SOURC e_ matri x_ event. */
         SOURCE_MATRIX_EVENT,
         /** The CEL l_ rsc p_ analysys. */
-        CELL_RSCP_ANALYSYS;
+        CELL_RSCP_ANALYSYS,
+        /** The SOURCE event. */
+        SOURCE_EVENT;
     }
 
     /**
@@ -302,10 +304,9 @@ public class GpehReportUtil {
         return new StringBuilder(networkName).append("@").append(gpehEventsName);
     }
 
-
     /**
      * Find prefix.
-     *
+     * 
      * @param gpehEvent the gpeh event
      * @param psc the psc
      * @param service the service
