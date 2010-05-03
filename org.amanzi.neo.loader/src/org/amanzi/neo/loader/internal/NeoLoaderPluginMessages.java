@@ -256,6 +256,36 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String CSPDCS_no_restriction;
     public static String CSPDCS_restriction;
     
+    public static String CSPTSS_stack_0;
+    public static String CSPTSS_stack_1;
+    public static String CSPTSS_stack_2;
+    public static String CSPTSS_stack_3;
+    public static String CSPTSSA_stack;
+    
+    public static String CTSP_service_profile_0;
+    public static String CTSP_service_profile_1;
+    public static String CTSP_service_profile_3;
+    public static String CTSP_service_profile_17;
+    public static String CTSP_service_profile_19;
+    public static String CTSP_service_layer1_0;
+    public static String CTSP_service_layer1_2;
+    public static String CTSP_service_layer1_3;
+    public static String CTSP_service_layer2_0;
+    public static String CTSP_service_layer2_1;
+    public static String CTSP_service_layer2_20;
+    
+    public static String CTXD_TxDemandPriority_0;
+    public static String CTXD_TxDemandPriority_1;
+    public static String CTXD_TxDemandPriority_2;
+    public static String CTXD_TxDemandPriority_3;
+    
+    public static String CSPTD_state_enabled;
+    public static String CSPTD_tei_state_disabled;
+    public static String CSPTD_itsi_state_disabled;
+    
+    public static String CTXN_tx_cont_0;
+    public static String CTXN_tx_cont_1;
+    
     private NeoLoaderPluginMessages() {
     }
 

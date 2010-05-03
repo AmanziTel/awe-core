@@ -17,27 +17,27 @@ import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
  * <p>
- * AT+CTSG command.
+ * +CSPTD command.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class CTSG extends AbstractAMSCommand {
+public class CSPTD extends AbstractAMSCommand {
 
     /*
      * Name of command
      */
-    private static final String COMMAND_NAME = "CTSG";
+    private static final String COMMAND_NAME = "CSPTD";
     
     @Override
     public String getName() {
-        return COMMAND_PREFIX+COMMAND_NAME;
+        return COMMAND_NAME;
     }
 
     @Override
     protected void initializeParameters() {
-        parameters.add(AMSCommandParameters.GROUP_TYPE);
-        parameters.add(AMSCommandParameters.GSSI);
+        parameters.add(AMSCommandParameters.ITSI_STATUS);
+        parameters.add(AMSCommandParameters.TEI_STATUS);
     }
     
     @Override

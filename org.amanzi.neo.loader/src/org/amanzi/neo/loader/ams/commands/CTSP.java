@@ -22,17 +22,17 @@ import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
  * <p>
- * AT+CNCI command.
+ * AT+CTSP command
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class CNCI extends AbstractAMSCommand {
+public class CTSP extends AbstractAMSCommand {
 
     /*
      * Name of command
      */
-    private static final String COMMAND_NAME = "CNCI";
+    private static final String COMMAND_NAME = "CTSP";
     
     @Override
     public String getName() {
@@ -41,10 +41,10 @@ public class CNCI extends AbstractAMSCommand {
 
     @Override
     protected void initializeParameters() {
-        parameters.add(AMSCommandParameters.NC_NUMBER);
-        parameters.add(AMSCommandParameters.F);
-        parameters.add(AMSCommandParameters.RSSI);
-        parameters.add(AMSCommandParameters.NC_C2);
+        parameters.add(AMSCommandParameters.SERVICE_PROFILE);
+        parameters.add(AMSCommandParameters.SERVICE_LAYER1);
+        parameters.add(AMSCommandParameters.SERVICE_LAYER2);
+        parameters.add(AMSCommandParameters.PID);
     }
     
     @SuppressWarnings("unchecked")

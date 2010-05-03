@@ -46,7 +46,7 @@ public class ATO extends AbstractAMSCommand {
 
     @Override
     public boolean isCallCommand() {
-        return true;
+        return false;
     }
 
 }

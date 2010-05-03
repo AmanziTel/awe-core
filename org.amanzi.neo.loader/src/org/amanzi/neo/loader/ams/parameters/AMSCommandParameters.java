@@ -538,6 +538,20 @@ public enum AMSCommandParameters {
             return rawValue;
         }
     },
+    SENDED_MESSAGE("message",ParameterType.STRING) {
+        @Override
+        public Object convert(Object rawValue) { //convert Hex to ASCII string
+            String hex = (String)rawValue;
+            StringBuilder sb = new StringBuilder();
+            for( int i=0; i<hex.length()-1; i+=2 ){
+                String output = hex.substring(i, (i + 2));
+                int decimal = Integer.parseInt(output, 16);
+                sb.append((char)decimal);
+            }
+            return sb.toString();
+
+        }
+    },
     SDS_INSTANCE("sds_instance",ParameterType.INTEGER) {
         @Override
         public Object convert(Object rawValue) {
@@ -838,7 +852,222 @@ public enum AMSCommandParameters {
         public Object convert(Object rawValue) {
             return rawValue;
         }
-    };    
+    },
+    TALKGROUP("talkgroup",ParameterType.STRING) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    DMO_COUNT("DMO count",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    }, 
+    TMO_COUNT("TMO count",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    DMO_GTSI("DMO GTSI",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    STACK("stack",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CSPTSS_stack_0;
+            case 1:
+                return NeoLoaderPluginMessages.CSPTSS_stack_1;
+            case 2:
+                return NeoLoaderPluginMessages.CSPTSS_stack_2;
+            case 3:
+                return NeoLoaderPluginMessages.CSPTSS_stack_3;
+            case 4:
+                return NeoLoaderPluginMessages.CSPTSSA_stack;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    SERVICE_PROFILE("service profile",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CTSP_service_profile_0;
+            case 1:
+                return NeoLoaderPluginMessages.CTSP_service_profile_1;
+            case 3:
+                return NeoLoaderPluginMessages.CTSP_service_profile_3;
+            case 17:
+                return NeoLoaderPluginMessages.CTSP_service_profile_17;
+            case 19:
+                return NeoLoaderPluginMessages.CTSP_service_profile_19;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    SERVICE_LAYER1("service layer 1",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CTSP_service_layer1_0;
+            case 2:
+                return NeoLoaderPluginMessages.CTSP_service_layer1_2;
+            case 3:
+                return NeoLoaderPluginMessages.CTSP_service_layer1_3;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    SERVICE_LAYER2("service layer 2",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CTSP_service_layer2_0;
+            case 1:
+                return NeoLoaderPluginMessages.CTSP_service_layer2_1;
+            case 20:
+                return NeoLoaderPluginMessages.CTSP_service_layer2_20;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    PID("PID",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    TX_DEMAND_PRIORITY("TxDemandPriority",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CTXD_TxDemandPriority_0;
+            case 1:
+                return NeoLoaderPluginMessages.CTXD_TxDemandPriority_1;
+            case 2:
+                return NeoLoaderPluginMessages.CTXD_TxDemandPriority_2;
+            case 3:
+                return NeoLoaderPluginMessages.CTXD_TxDemandPriority_3;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    BOOT_SOFTWARE("Boot Software", ParameterType.STRING) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    CONTROL_SOFTWARE("Control Software",ParameterType.STRING){
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    CONSOLE1_SOFTWARE("Console1 software",ParameterType.STRING) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    CONSOLE2_SOFTWARE("Console2 software",ParameterType.STRING){
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    MMI_AUTHENTICATION_SOFTWARE("MMI/Authentication software", ParameterType.STRING) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    SECURE_PROCESSOR_SOFTWARE("Secure processor software", ParameterType.STRING) {
+        @Override
+        public Object convert(Object rawValue) {
+            return rawValue;
+        }
+    },
+    TEI_STATUS("TEIStatus",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CSPTD_state_enabled;
+            case 1:
+                return NeoLoaderPluginMessages.CSPTD_tei_state_disabled;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    ITSI_STATUS("ITSIStatus",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CSPTD_state_enabled;
+            case 1:
+                return NeoLoaderPluginMessages.CSPTD_itsi_state_disabled;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    },
+    TX_CONT("TXCont",ParameterType.INTEGER) {
+        @Override
+        public Object convert(Object rawValue) {
+            Integer type = (Integer)rawValue;
+            
+            switch (type) {
+            case 0:
+                return NeoLoaderPluginMessages.CTXN_tx_cont_0;
+            case 1:
+                return NeoLoaderPluginMessages.CTXN_tx_cont_1;
+            default:
+                //TODO: log error message
+                return null;
+            }
+        }
+    };
+    
     
     
     /**

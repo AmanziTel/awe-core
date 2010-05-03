@@ -26,7 +26,7 @@ class CSQ extends AbstractAMSCommand {
 	/*
 	 * Command name
 	 */
-	private static final String COMMAND_NAME = "CCQ";
+	private static final String COMMAND_NAME = "CSQ";
 	
 	@Override
 	public String getName() {

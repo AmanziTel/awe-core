@@ -42,8 +42,9 @@ public class CTSDSR extends AbstractAMSCommand {
         parameters.add(AMSCommandParameters.CALLING_PARTY_IDENT);
         parameters.add(AMSCommandParameters.CALLING_PARTY_IDENT_TYPE);
         parameters.add(AMSCommandParameters.USER_INFO_LENGTH);
+        parameters.add(AMSCommandParameters.SENDED_MESSAGE);
     }
-
+    
     @Override
     public boolean isCallCommand() {
         return true;

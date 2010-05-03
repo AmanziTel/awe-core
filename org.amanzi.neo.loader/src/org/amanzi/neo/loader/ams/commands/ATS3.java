@@ -16,8 +16,6 @@ package org.amanzi.neo.loader.ams.commands;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
-
 /**
  * <p>
  * ARS3 commands.

@@ -18,7 +18,7 @@ import java.util.StringTokenizer;
 
 /**
  * <p>
- * ATI command. TODO parameters?
+ * ATI command. 
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0

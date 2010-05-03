@@ -852,7 +852,7 @@ public class AMSLoader extends DriveLoader {
 		    prevCommandName = null;
 		}
 		
-		if (!tokenizer.hasMoreTokens()) {
+		if (!tokenizer.hasMoreTokens()||maybePESQ.startsWith("Port.write")) {
 			//if last token is command name than it's Port.write command, do not proccess it
 			return;
 		}
@@ -861,8 +861,13 @@ public class AMSLoader extends DriveLoader {
 		if (AMSCommandPackage.isAMSCommand(commandName) || (unsolicited)) {
 			CommandSyntax syntax = AMSCommandPackage.getCommandSyntax(commandName);
 			if (syntax == CommandSyntax.SET) { 
-				int equalsIndex = commandName.indexOf("=");
-				tokenizer = new StringTokenizer(commandName.substring(equalsIndex + 1).trim());
+			    int equalsIndex = commandName.indexOf("=");			    
+				if (!commandName.contains("AT+CMGS")) {
+				    tokenizer = new StringTokenizer(commandName.substring(equalsIndex + 1).trim());
+                }else{
+                    //add message data.
+                    tokenizer = new StringTokenizer(commandName.substring(equalsIndex + 1).trim()+","+tokenizer.nextToken("|"));
+                }
 				commandName = commandName.substring(0, equalsIndex);
 			}
 			
@@ -888,7 +893,13 @@ public class AMSLoader extends DriveLoader {
 					else if (maybeTimestamp.startsWith("+")) {
 						int colonIndex = maybeTimestamp.indexOf(":");
 						commandName = maybeTimestamp.substring(1, colonIndex);
-						StringTokenizer paramTokenizer = new StringTokenizer(maybeTimestamp.substring(colonIndex + 1).trim());
+						StringTokenizer paramTokenizer;
+                        if (commandName.contains("CTSDSR")) {
+                            //add message data.
+                            paramTokenizer = new StringTokenizer(maybeTimestamp.substring(colonIndex + 1).trim()+","+tokenizer.nextToken());
+                        }else{
+                            paramTokenizer = new StringTokenizer(maybeTimestamp.substring(colonIndex + 1).trim());
+                        }
 						syntax = AMSCommandPackage.getCommandSyntax(commandName);
 						command = AMSCommandPackage.getCommand(commandName, syntax);
 					

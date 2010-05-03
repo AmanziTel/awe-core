@@ -17,32 +17,32 @@ import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
  * <p>
- * AT+CMGS command.
+ * +CTXN command.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class ATCMGS extends AbstractAMSCommand {
+public class CTXN extends AbstractAMSCommand {
 
     /*
      * Name of command
      */
-    private static final String COMMAND_NAME = "CMGS";
+    private static final String COMMAND_NAME = "CTXN";
     
     @Override
     public String getName() {
-        return COMMAND_PREFIX + COMMAND_NAME;
+        return COMMAND_NAME;
     }
 
     @Override
     protected void initializeParameters() {
-        parameters.add(AMSCommandParameters.CALLED_PARTY_ID);
-        parameters.add(AMSCommandParameters.USER_INFO_LENGTH);
-        parameters.add(AMSCommandParameters.SENDED_MESSAGE);
+        parameters.add(AMSCommandParameters.CC_INSTANCE);
+        parameters.add(AMSCommandParameters.TX_CONT);
+        parameters.add(AMSCommandParameters.TX_RQ_PRMSN);
     }
     
     @Override
     public boolean isCallCommand() {
-        return true;
+        return false;
     }
 }

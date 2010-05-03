@@ -13,36 +13,40 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
-import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
+import java.util.HashMap;
+import java.util.StringTokenizer;
 
 /**
  * <p>
- * AT+CMGS command.
+ * AT&F command.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class ATCMGS extends AbstractAMSCommand {
+public class ATandF extends AbstractAMSCommand {
 
     /*
      * Name of command
      */
-    private static final String COMMAND_NAME = "CMGS";
+    private static final String COMMAND_NAME = "AT&F";
     
     @Override
     public String getName() {
-        return COMMAND_PREFIX + COMMAND_NAME;
+        return COMMAND_NAME;
     }
 
     @Override
     protected void initializeParameters() {
-        parameters.add(AMSCommandParameters.CALLED_PARTY_ID);
-        parameters.add(AMSCommandParameters.USER_INFO_LENGTH);
-        parameters.add(AMSCommandParameters.SENDED_MESSAGE);
     }
     
     @Override
-    public boolean isCallCommand() {
-        return true;
+    protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
+        return null;
     }
+
+    @Override
+    public boolean isCallCommand() {
+        return false;
+    }
+
 }

@@ -1205,19 +1205,19 @@ public enum StatisticsHeaders {
             return null;
         }
     },
-    TSM_MESSAGE_ATTEMPT("TSM_MESSAGE_ATTEMPT",StatisticsType.COUNT) {
+    TSM_MESSAGE_ATTEMPT("MESSAGE_ATTEMPT",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
             return 1;
         }
     },
-    SDS_MESSAGE_ATTEMPT("SDS_MESSAGE_ATTEMPT",StatisticsType.COUNT) {
+    SDS_MESSAGE_ATTEMPT("MESSAGE_ATTEMPT",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
             return 1;
         }
     },
-    TSM_MESSAGE_SUCC("TSM_MESSAGE_SUCC",StatisticsType.COUNT) {
+    TSM_MESSAGE_SUCC("MESSAGE_SUCC",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
             if(!isCallSuccess(callNode)){
@@ -1232,7 +1232,7 @@ public enum StatisticsHeaders {
             return null;
         }
     },
-    SDS_MESSAGE_SUCC("SDS_MESSAGE_SUCC",StatisticsType.COUNT) {
+    SDS_MESSAGE_SUCC("MESSAGE_SUCC",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
             if(!isCallSuccess(callNode)){
