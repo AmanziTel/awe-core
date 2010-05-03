@@ -19,6 +19,7 @@ import java.io.IOException;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
+import org.amanzi.neo.loader.APDLoader;
 import org.amanzi.neo.loader.GPEHLoader;
 import org.amanzi.neo.loader.OSSCounterLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -60,6 +61,10 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                     case COUNTER:
                         OSSCounterLoader loaderOss = new OSSCounterLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         loaderOss.run(monitor);
+                        break;
+                    case APD:
+                        APDLoader apdLoader = new APDLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
+                        apdLoader.run(monitor);
                         break;
                     default:
                         break;
