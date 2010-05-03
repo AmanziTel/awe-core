@@ -16,6 +16,7 @@ package org.amanzi.awe.neighbours.gpeh;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -144,7 +145,7 @@ public class GpehReportCreator {
 
     /**
      * Creates the rscp cell report.
-     *
+     * 
      * @param periods the periods
      */
     public void createRSCPCellReport(CallTimePeriods periods) {
@@ -182,17 +183,34 @@ public class GpehReportCreator {
                     return false;
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            long timeAll=0;
+            long countAll=0;
             for (Node bestCell : traverse) {
+                countAll++;
                 long time = System.currentTimeMillis();
                 handler.setBestCell(bestCell);
                 String bestCellName = String.valueOf(bestCell.getId());
                 TimePeriodStructureCreator creator = new TimePeriodStructureCreator(parentNode, bestCellName, minMax.getLeft(), minMax.getRight(), periods, handler,
                         handler, service);
                 creator.createStructure();
-                time=System.currentTimeMillis()-time;
-                monitor.setTaskName("Create sructure for best cell "+bestCellName+" time: "+time);
+                long time2 = System.currentTimeMillis() - time;
+                LOGGER.info("Create structure time: " + time2);
+                handler.fillStructure();
+                time2 = System.currentTimeMillis();
+                tx.success();
+                tx.finish();
+                tx = service.beginTx();
+                time2 = System.currentTimeMillis() - time2;
+                LOGGER.info("Commit time: " + time2);
+                time = System.currentTimeMillis() - time;
+                timeAll+=time;
+                LOGGER.info("Time handle best cell: " + time);
+                LOGGER.info("Average time : " + timeAll/countAll);
+                monitor.setTaskName("Create sructure for best cell " + bestCellName + " time: " + time+", total count: "+countAll+", average time "+timeAll/countAll);
+
             }
             model.findCellRscpAnalisis(periods);
+            tx.success();
         } finally {
             tx.finish();
         }
@@ -623,7 +641,7 @@ public class GpehReportCreator {
 
     /**
      * Gets the best cell.
-     *
+     * 
      * @param activeSet the active set
      * @param measSet the meas set
      * @param type the type
@@ -953,7 +971,7 @@ public class GpehReportCreator {
 
     /**
      * Creates the inter idcm spread sheet.
-     *
+     * 
      * @param spreadsheetName the spreadsheet name
      * @return the spreadsheet node
      */
@@ -1155,18 +1173,22 @@ public class GpehReportCreator {
 
         /** The period. */
         private CallTimePeriods period;
-        
+
         /** The best cell. */
         private Node bestCell;
-        
+
         /** The rel id. */
         private final String relId;
-
+        
+        /** The cache cell. */
+        private final LinkedList<StructureCell> cacheCell = new LinkedList<StructureCell>();
+        
+        /** The psc. */
         private String psc;
 
         /**
          * Instantiates a new gPEH stat handler.
-         *
+         * 
          * @param relId the rel id
          */
         GPEHStatHandler(String relId) {
@@ -1175,8 +1197,104 @@ public class GpehReportCreator {
         }
 
         /**
+         * Fill structure.
+         */
+        public void fillStructure() {
+
+            Traverser gpehEventTraverser = bestCell.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+
+                @Override
+                public boolean isStopNode(TraversalPosition currentPos) {
+                    Relationship rel = currentPos.lastRelationshipTraversed();
+                    if (rel == null) {
+                        return false;
+                    }
+                    if (rel.isType(ReportsRelations.BEST_CELL)) {
+                        return !rel.getProperty(GpehReportUtil.REPORTS_ID, "").equals(relId);
+                    }
+                    return false;
+                }
+            }, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Relationship rel = currentPos.lastRelationshipTraversed();
+                    return rel != null && rel.isType(ReportsRelations.SOURCE_MATRIX_EVENT);
+                }
+            }, ReportsRelations.BEST_CELL, Direction.INCOMING, ReportsRelations.SOURCE_MATRIX_EVENT, Direction.OUTGOING);
+            long cont = 0;
+            // long logTime=System.currentTimeMillis();
+            for (Node gpehEvent : gpehEventTraverser) {
+                // logTime=System.currentTimeMillis()-logTime;
+                // LOGGER.info("traverse time"+logTime);
+                // logTime=System.currentTimeMillis();
+                cont++;
+                Long time = NeoUtils.getNodeTime(gpehEvent);
+                // logTime=System.currentTimeMillis()-logTime;
+                // LOGGER.info("getNodeTime "+logTime);
+                // logTime=System.currentTimeMillis();
+                StructureCell statNode = findStatNodeByTime(time);
+                // logTime=System.currentTimeMillis()-logTime;
+                // LOGGER.info("findStatNodeByTime "+logTime);
+                // logTime=System.currentTimeMillis();
+                if (statNode == null) {
+                    LOGGER.error("Not found statNode for time" + time);
+                    continue;
+                }
+                int[] rncpAr = statNode.getRncpAr();
+
+                Integer prfix = GpehReportUtil.findPrefix(gpehEvent, psc, service);
+                // logTime=System.currentTimeMillis()-logTime;
+                // LOGGER.info("findPrefix "+logTime);
+                // logTime=System.currentTimeMillis();
+
+                if (prfix == null) {
+                    LOGGER.error("Not found psc " + psc + " in node " + gpehEvent);
+                    continue;
+                }
+                Integer rnsp = (Integer)gpehEvent.getProperty(GpehReportUtil.GPEH_RRC_MR_RSCP_PREFIX + prfix, null);
+                if (rnsp != null) {
+                    Integer count = rncpAr[rnsp];
+                    count = count == null ? 1 : count + 1;
+                    rncpAr[rnsp] = count;;
+                } else {
+                    LOGGER.debug("Not found rnsp for best cell in node " + gpehEvent);
+                }
+                // logTime=System.currentTimeMillis()-logTime;
+                // LOGGER.info("handle stat "+logTime);
+                // logTime=System.currentTimeMillis();
+                statNode.getNode().createRelationshipTo(gpehEvent, ReportsRelations.SOURCE_EVENT);
+                // logTime=System.currentTimeMillis()-logTime;
+                // LOGGER.info("create rel "+logTime);
+                // logTime=System.currentTimeMillis();
+            }
+            LOGGER.info("events count " + cont);
+            // logTime=System.currentTimeMillis();
+            for (StructureCell cell : cacheCell) {
+                cell.storeRNSP();
+            }
+            // logTime=System.currentTimeMillis()-logTime;
+            // LOGGER.info("store time "+logTime);
+        }
+
+        /**
+         * Find stat node by time.
+         * 
+         * @param time the time
+         * @return the structure cell
+         */
+        private StructureCell findStatNodeByTime(Long time) {
+            for (StructureCell cell : cacheCell) {
+                if (cell.getStatElem().getStartTime() <= time && cell.getStatElem().getEndTime() >= time) {
+                    return cell;
+                }
+            }
+            return null;
+        }
+
+        /**
          * Gets the statisics.
-         *
+         * 
          * @param periodTime the period time
          * @param periodEnd the period end
          * @return the statisics
@@ -1205,17 +1323,19 @@ public class GpehReportCreator {
 
         /**
          * Sets the best cell.
-         *
+         * 
          * @param bestCell the new best cell
          */
         public void setBestCell(Node bestCell) {
             this.bestCell = bestCell;
-            psc=(String)bestCell.getProperty(GpehReportUtil.PRIMARY_SCR_CODE);
+            psc = (String)bestCell.getProperty(GpehReportUtil.PRIMARY_SCR_CODE);
+            cacheCell.clear();
+
         }
 
         /**
          * Sets the period.
-         *
+         * 
          * @param period the new period
          */
         public void setPeriod(CallTimePeriods period) {
@@ -1224,66 +1344,73 @@ public class GpehReportCreator {
 
         /**
          * Store statistic element.
-         *
+         * 
          * @param statElem the stat elem
          * @param node the node
          */
         @Override
         public void storeStatisticElement(IStatisticElement statElem, Node node) {
-            int[] rncpAr=new int[92];
-            final long begin = statElem.getStartTime();
-            final long end = statElem.getEndTime();
-            if (statElem.getPeriod() != CallTimePeriods.HOURLY) {
-                storeStatisticElementByHourlyStat(statElem, node);
-                return;
-            }
-           Traverser gpehEventTraverser = bestCell.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
-
-                @Override
-                public boolean isStopNode(TraversalPosition currentPos) {
-                    Relationship rel = currentPos.lastRelationshipTraversed();
-                    if (rel == null) {
-                        return false;
-                    }
-                    if (rel.isType(ReportsRelations.BEST_CELL)) {
-                        return !rel.getProperty(GpehReportUtil.REPORTS_ID, "").equals(relId);
-                    }
-                    return false;
-                }
-            }, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Relationship rel = currentPos.lastRelationshipTraversed();
-                    if (rel == null || !rel.isType(ReportsRelations.SOURCE_MATRIX_EVENT)) {
-                        return false;
-                    }
-                    Long time = NeoUtils.getNodeTime(currentPos.currentNode());
-                    return time != null && time >= begin && time <= end;
-                }
-            }, ReportsRelations.BEST_CELL, Direction.INCOMING, ReportsRelations.SOURCE_MATRIX_EVENT, Direction.OUTGOING);
-           for (Node gpehEvent:gpehEventTraverser){
-               Integer prfix = GpehReportUtil.findPrefix(gpehEvent,psc,service);
-               if (prfix==null){
-                   LOGGER.error("Not found psc "+psc+" in node "+gpehEvent);
-                   continue;
-               }
-               Integer rnsp = (Integer)gpehEvent.getProperty(GpehReportUtil.GPEH_RRC_MR_RSCP_PREFIX+prfix,null);
-               if (rnsp!=null){
-                   Integer count=rncpAr[rnsp];
-                   count=count==null?1:count+1;
-                   rncpAr[rnsp]=count;;
-               }else{
-                   LOGGER.debug("Not found rnsp for best cell in node "+gpehEvent);
-               }
-           }
-           node.setProperty(CellReportsProperties.RNSP_ARRAY, rncpAr);
+            cacheCell.add(new StructureCell(statElem, node));
+            //            
+            // long time = System.currentTimeMillis();
+            // int[] rncpAr=new int[92];
+            // final long begin = statElem.getStartTime();
+            // final long end = statElem.getEndTime();
+            // if (statElem.getPeriod() != CallTimePeriods.HOURLY) {
+            // storeStatisticElementByHourlyStat(statElem, node);
+            // return;
+            // }
+            // Traverser gpehEventTraverser = bestCell.traverse(Order.DEPTH_FIRST, new
+            // StopEvaluator() {
+            //
+            // @Override
+            // public boolean isStopNode(TraversalPosition currentPos) {
+            // Relationship rel = currentPos.lastRelationshipTraversed();
+            // if (rel == null) {
+            // return false;
+            // }
+            // if (rel.isType(ReportsRelations.BEST_CELL)) {
+            // return !rel.getProperty(GpehReportUtil.REPORTS_ID, "").equals(relId);
+            // }
+            // return false;
+            // }
+            // }, new ReturnableEvaluator() {
+            //
+            // @Override
+            // public boolean isReturnableNode(TraversalPosition currentPos) {
+            // Relationship rel = currentPos.lastRelationshipTraversed();
+            // if (rel == null || !rel.isType(ReportsRelations.SOURCE_MATRIX_EVENT)) {
+            // return false;
+            // }
+            // Long time = NeoUtils.getNodeTime(currentPos.currentNode());
+            // return time != null && time >= begin && time <= end;
+            // }
+            // }, ReportsRelations.BEST_CELL, Direction.INCOMING,
+            // ReportsRelations.SOURCE_MATRIX_EVENT, Direction.OUTGOING);
+            // for (Node gpehEvent:gpehEventTraverser){
+            // Integer prfix = GpehReportUtil.findPrefix(gpehEvent,psc,service);
+            // if (prfix==null){
+            // LOGGER.error("Not found psc "+psc+" in node "+gpehEvent);
+            // continue;
+            // }
+            // Integer rnsp =
+            // (Integer)gpehEvent.getProperty(GpehReportUtil.GPEH_RRC_MR_RSCP_PREFIX+prfix,null);
+            // if (rnsp!=null){
+            // Integer count=rncpAr[rnsp];
+            // count=count==null?1:count+1;
+            // rncpAr[rnsp]=count;;
+            // }else{
+            // LOGGER.debug("Not found rnsp for best cell in node "+gpehEvent);
+            // }
+            // }
+            // node.setProperty(CellReportsProperties.RNSP_ARRAY, rncpAr);
+            // time=System.currentTimeMillis()-time;
+            // System.out.println(time);
         }
-
 
         /**
          * Store statistic element by hourly stat.
-         *
+         * 
          * @param statElem the stat elem
          * @param node the node
          */
@@ -1292,7 +1419,77 @@ public class GpehReportCreator {
 
     }
 
+    /**
+     * Creates the rscp cell spread sheet.
+     *
+     * @param string the string
+     * @param period the period
+     * @return the spreadsheet node
+     */
     public SpreadsheetNode createRSCPCellSpreadSheet(String string, CallTimePeriods period) {
         return null;
+    }
+
+    /**
+     * The Class StructureCell.
+     */
+    public static class StructureCell {
+        
+        /** The stat elem. */
+        final IStatisticElement statElem;
+        
+        /** The node. */
+        final Node node;
+        
+        /** The rncp ar. */
+        final int[] rncpAr;
+
+        /**
+         * Instantiates a new structure cell.
+         *
+         * @param statElem the stat elem
+         * @param node the node
+         */
+        public StructureCell(IStatisticElement statElem, Node node) {
+            super();
+            this.statElem = statElem;
+            this.node = node;
+            rncpAr = new int[92];
+        }
+
+        /**
+         * Store rnsp.
+         */
+        public void storeRNSP() {
+            node.setProperty(CellReportsProperties.RNSP_ARRAY, rncpAr);
+        }
+
+        /**
+         * Gets the stat elem.
+         *
+         * @return the stat elem
+         */
+        public IStatisticElement getStatElem() {
+            return statElem;
+        }
+
+        /**
+         * Gets the node.
+         *
+         * @return the node
+         */
+        public Node getNode() {
+            return node;
+        }
+
+        /**
+         * Gets the rncp ar.
+         *
+         * @return the rncp ar
+         */
+        public int[] getRncpAr() {
+            return rncpAr;
+        }
+
     }
 }

@@ -267,7 +267,7 @@ public class GpehReportDialog extends Dialog {
             break;
             case CELL_RSCP_ANALYSIS:
                 //TODO remove after implementing and testing
-                if (true)return;
+//                if (true)return;
                 creator.createRSCPCellReport(period);
                 spreadsheet = creator.createRSCPCellSpreadSheet("RSCPCell",period);
                 return;
