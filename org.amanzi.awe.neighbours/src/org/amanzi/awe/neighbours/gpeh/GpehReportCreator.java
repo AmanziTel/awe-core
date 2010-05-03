@@ -45,7 +45,7 @@ import org.amanzi.splash.utilities.SpreadsheetCreator;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.geotools.referencing.CRS;
+import org.geotools.geometry.jts.JTS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -332,8 +332,8 @@ public class GpehReportCreator {
         Transaction tx = service.beginTx();
         try {
             // Physical distance in meters
-            if (!tableNode.hasProperty(MatrixProperties.DISTANCE) && model.getCrs() != null) {
-                double dist = CRS.distance(bestCell.getCoordinate(), sector.getCoordinate(), model.getCrs());
+            if (!tableNode.hasProperty(MatrixProperties.DISTANCE) && model.getCrs() != null) {                
+                double dist = JTS.orthodromicDistance(bestCell.getCoordinate(), sector.getCoordinate(), model.getCrs());
                 tableNode.setProperty(MatrixProperties.DISTANCE, dist);
             }
             // Defined NBR TRUE when Interfering Cell is defined neighboring cell,
@@ -443,7 +443,7 @@ public class GpehReportCreator {
         try {
             // Physical distance in meters
             if (!tableNode.hasProperty(MatrixProperties.DISTANCE) && model.getCrs() != null) {
-                double dist = CRS.distance(bestCell.getCoordinate(), sector.getCoordinate(), model.getCrs());
+                double dist = JTS.orthodromicDistance(bestCell.getCoordinate(), sector.getCoordinate(), model.getCrs());
                 tableNode.setProperty(MatrixProperties.DISTANCE, dist);
             }
             // Defined NBR TRUE when Interfering Cell is defined neighboring cell,
@@ -1406,15 +1406,6 @@ public class GpehReportCreator {
             // node.setProperty(CellReportsProperties.RNSP_ARRAY, rncpAr);
             // time=System.currentTimeMillis()-time;
             // System.out.println(time);
-        }
-
-        /**
-         * Store statistic element by hourly stat.
-         * 
-         * @param statElem the stat elem
-         * @param node the node
-         */
-        private void storeStatisticElementByHourlyStat(IStatisticElement statElem, Node node) {
         }
 
     }
