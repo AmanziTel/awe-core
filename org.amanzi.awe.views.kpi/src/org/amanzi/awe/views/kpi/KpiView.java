@@ -80,7 +80,12 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
@@ -498,6 +503,18 @@ public class KpiView extends ViewPart {
                 if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)) {
                     String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                     counters.put(id, node);
+                }
+                Traverser traverse = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return true;
+                    }
+                    
+                }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                for (Node fileNode:traverse){
+                    String id = fileNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                    counters.put(id, fileNode);
                 }
             }
             return counters.keySet().toArray(new String[] {});

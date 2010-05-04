@@ -61,20 +61,25 @@ public class PDFPrintingEngine {
     private static final Logger LOGGER = Logger.getLogger(PDFPrintingEngine.class);
     private int top;
     private int left;
+    private final String REPORT_DIRECTORY="Amanzi report";
     public void printReport(Report report) {
         top=0;
         final Rectangle paperSize = PageSize.A4;
         Rectangle paperRectangle = paperSize;
         Document document = new Document(paperRectangle, 0f, 0f, 0f, 0f);
-        String fileName=System.getProperty("user.home")+File.separator;
-        if(fileName==null || fileName.length()==0){
-            fileName+=System.getProperty("user.home")+File.separator+"report"+System.currentTimeMillis()+".pdf";
-        }else{
-            fileName+=report.getFile(); 
+        String fileName=System.getProperty("user.home")+File.separator+REPORT_DIRECTORY;
+        File directory = new File(fileName);
+        if (!directory.exists()) {
+            directory.mkdir();
         }
-        LOGGER.debug("[DEBUG] filename "+fileName);
+        String reportFileName = report.getFile();
+        if (reportFileName == null || reportFileName.length() == 0) {
+            fileName += File.separator + "report" + System.currentTimeMillis() + ".pdf";
+        } else {
+            fileName += File.separator + reportFileName;
+        }
+        LOGGER.debug("filename "+fileName);
         File outputPdfFile = new File(fileName);
-        // try {
 
         PdfWriter writer=null;
         try {
