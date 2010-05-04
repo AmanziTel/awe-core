@@ -2163,4 +2163,21 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
+
+
+    /**
+     * Gets the relationship type by name.
+     *
+     * @param name the name
+     * @return the relationship type by name
+     */
+    public static RelationshipType getRelationshipTypeByName(final String name) {
+        return new RelationshipType() {
+            
+            @Override
+            public String name() {
+                return name;
+            }
+        };
+    }
 }
