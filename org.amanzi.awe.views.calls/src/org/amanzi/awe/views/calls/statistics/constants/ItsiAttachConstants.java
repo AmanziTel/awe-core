@@ -15,15 +15,22 @@ package org.amanzi.awe.views.calls.statistics.constants;
 
 /**
  * <p>
- * Common class for SDS and TSM constants.
+ * Constants for ITSI attach statistics.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class MessageConstants implements IStatisticsConstants{
+public class ItsiAttachConstants implements IStatisticsConstants {
+    
+    public static Float TIME_LIMIT = 40f;
+    public static Float DELAY_P1_LOW = 0f;
+    public static Float DELAY_P2_LOW = 5f;
+    public static Float DELAY_P3_LOW = 10f;
+    public static Float DELAY_P4_LOW = 15f;
+    public static Float DELAY_L1_LOW = 20f;
+    public static Float DELAY_L2_LOW = 25f;
+    public static Float DELAY_L3_LOW = 30f;
+    public static Float DELAY_L4_LOW = 35f;
 
-    public static Float TSM_SEND_TIME_LIMIT = 15f;
-    public static Float TSM_REPLY_TIME_LIMIT = 5f;
-    public static Float SDS_SEND_TIME_LIMIT = 20f;
 
 }

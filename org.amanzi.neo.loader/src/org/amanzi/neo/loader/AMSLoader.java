@@ -355,7 +355,9 @@ public class AMSLoader extends DriveLoader {
 		SEND_MESSAGE_BEGIN("AT+CMGS"),
 	    SEND_MESSAGE_END("CTSDSR"),
 	    MESS_SETUP_BEGIN("AT+CTSDS"),
-	    MESS_ACKN_GET("CMGS");
+	    MESS_ACKN_GET("CMGS"),
+	    START_ITSI("AT+CSPTR"),
+	    UPDATE_START_END("AT+CREG");
 		
 		/*
 		 * Name of Command that causes this Event
@@ -1323,6 +1325,24 @@ public class AMSLoader extends DriveLoader {
 	            }
             }
 	        break;
+	    case START_ITSI:
+            if(call==null){
+                call = new Call();
+                call.setCallResult(CallProperties.CallResult.SUCCESS);
+            }
+            call.setCallerProbe(currentProbeCalls);
+            callerProbeCalls = currentProbeCalls;            
+            call.setCallType(CallType.ITSI_ATTACH);
+            break;
+	    case UPDATE_START_END:
+            if(call!=null && CallType.ITSI_ATTACH.equals(call.getCallType())){
+                if (!(call.getCallSetupBegin()>0)) {
+                    call.setCallSetupBeginTime(timestamp);
+                }else{
+                    call.setCallTerminationEnd(timestamp);
+                }
+            }
+            break;
 	    default:
 	        NeoCorePlugin.error("Unknown call event "+event+".", null);
 	    }
@@ -1367,6 +1387,9 @@ public class AMSLoader extends DriveLoader {
                 case TSM:
                 case ALARM:
                     storeMessageCall(call);
+                    break;
+                case ITSI_ATTACH:
+                    storeITSICall(call);
                     break;
                 default:
                     NeoCorePlugin.error("Unknown call type "+callType+".", null);
@@ -1427,6 +1450,27 @@ public class AMSLoader extends DriveLoader {
             setProperty(headers, callNode, CallProperties.MESS_RECEIVE_TIME.getId(), receivedTime);
             setProperty(headers, callNode, CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), acknTime);
         }
+        setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
+        setProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
+        
+        callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
+        
+        for (Node calleeProbe : call.getCalleeProbes()) {
+            callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
+        }
+        
+        probeCallNode.setProperty(call.getCallType().getProperty(), true);
+    }
+    
+    private void storeITSICall(Call call) {
+        Node probeCallNode = call.getCallerProbe();
+        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
+
+        long updateTime = call.getCallTerminationEnd() - call.getCallSetupBegin();
+        
+        LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
+        setProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), updateTime);
+
         setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
         setProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
         

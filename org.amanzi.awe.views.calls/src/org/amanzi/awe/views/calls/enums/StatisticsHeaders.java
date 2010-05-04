@@ -21,6 +21,7 @@ import java.util.List;
 import org.amanzi.awe.views.calls.statistics.constants.AlarmConstants;
 import org.amanzi.awe.views.calls.statistics.constants.ICallStatisticsConstants;
 import org.amanzi.awe.views.calls.statistics.constants.IStatisticsConstants;
+import org.amanzi.awe.views.calls.statistics.constants.ItsiAttachConstants;
 import org.amanzi.awe.views.calls.statistics.constants.MessageConstants;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.CallProperties.CallResult;
@@ -35,6 +36,36 @@ import org.neo4j.graphdb.Node;
  */
 public enum StatisticsHeaders {
     
+    /*SC1("CALL_ATTEMPT_COUNT", StatisticsType.PERCENT),
+    SC2_ZW2_AVG,
+    SC2_ZW2_MIN,
+    SC2_ZW2_MAX,
+    SC3_ZW2_AVG,
+    SC3_ZW2_MIN,
+    SC3_ZW2_MAX,
+    SC4_ZW2_AVG,
+    SC4_ZW2_MIN,
+    SC4_ZW2_MAX,
+    SC5_ZW1_AVG,
+    SC5_ZW1_MIN,
+    SC5_ZW1_MAX,
+    GC1,
+    GC2_ZW2_AVG,
+    GC2_ZW2_MIN,
+    GC2_ZW2_MAX,
+    GC3_ZW2_AVG,
+    GC3_ZW2_MIN,
+    GC3_ZW2_MAX,
+    GC4_ZW2_AVG,
+    GC4_ZW2_MIN,
+    GC4_ZW2_MAX,
+    GC5_ZW1_AVG,
+    GC5_ZW1_MIN,
+    GC5_ZW1_MAX,
+    INH_CC,
+    TSM,
+    SDS,
+    INH_AT,*/
     CALL_ATTEMPT_COUNT("CALL_ATTEMPT_COUNT", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
@@ -1867,6 +1898,102 @@ public enum StatisticsHeaders {
             }
             float connectionTime = getCallConnectionTime(callNode);
             if(connectionTime<=AlarmConstants.HELP_CALL_CONN_TIME_LIMIT){
+                return 1;
+            }
+            return null;
+        }
+    },
+    ATT_ATTEMPTS("ATTEMPTS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return 1;
+        }
+    },
+    ATT_SUCCESS("SUCCESS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            float connectionTime = getCallDurationTime(callNode);
+            if(connectionTime<=ItsiAttachConstants.TIME_LIMIT){
+                return 1;
+            }
+            return null;
+        }
+    },
+    ATT_DELAY_P1("DELAY_P1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            float updateTime = getCallDurationTime(callNode);
+            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P1_LOW, ItsiAttachConstants.DELAY_P2_LOW, true, false)){
+                return 1;
+            }
+            return null;
+        }
+    },
+    ATT_DELAY_P2("DELAY_P2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            float updateTime = getCallDurationTime(callNode);
+            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P2_LOW, ItsiAttachConstants.DELAY_P3_LOW, true, false)){
+                return 1;
+            }
+            return null;
+        }
+    },
+    ATT_DELAY_P3("DELAY_P3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            float updateTime = getCallDurationTime(callNode);
+            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P3_LOW, ItsiAttachConstants.DELAY_P4_LOW, true, false)){
+                return 1;
+            }
+            return null;
+        }
+    },
+    ATT_DELAY_P4("DELAY_P4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            float updateTime = getCallDurationTime(callNode);
+            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P4_LOW, ItsiAttachConstants.DELAY_L1_LOW, true, false)){
+                return 1;
+            }
+            return null;
+        }
+    },
+    ATT_DELAY_L1("DELAY_L1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            float updateTime = getCallDurationTime(callNode);
+            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L1_LOW, ItsiAttachConstants.DELAY_L2_LOW, true, false)){
+                return 1;
+            }
+            return null;
+        }
+    },
+    ATT_DELAY_L2("DELAY_L2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            float updateTime = getCallDurationTime(callNode);
+            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L2_LOW, ItsiAttachConstants.DELAY_L3_LOW, true, false)){
+                return 1;
+            }
+            return null;
+        }
+    },
+    ATT_DELAY_L3("DELAY_L3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            float updateTime = getCallDurationTime(callNode);
+            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L3_LOW, ItsiAttachConstants.DELAY_L4_LOW, true, false)){
+                return 1;
+            }
+            return null;
+        }
+    },
+    ATT_DELAY_L4("DELAY_L4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            float connectionTime = getCallDurationTime(callNode);
+            if(connectionTime>ItsiAttachConstants.DELAY_L4_LOW){
                 return 1;
             }
             return null;

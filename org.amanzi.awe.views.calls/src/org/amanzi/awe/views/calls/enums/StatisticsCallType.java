@@ -27,10 +27,15 @@ import org.amanzi.neo.core.enums.CallProperties.CallType;
  * @since 1.0.0
  */
 public enum StatisticsCallType {
+    
+    /**
+     * Second level statistics.
+     */
+    AGGREGATION_STATISTICS(null,2),
     /**
      * Individual calls.
      */
-    INDIVIDUAL(CallType.INDIVIDUAL, StatisticsHeaders.CALL_ATTEMPT_COUNT,
+    INDIVIDUAL(CallType.INDIVIDUAL, 1, StatisticsHeaders.CALL_ATTEMPT_COUNT,
                             StatisticsHeaders.SUCC_SETUP_COUNT,
                             StatisticsHeaders.SETUP_TM_Z1_P1,
                             StatisticsHeaders.SETUP_TM_Z1_P2,
@@ -95,7 +100,7 @@ public enum StatisticsCallType {
     /**
      * Group calls.
      */
-    GROUP(CallType.GROUP, StatisticsHeaders.CALL_ATTEMPT_COUNT,
+    GROUP(CallType.GROUP,1, StatisticsHeaders.CALL_ATTEMPT_COUNT,
                             StatisticsHeaders.SUCC_SETUP_COUNT,
                             StatisticsHeaders.SETUP_TM_Z1_P1,
                             StatisticsHeaders.SETUP_TM_Z1_P2,
@@ -159,15 +164,15 @@ public enum StatisticsCallType {
     /**
      * SDS messages.
      */
-    SDS(CallType.SDS,StatisticsHeaders.SDS_MESSAGE_ATTEMPT,StatisticsHeaders.SDS_MESSAGE_SUCC),
+    SDS(CallType.SDS,1,StatisticsHeaders.SDS_MESSAGE_ATTEMPT,StatisticsHeaders.SDS_MESSAGE_SUCC),
     /**
      * TSM messages.
      */
-    TSM(CallType.TSM,StatisticsHeaders.TSM_MESSAGE_ATTEMPT,StatisticsHeaders.TSM_MESSAGE_SUCC),
+    TSM(CallType.TSM,1,StatisticsHeaders.TSM_MESSAGE_ATTEMPT,StatisticsHeaders.TSM_MESSAGE_SUCC),
     /**
      * Alarm messages.
      */
-    ALARM(CallType.ALARM,StatisticsHeaders.ALM_ATTEMPT,
+    ALARM(CallType.ALARM,1,StatisticsHeaders.ALM_ATTEMPT,
                          StatisticsHeaders.ALM_SUCCESS,
                          StatisticsHeaders.ALM_DELAY_TOTAL_SUM,
                          StatisticsHeaders.ALM_DELAY_TOTAL_MIN,
@@ -218,13 +223,31 @@ public enum StatisticsCallType {
     /**
      * Emergency call type 1.
      */
-    EMERGENCY(CallType.EMERGENCY, StatisticsHeaders.EC1_ATTEMPT,StatisticsHeaders.EC1_SUCCESS),
+    EMERGENCY(CallType.EMERGENCY,1, StatisticsHeaders.EC1_ATTEMPT,StatisticsHeaders.EC1_SUCCESS),
     /**
      * Emergency call type 2.
      */
-    HELP(CallType.HELP, StatisticsHeaders.EC2_ATTEMPT,StatisticsHeaders.EC2_SUCCESS);
+    HELP(CallType.HELP,1, StatisticsHeaders.EC2_ATTEMPT,StatisticsHeaders.EC2_SUCCESS),
+    /**
+     * ITSI attach call type.
+     */
+    ITSI_ATTACH(CallType.ITSI_ATTACH,1, StatisticsHeaders.ATT_ATTEMPTS,
+                                        StatisticsHeaders.ATT_SUCCESS,
+                                        StatisticsHeaders.ATT_DELAY_P1,
+                                        StatisticsHeaders.ATT_DELAY_P2,
+                                        StatisticsHeaders.ATT_DELAY_P3,
+                                        StatisticsHeaders.ATT_DELAY_P4,
+                                        StatisticsHeaders.ATT_DELAY_L1,
+                                        StatisticsHeaders.ATT_DELAY_L2,
+                                        StatisticsHeaders.ATT_DELAY_L3,
+                                        StatisticsHeaders.ATT_DELAY_L4);
+    
+    
+    public static final Integer FIRST_LEVEL = 1;
+    public static final Integer SECOND_LEVEL = 2;
     
     private CallType id;
+    private Integer level;
     private List<StatisticsHeaders> headers;
     
     /**
@@ -232,8 +255,9 @@ public enum StatisticsCallType {
      * @param anId CallType
      * @param statHeaders headers
      */
-    private StatisticsCallType(CallType anId, StatisticsHeaders... statHeaders ) {
+    private StatisticsCallType(CallType anId, Integer aLevel, StatisticsHeaders... statHeaders ) {
         id = anId;
+        level = aLevel;
         headers = Arrays.asList(statHeaders);
     }
     
@@ -249,6 +273,13 @@ public enum StatisticsCallType {
      */
     public List<StatisticsHeaders> getHeaders() {
         return headers;
+    }
+    
+    /**
+     * @return Returns the level.
+     */
+    public Integer getLevel() {
+        return level;
     }
     
     public StatisticsHeaders getHeaderByTitle(String title){
@@ -268,7 +299,7 @@ public enum StatisticsCallType {
      */
     public static StatisticsCallType getTypeById(String id){
         for(StatisticsCallType type : values()){
-            if(type.id.toString().equals(id)){
+            if(type.id!=null&&type.id.toString().equals(id)){
                 return type;
             }
         }
@@ -283,10 +314,11 @@ public enum StatisticsCallType {
      */
     public static StatisticsCallType getTypeById(CallType id){
         for(StatisticsCallType type : values()){
-            if(type.id.equals(id)){
+            if(type.id!=null&&type.id.equals(id)){
                 return type;
             }
         }
         throw new IllegalArgumentException("Unknown call type <"+id+">");
     }
+    
 }

@@ -74,6 +74,6 @@ public class CREG extends AbstractAMSCommand {
 
     @Override
     public boolean isCallCommand() {
-        return false;
+        return true;
     }
 }

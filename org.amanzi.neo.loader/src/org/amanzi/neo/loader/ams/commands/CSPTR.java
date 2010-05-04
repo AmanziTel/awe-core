@@ -46,7 +46,7 @@ public class CSPTR extends AbstractAMSCommand {
     
     @Override
     public boolean isCallCommand() {
-        return false;
+        return true;
     }
     
 }

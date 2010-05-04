@@ -36,5 +36,13 @@ public enum StatisticsType {
     /**
      * All sum.
      */
-    SUM;
+    SUM,
+    /**
+     * Percent (for second level)
+     */
+    PERCENT,
+    /**
+     * Average (for second level)
+     */
+    AVERAGE;
 }
