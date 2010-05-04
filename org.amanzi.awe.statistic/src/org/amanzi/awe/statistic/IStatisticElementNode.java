@@ -13,36 +13,21 @@
 
 package org.amanzi.awe.statistic;
 
+import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- * Interface for statistic element
- * </p>.
- *
- * @author Tsinkel_A
+ *Interface for statistic element node
+ * </p>
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public interface IStatisticElement {
-
-    /**
-     * Gets the start time.
-     *
-     * @return the start time
-     */
-    long getStartTime();
+public interface IStatisticElementNode extends IStatisticElement {
     
     /**
-     * Gets the end time.
+     * Gets the statistic node.
      *
-     * @return the end time
+     * @return the node
      */
-    long getEndTime();
-    
-    /**
-     * Gets the period.
-     *
-     * @return the period
-     */
-    CallTimePeriods getPeriod();
-
+    Node getNode();
 }

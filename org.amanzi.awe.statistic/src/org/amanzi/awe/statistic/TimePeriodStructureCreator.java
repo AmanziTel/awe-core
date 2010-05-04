@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.statistic;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -51,16 +52,16 @@ public class TimePeriodStructureCreator {
 
     }
 
-    public Node createStructure() {
+    public StatisticByPeriodStructure createStructure() {
         if (rootNode != null) {
-            return rootNode;
+            return new StatisticByPeriodStructure(rootNode, service);
         }
         Transaction tx = service.beginTx();
         try {
             rootNode = StatisticNeoService.createRootNode(parent, structureId, service);
             rootNode.setProperty(StatisticNeoService.STATISTIC_PERIOD, period.getId());
-            rootNode.setProperty(StatisticNeoService.STATISTIC_TIME_START, startTime);
-            rootNode.setProperty(StatisticNeoService.STATISTIC_TIME_END, endTime);
+            rootNode.setProperty(INeoConstants.MIN_TIMESTAMP, startTime);
+            rootNode.setProperty(INeoConstants.MAX_TIMESTAMP, endTime);
             Node lastNode = null;
             Long periodTime = startTime;
             do {
@@ -68,8 +69,8 @@ public class TimePeriodStructureCreator {
                 IStatisticElement statElem = sourceHandler.getStatisics(periodTime, periodEnd);
                 if (statElem != null) {
                     Node node=service.createNode();
-                    node.setProperty(StatisticNeoService.STATISTIC_TIME_START, periodTime);
-                    node.setProperty(StatisticNeoService.STATISTIC_TIME_END, periodEnd);
+                    node.setProperty(INeoConstants.MIN_TIMESTAMP, periodTime);
+                    node.setProperty(INeoConstants.MAX_TIMESTAMP, periodEnd);
                     NeoUtils.addChild(rootNode, node, lastNode, service);
                     statStore.storeStatisticElement(statElem,node);
                     lastNode=node;
@@ -77,7 +78,7 @@ public class TimePeriodStructureCreator {
                 }
             } while ((periodTime = period.addPeriod(periodTime)) < endTime);
             tx.success();
-            return rootNode;
+            return new StatisticByPeriodStructure(rootNode, service);
         } finally {
             tx.finish();
         }

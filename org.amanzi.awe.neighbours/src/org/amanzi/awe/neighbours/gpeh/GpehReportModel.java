@@ -14,10 +14,11 @@
 package org.amanzi.awe.neighbours.gpeh;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistic.StatisticByPeriodStructure;
+import org.amanzi.awe.statistic.StatisticNeoService;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -32,7 +33,6 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -66,6 +66,7 @@ public class GpehReportModel {
     
     /** The cell rscp analisis. */
     private final Map<CallTimePeriods, CellRscpAnalisis> cellRscpAnalisis = new HashMap<CallTimePeriods, CellRscpAnalisis>();
+    private final Map<CallTimePeriods, CellEcNoAnalisis> cellEcNoAnalisis = new HashMap<CallTimePeriods, CellEcNoAnalisis>();
 
     /** The network. */
     private final Node network;
@@ -181,7 +182,24 @@ public class GpehReportModel {
         intraFrequencyICDM = rel == null ? null : new IntraFrequencyICDM(rel.getOtherNode(getRoot()));
         return intraFrequencyICDM;
     }
+    public CellEcNoAnalisis findCellEcNoAnalisis(final CallTimePeriods periods){
+        if (getRoot() == null) {
+            return null;
+        }
+        CellEcNoAnalisis analys = cellEcNoAnalisis.get(periods);
+        if (analys != null) {
+            return analys;
+        }
 
+        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellEcNoAnalisis.ECNO_PRFIX), Direction.OUTGOING);
+        if (rel!=null){
+            Node mainNode=rel.getOtherNode(getRoot());
+            analys = new CellEcNoAnalisis(mainNode, periods);
+            cellEcNoAnalisis.put(periods, analys);
+            return analys;
+        }
+        return null;   
+    }
     /**
      * Find cell rscp analisis.
      *
@@ -197,23 +215,30 @@ public class GpehReportModel {
             return analys;
         }
 
-        Relationship rel = getRoot().getSingleRelationship(ReportsRelations.CELL_RSCP_ANALYSYS, Direction.OUTGOING);
-        Iterator<Node> iter = getRoot().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                return currentPos.notStartNode()&&currentPos.currentNode().getProperty(CellReportsProperties.PERIOD_ID,"").equals(periods.getId());
-            }
-        }, ReportsRelations.CELL_RSCP_ANALYSYS, Direction.OUTGOING).iterator();
-        
-        Node mainNode = iter.hasNext() ? iter.next() : null;
-        if (mainNode != null) {
+        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellRscpAnalisis.RSCP_PRFIX), Direction.OUTGOING);
+        if (rel!=null){
+            Node mainNode=rel.getOtherNode(getRoot());
             analys = new CellRscpAnalisis(mainNode, periods);
             cellRscpAnalisis.put(periods, analys);
             return analys;
-        } else {
-            return null;
         }
+        return null;
+//        Iterator<Node> iter = getRoot().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+//
+//            @Override
+//            public boolean isReturnableNode(TraversalPosition currentPos) {
+//                return currentPos.notStartNode()&&currentPos.currentNode().getProperty(CellReportsProperties.PERIOD_ID,"").equals(periods.getId());
+//            }
+//        }, ReportsRelations.CELL_RSCP_ANALYSYS, Direction.OUTGOING).iterator();
+//        
+//        Node mainNode = iter.hasNext() ? iter.next() : null;
+//        if (mainNode != null) {
+//            analys = new CellRscpAnalisis(mainNode, periods);
+//            cellRscpAnalisis.put(periods, analys);
+//            return analys;
+//        } else {
+//            return null;
+//        }
     }
 
     /**
@@ -602,23 +627,61 @@ public class GpehReportModel {
         /** The period. */
         protected final CallTimePeriods period;
         
+        /** The use cache. */
+        protected  boolean useCache;
+        
+        /** The cache. */
+        protected  HashMap<String,StatisticByPeriodStructure> cache=new HashMap<String, StatisticByPeriodStructure>();
+        
         /** The main node. */
         protected final Node mainNode;
         
         /** The id name. */
         protected String idName;
+        
+        /** The prefix. */
+        protected final String prefix;
 
         /**
          * Instantiates a new analysis by periods.
          *
          * @param mainNode the main node
          * @param period the period
+         * @param prefix the prefix
          */
-        public AnalysisByPeriods(Node mainNode, CallTimePeriods period) {
+        public AnalysisByPeriods(Node mainNode, CallTimePeriods period,String prefix) {
             this.period = period;
             this.mainNode = mainNode;
+            this.prefix = prefix;
+            useCache=false;
         }
-
+        
+        /**
+         * Gets the statistic structure.
+         *
+         * @param structureId the structure id
+         * @return the statistic structure
+         */
+        public StatisticByPeriodStructure getStatisticStructure(String structureId){
+            if (useCache){
+                StatisticByPeriodStructure result = cache.get(structureId);
+                if (result!=null){
+                    return result;
+                }
+                
+            }
+           Node rootNode = StatisticNeoService.findRootNode(mainNode, structureId);
+           if (rootNode!=null){
+               StatisticByPeriodStructure result = new StatisticByPeriodStructure(rootNode, service);
+               if (isUseCache()){
+                   result.setUseCache(true);
+                   cache.put(structureId, result);
+               }
+               return result; 
+           }else{
+               return null;
+           }
+        }
         /**
          * Gets the period.
          *
@@ -637,13 +700,37 @@ public class GpehReportModel {
             return mainNode;
         }
 
+        /**
+         * Checks if is use cache.
+         *
+         * @return true, if is use cache
+         */
+        public boolean isUseCache() {
+            return useCache;
+        }
+
+        /**
+         * Sets the use cache.
+         *
+         * @param useCache the new use cache
+         */
+        public void setUseCache(boolean useCache) {
+            this.useCache = useCache;
+            if (!this.useCache){
+                cache.clear();
+            }
+        }
+
     }
 
     /**
      * The Class CellRscpAnalisis.
      */
     public class CellRscpAnalisis extends AnalysisByPeriods {
-
+        
+        /** The Constant RSCP_PRFIX. */
+        public static final String RSCP_PRFIX = "RSCP";
+        
         /**
          * Instantiates a new cell rscp analisis.
          *
@@ -651,7 +738,47 @@ public class GpehReportModel {
          * @param period the period
          */
         public CellRscpAnalisis(Node mainNode, CallTimePeriods period) {
-            super(mainNode, period);
+            super(mainNode, period,RSCP_PRFIX);
+        }
+        
+        
+        /**
+         * Gets the rscp property.
+         *
+         * @param node the node
+         * @return the rscp property
+         */
+        public int[] getRscpProperty(Node node) {
+            int[] result = (int[])node.getProperty(CellReportsProperties.RNSP_ARRAY,null);
+            return result==null?new int[92]:result;
+        }
+        
+    }
+    public class CellEcNoAnalisis extends AnalysisByPeriods {
+
+        /** The Constant RSCP_PRFIX. */
+        public static final String ECNO_PRFIX = "ECNO";
+
+        /**
+         * Instantiates a new cell rscp analisis.
+         *
+         * @param mainNode the main node
+         * @param period the period
+         */
+        public CellEcNoAnalisis(Node mainNode, CallTimePeriods period) {
+            super(mainNode, period,ECNO_PRFIX);
+        }
+
+
+        /**
+         * Gets the rscp property.
+         *
+         * @param node the node
+         * @return the rscp property
+         */
+        public int[] getEcNoProperty(Node node) {
+            int[] result = (int[])node.getProperty(CellReportsProperties.ECNO_ARRAY,null);
+            return result==null?new int[50]:result;
         }
 
     }

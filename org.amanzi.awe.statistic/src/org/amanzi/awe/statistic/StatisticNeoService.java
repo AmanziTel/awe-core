@@ -13,17 +13,13 @@
 
 package org.amanzi.awe.statistic;
 
-import java.util.Iterator;
-
+import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.graphdb.ReturnableEvaluator;
-import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.TraversalPosition;
-import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * TODO move to neo.core?
@@ -37,24 +33,41 @@ import org.neo4j.graphdb.Traverser.Order;
 public class StatisticNeoService {
     public static final String STATISTIC_ROOT_ID = "statisticId";
     public static final String STATISTIC_PERIOD = "statperiodId";
-    public static final String STATISTIC_TIME_START = "time_start";
     public static final String STATISTIC_TIME_END = "time_end";
     public static enum Relations implements RelationshipType {
         STATISTIC_ROOT;
     }
 
 
+    /**
+     * Find root node.
+     *
+     * @param parent the parent
+     * @param structureId the structure id
+     * @return the node
+     */
     public static Node findRootNode(Node parent, final String structureId) {
-        Iterator<Node> iterator = parent.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                return currentPos.notStartNode() && structureId.equals(currentPos.currentNode().getProperty(STATISTIC_ROOT_ID, ""));
-            }
-        }, Relations.STATISTIC_ROOT, Direction.OUTGOING).iterator();
-        return iterator.hasNext() ? iterator.next() : null;
+        
+        Relationship rel = parent.getSingleRelationship(getStatisticRootRelationType(structureId),Direction.OUTGOING);
+        return rel!=null?rel.getOtherNode(parent):null;
+//        Iterator<Node> iterator = parent.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+//
+//            @Override
+//            public boolean isReturnableNode(TraversalPosition currentPos) {
+//                return currentPos.notStartNode() && structureId.equals(currentPos.currentNode().getProperty(STATISTIC_ROOT_ID, ""));
+//            }
+//        }, Relations.STATISTIC_ROOT, Direction.OUTGOING).iterator();
+//        return iterator.hasNext() ? iterator.next() : null;
     }
 
+    /**
+     * Creates the root node.
+     *
+     * @param parent the parent
+     * @param structureId the structure id
+     * @param service the service
+     * @return the node
+     */
     public static Node createRootNode(Node parent, String structureId, GraphDatabaseService service) {
         Transaction tx = service.beginTx();
         try {
@@ -66,6 +79,26 @@ public class StatisticNeoService {
             return result;
         } finally {
             tx.finish();
+        }
+    }
+    
+    /**
+     * Gets the statistic root relation type.
+     *
+     * @param prefix the prefix
+     * @return the statistic root relation type
+     */
+    public static RelationshipType getStatisticRootRelationType(final String prefix){
+        if (StringUtil.isEmpty(prefix)){
+            return Relations.STATISTIC_ROOT;
+        }else{
+            final String name=new StringBuilder(prefix).append(Relations.STATISTIC_ROOT.name()).toString();
+            return new RelationshipType() {
+                @Override
+                public String name() {
+                    return name;
+                }
+            };
         }
     }
 
