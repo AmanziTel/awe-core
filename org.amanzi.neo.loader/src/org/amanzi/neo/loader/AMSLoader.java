@@ -807,7 +807,7 @@ public class AMSLoader extends DriveLoader {
 	
 	@Override
 	protected void parseLine(String line) {
-	    System.out.println("Parse line: "+line);
+	    //System.out.println("Parse line: "+line);
 	    if (newDirectory) {
 	        saveData();
 	        newDirectory = false;

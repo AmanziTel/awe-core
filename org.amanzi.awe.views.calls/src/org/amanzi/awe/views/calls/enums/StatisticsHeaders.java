@@ -23,6 +23,7 @@ import org.amanzi.awe.views.calls.statistics.constants.ICallStatisticsConstants;
 import org.amanzi.awe.views.calls.statistics.constants.IStatisticsConstants;
 import org.amanzi.awe.views.calls.statistics.constants.ItsiAttachConstants;
 import org.amanzi.awe.views.calls.statistics.constants.MessageConstants;
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.neo4j.graphdb.Node;
@@ -36,36 +37,405 @@ import org.neo4j.graphdb.Node;
  */
 public enum StatisticsHeaders {
     
-    /*SC1("CALL_ATTEMPT_COUNT", StatisticsType.PERCENT),
-    SC2_ZW2_AVG,
-    SC2_ZW2_MIN,
-    SC2_ZW2_MAX,
-    SC3_ZW2_AVG,
-    SC3_ZW2_MIN,
-    SC3_ZW2_MAX,
-    SC4_ZW2_AVG,
-    SC4_ZW2_MIN,
-    SC4_ZW2_MAX,
-    SC5_ZW1_AVG,
-    SC5_ZW1_MIN,
-    SC5_ZW1_MAX,
-    GC1,
-    GC2_ZW2_AVG,
-    GC2_ZW2_MIN,
-    GC2_ZW2_MAX,
-    GC3_ZW2_AVG,
-    GC3_ZW2_MIN,
-    GC3_ZW2_MAX,
-    GC4_ZW2_AVG,
-    GC4_ZW2_MIN,
-    GC4_ZW2_MAX,
-    GC5_ZW1_AVG,
-    GC5_ZW1_MIN,
-    GC5_ZW1_MAX,
-    INH_CC,
-    TSM,
-    SDS,
-    INH_AT,*/
+    //Utility headers for get second level statistics (should be not in any call type)
+    SC_SUCC_SETUP_COUNT("SC_SUCC_SETUP_COUNT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_ATTEMPT_COUNT("SC_ATTEMPT_COUNT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_SETUP_TIME_MAX("SC_SETUP_TIME_MAX",StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_SETUP_TIME_MIN("SC_SETUP_TIME_MIN",StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_SETUP_TIME_TOTAL("SC_SETUP_TIME_TOTAL",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_CALL_DISC_TIME("SC_CALL_DISC_TIME",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_AUDIO_QUAL_COUNT("SC_AUDIO_QUAL_COUNT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_AUDIO_QUAL_SUCC("SC_AUDIO_QUAL_SUCC",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_AUDIO_QUAL_MAX("SC_AUDIO_QUAL_MAX",StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_AUDIO_QUAL_MIN("SC_AUDIO_QUAL_MIN",StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_AUDIO_QUAL_TOTAL("SC_AUDIO_QUAL_TOTAL",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_DELAY_COUNT("SC_DELAY_COUNT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_DELAY_MAX("SC_DELAY_MAX",StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_DELAY_MIN("SC_DELAY_MIN",StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SC_DELAY_TOTAL("SC_DELAY_TOTAL",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_SUCC_SETUP_COUNT("GC_SUCC_SETUP_COUNT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_ATTEMPT_COUNT("GC_ATTEMPT_COUNT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_SETUP_TIME_MAX("GC_SETUP_TIME_MAX",StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_SETUP_TIME_MIN("GC_SETUP_TIME_MIN",StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_SETUP_TIME_TOTAL("GC_SETUP_TIME_TOTAL",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_CALL_DISC_TIME("GC_CALL_DISC_TIME",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_AUDIO_QUAL_COUNT("GC_AUDIO_QUAL_COUNT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_AUDIO_QUAL_SUCC("GC_AUDIO_QUAL_SUCC",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_AUDIO_QUAL_MAX("GC_AUDIO_QUAL_MAX",StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_AUDIO_QUAL_MIN("GC_AUDIO_QUAL_MIN",StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_AUDIO_QUAL_TOTAL("GC_AUDIO_QUAL_TOTAL",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_DELAY_COUNT("GC_DELAY_COUNT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_DELAY_MAX("GC_DELAY_MAX",StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_DELAY_MIN("GC_DELAY_MIN",StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    GC_DELAY_TOTAL("GC_DELAY_TOTAL",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    INH_CC_SUCCESS("INH_CC_SUCCESS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    INH_CC_ATTEMPT("INH_CC_ATTEMPT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    TSM_SUCCESS("TSM_SUCCESS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    TSM_ATTEMPT("TSM_ATTEMPT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SDS_SUCCESS("SDS_SUCCESS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    SDS_ATTEMPT("SDS_ATTEMPT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    INH_ATT_SUCCESS("INH_ATT_SUCCESS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    INH_ATT_ATTEMPT("INH_ATT_ATTEMPT",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    //Utility headers for get second level statistics (should not be in any call type) - end.
+    
+    SC1("SC1", StatisticsType.PERCENT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC2_ZW2_AVG("SC2 ZW2(AVG)", StatisticsType.AVERAGE) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC2_ZW2_MIN("SC2 ZW2(MIN)", StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC2_ZW2_MAX("SC2 ZW2(MAX)", StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC3("SC3 ZW2(AVG)", StatisticsType.AVERAGE) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC4("SC4", StatisticsType.PERCENT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC4_ZW2_AVG("SC4 ZW2(AVG)", StatisticsType.AVERAGE) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC4_ZW2_MIN("SC4 ZW2(MIN)", StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC4_ZW2_MAX("SC4 ZW2(MAX)", StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC5_ZW1_AVG("SC5 ZW1(AVG)", StatisticsType.AVERAGE) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC5_ZW1_MIN("SC5 ZW1(MIN)", StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SC5_ZW1_MAX("SC5 ZW1(MAX)", StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC1("GC1", StatisticsType.PERCENT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC2_ZW2_AVG("GC2 ZW2(AVG)", StatisticsType.AVERAGE) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC2_ZW2_MIN("GC2 ZW2(MIN)", StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC2_ZW2_MAX("GC2 ZW2(MAX)", StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC3("GC3 ZW2(AVG)", StatisticsType.AVERAGE) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC4("GC4", StatisticsType.PERCENT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC4_ZW2_AVG("GC4 ZW2(AVG)", StatisticsType.AVERAGE) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC4_ZW2_MIN("GC4 ZW2(MIN)", StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC4_ZW2_MAX("GC4 ZW2(MAX)", StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC5_ZW1_AVG("GC5 ZW1(AVG)", StatisticsType.AVERAGE) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC5_ZW1_MIN("GC5 ZW1(MIN)", StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    GC5_ZW1_MAX("GC5 ZW1(MAX)", StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    INH_CC("INH CC", StatisticsType.PERCENT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    TSM("TSM", StatisticsType.PERCENT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    SDS("SDS", StatisticsType.PERCENT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    INH_AT("INH AT", StatisticsType.PERCENT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
     CALL_ATTEMPT_COUNT("CALL_ATTEMPT_COUNT", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
@@ -349,10 +719,6 @@ public enum StatisticsHeaders {
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
             if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                /*List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualLimit(), callConstants.getIndivCallQualMax(), true, true);
-                if(!good.isEmpty()){
-                    return 1;
-                }*/
                 float[] audioQuality = getCallAudioQuality(callNode);
                 if (audioQuality.length>0) {
                     float result = audioQuality[0];
@@ -1996,6 +2362,126 @@ public enum StatisticsHeaders {
             if(connectionTime>ItsiAttachConstants.DELAY_L4_LOW){
                 return 1;
             }
+            return null;
+        }
+    },
+    CC_HO_ATTEMPTS("HO_ATTEMPTS",StatisticsType.COUNT) { //TODO next headers.
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_RES_ATTEMPTS("RES_ATTEMPTS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_HO_SUCCESS("HO_SUCCESS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_RES_SUCCESS("RES_SUCCESS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_HO_TIME_P1("HO_TIME_P1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_HO_TIME_P2("HO_TIME_P2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_HO_TIME_P3("HO_TIME_P3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_HO_TIME_P4("DELAY_L4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_HO_TIME_L1("HO_TIME_L1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_HO_TIME_L2("HO_TIME_L2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_HO_TIME_L3("HO_TIME_L3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_HO_TIME_L4("HO_TIME_L4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_RES_TIME_P1("RES_TIME_P1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_RES_TIME_P2("RES_TIME_P2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_RES_TIME_P3("RES_TIME_P3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_RES_TIME_P4("RES_TIME_P4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_RES_TIME_L1("RES_TIME_L1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_RES_TIME_L2("RES_TIME_L2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_RES_TIME_L3("RES_TIME_L3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CC_RES_TIME_L4("RES_TIME_L4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
             return null;
         }
     };

@@ -106,7 +106,8 @@ public enum CallProperties {
         ALARM("has_alarm"), 
         EMERGENCY("has_emergency"), 
         HELP("has_help"),
-        ITSI_ATTACH("has_attach");
+        ITSI_ATTACH("has_attach"),
+        ITSI_CC("has_itsi_cc");
         
         private String hasCallsProperty;
         

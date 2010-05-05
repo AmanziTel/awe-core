@@ -13,11 +13,11 @@
 
 package org.amanzi.awe.views.calls.enums;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.neo.core.enums.CallProperties.CallType;
-
 
 /**
  * <p>
@@ -31,7 +31,32 @@ public enum StatisticsCallType {
     /**
      * Second level statistics.
      */
-    AGGREGATION_STATISTICS(null,2),
+    AGGREGATION_STATISTICS(null,2,StatisticsHeaders.SC1,
+                                StatisticsHeaders.SC2_ZW2_AVG,
+                                StatisticsHeaders.SC2_ZW2_MIN,
+                                StatisticsHeaders.SC2_ZW2_MAX,
+                                StatisticsHeaders.SC3,
+                                StatisticsHeaders.SC4_ZW2_AVG,
+                                StatisticsHeaders.SC4_ZW2_MIN,
+                                StatisticsHeaders.SC4_ZW2_MAX,
+                                StatisticsHeaders.SC5_ZW1_AVG,
+                                StatisticsHeaders.SC5_ZW1_MIN,
+                                StatisticsHeaders.SC5_ZW1_MAX,
+                                StatisticsHeaders.GC1,
+                                StatisticsHeaders.GC2_ZW2_AVG,
+                                StatisticsHeaders.GC2_ZW2_MIN,
+                                StatisticsHeaders.GC2_ZW2_MAX,
+                                StatisticsHeaders.GC3,
+                                StatisticsHeaders.GC4_ZW2_AVG,
+                                StatisticsHeaders.GC4_ZW2_MIN,
+                                StatisticsHeaders.GC4_ZW2_MAX,
+                                StatisticsHeaders.GC5_ZW1_AVG,
+                                StatisticsHeaders.GC5_ZW1_MIN,
+                                StatisticsHeaders.GC5_ZW1_MAX,
+                                StatisticsHeaders.INH_CC,
+                                StatisticsHeaders.TSM,
+                                StatisticsHeaders.SDS,
+                                StatisticsHeaders.INH_AT),
     /**
      * Individual calls.
      */
@@ -240,7 +265,30 @@ public enum StatisticsCallType {
                                         StatisticsHeaders.ATT_DELAY_L1,
                                         StatisticsHeaders.ATT_DELAY_L2,
                                         StatisticsHeaders.ATT_DELAY_L3,
-                                        StatisticsHeaders.ATT_DELAY_L4);
+                                        StatisticsHeaders.ATT_DELAY_L4),
+    /**
+     * ITSI CC (CellChange) call type.
+     */
+    ITSI_CC(CallType.ITSI_CC,1, StatisticsHeaders.CC_HO_ATTEMPTS,
+                                StatisticsHeaders.CC_RES_ATTEMPTS,
+                                StatisticsHeaders.CC_HO_SUCCESS,
+                                StatisticsHeaders.CC_RES_SUCCESS,
+                                StatisticsHeaders.CC_HO_TIME_P1,
+                                StatisticsHeaders.CC_HO_TIME_P2,
+                                StatisticsHeaders.CC_HO_TIME_P3,
+                                StatisticsHeaders.CC_HO_TIME_P4,
+                                StatisticsHeaders.CC_HO_TIME_L1,
+                                StatisticsHeaders.CC_HO_TIME_L2,
+                                StatisticsHeaders.CC_HO_TIME_L3,
+                                StatisticsHeaders.CC_HO_TIME_L4,
+                                StatisticsHeaders.CC_RES_TIME_P1,
+                                StatisticsHeaders.CC_RES_TIME_P2,
+                                StatisticsHeaders.CC_RES_TIME_P3,
+                                StatisticsHeaders.CC_RES_TIME_P4,
+                                StatisticsHeaders.CC_RES_TIME_L1,
+                                StatisticsHeaders.CC_RES_TIME_L2,
+                                StatisticsHeaders.CC_RES_TIME_L3,
+                                StatisticsHeaders.CC_RES_TIME_L4);
     
     
     public static final Integer FIRST_LEVEL = 1;
@@ -298,7 +346,7 @@ public enum StatisticsCallType {
      * @return StatisticsCallTypes
      */
     public static StatisticsCallType getTypeById(String id){
-        for(StatisticsCallType type : values()){
+        for(StatisticsCallType type : getTypesByLevel(FIRST_LEVEL)){
             if(type.id!=null&&type.id.toString().equals(id)){
                 return type;
             }
@@ -313,12 +361,22 @@ public enum StatisticsCallType {
      * @return StatisticsCallTypes
      */
     public static StatisticsCallType getTypeById(CallType id){
-        for(StatisticsCallType type : values()){
+        for(StatisticsCallType type : getTypesByLevel(FIRST_LEVEL)){
             if(type.id!=null&&type.id.equals(id)){
                 return type;
             }
         }
         throw new IllegalArgumentException("Unknown call type <"+id+">");
+    }
+    
+    public static List<StatisticsCallType> getTypesByLevel(Integer level){
+        List<StatisticsCallType> result = new ArrayList<StatisticsCallType>();
+        for(StatisticsCallType type : values()){
+            if(type.level.equals(level)){
+                result.add(type);
+            }
+        }
+        return result;
     }
     
 }
