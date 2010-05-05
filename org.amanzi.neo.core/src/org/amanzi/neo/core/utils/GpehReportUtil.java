@@ -268,7 +268,7 @@ public class GpehReportUtil {
         /** The CEL l_ rsc p_ analysys. */
         CELL_RSCP_ANALYSYS,
         /** The SOURCE event. */
-        SOURCE_EVENT, SOURCE_RSCP_EVENT, SOURCE_ECNO_EVENT;
+        SOURCE_EVENT, SOURCE_RSCP_EVENT, SOURCE_ECNO_EVENT, SOURCE_RSCP_ECNO_EVENT, SOURCE_UE_TX_POWER_EVENT, SOURCE;
     }
 
     /**
