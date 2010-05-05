@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.statistic;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -32,6 +35,7 @@ import org.neo4j.graphdb.Transaction;
  */
 public class StatisticNeoService {
     public static final String STATISTIC_ROOT_ID = "statisticId";
+    public static final Pattern ID_PATTERN = Pattern.compile("(^.*)(" + Relations.STATISTIC_ROOT.name() + "$)");
     public static final String STATISTIC_PERIOD = "statperiodId";
     public static final String STATISTIC_TIME_END = "time_end";
     public static enum Relations implements RelationshipType {
@@ -72,7 +76,7 @@ public class StatisticNeoService {
         Transaction tx = service.beginTx();
         try {
             Node result = service.createNode();
-            parent.createRelationshipTo(result, Relations.STATISTIC_ROOT);
+            parent.createRelationshipTo(result, getStatisticRootRelationType(structureId));
             // TODO add type
             result.setProperty(STATISTIC_ROOT_ID, structureId);
             tx.success();
@@ -99,6 +103,16 @@ public class StatisticNeoService {
                     return name;
                 }
             };
+        }
+    }
+
+
+    public static String getBestCellId(String name) {
+        Matcher matcher = ID_PATTERN.matcher(name);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        } else {
+            return null;
         }
     }
 

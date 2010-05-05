@@ -14,6 +14,8 @@
 package org.amanzi.awe.statistic;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -104,6 +106,22 @@ public class StatisticByPeriodStructure {
        }
        
     }
+
+    public Set<IStatisticElementNode> getStatNedes(Long from, Long to) {
+        LinkedHashSet<IStatisticElementNode> result = new LinkedHashSet<IStatisticElementNode>();
+        Transaction tx = service.beginTx();
+        try {
+            for (Node statNode : NeoUtils.getChildTraverser(root)) {
+                Pair<Long, Long> timePeriod = NeoUtils.getMinMaxTimeOfDataset(statNode, service);
+                if (Math.max(from, timePeriod.getLeft()) <= Math.min(to, timePeriod.getRight())) {
+                    result.add(new StatisticElementNodeImpl(statNode, period, timePeriod.getLeft(), timePeriod.getRight()));
+                }
+            }
+            return result;
+        } finally {
+            tx.finish();
+        }
+    }
     
     /**
      * Checks if is use cache.
@@ -124,6 +142,10 @@ public class StatisticByPeriodStructure {
         if (!useCache){
             cache.clear();
         }
+    }
+
+    public Node getRoot() {
+        return root;
     }
     
 }

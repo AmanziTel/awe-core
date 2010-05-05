@@ -67,6 +67,8 @@ public class GpehReportModel {
     /** The cell rscp analisis. */
     private final Map<CallTimePeriods, CellRscpAnalisis> cellRscpAnalisis = new HashMap<CallTimePeriods, CellRscpAnalisis>();
     private final Map<CallTimePeriods, CellEcNoAnalisis> cellEcNoAnalisis = new HashMap<CallTimePeriods, CellEcNoAnalisis>();
+    private final Map<CallTimePeriods, CellRscpEcNoAnalisis> cellRscpEcNoAnalisis = new HashMap<CallTimePeriods, CellRscpEcNoAnalisis>();
+    private final Map<CallTimePeriods, CellUeTxPowerAnalisis> cellUeTxPowerAnalisis = new HashMap<CallTimePeriods, CellUeTxPowerAnalisis>();
 
     /** The network. */
     private final Node network;
@@ -120,6 +122,9 @@ public class GpehReportModel {
     public void findCellAnalysis() {
         for (CallTimePeriods period:new CallTimePeriods[]{CallTimePeriods.HOURLY,CallTimePeriods.DAILY,CallTimePeriods.ALL}){
             findCellRscpAnalisis(period);
+            findCellEcNoAnalisis(period);
+            findCellRscpEcNoAnalisis(period);
+            findCellUeTxPowerAnalisis(period);
         }
     }
 
@@ -200,6 +205,46 @@ public class GpehReportModel {
         }
         return null;   
     }
+
+    public CellRscpEcNoAnalisis findCellRscpEcNoAnalisis(final CallTimePeriods periods) {
+        if (getRoot() == null) {
+            return null;
+        }
+        CellRscpEcNoAnalisis analys = cellRscpEcNoAnalisis.get(periods);
+        if (analys != null) {
+            return analys;
+        }
+
+        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellRscpEcNoAnalisis.PRFIX),
+                Direction.OUTGOING);
+        if (rel != null) {
+            Node mainNode = rel.getOtherNode(getRoot());
+            analys = new CellRscpEcNoAnalisis(mainNode, periods);
+            cellRscpEcNoAnalisis.put(periods, analys);
+            return analys;
+        }
+        return null;
+    }
+
+    public CellUeTxPowerAnalisis findCellUeTxPowerAnalisis(final CallTimePeriods periods) {
+        if (getRoot() == null) {
+            return null;
+        }
+        CellUeTxPowerAnalisis analys = cellUeTxPowerAnalisis.get(periods);
+        if (analys != null) {
+            return analys;
+        }
+
+        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellUeTxPowerAnalisis.PRFIX),
+                Direction.OUTGOING);
+        if (rel != null) {
+            Node mainNode = rel.getOtherNode(getRoot());
+            analys = new CellUeTxPowerAnalisis(mainNode, periods);
+            cellUeTxPowerAnalisis.put(periods, analys);
+            return analys;
+        }
+        return null;
+    }
     /**
      * Find cell rscp analisis.
      *
@@ -276,6 +321,18 @@ public class GpehReportModel {
      */
     public CellRscpAnalisis getCellRscpAnalisis(CallTimePeriods periods) {
         return cellRscpAnalisis.get(periods);
+    }
+
+    public CellRscpEcNoAnalisis getCellRscpEcNoAnalisis(CallTimePeriods periods) {
+        return cellRscpEcNoAnalisis.get(periods);
+    }
+
+    public CellUeTxPowerAnalisis getCellUeTxPowerAnalisis(CallTimePeriods periods) {
+        return cellUeTxPowerAnalisis.get(periods);
+    }
+
+    public CellEcNoAnalisis getCellEcNoAnalisis(CallTimePeriods periods) {
+        return cellEcNoAnalisis.get(periods);
     }
 
     /**
@@ -730,6 +787,7 @@ public class GpehReportModel {
         
         /** The Constant RSCP_PRFIX. */
         public static final String RSCP_PRFIX = "RSCP";
+        public static final String ARRAY_NAME = "rscp_arr";
         
         /**
          * Instantiates a new cell rscp analisis.
@@ -742,22 +800,14 @@ public class GpehReportModel {
         }
         
         
-        /**
-         * Gets the rscp property.
-         *
-         * @param node the node
-         * @return the rscp property
-         */
-        public int[] getRscpProperty(Node node) {
-            int[] result = (int[])node.getProperty(CellReportsProperties.RNSP_ARRAY,null);
-            return result==null?new int[92]:result;
-        }
+
         
     }
     public class CellEcNoAnalisis extends AnalysisByPeriods {
 
         /** The Constant RSCP_PRFIX. */
         public static final String ECNO_PRFIX = "ECNO";
+        public static final String ARRAY_NAME = "ecno_arr";
 
         /**
          * Instantiates a new cell rscp analisis.
@@ -767,6 +817,55 @@ public class GpehReportModel {
          */
         public CellEcNoAnalisis(Node mainNode, CallTimePeriods period) {
             super(mainNode, period,ECNO_PRFIX);
+        }
+
+        /**
+         * Gets the rscp property.
+         * 
+         * @param node the node
+         * @return the rscp property
+         */
+        public int[] getEcNoProperty(Node node) {
+            int[] result = (int[])node.getProperty(CellReportsProperties.ECNO_ARRAY, null);
+            return result == null ? new int[50] : result;
+        }
+
+    }
+
+    public class CellRscpEcNoAnalisis extends AnalysisByPeriods {
+
+        /** The Constant RSCP_PRFIX. */
+        public static final String PRFIX = "RSCP_ECNO";
+        public static final String ARRAY_NAME = "rscp_ecno_arr";
+
+        /**
+         * Instantiates a new cell rscp analisis.
+         * 
+         * @param mainNode the main node
+         * @param period the period
+         */
+        public CellRscpEcNoAnalisis(Node mainNode, CallTimePeriods period) {
+            super(mainNode, period, PRFIX);
+        }
+
+
+
+    }
+
+    public class CellUeTxPowerAnalisis extends AnalysisByPeriods {
+
+        /** The Constant RSCP_PRFIX. */
+        public static final String PRFIX = "UE_TX_POWER";
+        public static final String ARRAY_NAME = "ue_tx_pow_arr";
+
+        /**
+         * Instantiates a new cell rscp analisis.
+         * 
+         * @param mainNode the main node
+         * @param period the period
+         */
+        public CellUeTxPowerAnalisis(Node mainNode, CallTimePeriods period) {
+            super(mainNode, period, PRFIX);
         }
 
 

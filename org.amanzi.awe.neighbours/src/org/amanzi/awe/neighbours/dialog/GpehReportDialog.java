@@ -257,6 +257,7 @@ public class GpehReportDialog extends Dialog {
                 NeoServiceProvider.getProvider().getIndexService());
         creator.setMonitor(monitor);
         creator.createMatrix();
+
         final SpreadsheetNode spreadsheet;
         switch (repType) {
         case IDCM_INTRA:
@@ -265,11 +266,17 @@ public class GpehReportDialog extends Dialog {
         case IDCM_INTER:
             spreadsheet = creator.createInterIDCMSpreadSheet("InterMatrix");
             break;
-            case CELL_RSCP_ANALYSIS:
+        case CELL_RSCP_ANALYSIS:
+            // TODO remove after implementing and testing
+            // if (true)return;
+            creator.createRSCPCellReport(period);
+            spreadsheet = creator.createRSCPCellSpreadSheet("RSCPCell", period);
+            return;
+        case CELL_ECNO_ANALYSIS:
                 //TODO remove after implementing and testing
 //                if (true)return;
-                creator.createRSCPCellReport(period);
-                spreadsheet = creator.createRSCPCellSpreadSheet("RSCPCell",period);
+            creator.createEcNoCellReport(period);
+            spreadsheet = creator.createEcNoCellSpreadSheet("RSCPCell", period);
                 return;
         default:
             return;

@@ -22,7 +22,8 @@ package org.amanzi.awe.neighbours.gpeh;
  * @since 1.0.0
  */
 public enum GpehReportType {
-    IDCM_INTRA("INTRA-FREQUENCY ICDM"), IDCM_INTER("INTER-FREQUENCY ICDM"), CELL_RSCP_ANALYSIS("CELL RSCP ANALYSIS");
+    IDCM_INTRA("INTRA-FREQUENCY ICDM"), IDCM_INTER("INTER-FREQUENCY ICDM"), CELL_RSCP_ANALYSIS("CELL RSCP ANALYSIS"), CELL_ECNO_ANALYSIS(
+            "CELL ECNO ANALYSIS");
     private final String id;
     private GpehReportType(String id){
         this.id = id;

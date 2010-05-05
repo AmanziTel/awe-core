@@ -38,6 +38,8 @@ public class RrcMeasurement {
     /** The position. */
     private int position;
 
+    private Integer ueTxPower;
+
     /**
      * Instantiates a new rrc measurement.
      */
@@ -53,12 +55,13 @@ public class RrcMeasurement {
      * @param ecNo the ec no
      * @param bsic the bsic
      */
-    public RrcMeasurement(String scrambling, Integer rscp, Integer ecNo,Integer bsic) {
+    public RrcMeasurement(String scrambling, Integer rscp, Integer ecNo, Integer bsic, Integer ueTxPower) {
         super();
         this.scrambling = scrambling;
         this.rscp = rscp;
         this.ecNo = ecNo;
         this.bsic = bsic;
+        this.ueTxPower = ueTxPower;
     }
 
     /**
@@ -150,6 +153,20 @@ public class RrcMeasurement {
      */
     public int getPosition() {
         return position;
+    }
+
+    /**
+     * @return Returns the ueTxPower.
+     */
+    public Integer getUeTxPower() {
+        return ueTxPower;
+    }
+
+    /**
+     * @param ueTxPower The ueTxPower to set.
+     */
+    public void setUeTxPower(Integer ueTxPower) {
+        this.ueTxPower = ueTxPower;
     }
     
 }
