@@ -1344,7 +1344,7 @@ public class AMSLoader extends DriveLoader {
             }
             break;
 	    default:
-	        NeoCorePlugin.error("Unknown call event "+event+".", null);
+	        LOGGER.warn("Unknown call event "+event+".");
 	    }
 	    
 	    if (call != null) {
