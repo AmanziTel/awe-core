@@ -27,9 +27,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
 /**
- * TODO Purpose of
- * <p>
- * </p>
+ * Loader of APD data
  * 
  * @author NiCK
  * @since 1.0.0
