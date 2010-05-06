@@ -241,6 +241,9 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
         if (lastExetutedEvent.equals(event)) {
             return true;
         }
+        if(!lastExetutedEvent.getClass().equals(event.getClass())){
+            return false;
+        }
         Node last = getNodeFromEvent(lastExetutedEvent);
         if (last != null) {
             Node current = getNodeFromEvent(event);
