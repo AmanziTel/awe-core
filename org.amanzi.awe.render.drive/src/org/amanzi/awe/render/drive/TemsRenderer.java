@@ -48,10 +48,8 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.awe.neostyle.ShapeType;
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -203,6 +201,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     /**
      * This method is called to render data from the Neo4j 'GeoNeo' Geo-Resource.
      */
+    @SuppressWarnings("unchecked")
     private void renderGeoNeo(Graphics2D g, IGeoResource neoGeoResource, IProgressMonitor monitor) throws RenderException {
         if (monitor == null)
             monitor = new NullProgressMonitor();
@@ -333,9 +332,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             if (haveSelectedNodes()) {
                 trans = 25;
             }
-            // draw event icon flag
-            boolean drawEvents = /* true || */drawFull;
-
+            
             fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), trans);
             g.setColor(drawColor);
             int count = 0;
@@ -377,7 +374,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                     for (GroupFilter groupFilter : groupFilters) {
                                         final List<IFilter> filters = groupFilter.getFilters();
                                         Node currentNode = currentPos.currentNode();
-                                        final Iterable<String> propertyKeys = currentNode.getPropertyKeys();
                                         if (!NeoUtils.isDriveMNode(currentNode))
                                             return false;
                                         for (IFilter filter : filters) {
@@ -569,8 +565,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     }
                 } else {
                     // Traverse backwards on CHILD relations to closest 'mp' Point
-                    for (@SuppressWarnings("unused")
-                    Node rnode : node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+                    for (Node rnode : node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
                         @Override
                         public boolean isStopNode(TraversalPosition currentPos) {
                             return NeoUtils.isDrivePointNode(currentPos.currentNode());

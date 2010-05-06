@@ -165,7 +165,7 @@ public class LegendDrive implements MapGraphic {
             x += imageWidth;
         }
 
-        if (text != null || text.length() != 0) {
+        if (text != null && text.length() != 0) {
             graphics.drawString(text, x + horizontalMargin, y + graphics.getFontAscent() + textVerticalOffset,
                     ViewportGraphics.ALIGN_LEFT, ViewportGraphics.ALIGN_LEFT);
         }

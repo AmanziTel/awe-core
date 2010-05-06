@@ -1060,19 +1060,7 @@ public class AMSLoader extends DriveLoader {
 	 * @return list of files to import
 	 */
 	private ArrayList<File> getAllLogFilePathes(String directoryName) {
-		File directory = new File(directoryName);
-		ArrayList<File> result = new ArrayList<File>();
-		
-		for (File childFile : directory.listFiles()) {
-			if (childFile.isDirectory()) {
-				result.addAll(getAllLogFilePathes(childFile.getAbsolutePath()));
-			}
-			else if (childFile.isFile() &&
-					 childFile.getName().endsWith(AMS_LOG_FILE_EXTENSION)) {
-				result.add(childFile);
-			}
-		}
-		return result;
+		return super.getAllLogFilePathes(directoryName, AMS_LOG_FILE_EXTENSION);
 		
 	}
 	

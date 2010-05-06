@@ -1892,4 +1892,29 @@ public abstract class AbstractLoader {
         });
         return result;
     }
+    
+    /**
+     * Calculates list of files to import
+     *
+     * @param directoryName directory to import
+     * @param extension extension of File (can be null) 
+     * @return list of files to import
+     */
+    protected ArrayList<File> getAllLogFilePathes(String directoryName, String extension) {
+        File directory = new File(directoryName);
+        ArrayList<File> result = new ArrayList<File>();
+        
+        for (File childFile : directory.listFiles()) {
+            if (childFile.isDirectory()) {
+                result.addAll(getAllLogFilePathes(childFile.getAbsolutePath(), extension));
+            }
+            else if (childFile.isFile() &&
+                     ((extension == null) || 
+                     childFile.getName().endsWith(extension))) {
+                result.add(childFile);
+            }
+        }
+        return result;
+        
+    }
 }
