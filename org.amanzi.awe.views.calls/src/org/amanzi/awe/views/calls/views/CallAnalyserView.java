@@ -37,7 +37,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -91,8 +90,6 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class CallAnalyserView extends ViewPart {
-    /** String NEOGRAPH_ID field */
-    private static final String NEOGRAPH_ID = "org.neo4j.neoclipse.view.NeoGraphViewPart";
     /** String DRIVE_ID field */
     private static final String DRIVE_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
     /** String ERROR_VALUE field */
@@ -100,8 +97,6 @@ public class CallAnalyserView extends ViewPart {
     // row labels
     private static final String LBL_DRIVE = "Drive:";
     private static final String LBL_PROBE = "Probe";
-    private static final String LBL_START_TIME = "Start time";
-    private static final String LBL_END_TIME = "End time";
     private static final String LBL_PERIOD = "Period";
     private static final String LBL_CALL_TYPE = "Call Type";
     // column name
@@ -928,10 +923,6 @@ public class CallAnalyserView extends ViewPart {
         // Menu menu = menuMgr.createContextMenu(viewer.getControl());
         // viewer.getControl().setMenu(menu);
         // getSite().registerContextMenu(menuMgr, viewer);
-    }
-
-    private void fillContextMenu(IMenuManager manager) {
-
     }
 
     /**

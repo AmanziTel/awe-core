@@ -173,7 +173,7 @@ public class CallStatistics {
                 
                 parentNode = createRootStatisticsNode(datasetNode, callType);
                 result.put(callType, parentNode);
-                for (Node probe : NeoUtils.getAllProbesOfDataset(datasetNode, callType.getId())) {
+                for (Node probe : probesByCallType) {
                     String probeName = (String)probe.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                     Node probeCallsNode = NeoUtils.getCallsNode(datasetNode, probeName, probe, neoService);
                     String callProbeName = (String)probeCallsNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
