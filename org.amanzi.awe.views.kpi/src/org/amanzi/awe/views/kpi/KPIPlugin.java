@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -100,7 +101,8 @@ public class KPIPlugin extends AbstractUIPlugin {
             IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
             String location = rubyProject.getResource().getLocation().toOSString();
             LOGGER.debug("[DEBUG] rubyProjectlocation " + location);
-            loadPaths[0]=location;
+            URL entry = Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry("ruby");
+            loadPaths[0] = FileLocator.resolve(entry).getFile();
             loadPaths[1]=location;
 //            Platform.getBundle("").getE
         } catch (CoreException e1) {

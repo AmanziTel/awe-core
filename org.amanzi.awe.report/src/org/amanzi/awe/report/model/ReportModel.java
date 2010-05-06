@@ -23,12 +23,16 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.report.ReportPlugin;
 import org.amanzi.awe.report.model.events.IReportModelListener;
 import org.amanzi.awe.report.util.ReportUtils;
+import org.amanzi.awe.views.kpi.KPIPlugin;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -100,7 +104,12 @@ public class ReportModel {
         };
 
         runtime = Ruby.newInstance(config);
-        runtime.getLoadService().init(ScriptUtils.makeLoadPath(new String[] {}));
+        String[] loadPaths=new String[1];
+        URL entry = Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry("ruby");
+        loadPaths[0] = FileLocator.resolve(entry).getFile();
+        LOGGER.debug("load paths:"+ loadPaths[0]);
+        
+        runtime.getLoadService().init(ScriptUtils.makeLoadPath(loadPaths));
 
         String path = "";
         URL scriptURL = null;

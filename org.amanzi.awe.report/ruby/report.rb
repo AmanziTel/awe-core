@@ -5,13 +5,12 @@ require 'neo4j'
 #require 'neo4j/auto_tx'
 #require 'ruby/cell'
 require 'ruby/amanzi_neo4j'
-puts "require gis"
 require 'ruby/gis'
 require 'ruby/filters'
 require "ruby/style"
+require "initKpi"
 #todo delete
 require 'ruby/auto/report_aggregation'
-puts "include classes"
 include_class org.amanzi.neo.core.database.nodes.CellID
 include_class org.amanzi.neo.core.service.NeoServiceProvider
 
@@ -262,8 +261,10 @@ include_class org.jfree.data.time.TimeSeriesCollection
     end
 
     def setup(&block)
+      Neo4j::Transaction.run{
       self.instance_eval &block
       self
+      }
     end
 
     def author (new_author)

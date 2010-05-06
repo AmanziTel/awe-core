@@ -881,7 +881,12 @@ public class KpiView extends ViewPart {
         Long countId = countNode == null ? null : countNode.getId();
         KPIPlugin.getDefault().setCounterId(countId);
         
-        runScript("init");
+        IRubyObject result=runScript("init;find_kpis");
+        Object[] array = result.convertToArray().toArray();
+        LOGGER.debug("The following KPIs were found:");
+        for (Object met : array) {
+            LOGGER.debug("  - "+met.toString());
+        }
         fillPropertyList();
     }
 
