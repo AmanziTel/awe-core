@@ -1351,7 +1351,6 @@ public class GpehReportCreator {
     public SpreadsheetNode createRSCPCellSpreadSheet(String string, CallTimePeriods period) {
         IPath path = ResourcesPlugin.getWorkspace().getRoot().getFullPath().append(
                 new Path(new StringBuilder("RSCP_REPORT_").append(period.getId()).append(".csv").toString()));
-
         File file = path.toFile();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         Transaction tx = service.beginTx();
@@ -1649,10 +1648,10 @@ public class GpehReportCreator {
 
     public static class StatisticSetElement implements IStatisticElement {
 
-        private long endTime;
-        private CallTimePeriods period;
-        private long startTime;
-        private Set<IStatisticElementNode> sources;
+        private final long endTime;
+        private final CallTimePeriods period;
+        private final long startTime;
+        private final Set<IStatisticElementNode> sources;
 
         public StatisticSetElement(long startTime, long endTime, CallTimePeriods period, Set<IStatisticElementNode> sources) {
             super();

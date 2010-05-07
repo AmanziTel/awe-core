@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 
 import org.amanzi.neo.loader.AMSLoader;
+import org.amanzi.neo.loader.AMSXMLLoader;
+import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,14 +46,26 @@ public class AMSImportWizard extends Wizard implements IImportWizard {
         Job job = new Job("Load AMS '" + (new File(mainPage.getFileName())).getName() + "'") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-            	AMSLoader loader = new AMSLoader(mainPage.getFileName(), null, mainPage.getDatasetName(), mainPage.getNetworkName());
-                
-                try {
-                	loader.run(monitor);
-                	AMSLoader.finishUpGis(loader.getDatasetNode());
-                } catch (IOException e) {
-                    NeoLoaderPlugin.error(e.getLocalizedMessage());
-                    return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
+                File firstFile = LoaderUtils.getFirstFile(mainPage.getFileName());
+                if (firstFile != null && LoaderUtils.getFileExtension(firstFile.getName()).equalsIgnoreCase(".xml")) {
+                    AMSXMLLoader loader = new AMSXMLLoader(mainPage.getFileName(), null, mainPage.getDatasetName(), mainPage.getNetworkName());
+
+                    try {
+                        loader.run(monitor);
+                    } catch (IOException e) {
+                        NeoLoaderPlugin.error(e.getLocalizedMessage());
+                        return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
+                    }
+                } else {
+                    AMSLoader loader = new AMSLoader(mainPage.getFileName(), null, mainPage.getDatasetName(), mainPage.getNetworkName());
+
+                    try {
+                        loader.run(monitor);
+                        AMSLoader.finishUpGis(loader.getDatasetNode());
+                    } catch (IOException e) {
+                        NeoLoaderPlugin.error(e.getLocalizedMessage());
+                        return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
+                    }
                 }
                 return Status.OK_STATUS;
             }

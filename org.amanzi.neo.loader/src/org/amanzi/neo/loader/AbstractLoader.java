@@ -906,7 +906,13 @@ public abstract class AbstractLoader {
     protected boolean isOverLimit() {
         return limit > 0 && savedData > limit;
     }
-
+    protected boolean setNewIndexProperty(Map<String, Header> headers, Node eventNode, String key, Object parsedValue) {
+       if (eventNode.hasProperty(key)){
+           return false;
+       }
+       setIndexProperty(headers, eventNode, key, parsedValue);
+       return true;
+    }
     /**
      * Sets index property 
      * @param headers index header

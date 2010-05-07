@@ -1779,7 +1779,7 @@ public class NeoUtils {
         }
 
     }
-
+    
     /**
      * return last child of node
      * 

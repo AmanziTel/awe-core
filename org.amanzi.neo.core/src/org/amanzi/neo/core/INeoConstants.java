@@ -159,4 +159,7 @@ public class INeoConstants {
     public static final String LAST_CHILD_ID = "last_child_id";
     public static final String URTAN_DATA_TYPE = "utran_data_type";
     public static final String SECTOR_TYPE = "sector_type";
+    
+    public static final String M_EVENT_TYPE = "m_type";
+    public static final String M_PROBE_ID = "probe_id";
 }

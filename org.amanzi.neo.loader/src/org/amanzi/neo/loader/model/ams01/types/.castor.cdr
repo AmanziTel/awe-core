@@ -1,0 +1,7 @@
+#Thu May 06 14:03:55 EEST 2010
+org.amanzi.neo.loader.model.ams01.types.DirectionLatType=org.amanzi.neo.loader.model.ams01.types.descriptors.DirectionLatTypeDescriptor
+org.amanzi.neo.loader.model.ams01.types.StatusType=org.amanzi.neo.loader.model.ams01.types.descriptors.StatusTypeDescriptor
+org.amanzi.neo.loader.model.ams01.types.DirectionType=org.amanzi.neo.loader.model.ams01.types.descriptors.DirectionTypeDescriptor
+org.amanzi.neo.loader.model.ams01.types.DirectionLonType=org.amanzi.neo.loader.model.ams01.types.descriptors.DirectionLonTypeDescriptor
+org.amanzi.neo.loader.model.ams01.types.ReceiveMsgMsgType=org.amanzi.neo.loader.model.ams01.types.descriptors.ReceiveMsgMsgTypeDescriptor
+org.amanzi.neo.loader.model.ams01.types.MsgTypeType=org.amanzi.neo.loader.model.ams01.types.descriptors.MsgTypeTypeDescriptor

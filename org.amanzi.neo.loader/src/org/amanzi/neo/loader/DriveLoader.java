@@ -199,7 +199,16 @@ public abstract class DriveLoader extends AbstractLoader {
             }
         }
     }
-
+    
+    protected Transaction commit(Transaction tx) {
+        if (tx != null) {
+            flushIndexes();
+            tx.success();
+            tx.finish();
+            return neo.beginTx();
+        }
+        return null;
+    }
 
     /**
      * Finds or create if not exist necessary dataset node. Assumes existance of transaction.

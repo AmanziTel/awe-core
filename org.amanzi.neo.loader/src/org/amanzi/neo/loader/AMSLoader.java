@@ -495,7 +495,7 @@ public class AMSLoader extends DriveLoader {
 
     private Node probeNode;
     
-    private SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
+    private final SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
 	
 	/**
 	 * Creates a loader
@@ -664,15 +664,7 @@ public class AMSLoader extends DriveLoader {
 		LOGGER.debug("====================== Load time: "+(endTime-startTime)+"=============================");
 	}
 	
-	protected Transaction commit(Transaction tx) {
-        if (tx != null) {
-            flushIndexes();
-            tx.success();
-            tx.finish();
-            return neo.beginTx();
-        }
-        return null;
-    }
+
 	
 	/**
 	 * Updates cache for probes
