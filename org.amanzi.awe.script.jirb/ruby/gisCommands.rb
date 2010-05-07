@@ -17,7 +17,7 @@ module AWE
     end
     # Find and set the active project (pass project index if other than 0)
     def project(index=nil)
-      $active_project = $projects[index||0] if($projects && ($active_map.nil? || index))
+      $active_project = $projects[index||0] if($projects && ($active_project.nil? || index))
       $active_project
     end
     # Find all projects as an array
@@ -26,7 +26,7 @@ module AWE
     end
     # Find the active map (pass project index and map index if different from 0,0)
     def map(index=nil,map_index=nil)
-      $active_map = project(index).elements[map_index||0] if(project && ($active_map.nil? || map_index))
+      $active_map = project(index).elements(Java::JavaClass.for_name("net.refractions.udig.project.IMap"))[map_index||0] if(project && ($active_map.nil? || map_index))
       $active_map
     end
     # Find all maps in current or specified project

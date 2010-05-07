@@ -1,6 +1,8 @@
 module KPI
   def sum_new(data)
-    if data.respond_to? 'each'
+    if data.respond_to? 'sum_internal'
+          data.count_internal
+        elsif data.respond_to? 'each'
       s=0.0
       data.each do |element|
         s+=element

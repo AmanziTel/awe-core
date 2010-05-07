@@ -138,7 +138,7 @@ class PropertySet
     num
   end
 
-  def sum
+  def sum_internal
     num=0.0
     @node_set.each{|n|
       if !n.props[@property].nil?

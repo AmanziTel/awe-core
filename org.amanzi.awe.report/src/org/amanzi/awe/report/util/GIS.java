@@ -31,6 +31,7 @@ import org.geotools.data.FeatureSource;
 import org.geotools.feature.Feature;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.feature.FeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -88,7 +89,14 @@ public class GIS {
                         try {
                             while (features.hasNext()) {
                                 final Feature feature = features.next();
-                                LOGGER.debug("[DEBUG] feature " + (feature == null ? null : feature));
+                                LOGGER.debug("feature " + (feature == null ? null : feature));
+                                LOGGER.debug("ID " + feature.getID());
+                                FeatureType featureType = feature.getFeatureType();
+                                
+                                for (int i=0;i<feature.getNumberOfAttributes();i++){
+                                    Object attribute = feature.getAttribute(i);
+                                    LOGGER.debug("attribute: "+ featureType.getAttributeType(i).getName()+"="+ attribute);
+                                }
                                 final Geometry defaultGeometry = feature.getDefaultGeometry();
                                 if (defaultGeometry!=null && defaultGeometry instanceof MultiPolygon){
                                     LOGGER.debug("[DEBUG] Geometry type=" + defaultGeometry.getGeometryType()+" "+(defaultGeometry == null ? null : defaultGeometry));
