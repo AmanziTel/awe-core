@@ -157,6 +157,8 @@ public class OldNemoVersionLoader extends NemoLoader {
             index(mp);
             transaction.success();
             pointNode = mp;
+            curLat = lat;
+            curLon = lon;
         } catch (Exception e) {
             e.printStackTrace();
             NeoLoaderPlugin.error(e.getLocalizedMessage());

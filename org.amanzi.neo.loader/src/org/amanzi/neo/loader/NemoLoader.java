@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
@@ -51,6 +53,7 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class NemoLoader extends DriveLoader {
+    private List<Map<String, Object>> subNodes = null;
     private static final Logger LOGGER = Logger.getLogger(NemoLoader.class);
     protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
 
@@ -58,11 +61,18 @@ public class NemoLoader extends DriveLoader {
     protected static final String EVENT_ID = INeoConstants.EVENT_ID;
     /** String TIME_FORMAT field */
     protected static final String TIME_FORMAT = "HH:mm:ss.S";
+    private static final String MM_KEY = "mm";
     protected char fieldSepRegex;
     protected Node pointNode;
+    protected Pair<Node, Node> pairNode;
     protected Node parentMnode;
     protected SimpleDateFormat timeFormat;
     protected LinkedHashMap<String, Header> headers;
+    private LinkedHashMap<String, Header> headersVirt;
+    private Node virtualDataset;
+    private Node virtualMnode = null;
+    protected Float curLat;
+    protected Float curLon;
 
     // protected Node msNode;
 
@@ -78,6 +88,7 @@ public class NemoLoader extends DriveLoader {
         driveType = DriveTypes.NEMO2;
         initialize("Nemo", null, filename, display, dataset);
         headers = getHeaderMap(1).headers;
+        headersVirt = getHeaderMap(2).headers;
         timeFormat = new SimpleDateFormat(TIME_FORMAT);
         pointNode = null;
         initializeKnownHeaders();
@@ -98,6 +109,7 @@ public class NemoLoader extends DriveLoader {
         driveType = DriveTypes.NEMO2;
         initialize("Nemo", neo , filename, null, dataset);
         headers = getHeaderMap(1).headers;
+        headersVirt = getHeaderMap(2).headers;
         timeFormat = new SimpleDateFormat(TIME_FORMAT);
         pointNode = null;
         initializeKnownHeaders();
@@ -152,8 +164,8 @@ public class NemoLoader extends DriveLoader {
     protected void createPointNode(Event event) {
         Transaction transaction = neo.beginTx();
         try {
-            Float lon = (Float)event.parsedParameters.get("Lon.");
-            Float lat = (Float)event.parsedParameters.get("Lat.");
+            Float lon = (Float)event.parsedParameters.get("lon");
+            Float lat = (Float)event.parsedParameters.get("lat");
             String time = event.time;
             if ((lon == null || lat == null) ||
                 (lon == 0) && (lat == 0)) {
@@ -171,6 +183,8 @@ public class NemoLoader extends DriveLoader {
             index(mp);
             transaction.success();
             pointNode = mp;
+            curLat = lat;
+            curLon = lon;
         } catch (Exception e) {
             NeoLoaderPlugin.error(e.getLocalizedMessage());
             return;
@@ -186,10 +200,11 @@ public class NemoLoader extends DriveLoader {
      */
     protected void createMNode(Event event) {
         Transaction transaction = neo.beginTx();
+        long timestamp;
         try {
             String id = event.eventId;// getEventId(event);
             String time = event.time;// getEventTime(event);
-            long timestamp;
+
             try {
                 timestamp = getTimeStamp(1, timeFormat.parse(time));
             } catch (ParseException e) {
@@ -224,6 +239,71 @@ public class NemoLoader extends DriveLoader {
         } finally {
             transaction.finish();
         }
+        createSubNodes(event, timestamp);
+    }
+
+    protected void createSubNodes(Event event, long timestamp) {
+        if (subNodes == null) {
+            return;
+        }
+        Transaction tx = neo.beginTx();
+        try {
+            for (Map<String, Object> propertyMap : subNodes) {
+                Iterator<Entry<String, Object>> iter = propertyMap.entrySet().iterator();
+                while (iter.hasNext()) {
+                    Entry<String, Object> entry = iter.next();
+                    if (entry.getValue() == null) {
+                        iter.remove();
+                    }
+                }
+                if (propertyMap.isEmpty()) {
+                    continue;
+                }
+                try {
+                    Node mm = neo.createNode();
+                    if (timestamp != 0) {
+                        mm.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                    }
+                    findOrCreateVirtualFileNode(mm);
+                    NodeTypes.MM.setNodeType(mm, neo);
+                    mm.setProperty(INeoConstants.PROPERTY_NAME_NAME, event.eventId);
+                    findOrCreateVirtualFileNode(mm);
+                    if (virtualMnode != null) {
+                        virtualMnode.createRelationshipTo(mm, GeoNeoRelationshipTypes.NEXT);
+                    }
+                    virtualMnode = mm;
+                    for (String key : propertyMap.keySet()) {
+                        setIndexProperty(headersVirt, mm, key, propertyMap.get(key));
+                    }
+
+                    index(mm);
+                    if (pointNode != null) {
+                        Node virtPointNode;
+                        if (pairNode == null || !pointNode.equals(pairNode.left())) {
+                            virtPointNode = neo.createNode();
+                            for (String key : pointNode.getPropertyKeys()) {
+                                virtPointNode.setProperty(key, pointNode.getProperty(key));
+                            }
+                            index(MM_KEY, virtPointNode);
+                            pairNode = new Pair<Node, Node>(pointNode, virtPointNode);
+                        } else {
+                            virtPointNode = pairNode.getRight();
+                        }
+                        GisProperties gisProperties = getGisProperties(DriveTypes.MS.getFullDatasetName(dataset));
+                        gisProperties.incSaved();
+                        gisProperties.updateBBox(curLat, curLon);
+                        gisProperties.checkCRS(curLat, curLon, null);
+                        mm.createRelationshipTo(virtPointNode, GeoNeoRelationshipTypes.LOCATION);
+                    }
+                } catch (Exception e) {
+                    NeoLoaderPlugin.exception(e);
+                }
+            }
+
+        } finally {
+            tx.finish();
+            subNodes = null;
+        }
     }
 
     /**
@@ -253,6 +333,10 @@ public class NemoLoader extends DriveLoader {
         try {
             addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
+            String virtualDatasetName = DriveTypes.MS.getFullDatasetName(dataset);
+            
+            addIndex(NodeTypes.MM.getId(), NeoUtils.getTimeIndexProperty(virtualDatasetName));
+            addMappedIndex(MM_KEY, NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(virtualDatasetName));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -274,6 +358,7 @@ public class NemoLoader extends DriveLoader {
         protected List<String> parameters;
         protected Map<String, Object> parsedParameters;
         protected NemoEvents event;
+
 
         /**
          * constructor
@@ -342,6 +427,7 @@ public class NemoLoader extends DriveLoader {
             if (parParam.isEmpty()) {
                 return;
             }
+            subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
             // add context field
             if (parParam.containsKey(NemoEvents.FIRST_CONTEXT_NAME)) {
                 List<String> contextName = (List<String>)parParam.get(NemoEvents.FIRST_CONTEXT_NAME);
@@ -450,7 +536,15 @@ public class NemoLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return gisNodes.get(dataset).getGis();
+        String datasetName = null;
+        if (key == 1) {
+            datasetName = dataset;
+        } else {
+            datasetName = DriveTypes.MS.getFullDatasetName(dataset);
+        }
+
+        GisProperties gisProperties = gisNodes.get(datasetName);
+        return gisProperties == null ? null : gisProperties.getGis();
     }
 
     @Override
