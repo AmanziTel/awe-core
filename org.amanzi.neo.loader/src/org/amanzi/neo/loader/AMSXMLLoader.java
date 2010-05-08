@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
@@ -47,10 +48,25 @@ import org.amanzi.neo.loader.model.ams01.ItsiAttach;
 import org.amanzi.neo.loader.model.ams01.MptSync;
 import org.amanzi.neo.loader.model.ams01.NeighborData;
 import org.amanzi.neo.loader.model.ams01.Ntpq;
+import org.amanzi.neo.loader.model.ams01.PdResult;
+import org.amanzi.neo.loader.model.ams01.PesqResult;
 import org.amanzi.neo.loader.model.ams01.ProbeIDNumberMap;
 import org.amanzi.neo.loader.model.ams01.ReceiveMsg;
 import org.amanzi.neo.loader.model.ams01.ReceiveMsgIsInclusive;
+import org.amanzi.neo.loader.model.ams01.SendMsg;
+import org.amanzi.neo.loader.model.ams01.SendMsgIsInclusive;
+import org.amanzi.neo.loader.model.ams01.SendReport;
 import org.amanzi.neo.loader.model.ams01.ServingData;
+import org.amanzi.neo.loader.model.ams01.TOCIsInclusive;
+import org.amanzi.neo.loader.model.ams01.TPCIsInclusive;
+import org.amanzi.neo.loader.model.ams01.TTCIsInclusive;
+import org.amanzi.neo.loader.model.ams01.TTCPesqResult;
+import org.amanzi.neo.loader.model.ams01.Toc;
+import org.amanzi.neo.loader.model.ams01.Tpc;
+import org.amanzi.neo.loader.model.ams01.Ttc;
+import org.amanzi.neo.loader.model.ams01.types.DirectionType;
+import org.amanzi.neo.loader.model.ams01.types.MsgTypeType;
+import org.amanzi.neo.loader.model.ams01.types.StatusType;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -232,7 +248,7 @@ public class AMSXMLLoader extends DriveLoader {
 
 
 
-    private void storeEvent(Events event) throws ParseException {
+    private void storeEvent(Events event) throws ParseException, IOException {
         CellResel cr = event.getCellResel();
         
         if (cr!=null){
@@ -258,7 +274,7 @@ public class AMSXMLLoader extends DriveLoader {
             lastDatasetNode=eventNode;
             setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_EVENT_TYPE,GroupAttach.class.getName());
             setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_PROBE_ID,gr.getProbeID());
-            Node lastMM=null;
+
             Date date = getTime(gr.getGroupAttachTime());
             long timestamp = date.getTime();
             eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
@@ -267,9 +283,11 @@ public class AMSXMLLoader extends DriveLoader {
             if (gr.hasErrorCode()){
                 setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode , "errorCode",gr.getErrorCode());
             }
+            Node lastMM = null;
             for (Attachment at:gr.getAttachment()){
                 Node mm=neo.createNode();
                 NeoUtils.addChild(eventNode, mm, lastMM, neo);
+                NodeTypes.MM.setNodeType(mm, neo);
                 lastMM=mm;
                 mm.setProperty("groupType",at.getGroupType());
                 mm.setProperty("gssi",at.getGssi());
@@ -302,7 +320,7 @@ public class AMSXMLLoader extends DriveLoader {
             if (isIncl!=null){
                 setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"reason",isIncl.getReason());
                if (isIncl.hasErrCode()){
-                   setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"errorCode",isIncl.getErrCode());
+                    setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", isIncl.getErrCode());
                }
             }
             index(eventNode);
@@ -333,42 +351,272 @@ public class AMSXMLLoader extends DriveLoader {
             if (isIncl!=null){
                 setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"reason",isIncl.getReason());
                if (isIncl.hasErrCode()){
-                   setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"errorCode",isIncl.getErrCode());
+                    setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", isIncl.getErrCode());
                }
             }
             index(eventNode);
         }
        
         ReceiveMsg rMsg=event.getReceiveMsg();
-       if (rMsg!=null){
+        if (rMsg != null) {
+            Node eventNode = neo.createNode();
+            NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
+            lastDatasetNode = eventNode;
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE,
+                    ItsiAttach.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, rMsg
+                    .getProbeID());
+            Date date = getTime(rMsg.getReceiveTime());
+            long timestamp = date.getTime();
+            eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "receiveTime", timestamp);
+            if (rMsg.hasDataLength()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "dataLength", rMsg.getDataLength());
+                ByteArrayOutputStream barMsg = new ByteArrayOutputStream(rMsg.getDataLength());
+                barMsg.write(rMsg.getDataTxt());
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "dataTxt", barMsg.toString());
+            }
+            if (rMsg.hasMsgRef()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "msgRef", rMsg.getMsgRef());
+            }
+            MsgTypeType mType = rMsg.getReceiveMsgMsgType();
+            if (mType != null) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "message_type", mType.getType());
+            }
+            ReceiveMsgIsInclusive isIncl = rMsg.getReceiveMsgIsInclusive();
+            if (isIncl != null) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "reason", isIncl.getReason());
+                if (isIncl.hasErrCode()) {
+                    setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", isIncl.getErrCode());
+                }
+            }
+            index(eventNode);
+        }
+        SendMsg sMsg = event.getSendMsg();
+        if (sMsg != null) {
            Node eventNode=neo.createNode();
            NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
            lastDatasetNode=eventNode;
            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_EVENT_TYPE,ItsiAttach.class.getName());
-           setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_PROBE_ID,rMsg.getProbeID());
-           Date date = getTime(rMsg.getReceiveTime());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, sMsg
+                    .getProbeID());
+            Date date = getTime(sMsg.getSendTime());
            long timestamp = date.getTime();
            eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
            updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
-           setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"receiveTime",timestamp);
-           if (rMsg.hasDataLength()){
-               setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"dataLength",rMsg.getDataLength());
-           }
-           
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "sendTime", timestamp);
+            if (sMsg.hasDataLength()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "dataLength", sMsg.getDataLength());
+                ByteArrayOutputStream barMsg = new ByteArrayOutputStream(sMsg.getDataLength());
+                barMsg.write(sMsg.getDataTxt());
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "dataTxt", barMsg.toString());
 
-            ReceiveMsgIsInclusive isIncl = rMsg.getReceiveMsgIsInclusive();
+           }
+            if (sMsg.hasMsgRef()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "msgRef", sMsg.getMsgRef());
+            }
+            if (sMsg.hasErrorCode()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", sMsg.getErrorCode());
+            }
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "calledNumber", sMsg.getCalledNumber());
+            MsgTypeType mType = sMsg.getMsgType();
+            if (mType != null) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "message_type", mType.getType());
+            }
+             SendMsgIsInclusive isIncl = sMsg.getSendMsgIsInclusive();
            if (isIncl!=null){
                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"reason",isIncl.getReason());
               if (isIncl.hasErrCode()){
-                  setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"errorCode",isIncl.getErrCode());
+                    setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", isIncl.getErrCode());
               }
            }
+
+            Node lastMM = null;
+            for (SendReport report : sMsg.getSendReport()) {
+                Node mm = neo.createNode();
+                NeoUtils.addChild(eventNode, mm, lastMM, neo);
+                NodeTypes.MM.setNodeType(mm, neo);
+                lastMM = mm;
+                mm.setProperty("reportTime", getTime(report.getReportTime()));
+                StatusType status = report.getStatus();
+                if (status != null) {
+                    mm.setProperty("status_type", status.getType());
+                }
+            }
            index(eventNode);
        }
-       event.getSendMsg();
-       event.getToc();
-       event.getTpc();
-       event.getTtc();
+
+        Toc toc = event.getToc();
+        if (toc != null) {
+            Node eventNode = neo.createNode();
+            NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
+            lastDatasetNode = eventNode;
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE,
+                    ItsiAttach.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, toc
+                    .getProbeID());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "calledNumber", toc.getCalledNumber());
+
+           Date date = getTime(toc.getConfigTime());
+            long timestamp = date.getTime();
+            eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "config_time", timestamp);
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "connect_time", getTime(
+                    toc.getConnectTime()).getTime());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "disconnect_time", getTime(
+                    toc.getDisconnectTime()).getTime());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "setup_time", getTime(toc.getSetupTime()).getTime());
+            if (toc.hasErrorCode()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errorCode", toc.getErrorCode());
+            }
+            if (toc.hasCauseForTermination()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "causeForTermination", toc
+                        .getCauseForTermination());
+            }
+            if (toc.hasHook()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "hook", toc.getHook());
+            }
+            if (toc.hasPriority()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "priopity", toc.getPriority());
+            }
+            if (toc.hasSimplex()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "simplex", toc.getSimplex());
+            }
+            Node lastMM = null;
+            for (PesqResult result : toc.getPesqResult()) {
+                Node mm = neo.createNode();
+                NeoUtils.addChild(eventNode, mm, lastMM, neo);
+                NodeTypes.MM.setNodeType(mm, neo);
+                lastMM = mm;
+                if (result.hasDelay()) {
+                    mm.setProperty("delay", result.getDelay());
+
+                }
+                if (result.hasPesq()) {
+                    mm.setProperty("delay", result.getPesq());
+
+                }
+                mm.setProperty("sendSampleStart", getTime(result.getSendSampleStart()));
+            }
+            TOCIsInclusive isIncl = toc.getTOCIsInclusive();
+            if (isIncl != null) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "reason", isIncl.getReason());
+                if (isIncl.hasErrCode()) {
+                    setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", isIncl.getErrCode());
+                }
+            }
+            index(eventNode);
+        }
+
+        Tpc tpc = event.getTpc();
+        if (tpc != null) {
+            Node eventNode = neo.createNode();
+            NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
+            lastDatasetNode = eventNode;
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE, ItsiAttach.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, tpc.getProbeID());
+
+            Date date = getTime(tpc.getSetupTime());
+            long timestamp = date.getTime();
+            eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "setup_time", timestamp);
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "connect_time", getTime(tpc.getConnectTime()).getTime());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "release_time", getTime(tpc.getReleaseTime()).getTime());
+            if (tpc.hasErrorCode()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errorCode", tpc.getErrorCode());
+            }
+            if (tpc.hasCauseForTermination()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "causeForTermination", tpc.getCauseForTermination());
+            }
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "FtpConnAccept", tpc.getFtpConnAccept());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "FtpConnReq", tpc.getFtpConnReq());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "PdpAccept", tpc.getPdpAccept());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "PdpRequest", tpc.getPdpRequest());
+
+            Node lastMM = null;
+            for (PdResult result : tpc.getPdResult()) {
+                Node mm = neo.createNode();
+                NeoUtils.addChild(eventNode, mm, lastMM, neo);
+                NodeTypes.MM.setNodeType(mm, neo);
+                lastMM = mm;
+                if (result.hasSize()) {
+                    mm.setProperty("size", result.getSize());
+
+                }
+                mm.setProperty("TransmitStart", result.getTransmitStart());
+                mm.setProperty("TransmitStart", result.getTransmitEnd());
+                DirectionType dir = result.getDirection();
+                if (dir != null) {
+                    mm.setProperty("type", dir.getType());
+                }
+            }
+            TPCIsInclusive isIncl = tpc.getTPCIsInclusive();
+            if (isIncl != null) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "reason", isIncl.getReason());
+                if (isIncl.hasErrCode()) {
+                    setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", isIncl.getErrCode());
+                }
+            }
+            index(eventNode);
+        }
+;
+        Ttc ttc = event.getTtc();
+        if (ttc != null) {
+            Node eventNode = neo.createNode();
+            NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
+            lastDatasetNode = eventNode;
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE, ItsiAttach.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, ttc.getProbeID());
+
+            Date date = getTime(ttc.getIndicationTime());
+            long timestamp = date.getTime();
+            eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "indication_time", timestamp);
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "connect_time", getTime(ttc.getConnectTime()).getTime());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "answer_time", getTime(ttc.getAnswerTime()).getTime());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "release_time", getTime(ttc.getReleaseTime()).getTime());
+            if (ttc.hasErrorCode()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errorCode", ttc.getErrorCode());
+            }
+            if (ttc.hasCauseForTermination()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "causeForTermination", ttc.getCauseForTermination());
+            }
+            if (ttc.hasHook()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "hook", toc.getHook());
+            }
+            if (ttc.hasSimplex()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "simplex", toc.getSimplex());
+            }
+
+            Node lastMM = null;
+            for (TTCPesqResult result : ttc.getTTCPesqResult()) {
+                Node mm = neo.createNode();
+                NeoUtils.addChild(eventNode, mm, lastMM, neo);
+                NodeTypes.MM.setNodeType(mm, neo);
+                lastMM = mm;
+                if (result.hasDelay()) {
+                    mm.setProperty("delay", result.getDelay());
+                }
+                if (result.hasPesq()) {
+                    mm.setProperty("pesq", result.getPesq());
+                }
+                mm.setProperty("sendSampleStart", getTime(result.getSendSampleStart()));
+
+            }
+            TTCIsInclusive isIncl = ttc.getTTCIsInclusive();
+            if (isIncl != null) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "reason", isIncl.getReason());
+                if (isIncl.hasErrCode()) {
+                    setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", isIncl.getErrCode());
+                }
+            }
+            index(eventNode);
+        }
+
     }
 
     /**
