@@ -594,7 +594,7 @@ public class AMSXMLLoader extends DriveLoader {
                     tocttc.setCallTerminationBegin(getTime(disconnectTime));
                 }
                 tocttc.setCallerProbe(probeCache.get(toc.getProbeID()));
-                tocttc.setCallerPhoneNumber(toc.getCalledNumber());
+                tocttc.setCallerPhoneNumber(telephon.get(toc.getProbeID()));
                 tocttc.setCallSetupBeginTime(timestamp);
             }
             Node lastMM = null;
@@ -776,9 +776,9 @@ public class AMSXMLLoader extends DriveLoader {
             return;
         }
         setNewIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers, probeNew, "phoneNumber", map.getPhoneNumber());
-//        if (telephon.get(probe.getId())==null){
-//            telephon.put(probe.getId(), map.getPhoneNumber());
-//        }
+        if (telephon.get(probe.getId())==null){
+            telephon.put(probe.getId(), map.getPhoneNumber());
+        }
         String fr = map.getFrequency();
         if (fr != null) {
             setNewIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers, probeNew, "frequency", Double.parseDouble(fr));
