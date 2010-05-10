@@ -186,10 +186,10 @@ public class CallStatistics {
                 }
                 previousSRowNodes.clear();
             }
-            parentNode = createAggrStatisticsByPeriod(null,period, result);
+            /*parentNode = createAggrStatisticsByPeriod(null,period, result);
             if (parentNode!=null) {
                 //result.put(StatisticsCallType.AGGREGATION_STATISTICS, parentNode); TODO uncomment after finish
-            }
+            }*/
             tx.success();
         }
         catch (Exception e) {            

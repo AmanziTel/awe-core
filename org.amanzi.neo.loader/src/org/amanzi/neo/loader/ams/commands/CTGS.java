@@ -13,6 +13,11 @@
 
 package org.amanzi.neo.loader.ams.commands;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 
 /**
@@ -36,8 +41,43 @@ public class CTGS extends AbstractAMSCommand {
 
     @Override
     protected void initializeParameters() {
-        parameters.add(AMSCommandParameters.GROUP_TYPE);
+        parameters.add(AMSCommandParameters.GROUP_TYPE); //TODO all params
         parameters.add(AMSCommandParameters.GSSI);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    protected HashMap<String, Object> parseResults(StringTokenizer tokenizer) {
+        HashMap<String, Object> result = new HashMap<String, Object>();
+
+        while (tokenizer.hasMoreTokens()) {
+            String row = tokenizer.nextToken("|");
+            if(row.contains("OK")){
+                break;
+            }
+            if(row.startsWith("~")||row.startsWith("+")){
+                continue;
+            }
+            StringTokenizer parametersTokenizer = new StringTokenizer(row, getParamterDelimiter());
+            for (AMSCommandParameters singleParameter : parameters) {
+                List<Object> column = (List<Object>)result.get(singleParameter.getName());
+                if(column == null){
+                    column = new ArrayList<Object>();
+                    result.put(singleParameter.getName(), column);
+                }
+                if (!parametersTokenizer.hasMoreTokens()) {
+                    column.add(null);
+                } else{
+                    column.add(singleParameter.parseString(parametersTokenizer.nextToken().trim()));
+                }
+            }
+        }
+        return result;
+    }
+    
+    @Override
+    public HashMap<String, Object> getResults(CommandSyntax syntax, StringTokenizer tokenizer) {
+        return parseResults(tokenizer);
     }
     
     @Override

@@ -2484,6 +2484,474 @@ public enum StatisticsHeaders {
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
             return null;
         }
+    },
+    CSD_ATTEMPTS("ATTEMPTS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_SUCCESS("SUCCESS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_STABILITY("STABILITY",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_MIN("THROUGHPUT_MIN",StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_MAX("THROUGHPUT_MAX",StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_CONNECT_TOTAL_DUR("CONNECT_TOTAL_DUR",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_DATA_EXCH_SUCC("DATA_EXCH_SUCC",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z1_P1("THROUGHPUT_Z1_P1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z1_P2("THROUGHPUT_Z1_P2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z1_P3("THROUGHPUT_Z1_P3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z1_P4("THROUGHPUT_Z1_P4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z1_L1("THROUGHPUT_Z1_L1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z1_L2("THROUGHPUT_Z1_L2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z1_L3("THROUGHPUT_Z1_L3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z1_L4("THROUGHPUT_Z1_L4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z2_P1("THROUGHPUT_Z2_P1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z2_P2("THROUGHPUT_Z2_P2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z2_P3("THROUGHPUT_Z2_P3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z2_P4("THROUGHPUT_Z2_P4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z2_L1("THROUGHPUT_Z2_L1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z2_L2("THROUGHPUT_Z2_L2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z2_L3("THROUGHPUT_Z2_L3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_THROUGHPUT_Z2_L4("THROUGHPUT_Z2_L4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_DATA_SUM_Z1_P1("DATA_SUM_Z1_P1",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_DATA_SUM_Z1_P2("DATA_SUM_Z1_P2",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_DATA_SUM_Z1_P3("DATA_SUM_Z1_P3",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_DATA_SUM_Z1_P4("DATA_SUM_Z1_P4",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_DATA_SUM_Z1_L1("DATA_SUM_Z1_L1",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_DATA_SUM_Z1_L2("DATA_SUM_Z1_L2",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_DATA_SUM_Z1_L3("DATA_SUM_Z1_L3",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_DATA_SUM_Z1_L4("DATA_SUM_Z1_L4",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_TIME_SUM_Z1_P1("TIME_SUM_Z1_P1",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_TIME_SUM_Z1_P2("TIME_SUM_Z1_P2",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_TIME_SUM_Z1_P3("TIME_SUM_Z1_P3",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_TIME_SUM_Z1_P4("TIME_SUM_Z1_P4",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_TIME_SUM_Z1_L1("TIME_SUM_Z1_L1",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_TIME_SUM_Z1_L2("TIME_SUM_Z1_L2",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_TIME_SUM_Z1_L3("TIME_SUM_Z1_L3",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    CSD_TIME_SUM_Z1_L4("TIME_SUM_Z1_L4",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_ATTEMPTS("ATTEMPTS",StatisticsType.COUNT) { //TODO may be union with CSD 
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_SUCCESS("SUCCESS",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_STABILITY("STABILITY",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_MIN("THROUGHPUT_MIN",StatisticsType.MIN) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_MAX("THROUGHPUT_MAX",StatisticsType.MAX) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_CONNECT_TOTAL_DUR("CONNECT_TOTAL_DUR",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_DATA_EXCH_SUCC("DATA_EXCH_SUCC",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z1_P1("THROUGHPUT_Z1_P1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z1_P2("THROUGHPUT_Z1_P2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z1_P3("THROUGHPUT_Z1_P3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z1_P4("THROUGHPUT_Z1_P4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z1_L1("THROUGHPUT_Z1_L1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z1_L2("THROUGHPUT_Z1_L2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z1_L3("THROUGHPUT_Z1_L3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z1_L4("THROUGHPUT_Z1_L4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z2_P1("THROUGHPUT_Z2_P1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z2_P2("THROUGHPUT_Z2_P2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z2_P3("THROUGHPUT_Z2_P3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z2_P4("THROUGHPUT_Z2_P4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z2_L1("THROUGHPUT_Z2_L1",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z2_L2("THROUGHPUT_Z2_L2",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z2_L3("THROUGHPUT_Z2_L3",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_THROUGHPUT_Z2_L4("THROUGHPUT_Z2_L4",StatisticsType.COUNT) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_DATA_SUM_Z1_P1("DATA_SUM_Z1_P1",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_DATA_SUM_Z1_P2("DATA_SUM_Z1_P2",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_DATA_SUM_Z1_P3("DATA_SUM_Z1_P3",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_DATA_SUM_Z1_P4("DATA_SUM_Z1_P4",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_DATA_SUM_Z1_L1("DATA_SUM_Z1_L1",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_DATA_SUM_Z1_L2("DATA_SUM_Z1_L2",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_DATA_SUM_Z1_L3("DATA_SUM_Z1_L3",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_DATA_SUM_Z1_L4("DATA_SUM_Z1_L4",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_TIME_SUM_Z1_P1("TIME_SUM_Z1_P1",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_TIME_SUM_Z1_P2("TIME_SUM_Z1_P2",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_TIME_SUM_Z1_P3("TIME_SUM_Z1_P3",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_TIME_SUM_Z1_P4("TIME_SUM_Z1_P4",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_TIME_SUM_Z1_L1("TIME_SUM_Z1_L1",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_TIME_SUM_Z1_L2("TIME_SUM_Z1_L2",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_TIME_SUM_Z1_L3("TIME_SUM_Z1_L3",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
+    },
+    IP_TIME_SUM_Z1_L4("TIME_SUM_Z1_L4",StatisticsType.SUM) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
+            return null;
+        }
     };
     
     protected static final float MAX_DURATION_FOR_DELAY = 10.0f;

@@ -21,6 +21,7 @@ import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.views.calls.ExportSpreadsheetWizard;
+import org.amanzi.awe.views.calls.Messages;
 import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
@@ -90,18 +91,21 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class CallAnalyserView extends ViewPart {
+
     /** String DRIVE_ID field */
     private static final String DRIVE_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
     /** String ERROR_VALUE field */
-    private static final String ERROR_VALUE = "ERROR";
+    private static final String ERROR_VALUE = Messages.CAV_ERROR_VALUE;
+    private static final String ALL_VALUE = Messages.CAV_ALL_VALUE;
     // row labels
-    private static final String LBL_DRIVE = "Drive:";
-    private static final String LBL_PROBE = "Probe";
-    private static final String LBL_PERIOD = "Period";
-    private static final String LBL_CALL_TYPE = "Call Type";
+    private static final String LBL_DRIVE = Messages.CAV_LBL_DRIVE;
+    private static final String LBL_PROBE = Messages.CAV_LBL_PROBE;
+    private static final String LBL_PERIOD = Messages.CAV_LBL_PERIOD;
+    private static final String LBL_CALL_TYPE = Messages.CAV_LBL_CALL_TYPE;
+
     // column name
-    private static final String COL_PERIOD = "Period";
-    private static final String COL_HOST = "Host";
+    private static final String COL_PERIOD = Messages.CAV_COL_PERIOD;
+    private static final String COL_HOST = Messages.CAV_COL_HOST;
 
     /**
      * The ID of the view as specified by the extension.
@@ -110,7 +114,7 @@ public class CallAnalyserView extends ViewPart {
 
     private static final int MIN_FIELD_WIDTH = 100;
     public static final int DEF_SIZE = 100;
-    private static final String KEY_ALL = "ALL";
+    private static final String KEY_ALL = ALL_VALUE;
     public static final int MAX_TABLE_LEN = 500;
     private static final String LB_EXPORT = "Export";
     private List<ColumnHeaders> columnHeaders = new ArrayList<ColumnHeaders>();
@@ -821,7 +825,7 @@ public class CallAnalyserView extends ViewPart {
         else {
             String probeName = cProbe.getText();
             formProbeCall(drive, callType);
-            if ((probeName.equals("ALL")) ||(!probeName.isEmpty() &&
+            if ((probeName.equals(ALL_VALUE)) ||(!probeName.isEmpty() &&
                 NeoUtils.hasCallsOfType(drive, callType.getId(), probeName))) {                
                 cProbe.setText(probeName);
                 updateTable(false);
