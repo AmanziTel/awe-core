@@ -495,7 +495,7 @@ public class AMSLoader extends DriveLoader {
 
     private Node probeNode;
     
-    private final SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
+    private final static SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
 	
 	/**
 	 * Creates a loader
@@ -1513,7 +1513,7 @@ public class AMSLoader extends DriveLoader {
 		return result;
 	}
 	
-	private String getCallName(String probeName, long timestamp){
+	public static  String getCallName(String probeName, long timestamp){
 	    StringBuffer result = new StringBuffer(probeName.split(" ")[0]).append("_").append(timeFormat.format(new Date(timestamp)));
 	    return result.toString();
 	}

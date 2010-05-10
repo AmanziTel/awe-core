@@ -130,6 +130,7 @@ public class StatusType implements java.io.Serializable {
         members.put("3", VALUE_3);
         members.put("8", VALUE_8);
         members.put("9", VALUE_9);
+        members.put("0", new StatusType(4, "0"));
         return members;
     }
 
@@ -151,6 +152,7 @@ public class StatusType implements java.io.Serializable {
      * 
      * @return the String representation of this StatusType
      */
+    @Override
     public java.lang.String toString(
     ) {
         return this.stringValue;
