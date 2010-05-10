@@ -34,11 +34,13 @@ import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.AMSLoader.Call;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.model.ams01.Attachment;
 import org.amanzi.neo.loader.model.ams01.CellResel;
 import org.amanzi.neo.loader.model.ams01.CompleteGpsData;
 import org.amanzi.neo.loader.model.ams01.Events;
+import org.amanzi.neo.loader.model.ams01.GpsData;
 import org.amanzi.neo.loader.model.ams01.GroupAttach;
 import org.amanzi.neo.loader.model.ams01.Handover;
 import org.amanzi.neo.loader.model.ams01.HandoverIsInclusive;
@@ -74,29 +76,28 @@ import org.exolab.castor.xml.Unmarshaller;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
-// TODO: Auto-generated Javadoc
 /**
- * TODO Purpose of
  * <p>
- * </p>.
- *
+ * AMS XML Loader
+ * </p>
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class AMSXMLLoader extends DriveLoader {
-    /*
+    /**
      * Header Index for Real Dataset
      */
-    /** The Constant REAL_DATASET_HEADER_INDEX. */
     private static final int REAL_DATASET_HEADER_INDEX = 0;
-    private static SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSSz");
 
-    /*
+    /** The formatter. */
+    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSSz");
+
+    /**
      * Header Index for Call Dataset
      */
-    /** The Constant CALL_DATASET_HEADER_INDEX. */
     private static final int CALL_DATASET_HEADER_INDEX = 1;
-    /*
+    /**
      * Header Index for Probe Network Dataset
      */
     /** The Constant PROBE_NETWORK_HEADER_INDEX. */
@@ -106,7 +107,7 @@ public class AMSXMLLoader extends DriveLoader {
     private final String directoryName;
 
     /** The network name. */
-    private final String networkName;
+    private String networkName;
 
     /** The network gis. */
     private Node networkGis;
@@ -120,9 +121,16 @@ public class AMSXMLLoader extends DriveLoader {
     /** The last dataset node. */
     private Node lastDatasetNode;
 
+    /** The call dataset. */
+    private Node callDataset;
+    private Map<String,Node> probeCache;
+    private Map<String,String> telephon;
+
+    private Call tocttc;
+
     /**
      * Creates a loader.
-     *
+     * 
      * @param directoryName name of directory to import
      * @param display the display
      * @param datasetName name of dataset
@@ -143,10 +151,8 @@ public class AMSXMLLoader extends DriveLoader {
         this.directoryName = directoryName;
         this.filename = directoryName;
         this.networkName = networkName;
-        
-        initialize("AMS", null, directoryName, display, datasetName);
 
-        addDriveIndexes();
+        initialize("AMS", null, directoryName, display, datasetName);
 
         // timestampFormat = new SimpleDateFormat(TIMESTAMP_FORMAT);
     }
@@ -156,6 +162,7 @@ public class AMSXMLLoader extends DriveLoader {
      */
     private void addDriveIndexes() {
         try {
+            addIndex(NodeTypes.PROBE.getId(), NeoUtils.getLocationIndexProperty(networkName));
             addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(NodeTypes.CALL.getId(), NeoUtils.getTimeIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
         } catch (IOException e) {
@@ -165,7 +172,7 @@ public class AMSXMLLoader extends DriveLoader {
 
     /**
      * Run.
-     *
+     * 
      * @param monitor the monitor
      * @throws IOException Signals that an I/O exception has occurred.
      */
@@ -178,7 +185,7 @@ public class AMSXMLLoader extends DriveLoader {
 
             @Override
             public boolean accept(File pathname) {
-                return pathname.isDirectory()||LoaderUtils.getFileExtension(pathname.getName()).equalsIgnoreCase(".xml");
+                return pathname.isDirectory() || LoaderUtils.getFileExtension(pathname.getName()).equalsIgnoreCase(".xml");
             }
         });
 
@@ -189,6 +196,8 @@ public class AMSXMLLoader extends DriveLoader {
         try {
             initializeNetwork(networkName);
             initializeDatasets(dataset);
+            addDriveIndexes();
+            initializeIndexes();
             long count = 0;
             for (File logFile : allFiles) {
                 monitor.subTask("Loading file " + logFile.getAbsolutePath());
@@ -204,7 +213,7 @@ public class AMSXMLLoader extends DriveLoader {
             finishUp();
 
             cleanupGisNode();
-             finishUpGis(getDatasetNode());
+            finishUpGis(getDatasetNode());
             tx.success();
         } finally {
             tx.finish();
@@ -213,7 +222,7 @@ public class AMSXMLLoader extends DriveLoader {
 
     /**
      * Handle file.
-     *
+     * 
      * @param logFile the log file
      */
     private void handleFile(File logFile) {
@@ -225,16 +234,16 @@ public class AMSXMLLoader extends DriveLoader {
             Unmarshaller u = new Unmarshaller(InterfaceData.class);
             u.setValidation(false);
             InterfaceData interfaceData = (InterfaceData)u.unmarshal(new FileReader(logFile));
-            time=System.currentTimeMillis()-time;
+            time = System.currentTimeMillis() - time;
             System.out.println(time);
             time = System.currentTimeMillis();
             Map<String, Probe> probeMap = formatProbeData(interfaceData);
-            time=System.currentTimeMillis()-time;
+            time = System.currentTimeMillis() - time;
             System.out.println(time);
-            for (Map.Entry<String, Probe> entry:probeMap.entrySet()){
+            for (Map.Entry<String, Probe> entry : probeMap.entrySet()) {
                 storeProbe(entry.getValue());
             }
-            for (Events event:interfaceData.getEvents()){
+            for (Events event : interfaceData.getEvents()) {
                 storeEvent(event);
             }
 
@@ -244,128 +253,132 @@ public class AMSXMLLoader extends DriveLoader {
         }
     }
 
-
-
-
-
+    /**
+     * Store event.
+     * 
+     * @param event the event
+     * @throws ParseException the parse exception
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     private void storeEvent(Events event) throws ParseException, IOException {
         CellResel cr = event.getCellResel();
-        
-        if (cr!=null){
-            Node eventNode=neo.createNode();
+
+        if (cr != null) {
+            Node eventNode = neo.createNode();
             NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
-            lastDatasetNode=eventNode;
+            lastDatasetNode = eventNode;
             Date date = getTime(cr.getCellReselReq());
             long timestamp = date.getTime();
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode , "cellReselReq",timestamp);
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_EVENT_TYPE,CellResel.class.getName());
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_PROBE_ID,cr.getProbeID());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "cellReselReq", timestamp);
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE, CellResel.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, cr.getProbeID());
             eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
-            
+
             index(eventNode);
-            
+
         }
         GroupAttach gr = event.getGroupAttach();
-        if (gr!=null){
+        if (gr != null) {
 
-            Node eventNode=neo.createNode();
+            Node eventNode = neo.createNode();
             NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
-            lastDatasetNode=eventNode;
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_EVENT_TYPE,GroupAttach.class.getName());
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_PROBE_ID,gr.getProbeID());
+            lastDatasetNode = eventNode;
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE, GroupAttach.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, gr.getProbeID());
 
             Date date = getTime(gr.getGroupAttachTime());
             long timestamp = date.getTime();
             eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode , "groupAttachTime",timestamp);
-            if (gr.hasErrorCode()){
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode , "errorCode",gr.getErrorCode());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "groupAttachTime", timestamp);
+            if (gr.hasErrorCode()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errorCode", gr.getErrorCode());
             }
             Node lastMM = null;
-            for (Attachment at:gr.getAttachment()){
-                Node mm=neo.createNode();
+            for (Attachment at : gr.getAttachment()) {
+                Node mm = neo.createNode();
                 NeoUtils.addChild(eventNode, mm, lastMM, neo);
                 NodeTypes.MM.setNodeType(mm, neo);
-                lastMM=mm;
-                mm.setProperty("groupType",at.getGroupType());
-                mm.setProperty("gssi",at.getGssi());
+                lastMM = mm;
+                mm.setProperty("groupType", at.getGroupType());
+                mm.setProperty("gssi", at.getGssi());
             }
             index(eventNode);
-        }  
+        }
         Handover handover = event.getHandover();
-        if (handover!=null){
-            Node eventNode=neo.createNode();
+        if (handover != null) {
+            Node eventNode = neo.createNode();
             NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
-            lastDatasetNode=eventNode;
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_EVENT_TYPE,Handover.class.getName());
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_PROBE_ID,handover.getProbeID());
-            if (handover.hasErrorCode()){
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"errorCode",handover.getErrorCode());
+            lastDatasetNode = eventNode;
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE, Handover.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, handover.getProbeID());
+            if (handover.hasErrorCode()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errorCode", handover.getErrorCode());
             }
-            if (handover.hasLocationAreaAfter()){
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"locationAreaAfter",handover.getLocationAreaAfter());
+            if (handover.hasLocationAreaAfter()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "locationAreaAfter", handover.getLocationAreaAfter());
             }
-            if (handover.hasLocationAreaBefore()){
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"locationAreaBefore",handover.getLocationAreaBefore());
+            if (handover.hasLocationAreaBefore()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "locationAreaBefore", handover.getLocationAreaBefore());
             }
             Date date = getTime(handover.getHo_Req());
             long timestamp = date.getTime();
             eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"ho_Req",timestamp);
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"ho_accept",getTime(handover.getHo_Accept()).getTime());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "ho_Req", timestamp);
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "ho_accept", getTime(handover.getHo_Accept()).getTime());
             HandoverIsInclusive isIncl = handover.getHandoverIsInclusive();
-            if (isIncl!=null){
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"reason",isIncl.getReason());
-               if (isIncl.hasErrCode()){
+            if (isIncl != null) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "reason", isIncl.getReason());
+                if (isIncl.hasErrCode()) {
                     setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", isIncl.getErrCode());
-               }
+                }
             }
             index(eventNode);
         }
-        ItsiAttach itAt=event.getItsiAttach();
-        if (itAt!=null){
-            Node eventNode=neo.createNode();
+        ItsiAttach itAt = event.getItsiAttach();
+        if (itAt != null) {
+            Node eventNode = neo.createNode();
             NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
-            lastDatasetNode=eventNode;
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_EVENT_TYPE,ItsiAttach.class.getName());
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_PROBE_ID,itAt.getProbeID());
+            lastDatasetNode = eventNode;
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE, ItsiAttach.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, itAt.getProbeID());
             Date date = getTime(itAt.getItsiAtt_Req());
             long timestamp = date.getTime();
             eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"itsiAtt_Req",timestamp);
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"itsiAtt_Accept",getTime(itAt.getItsiAtt_Accept()).getTime());
-            if (itAt.hasErrorCode()){
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"errorCode",itAt.getErrorCode());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "itsiAtt_Req", timestamp);
+            String itsiAttAccept = itAt.getItsiAtt_Accept();
+            if (itsiAttAccept!=null){
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "itsiAtt_Accept", getTime(itsiAttAccept).getTime());
             }
-            if (itAt.hasLocationAreaAfter()){
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"locationAreaAfter",itAt.getLocationAreaAfter());
+            if (itAt.hasErrorCode()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errorCode", itAt.getErrorCode());
             }
-            if (itAt.hasLocationAreaBefore()){
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"locationAreaBefore",itAt.getLocationAreaBefore());
+            if (itAt.hasLocationAreaAfter()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "locationAreaAfter", itAt.getLocationAreaAfter());
+            }
+            if (itAt.hasLocationAreaBefore()) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "locationAreaBefore", itAt.getLocationAreaBefore());
             }
             IsInconclusive isIncl = itAt.getIsInconclusive();
-            if (isIncl!=null){
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"reason",isIncl.getReason());
-               if (isIncl.hasErrCode()){
+            if (isIncl != null) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "reason", isIncl.getReason());
+                if (isIncl.hasErrCode()) {
                     setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", isIncl.getErrCode());
-               }
+                }
             }
             index(eventNode);
         }
-       
-        ReceiveMsg rMsg=event.getReceiveMsg();
+
+        ReceiveMsg rMsg = event.getReceiveMsg();
         if (rMsg != null) {
             Node eventNode = neo.createNode();
             NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
             lastDatasetNode = eventNode;
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE,
-                    ItsiAttach.class.getName());
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, rMsg
-                    .getProbeID());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE, ItsiAttach.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, rMsg.getProbeID());
             Date date = getTime(rMsg.getReceiveTime());
             long timestamp = date.getTime();
             eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
@@ -395,16 +408,15 @@ public class AMSXMLLoader extends DriveLoader {
         }
         SendMsg sMsg = event.getSendMsg();
         if (sMsg != null) {
-           Node eventNode=neo.createNode();
-           NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
-           lastDatasetNode=eventNode;
-           setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,INeoConstants.M_EVENT_TYPE,ItsiAttach.class.getName());
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, sMsg
-                    .getProbeID());
+            Node eventNode = neo.createNode();
+            NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
+            lastDatasetNode = eventNode;
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE, ItsiAttach.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, sMsg.getProbeID());
             Date date = getTime(sMsg.getSendTime());
-           long timestamp = date.getTime();
-           eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-           updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
+            long timestamp = date.getTime();
+            eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
             setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "sendTime", timestamp);
             if (sMsg.hasDataLength()) {
                 setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "dataLength", sMsg.getDataLength());
@@ -412,7 +424,7 @@ public class AMSXMLLoader extends DriveLoader {
                 barMsg.write(sMsg.getDataTxt());
                 setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "dataTxt", barMsg.toString());
 
-           }
+            }
             if (sMsg.hasMsgRef()) {
                 setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "msgRef", sMsg.getMsgRef());
             }
@@ -424,13 +436,13 @@ public class AMSXMLLoader extends DriveLoader {
             if (mType != null) {
                 setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "message_type", mType.getType());
             }
-             SendMsgIsInclusive isIncl = sMsg.getSendMsgIsInclusive();
-           if (isIncl!=null){
-               setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers,eventNode ,"reason",isIncl.getReason());
-              if (isIncl.hasErrCode()){
+            SendMsgIsInclusive isIncl = sMsg.getSendMsgIsInclusive();
+            if (isIncl != null) {
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "reason", isIncl.getReason());
+                if (isIncl.hasErrCode()) {
                     setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errCode", isIncl.getErrCode());
-              }
-           }
+                }
+            }
 
             Node lastMM = null;
             for (SendReport report : sMsg.getSendReport()) {
@@ -444,36 +456,40 @@ public class AMSXMLLoader extends DriveLoader {
                     mm.setProperty("status_type", status.getType());
                 }
             }
-           index(eventNode);
-       }
+            index(eventNode);
+        }
 
         Toc toc = event.getToc();
         if (toc != null) {
+            tocttc=new AMSLoader.Call();
             Node eventNode = neo.createNode();
             NeoUtils.addChild(datasetNode, eventNode, lastDatasetNode, neo);
             lastDatasetNode = eventNode;
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE,
-                    ItsiAttach.class.getName());
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, toc
-                    .getProbeID());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_EVENT_TYPE, ItsiAttach.class.getName());
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, INeoConstants.M_PROBE_ID, toc.getProbeID());
             setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "calledNumber", toc.getCalledNumber());
-
-           Date date = getTime(toc.getConfigTime());
+            Date date = getTime(toc.getConfigTime());
             long timestamp = date.getTime();
             eventNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
             setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "config_time", timestamp);
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "connect_time", getTime(
-                    toc.getConnectTime()).getTime());
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "disconnect_time", getTime(
-                    toc.getDisconnectTime()).getTime());
-            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "setup_time", getTime(toc.getSetupTime()).getTime());
+            String connectTime = toc.getConnectTime();
+            if (connectTime!=null){
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "connect_time", getTime(connectTime).getTime());
+            }
+            String disconnectTime = toc.getDisconnectTime();
+            if (disconnectTime!=null){
+            setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "disconnect_time", getTime(disconnectTime).getTime());
+            }
+            String setupTime = toc.getSetupTime();
+            if (setupTime!=null){
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "setup_time", getTime(setupTime).getTime());
+            }
             if (toc.hasErrorCode()) {
                 setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "errorCode", toc.getErrorCode());
             }
             if (toc.hasCauseForTermination()) {
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "causeForTermination", toc
-                        .getCauseForTermination());
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "causeForTermination", toc.getCauseForTermination());
             }
             if (toc.hasHook()) {
                 setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "hook", toc.getHook());
@@ -498,7 +514,7 @@ public class AMSXMLLoader extends DriveLoader {
                     mm.setProperty("delay", result.getPesq());
 
                 }
-                mm.setProperty("sendSampleStart", getTime(result.getSendSampleStart()));
+                mm.setProperty("sendSampleStart", getTime(result.getSendSampleStart()).getTime());
             }
             TOCIsInclusive isIncl = toc.getTOCIsInclusive();
             if (isIncl != null) {
@@ -561,8 +577,7 @@ public class AMSXMLLoader extends DriveLoader {
                 }
             }
             index(eventNode);
-        }
-;
+        };
         Ttc ttc = event.getTtc();
         if (ttc != null) {
             Node eventNode = neo.createNode();
@@ -586,10 +601,10 @@ public class AMSXMLLoader extends DriveLoader {
                 setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "causeForTermination", ttc.getCauseForTermination());
             }
             if (ttc.hasHook()) {
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "hook", toc.getHook());
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "hook", ttc.getHook());
             }
             if (ttc.hasSimplex()) {
-                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "simplex", toc.getSimplex());
+                setNewIndexProperty(getHeaderMap(REAL_DATASET_HEADER_INDEX).headers, eventNode, "simplex", ttc.getSimplex());
             }
 
             Node lastMM = null;
@@ -604,7 +619,7 @@ public class AMSXMLLoader extends DriveLoader {
                 if (result.hasPesq()) {
                     mm.setProperty("pesq", result.getPesq());
                 }
-                mm.setProperty("sendSampleStart", getTime(result.getSendSampleStart()));
+                mm.setProperty("sendSampleStart", getTime(result.getSendSampleStart()).getTime());
 
             }
             TTCIsInclusive isIncl = ttc.getTTCIsInclusive();
@@ -620,37 +635,57 @@ public class AMSXMLLoader extends DriveLoader {
     }
 
     /**
-     *
-     * @param cellReselReq
-     * @return
-     * @throws ParseException 
+     * Gets the time.
+     * 
+     * @param timestamp the timestamp
+     * @return the time
+     * @throws ParseException the parse exception
      */
-    private Date getTime(String timestamp) throws ParseException {
+    private static Date getTime(String timestamp) throws ParseException {
         int i = timestamp.lastIndexOf(':');
-        StringBuilder time=new StringBuilder(timestamp.substring(0, i)).append(timestamp.substring(i+1,timestamp.length()));
+        StringBuilder time = new StringBuilder(timestamp.substring(0, i)).append(timestamp.substring(i + 1, timestamp.length()));
         return formatter.parse(time.toString());
     }
 
     /**
      * Store probe.
-     *
+     * 
      * @param probe the probe
      */
     private void storeProbe(Probe probe) {
         Node probeNew = NeoUtils.findOrCreateProbeNode(networkNode, probe.getId(), neo);
-       ProbeIDNumberMap map = probe.getProbeIDNumberMap();
-       setNewIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers,probeNew , "phoneNumber", map.getPhoneNumber());
-       String fr = map.getFrequency();
-       if (fr!=null){
-           setNewIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers,probeNew , "phoneNumber", Double.parseDouble(fr));
-       }
-       setNewIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers,probeNew , "phoneNumber", map.getLocationArea());
-       index(probeNew);
+        ProbeIDNumberMap map = probe.getProbeIDNumberMap();
+        if (map==null){
+            NeoLoaderPlugin.info(String.format("Probe %s not stored. Reason: not found ProbeIDNumberMap",probe.getId()));
+            return;
+        }
+        setNewIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers, probeNew, "phoneNumber", map.getPhoneNumber());
+        String fr = map.getFrequency();
+        if (fr != null) {
+            setNewIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers, probeNew, "frequency", Double.parseDouble(fr));
+        }
+        setNewIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers, probeNew, "locationArea", map.getLocationArea());
+        // parce GPS data
+        if (!probeNew.hasProperty(INeoConstants.PROPERTY_LAT_NAME)) {
+            for (CompleteGpsData gpsData : probe.getCompleteGpsData()) {
+                GPSData data = new GPSData(gpsData);
+                if (data.getLat() != null) {
+                    probeNew.setProperty(INeoConstants.PROPERTY_LAT_NAME, data.getLat().doubleValue());
+                    probeNew.setProperty(INeoConstants.PROPERTY_LON_NAME, data.getLon().doubleValue());
+                    GisProperties gisProperties = gisNodes.get(networkName);
+                    gisProperties.updateBBox(data.getLat(), data.getLon());
+                    gisProperties.checkCRS(data.getLat(), data.getLon(), null);
+                    gisProperties.incSaved();
+                }
+            }
+        }
+
+        index(probeNew);
     }
 
     /**
      * Initializes Network for probes.
-     *
+     * 
      * @param networkName name of network
      */
     private void initializeNetwork(String networkName) {
@@ -664,12 +699,13 @@ public class AMSXMLLoader extends DriveLoader {
         basename = networkName;
         networkGis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
         networkNode = findOrCreateNetworkNode(networkGis);
+        this.networkName = basename;
         basename = oldBasename;
     }
 
     /**
      * Initializes a Call dataset.
-     *
+     * 
      * @param datasetName name of Real dataset
      */
     private void initializeDatasets(String datasetName) {
@@ -678,7 +714,7 @@ public class AMSXMLLoader extends DriveLoader {
             datasetNode = findOrCreateDatasetNode(neo.getReferenceNode(), dataset);
             gisDataset = findOrCreateGISNode(datasetNode, GisTypes.DRIVE.getHeader());
 
-            // callDataset = getVirtualDataset(DriveTypes.AMS_CALLS);
+            callDataset = getVirtualDataset(DriveTypes.AMS_CALLS);
 
             tx.success();
         } catch (Exception e) {
@@ -692,7 +728,7 @@ public class AMSXMLLoader extends DriveLoader {
 
     /**
      * Gets the storing node.
-     *
+     * 
      * @param key the key
      * @return the storing node
      */
@@ -703,6 +739,8 @@ public class AMSXMLLoader extends DriveLoader {
             return gisNodes.get(dataset).getGis();
         case CALL_DATASET_HEADER_INDEX:
             return gisNodes.get(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)).getGis();
+        case PROBE_NETWORK_HEADER_INDEX:
+            return gisNodes.get(networkName).getGis();
         default:
             return null;
         }
@@ -710,7 +748,7 @@ public class AMSXMLLoader extends DriveLoader {
 
     /**
      * Parses the line.
-     *
+     * 
      * @param line the line
      */
     @Override
@@ -720,7 +758,7 @@ public class AMSXMLLoader extends DriveLoader {
 
     /**
      * Format probe data.
-     *
+     * 
      * @param interfaceData the interface data
      * @return the map
      */
@@ -771,14 +809,17 @@ public class AMSXMLLoader extends DriveLoader {
             }
             probe.addServingData(elem);
         }
-        for (CompleteGpsData elem : interfaceData.getGpsData().getCompleteGpsDataList().getCompleteGpsData()) {
-            String id = elem.getProbeID();
-            Probe probe = result.get(id);
-            if (probe == null) {
-                probe = new Probe(id);
-                result.put(id, probe);
+        GpsData gpsData = interfaceData.getGpsData();
+        if (gpsData != null) {
+            for (CompleteGpsData elem : gpsData.getCompleteGpsDataList().getCompleteGpsData()) {
+                String id = elem.getProbeID();
+                Probe probe = result.get(id);
+                if (probe == null) {
+                    probe = new Probe(id);
+                    result.put(id, probe);
+                }
+                probe.addCompleteGpsData(elem);
             }
-            probe.addCompleteGpsData(elem);
         }
 
         return result;
@@ -788,31 +829,31 @@ public class AMSXMLLoader extends DriveLoader {
      * The Class Probe.
      */
     private static class Probe {
-        
+
         /** The id. */
         final String id;
-        
+
         /** The probe id number map. */
-        ProbeIDNumberMap probeIDNumberMap=null;
-        
+        ProbeIDNumberMap probeIDNumberMap = null;
+
         /** The mpt sync. */
-        List<MptSync> mptSync=new LinkedList<MptSync>();
-        
+        List<MptSync> mptSync = new LinkedList<MptSync>();
+
         /** The neighbor data. */
-        List<NeighborData> neighborData=new LinkedList<NeighborData>();
-        
+        List<NeighborData> neighborData = new LinkedList<NeighborData>();
+
         /** The ntpq. */
-        List<Ntpq> ntpq=new LinkedList<Ntpq>();
-        
+        List<Ntpq> ntpq = new LinkedList<Ntpq>();
+
         /** The serving data. */
-        List<ServingData> servingData=new LinkedList<ServingData>();
-        
+        List<ServingData> servingData = new LinkedList<ServingData>();
+
         /** The complete gps data. */
-        List<CompleteGpsData> completeGpsData=new LinkedList<CompleteGpsData>();
-        
+        List<CompleteGpsData> completeGpsData = new LinkedList<CompleteGpsData>();
+
         /**
          * Instantiates a new probe.
-         *
+         * 
          * @param id the id
          */
         public Probe(String id) {
@@ -820,20 +861,18 @@ public class AMSXMLLoader extends DriveLoader {
             this.id = id;
         }
 
- 
         /**
          * Adds the complete gps data.
-         *
+         * 
          * @param elem the elem
          */
         public void addCompleteGpsData(CompleteGpsData elem) {
             completeGpsData.add(elem);
         }
 
-
         /**
          * Adds the serving data.
-         *
+         * 
          * @param elem the elem
          */
         public void addServingData(ServingData elem) {
@@ -842,111 +881,211 @@ public class AMSXMLLoader extends DriveLoader {
 
         /**
          * Adds the ntpq.
-         *
+         * 
          * @param elem the elem
          */
         public void addNtpq(Ntpq elem) {
             ntpq.add(elem);
         }
 
-
         /**
          * Adds the neighbor data.
-         *
+         * 
          * @param elem the elem
          */
         public void addNeighborData(NeighborData elem) {
-            neighborData.add(elem); 
+            neighborData.add(elem);
         }
-
 
         /**
          * Adds the mpt sync.
-         *
+         * 
          * @param elem the elem
          */
         public void addMptSync(MptSync elem) {
-            mptSync.add(elem); 
+            mptSync.add(elem);
         }
-
 
         /**
          * Sets the probe id number map.
-         *
+         * 
          * @param idMap the new probe id number map
          */
         public void setProbeIDNumberMap(ProbeIDNumberMap idMap) {
-            probeIDNumberMap=idMap;
+            probeIDNumberMap = idMap;
         }
-
 
         /**
          * Gets the id.
-         *
+         * 
          * @return the id
          */
         public String getId() {
             return id;
         }
 
-
         /**
          * Gets the probe id number map.
-         *
+         * 
          * @return the probe id number map
          */
         public ProbeIDNumberMap getProbeIDNumberMap() {
             return probeIDNumberMap;
         }
 
-
         /**
          * Gets the mpt sync.
-         *
+         * 
          * @return the mpt sync
          */
         public List<MptSync> getMptSync() {
             return mptSync;
         }
 
-
         /**
          * Gets the neighbor data.
-         *
+         * 
          * @return the neighbor data
          */
         public List<NeighborData> getNeighborData() {
             return neighborData;
         }
 
-
         /**
          * Gets the ntpq.
-         *
+         * 
          * @return the ntpq
          */
         public List<Ntpq> getNtpq() {
             return ntpq;
         }
 
-
         /**
          * Gets the serving data.
-         *
+         * 
          * @return the serving data
          */
         public List<ServingData> getServingData() {
             return servingData;
         }
 
-
         /**
          * Gets the complete gps data.
-         *
+         * 
          * @return the complete gps data
          */
         public List<CompleteGpsData> getCompleteGpsData() {
             return completeGpsData;
+        }
+
+    }
+
+    /**
+     * <p>
+     * GPS data contains parsed information from CompleteGpsData For now supports only
+     * </p>
+     * .
+     * 
+     * @author tsinkel_a
+     * @since 1.0.0
+     */
+    public static class GPSData {
+
+        /** The lat. */
+        private Float lat;
+
+        /** The lon. */
+        private Float lon;
+
+        /** The delivery time. */
+        private Long deliveryTime;
+
+        /** The probe id. */
+        private final String probeId;
+
+        /** The gps sentence. */
+        private final String gpsSentence;
+
+        /**
+         * Instantiates a new gPS data.
+         * 
+         * @param data the data
+         */
+        public GPSData(CompleteGpsData data) {
+            try {
+                deliveryTime = getTime(data.getDeliveryTime()).getTime();
+            } catch (ParseException e) {
+                NeoLoaderPlugin.exception(e);
+                deliveryTime = null;
+            }
+            probeId = data.getProbeID();
+            gpsSentence = data.getGpsSentence();
+            parseGPSCommand();
+        }
+
+        /**
+         * Parse gps command.
+         */
+        private void parseGPSCommand() {
+            String[] commandArr = gpsSentence.split(",");
+            if (commandArr.length != 7 || !commandArr[0].equalsIgnoreCase("$GPGLL") || !commandArr[6].equalsIgnoreCase("A")) {
+                lat = null;
+                lon = null;
+                return;
+            }
+            lat = Float.parseFloat(commandArr[1]);
+            if (commandArr[2].equalsIgnoreCase("S")) {
+                lat = -lat;
+            }
+            lon = Float.parseFloat(commandArr[3]);
+            if (commandArr[4].equalsIgnoreCase("W")) {
+                lon = -lon;
+            }
+        }
+
+        /**
+         * Gets the lat.
+         * 
+         * @return the lat
+         */
+        public Float getLat() {
+            return lat;
+        }
+
+        /**
+         * Gets the lon.
+         * 
+         * @return the lon
+         */
+        public Float getLon() {
+            return lon;
+        }
+
+        /**
+         * Gets the delivery time.
+         * 
+         * @return the delivery time
+         */
+        public Long getDeliveryTime() {
+            return deliveryTime;
+        }
+
+        /**
+         * Gets the probe id.
+         * 
+         * @return the probe id
+         */
+        public String getProbeId() {
+            return probeId;
+        }
+
+        /**
+         * Gets the gps sentence.
+         * 
+         * @return the gps sentence
+         */
+        public String getGpsSentence() {
+            return gpsSentence;
         }
 
     }

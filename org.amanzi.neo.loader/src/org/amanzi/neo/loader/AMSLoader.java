@@ -78,7 +78,7 @@ public class AMSLoader extends DriveLoader {
      * @author Lagutko_N
      * @since 1.0.0
      */
-	private class Call {
+	public static class Call {
 		
 	    /*
 	     * List of Duration Parameters
