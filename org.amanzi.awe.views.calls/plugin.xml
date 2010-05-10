@@ -27,4 +27,23 @@
          </viewShortcut>
       </perspectiveExtension>
    </extension>
+   
+   <extension
+          point="org.eclipse.ui.importWizards">
+	       <wizard  
+	             category="org.ams.load"
+	             class="org.amanzi.awe.views.calls.views.AmsImportWizard"
+	             icon="icons/call_analyser.png"
+	             id="org.amanzi.awe.views.calls.views.AmsImportWizard"
+	             name="Import AMS statistics data">
+	          <description>
+	 				Import a data file from the local file system into the project
+	          </description>
+	       </wizard>                
+	       <category
+	             id="org.ams.load"
+	             name="AMS Data">
+	       </category>
+       
+    </extension>
 </plugin>
