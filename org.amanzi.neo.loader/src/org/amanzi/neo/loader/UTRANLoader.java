@@ -739,17 +739,6 @@ public class UTRANLoader extends AbstractLoader {
             super(tagName, parent, attributes);
         }
 
-        /**
-         * Constructor.
-         * 
-         * @param tagName - tag name
-         * @param parent - parent node
-         * @param lastChild -last child of parent node, if null, then child will be found
-         * @param attributes - attributes of tag
-         */
-        protected AbstractNeoTag(String tagName, Node parent, Node lastChild, Attributes attributes) {
-            super(tagName, parent, lastChild, attributes);
-        }
 
         /**
          * Adds the child.
