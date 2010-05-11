@@ -15,7 +15,11 @@ package org.amanzi.awe.views.calls.enums;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 
@@ -31,36 +35,38 @@ public enum StatisticsCallType {
     /**
      * Second level statistics.
      */
-    AGGREGATION_STATISTICS(null,2,StatisticsHeaders.SC1,
-                                StatisticsHeaders.SC2_ZW2_AVG,
-                                StatisticsHeaders.SC2_ZW2_MIN,
-                                StatisticsHeaders.SC2_ZW2_MAX,
-                                StatisticsHeaders.SC3,
-                                StatisticsHeaders.SC4_ZW2_AVG,
-                                StatisticsHeaders.SC4_ZW2_MIN,
-                                StatisticsHeaders.SC4_ZW2_MAX,
-                                StatisticsHeaders.SC5_ZW1_AVG,
-                                StatisticsHeaders.SC5_ZW1_MIN,
-                                StatisticsHeaders.SC5_ZW1_MAX,
-                                StatisticsHeaders.GC1,
-                                StatisticsHeaders.GC2_ZW2_AVG,
-                                StatisticsHeaders.GC2_ZW2_MIN,
-                                StatisticsHeaders.GC2_ZW2_MAX,
-                                StatisticsHeaders.GC3,
-                                StatisticsHeaders.GC4_ZW2_AVG,
-                                StatisticsHeaders.GC4_ZW2_MIN,
-                                StatisticsHeaders.GC4_ZW2_MAX,
-                                StatisticsHeaders.GC5_ZW1_AVG,
-                                StatisticsHeaders.GC5_ZW1_MIN,
-                                StatisticsHeaders.GC5_ZW1_MAX,
-                                StatisticsHeaders.INH_CC,
-                                StatisticsHeaders.TSM,
-                                StatisticsHeaders.SDS,
-                                StatisticsHeaders.INH_AT),
+    AGGREGATION_STATISTICS("Second level",null,55,2,AggregationStatisticsHeaders.SC1,
+                                AggregationStatisticsHeaders.SC2_ZW2_AVG,
+                                AggregationStatisticsHeaders.SC2_ZW2_MIN,
+                                AggregationStatisticsHeaders.SC2_ZW2_MAX,
+                                AggregationStatisticsHeaders.SC3,
+                                AggregationStatisticsHeaders.SC4,
+                                AggregationStatisticsHeaders.SC4_ZW2_AVG,
+                                AggregationStatisticsHeaders.SC4_ZW2_MIN,
+                                AggregationStatisticsHeaders.SC4_ZW2_MAX,
+                                /*AggregationStatisticsHeaders.SC5_ZW1_AVG,
+                                AggregationStatisticsHeaders.SC5_ZW1_MIN,
+                                AggregationStatisticsHeaders.SC5_ZW1_MAX,*/
+                                AggregationStatisticsHeaders.GC1,
+                                AggregationStatisticsHeaders.GC2_ZW2_AVG,
+                                AggregationStatisticsHeaders.GC2_ZW2_MIN,
+                                AggregationStatisticsHeaders.GC2_ZW2_MAX,
+                                AggregationStatisticsHeaders.GC3,
+                                AggregationStatisticsHeaders.GC4,
+                                AggregationStatisticsHeaders.GC4_ZW2_AVG,
+                                AggregationStatisticsHeaders.GC4_ZW2_MIN,
+                                AggregationStatisticsHeaders.GC4_ZW2_MAX,
+                                /*AggregationStatisticsHeaders.GC5_ZW1_AVG,
+                                AggregationStatisticsHeaders.GC5_ZW1_MIN,
+                                AggregationStatisticsHeaders.GC5_ZW1_MAX,*/
+                                AggregationStatisticsHeaders.INH_CC,
+                                AggregationStatisticsHeaders.TSM,
+                                AggregationStatisticsHeaders.SDS,
+                                AggregationStatisticsHeaders.INH_AT),
     /**
      * Individual calls.
      */
-    INDIVIDUAL(CallType.INDIVIDUAL, 1, StatisticsHeaders.CALL_ATTEMPT_COUNT,
+    INDIVIDUAL("SC (single call)",CallType.INDIVIDUAL,0, 1, StatisticsHeaders.CALL_ATTEMPT_COUNT,
                             StatisticsHeaders.SUCC_SETUP_COUNT,
                             StatisticsHeaders.SETUP_TM_Z1_P1,
                             StatisticsHeaders.SETUP_TM_Z1_P2,
@@ -125,7 +131,7 @@ public enum StatisticsCallType {
     /**
      * Group calls.
      */
-    GROUP(CallType.GROUP,1, StatisticsHeaders.CALL_ATTEMPT_COUNT,
+    GROUP("GC (group call)",CallType.GROUP,5,1, StatisticsHeaders.CALL_ATTEMPT_COUNT,
                             StatisticsHeaders.SUCC_SETUP_COUNT,
                             StatisticsHeaders.SETUP_TM_Z1_P1,
                             StatisticsHeaders.SETUP_TM_Z1_P2,
@@ -189,15 +195,15 @@ public enum StatisticsCallType {
     /**
      * SDS messages.
      */
-    SDS(CallType.SDS,1,StatisticsHeaders.SDS_MESSAGE_ATTEMPT,StatisticsHeaders.SDS_MESSAGE_SUCC),
+    SDS("SDS",CallType.SDS,10,1,StatisticsHeaders.SDS_MESSAGE_ATTEMPT,StatisticsHeaders.SDS_MESSAGE_SUCC),
     /**
      * TSM messages.
      */
-    TSM(CallType.TSM,1,StatisticsHeaders.TSM_MESSAGE_ATTEMPT,StatisticsHeaders.TSM_MESSAGE_SUCC),
+    TSM("TSM",CallType.TSM,15,1,StatisticsHeaders.TSM_MESSAGE_ATTEMPT,StatisticsHeaders.TSM_MESSAGE_SUCC),
     /**
      * Alarm messages.
      */
-    ALARM(CallType.ALARM,1,StatisticsHeaders.ALM_ATTEMPT,
+    ALARM("Alarm",CallType.ALARM,40,1,StatisticsHeaders.ALM_ATTEMPT,
                          StatisticsHeaders.ALM_SUCCESS,
                          StatisticsHeaders.ALM_DELAY_TOTAL_SUM,
                          StatisticsHeaders.ALM_DELAY_TOTAL_MIN,
@@ -248,15 +254,15 @@ public enum StatisticsCallType {
     /**
      * Emergency call type 1.
      */
-    EMERGENCY(CallType.EMERGENCY,1, StatisticsHeaders.EC1_ATTEMPT,StatisticsHeaders.EC1_SUCCESS),
+    EMERGENCY("EC1",CallType.EMERGENCY,20,1, StatisticsHeaders.EC1_ATTEMPT,StatisticsHeaders.EC1_SUCCESS),
     /**
      * Emergency call type 2.
      */
-    HELP(CallType.HELP,1, StatisticsHeaders.EC2_ATTEMPT,StatisticsHeaders.EC2_SUCCESS),
+    HELP("EC2",CallType.HELP,25,1, StatisticsHeaders.EC2_ATTEMPT,StatisticsHeaders.EC2_SUCCESS),
     /**
      * ITSI attach call type.
      */
-    ITSI_ATTACH(CallType.ITSI_ATTACH,1, StatisticsHeaders.ATT_ATTEMPTS,
+    ITSI_ATTACH("ITSI-attach",CallType.ITSI_ATTACH,35,1, StatisticsHeaders.ATT_ATTEMPTS,
                                         StatisticsHeaders.ATT_SUCCESS,
                                         StatisticsHeaders.ATT_DELAY_P1,
                                         StatisticsHeaders.ATT_DELAY_P2,
@@ -269,7 +275,7 @@ public enum StatisticsCallType {
     /**
      * ITSI CC (CellChange) call type.
      */
-    ITSI_CC(CallType.ITSI_CC,1, StatisticsHeaders.CC_HO_ATTEMPTS,
+    ITSI_CC("HO/CC (Handover/cell change)",CallType.ITSI_CC,30,1, StatisticsHeaders.CC_HO_ATTEMPTS,
                                 StatisticsHeaders.CC_RES_ATTEMPTS,
                                 StatisticsHeaders.CC_HO_SUCCESS,
                                 StatisticsHeaders.CC_RES_SUCCESS,
@@ -292,7 +298,7 @@ public enum StatisticsCallType {
     /**
      * Circuit-switched data call type.                       
      */
-    CS_DATA(CallType.CS_DATA,1,StatisticsHeaders.CSD_ATTEMPTS,
+    CS_DATA("Circuit-switched",CallType.CS_DATA,45,1,StatisticsHeaders.CSD_ATTEMPTS,
                                 StatisticsHeaders.CSD_SUCCESS,
                                 StatisticsHeaders.CSD_STABILITY,
                                 StatisticsHeaders.CSD_THROUGHPUT_MIN,
@@ -334,7 +340,7 @@ public enum StatisticsCallType {
     /**
      * Packet switched data call type.
      */
-    PS_DATA(CallType.PS_DATA,1,StatisticsHeaders.IP_ATTEMPTS,
+    PS_DATA("Packet switched",CallType.PS_DATA,50,1,StatisticsHeaders.IP_ATTEMPTS,
                                 StatisticsHeaders.IP_SUCCESS,
                                 StatisticsHeaders.IP_STABILITY,
                                 StatisticsHeaders.IP_THROUGHPUT_MIN,
@@ -379,18 +385,22 @@ public enum StatisticsCallType {
     public static final Integer SECOND_LEVEL = 2;
     
     private CallType id;
+    private String viewName;
     private Integer level;
-    private List<StatisticsHeaders> headers;
+    private Integer order;
+    private List<IStatisticsHeader> headers;
     
     /**
      * Constructor.
      * @param anId CallType
      * @param statHeaders headers
      */
-    private StatisticsCallType(CallType anId, Integer aLevel, StatisticsHeaders... statHeaders ) {
+    private StatisticsCallType(String name, CallType anId,Integer orderValue, Integer aLevel, IStatisticsHeader... statHeaders ) {
         id = anId;
         level = aLevel;
         headers = Arrays.asList(statHeaders);
+        viewName = name;
+        order = orderValue;
     }
     
     /**
@@ -403,7 +413,7 @@ public enum StatisticsCallType {
     /**
      * @return Returns the headers.
      */
-    public List<StatisticsHeaders> getHeaders() {
+    public List<IStatisticsHeader> getHeaders() {
         return headers;
     }
     
@@ -414,8 +424,8 @@ public enum StatisticsCallType {
         return level;
     }
     
-    public StatisticsHeaders getHeaderByTitle(String title){
-        for(StatisticsHeaders header : headers){
+    public IStatisticsHeader getHeaderByTitle(String title){
+        for(IStatisticsHeader header : headers){
             if(header.getTitle().equals(title)){
                 return header;
             }
@@ -430,12 +440,27 @@ public enum StatisticsCallType {
      * @return StatisticsCallTypes
      */
     public static StatisticsCallType getTypeById(String id){
-        for(StatisticsCallType type : getTypesByLevel(FIRST_LEVEL)){
-            if(type.id!=null&&type.id.toString().equals(id)){
+        for(StatisticsCallType type : values()){
+            if(type.toString().equals(id)){
                 return type;
             }
         }
         throw new IllegalArgumentException("Unknown call type <"+id+">");
+    }
+    
+    /**
+     * Returns call type.
+     *
+     * @param id String
+     * @return StatisticsCallTypes
+     */
+    public static StatisticsCallType getTypeByViewName(String name){
+        for(StatisticsCallType type : values()){
+            if(type.viewName.equals(name)){
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown call type <"+name+">");
     }
     
     /**
@@ -462,5 +487,24 @@ public enum StatisticsCallType {
         }
         return result;
     }
+    
+    /**
+     * @return Returns the viewName.
+     */
+    public String getViewName() {
+        return viewName;
+    }
+    
+    public static List<StatisticsCallType> getSortedTypesList(Set<StatisticsCallType> typesSet){
+        List<StatisticsCallType> result = new ArrayList<StatisticsCallType>(typesSet);
+        Collections.sort(result, new Comparator<StatisticsCallType>() {
+            @Override
+            public int compare(StatisticsCallType o1, StatisticsCallType o2) {
+                return o1.order.compareTo(o2.order);
+            }
+        });
+        return result;
+    }
+    
     
 }

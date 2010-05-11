@@ -19,7 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import org.amanzi.neo.data_generator.data.calls.CallData;
@@ -32,9 +31,8 @@ import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 import org.amanzi.neo.data_generator.utils.call.CallFileBuilder;
 
 /**
- * Generate AMS data (individual calls)
  * <p>
- *
+ * Generate AMS data.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
@@ -48,9 +46,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
     private static final double MAX_FREQUENCY = 999;
     private static final long MAX_NETWORK_ID = 125000;
     
-    private static final int CALL_DURATION_PERIODS_COUNT = 8;
-    
-    private static final int MILLISECONDS = 1000;
+    protected static final int MILLISECONDS = 1000;
     protected static final long HOUR = 60*60*MILLISECONDS;
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
     private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(TIMESTAMP_FORMAT);
@@ -122,6 +118,27 @@ public abstract class AmsDataGenerator implements IDataGenerator{
         return probesCount;
     }
     
+    /**
+     * @return Returns the hours.
+     */
+    public Integer getHours() {
+        return hours;
+    }
+    
+    /**
+     * @return Returns the calls.
+     */
+    public Integer getCalls() {
+        return calls;
+    }
+    
+    /**
+     * @return Returns the callVariance.
+     */
+    public Integer getCallVariance() {
+        return callVariance;
+    }
+    
     @Override
     public GeneratedCallsData generate(){
         List<CallGroup> data;
@@ -178,9 +195,9 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      */
     private List<CallGroup> buildData(){
         List<CallGroup> data = initCallGroups();
-        for(CallGroup pair : data){            
-            List<CallData> calls = buildCalls(pair);
-            pair.setData(calls);
+        for(CallGroup group : data){            
+            List<CallData> calls = buildCalls(group);
+            group.setData(calls);
         }
         return data;
     }
@@ -192,17 +209,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * @param receiver Integer
      * @return List of {@link CallData}
      */
-    private List<CallData> buildCalls(CallGroup group) {
-        List<CallData> calls = new ArrayList<CallData>();
-        HashMap<Integer, List<Long>> hourMap = buildHourMap();
-        for(Integer hour : hourMap.keySet()){
-            for(Long duration : hourMap.get(hour)){
-                CallData call = buildCall(group, hour, duration);
-                calls.add(call);
-            }
-        }
-        return calls;
-    }
+    protected abstract List<CallData> buildCalls(CallGroup group);
     
     /**
      * Build one call.
@@ -279,56 +286,6 @@ public abstract class AmsDataGenerator implements IDataGenerator{
         }             
         return new CallGroup(groupName, source, sourceName, receiverList,receiverNames);
     }
-    
-    /**
-     * Build map of calls duration in all hours.
-     *
-     * @return HashMap<Integer, List<Long>> (key - hour, value - list of durations).
-     */
-    private HashMap<Integer, List<Long>> buildHourMap(){
-        HashMap<Integer, List<Long>> result = new HashMap<Integer, List<Long>>(hours);
-        for(int i = 0; i<hours; i++){
-            int count = calls + RandomValueGenerator.getGenerator().getIntegerValue(-callVariance, callVariance);
-            result.put(i, buildDurationMap(count));
-        }
-        return result;
-    }
-    
-    /**
-     * Build map of calls duration in one hour.
-     *
-     * @param allCountPerHour Integer (call count)
-     * @return list of durations
-     */
-    private List<Long> buildDurationMap(Integer allCountPerHour){
-        List<Long> result = new ArrayList<Long>(allCountPerHour);
-        RandomValueGenerator generator = RandomValueGenerator.getGenerator();
-        for(int i=0; i<allCountPerHour; i++) {
-            int period = generator.getIntegerValue(0, CALL_DURATION_PERIODS_COUNT);
-            Long[] borders = getPeriodBorders(period);
-            Long duration = generator.getLongValue(borders[0], borders[1]);            
-            result.add(duration);
-        }
-        return result;
-    }
-    
-    /**
-     * Returns borders of duration period.
-     *
-     * @param period Integer (period number)
-     * @return Long[]
-     */
-    private Long[] getPeriodBorders(Integer period){
-        float[] durationBorders = getCallDurationBorders();
-        Long start = (long)(durationBorders[period]*MILLISECONDS);
-        Long end = (long)(durationBorders[period+1]*MILLISECONDS);
-        return new Long[]{start,end};
-    }
-    
-    /**
-     * @return Returns Call duration borders
-     */
-    protected abstract float[] getCallDurationBorders();
     
     /**
      * Build name for probe.

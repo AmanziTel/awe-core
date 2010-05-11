@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
 import org.amanzi.awe.views.calls.statistics.constants.ICallStatisticsConstants;
@@ -166,8 +167,8 @@ public class IndividualCallStatTest extends CallStatisticsTest{
     }
 
     @Override
-    protected HashMap<StatisticsHeaders, Number> getStatValuesFromCall(CallData call)  throws ParseException {
-        HashMap<StatisticsHeaders, Number> result = new HashMap<StatisticsHeaders, Number>();
+    protected HashMap<IStatisticsHeader, Number> getStatValuesFromCall(CallData call)  throws ParseException {
+        HashMap<IStatisticsHeader, Number> result = new HashMap<IStatisticsHeader, Number>();
         ICallStatisticsConstants constants = getStatisticsConstants();
         Date start = getCallStartTime(call);
         Float setupDuration = getCallSetupDuration(call, start);
@@ -219,11 +220,8 @@ public class IndividualCallStatTest extends CallStatisticsTest{
             }
             List<Float> audioQuality = getCallAudioQualitySorted(call);
             if (!audioQuality.isEmpty()) {
-                for(Float curr : audioQuality){
-                    if(curr>=constants.getIndivCallQualLimit()){
-                        result.put(StatisticsHeaders.AUDIO_QUAL_SUCC,1L);
-                        break;
-                    }
+                if(audioQuality.get(0)>=constants.getIndivCallQualLimit()){
+                    result.put(StatisticsHeaders.AUDIO_QUAL_SUCC,1L);
                 }
                 HashMap<Integer, List<Float>> audioMap = getAudioMap(audioQuality);
                 List<Float> list = audioMap.get(0);

@@ -16,7 +16,7 @@ package org.amanzi.awe.views.calls.statistics;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
+import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -25,7 +25,7 @@ import org.neo4j.graphdb.Node;
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class Statistics extends HashMap<StatisticsHeaders, Object> {
+public class Statistics extends HashMap<IStatisticsHeader, Object> {
     
     /** long serialVersionUID field */
     private static final long serialVersionUID = 1L;
@@ -33,7 +33,7 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
     /*
      * Map for storing source nodes for each statistics element
      */
-    private HashMap<StatisticsHeaders, ArrayList<Node>> sourceNodes = new HashMap<StatisticsHeaders, ArrayList<Node>>();
+    private HashMap<IStatisticsHeader, ArrayList<Node>> sourceNodes = new HashMap<IStatisticsHeader, ArrayList<Node>>();
 
     /**
      * Updates Statistics and source node
@@ -42,7 +42,7 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
      * @param value value to update
      * @param sourceNode affected node
      */
-    public void updateHeaderWithCall(StatisticsHeaders header, Object value, Node sourceNode) {
+    public void updateHeaderWithCall(IStatisticsHeader header, Object value, Node sourceNode) {
         boolean added = false;
         if (value!=null) {
             switch (header.getType()) {
@@ -71,7 +71,7 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
      * @param header header of Statistics
      * @param value value to update
      */
-    public void updateHeader(StatisticsHeaders header, Object value) {
+    public void updateHeader(IStatisticsHeader header, Object value) {
         switch (header.getType()) {
         case COUNT:
             updateHeaderCount(header, (Integer)value);
@@ -94,7 +94,7 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
      * @param header header of Statistics
      * @param additionalNodes additional source nodes
      */
-    public void copyAllSourceNodes(StatisticsHeaders header, ArrayList<Node> additionalNodes) {
+    public void copyAllSourceNodes(IStatisticsHeader header, ArrayList<Node> additionalNodes) {
         if (additionalNodes != null) {
             ArrayList<Node> nodes = sourceNodes.get(header);
             if (nodes == null) {
@@ -105,7 +105,7 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
         }
     }
     
-    void updateSourceNodes(StatisticsHeaders header, Node source) {
+    void updateSourceNodes(IStatisticsHeader header, Node source) {
         ArrayList<Node> nodes = sourceNodes.get(header);
         if (nodes == null) {
             nodes = new ArrayList<Node>();
@@ -114,7 +114,7 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
         nodes.add(source);
     }
     
-    private boolean updateHeaderCount(StatisticsHeaders header, int count) {
+    private boolean updateHeaderCount(IStatisticsHeader header, int count) {
         Integer oldCount = (Integer)get(header);
         if (oldCount == null) {
             put(header, count);
@@ -126,7 +126,7 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
         return true;
     }
     
-    private boolean updateHeaderSum(StatisticsHeaders header, float count) {
+    private boolean updateHeaderSum(IStatisticsHeader header, float count) {
         Float oldCount = (Float)get(header);
         if (oldCount == null) {
             put(header, count);
@@ -138,7 +138,7 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
         return true;
     }
     
-    private boolean updateHeaderMax(StatisticsHeaders header, float newMax) {
+    private boolean updateHeaderMax(IStatisticsHeader header, float newMax) {
         Float oldMax = (Float)get(header);
         if (oldMax == null) {
             put(header, newMax);
@@ -152,7 +152,7 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
         return false;
     }
     
-    private boolean updateHeaderMin(StatisticsHeaders header, float newMin) {
+    private boolean updateHeaderMin(IStatisticsHeader header, float newMin) {
         Float oldMin = (Float)get(header);
         if (oldMin == null) {
             put(header, newMin);
@@ -166,7 +166,7 @@ public class Statistics extends HashMap<StatisticsHeaders, Object> {
         return false;
     }
     
-    public ArrayList<Node> getAllAffectedCalls(StatisticsHeaders header) {
+    public ArrayList<Node> getAllAffectedCalls(IStatisticsHeader header) {
         return sourceNodes.get(header);
     }
     

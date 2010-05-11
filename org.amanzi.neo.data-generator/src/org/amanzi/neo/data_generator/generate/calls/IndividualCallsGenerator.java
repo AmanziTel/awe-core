@@ -14,6 +14,7 @@
 package org.amanzi.neo.data_generator.generate.calls;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.amanzi.neo.data_generator.data.calls.CallData;
@@ -30,7 +31,7 @@ import org.amanzi.neo.data_generator.utils.call.CommandCreator;
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class IndividualCallsGenerator extends AmsDataGenerator {
+public class IndividualCallsGenerator extends CallDataGenerator {
     
     private static final float[] CALL_DURATION_BORDERS = new float[]{0.01f,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
     
@@ -82,6 +83,7 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
         receiverCommands.add(CommandCreator.getAtCciRow(time,receiverCci));
         
         time = getRamdomTime(time, start);
+        Long startAll = time;
         CommandRow ctsdcRow = CommandCreator.getCtsdcRow(time,0,0,0,0,0,0,0,1,0,0);
         sourceCommands.add(ctsdcRow);
         sourceCommands.add(CommandCreator.getCtsdcRow(start,ctsdcRow));
@@ -115,15 +117,16 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
             rest = HOUR;
         }
         time = getRamdomTime(0L, rest);
-        sourceCommands.add(CommandCreator.getAthRow(end+time));
+        long andAll = end+time;
+        sourceCommands.add(CommandCreator.getAthRow(andAll));
         time = getRamdomTime(time, rest);
-        CommandRow ctcrRow = CommandCreator.getCtcrRow(end+time,1,1);
+        CommandRow ctcrRow = CommandCreator.getCtcrRow(andAll,1,1);
         time = getRamdomTime(time, rest);
-        sourceCommands.add(CommandCreator.getAthRow(end+time,ctcrRow));            
+        sourceCommands.add(CommandCreator.getAthRow(andAll,ctcrRow));            
         
         time = getRamdomTime(time, rest);
         ctcrRow = CommandCreator.getCtcrRow(null,1,1);
-        receiverCommands.add(CommandCreator.getUnsoCtcrRow(end+time,ctcrRow));
+        receiverCommands.add(CommandCreator.getUnsoCtcrRow(andAll,ctcrRow));
         Long time1 = time;
         Long time2 = time;
         for(int i=0;i<6;i++){            
@@ -133,7 +136,12 @@ public class IndividualCallsGenerator extends AmsDataGenerator {
             receiverCommands.add(CommandCreator.getPESQRow(time2));
         }
         
-        return new CallData(getKey(),source, receiver);
+        CallData callData = new CallData(getKey(),source, receiver);
+        callData.setStartTime(new Date(startTime));
+        callData.addTime(duration);
+        callData.addTime(andAll-startAll);
+        //TODO Priority
+        return callData;
     }
 
     @Override

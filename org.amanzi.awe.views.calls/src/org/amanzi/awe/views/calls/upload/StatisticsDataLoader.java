@@ -33,9 +33,11 @@ import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
+import org.amanzi.awe.views.calls.statistics.AggregationCallStatisticsBuilder;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
@@ -102,6 +104,8 @@ public class StatisticsDataLoader {
     private HashMap<StatisticsCallType, Node> previousCells = new HashMap<StatisticsCallType, Node>();
     private HashMap<StatisticsCallType, Node> previousRows = new HashMap<StatisticsCallType, Node>();
     private HashMap<StatisticsCallType, Long[]> statBorders = new HashMap<StatisticsCallType, Long[]>();
+    Long minTime;
+    Long maxTime;
     
     private GraphDatabaseService service;
     
@@ -179,17 +183,7 @@ public class StatisticsDataLoader {
     /**
      * Finish all.
      */
-    private void finish(){
-        Long minTime = null;
-        Long maxTime = null;
-        for(Long[] borders : statBorders.values()){
-            if(minTime==null||minTime<borders[0]){
-                minTime = borders[0];
-            }
-            if(maxTime==null||maxTime>borders[1]){
-                maxTime = borders[1];
-            }
-        }
+    private void finish(){        
         Node gis = gisNodes.get(datasetName);
         gis.setProperty(INeoConstants.MIN_TIMESTAMP, minTime);
         gis.setProperty(INeoConstants.MAX_TIMESTAMP, maxTime);
@@ -200,6 +194,19 @@ public class StatisticsDataLoader {
             addDataToCatalog();
         } catch (MalformedURLException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+    
+    private void initCommonBorders(){
+        minTime = null;
+        maxTime = null;
+        for(Long[] borders : statBorders.values()){
+            if(minTime==null||minTime<borders[0]){
+                minTime = borders[0];
+            }
+            if(maxTime==null||maxTime>borders[1]){
+                maxTime = borders[1];
+            }
         }
     }
     
@@ -306,7 +313,7 @@ public class StatisticsDataLoader {
                 if(callType!=null){
                     Node row = getRowNode(callType, start, end, probeName, la, frequency);
                     Object value = header.parseValue(cells[i]);
-                    StatisticsHeaders real = header.getRealHeader();
+                    IStatisticsHeader real = header.getRealHeader();
                     createSCellNode(row,null, value, real, callType);
                 }
             }
@@ -459,7 +466,7 @@ public class StatisticsDataLoader {
      * @param header StatisticsHeaders
      * @param callType StatisticsCallType
      */
-    private void createSCellNode(Node row, List<Node> sourceCells, Object value, StatisticsHeaders header, StatisticsCallType callType){
+    private void createSCellNode(Node row, List<Node> sourceCells, Object value, IStatisticsHeader header, StatisticsCallType callType){
         Node result = service.createNode();
         
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
@@ -637,10 +644,17 @@ public class StatisticsDataLoader {
      * Build statistics for higher periods.
      */
     private void buildHighperiodStatistics(){
+        HashMap<StatisticsCallType, Node> roots = new HashMap<StatisticsCallType, Node>(statRoots.size());
         for(StatisticsCallType type : statRoots.keySet()){
             CallTimePeriods highestPeriod = getHighestPeriod(type);            
-            statRoots.put(type, buildStatisticsFromUnderling(highestPeriod, type));
+            StatInfo newInfo = buildStatisticsFromUnderling(highestPeriod, type);
+            statRoots.put(type, newInfo);
+            roots.put(type, newInfo.getRoot());
         }
+        initCommonBorders();
+        CallTimePeriods period = getHighestPeriod(minTime,maxTime);
+        AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(virtualDataset, service);
+        aggrStatisticsBuilder.createAggregationStatistics(period, roots);
     }
     
     /**
@@ -669,9 +683,9 @@ public class StatisticsDataLoader {
                 Node probe = probes.get(probeName);
                 List<Node> sourceRows = allProbes.get(probeName).getRowsInTime(start, nextStart);
                 Node row = createRowNode(start, end, probe, sourceRows, periodNode, callType, period);
-                HashMap<StatisticsHeaders, List<Node>> cellsMap = getCellsMap(sourceRows, callType);
+                HashMap<IStatisticsHeader, List<Node>> cellsMap = getCellsMap(sourceRows, callType);
                 previousCells.clear();
-                for(StatisticsHeaders header : cellsMap.keySet()){
+                for(IStatisticsHeader header : cellsMap.keySet()){
                     List<Node> sourceCells = cellsMap.get(header);
                     Object cellValue = getCellValue(header, sourceCells);
                     createSCellNode(row, sourceCells, cellValue, header, callType);
@@ -693,11 +707,11 @@ public class StatisticsDataLoader {
      * @param callType StatisticsCallType
      * @return HashMap<StatisticsHeaders, List<Node>>
      */
-    private HashMap<StatisticsHeaders, List<Node>> getCellsMap(List<Node> rows, StatisticsCallType callType){
-        HashMap<StatisticsHeaders, List<Node>> result = new HashMap<StatisticsHeaders, List<Node>>();
+    private HashMap<IStatisticsHeader, List<Node>> getCellsMap(List<Node> rows, StatisticsCallType callType){
+        HashMap<IStatisticsHeader, List<Node>> result = new HashMap<IStatisticsHeader, List<Node>>();
         for(Node row : rows){
             for(Node cell : NeoUtils.getChildTraverser(row)){
-                StatisticsHeaders header = callType.getHeaderByTitle(NeoUtils.getNodeName(cell,service));
+                IStatisticsHeader header = callType.getHeaderByTitle(NeoUtils.getNodeName(cell,service));
                 List<Node> cells = result.get(header);
                 if(cells==null){
                     cells = new ArrayList<Node>();
@@ -716,7 +730,7 @@ public class StatisticsDataLoader {
      * @param sourceCells List of Nodes
      * @return Object
      */
-    private Object getCellValue(StatisticsHeaders header, List<Node> sourceCells){
+    private Object getCellValue(IStatisticsHeader header, List<Node> sourceCells){
         Object value = null;
         StatisticsType type = header.getType();
         for(Node cell : sourceCells){
@@ -776,7 +790,11 @@ public class StatisticsDataLoader {
      */
     private CallTimePeriods getHighestPeriod(StatisticsCallType callType){
         Long[] borders = statBorders.get(callType);
-        Long delta = borders[1] - borders[0];
+        return getHighestPeriod(borders[0], borders[1]);
+    }
+    
+    private CallTimePeriods getHighestPeriod(Long start, Long end){
+        Long delta = end - start;
         if(delta<=HOUR){
             return CallTimePeriods.HOURLY;
         }
@@ -880,9 +898,9 @@ public class StatisticsDataLoader {
         private String name;
         private ValueType parsedType;
         
-        private StatisticsHeaders realHeader;
+        private IStatisticsHeader realHeader;
         
-        public Header(int aNumber, String aName, ValueType aType, StatisticsHeaders aReal) {
+        public Header(int aNumber, String aName, ValueType aType, IStatisticsHeader aReal) {
             number = aNumber;
             name = aName;
             realHeader = aReal;
@@ -906,7 +924,7 @@ public class StatisticsDataLoader {
         /**
          * @return Returns the realHeader.
          */
-        public StatisticsHeaders getRealHeader() {
+        public IStatisticsHeader getRealHeader() {
             return realHeader;
         }
         
@@ -988,7 +1006,7 @@ public class StatisticsDataLoader {
             HeaderTypes headerType = HeaderTypes.getTypeByHeader(name);
             if(headerType!=null){
                 StatisticsCallType statType = headerType.getRealType();
-                StatisticsHeaders statHeader = getStatisticsHeader(statType, name);
+                IStatisticsHeader statHeader = getStatisticsHeader(statType, name);
                 if (statHeader!=null) {
                     ValueType type = statHeader.getType().equals(StatisticsType.COUNT) ? ValueType.INTEGER : ValueType.FLOAT;
                     header = new Header(number, name, type, statHeader);
@@ -1040,12 +1058,12 @@ public class StatisticsDataLoader {
          * @param name String
          * @return StatisticsHeaders
          */
-        private StatisticsHeaders getStatisticsHeader(StatisticsCallType callType, String name){
+        private IStatisticsHeader getStatisticsHeader(StatisticsCallType callType, String name){
             if(callType==null){
                 return null;
             }
-            for(StatisticsHeaders header : callType.getHeaders()){
-                if(name.contains(header.getTitle())){
+            for(IStatisticsHeader header : callType.getHeaders()){
+                if(name.endsWith(header.getTitle())){
                     return header;
                 }
             }
