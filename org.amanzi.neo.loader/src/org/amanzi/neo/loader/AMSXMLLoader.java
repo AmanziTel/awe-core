@@ -129,6 +129,9 @@ public class AMSXMLLoader extends DriveLoader {
     
     /** The last call node. */
     private  Node lastCallInDataset=null;
+    private  long timeParse;
+    private  long timeHandle;
+    private  long countAll;
 
     /** The call dataset. */
     private Node callDataset;
@@ -187,7 +190,9 @@ public class AMSXMLLoader extends DriveLoader {
      */
     @Override
     public void run(IProgressMonitor monitor) throws IOException {
-        Long startTime = System.currentTimeMillis();
+        timeHandle=0;
+        timeParse=0;
+        countAll=0;
         monitor.beginTask("Loading AMS data", 2);
         monitor.subTask("Searching for files to load");
         List<File> allFiles = LoaderUtils.getAllFiles(directoryName, new FileFilter() {
@@ -209,14 +214,21 @@ public class AMSXMLLoader extends DriveLoader {
             initializeIndexes();
             long count = 0;
             for (File logFile : allFiles) {
-                monitor.subTask("Loading file " + logFile.getAbsolutePath());
-                handleFile(logFile);
+                count++;
+                monitor.subTask(String.format("Loading file %s, parse time %s, handle time %s",logFile.getAbsolutePath(),timeParse,timeHandle));
+                handleFile(logFile,monitor);
                 if (count++ > 10) {
+                    long time = System.currentTimeMillis();
                     commit(tx);
+                    time=System.currentTimeMillis()-time;
+                    timeHandle+=time;
+                    count=0;
                 }
                 monitor.worked(1);
             }
-
+            System.out.println(timeParse);
+            System.out.println(timeHandle);
+            System.out.println(count);
             saveProperties();
             finishUpIndexes();
             finishUp();
@@ -233,8 +245,9 @@ public class AMSXMLLoader extends DriveLoader {
      * Handle file.
      * 
      * @param logFile the log file
+     * @param monitor 
      */
-    private void handleFile(File logFile) {
+    private void handleFile(File logFile, IProgressMonitor monitor) {
         try {
             long time = System.currentTimeMillis();
             filename = logFile.getAbsolutePath();
@@ -243,12 +256,10 @@ public class AMSXMLLoader extends DriveLoader {
             Unmarshaller u = new Unmarshaller(InterfaceData.class);
             u.setValidation(false);
             InterfaceData interfaceData = (InterfaceData)u.unmarshal(new FileReader(logFile));
-            time = System.currentTimeMillis() - time;
-            System.out.println(time);
-            time = System.currentTimeMillis();
+            timeParse += System.currentTimeMillis() - time;
+            long time2 = System.currentTimeMillis();
             Map<String, Probe> probeMap = formatProbeData(interfaceData);
-            time = System.currentTimeMillis() - time;
-            System.out.println(time);
+
             for (Map.Entry<String, Probe> entry : probeMap.entrySet()) {
                 storeProbe(entry.getValue());
             }
@@ -256,6 +267,7 @@ public class AMSXMLLoader extends DriveLoader {
                 storeEvent(event);
             }
             handleCalls();
+            timeHandle+=time2 = System.currentTimeMillis() - time2;
 
         } catch (Exception e) {
             NeoLoaderPlugin.error(String.format("File %s not parsed", logFile.getName()));
