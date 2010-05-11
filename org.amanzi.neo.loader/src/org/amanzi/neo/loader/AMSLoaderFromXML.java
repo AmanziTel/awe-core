@@ -73,6 +73,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 public class AMSLoaderFromXML extends DriveLoader {
     /** TOC-TTC call*/
     private AMSCall tocttc;
+    private AMSCall tocttcGroup;
     /** The Constant subNodes. */
     protected final static Map<String, Class< ? extends AbstractEvent>> subNodes = new HashMap<String, Class< ? extends AbstractEvent>>();
     /** Initialize events map */
@@ -352,12 +353,17 @@ public class AMSLoaderFromXML extends DriveLoader {
      * @throws IOException Signals that an I/O exception has occurred.
      */
     private void handleFile(File singleFile) throws SAXException, IOException {
+        tocttc=null;
+        tocttcGroup=null;
         lastDatasetNode = null;
         datasetFileNode = NeoUtils.findOrCreateFileNode(neo, datasetNode, singleFile.getName(), singleFile.getName()).getRight();
         XMLReader rdr = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
         rdr.setContentHandler(handler);
         in = new CountingFileInputStream(singleFile);
         rdr.parse(new InputSource(new BufferedInputStream(in, 64 * 1024)));
+        if (tocttcGroup!=null){
+            storeRealCall(tocttcGroup);
+        }
 
 
     }
@@ -704,21 +710,32 @@ public class AMSLoaderFromXML extends DriveLoader {
         }
 
         protected void handleCall() {
-            if (tocttc == null) {
+            if (hook == null||simplex==null){
                 return;
             }
-            if (hook != null && hook == 0) {
-                if (simplex != null && simplex == 0) {
-                    tocttc.setCallSetupEndTime((Long)node.getProperty("connectTime", 0));
-                    tocttc.setCallTerminationEnd((Long)node.getProperty("releaseTime", 0));
+            assert hook.equals(simplex):hook+"\t"+simplex;
+            if (tocttc != null) {
+                if ( hook == 0&&simplex==0) {
+                        tocttc.setCallSetupEndTime((Long)node.getProperty("connectTime", 0));
+                        tocttc.setCallTerminationEnd((Long)node.getProperty("releaseTime", 0));
+                        if (getPropertyMap().get("errorCode") != null) {
+                            tocttc.setCallResult(CallResult.FAILURE);
+                        }
+                        tocttc.addRelatedNode(node);
+                        storeRealCall(tocttc);
+                }
+            } else if (tocttcGroup != null) {
+                if ( hook ==1&&simplex==1) {
+                    tocttcGroup.setCallSetupEndTime((Long)node.getProperty("connectTime", 0l));
+                    tocttcGroup.setCallTerminationEnd((Long)node.getProperty("releaseTime", 0l));
                     if (getPropertyMap().get("errorCode") != null) {
-                        tocttc.setCallResult(CallResult.FAILURE);
+                        tocttcGroup.setCallResult(CallResult.FAILURE);
                     }
-                    tocttc.addRelatedNode(node);
-                    storeRealCall(tocttc);
+                    tocttcGroup.addRelatedNode(node);
+                  
                 }
             }
-            
+
         }
 
         /**
@@ -780,6 +797,7 @@ public class AMSLoaderFromXML extends DriveLoader {
             pesqCastMap.put("delay", Integer.class);
             parameterMap.put("hook", AMSCommandParameters.HOOK);
             parameterMap.put("simplex", AMSCommandParameters.SIMPLEX);
+            parameterMap.put("priority", AMSCommandParameters.PRIORITY);
         }
         @Override
         protected void handleAMSCommand(AMSCommandParameters amsCommandParameters, String key, Object parsedValue) {
@@ -805,8 +823,9 @@ public class AMSLoaderFromXML extends DriveLoader {
         }
 
         protected void handleCall() {
-            if (hook != null && hook==0) {
-                if (simplex != null && simplex==0) {
+            if (hook != null && simplex!=null) {
+                
+                if (hook==0 && simplex==0) {
                     tocttc = new AMSCall();
                     call = tocttc;
                     tocttc.setCallType(CallType.INDIVIDUAL);
@@ -825,6 +844,25 @@ public class AMSLoaderFromXML extends DriveLoader {
                     tocttc.setCallerPhoneNumber((String)callerProbe.getProperty("phoneNumber", null));
                     tocttc.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0));
                     tocttc.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0));
+                }else if (hook==1 && simplex==1){
+                    tocttcGroup = new AMSCall();
+                    call = tocttc;
+                    tocttcGroup.setCallType(CallType.GROUP);
+                    tocttcGroup.addRelatedNode(node);
+                    Long disconnectTime = (Long)node.getProperty("disconnectTime", null);
+                    if (disconnectTime != null) {
+                        tocttcGroup.setCallTerminationBegin(disconnectTime);
+                    }
+                    if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
+                        tocttcGroup.setCallResult(CallResult.FAILURE);
+                    } else {
+                        tocttcGroup.setCallResult(CallResult.SUCCESS);
+                    }
+                    Node callerProbe = probeCache.get(getPropertyMap().get("probeID"));
+                    tocttcGroup.setCallerProbe(callerProbe);
+                    tocttcGroup.setCallerPhoneNumber((String)callerProbe.getProperty("phoneNumber", null));
+                    tocttcGroup.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0l));
+                    tocttcGroup.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0l));   
                 }
             }
         }
