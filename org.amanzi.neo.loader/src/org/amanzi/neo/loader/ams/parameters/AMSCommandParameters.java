@@ -1103,7 +1103,7 @@ public enum AMSCommandParameters {
         return name;
     }
     
-    protected abstract Object convert(Object rawValue);
+    public abstract Object convert(Object rawValue);
     
     /**
      * Parses string to get a value of this parameter
