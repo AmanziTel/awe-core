@@ -20,18 +20,22 @@ import org.xml.sax.Attributes;
 /**
  * <p>
  * Abstract tag with support neo4j and CHILD/NEXT structure New transaction do not created
- * </p>
- * 
+ * </p>.
+ *
  * @author Tsinkel_A
  * @since 1.0.0
  */
 public abstract class AbstractNeoTag extends AbstractTag {
+    
+    /** The node. */
     protected Node node;
+    
+    /** The last child. */
     protected Node lastChild;
 
     /**
-     * Constructor
-     * 
+     * Constructor.
+     *
      * @param tagName - tag name
      * @param parent - parent AbstractNeoTag
      * @param attributes - attributes of tag
@@ -43,31 +47,36 @@ public abstract class AbstractNeoTag extends AbstractTag {
         parent.addChild(this);
     }
 
+
     /**
-     * Constructor
-     * 
-     * @param tagName - tag name
-     * @param parent - parent node
-     * @param lastChild -last child of parent node, if null, then child will be found
-     * @param attributes - attributes of tag
+     * Instantiates a new abstract neo tag.
+     *
+     * @param tagName the tag name
+     * @param parent the parent
+     * @param parentHandler the parent handler
+     * @param lastChild the last child
+     * @param attributes the attributes
      */
-    protected AbstractNeoTag(String tagName, Node parent, Node lastChild, Attributes attributes) {
-        super(tagName, null);
+    protected AbstractNeoTag(String tagName,IXmlTag parentHandler, Node parent, Node lastChild, Attributes attributes) {
+        super(tagName, parentHandler);
         lastChild = null;
         node = createNode(attributes);
         addChild(parent,lastChild);
     }
+    
     /**
-     * add current node like child of parent node
-     * 
-     * @param childNode - child tag
+     * add current node like child of parent node.
+     *
+     * @param parent the parent
+     * @param lastChild the last child
      */
     protected void addChild(Node parent,Node lastChild) {
         NeoUtils.addChild(parent, node, lastChild, null);
     }
+    
     /**
-     * add child
-     * 
+     * add child.
+     *
      * @param childNode - child tag
      */
     protected void addChild(AbstractNeoTag childNode) {
@@ -76,8 +85,8 @@ public abstract class AbstractNeoTag extends AbstractTag {
     }
 
     /**
-     * utility method for storing attributes like propertys in node
-     * 
+     * utility method for storing attributes like propertys in node.
+     *
      * @param node - node to store
      * @param attributes - attributes
      */
@@ -88,16 +97,16 @@ public abstract class AbstractNeoTag extends AbstractTag {
     }
 
     /**
-     * Create node of current tag
-     * 
+     * Create node of current tag.
+     *
      * @param attributes - attributes
      * @return created node
      */
     protected abstract Node createNode(Attributes attributes);
 
     /**
-     * Get node of current tag
-     * 
+     * Get node of current tag.
+     *
      * @return Returns the node.
      */
     public Node getNode() {

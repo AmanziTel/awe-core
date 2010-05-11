@@ -30,13 +30,13 @@ import org.xml.sax.Attributes;
  */
 public class PropertyCollector implements IXmlTag {
 
-    private String openTag=null;
-    private final IXmlTag parent;
-    private final Map<String, String> propertyMap;
-    private final List<String> skippedTag;
-    private final List<PropertyCollector> subCollectors;
-    private final Boolean computeSubChild;
-    private final String tagName;
+    protected String openTag=null;
+    protected final IXmlTag parent;
+    protected final Map<String, String> propertyMap;
+    protected final List<String> skippedTag;
+    protected final List<PropertyCollector> subCollectors;
+    protected final Boolean computeSubChild;
+    protected final String tagName;
 
     /**
      * 
