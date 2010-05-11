@@ -37,6 +37,7 @@ import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.CallProperties.CallResult;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.AMSLoader.Call;
@@ -589,10 +590,12 @@ public class AMSXMLLoader extends DriveLoader {
             }
             if(toc.hasHook()&&toc.hasSimplex()&&toc.getHook()==0&&toc.getSimplex()==0){
                 tocttc = new AMSCall();
+                tocttc.setCallType(CallType.INDIVIDUAL);
                 tocttc.addRelatedNode(eventNode);
                 if (disconnectTime != null) {
                     tocttc.setCallTerminationBegin(getTime(disconnectTime));
                 }
+                tocttc.setCallResult(toc.hasErrorCode()?CallResult.FAILURE:CallResult.SUCCESS);
                 tocttc.setCallerProbe(probeCache.get(toc.getProbeID()));
                 tocttc.setCallerPhoneNumber(telephon.get(toc.getProbeID()));
                 tocttc.setCallSetupBeginTime(timestamp);
