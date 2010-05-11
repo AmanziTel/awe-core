@@ -21,6 +21,7 @@ import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.loader.APDLoader;
 import org.amanzi.neo.loader.GPEHLoader;
+import org.amanzi.neo.loader.IdenLoader;
 import org.amanzi.neo.loader.OSSCounterLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -65,6 +66,10 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                     case APD:
                         APDLoader apdLoader = new APDLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         apdLoader.run(monitor);
+                        break;
+                    case iDEN:
+                        IdenLoader idenLoader = new IdenLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
+                        idenLoader.run(monitor);
                         break;
                     default:
                         break;

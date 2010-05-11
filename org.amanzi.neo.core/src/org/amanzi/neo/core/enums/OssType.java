@@ -28,7 +28,7 @@ import org.neo4j.graphdb.Transaction;
  */
 public enum OssType {
     GPEH(EnumsMessages.OssType_GPEH), 
- COUNTER(EnumsMessages.OssType_COUNTER), APD("APD");
+ COUNTER(EnumsMessages.OssType_COUNTER), APD("APD"), iDEN("iDEN Performance Counters");
     
     public static final String PROPERTY_NAME = "oss_type";
     private final String id;
