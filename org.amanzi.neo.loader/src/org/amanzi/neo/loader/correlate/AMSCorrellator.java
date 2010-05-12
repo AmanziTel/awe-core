@@ -30,6 +30,7 @@ import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.AbstractLoader.GisProperties;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -92,21 +93,35 @@ public class AMSCorrellator {
 	 *
 	 * @param firstDataset name of first dataset
 	 * @param secondDataset name of second dataset
+	 * @param monitor 
 	 */
-	public void correlate(String firstDataset, String secondDataset) {
-		Transaction tx = neoService.beginTx();
+	public void correlate(String firstDataset, String secondDataset, IProgressMonitor monitor) {
+		assert !Thread.currentThread().getName().equals("main");
+	    Transaction tx = neoService.beginTx();
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "correlate");
 		try {
 			initializeIndex(secondDataset);
+            if (monitor.isCanceled()){
+                throw new InterruptedException("correlation was interrupted"); //$NON-NLS-1$
+            }
             Node gisFrom = !isTest ? NeoUtils.findGisNode(secondDataset) : NeoUtils.findGisNode(secondDataset, neoService) ;
             Node disTo = !isTest ? NeoUtils.findGisNode(firstDataset) : NeoUtils.findGisNode(firstDataset, neoService);
+            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(disTo, neoService);
+            assert minMax!=null;
+            long begin=minMax.getLeft();
+            long end=minMax.getRight();
+            monitor.beginTask("correlate", (int)(end-begin));
             gisProperFrom = new GisProperties(gisFrom);
             gisProperTo = new GisProperties(disTo);
             gisProperFrom.initCRS();
             gisProperTo.setCrs(gisProperFrom.getCrs());
             gisProperTo.saveCRS();
+            
 			Node realDatasetNode = getDatasetNode(firstDataset);
 			String callDatasetName = getCallDatasetName(realDatasetNode, firstDataset);
+            if (monitor.isCanceled()){
+                throw new InterruptedException("correlation was interrupted"); //$NON-NLS-1$
+            }
             Node gisToCall = !isTest ? NeoUtils.findGisNode(callDatasetName) : NeoUtils.findGisNode(callDatasetName, neoService);
             gisProperToCall = new GisProperties(gisToCall);
             gisProperToCall.setCrs(gisProperFrom.getCrs());
@@ -114,15 +129,26 @@ public class AMSCorrellator {
 			createNewIndexes(firstDataset, callDatasetName);
 		
             Iterator<Node> mIterator = getMNodeIterator(realDatasetNode);
-		
+            if (monitor.isCanceled()){
+                throw new InterruptedException("correlation was interrupted"); //$NON-NLS-1$
+            }
 			while (mIterator.hasNext()) {
+			    if (monitor.isCanceled()){
+			        throw new InterruptedException("correlation was interrupted"); //$NON-NLS-1$
+			    }
 				Node firstM = mIterator.next();
 				
 				Node callNode = determineCallNode(firstM);
 				
-				Node mpNode = determineNode((Long)firstM.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME));
+				Long nodeTime = (Long)firstM.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
+				
+                Node mpNode = determineNode(nodeTime);
 								
 				correlateNodes(firstM, callNode, mpNode);
+				if (nodeTime>begin){
+				    monitor.worked((int)(nodeTime-begin));
+				    begin=nodeTime;
+				}
 			}
             gisProperTo.saveBBox();
             gisProperToCall.saveBBox();
@@ -130,17 +156,18 @@ public class AMSCorrellator {
 			callDatasetLocationIndex.finishUp();
 			
 			tx.success();
-		}
-		catch (Exception e) {
+		}catch (InterruptedException ie){
+		    tx.failure();
+		}catch (Exception e) {
 			tx.failure();
 			NeoCorePlugin.error(null, e);
 		}
 		finally {
 			tx.finish();
-			if(!isTest)
-			{
-			    NeoServiceProvider.getProvider().commit();
-			}
+//			if(!isTest)
+//			{
+//			    NeoServiceProvider.getProvider().commit();
+//			}
 		}
 	}
 	

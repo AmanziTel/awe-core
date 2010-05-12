@@ -204,7 +204,8 @@ public class CorrelateDialog {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				AMSCorrellator correlator = new AMSCorrellator();
-				correlator.correlate(firstDataset, secondDataset);
+				correlator.correlate(firstDataset, secondDataset,monitor);
+				if (!monitor.isCanceled()){
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
@@ -212,6 +213,7 @@ public class CorrelateDialog {
                         LoaderUtils.addGisNodeToMap(firstDataset, NeoUtils.findGisNode(firstDataset));
                     }
                 }, true);
+				}
 				return Status.OK_STATUS;
 			}
 		};
