@@ -36,7 +36,6 @@ import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkFileType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
@@ -322,8 +321,7 @@ public class LoaderUtils {
             oss = NeoUtils.findRootNode(NodeTypes.OSS, ossName, neo);
             if (oss == null) {
                 oss = neo.createNode();
-                oss.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS.getId());
-                oss.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, GisTypes.OSS.getHeader());
+                oss.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.OSS.getId());
                 oss.setProperty(INeoConstants.PROPERTY_NAME_NAME, ossName);
                 ossType.setOssType(oss, neo);
                 neo.getReferenceNode().createRelationshipTo(oss, GeoNeoRelationshipTypes.CHILD);
