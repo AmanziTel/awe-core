@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.wizards;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;

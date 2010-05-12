@@ -56,7 +56,7 @@
        <page
             class="org.amanzi.awe.views.drive.preferences.PropertyListPreferences"
             id="org.amanzi.awe.views.drive.preferences.PropertyListPreferences"
-            name="Property list"
+            name="Common Properties"
             category="org.amanzi.neo.preferences.DataLoadPreferencePage">
       </page>
 

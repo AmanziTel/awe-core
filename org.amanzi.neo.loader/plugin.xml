@@ -203,7 +203,7 @@
       <page
             class="org.amanzi.neo.preferences.CommonCRSPreferencePage"
             id="org.amanzi.neo.preferences.CommonCRSPreferencePage"
-            name="Common Coordinate Reference Systems"
+            name="Common CRS"
             category="org.amanzi.neo.preferences.DataLoadPreferencePage">
       </page>
 	  <page
