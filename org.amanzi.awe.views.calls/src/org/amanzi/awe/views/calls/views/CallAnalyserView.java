@@ -1109,7 +1109,7 @@ public class CallAnalyserView extends ViewPart {
                         return NeoUtils.isProbeNode(currentPos.currentNode());
                     }
                 }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next();
-                host = NeoUtils.getNodeName(probeNode);
+                host = NeoUtils.getNodeName(probeNode).split(" ")[0];
                 Number f = (Number)probeNode.getProperty(INeoConstants.PROBE_F, null);
                 Number la = (Number)probeNode.getProperty(INeoConstants.PROBE_LA, null);
                 probeF = f == null ? "" : f.toString();

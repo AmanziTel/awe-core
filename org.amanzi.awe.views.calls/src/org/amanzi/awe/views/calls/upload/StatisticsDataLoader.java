@@ -60,6 +60,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
 
 /**
  * <p>
@@ -97,7 +98,7 @@ public class StatisticsDataLoader {
     private Node network;
     private Node virtualDataset;
     private HashMap<String, Node> gisNodes = new HashMap<String, Node>();
-    private HashMap<String, Node> probes;
+    private HashMap<String, Node> probes = new HashMap<String, Node>();
     private HeaderMap headers;
     
     private HashMap<StatisticsCallType, StatInfo> statRoots = new HashMap<StatisticsCallType, StatInfo>();
@@ -146,7 +147,6 @@ public class StatisticsDataLoader {
         try{
             network = findOrCreateNetworkNode(); 
             virtualDataset = getVirtualDataset();
-            loadProbes();
             for (File file : allFiles) {
                 monitor.subTask("Loading file " + file.getAbsolutePath());
                 loadFile(file);
@@ -306,6 +306,7 @@ public class StatisticsDataLoader {
         if(start==null||end==null||probeName==null||probeName.length()==0||la==null||frequency==null){
             return;
         }
+        probeName = NeoUtils.buildProbeName(probeName, la, frequency);
         for(int i=FREQUENCY_COLUMN+1; i<callCount;i++){
             Header header = headers.getHeader(i);
             if(!headers.isUnknownHeader(header)){
@@ -513,14 +514,11 @@ public class StatisticsDataLoader {
      */
     private Node getProbeNode(String probeName, Integer la, Float frequency, StatisticsCallType callType)throws IOException{
         Node probe = probes.get(probeName);
-        if(probe==null){
-            probe = service.createNode();
-            probe.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PROBE.getId());
-            probe.setProperty(INeoConstants.PROPERTY_NAME_NAME, probeName);
+        if(probe==null){            
+            probe = NeoUtils.findOrCreateProbeNode(network, probeName, service);
             probe.setProperty(INeoConstants.PROBE_LA, la); 
             probe.setProperty(INeoConstants.PROBE_F, frequency);
 
-            network.createRelationshipTo(probe, GeoNeoRelationshipTypes.CHILD);
             probes.put(probeName, probe);
         }
         Node calls = getProbeCalls(probe, probeName);
@@ -618,26 +616,39 @@ public class StatisticsDataLoader {
      * @return empty virtual dataset node (calls).
      */
     private Node getVirtualDataset() {
-        Node result = service.createNode();
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DATASET.getId());
-        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, datasetName);
-        result.setProperty(INeoConstants.DRIVE_TYPE, DriveTypes.AMS_CALLS.getId());
+        Node realDataset = findDatasetNode();
+        Node result;
+        DriveTypes amsCalls = DriveTypes.AMS_CALLS;
+        if(realDataset!=null){
+            result = NeoUtils.findOrCreateVirtualDatasetNode(realDataset, amsCalls, service);
+            datasetName = NeoUtils.getNodeName(result,service);
+        }else{
+            datasetName = amsCalls.getFullDatasetName(datasetName);
+            result = service.createNode();
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DATASET.getId());
+            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, datasetName);
+            result.setProperty(INeoConstants.DRIVE_TYPE, amsCalls.getId());
+        }        
         findOrCreateGISNode(datasetName,result, GisTypes.DRIVE.getHeader(),null); 
         return result;
     }
     
     /**
-     * Get all probes from network.
+     * Find real dataset node.
+     *
+     * @return Node
      */
-    private void loadProbes(){
-        probes = new HashMap<String, Node>();
-        if(network != null){
-            for(Relationship link : network.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)){
-                Node probe = link.getEndNode();
-                String probeName = NeoUtils.getNodeName(probe, service);
-                probes.put(probeName, probe);
+    protected final Node findDatasetNode() {        
+        if (datasetName == null || datasetName.isEmpty()) {
+            return null;
+        }
+        Traverser traverse = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(service.getReferenceNode());
+        for (Node node : traverse) {
+            if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(datasetName)) {
+                return node;
             }
         }
+        return null;
     }
     
     /**

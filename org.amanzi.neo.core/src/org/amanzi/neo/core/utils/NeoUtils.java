@@ -1214,6 +1214,10 @@ public class NeoUtils {
 
         return result;
     }
+    
+    public static String buildProbeName(String probeName,Integer la, Float frequency){
+        return probeName+" (LA: "+la+", F: "+frequency+")";
+    }
 
     /**
      * Returns a Probe Calls node for current dataset and network
