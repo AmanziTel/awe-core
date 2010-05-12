@@ -1094,8 +1094,8 @@ public class ReuseAnalyserView extends ViewPart {
         float ratio = 0;
         float ratio2 = 0;
         float perc = size <= 0 ? 1 : (float)1 / size;
-        float percMid1 = midColumnIndex + 1 <= 0 ? 1 : (float)1 / (midColumnIndex + 1);
-        float percMid2 = size - midColumnIndex - 1 <= 0 ? 1 : (float)1 / (size - midColumnIndex - 1);
+        float percMid1 = midColumnIndex == 0 ? 1 : (float)1 / (midColumnIndex );
+        float percMid2 = size - midColumnIndex == 0 ? 1 : (float)1 / (size - midColumnIndex);
         for (int i = 0; i < dataset.nodeList.size(); i++) {
             ChartNode chart = dataset.nodeList.get(i);
             if (isColorThema()) {
@@ -1103,10 +1103,12 @@ public class ReuseAnalyserView extends ViewPart {
                     if (threeBlend.getSelection() && midColumnIndex >= 0) {
                         if (leftRgb != null && rightRgb != null) {
                             RGB colrRgb;
-                            if (i <= midColumnIndex) {
+                            if (i < midColumnIndex) {
                                 colrRgb = blend(leftRgb, middleRgb, ratio);
                                 ratio += percMid1;
-                            } else {
+                            } else if (i==midColumnIndex){
+                                colrRgb =  middleRgb;
+                            }else {
                                 ratio2 += percMid2;
                                 if (ratio2 > 1) {
                                     ratio2 = 1;
