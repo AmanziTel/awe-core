@@ -111,7 +111,8 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
                 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return NeoUtils.isCallNode(currentPos.currentNode());
+                    Node currentNode = currentPos.currentNode();                    
+                    return (!currentPos.isStartNode()) && (NeoUtils.isCallNode(currentNode)||NeoUtils.isScellNode(currentNode));
                 }
             }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
         }
@@ -147,13 +148,26 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         if (type.equals(NodeTypes.PROBE.getId())) {
             return new CallAnalyzisNeoNode(statisticsNode, statisticsNode, nextNum);
         } else if (type.equals(NodeTypes.S_ROW.getId())) {
-            return new CallAnalyzisNeoNode(node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+            Iterator<Node> probeIterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return NeoUtils.isProbeNode(currentPos.currentNode());
                 }
-            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next(), statisticsNode, nextNum);
+            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
+            Node parentNode;
+            if (probeIterator.hasNext()) {
+                parentNode = probeIterator.next();
+            }else{
+                parentNode = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return !currentPos.isStartNode();
+                    }
+                }, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator().next();
+            }
+            return new CallAnalyzisNeoNode(parentNode, statisticsNode, nextNum);
         } else {
             return new CallAnalyzisNeoNode(NeoUtils.getParent(null, node), statisticsNode, nextNum);
         }

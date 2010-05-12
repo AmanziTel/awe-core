@@ -28,6 +28,8 @@ import org.amanzi.awe.views.calls.statistics.constants.ICallStatisticsConstants;
 import org.amanzi.awe.views.calls.statistics.constants.IndividualCallConstants;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -119,7 +121,9 @@ public class CallStatistics {
             Pair<Long, Long> minMax = getTimeBounds(datasetNode);
             long minTime = minMax.getLeft();
             long maxTime = minMax.getRight();
-            highPeriod = getHighestPeriod(minTime, maxTime);            
+            highPeriod = getHighestPeriod(minTime, maxTime); 
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                    new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
         }
         catch (Exception e) {
             tx.failure();

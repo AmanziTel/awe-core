@@ -23,6 +23,7 @@ package org.amanzi.neo.core.database.services.events;
 public enum UpdateViewEventType {
     Spreadsheet,
     GIS,
+    STATISTICS,
     NEIGHBOUR,
     TRANSMISSION,
     OSS,

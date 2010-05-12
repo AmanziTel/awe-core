@@ -259,6 +259,16 @@ public class NeoUtils {
     public static boolean isCallNode(Node node) {
         return node != null && NodeTypes.CALL.getId().equals(getNodeType(node, ""));
     }
+    
+    /**
+     * Is this node a SCell node
+     * 
+     * @param node node to check
+     * @return is this node a Call node
+     */
+    public static boolean isScellNode(Node node) {
+        return node != null && NodeTypes.S_CELL.getId().equals(getNodeType(node, ""));
+    }
 
     /**
      * gets stop evaluator with necessary depth

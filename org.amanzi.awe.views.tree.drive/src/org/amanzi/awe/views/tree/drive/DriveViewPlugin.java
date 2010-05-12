@@ -46,6 +46,7 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
         Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
         spr.add(UpdateViewEventType.DRILL_DOWN);
         spr.add(UpdateViewEventType.SHOW_PREPARED_VIEW);
+        spr.add(UpdateViewEventType.STATISTICS);
         handedTypes = Collections.unmodifiableCollection(spr);
     }
 
@@ -109,6 +110,9 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
             break;
         case SHOW_PREPARED_VIEW:
             showPreparedView((ShowPreparedViewEvent)event);
+            break;
+        case STATISTICS:
+            ((Viewer)getTreeView().getSite().getSelectionProvider()).refresh();
             break;
         default:
         }
