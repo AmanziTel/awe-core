@@ -61,12 +61,14 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         else if (type.equals(NodeTypes.S_CELL.getId())) {
             name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
         }        
+        hasChildren();
     }
     
     protected CallAnalyzisNeoNode(Node probeNode, Node statisticsNode, int number) {
         this(probeNode, number);
         
         this.statisticsNode = statisticsNode; 
+        hasChildren();
     }
     
     @Override
@@ -137,7 +139,7 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
     
     @Override
     public boolean hasChildren() {
-        return node.hasRelationship(Direction.OUTGOING);
+        return node.hasRelationship(GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING)||node.hasRelationship(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING);
     }
 
     /**
