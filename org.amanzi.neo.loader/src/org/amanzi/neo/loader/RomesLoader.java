@@ -48,8 +48,7 @@ public class RomesLoader extends DriveLoader {
     private Float currentLongitude = null;
     private String time = null;
     // private long timestamp = 0L;
-    private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-
+    private final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -103,15 +102,14 @@ public class RomesLoader extends DriveLoader {
      * @param filename of file to load
      * @param display
      */
-    public RomesLoader(GraphDatabaseService neo, String filename, String datasetName,LuceneIndexService anIndex) {
+    public RomesLoader(GraphDatabaseService neo, String filename, String datasetName, LuceneIndexService anIndex) {
         initialize("Romes", neo, filename, null, datasetName);
         driveType = DriveTypes.ROMES;
         initData();
-        if(anIndex == null){
-        	initializeLuceneIndex();
-        }
-        else{
-        	index = anIndex;
+        if (anIndex == null) {
+            initializeLuceneIndex();
+        } else {
+            index = anIndex;
         }
         initializeKnownHeaders();
         addDriveIndexes();
@@ -147,57 +145,55 @@ public class RomesLoader extends DriveLoader {
         }
     }
 
+    @Override
     protected void parseLine(String line) {
         try {
-        // debug(line);
-        List<String> fields = splitLine(line);
-        if (fields.size() < 2)
-            return;
-        if (this.isOverLimit())
-            return;
-        this.incValidMessage(); // we have not filtered the message out on non-accepted content
-        this.incValidChanged(); // we have not filtered the message out on lack of data change
-        if (first_line == 0)
-            first_line = lineNumber;
-        last_line = lineNumber;
-        Map<String, Object> lineData = makeDataMap(fields);
-        this.time = (String)lineData.get("time");
+            // debug(line);
+            List<String> fields = splitLine(line);
+            if (fields.size() < 2)
+                return;
+            if (this.isOverLimit())
+                return;
+            this.incValidMessage(); // we have not filtered the message out on non-accepted content
+            this.incValidChanged(); // we have not filtered the message out on lack of data change
+            if (first_line == 0)
+                first_line = lineNumber;
+            last_line = lineNumber;
+            Map<String, Object> lineData = makeDataMap(fields);
+            this.time = (String)lineData.get("time");
             // Date nodeDate = (Date)lineData.get("timestamp");
             // this.timestamp = getTimeStamp(nodeDate);
-        Float latitude = (Float)lineData.get("latitude");        
-        Float longitude = (Float)lineData.get("longitude");
-        if (time == null || latitude == null || longitude == null) {
-            return;
-        }
-        if ((latitude != null) && 
-            	(longitude != null) &&        	
-            	(((currentLatitude == null) && (currentLongitude == null)) ||
-            	((Math.abs(currentLatitude - latitude) > 10E-10) ||
-            	 (Math.abs(currentLongitude - longitude) > 10E-10)))) {
-        	currentLatitude = latitude;
-        	currentLongitude = longitude;
-            saveData(); // persist the current data to database
-        }
-        this.incValidLocation(); // we have not filtered the message out on lack of location
-        if (lineData.size() > 0) {
-            data.add(lineData);
-        }
+            Float latitude = (Float)lineData.get("latitude");
+            Float longitude = (Float)lineData.get("longitude");
+            if (time == null || latitude == null || longitude == null) {
+                return;
+            }
+            if ((latitude != null)
+                    && (longitude != null)
+                    && (((currentLatitude == null) && (currentLongitude == null)) || ((Math.abs(currentLatitude - latitude) > 10E-10) || (Math.abs(currentLongitude
+                            - longitude) > 10E-10)))) {
+                currentLatitude = latitude;
+                currentLongitude = longitude;
+                saveData(); // persist the current data to database
+            }
+            this.incValidLocation(); // we have not filtered the message out on lack of location
+            if (lineData.size() > 0) {
+                data.add(lineData);
+            }
         } catch (Exception e) {
             // TODO: handle exception
             e.printStackTrace();
-            e.printStackTrace();
         }
     }
-
-
 
     /**
      * After all lines have been parsed, this method is called. In this loader we save remaining
      * cached data, and call the super method to finalize saving of data to gis node and the
      * properties map.
      */
+    @Override
     protected void finishUp() {
-        saveData();        
+        saveData();
         super.finishUp();
         sendUpdateEvent(UpdateViewEventType.GIS);
     }
@@ -214,11 +210,10 @@ public class RomesLoader extends DriveLoader {
                 mp.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MP.getId());
                 mp.setProperty(INeoConstants.PROPERTY_TIME_NAME, this.time);
                 mp.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, first_line);
-                mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);                
+                mp.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, last_line);
                 mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
                 mp.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
                 index(mp);
-
 
                 // debug("Added measurement point: " + propertiesString(mp));
 
@@ -287,7 +282,7 @@ public class RomesLoader extends DriveLoader {
         EmbeddedGraphDatabase neo = new EmbeddedGraphDatabase("../../testing/neo");
         try {
             for (String filename : args) {
-                RomesLoader driveLoader = new RomesLoader(neo, filename,null, null);
+                RomesLoader driveLoader = new RomesLoader(neo, filename, null, null);
                 driveLoader.setLimit(5000);
                 driveLoader.run(null);
                 driveLoader.printStats(true); // stats for this load
@@ -304,6 +299,6 @@ public class RomesLoader extends DriveLoader {
     @Override
     protected Node getStoringNode(Integer key) {
         GisProperties gisProperties = gisNodes.get(dataset);
-		return gisProperties==null?null:gisProperties.getGis();
+        return gisProperties == null ? null : gisProperties.getGis();
     }
 }

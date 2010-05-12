@@ -42,6 +42,7 @@ import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DriveLoader;
+import org.amanzi.neo.loader.GSMLoader;
 import org.amanzi.neo.loader.NemoLoader;
 import org.amanzi.neo.loader.OldNemoVersionLoader;
 import org.amanzi.neo.loader.RomesLoader;
@@ -96,6 +97,7 @@ public class DriveDialog {
         "Drive Test Data (*.FMT; *.ASC; *.nmf; *.dt1)",
         "TEMS Drive Test Export (*.FMT)",
         "Romes drive test export (*.ASC)",
+        "GSM drive test export (*.GSM)",
         "Nemo drive test export (*.nmf)",
         "Nemo drive test export (*.dt1)",
         "All Files (*.*)"};
@@ -107,6 +109,7 @@ public class DriveDialog {
         "*.FMT;*.fmt;*.ASC;*.asc;*.dt1;*.DT1;*.NMF;*.nmf",
         "*.FMT;*.fmt",
         "*.ASC;*.asc",
+        "*.GSM;*.gsm",
         "*.NMF;*.nmf",
         "*.dt1;*.DT1",
         "*.*"};
@@ -664,7 +667,7 @@ public class DriveDialog {
     protected String[] getFilterExtensions() {
         Node datasetNode = dataset.get(cDataset.getText());
         if (datasetNode == null) {
-            String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.NEMO1, DriveTypes.NEMO2);
+            String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES,DriveTypes.GSM, DriveTypes.NEMO1, DriveTypes.NEMO2);
             ArrayList<String> fel = new ArrayList<String>(fileExtensions.length + 1);
             fel.add(Drive_FILE_EXTENSIONS[0]);
             fel.addAll(Arrays.asList(fileExtensions));
@@ -683,9 +686,9 @@ public class DriveDialog {
     protected String[] getFilerNames() {
         Node datasetNode = dataset.get(cDataset.getText());
         if (datasetNode == null) {
-            String[] fileDescriptions = DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.NEMO1, DriveTypes.NEMO2);
+            String[] fileDescriptions = DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.GSM, DriveTypes.NEMO1, DriveTypes.NEMO2);
             ArrayList<String> fdl = new ArrayList<String>(fileDescriptions.length + 1);
-            fdl.add(Drive_FILE_NAMES[5]);
+            fdl.add(Drive_FILE_NAMES[6]);
             fdl.addAll(Arrays.asList(fileDescriptions));
             String[] result = fdl.toArray(new String[0]);
             return result;
@@ -726,7 +729,9 @@ public class DriveDialog {
                     driveLoader = new TEMSLoader(time, filePath, display, datasetName);
 			    } else if(extension.toLowerCase().equals("asc")) {
                     driveLoader = new RomesLoader(time, filePath, display, datasetName);
-                } else if (extension.toLowerCase().equals("nmf")) {
+                } else if(extension.toLowerCase().equals("gsm")) {
+                    driveLoader = new GSMLoader(time, filePath, display, datasetName);
+                }else if (extension.toLowerCase().equals("nmf")) {
                     driveLoader = new NemoLoader(time, filePath, display, datasetName);
                 } else if (extension.toLowerCase().equals("dt1")) {
                     driveLoader = new OldNemoVersionLoader(time, filePath, display, datasetName);
