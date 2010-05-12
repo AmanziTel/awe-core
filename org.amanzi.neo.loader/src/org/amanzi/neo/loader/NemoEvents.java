@@ -3937,6 +3937,9 @@ public enum NemoEvents {
                     parsedParameters.put("Ch", getIntegerValue(parameters));
                     parsedParameters.put("Ch type", getIntegerValue(parameters));
                     parsedParameters.put("RSSI", getFloatValue(parameters));
+                    //TODO check documrntation. now we have difference between specipication and actual data
+                    //for example 
+                    getStringValue(parameters);
                     groupCount = getIntegerValue(parameters);
                     getIntegerValue(parameters);// not need cell group length
                     List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
