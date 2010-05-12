@@ -145,34 +145,38 @@ public class AMSLoaderFromXML extends DriveLoader {
     private final Map<String, String> phoneNumberCache = new HashMap<String, String>();
     /** active file node for event dataset*/
     private Node datasetFileNode;
-//TODO change after implement feature 1131
 
-//    @Override
-//    protected Node getStoringNode(Integer key) {
-//        switch (key) {
-//        case REAL_DATASET_HEADER_INDEX:
-//            return datasetNode;
-//        case CALL_DATASET_HEADER_INDEX:
-//            return callDataset;
-//        case PROBE_NETWORK_HEADER_INDEX:
-//            return networkNode;
-//        default:
-//            return null;
-//        }
-//    }
-    @Override
-    protected Node getStoringNode(Integer key) {
-        switch (key) {
-        case REAL_DATASET_HEADER_INDEX:
-            return gisNodes.get(dataset).getGis();
-        case CALL_DATASET_HEADER_INDEX:
-            return gisNodes.get(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)).getGis();
-        case PROBE_NETWORK_HEADER_INDEX:
-            return gisNodes.get(networkName).getGis();
-        default:
-            return null;
-        }
-    }
+  //TODO change after implement feature 1131
+
+//  @Override
+//  protected Node getStoringNode(Integer key) {
+//      switch (key) {
+//      case REAL_DATASET_HEADER_INDEX:
+//          return datasetNode;
+//      case CALL_DATASET_HEADER_INDEX:
+//          return callDataset;
+//      case PROBE_NETWORK_HEADER_INDEX:
+//          return networkNode;
+//      default:
+//          return null;
+//      }
+//  }
+  @Override
+  protected Node getStoringNode(Integer key) {
+      switch (key) {
+      case REAL_DATASET_HEADER_INDEX:
+          return gisNodes.get(dataset).getGis();
+      case CALL_DATASET_HEADER_INDEX:
+          return gisNodes.get(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)).getGis();
+      case PROBE_NETWORK_HEADER_INDEX:
+          return gisNodes.get(networkName).getGis();
+      default:
+          return null;
+      }
+  }
+
+
+
 
     @Override
     protected boolean needParceHeaders() {
@@ -386,6 +390,11 @@ public class AMSLoaderFromXML extends DriveLoader {
         rdr.parse(new InputSource(new BufferedInputStream(in, 64 * 1024)));
         if (tocttcGroup!=null){
             storeRealCall(tocttcGroup);
+            tocttcGroup=null;
+        }
+        if (tocttc!=null){
+            storeRealCall(tocttc);
+            tocttc=null;
         }
 
 
@@ -724,12 +733,16 @@ public class AMSLoaderFromXML extends DriveLoader {
         protected void handleCollector() throws ParseException {
             super.handleCollector();
             List<PropertyCollector> collectorList = getSubCollectors();
+            handleCall();
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("pesqResult")) {
                     createAttachmentNode(collector);
                 }
             }
-            handleCall();
+            if (tocttc!=null&&hook != null&&simplex!=null&&hook == 0&&simplex==0){
+                storeRealCall(tocttc);
+                tocttc=null;
+            }
         }
 
         protected void handleCall() {
@@ -746,7 +759,7 @@ public class AMSLoaderFromXML extends DriveLoader {
                         }
                         tocttc.addRelatedNode(node);
                         tocttc.addCalleeProbe(probeCallCache.get(phoneNumberCache.get(tocttc.getCalledPhoneNumber())));
-                        storeRealCall(tocttc);
+
                 }
             } else if (tocttcGroup != null) {
                 if ( hook ==1&&simplex==1) {
@@ -777,6 +790,22 @@ public class AMSLoaderFromXML extends DriveLoader {
             Map<String, String> map = collector.getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), pesqCastMap).getLeft();
+                if (entry.getKey().equals("delay")) {
+                    if (tocttc != null) {
+                        tocttc.addDelay(((Number)parseValue).floatValue());
+                    }
+                    if (tocttcGroup != null) {
+                        tocttcGroup.addDelay(((Number)parseValue).floatValue());
+                    }
+                }
+                if (entry.getKey().equals("pesq")) {
+                    if (tocttc != null) {
+                        tocttc.addLq(((Number)parseValue).floatValue());
+                    }
+                    if (tocttcGroup != null) {
+                        tocttcGroup.addLq(((Number)parseValue).floatValue());
+                    }
+                }
                 setProperty(mm, entry.getKey(), parseValue);
             }
         }
@@ -839,12 +868,13 @@ public class AMSLoaderFromXML extends DriveLoader {
         protected void handleCollector() throws ParseException {
             super.handleCollector();
             List<PropertyCollector> collectorList = getSubCollectors();
+            handleCall();
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("pesqResult")) {
                     createAttachmentNode(collector);
                 }
             }
-            handleCall();
+
         }
 
         protected void handleCall() {
@@ -906,11 +936,20 @@ public class AMSLoaderFromXML extends DriveLoader {
             Map<String, String> map = collector.getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), pesqCastMap).getLeft();
-                if (call != null) {
-                    if (entry.getKey().equals("delay")) {
-                        call.addDelay(((Number)parseValue).floatValue());
-                    } else if (entry.getKey().equals("pesq")) {
-                        call.addLq(((Number)parseValue).floatValue());
+                if (entry.getKey().equals("delay")) {
+                    if (tocttc != null) {
+                        tocttc.addDelay(((Number)parseValue).floatValue());
+                    }
+                    if (tocttcGroup != null) {
+                        tocttcGroup.addDelay(((Number)parseValue).floatValue());
+                    }
+                }
+                if (entry.getKey().equals("pesq")) {
+                    if (tocttc != null) {
+                        tocttc.addLq(((Number)parseValue).floatValue());
+                    }
+                    if (tocttcGroup != null) {
+                        tocttcGroup.addLq(((Number)parseValue).floatValue());
                     }
                 }
                 setProperty(mm, entry.getKey(), parseValue);
