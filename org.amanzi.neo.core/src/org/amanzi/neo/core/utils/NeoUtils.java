@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -1647,18 +1648,24 @@ public class NeoUtils {
         if (startTime == null || endTime == null) {
             return "No time";
         }
-        StringBuilder sb = new StringBuilder();
+        Calendar endTimeCal = Calendar.getInstance();
+        endTimeCal.setTimeInMillis(endTime);
+        
+        Calendar startTimeCal = Calendar.getInstance();
+        startTimeCal.setTimeInMillis(startTime);
+        
         String pattern = "yyyy-MM-dd " + dayFormat;
-        if (endTime - startTime <= 24 * 60 * 60 * 1000 && new Date(startTime).getDay() == new Date(endTime).getDay()) {
-            SimpleDateFormat sf = new SimpleDateFormat(pattern);
+        SimpleDateFormat sf = new SimpleDateFormat(pattern);
+        
+        StringBuilder sb = new StringBuilder();        
+        if (endTime - startTime <= 24 * 60 * 60 * 1000 && startTimeCal.get(Calendar.DAY_OF_WEEK) == endTimeCal.get(Calendar.DAY_OF_WEEK)) {
             SimpleDateFormat sf2 = new SimpleDateFormat(dayFormat);
-            sb.append(sf.format(new Date(startTime)));
-            sb.append("-").append(sf2.format(endTime));
+            sb.append(sf.format(startTimeCal.getTime()));
+            sb.append("-").append(sf2.format(endTimeCal.getTime()));
         } else {
-            SimpleDateFormat sfMulDay1 = new SimpleDateFormat(pattern);
             SimpleDateFormat sfMulDay2 = new SimpleDateFormat(pattern);
-            sb.append(sfMulDay1.format(new Date(startTime)));
-            sb.append(" to ").append(sfMulDay2.format(endTime));
+            sb.append(sf.format(startTimeCal.getTime()));
+            sb.append(" to ").append(sfMulDay2.format(endTimeCal.getTime()));
         }
         return sb.toString();
     }

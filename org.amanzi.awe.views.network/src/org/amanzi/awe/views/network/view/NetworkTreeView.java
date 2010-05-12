@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -859,7 +858,7 @@ public class NetworkTreeView extends ViewPart {
          */
         protected Set<Node> getInputNodes(IStructuredSelection selection) {
             Set<Node> result = new HashSet<Node>();
-            Iterator iterator = selection.iterator();
+            Iterator< ? > iterator = selection.iterator();
             while (iterator.hasNext()) {
                 Object element = iterator.next();
                 if (element instanceof Root || !(element instanceof NeoNode)) {
@@ -991,7 +990,6 @@ public class NetworkTreeView extends ViewPart {
             text = text.replaceAll("citys", "cities");
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public void run() {
             if (interactive) {
@@ -1029,7 +1027,6 @@ public class NetworkTreeView extends ViewPart {
             // the database
             Job job = new Job(getText()) {
 
-                @SuppressWarnings("unchecked")
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     int size = 2;
@@ -1224,7 +1221,6 @@ public class NetworkTreeView extends ViewPart {
             return text;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public boolean isEnabled() {
             return nodesToDelete.size() > 0;
@@ -1246,7 +1242,6 @@ public class NetworkTreeView extends ViewPart {
         private NeoNode previousReport;
         private Node reportNode;
 
-        @SuppressWarnings("unchecked")
         @Override
         public void run() {
 
@@ -1657,7 +1652,7 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public boolean isEnabled() {
             IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-            final Iterator iterator = selection.iterator();
+            final Iterator< ? > iterator = selection.iterator();
             while (iterator.hasNext()) {
                 Object node = iterator.next();
                 if (node instanceof NeoNode) {
@@ -1684,10 +1679,6 @@ public class NetworkTreeView extends ViewPart {
             this.nodes.put(network, node);
         }
 
-        public String getName() {
-            return name;
-        }
-
         @Override
         public String toString() {
             return name;
@@ -1695,10 +1686,6 @@ public class NetworkTreeView extends ViewPart {
 
         public boolean missingIn(String network) {
             return !nodes.containsKey(network);
-        }
-
-        public Node nodeIn(String network) {
-            return nodes.get(network);
         }
 
         public void put(String network, Node node) {
@@ -1726,10 +1713,7 @@ public class NetworkTreeView extends ViewPart {
                     ArrayList<String> identical = new ArrayList<String>();
                     for (Map.Entry<String, Pair> entry : delta.entrySet()) {
                         if (entry.getValue().same()) {
-                            identical.add(entry.getKey());
-                            // } else {
-                            // LOGGER.debug("Property changed for '"+entry.getKey()+"':
-                            // "+entry.getValue());
+                            identical.add(entry.getKey());                           
                         }
                     }
                     for (String key : identical) {

@@ -154,9 +154,6 @@ public class KPIUtils {
 
             }
         }
-        // init scipt updating test
-        String[] tests2 = new String[] {"load 'f1.rb'\nload 'f2.rb'"};
-        // inserting method into a script test
     }
 
     public static String generateInitScript() {

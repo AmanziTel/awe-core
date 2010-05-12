@@ -71,7 +71,6 @@ public class EventPropertySheetPage extends PropertySheetPage implements ISelect
         
     }
     
-    @SuppressWarnings("restriction")
     private class EventPropertySource extends NodePropertySource implements IPropertySource {
 
         /**

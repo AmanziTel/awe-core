@@ -1914,36 +1914,43 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             return (Number)NeoServiceProvider.getProvider().getService().getNodeById(collection.getY(i, j).longValue()).getProperty(propertyName);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public int getColumnIndex(Comparable comparable) {
             return 0;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public Comparable getColumnKey(int i) {
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public List getColumnKeys() {
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public int getRowIndex(Comparable comparable) {
             return 0;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public Comparable getRowKey(int i) {
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public List getRowKeys() {
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public Number getValue(Comparable comparable, Comparable comparable1) {
             return null;

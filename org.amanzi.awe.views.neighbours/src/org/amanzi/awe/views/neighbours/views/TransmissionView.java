@@ -148,13 +148,14 @@ public class TransmissionView extends ViewPart {
         private Collection<Node> input;
         private RelationWrapper[] elements = new RelationWrapper[0];
 
+        @SuppressWarnings("unchecked")
         public void inputChanged(Viewer v, Object oldInput, Object newInput) {
             // Lagutko, 9.10.2009, if newInput is null than AWE closes and no need to update view
             if (newInput == null) {
                 return;
             }
             clearSelection();
-            if (!(newInput instanceof Collection)) {
+            if (!(newInput instanceof Collection< ? > )) {
                 input = new ArrayList<Node>(0);
                 network = null;
             } else {
@@ -418,7 +419,7 @@ public class TransmissionView extends ViewPart {
             List<String> allNeighbourEditableProperties = getAllNeighbourEditableProperties();
             for (String name : allNeighbourEditableProperties) {
                 if (!columns.contains(name)) {
-                    Class cl = doubleProperties.contains(name) ? Double.class : integerProperties.contains(name) ? Integer.class
+                    Class<? extends Object> cl = doubleProperties.contains(name) ? Double.class : integerProperties.contains(name) ? Integer.class
                             : String.class;
                     int swt;
                     if (Number.class.isAssignableFrom(cl)) {
@@ -799,7 +800,7 @@ public class TransmissionView extends ViewPart {
     public class NeighbourEditableSupport extends EditingSupport {
 
         private final String name;
-        private final Class valueClass;
+        private final Class< ? > valueClass;
         private final CellEditor editor;
         private String value;
 
@@ -810,7 +811,7 @@ public class TransmissionView extends ViewPart {
          * @param name
          * @param class1
          */
-        public NeighbourEditableSupport(TableViewer viewer, String name, Class valueClass) {
+        public NeighbourEditableSupport(TableViewer viewer, String name, Class< ? > valueClass) {
             super(viewer);
             this.name = name;
             this.valueClass = valueClass;

@@ -29,8 +29,6 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -40,7 +38,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -64,8 +61,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  */
 public class PropertyListPreferences extends PreferencePage implements IWorkbenchPreferencePage {
 
-    private static final int MIN_FIELD_WIDTH = 50;
-    private static final int MAX_PROP_COUNT = 6;
     public static final Color BAD_COLOR = new Color(null, 255, 0, 0);
     private final List<RowWr> propertyLists = new ArrayList<RowWr>();
     private Composite mainFrame;
@@ -298,20 +293,6 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         }
 
-    }
-
-    private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
-
-        @Override
-        public Image getColumnImage(Object element, int columnIndex) {
-            return null;
-        }
-
-        @Override
-        public String getColumnText(Object element, int columnIndex) {
-            RowWr wrapper = (RowWr)element;
-            return columnIndex == 0 ? wrapper.getListName() : wrapper.getProperties();
-        }
     }
 
     public class TableEditableSupport extends EditingSupport {

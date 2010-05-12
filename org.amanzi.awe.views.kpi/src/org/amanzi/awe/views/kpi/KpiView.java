@@ -121,8 +121,6 @@ public class KpiView extends ViewPart {
 
     private static final String TEST_NO_ERR = "Script parsing has passed successfully";
 
-    private static final String JRUBY_SCRIPT = "formula.rb";
-
     private static final String LB_NETWORK = "Network:";
 
     private static final String LB_DRIVE = "Drive:";
@@ -178,10 +176,6 @@ public class KpiView extends ViewPart {
 	
 	private String parameters="";
 
-    private final String LB_FORMULA_NAME="Formula name:";
-
-    private final String LB_PARAMETERS="Parameters:";
-
     private Text txtFormulaName;
 
     private Text txtParameters;
@@ -189,19 +183,6 @@ public class KpiView extends ViewPart {
     private Button btnElements;
 
     private Button btnCollections;
-
-    private final String LB_ELEMENTS="elements";
-
-    private final String LB_COLLECTIONS="collections";
-
-    private final String LB_TYPE="Type:";
-
-    private final String ELEMENTS_SCRIPT="element_formulas.rb";
-    
-    private final String COLLECTIONS_SCRIPT="collection_formulas.rb";
-
-
-
 
 	/**
 	 * The constructor.
@@ -495,7 +476,6 @@ public class KpiView extends ViewPart {
     private String[] getAllCounterFiles() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Node directoryNode = directories.get(directoriesNode.getText());
             counters = new LinkedHashMap<String, Node>();
             for (Relationship relationship : directoryNode.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)) {
@@ -712,8 +692,6 @@ public class KpiView extends ViewPart {
         });
         bSave.addSelectionListener(new SelectionAdapter(){
 
-			private static final String KPI_FOLDER = "kpi";
-
 			@Override
 			public void widgetSelected(SelectionEvent e) {
                 try {
@@ -814,19 +792,6 @@ public class KpiView extends ViewPart {
 				return is;
 			}
 
-			private ByteArrayInputStream createOrUpdateInitScript(String fileName,
-					StringBuffer sb) {
-				appendLoadDirective(fileName, sb);
-				ByteArrayInputStream is = new ByteArrayInputStream(sb.toString().getBytes());
-				return is;
-			}
-
-			private void appendLoadDirective(String fileName, StringBuffer sb) {
-				String loadLine = new StringBuffer("load '").append(fileName).append("'\n").toString();
-				if (sb.indexOf(loadLine)<0){
-					sb.append(loadLine);
-				}
-			}
 			private void createOrUpdateScript(String methodText, IFile scriptFile) throws CoreException, IOException {
                 StringBuffer sb;
                 sb = new StringBuffer();

@@ -976,7 +976,6 @@ public class ReuseAnalyserView extends ViewPart {
         colorRight.setColorValue(getColorRight(aggrNode));
         colorMiddle.setColorValue(getColorMiddle(aggrNode));
 
-        Combo acPalette;
         String[] array = cPalette.getItems();
         int index = -1;
         if (currentPalette != null) {
@@ -1310,14 +1309,7 @@ public class ReuseAnalyserView extends ViewPart {
                 }, true);
             }
             return Status.OK_STATUS;
-        }
-
-        /**
-         * @return Returns the node.
-         */
-        public Node getNode() {
-            return node;
-        }
+        }       
 
     }
 
@@ -1787,7 +1779,6 @@ public class ReuseAnalyserView extends ViewPart {
      * @return first value
      */
     private Number getFirstValueOfMpNode(Node mpNode, final String propertyName) {
-        Double result = null;
         Traverser traverse = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
             @Override
@@ -1813,8 +1804,6 @@ public class ReuseAnalyserView extends ViewPart {
     private boolean computeTransmissionStatistics(Node neighbour, Node aggrNode, String propertyName2, Distribute distribute, Select select, IProgressMonitor monitor) {
         Node gisNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING).getOtherNode(neighbour);
         final String neighbourName = NeoUtils.getSimpleNodeName(neighbour, "");
-        Map<Node, Number> mpMap = new HashMap<Node, Number>();
-        // List<Number> aggregatedValues = new ArrayList<Number>();
         GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
         int totalWork = (int)geoNode.getCount() * 2;
         LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
@@ -1958,8 +1947,6 @@ public class ReuseAnalyserView extends ViewPart {
     private boolean computeNeighbourStatistics(Node neighbour, Node aggrNode, String propertyName2, Distribute distribute, Select select, IProgressMonitor monitor) {
         Node gisNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING).getOtherNode(neighbour);
         final String neighbourName = NeoUtils.getSimpleNodeName(neighbour, "");
-        Map<Node, Number> mpMap = new HashMap<Node, Number>();
-        // List<Number> aggregatedValues = new ArrayList<Number>();
         GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
         int totalWork = (int)geoNode.getCount() * 2;
         LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
@@ -2324,7 +2311,6 @@ public class ReuseAnalyserView extends ViewPart {
 
         private Double minValue;
         private Double range;
-        private boolean spacer = false;
         private Node node;
         private Distribute distribute;
         private Object propertyValue;
@@ -2440,26 +2426,11 @@ public class ReuseAnalyserView extends ViewPart {
         }
 
         /**
-         * Whether or not this column is a chart spacer column
-         * 
-         * @return true if this column is only a chart spacer
-         */
-        public boolean isSpacer() {
-            return spacer;
-        }
-
-        /**
          * Set this column to be a chart spacer (no data)
          * 
          * @param value
          */
         public void setSpacer(boolean value) {
-            spacer = value;
-            // if (propertyValue instanceof Integer && range < 1) {
-            // node.setProperty(INeoConstants.PROPERTY_NAME_NAME, "");
-            // } else {
-            // node.setProperty(INeoConstants.PROPERTY_NAME_NAME, getColumnName());
-            // }
             node.setProperty("spacer", value);
         }
 
@@ -2471,20 +2442,6 @@ public class ReuseAnalyserView extends ViewPart {
          */
         public boolean containsValue(double value) {
             return value >= minValue && (range == 0 || value < minValue + range);
-        }
-
-        /**
-         * @return Returns the minValue.
-         */
-        public Double getMinValue() {
-            return minValue;
-        }
-
-        /**
-         * @return Returns the range.
-         */
-        public Double getRange() {
-            return range;
         }
 
         @Override
@@ -2773,12 +2730,6 @@ public class ReuseAnalyserView extends ViewPart {
             propertyList.add(NodeTypes.CALL.getId());
             propertyList.add(NodeTypes.UTRAN_DATA.getId());
             propertyList.add(NodeTypes.GPEH_EVENT.getId());
-        }
-
-        public PropertyReturnableEvalvator(NodeTypes propertyType) {
-            super();
-            propertyList = new HashSet<String>();
-            propertyList.add(propertyType.getId());
         }
 
         @Override

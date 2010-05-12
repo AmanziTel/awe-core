@@ -22,3 +22,4 @@ Bundle-ClassPath: .
 Export-Package: org.amanzi.awe.views.reuse,
  org.amanzi.awe.views.reuse.views
 Bundle-Vendor: amanzi.org
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

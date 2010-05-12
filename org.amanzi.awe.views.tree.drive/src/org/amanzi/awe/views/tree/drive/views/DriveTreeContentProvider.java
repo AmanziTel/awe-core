@@ -49,7 +49,7 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
             }
             if (element instanceof IAdaptable) {
                 IAdaptable adapter = (IAdaptable)element;
-                Pair pair = (Pair)adapter.getAdapter(Pair.class);
+                Pair< ? , ? > pair = (Pair< ? , ? >)adapter.getAdapter(Pair.class);
                 if (pair.getLeft() instanceof Node && pair.getRight() instanceof Node) {
                     CallAnalyzisNeoNode elem = new CallAnalyzisNeoNode((Node)pair.getLeft(), (Node)pair.getRight(),0);
                     return elem.getParent();

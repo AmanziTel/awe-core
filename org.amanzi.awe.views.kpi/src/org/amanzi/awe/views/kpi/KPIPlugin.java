@@ -30,8 +30,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
@@ -52,8 +50,6 @@ public class KPIPlugin extends AbstractUIPlugin {
     public static final String DEFAULT_DIRRECTORY_LOADER = "DEFAULT_DIRRECTORY_LOADER";
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.amanzi.awe.views.kpi";
-    private static String CONSOLE_NAME = "NeoLoader Console";
-    private static final int BUFFER = 0;
     private final Object synch = new Object();
     private PrintStream output = null;
     private PrintStream error = null;
@@ -163,19 +159,7 @@ public class KPIPlugin extends AbstractUIPlugin {
         return output;
     }
 
-    /**
-     * @return
-     */
-    private IConsole getConsole() {
-        for (IConsole console:ConsolePlugin.getDefault().getConsoleManager().getConsoles()){
-            if (CONSOLE_NAME.equals(console.getName())) {
-                return console;
-            }
-        }
-        return null;
-    }
-
-    /**
+   /**
      * @return
      */
     private PrintStream getErrorOutputStream() {

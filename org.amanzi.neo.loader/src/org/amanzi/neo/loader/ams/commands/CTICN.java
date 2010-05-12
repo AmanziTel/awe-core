@@ -50,7 +50,7 @@ class CTICN extends AbstractAMSCommand {
 
 	@Override
 	public boolean isCallCommand() {
-		return true;
+		return false;
 	}
 
 }

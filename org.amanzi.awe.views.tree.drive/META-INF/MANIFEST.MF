@@ -16,3 +16,4 @@ Eclipse-LazyStart: true
 Bundle-Vendor: amanzi.org
 Export-Package: org.amanzi.awe.views.tree.drive,
  org.amanzi.awe.views.tree.drive.views
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -906,23 +906,14 @@ public class StatisticsDataLoader {
     private class Header {
         
         private int number;
-        private String name;
         private ValueType parsedType;
         
         private IStatisticsHeader realHeader;
         
         public Header(int aNumber, String aName, ValueType aType, IStatisticsHeader aReal) {
             number = aNumber;
-            name = aName;
             realHeader = aReal;
             parsedType = aType;
-        }
-        
-        /**
-         * @return Returns the name.
-         */
-        public String getName() {
-            return name;
         }
         
         /**
