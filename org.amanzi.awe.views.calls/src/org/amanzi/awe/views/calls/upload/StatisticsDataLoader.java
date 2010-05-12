@@ -826,7 +826,7 @@ public class StatisticsDataLoader {
         ArrayList<File> result = new ArrayList<File>();        
         for (File childFile : directory.listFiles()) {
             if (childFile.isDirectory()) {
-                continue;
+                result.addAll(getAllFiles(childFile.getPath()));
             }
             else if (childFile.isFile() && childFile.getName().endsWith(CSV_FILE_EXTENSION)) {
                 result.add(childFile);

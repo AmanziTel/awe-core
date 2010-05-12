@@ -493,7 +493,8 @@ public class AMSLoader extends DriveLoader {
 	
 	private String prevCommandName;
 
-    private Node probeNode;
+    private String probeName;
+	private Node probeNode;
     
     private final static SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
 	
@@ -624,7 +625,7 @@ public class AMSLoader extends DriveLoader {
             for (File logFile : allFiles) {
                 monitor.subTask("Loading file " + logFile.getAbsolutePath());
                 
-                String probeName = initializeProbeNodes(logFile);
+                probeName = getRealProbeName(logFile);
                 filename = logFile.getAbsolutePath();
                 currentDirectoryNode = findOrCreateDirectoryNode(logFile.getParentFile());
                 if(dirNode != null && !currentDirectoryNode.equals(dirNode)){
@@ -641,7 +642,7 @@ public class AMSLoader extends DriveLoader {
                 
                 monitor.worked(1);
                 
-                updateProbeCache(probeName);
+                //updateProbeCache(probeName);
             }
         
             saveData();
@@ -681,25 +682,35 @@ public class AMSLoader extends DriveLoader {
 	 * @param logFile
 	 * @return
 	 */
-	private String initializeProbeNodes(File logFile) {
-		String fileName = logFile.getName();
-		int index = fileName.indexOf("#");
-		String probeName = fileName;
-		if (index > -1) {
-			probeName = probeName.substring(0, index);
-		}
+	private void initializeProbeNodes(Object laObj, Object frObj) {
+	    if(laObj==null||frObj==null){
+	        return;
+	    }
+	    Integer la = (Integer)laObj;
+	    Float frequency = (Float)frObj;
+		String name = NeoUtils.buildProbeName(probeName, la, frequency);
 		
-		Pair<Node, Node> probeNodes = probesCache.get(probeName);		
+		Pair<Node, Node> probeNodes = probesCache.get(name);		
 		if (probeNodes == null) {            
-		    probeNode = NeoUtils.findOrCreateProbeNode(networkNode, probeName, neo);
-			currentProbeCalls = NeoUtils.getCallsNode(callDataset, probeName, probeNode, neo);
-		}
-		else {
+		    probeNode = NeoUtils.findOrCreateProbeNode(networkNode, name, neo);
+		    probeNode.setProperty(INeoConstants.PROBE_LA, la);        
+            probeNode.setProperty(INeoConstants.PROBE_F, frequency);
+			currentProbeCalls = NeoUtils.getCallsNode(callDataset, name, probeNode, neo);
+			updateProbeCache(name);
+		} else {
 		    probeNode = probeNodes.getRight();
 			currentProbeCalls = probeNodes.getLeft();
-		}
-		
-		return probeName;
+		}		
+	}
+	
+	private String getRealProbeName(File logFile){
+	    String fileName = logFile.getName();
+        int index = fileName.indexOf("#");
+        String name = fileName;
+        if (index > -1) {
+            name = name.substring(0, index);
+        }        
+        return name;
 	}
 	
 	/**
@@ -1122,15 +1133,9 @@ public class AMSLoader extends DriveLoader {
 		
 		HashMap<String, Object> result = command.getResults(syntax, tokenizer);
         if (command.getName().equals(new CCI().getName())) {
-            Object value = result.get(INeoConstants.PROBE_LA);
-            if (value != null) {                
-                probeNode.setProperty(INeoConstants.PROBE_LA, value);
-            }
-            value = result.get("F");
-            if (value != null) {
-                probeNode.setProperty(INeoConstants.PROBE_F, value);
-            }
-
+            Object laValue = result.get(INeoConstants.PROBE_LA);
+            Object frValue = result.get("F");
+            initializeProbeNodes(laValue, frValue);
         }
 		Node mNode = createMNode(timestampValue);
 		

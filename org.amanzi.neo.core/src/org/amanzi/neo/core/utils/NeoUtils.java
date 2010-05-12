@@ -1215,6 +1215,14 @@ public class NeoUtils {
         return result;
     }
     
+    /**
+     * Build probe name like: 'name (La: local area, F: frequency)'
+     *
+     * @param probeName String (real probe name)
+     * @param la Integer (local area)
+     * @param frequency Float
+     * @return String
+     */
     public static String buildProbeName(String probeName,Integer la, Float frequency){
         return probeName+" (LA: "+la+", F: "+frequency+")";
     }
