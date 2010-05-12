@@ -142,11 +142,11 @@ public class AMSLoaderFromXML extends DriveLoader {
     protected Node getStoringNode(Integer key) {
         switch (key) {
         case REAL_DATASET_HEADER_INDEX:
-            return gisNodes.get(dataset).getGis();
+            return datasetNode;
         case CALL_DATASET_HEADER_INDEX:
-            return gisNodes.get(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)).getGis();
+            return callDataset;
         case PROBE_NETWORK_HEADER_INDEX:
-            return gisNodes.get(networkName).getGis();
+            return networkNode;
         default:
             return null;
         }
@@ -557,7 +557,7 @@ public class AMSLoaderFromXML extends DriveLoader {
             NodeTypes.M.setNodeType(node, neo);
             NeoUtils.addChild(datasetFileNode, node, lastDatasetNode, neo);
             lastDatasetNode = node;
-            setNewIndexProperty(header, node, INeoConstants.M_EVENT_TYPE, getClass().getSimpleName());
+            setNewIndexProperty(header, node, INeoConstants.PROPERTY_NAME_NAME, getClass().getSimpleName());
         }
 
     }
