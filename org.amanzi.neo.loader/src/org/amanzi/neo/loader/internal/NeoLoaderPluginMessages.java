@@ -33,6 +33,10 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String DriveDialog_DialogTitle;
     public static String DriveDialog_FileDialogTitle;
     public static String DriveDialog_MonitorName;
+    
+    public static String TemsImportWizard_PAGE_TITLE;
+    public static String TemsImportWizard_PAGE_DESCR;
+    
     public static String Console_ErrorOnClose;
     public static String NetworkDialog_DialogTitle;
 	public static String DriveDialog_AddAllButtonText;

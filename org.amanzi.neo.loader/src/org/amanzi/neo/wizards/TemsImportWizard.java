@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.wizards;
 
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
@@ -28,9 +29,9 @@ import org.eclipse.ui.IWorkbench;
 public class TemsImportWizard extends Wizard implements IImportWizard {
 
     /** String PAGE_TITLE field */
-    private static final String PAGE_TITLE = "Import Drive data File";
+    private static final String PAGE_TITLE = NeoLoaderPluginMessages.TemsImportWizard_PAGE_TITLE;
     /** String PAGE_DESCR field */
-    private static final String PAGE_DESCR = "Import a file from the local file system into the workspace";
+    private static final String PAGE_DESCR = NeoLoaderPluginMessages.TemsImportWizard_PAGE_DESCR;
     private TemsImportWizardPage mainPage;
 
     @Override
