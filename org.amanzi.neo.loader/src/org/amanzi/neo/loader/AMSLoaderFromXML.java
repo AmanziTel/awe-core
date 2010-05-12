@@ -136,22 +136,34 @@ public class AMSLoaderFromXML extends DriveLoader {
     private final Map<String, Node> probeCache = new HashMap<String, Node>();
     /** active file node for event dataset*/
     private Node datasetFileNode;
+//TODO change after implement feature 1131
 
-
+//    @Override
+//    protected Node getStoringNode(Integer key) {
+//        switch (key) {
+//        case REAL_DATASET_HEADER_INDEX:
+//            return datasetNode;
+//        case CALL_DATASET_HEADER_INDEX:
+//            return callDataset;
+//        case PROBE_NETWORK_HEADER_INDEX:
+//            return networkNode;
+//        default:
+//            return null;
+//        }
+//    }
     @Override
     protected Node getStoringNode(Integer key) {
         switch (key) {
         case REAL_DATASET_HEADER_INDEX:
-            return datasetNode;
+            return gisNodes.get(dataset).getGis();
         case CALL_DATASET_HEADER_INDEX:
-            return callDataset;
+            return gisNodes.get(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)).getGis();
         case PROBE_NETWORK_HEADER_INDEX:
-            return networkNode;
+            return gisNodes.get(networkName).getGis();
         default:
             return null;
         }
     }
-
 
     @Override
     protected boolean needParceHeaders() {
