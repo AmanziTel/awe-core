@@ -15,7 +15,6 @@ package org.amanzi.awe.views.calls.enums;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -273,7 +272,7 @@ public enum StatisticsCallType {
                                         StatisticsHeaders.ATT_DELAY_L3,
                                         StatisticsHeaders.ATT_DELAY_L4),
     /**
-     * ITSI CC (CellChange) call type.
+     * ITSI CC (Handover/cell change) call type.
      */
     ITSI_CC("HO/CC (Handover/cell change)",CallType.ITSI_CC,30,1, StatisticsHeaders.CC_HO_ATTEMPTS,
                                 StatisticsHeaders.CC_RES_ATTEMPTS,

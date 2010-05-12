@@ -844,7 +844,10 @@ public class CallAnalyserView extends ViewPart {
         if (cProbe.getText().isEmpty()) {
             formProbeCall(drive, callType);
         }
-        else {
+        else {            
+            if(callType.equals(StatisticsCallType.AGGREGATION_STATISTICS)){
+                cProbe.setText(KEY_ALL);
+            }
             String probeName = cProbe.getText();
             formProbeCall(drive, callType);
             if ((probeName.equals(ALL_VALUE)) ||(!probeName.isEmpty() &&

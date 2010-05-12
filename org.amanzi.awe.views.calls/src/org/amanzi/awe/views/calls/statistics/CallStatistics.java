@@ -298,7 +298,6 @@ public class CallStatistics {
         if (startDate > currentStartDate) {
             currentStartDate = startDate;
         }
-        
         Node statisticsNode = getStatisticsNode(parentNode, period);
         if (highStatisticsNode != null) {
             highStatisticsNode.createRelationshipTo(statisticsNode, GeoNeoRelationshipTypes.SOURCE);

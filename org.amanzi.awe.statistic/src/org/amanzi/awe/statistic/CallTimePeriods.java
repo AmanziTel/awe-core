@@ -85,11 +85,12 @@ public enum CallTimePeriods {
             GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
             int dayInWeek = cl.get(Calendar.DAY_OF_WEEK);
-            int dayInMonth = cl.get(Calendar.DAY_OF_MONTH);
+            /*int dayInMonth = cl.get(Calendar.DAY_OF_MONTH);
             if (dayInMonth < dayInWeek) {
                 cl.add(Calendar.DAY_OF_YEAR, -dayInMonth - 1);
             }
-            cl.set(Calendar.DAY_OF_WEEK, 0);
+            cl.set(Calendar.DAY_OF_WEEK, 0);*/
+            cl.add(Calendar.DAY_OF_YEAR, -dayInWeek);
             cl.set(Calendar.HOUR_OF_DAY, 0);
             cl.set(Calendar.MINUTE, 0);
             cl.set(Calendar.SECOND, 0);
