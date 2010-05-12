@@ -144,7 +144,7 @@ public class CallStatistics {
                 datasetNode = NeoUtils.getAllDatasetNodes(neoService).get(amsDatasetName);
             }
             
-            Iterator<Node> analyzisNodes = datasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING).iterator();
+            Iterator<Node> analyzisNodes = datasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, ProbeCallRelationshipType.CALL_ANALYSIS, Direction.OUTGOING).iterator();
             
             while (analyzisNodes.hasNext()) {
                 Node analyzisNode = analyzisNodes.next();
@@ -208,7 +208,7 @@ public class CallStatistics {
         result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(datasetNode,neoService));
         result.setProperty(CallProperties.CALL_TYPE.getId(), callType.toString());
         
-        datasetNode.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYZIS);
+        datasetNode.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYSIS);
         
         return result;
     }

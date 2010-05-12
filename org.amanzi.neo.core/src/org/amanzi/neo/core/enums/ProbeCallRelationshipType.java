@@ -33,7 +33,7 @@ public enum ProbeCallRelationshipType implements DeletableRelationshipType {
 	DRIVE_CALL(null,null),
 	PROBE_CALL(null,null),
 	CALLS(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED), 
-	CALL_ANALYZIS(null,null);
+	CALL_ANALYSIS(null,null);
 
     private RelationDeletableTypes deletableOut;
     private RelationDeletableTypes deletableIn;

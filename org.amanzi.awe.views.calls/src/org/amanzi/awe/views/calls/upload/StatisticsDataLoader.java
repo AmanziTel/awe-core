@@ -335,7 +335,7 @@ public class StatisticsDataLoader {
         result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(virtualDataset,service));
         result.setProperty(CallProperties.CALL_TYPE.getId(), callType.toString());
         
-        virtualDataset.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYZIS);
+        virtualDataset.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYSIS);
         
         return result;
     }

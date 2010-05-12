@@ -351,7 +351,7 @@ public class AggregationCallStatisticsBuilder {
         result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(dataset,service));
         result.setProperty(CallProperties.CALL_TYPE.getId(), StatisticsCallType.AGGREGATION_STATISTICS.toString());
         
-        dataset.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYZIS);
+        dataset.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYSIS);
         
         return result;
     }

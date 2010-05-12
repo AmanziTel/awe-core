@@ -82,7 +82,7 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             StatisticsCallType callType = StatisticsCallType.valueOf((String)getParent().getNode().getProperty(CallProperties.CALL_TYPE.getId()));          
             if (callType.getLevel().equals(StatisticsCallType.FIRST_LEVEL)) {
                 Node root = node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-                Node dataset = root.getSingleRelationship(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.INCOMING).getStartNode();
+                Node dataset = root.getSingleRelationship(ProbeCallRelationshipType.CALL_ANALYSIS, Direction.INCOMING).getStartNode();
                 iterator = NeoUtils.getAllProbesOfDataset(dataset, callType.getId()).iterator();
             }else{
                 iterator = NeoUtils.getChildTraverser(node).iterator();

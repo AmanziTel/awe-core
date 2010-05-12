@@ -953,7 +953,7 @@ public class CallAnalyserView extends ViewPart {
         Transaction tx = service.beginTx();
         try {
             Node statRoot = null;
-            for (Relationship link : drive.getRelationships(ProbeCallRelationshipType.CALL_ANALYZIS, Direction.OUTGOING)) {
+            for (Relationship link : drive.getRelationships(ProbeCallRelationshipType.CALL_ANALYSIS, Direction.OUTGOING)) {
                 Node root = link.getEndNode();
                 String rootType = root.getProperty(CallProperties.CALL_TYPE.getId(), "").toString();
                 if (rootType.equals(StatisticsCallType.AGGREGATION_STATISTICS.toString())) {
