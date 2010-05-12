@@ -16,6 +16,7 @@ package org.amanzi.neo.wizards;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -84,6 +85,8 @@ public class NetworkSiteImportWizardPage extends WizardPage {
     private Pair<NetworkFileType, Exception> netwFile = new Pair<NetworkFileType, Exception>(null, null);
     private Combo networkType;
     protected String networkName=""; //$NON-NLS-1$
+    
+    private boolean needCheckFilds;
 
     /**
      *check page
@@ -92,6 +95,9 @@ public class NetworkSiteImportWizardPage extends WizardPage {
      */
     protected boolean isValidPage() {
         //TODO must be refactoring after change loaders
+        if(!needCheckFilds){
+            return false;
+        }
         final NetworkFileType type = netwFile.getLeft();
         if (fileName==null){
             setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE); 
@@ -115,7 +121,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
                 setDescription(String.format(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NETWORK_MUST_EXIST,type.getId()));  
                 return false;
             }
-            setDescription("");  //$NON-NLS-1$
+            setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR);  //$NON-NLS-1$
             return true;
         }
 
@@ -124,12 +130,13 @@ public class NetworkSiteImportWizardPage extends WizardPage {
             setDescription(String.format(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_WRONG_TYPE_FOR_NETWORK,type.getId(),netType.getId()));  
             return false;
         }
-        setDescription(""); //$NON-NLS-1$
+        setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR); //$NON-NLS-1$
         return true;
     }
 
     @Override
     public void createControl(Composite parent) {
+        needCheckFilds = false;
         main = new Group(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
         Label label = new Label(main, SWT.LEFT);
@@ -168,6 +175,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
+                needCheckFilds = true;
                 updateLabelFileDescr();
                 if (netwFile.getLeft()!=null){
                     if (netwFile.getLeft()==NetworkFileType.NEIGHBOUR){
@@ -227,12 +235,12 @@ public class NetworkSiteImportWizardPage extends WizardPage {
      * @return
      */
     private String[] getNetworkFileType() {
-        NetworkFileType[] types = NetworkFileType.values();
-        String[] result = new String[types.length];
-        for (NetworkFileType type : types) {
-            result[type.ordinal()] = type.getId();
+        List<NetworkFileType> types = NetworkFileType.getAllTypesSorted();
+        int count = types.size();
+        String[] result = new String[count];
+        for (int i=0; i<count;i++) {
+            result[i] = types.get(i).getId();
         }
-        Arrays.sort(result);
         return result;
     }
 

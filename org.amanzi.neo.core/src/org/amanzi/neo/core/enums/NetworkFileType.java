@@ -13,6 +13,11 @@
 
 package org.amanzi.neo.core.enums;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 
 /**
  * <p>
@@ -22,14 +27,15 @@ package org.amanzi.neo.core.enums;
  * @since 1.0.0
  */
 public enum NetworkFileType {
-    RADIO_SITE(EnumsMessages.NetworkFileType_RADIO_SITE),
-    RADIO_SECTOR(EnumsMessages.NetworkFileType_RADIO_SECTOR),
-    TRANSMISSION(EnumsMessages.NetworkFileType_TRANSMISSION),
-    NEIGHBOUR(EnumsMessages.NetworkFileType_NEIGHBOUR),
-    PROBE(EnumsMessages.NetworkFileType_PROBE),
-    UTRAN(EnumsMessages.NetworkFileType_UTRAN),
-    NOKIA_TOPOLOGY(EnumsMessages.NetworkFileType_NOKIA);
+    RADIO_SITE(EnumsMessages.NetworkFileType_RADIO_SITE,0),
+    RADIO_SECTOR(EnumsMessages.NetworkFileType_RADIO_SECTOR,5),
+    TRANSMISSION(EnumsMessages.NetworkFileType_TRANSMISSION,10),
+    NEIGHBOUR(EnumsMessages.NetworkFileType_NEIGHBOUR,15),
+    PROBE(EnumsMessages.NetworkFileType_PROBE,20),
+    UTRAN(EnumsMessages.NetworkFileType_UTRAN,25),
+    NOKIA_TOPOLOGY(EnumsMessages.NetworkFileType_NOKIA,30);
     private String id;
+    private Integer order;
 
     /**
      * constructor
@@ -37,8 +43,9 @@ public enum NetworkFileType {
      * @param id node type ID
      * @param nonEditableProperties list of not editable properties
      */
-    private NetworkFileType(String id) {
+    private NetworkFileType(String id, Integer orderValue) {
         this.id = id;
+        order = orderValue;
     }
 
     /**
@@ -64,5 +71,16 @@ public enum NetworkFileType {
             }
         }
         return null;
+    }
+    
+    public static List<NetworkFileType> getAllTypesSorted(){
+        List<NetworkFileType> result = Arrays.asList(values());
+        Collections.sort(result, new Comparator<NetworkFileType>() {
+            @Override
+            public int compare(NetworkFileType o1, NetworkFileType o2) {
+                return o1.order.compareTo(o2.order);
+            }
+        });
+        return result;
     }
 }
