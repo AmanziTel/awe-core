@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -72,12 +73,13 @@ public class APDLoader extends AbstractLoader {
     protected void parseLine(String line) {
         if (fileNode == null) {
             ossRoot = LoaderUtils.findOrCreateOSSNode(OssType.APD, basename, neo);
-            Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateChildNode(neo, ossRoot, new File(basename).getName());
+                        
+            Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateFileNode(neo, ossRoot,new File(basename).getName(), new File(basename).getName());
             fileNode = fileNodePair.getRight();
             lastChild = null;
-            if (fileNodePair.getLeft()) {
-                NodeTypes.FILE.setNodeType(fileNode, neo);
-            }
+//            if (fileNodePair.getLeft()) {
+//                NodeTypes.FILE.setNodeType(fileNode, neo);
+//            }
         }
         List<String> fields = splitLine(line);
         if (fields.size() < 2)
@@ -95,10 +97,11 @@ public class APDLoader extends AbstractLoader {
         Transaction transaction = neo.beginTx();
         try {
             Node node = neo.createNode();
-            NodeTypes.M.setNodeType(fileNode, neo);
+            NodeTypes.M.setNodeType(node, neo);
             for (Map.Entry<String, Object> entry : lineData.entrySet()) {
                 node.setProperty(entry.getKey(), entry.getValue());
             }
+            node.setProperty(INeoConstants.PROPERTY_NAME_NAME, "APD counter");
             index(node);
             NeoUtils.addChild(fileNode, node, lastChild, neo);
             lastChild = node;

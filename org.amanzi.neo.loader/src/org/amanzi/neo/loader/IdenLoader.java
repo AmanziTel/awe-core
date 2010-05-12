@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -33,12 +34,12 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class IdenLoader extends AbstractLoader {
-    private Node oss;
-    private Node file;
-    private Node lChild;
-
     private static boolean needParceHeader = true;
     private final LinkedHashMap<String, Header> headers;
+
+    private Node ossRoot;
+    private Node fileNode;
+    private Node lastChild;
 
     /**
      * Constructor
@@ -48,7 +49,7 @@ public class IdenLoader extends AbstractLoader {
      * @param display
      */
     public IdenLoader(String directory, String datasetName, Display display) {
-        initialize("APD", null, directory, display);
+        initialize("iDEN", null, directory, display);
         basename = datasetName;
         headers = getHeaderMap(1).headers;
         needParceHeader = true;
@@ -56,7 +57,7 @@ public class IdenLoader extends AbstractLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return oss;
+        return ossRoot;
     }
 
     @Override
@@ -70,14 +71,11 @@ public class IdenLoader extends AbstractLoader {
 
     @Override
     protected void parseLine(String line) {
-        if (file == null) {
-            oss = LoaderUtils.findOrCreateOSSNode(OssType.APD, basename, neo);
-            Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateChildNode(neo, oss, new File(basename).getName());
-            file = fileNodePair.getRight();
-            lChild = null;
-            if (fileNodePair.getLeft()) {
-                NodeTypes.FILE.setNodeType(file, neo);
-            }
+        if (fileNode == null) {
+            ossRoot = LoaderUtils.findOrCreateOSSNode(OssType.iDEN, basename, neo);
+            Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateFileNode(neo, ossRoot,new File(basename).getName(), new File(basename).getName());
+            fileNode = fileNodePair.getRight();
+            lastChild = null;
         }
         List<String> fields = splitLine(line);
         if (fields.size() < 2)
@@ -87,7 +85,6 @@ public class IdenLoader extends AbstractLoader {
         Map<String, Object> lineData = makeDataMap(fields);
         saveStatistic(lineData);
     }
-
     /**
      * @param lineData
      */
@@ -95,16 +92,16 @@ public class IdenLoader extends AbstractLoader {
         Transaction transaction = neo.beginTx();
         try {
             Node node = neo.createNode();
-            NodeTypes.M.setNodeType(file, neo);
+            NodeTypes.M.setNodeType(node, neo);
             for (Map.Entry<String, Object> entry : lineData.entrySet()) {
                 node.setProperty(entry.getKey(), entry.getValue());
             }
+            node.setProperty(INeoConstants.PROPERTY_NAME_NAME, "iDEN counter");
             index(node);
-            NeoUtils.addChild(file, node, lChild, neo);
-            lChild = node;
+            NeoUtils.addChild(fileNode, node, lastChild, neo);
+            lastChild = node;
         } finally {
             transaction.finish();
         }
     }
-
 }
