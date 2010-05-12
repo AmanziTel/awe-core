@@ -41,6 +41,7 @@ import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.AMSLoader.Call;
 import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -49,6 +50,7 @@ import org.amanzi.neo.loader.sax_parsers.IXmlTag;
 import org.amanzi.neo.loader.sax_parsers.IXmlTagFactory;
 import org.amanzi.neo.loader.sax_parsers.PropertyCollector;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -74,6 +76,11 @@ public class AMSLoaderFromXML extends DriveLoader {
     /** TOC-TTC call*/
     private AMSCall tocttc;
     private AMSCall tocttcGroup;
+    /*
+     * Timestamp Index for Calls
+     */
+    private final HashMap<String, MultiPropertyIndex<Long>> callTimestampIndexes = new HashMap<String, MultiPropertyIndex<Long>>();
+
     /** The Constant subNodes. */
     protected final static Map<String, Class< ? extends AbstractEvent>> subNodes = new HashMap<String, Class< ? extends AbstractEvent>>();
     /** Initialize events map */
@@ -134,6 +141,8 @@ public class AMSLoaderFromXML extends DriveLoader {
 
     /** The probe cache. */
     private final Map<String, Node> probeCache = new HashMap<String, Node>();
+    private final Map<String, Node> probeCallCache = new HashMap<String, Node>();
+    private final Map<String, String> phoneNumberCache = new HashMap<String, String>();
     /** active file node for event dataset*/
     private Node datasetFileNode;
 //TODO change after implement feature 1131
@@ -188,6 +197,8 @@ public class AMSLoaderFromXML extends DriveLoader {
             updateTimestampMinMax(CALL_DATASET_HEADER_INDEX, timestamp);
             index(result);
 
+            MultiPropertyIndex<Long> callIndex = getProbeCallsIndex(probeName);
+            callIndex.add(result);
             // create relationship to M node
             for (Node mNode : relatedNodes) {
                 result.createRelationshipTo(mNode, ProbeCallRelationshipType.CALL_M);
@@ -734,6 +745,7 @@ public class AMSLoaderFromXML extends DriveLoader {
                             tocttc.setCallResult(CallResult.FAILURE);
                         }
                         tocttc.addRelatedNode(node);
+                        tocttc.addCalleeProbe(probeCallCache.get(phoneNumberCache.get(tocttc.getCalledPhoneNumber())));
                         storeRealCall(tocttc);
                 }
             } else if (tocttcGroup != null) {
@@ -743,6 +755,7 @@ public class AMSLoaderFromXML extends DriveLoader {
                     if (getPropertyMap().get("errorCode") != null) {
                         tocttcGroup.setCallResult(CallResult.FAILURE);
                     }
+                    tocttcGroup.addCalleeProbe(probeCallCache.get(getPropertyMap().get("probeID")));
                     tocttcGroup.addRelatedNode(node);
                   
                 }
@@ -851,9 +864,9 @@ public class AMSLoaderFromXML extends DriveLoader {
                     } else {
                         tocttc.setCallResult(CallResult.SUCCESS);
                     }
-                    Node callerProbe = probeCache.get(getPropertyMap().get("probeID"));
+                    Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
                     tocttc.setCallerProbe(callerProbe);
-                    tocttc.setCallerPhoneNumber((String)callerProbe.getProperty("phoneNumber", null));
+                    tocttc.setCalledPhoneNumber(getPropertyMap().get("calledNumber"));
                     tocttc.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0));
                     tocttc.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0));
                 }else if (hook==1 && simplex==1){
@@ -870,9 +883,9 @@ public class AMSLoaderFromXML extends DriveLoader {
                     } else {
                         tocttcGroup.setCallResult(CallResult.SUCCESS);
                     }
-                    Node callerProbe = probeCache.get(getPropertyMap().get("probeID"));
+                    Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
                     tocttcGroup.setCallerProbe(callerProbe);
-                    tocttcGroup.setCallerPhoneNumber((String)callerProbe.getProperty("phoneNumber", null));
+                    tocttcGroup.setCalledPhoneNumber((String)callerProbe.getProperty("phoneNumber", null));
                     tocttcGroup.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0l));
                     tocttcGroup.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0l));   
                 }
@@ -1225,17 +1238,26 @@ public class AMSLoaderFromXML extends DriveLoader {
                 return;
             }
             Node probeNew = NeoUtils.findOrCreateProbeNode(networkNode, id, neo);
+            Node currentProbeCalls = NeoUtils.getCallsNode(callDataset, id, probeNew, neo);
             probeCache.put(id, probeNew);
+            probeCallCache.put(id, currentProbeCalls);
+            String phone = map.get("phoneNumber");
+            if (!StringUtils.isEmpty(phone)){
+                phoneNumberCache.put(phone, id); 
+            }
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object valueToSave;
-                if (entry.getKey().equals("locationArea")) {
+                String key = entry.getKey();
+                if (key.equals("locationArea")) {
+                    key=INeoConstants.PROBE_LA;
                     valueToSave = Integer.parseInt(entry.getValue());
-                } else if (entry.getKey().equals("frequency")) {
+                } else if (key.equals("frequency")) {
+                    key=INeoConstants.PROBE_F;
                     valueToSave = Double.parseDouble(entry.getValue());
                 } else {
                     valueToSave = entry.getValue();
                 }
-                setIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers, probeNew, entry.getKey(), valueToSave);
+                setIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers, probeNew, key, valueToSave);
             }
 
             index(probeNew);
@@ -1274,15 +1296,49 @@ public class AMSLoaderFromXML extends DriveLoader {
     }
 
     public static class AMSCall extends AMSLoader.Call {
-        protected String callerPhoneNumber;
+        protected String calledPhoneNumber;
 
-        public String getCallerPhoneNumber() {
-            return callerPhoneNumber;
+        public String getCalledPhoneNumber() {
+            return calledPhoneNumber;
         }
 
-        public void setCallerPhoneNumber(String callerPhoneNumber) {
-            this.callerPhoneNumber = callerPhoneNumber;
+        public void setCalledPhoneNumber(String callerPhoneNumber) {
+            this.calledPhoneNumber = callerPhoneNumber;
         }
 
+    }
+    /**
+     * Returns an index for Probe Calls
+     * 
+     * @param probeCallsName name of Probe Calls
+     * @return timestamp index of Probe Calls
+     */
+    private MultiPropertyIndex<Long> getProbeCallsIndex(String probeCallsName) {
+        MultiPropertyIndex<Long> result = callTimestampIndexes.get(probeCallsName);
+
+        if (result == null) {
+            Transaction tx = neo.beginTx();
+            try {
+                result = NeoUtils.getTimeIndexProperty(probeCallsName);
+                result.initialize(neo, null);
+
+                callTimestampIndexes.put(probeCallsName, result);
+                tx.success();
+            } catch (IOException e) {
+                tx.failure();
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            } finally {
+                tx.finish();
+            }
+        }
+
+        return result;
+    }
+    @Override
+    protected void finishUpIndexes() {
+        for (MultiPropertyIndex<Long> singleIndex : callTimestampIndexes.values()) {
+            singleIndex.finishUp();
+        }
+        super.finishUpIndexes();
     }
 }
