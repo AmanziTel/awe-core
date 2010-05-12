@@ -23,7 +23,6 @@ import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
 import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
-import org.amanzi.neo.data_generator.data.nemo.PointData;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.loader.AMSLoader;
 import org.amanzi.neo.loader.NemoLoader;
@@ -323,7 +322,7 @@ public class AMSCorrellatorTest {
     private void correlateData()
     {
          AMSCorrellator amsCorrellator = new AMSCorrellator(getNeo());
-         amsCorrellator.correlate( PROBE_DATASET_NAME , DRIVE_DATASET_NAME );
+         amsCorrellator.correlate( PROBE_DATASET_NAME , DRIVE_DATASET_NAME ,new NullProgressMonitor());
     }    
     
     
