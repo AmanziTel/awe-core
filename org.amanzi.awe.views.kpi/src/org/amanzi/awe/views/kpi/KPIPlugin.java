@@ -62,7 +62,13 @@ public class KPIPlugin extends AbstractUIPlugin {
     private Long directoryId;
     private Long counterId;
     public static final String KPI_FOLDER="kpi";
+    public static final String RUBY_FOLDER="ruby";
     private static final String JRUBY_PATH_RUBY_NAME = "jrubyPath";	
+    public static final String KPI_RUBY_MODULE="KPI";
+    public static final String DEFAULT_KPI_RUBY_MODULE="KPI::Default";
+    public static final String CUSTOM_KPI_RUBY_MODULE="KPI::Custom";
+    public static final String GET_SUBMODULES_SCRIPT = "find_nested_modules(%s)";
+    public static final String GET_METHODS_SCRIPT = "find_methods(%s)";
 	/**
 	 * The constructor
 	 */

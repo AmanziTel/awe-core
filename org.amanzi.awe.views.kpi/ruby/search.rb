@@ -49,19 +49,40 @@ def properties(options={})
 end
 
 def counters(options={})
-  if (options.has_key? "oss") and  (options.has_key? "file")
+  if (options.has_key? "oss")
     oss=options.delete("oss")
-    file=options.delete("file")
+    if (options.has_key? "file")
+      file=options.delete("file")
+    else
+      file=oss
+    end
     puts "oss #{oss}\nfile #{file}"
-      oss_node=filter(Neo4j.ref_node,'oss', {"name"=>oss}).first
-      puts oss_node
-      counter_node=filter(oss_node,'file', {"name"=>file}).first
-      traverser=filter(counter_node,'mv', options)
-      traverser.stop_on {get_property('type')=='file'}
-      NodeSet.new traverser
+    oss_node=filter(Neo4j.ref_node,'oss', {"name"=>oss}).first
+    puts oss_node
+    counter_node=filter(oss_node,'file', {"name"=>file}).first
+    oss_type=counter_node["oss_type"]
+    if oss_type=="RNC Counters Data"
+      type_property_name='mv'
+    elsif oss_type=="APD"
+      type_property_name='m'
+    else #TODO
+      type_property_name='m'
+    end
+    traverser=filter(counter_node,type_property_name, options)
+    #      traverser=filter(counter_node,'mv', options)
+    traverser.stop_on {get_property('type')=='file'}
+    NodeSet.new traverser
   else
     if !$counter_root_node.nil?
-      traverser=filter($counter_root_node,'mv', options)
+      oss_type=$counter_root_node["oss_type"]
+      if oss_type=="RNC Counters Data"
+        type_property_name='mv'
+      elsif oss_type=="APD"
+        type_property_name='m'
+      else #TODO
+        type_property_name='m'
+      end
+      traverser=filter($counter_root_node,type_property_name, options)
       traverser.stop_on {get_property('type')=='file'}
       NodeSet.new traverser
     end
@@ -181,9 +202,9 @@ class PropertyTable
 
   def each
     #TODO print first 10
-#    i=0
+    #    i=0
     @node_set.each do |node|
-#      break if i>10
+      #      break if i>10
       props=Hash.new
       @properties.each do |p|
         value=node.props[p]
@@ -194,7 +215,7 @@ class PropertyTable
         end
       end
       if !props.empty? and props.length==@properties.length
-#        i+=1
+        #        i+=1
         yield props
       end
     end
@@ -242,5 +263,104 @@ class Aggregation
       result+="\n"
     end
     result
+  end
+end
+
+def calculate_average(sites, aggregation)
+  if aggregation==:hourly
+    time_label="hour"
+  elsif  aggregation==:daily
+    time_label="day"
+  elsif  aggregation==:monthly
+    time_label="month"
+  else
+    time_label="time"
+  end
+  aggr_result=[]
+  aggr_result<<['site_name','cell_name','date',time_label,'KPI']
+  sites.each do |site,cells|
+    cells.each do |cell,dates|
+      days=Hash.new
+      months=Hash.new
+      dates.each do |date,times|
+        parsed_date=ParseDate.parsedate(date)
+        day=parsed_date[1]
+        month=parsed_date[2]
+        hours=Hash.new
+        times.each do |time,values|
+          hour=ParseDate.parsedate(time)[3]
+          if aggregation==:hourly
+            values.each do |value|
+              if hours.has_key? hour
+                hours[hour][0]+=value
+                hours[hour][1]+=1
+              else
+                hours[hour]=[value,1]
+              end
+            end
+          elsif  aggregation==:daily
+            values.each do |value|
+              if days.has_key? day
+                days[day][0]+=value
+                days[day][1]+=1
+              else
+                days[day]=[value,1]
+              end
+            end
+          elsif  aggregation==:monthly
+            values.each do |value|
+              if months.has_key? month
+                months[month][0]+=value
+                months[month][1]+=1
+              else
+                months[month]=[value,1]
+              end
+            end
+          else
+            values.each do |value|
+              aggr_result<<[site,cell,date,parsed_date[1],time,value]
+            end
+          end
+        end
+        if aggregation==:hourly
+          hours.each do |h,arr|
+            aggr_result<<[site,cell,date,h,arr[0].to_f/arr[1]]
+          end
+        elsif  aggregation==:daily
+          days.each do |d,arr|
+            aggr_result<<[site,cell,date,d,arr[0].to_f/arr[1]]
+          end
+        elsif  aggregation==:monthly
+          months.each do |m,arr|
+            aggr_result<<[site,cell,"",m,arr[0].to_f/arr[1]]
+          end
+        end
+      end
+    end
+
+  end
+  aggr_result
+end
+
+def aggregate_sites(sites,site,cell,date,time,kpi_rounded)
+  if sites.has_key? site
+    cells=sites[site]
+    if cells.has_key? cell
+      dates=cells[cell]
+      if dates.has_key? date
+        times=dates[date]
+        if times.has_key? time
+          times[time]<<kpi_rounded
+        else
+          times[time]=[kpi_rounded]
+        end
+      else
+        dates[date]={time=>[kpi_rounded]}
+      end
+    else
+      cells[cell]={date=>{time=>[kpi_rounded]}}
+    end
+  else
+    sites[site]={cell=>{date=>{time=>[kpi_rounded]}}}
   end
 end

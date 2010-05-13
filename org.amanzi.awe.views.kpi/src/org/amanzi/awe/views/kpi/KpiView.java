@@ -993,22 +993,23 @@ public class KpiView extends ViewPart {
      */
     protected void runScript() {
         final Ruby rubyRuntime = KPIPlugin.getDefault().getRubyRuntime();
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow[] workbenchWindows = workbench.getWorkbenchWindows();
-        for (IWorkbenchWindow window:workbenchWindows){
-            IEditorPart activeEditor = window.getActivePage().getActiveEditor();
-            LOGGER.debug("[DEBUG] activeEditor "+activeEditor);
-            if (activeEditor instanceof AbstractSplashEditor){
-                AbstractSplashEditor splashEditor=(AbstractSplashEditor)activeEditor;
-                TableModel model = splashEditor.getTable().getModel();
-                if (model instanceof SplashTableModel){
-                  LOGGER.debug("[DEBUG] model "+model);
-                  IRubyObject rubyObject = JavaEmbedUtils.javaToRuby(rubyRuntime, model);
-                  rubyRuntime.getGlobalVariables().define("$tableModel", new ValueAccessor(rubyObject));
-                }
-                
-            }
-        }
+//        TODO
+//        IWorkbench workbench = PlatformUI.getWorkbench();
+//        IWorkbenchWindow[] workbenchWindows = workbench.getWorkbenchWindows();
+//        for (IWorkbenchWindow window:workbenchWindows){
+//            IEditorPart activeEditor = window.getActivePage().getActiveEditor();
+//            LOGGER.debug("[DEBUG] activeEditor "+activeEditor);
+//            if (activeEditor instanceof AbstractSplashEditor){
+//                AbstractSplashEditor splashEditor=(AbstractSplashEditor)activeEditor;
+//                TableModel model = splashEditor.getTable().getModel();
+//                if (model instanceof SplashTableModel){
+//                  LOGGER.debug("[DEBUG] model "+model);
+//                  IRubyObject rubyObject = JavaEmbedUtils.javaToRuby(rubyRuntime, model);
+//                  rubyRuntime.getGlobalVariables().define("$tableModel", new ValueAccessor(rubyObject));
+//                }
+//                
+//            }
+//        }
         final Display display = PlatformUI.getWorkbench().getDisplay();
         display.asyncExec(new Runnable() {
 

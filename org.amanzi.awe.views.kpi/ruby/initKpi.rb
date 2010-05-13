@@ -68,3 +68,9 @@ def find_kpis(type=nil)
   end
   methods
 end
+def find_methods(mod)
+  methods=[]
+  methods_found=mod.singleton_methods.sort
+  methods.concat(methods_found.collect! {|x| mod.name+"."+x}) if !methods_found.empty?
+  methods
+end

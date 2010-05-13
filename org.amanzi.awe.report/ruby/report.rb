@@ -360,7 +360,7 @@ end
   class ReportTable
     include NodeUtils
 
-    attr_accessor :title, :properties, :nodes, :sheet, :range
+    attr_accessor :title, :properties, :nodes, :sheet, :range, :kpi
     def initialize(title)
       self.title = title
     end
@@ -370,57 +370,60 @@ end
       get_data
     end
 
-    def  get_data
-      Neo4j::Transaction.run {
-        if !@nodes.nil?
-          #      puts @nodes.class
-          begin
-            @nodes.each do |n|
-              n=Neo4j.load_node(n) if n.is_a? Fixnum
-              @properties=n.props.keys if @properties.nil?
-              row=Array.new
-              @properties.each do |p| 
-                if p!="id"
-                row<<if n.property? p then n.get_property(p).to_s else "" end 
-                else 
-                  row<<n.neo_id.to_s 
-                end
+  def  get_data
+    Neo4j::Transaction.run {
+      if !@nodes.nil?
+        #      puts @nodes.class
+        @nodes.each do |n|
+          n=Neo4j.load_node(n) if n.is_a? Fixnum
+          @properties=n.props.keys if @properties.nil?
+          row=Array.new
+          @properties.each do |p|
+            if p!="id"
+              row<<if n.property? p then n.get_property(p).to_s else "" end
+            else
+              row<<n.neo_id.to_s
             end
-              addRow(row.to_java(java.lang.String))
-            end
-            setHeaders(@properties.to_java(java.lang.String)) if @properties.is_a? Array
-          rescue =>e
-            puts "An exception occured #{e}"
           end
-        elsif !@sheet.nil?
-          sheetName=@sheet
-          sheetNodes=Neo4j.load_node($RUBY_PROJECT_NODE_ID).outgoing(:SPREADSHEET).depth(:all).filter      do
-            get_property('name')== sheetName
-          end
-          range=@range
-          columnNodes=sheetNodes.first.outgoing(:COLUMN).depth(1).filter do
-            #          puts "sheetNode.traverse.outgoing(:COLUMN) #{get_property(:name)}"
-            puts get_property(:name)
-            index=CellID.getColumnIndexFromCellID(get_property(:name))
-            puts "index #{index}"
-            index>=range.begin.getColumnIndex() and index<=range.end.getColumnIndex()
-          end
-          columnNodes.each do |col|
-            puts "---> col #{col}"
-            cells=col.traverse.outgoing(:COLUMN_CELL).depth(1).filter do
-              name=relationship(:ROW_CELL,:incoming).start_node[:name]
-              puts "cells row name #{name}"
-              rowIndex=name.to_i
-              rowIndex>=range.begin.getRowName().to_i and rowIndex<=range.end.getRowName().to_i
-              true
-            end
-            cells.each {|cell| puts "cell #{cell}"}
-          end
-          #      TODO traverse rows and columns
-
+          addRow(row.to_java(java.lang.String))
         end
-      }
-    end
+        setHeaders(@properties.to_java(java.lang.String)) if @properties.is_a? Array
+      elsif !@sheet.nil?
+        sheetName=@sheet
+        sheetNodes=Neo4j.load_node($RUBY_PROJECT_NODE_ID).outgoing(:SPREADSHEET).depth(:all).filter      do
+          get_property('name')== sheetName
+        end
+        range=@range
+        columnNodes=sheetNodes.first.outgoing(:COLUMN).depth(1).filter do
+          #          puts "sheetNode.traverse.outgoing(:COLUMN) #{get_property(:name)}"
+          puts get_property(:name)
+          index=CellID.getColumnIndexFromCellID(get_property(:name))
+          puts "index #{index}"
+          index>=range.begin.getColumnIndex() and index<=range.end.getColumnIndex()
+        end
+        columnNodes.each do |col|
+          puts "---> col #{col}"
+          cells=col.traverse.outgoing(:COLUMN_CELL).depth(1).filter do
+            name=relationship(:ROW_CELL,:incoming).start_node[:name]
+            puts "cells row name #{name}"
+            rowIndex=name.to_i
+            rowIndex>=range.begin.getRowName().to_i and rowIndex<=range.end.getRowName().to_i
+            true
+          end
+          cells.each {|cell| puts "cell #{cell}"}
+        end
+        #      TODO traverse rows and columns
+      elsif !@kpi.nil?
+        @kpi.each_with_index do |row,i|
+          if i==0
+            setHeaders(row.to_java(java.lang.String))
+          else
+            addRow(row.to_java(java.lang.String))
+          end
+        end
+      end
+    }
+  end
 
     def select(name,params=nil,&block)
       Neo4j::Transaction.run {
