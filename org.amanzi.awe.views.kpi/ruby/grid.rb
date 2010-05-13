@@ -1,6 +1,6 @@
 require 'formulas'
 require 'search'
-require 'Neo4j'
+require 'neo4j'
 require 'parsedate'
 
 module KPI
