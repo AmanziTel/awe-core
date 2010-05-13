@@ -56,7 +56,7 @@ public class SplashJFreePieChartEditor extends EditorPart {
      */
     public void createPartControl(final Composite parent) {
         JFreeChart chart = Charts.createPieChart(Charts.createPieChartDataset(getChartNode()));
-        final ChartComposite frame = new ChartComposite(parent, SWT.NONE, chart, true, true, true, true, true);
+        new ChartComposite(parent, SWT.NONE, chart, true, true, true, true, true);
         parent.layout();
     }
     
@@ -167,9 +167,7 @@ public class SplashJFreePieChartEditor extends EditorPart {
         // log an error and provide a helpful, friendly message.
         if (ei == null)
             throw new PartInitException(MessageFormat.format("Invalid input.\n\n({0} is not a valid input for {1})",
-                    new String[] {editorInput.getClass().getName(),
-                    this.getClass().getName()
-            }));
+                                        editorInput.getClass().getName(), this.getClass().getName()));
 
         try {
 

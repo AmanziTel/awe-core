@@ -13,7 +13,6 @@
 
 package org.amanzi.splash.ui.wizards;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +55,6 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 
@@ -72,7 +70,6 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
     private Group main;
 
     private String fileName;
-    private HashMap<String, Node> members;
     private TreeViewer viewer;
     private Node selectedNode;
     private final GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
@@ -146,7 +143,6 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
             IEditorPart activeEditor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
             if (activeEditor != null && activeEditor instanceof SplashResourceEditor) {
                 SplashResourceEditor splashResourceEditor = (SplashResourceEditor)activeEditor;
-                String sheetName = splashResourceEditor.getPartName();
                 SpreadsheetNode spreadsheet = ((SplashTableModel)splashResourceEditor.getTable().getModel()).getSpreadsheet();
                 viewer.setSelection(new StructuredSelection(new TreeNeoNode(spreadsheet.getUnderlyingNode())), true);
             }
@@ -154,29 +150,6 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
             // wrong active editor
         }
 
-    }
-
-    private String[] getSplashItems() {
-        Transaction tx = NeoUtils.beginTransaction();
-        try {
-            Node refNode = service.getReferenceNode();
-            Traverser traverse = refNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return NeoUtils.getNodeType(currentPos.currentNode(), "").equals(NodeTypes.SPREADSHEET.getId()); //$NON-NLS-1$
-                }
-            }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, SplashRelationshipTypes.RUBY_PROJECT, Direction.OUTGOING, SplashRelationshipTypes.SPREADSHEET,
-                    Direction.OUTGOING);
-
-            members = new HashMap<String, Node>();
-            for (Node node : traverse) {
-                members.put(NeoUtils.getSimpleNodeName(node, "", null), node); //$NON-NLS-1$
-            }
-            return members.keySet().toArray(new String[] {});
-        } finally {
-            tx.finish();
-        }
     }
 
     /**
@@ -272,6 +245,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
             return getName();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public Object getAdapter(Class adapter) {
             if (adapter == TreeNeoNode.class) {

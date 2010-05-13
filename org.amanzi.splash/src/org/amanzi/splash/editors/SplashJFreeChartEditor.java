@@ -92,7 +92,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
 	public void createPartControl(final Composite parent) {
         ChartNode chartNode = getChartNode();
         JFreeChart chart = Charts.createBarChart(Charts.createBarChartDataset(chartNode));
-        final ChartComposite frame = new ChartComposite(parent, SWT.NONE, chart, true, true, true, true, true);
+        new ChartComposite(parent, SWT.NONE, chart, true, true, true, true, true);
         parent.layout();
 
     }
@@ -281,9 +281,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
 		// log an error and provide a helpful, friendly message.
 		if (ei == null)
 			throw new PartInitException(MessageFormat.format("Invalid input.\n\n({0} is not a valid input for {1})",
-					new String[] {editorInput.getClass().getName(),
-					this.getClass().getName()
-			}));
+					                    editorInput.getClass().getName(), this.getClass().getName()));
 
 		try {
 

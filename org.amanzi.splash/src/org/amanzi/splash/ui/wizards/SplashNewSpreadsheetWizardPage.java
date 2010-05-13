@@ -44,8 +44,6 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.rubypeople.rdt.internal.core.RubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.OpenNewRubyProjectWizardAction;
 
-import com.sun.corba.se.impl.protocol.giopmsgheaders.Message;
-
 /**
  * The "New" wizard page allows setting the container for the new file as well
  * as the file name. The page will only accept file name without the extension

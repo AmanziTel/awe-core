@@ -77,10 +77,10 @@ public class NeoSplashManager {
 		final String realRdtName = resolveRDTProjectName(realUdigName, rdtName);
 		
 		//get AWEProject Node from database
-		final AweProjectNode aweNode = (AweProjectNode)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult() {
+		final AweProjectNode aweNode = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<AweProjectNode>() {
 		        private AweProjectNode result;
 		        
-		        public Object getValue() {
+		        public AweProjectNode getValue() {
 		            return result;
 		        }
 		        
@@ -90,12 +90,11 @@ public class NeoSplashManager {
 		});
 		
 		//get RubyProject Node from database
-		final RubyProjectNode rootNode = (RubyProjectNode) ActionUtil
-				.getInstance().runTaskWithResult(new RunnableWithResult() {
+		final RubyProjectNode rootNode = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<RubyProjectNode>() {
 
 					private RubyProjectNode result;
 
-					public Object getValue() {
+					public RubyProjectNode getValue() {
 						return result;
 					}
 
@@ -105,12 +104,11 @@ public class NeoSplashManager {
 				});
 		
 	    //get Spreadsheet Node from database
-		final SpreadsheetNode spreadsheet = (SpreadsheetNode) ActionUtil
-				.getInstance().runTaskWithResult(new RunnableWithResult() {
+		final SpreadsheetNode spreadsheet = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<SpreadsheetNode>() {
 
 					private SpreadsheetNode result;
 
-					public Object getValue() {
+					public SpreadsheetNode getValue() {
 						return result;
 					}
 

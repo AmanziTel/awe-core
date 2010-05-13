@@ -103,6 +103,7 @@ public class ChartEditorInput implements IEditorInput, IPersistableElement {
         return chartName;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Object getAdapter(Class adapter) {
         return null;

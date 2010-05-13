@@ -85,7 +85,6 @@ public class StarTool extends AbstractModalTool {
     private Map<Long, java.awt.Point> nodesMap;
     private DrawShapeCommand drawSelectedSectorCommand;
     private Pair<Point, Long> selected;
-    private Long previosSelectedNodeId=null;
     private Node gisNode;
     private ILayer selectedLayer;
 
@@ -371,8 +370,7 @@ public class StarTool extends AbstractModalTool {
      * @param selectedPair - pair of necessary node
      */
     private void sendSelection(Pair<Point, Long> selectedPair) {
-        if (selectedPair == null || selectedPair.getRight() == null) {
-            previosSelectedNodeId=null;
+        if (selectedPair == null || selectedPair.getRight() == null) {            
             return;
         }
         Node nodeToSelect = NeoUtils.getNodeById(selectedPair.getRight());

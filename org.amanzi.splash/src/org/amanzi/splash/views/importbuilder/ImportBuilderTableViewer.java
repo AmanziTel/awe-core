@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.core.ISourceFolder;
@@ -349,17 +350,20 @@ public class ImportBuilderTableViewer {
 			public void widgetSelected(SelectionEvent e) {
 			    //Lagutko, 21.10.2009, creating a ImportBuilder script
 			    //get a current editor
-			    SplashResourceEditor editor = (SplashResourceEditor)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult(){
+			    SplashResourceEditor editor = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<SplashResourceEditor>(){
 			        
-			        private Object result;
+			        private SplashResourceEditor result;
                     
                     @Override
                     public void run() {
-                        result = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+                        IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+                        if (part instanceof SplashResourceEditor) { 
+                            result = (SplashResourceEditor)part;
+                        }
                     }
                     
                     @Override
-                    public Object getValue() {
+                    public SplashResourceEditor getValue() {
                         return result;
                     }
                 });

@@ -39,25 +39,17 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
-import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
-import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
-import org.jfree.chart.renderer.xy.XYBarRenderer;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.Dataset;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.time.TimeSeriesCollection;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -70,11 +62,7 @@ import org.neo4j.graphdb.Node;
  */
 public class Charts implements IElementFactory {
     private static final String FACTORY_ID = Charts.class.getName();
-    /** Color COLOR_LEFT_PROPERTY field */
-    private static final Color COLOR_LEFT_PROPERTY = Color.black;
-    /** Color COLOR_RIGHT_PROPERTY field */
-    private static final Color COLOR_RIGHT_PROPERTY = Color.red;
-
+    
     public static IEditorPart getActiveEditor() {
         IWorkbenchPage activePage = PlatformUI.getWorkbench().getWorkbenchWindows()[0].getActivePage();
         return activePage.getActiveEditor();
