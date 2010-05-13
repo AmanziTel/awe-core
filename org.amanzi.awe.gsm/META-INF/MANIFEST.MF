@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GSM
+Bundle-SymbolicName: org.amanzi.awe.gsm
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.amanzi.neo.core;bundle-version="1.0.0",
+ org.neo4j;bundle-version="1.0.0"
