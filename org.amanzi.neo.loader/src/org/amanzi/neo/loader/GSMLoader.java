@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -73,6 +75,15 @@ public class GSMLoader extends DriveLoader {
         headers = getHeaderMap(1).headers;
         needParceHeader = true;
         initializeKnownHeaders();
+        
+        try {
+            addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
+            addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
+        }
+        catch (IOException e) {
+            //TODO: 
+            e.printStackTrace();
+        }
     }
 
     /**
