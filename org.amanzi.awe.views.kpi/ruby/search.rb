@@ -318,7 +318,7 @@ def calculate_average(sites, aggregation)
             end
           else
             values.each do |value|
-              aggr_result<<[site,cell,date,parsed_date[1],time,value]
+              aggr_result<<[site,cell,date,time,value]
             end
           end
         end
