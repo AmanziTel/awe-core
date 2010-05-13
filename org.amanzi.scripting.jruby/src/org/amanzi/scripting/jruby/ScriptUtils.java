@@ -215,7 +215,7 @@ public class ScriptUtils {
 	 * @throws IOException throws Exception if path cannot be resolved
 	 * @author Lagutko_N
 	 */
-	private static String getPluginRoot(String pluginName) throws IOException {
+	public static String getPluginRoot(String pluginName) throws IOException {
 	    URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");       
         String rubyLocation = URLUtils.urlToString(FileLocator.resolve(rubyLocationURL), false);
         if (rubyLocation.startsWith("jar:file:")) {

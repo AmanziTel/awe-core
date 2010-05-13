@@ -158,11 +158,15 @@ public class SelectKPIPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 try {
                     try {
-                        URL entry = Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry(KPIPlugin.RUBY_FOLDER);
-                        String file = FileLocator.resolve(entry).getFile();
+                        String pluginRoot = org.amanzi.scripting.jruby.ScriptUtils.getPluginRoot(KPIPlugin.PLUGIN_ID);
+                        String file=pluginRoot+ "\\\\" +KPIPlugin.RUBY_FOLDER+ "\\\\" + cmbSelectVendor.getText().toLowerCase()+".rb";
+                        LOGGER.debug("pluginRoot "+pluginRoot);
+//                        URL entry = Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry(KPIPlugin.RUBY_FOLDER);
+//                        String file = FileLocator.resolve(entry).getFile().replaceAll("/", "\\");
                         LOGGER.debug(file);
-                        String scriptText = "IO.readlines(\"" + file + File.separator + cmbSelectVendor.getText().toLowerCase()
-                                + ".rb\").to_s";
+//                        String scriptText = "IO.readlines(\"" + file + File.separator + cmbSelectVendor.getText().toLowerCase()
+//                                + ".rb\").to_s";
+                        String scriptText = "IO.readlines(\"" +file/*.replaceAll("\\","/")*/+ "\").to_s";
                         IRubyObject result = ruby.evalScriptlet(scriptText);
                         LOGGER.debug("result: " + result);
                         String res = result.asJavaString();
