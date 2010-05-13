@@ -156,7 +156,6 @@ public class SelectKPIPage extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
                     try {
                         String pluginRoot = org.amanzi.scripting.jruby.ScriptUtils.getPluginRoot(KPIPlugin.PLUGIN_ID);
                         String file=pluginRoot+ "\\\\" +KPIPlugin.RUBY_FOLDER+ "\\\\" + cmbSelectVendor.getText().toLowerCase()+".rb";
@@ -166,7 +165,7 @@ public class SelectKPIPage extends WizardPage {
                         LOGGER.debug(file);
 //                        String scriptText = "IO.readlines(\"" + file + File.separator + cmbSelectVendor.getText().toLowerCase()
 //                                + ".rb\").to_s";
-                        String scriptText = "IO.readlines(\"" +file/*.replaceAll("\\","/")*/+ "\").to_s";
+                        String scriptText = "IO.readlines(\"" +file.replaceAll("\\\\","/")+ "\").to_s";
                         IRubyObject result = ruby.evalScriptlet(scriptText);
                         LOGGER.debug("result: " + result);
                         String res = result.asJavaString();
@@ -187,15 +186,15 @@ public class SelectKPIPage extends WizardPage {
                                 }
                             }
                         }
-                        updatePageComplete(true);
                     } catch (Exception e1) {
+                        LOGGER.debug("Exception occured: ",e1);
+                        parameter = "counters";
+                        needsAggregation = true;
                         // TODO Handle IOException
-                        throw (RuntimeException)new RuntimeException().initCause(e1);
+                    }finally{
+                        updatePageComplete(true);
+                        
                     }
-                } catch (RuntimeException e1) {
-                    // TODO Handle RuntimeException
-                    throw (RuntimeException)new RuntimeException().initCause(e1);
-                }
             }
 
         });
@@ -271,6 +270,9 @@ public class SelectKPIPage extends WizardPage {
         cmbSelectVendor.setItems(availableModules);
         cmbSelectGroup.removeAll();
         cmbSelectKPI.removeAll();
+    }
+    public static void main(String[] args){
+        
     }
 
 }
