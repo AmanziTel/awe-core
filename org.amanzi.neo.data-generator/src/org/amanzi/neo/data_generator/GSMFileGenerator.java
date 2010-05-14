@@ -122,10 +122,10 @@ public class GSMFileGenerator {
                 str2Write.append("410").append("\t");
                 // RxQuality
                 str2Write.append("14[raw data]").append("\t");
-                // Latitude
-                str2Write.append(new BigDecimal(data[latNum]).add(new BigDecimal(generator.nextInt(6)-2).divide(BigDecimal.valueOf(2)))).append("\t");
                 // Longitude
-                str2Write.append(new BigDecimal(data[lonNum]).add(new BigDecimal(generator.nextInt(6)-2).divide(BigDecimal.valueOf(2)))).append("\t");
+                str2Write.append(new BigDecimal(data[lonNum]).add(new BigDecimal(generator.nextInt(6)-2).divide(BigDecimal.valueOf(200)))).append("\t");
+                // Latitude
+                str2Write.append(new BigDecimal(data[latNum]).add(new BigDecimal(generator.nextInt(6)-2).divide(BigDecimal.valueOf(200)))).append("\t");                
                 // lastCallStatus
                 str2Write.append("Idle").append("\t");
                 // lastCallStartTime
