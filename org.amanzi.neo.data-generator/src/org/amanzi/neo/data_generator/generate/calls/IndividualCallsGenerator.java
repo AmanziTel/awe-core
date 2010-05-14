@@ -14,12 +14,14 @@
 package org.amanzi.neo.data_generator.generate.calls;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
+import org.amanzi.neo.data_generator.data.calls.Call;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
+import org.amanzi.neo.data_generator.data.calls.CallParameterNames;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
+import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
 import org.amanzi.neo.data_generator.utils.call.CommandCreator;
@@ -34,6 +36,8 @@ import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 public class IndividualCallsGenerator extends CallDataGenerator {
     
     private static final float[] CALL_DURATION_BORDERS = new float[]{0.01f,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
+    private static final float[] AUDIO_QUAL_BORDERS = new float[]{-0.5f,4.5f};
+    private final float CALL_DURATION_TIME = 60;
     
     private static final String PAIR_DIRECTORY_POSTFIX = "IndividualCall";
 
@@ -50,25 +54,28 @@ public class IndividualCallsGenerator extends CallDataGenerator {
         super(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
     }
     
+    @SuppressWarnings("unchecked")
     @Override
-    protected CallData buildCall(CallGroup group, Integer hour, Long duration){
-        Long startTime = getStartTime();
+    protected CallData buildCallCommands(CallGroup group,Integer hour, Call... calls){
+        Call call = calls[0];
         Long networkIdentity = getNetworkIdentity();
-        List<ProbeInfo> probes = getProbes();
-        Long startHour = startTime+HOUR*hour;
-        Long endHour = startTime+HOUR*(hour+1);
-        Long start = getRamdomTime(startHour, endHour);
+        List<Probe> probes = getProbes();
+        Long startHour = getStartOfHour(hour);
+        Long endHour = getStartOfHour(hour+1);
+        Long start = call.getStartTime();
+        Long setupDuration = (Long)call.getParameter(CallParameterNames.SETUP_TIME);
+        Long callDuration = (Long)call.getParameter(CallParameterNames.DURATION_TIME);
         
         Integer sourceNum = group.getSourceProbe();
         List<Integer> receiverNums = group.getReceiverProbes();
         
         Long time = getRamdomTime(startHour, start);
         ProbeData source = getNewProbeData(time, sourceNum);
-        ProbeInfo sourceInfo = probes.get(sourceNum-1);
+        Probe sourceInfo = probes.get(sourceNum-1);
         time = getRamdomTime(time, start);
         Integer receiverNum = receiverNums.get(0);
         ProbeData receiver = getNewProbeData(start, receiverNum);
-        ProbeInfo receiverInfo = probes.get(receiverNum-1);
+        Probe receiverInfo = probes.get(receiverNum-1);
         List<CommandRow> sourceCommands = source.getCommands();
         List<CommandRow> receiverCommands = receiver.getCommands();
         
@@ -82,65 +89,65 @@ public class IndividualCallsGenerator extends CallDataGenerator {
         CommandRow receiverCci = CommandCreator.getCciRow(networkIdentity,receiverInfo.getLocalAria(),receiverInfo.getFrequency());
         receiverCommands.add(CommandCreator.getAtCciRow(time,receiverCci));
         
-        time = getRamdomTime(time, start);
-        Long startAll = time;
-        CommandRow ctsdcRow = CommandCreator.getCtsdcRow(time,0,0,0,0,0,0,0,1,0,0);
+        
+        CommandRow ctsdcRow = CommandCreator.getCtsdcRow(start,0,0,0,0,0,0,0,1,0,0);
         sourceCommands.add(ctsdcRow);
-        sourceCommands.add(CommandCreator.getCtsdcRow(start,ctsdcRow));
-        time = getRamdomTime(0L, duration);
+        time = getRamdomTime(0L, setupDuration);
+        sourceCommands.add(CommandCreator.getCtsdcRow(start+time,ctsdcRow));
+        time = getRamdomTime(time, setupDuration);
         CommandRow atdRow = CommandCreator.getAtdRow(start+time, receiver.getNumber());
         sourceCommands.add(atdRow);
         
         
-        time = getRamdomTime(time, duration);
+        time = getRamdomTime(time, setupDuration);
         CommandRow ctocp1 = CommandCreator.getCtocpRow(start+time);
         
-        time = getRamdomTime(time, duration);
+        time = getRamdomTime(time, setupDuration);
         receiverCommands.add(CommandCreator.getCticnRow(start+time,"0"+source.getNumber()));
-        time = getRamdomTime(time, duration);
+        time = getRamdomTime(time, setupDuration);
         CommandRow ataRow = CommandCreator.getAtaRow(start+time);
         receiverCommands.add(ataRow);
         
         
-        time = getRamdomTime(time, duration);
+        time = getRamdomTime(time, setupDuration);
         CommandRow ctocp2 = CommandCreator.getCtocpRow(start+time);
         CommandRow ctcc = CommandCreator.getCtccRow(null,1,0,0,0,0,0,1);
         sourceCommands.add(CommandCreator.getAtdRow(atdRow,ctocp1,ctocp2,ctcc));
         
-        time = getRamdomTime(time, duration);
-        Long end = start+duration;
+        time = getRamdomTime(time, setupDuration);
+        Long end = start+setupDuration;
         ctcc = CommandCreator.getCtccRow(end,1,0,0,0,0,0,1);
         receiverCommands.add(CommandCreator.getAtaRow(ataRow, ctcc));
         
-        Long rest = startTime+HOUR*(hour+1)-end;
+        
+        long endAll = start+callDuration;
+        sourceCommands.add(CommandCreator.getAthRow(endAll));
+        CommandRow ctcrRow = CommandCreator.getCtcrRow(endAll,1,1);
+        sourceCommands.add(CommandCreator.getAthRow(endAll,ctcrRow));            
+        
+        ctcrRow = CommandCreator.getCtcrRow(null,1,1);
+        receiverCommands.add(CommandCreator.getUnsoCtcrRow(endAll,ctcrRow));
+        Long rest = endHour-endAll;
         if(rest<0){
             rest = HOUR;
         }
         time = getRamdomTime(0L, rest);
-        long andAll = end+time;
-        sourceCommands.add(CommandCreator.getAthRow(andAll));
-        time = getRamdomTime(time, rest);
-        CommandRow ctcrRow = CommandCreator.getCtcrRow(andAll,1,1);
-        time = getRamdomTime(time, rest);
-        sourceCommands.add(CommandCreator.getAthRow(andAll,ctcrRow));            
-        
-        time = getRamdomTime(time, rest);
-        ctcrRow = CommandCreator.getCtcrRow(null,1,1);
-        receiverCommands.add(CommandCreator.getUnsoCtcrRow(andAll,ctcrRow));
         Long time1 = time;
-        Long time2 = time;
-        for(int i=0;i<6;i++){            
+        List<Float> audioQuals = (List<Float>)call.getParameter(CallParameterNames.AUDIO_QUALITY+group.getSourceName());
+        for(Float quality : audioQuals){
+            sourceCommands.add(CommandCreator.getPESQRow(end+time1,quality));
             time1 = getRamdomTime(time1, rest);
-            sourceCommands.add(CommandCreator.getPESQRow(time1));
-            time2 = getRamdomTime(time2, rest);
-            receiverCommands.add(CommandCreator.getPESQRow(time2));
+        }
+        time1 = time;
+        audioQuals = (List<Float>)call.getParameter(CallParameterNames.AUDIO_QUALITY+group.getReceiverNames().get(0));
+        for(Float quality : audioQuals){   
+            receiverCommands.add(CommandCreator.getPESQRow(end+time1,quality));
+            time1 = getRamdomTime(time1, rest);
         }
         
         CallData callData = new CallData(getKey(),source, receiver);
-        callData.setStartTime(new Date(startTime));
-        callData.addTime(duration);
-        callData.addTime(andAll-startAll);
-        //TODO Priority
+        callData.addCall(call);
+        //TODO Priority and audio delay
         return callData;
     }
 
@@ -172,6 +179,21 @@ public class IndividualCallsGenerator extends CallDataGenerator {
     @Override
     protected float[] getCallDurationBorders() {
         return CALL_DURATION_BORDERS;
+    }
+
+    @Override
+    protected float[] getAudioQualityBorders() {
+        return AUDIO_QUAL_BORDERS;
+    }
+
+    @Override
+    protected Long getMinCallDuration() {
+        return (long)(CALL_DURATION_TIME*MILLISECONDS);
+    }
+
+    @Override
+    protected Integer getCallPriority() {
+        return 1;//TODO
     }
 
 }

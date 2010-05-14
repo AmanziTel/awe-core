@@ -75,7 +75,7 @@ public class CallGroup {
      *
      * @return String.
      */
-    public String getFirstName() {
+    public String getSourceName() {
         return sourceProbeName;
     }
     

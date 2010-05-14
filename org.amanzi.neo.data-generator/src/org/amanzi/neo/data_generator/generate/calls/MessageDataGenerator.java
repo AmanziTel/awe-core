@@ -16,13 +16,19 @@ package org.amanzi.neo.data_generator.generate.calls;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.data_generator.data.calls.Call;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
+import org.amanzi.neo.data_generator.data.calls.CallParameterNames;
+import org.amanzi.neo.data_generator.data.calls.CommandRow;
+import org.amanzi.neo.data_generator.data.calls.Probe;
+import org.amanzi.neo.data_generator.data.calls.ProbeData;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
+import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 
 /**
  * <p>
- * Common class for all messages data.
+ * Common class for all messages data.  TODO correct acknowledge time
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
@@ -43,8 +49,71 @@ public abstract class MessageDataGenerator extends AmsDataGenerator{
     }
 
     @Override
-    protected CallData buildCall(CallGroup group, Integer hour, Long duration) {
-        return null;
+    protected CallData buildCallCommands(CallGroup group,Integer hour, Call... calls) {
+        Long networkIdentity = getNetworkIdentity();
+        List<Probe> probes = getProbes();   
+        Integer sourceNum = group.getSourceProbe();
+        Integer recNum = group.getReceiverProbes().get(0);
+        Probe sourceInfo = probes.get(sourceNum-1);        
+        Probe recInfo = probes.get(recNum-1);
+        ProbeData source = null;
+        ProbeData receiver = null;
+        List<CommandRow> sourceCommands = null;
+        List<CommandRow> receiverCommands = null;
+        CallData callData = null;
+        
+        Long startHour = getStartOfHour(hour);
+        Long time = startHour;
+        Integer aiService = getAiService();
+        String sourceKey = networkIdentity+sourceInfo.getPhoneNumber();
+        String recKey = networkIdentity+recInfo.getPhoneNumber();
+        for(Call call : calls){
+            Long start = call.getStartTime();
+            if(source==null||receiver==null){
+                time = getRamdomTime(time, start);
+                source = getNewProbeData(time, sourceNum);
+                sourceCommands = source.getCommands();
+                time = getRamdomTime(time, start);
+                receiver = getNewProbeData(time, recNum);
+                receiverCommands = receiver.getCommands();
+                callData = new CallData(getKey(),source, receiver);
+            }
+            Long duration = (Long)call.getParameter(CallParameterNames.DURATION_TIME);
+            Long acknowledge = (Long)call.getParameter(CallParameterNames.ACKNOWLEDGE_TIME);
+            time = getRamdomTime(time, start);
+            sourceCommands.add(CommandCreator.getAtCciRow(time));
+            CommandRow sourceCci = CommandCreator.getCciRow(networkIdentity,sourceInfo.getLocalAria(),sourceInfo.getFrequency());
+            sourceCommands.add(CommandCreator.getAtCciRow(time,sourceCci));
+            
+            time = getRamdomTime(time, start);
+            receiverCommands.add(CommandCreator.getAtCciRow(time));
+            CommandRow receiverCci = CommandCreator.getCciRow(networkIdentity,recInfo.getLocalAria(),recInfo.getFrequency());
+            receiverCommands.add(CommandCreator.getAtCciRow(time,receiverCci));
+            
+            time = getRamdomTime(time, start);
+            
+            CommandRow ctsdsRow = CommandCreator.getCtsdsRow(time,aiService,0,0,0,0);
+            sourceCommands.add(ctsdsRow);
+            time = getRamdomTime(time, start);
+            sourceCommands.add(CommandCreator.getCtsdsRow(time,ctsdsRow));
+            
+            time = getRamdomTime(time, start);
+            String message = call.getParameter(CallParameterNames.MESSAGE).toString();
+            CommandRow atCmgs = CommandCreator.getCmgsRow(time, recInfo.getPhoneNumber(), message);
+            sourceCommands.add(atCmgs);
+            
+            
+            CommandRow cmgs = CommandCreator.getCmgsRow(233,2,30);
+            sourceCommands.add(CommandCreator.getCmgsRow(start, atCmgs, cmgs));
+            
+            time = start+duration;
+            receiverCommands.add(CommandCreator.getCtsdsrRow(time, aiService, sourceKey, recKey, message));
+            
+            time+=acknowledge;
+            sourceCommands.add(CommandCreator.getUnsoCmgsRow(time,cmgs));
+            callData.addCall(call);
+        }
+        return callData;
     }
     
     @Override
@@ -53,17 +122,42 @@ public abstract class MessageDataGenerator extends AmsDataGenerator{
         int hours = getHours();
         int callsCount = getCalls();
         int callVariance = getCallVariance();
-        Long[] borders = getDurationBorders();
-        RandomValueGenerator generator = RandomValueGenerator.getGenerator();
         for(int i = 0; i<hours; i++){
             int currCallCount = callsCount + RandomValueGenerator.getGenerator().getIntegerValue(-callVariance, callVariance);
-            for(int j = 0; j<currCallCount; j++){
-                Long duration = generator.getLongValue(borders[0], borders[1]);
-                CallData call = buildCall(group, i, duration);
+            for(int j = 0; j<currCallCount; j++){                
+                CallData call = buildCallCommands(group, i, createMessages(i));
                 calls.add(call);
             }
         }
         return calls;
+    }
+    
+    /**
+     * Create messages for one call. TODO correct acknowledge time.
+     *
+     * @param hour int
+     * @return Call[]
+     */
+    private Call[] createMessages(int hour){
+        Long[] borders = getDurationBorders();
+        Long[] acknBorders = getAcknowledgeBorders();
+        int messCount = getMessagesCount();
+        RandomValueGenerator generator = RandomValueGenerator.getGenerator();
+        String[] messages = getAllMessages();
+        Call[] result = new Call[messCount];
+        Long start = getStartOfHour(hour);
+        for(int i=0; i<messCount; i++){
+            Long duration = generator.getLongValue(borders[0], borders[1]);
+            start = generator.getLongValue(start, start+duration/2);
+            Call call = getEmptyCall(start);
+            call.addParameter(CallParameterNames.DURATION_TIME, duration);
+            call.addParameter(CallParameterNames.MESSAGE, messages[i]);
+            Long acknTime = generator.getLongValue(acknBorders[0], acknBorders[1]);
+            call.addParameter(CallParameterNames.ACKNOWLEDGE_TIME, acknTime);
+            start = start+duration+acknTime;
+            result[i] = call;
+        }
+        return result;
     }
 
     @Override
@@ -94,10 +188,36 @@ public abstract class MessageDataGenerator extends AmsDataGenerator{
     protected abstract Long[] getDurationBorders();
     
     /**
+     * Get borders for call duration.
+     *
+     * @return Long[] (start, end)
+     */
+    protected abstract Long[] getAcknowledgeBorders();
+    
+    /**
      * Get count of messages in one call.
      *
      * @return int
      */
     protected abstract int getMessagesCount();
+    
+    /**
+     * Get messages for one call.
+     *
+     * @return String[]
+     */
+    protected abstract String[] getAllMessages();
+    
+    /**
+     * Get ai service.
+     *
+     * @return Integer
+     */
+    protected abstract Integer getAiService();
+
+    @Override
+    protected Integer getCallPriority() {
+        return 1; //TODO correct
+    }
 
 }

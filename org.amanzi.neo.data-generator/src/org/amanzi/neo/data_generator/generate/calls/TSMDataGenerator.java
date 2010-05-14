@@ -25,6 +25,10 @@ public class TSMDataGenerator extends MessageDataGenerator{
     private static final String PAIR_DIRECTORY_POSTFIX = "TSM";
     public static Float TSM_SEND_TIME_LIMIT = 15f;
     public static Float TSM_REPLY_TIME_LIMIT = 5f;
+    private static final int AI_SERVICE = 13;
+    private static final String[] MESSAGES = new String[]{"8000"};
+    private static final Long[] DURATION_BORDERS = new Long[]{1L,MILLISECONDS*20L};
+    private static final Long[] ACKNOWLEDGE_BORDERS = new Long[]{1L,MILLISECONDS*6L};
     
     /**
      * @param aDirectory
@@ -46,12 +50,27 @@ public class TSMDataGenerator extends MessageDataGenerator{
 
     @Override
     protected Long[] getDurationBorders() {
-        return null;
+        return DURATION_BORDERS;
     }
 
     @Override
     protected int getMessagesCount() {
         return 1;
+    }
+
+    @Override
+    protected Long[] getAcknowledgeBorders() {
+        return ACKNOWLEDGE_BORDERS;
+    }
+
+    @Override
+    protected Integer getAiService() {
+        return AI_SERVICE;
+    }
+
+    @Override
+    protected String[] getAllMessages() {
+        return MESSAGES;
     }
 
 }

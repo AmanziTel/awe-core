@@ -17,8 +17,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.amanzi.neo.data_generator.data.calls.Call;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
+import org.amanzi.neo.data_generator.data.calls.CallParameterNames;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
 
 /**
@@ -50,13 +52,58 @@ public abstract class CallDataGenerator extends AmsDataGenerator {
         List<CallData> calls = new ArrayList<CallData>();
         HashMap<Integer, List<Long>> hourMap = buildHourMap();
         for(Integer hour : hourMap.keySet()){
-            for(Long duration : hourMap.get(hour)){
-                CallData call = buildCall(group, hour, duration);
+            for(Long setupDuration : hourMap.get(hour)){
+                CallData call = buildCallCommands(group, hour, createCall(hour, setupDuration,group));
                 calls.add(call);
             }
         }
         return calls;
     }
+    
+    private Call createCall(Integer hour, Long setupDuration,CallGroup group){
+        RandomValueGenerator generator = getRandomGenerator();
+        boolean inDistTime = generator.getBooleanValue();
+        long callDuration;
+        Long minDuration = getMinCallDuration();
+        if(setupDuration>=minDuration){
+            callDuration = generator.getLongValue(setupDuration, HOUR-setupDuration);
+        } else if(inDistTime){
+            callDuration = generator.getLongValue(minDuration, HOUR-minDuration);
+        }else{
+            callDuration = generator.getLongValue(setupDuration, minDuration);
+        }
+        Long start = getStartOfHour(hour)+generator.getLongValue(1L, HOUR-callDuration);
+        Call call = getEmptyCall(start);
+        call.addParameter(CallParameterNames.SETUP_TIME, setupDuration);
+        call.addParameter(CallParameterNames.DURATION_TIME, callDuration);
+        Integer pesqCount = generator.getIntegerValue(1, 6);
+        List<Float> audioQuals = new ArrayList<Float>(pesqCount);
+        String probeName = group.getSourceName();
+        float[] audioQualityBorders = getAudioQualityBorders();
+        for(int i=0; i<pesqCount;i++){
+            audioQuals.add(generator.getFloatValue(audioQualityBorders[0], audioQualityBorders[1]));
+        }
+        call.addParameter(CallParameterNames.AUDIO_QUALITY+probeName, audioQuals);
+        for(String name : group.getReceiverNames()){
+            audioQualityBorders = getAudioQualityBorders();
+            for(int i=0; i<pesqCount;i++){
+                audioQuals.add(generator.getFloatValue(audioQualityBorders[0], audioQualityBorders[1]));
+            }
+            call.addParameter(CallParameterNames.AUDIO_QUALITY+name, audioQuals);
+        }
+        //TODO add audio sample delay.
+        return call;
+    }
+    
+    /**
+     * @return minimum of call duration.
+     */
+    protected abstract Long getMinCallDuration();
+    
+    /**
+     * @return audio quality borders {start,end}.
+     */
+    protected abstract float[] getAudioQualityBorders();
     
     /**
      * Build map of calls duration in all hours.

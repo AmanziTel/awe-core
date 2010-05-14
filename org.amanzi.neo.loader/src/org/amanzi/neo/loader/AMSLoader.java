@@ -807,7 +807,6 @@ public class AMSLoader extends DriveLoader {
 	
 	@Override
 	protected void parseLine(String line) {
-	    //System.out.println("Parse line: "+line);
 	    if (newDirectory) {
 	        saveData();
 	        newDirectory = false;
@@ -1116,7 +1115,7 @@ public class AMSLoader extends DriveLoader {
 	 * @return is this command was a Call Command
 	 */
 	private boolean processCommand(String timestamp, AbstractAMSCommand command, CommandSyntax syntax, StringTokenizer tokenizer, boolean callCommandResult) {
-	    //try to parse timestamp
+	    //try to parse timestam
 		long timestampValue;
 		try {
 			timestampValue = timestampFormat.parse(timestamp).getTime();
@@ -1213,7 +1212,12 @@ public class AMSLoader extends DriveLoader {
 	        break;
 	    case TERMINATION_END:
 	        if (call != null) {
-	            call.setCallTerminationEnd(timestamp);
+	            if ((call.getCallType() != null)
+                        && (((call.getCallType() == CallType.GROUP) || (call.getCallType().equals(CallType.EMERGENCY))) && (currentProbeCalls
+                                .equals(callerProbeCalls)))
+                        || (((call.getCallType() == CallType.INDIVIDUAL) || (call.getCallType() == CallType.HELP)))) {
+	                call.setCallTerminationEnd(timestamp);
+                }
 	        }
 	        break;
 	    case ERROR:
@@ -1317,7 +1321,7 @@ public class AMSLoader extends DriveLoader {
             call.setCallType(CallType.ITSI_ATTACH);
             break;
 	    case UPDATE_START_END:
-            if(call!=null && CallType.ITSI_ATTACH.equals(call.getCallType())){
+	        if(call!=null && CallType.ITSI_ATTACH.equals(call.getCallType())){
                 if (!(call.getCallSetupBegin()>0)) {
                     call.setCallSetupBeginTime(timestamp);
                 }else{

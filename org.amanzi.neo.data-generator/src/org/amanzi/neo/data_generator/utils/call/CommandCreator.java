@@ -45,6 +45,15 @@ public class CommandCreator {
     public static final String CTSDC = "AT+CTSDC";
     public static final String CTXG = "+CTXG";
     public static final String PESQ = "PESQ.run";
+    public static final String CTCC = "+CTCC";
+    public static final String CTOCP = "+CTOCP";
+    public static final String CTSDS = "AT+CTSDS";
+    public static final String AT_CMGS = "AT+CMGS";
+    public static final String CMGS = "+CMGS";
+    public static final String CTSDSR = "<UNSOLICITED>|+CTSDSR";
+    public static final String CSPTR = "AT+CSPTR";
+    public static final String AT_CREG = "AT+CREG?";
+    public static final String CREG = "+CREG";
     
     private static final String ADD_COMAND_PREFIX = "~";
     private static final String OK_PARAMETER = "OK";
@@ -93,6 +102,38 @@ public class CommandCreator {
      */
     public static CommandRow getCtsdcRow(Long time, CommandRow source){
         CommandRow row = new CommandRow(CTSDC);
+        row.setTime(getDate(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
+        row.getParams().addAll(source.getParams());
+        row.getAdditional().add(OK_PARAMETER);
+        return row;
+    }
+    
+    /**
+     * Row with 'CTSDS' command.
+     *
+     * @param time Long.
+     * @return CommandRow.
+     */
+    public static CommandRow getCtsdsRow(Long time, Integer... params){
+        CommandRow row = new CommandRow(CTSDS);
+        row.setTime(getDate(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
+        for(Integer param : params){
+            row.getParams().add(param);
+        }
+        return row;
+    }
+    
+    /**
+     * Row with 'CTSDS' command.
+     *
+     * @param time Long.
+     * @param source CommamdRow.
+     * @return CommandRow.
+     */
+    public static CommandRow getCtsdsRow(Long time, CommandRow source){
+        CommandRow row = new CommandRow(CTSDS);
         row.setTime(getDate(time));
         row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
         row.getParams().addAll(source.getParams());
@@ -160,7 +201,7 @@ public class CommandCreator {
      * @return CommandRow.
      */
     public static CommandRow getCtocpRow(Long time){
-        CommandRow row = new CommandRow("+CTOCP");
+        CommandRow row = new CommandRow(CTOCP);
         row.setTime(getDate(time));
         row.getParams().add(1); //CC instance
         row.getParams().add(0);
@@ -180,7 +221,7 @@ public class CommandCreator {
      * @return CommandRow.
      */
     public static CommandRow getCtccRow(Long time,Integer... params){
-        CommandRow row = new CommandRow("+CTCC");
+        CommandRow row = new CommandRow(CTCC);
         row.setTime(getDate(time));
         for(Integer param : params){
             row.getParams().add(param);
@@ -379,7 +420,7 @@ public class CommandCreator {
     public static CommandRow getAtCciRow(Long time, CommandRow cci){
         CommandRow row = new CommandRow(AT_CCI);
         row.setTime(new Date(time));
-        row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
         row.getAdditional().add(cci.getCommandAsString());
         row.getAdditional().add(OK_PARAMETER);
         return row;
@@ -431,7 +472,7 @@ public class CommandCreator {
     public static CommandRow getAtCtgsRow(Long time, CommandRow ctgs){
         CommandRow row = new CommandRow(AT_CTGS);
         row.setTime(new Date(time));
-        row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
         row.getAdditional().add(ctgs.getCommandAsString());
         row.getAdditional().add(OK_PARAMETER);
         return row;
@@ -458,15 +499,177 @@ public class CommandCreator {
         return row;
     }
     
-    public static CommandRow getPESQRow(Long time){
+    public static CommandRow getPESQRow(Long time, Float audioQuality){
         CommandRow row = new CommandRow(PESQ);
         row.setTime(new Date(time));
         RandomValueGenerator generator = RandomValueGenerator.getGenerator();
-        row.getAdditional().add(formatDoubleValue(generator.getDoubleValue(0.0, 5.0), 7));
+        row.getAdditional().add(formatDoubleValue(audioQuality.doubleValue(), 7));
         row.getAdditional().add(formatDoubleValue(generator.getDoubleValue(100.0, 999.0), 7));
         row.getAdditional().add(formatDoubleValue(generator.getDoubleValue(100.0, 999.0), 7));
         row.getAdditional().add(formatDoubleValue(generator.getDoubleValue(100.0, 999.0), 7));
         row.getAdditional().add(formatDoubleValue(generator.getDoubleValue(0.0, 1.0), 7));
+        return row;
+    }
+    
+    /**
+     * Row with 'CMGS' command.
+     *
+     * @param time Long.
+     * @return CommandRow.
+     */
+    public static CommandRow getCmgsRow(Integer... params){
+        CommandRow row = new CommandRow(CMGS);
+        for(Integer param : params){
+            row.getParams().add(param);
+        }
+        return row;
+    }
+    
+    /**
+     * Row with 'UNSOLICITED|CMGS' command.
+     *
+     * @param time Long.
+     * @return CommandRow.
+     */
+    public static CommandRow getUnsoCmgsRow(Long time,CommandRow cmgs){
+        CommandRow row = new CommandRow(UNSOLICITED);
+        row.setTime(new Date(time));
+        row.getAdditional().add(cmgs.getCommandAsString());
+        return row;
+    }
+    
+    /**
+     * Row with 'CMGS' command.
+     *
+     * @param time Long.
+     * @return CommandRow.
+     */
+    public static CommandRow getCmgsRow(Long time, String number, String message){
+        CommandRow row = new CommandRow(AT_CMGS);
+        row.setTime(getDate(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
+        row.getParams().add(number);
+        String hex = convertAsciiToHex(message);
+        row.getParams().add(hex.length()*4);
+        row.getAdditional().add(hex);
+        return row;
+    }
+    
+    /**
+     * Row with 'CMGS' command.
+     *
+     * @param time Long.
+     * @param source CommamdRow.
+     * @return CommandRow.
+     */
+    public static CommandRow getCmgsRow(Long time, CommandRow source, CommandRow cmgs){
+        CommandRow row = new CommandRow(AT_CMGS);
+        row.setTime(getDate(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
+        row.getParams().addAll(source.getParams());
+        row.getAdditional().add(source.getAdditional().get(0));
+        row.getAdditional().add(cmgs.getCommandAsString());
+        row.getAdditional().add(OK_PARAMETER);
+        return row;
+    }
+    
+    /**
+     * Row with 'CTSDSR' command.
+     *
+     * @param time Long.
+     * @return CommandRow.
+     */
+    public static CommandRow getCtsdsrRow(Long time,Integer aiService, String source, String receiver, String message){
+        CommandRow row = new CommandRow(CTSDSR);
+        row.setTime(getDate(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
+        row.getParams().add(aiService);
+        row.getParams().add(source);
+        row.getParams().add(1);
+        row.getParams().add(receiver);
+        row.getParams().add(1);
+        String hex = convertAsciiToHex(message);
+        row.getParams().add(hex.length()*4);
+        row.getAdditional().add(hex);
+        return row;
+    }
+    
+    /**
+     * Row with 'CSPTR' command.
+     *
+     * @param time Long.
+     * @param source CommamdRow.
+     * @return CommandRow.
+     */
+    public static CommandRow getCsprtRow(Long time, boolean isWrite){
+        CommandRow row = new CommandRow(CSPTR);
+        row.setTime(getDate(time));
+        if (isWrite) {
+            row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
+        }else{
+            row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
+            row.getAdditional().add(OK_PARAMETER);
+        }
+        return row;
+    }
+    
+    /**
+     * Row with 'CREG' command.
+     *
+     * @param time Long.
+     * @param source CommamdRow.
+     * @return CommandRow.
+     */
+    public static CommandRow getCregRow(Long time){
+        CommandRow row = new CommandRow(AT_CREG);
+        row.setTime(getDate(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
+        return row;
+    }
+    
+    /**
+     * Row with 'CREG' command.
+     *
+     * @param time Long.
+     * @param source CommamdRow.
+     * @return CommandRow.
+     */
+    public static CommandRow getCregRow(Long time, String param){
+        CommandRow row = new CommandRow(AT_CREG);
+        row.setTime(getDate(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
+        row.getAdditional().add(param);
+        return row;
+    }
+    
+    /**
+     * Row with 'CREG' command.
+     *
+     * @param time Long.
+     * @param source CommamdRow.
+     * @return CommandRow.
+     */
+    public static CommandRow getCregRow(String mni, Integer la){
+        CommandRow row = new CommandRow(CREG);
+        row.getParams().add(1);
+        row.getParams().add(la);
+        row.getParams().add(mni);
+        return row;
+    }
+    
+    /**
+     * Row with 'CREG' command.
+     *
+     * @param time Long.
+     * @param source CommamdRow.
+     * @return CommandRow.
+     */
+    public static CommandRow getCregRow(Long time, CommandRow source){
+        CommandRow row = new CommandRow(AT_CREG);
+        row.setTime(getDate(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
+        row.getAdditional().add(source.getCommandAsString());
+        row.getAdditional().add(OK_PARAMETER);
         return row;
     }
     
@@ -499,4 +702,21 @@ public class CommandCreator {
         }
         return new Date(time);
     }
+    
+    /**
+     * Convert ASCII string to hex string.
+     *
+     * @param ascii
+     * @return
+     */
+    private static String convertAsciiToHex(String ascii){
+        StringBuilder hex = new StringBuilder();
+        
+        for (int i=0; i < ascii.length(); i++) {
+            hex.append(Integer.toHexString(ascii.charAt(i)));
+        }
+        
+        return hex.toString();
+    }
+
 }

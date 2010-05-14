@@ -1958,8 +1958,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_L4("DELAY_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float connectionTime = getCallDurationTime(callNode);
-            if(connectionTime>ItsiAttachConstants.DELAY_L4_LOW){
+            float updateTime = getCallDurationTime(callNode);
+            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L4_LOW, ItsiAttachConstants.TIME_LIMIT, true, true)){
                 return 1;
             }
             return null;

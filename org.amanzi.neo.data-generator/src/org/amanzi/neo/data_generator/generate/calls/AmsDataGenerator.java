@@ -21,9 +21,11 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.amanzi.neo.data_generator.data.calls.Call;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
+import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
@@ -42,6 +44,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
     private static final String PROBE_NUMBER_PREFIX = "110";
     private static final String ZERO = "0";
     
+    private static final long MAX_KEY_VALUE = (long)1E10;
     private static final int MAX_LA = 10000;
     private static final double MAX_FREQUENCY = 999;
     private static final long MAX_NETWORK_ID = 125000;
@@ -68,7 +71,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
     private Integer calls;
     private Integer callVariance;
     private Integer probesCount;
-    private List<ProbeInfo> probes;
+    private List<Probe> probes;
     
     /**
      * Constructor.
@@ -93,7 +96,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
     /**
      * @return Returns the probes.
      */
-    public List<ProbeInfo> getProbes() {
+    public List<Probe> getProbes() {
         return probes;
     }
     
@@ -175,7 +178,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * Initialize probes.
      */
     private void initProbes(){
-       probes = new ArrayList<ProbeInfo>(probesCount); 
+       probes = new ArrayList<Probe>(probesCount); 
        int defLength = probesCount.toString().length();
        RandomValueGenerator generator = getRandomGenerator();
        for(int i=1; i<=probesCount; i++){
@@ -183,7 +186,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
            String number = PROBE_NUMBER_PREFIX+name;           
            Integer la = generator.getIntegerValue(0, MAX_LA);
            Double fr = generator.getDoubleValue(0.0, MAX_FREQUENCY);
-           ProbeInfo probe = new ProbeInfo(name, number, la, fr);
+           Probe probe = new Probe(name, number, la, fr);
            probes.add(probe);
        }
     }
@@ -212,15 +215,30 @@ public abstract class AmsDataGenerator implements IDataGenerator{
     protected abstract List<CallData> buildCalls(CallGroup group);
     
     /**
-     * Build one call.
+     * Build call data.
      *
-     * @param sourceNum Integer
-     * @param receiverNum Integer
-     * @param hour Integer
-     * @param duration Long
+     * @param group CallGroup
+     * @param calls Call... (calls in file)
      * @return {@link CallData}
      */
-    protected abstract CallData buildCall(CallGroup group, Integer hour, Long duration);
+    protected abstract CallData buildCallCommands(CallGroup group,Integer hour, Call... calls);
+    
+    /**
+     * Create new empty call
+     *
+     * @param start
+     * @return Call.
+     */
+    protected Call getEmptyCall(Long start){
+        return new Call(start, getCallPriority());
+    }
+    
+    /**
+     * Get call priority value.
+     *
+     * @return Integer
+     */
+    protected abstract Integer getCallPriority();
 
     /**
      * Returns random time in interval.
@@ -240,6 +258,10 @@ public abstract class AmsDataGenerator implements IDataGenerator{
         return time;
     }
     
+    protected Long getStartOfHour(Integer hour){
+        return startTime+HOUR*hour;
+    }
+    
     /**
      * Initialize new probe data.
      *
@@ -248,7 +270,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * @return {@link ProbeData}
      */
     protected ProbeData getNewProbeData(Long time,Integer number){
-        ProbeInfo probeInfo = probes.get(number-1);
+        Probe probeInfo = probes.get(number-1);
         String name = probeInfo.getName();
         String callNumber = probeInfo.getPhoneNumber();
         ProbeData data = new ProbeData(name,callNumber,getKey());
@@ -272,14 +294,14 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      */
     protected CallGroup getCallGroup(Integer source, Integer... receivers){
         String groupName = getRandomGenerator().getLongValue(0L, 100000L).toString();
-        ProbeInfo sourceProbeInfo = probes.get(source-1);
+        Probe sourceProbeInfo = probes.get(source-1);
         String sourceName = sourceProbeInfo.getName();
         sourceProbeInfo.addSourceGroup(groupName);
         int resCount = receivers.length;
         List<Integer> receiverList = Arrays.asList(receivers);
         List<String> receiverNames = new ArrayList<String>(resCount);
         for(Integer receiver : receiverList){
-            ProbeInfo resProbeInfo = probes.get(receiver-1);
+            Probe resProbeInfo = probes.get(receiver-1);
             resProbeInfo.addResGroup(groupName);
             String receiverName = resProbeInfo.getName();
             receiverNames.add(receiverName);
@@ -311,7 +333,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * @return Long.
      */
     protected Long getKey() {
-        return getRandomGenerator().getLongValue(0L, (long)1E10);
+        return getRandomGenerator().getLongValue(0L, MAX_KEY_VALUE);
     }
     
     /**
@@ -321,106 +343,6 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      */
     protected RandomValueGenerator getRandomGenerator() {
         return RandomValueGenerator.getGenerator();
-    }
-    
-    /**
-     * Saving common probe information.
-     * <p>
-     *
-     * </p>
-     * @author Shcharbatsevich_A
-     * @since 1.0.0
-     */
-    protected class ProbeInfo{
-        private List<String> sourceGroups = new ArrayList<String>();
-        private List<String> resGroups = new ArrayList<String>();
-        
-        private String name;
-        private String phoneNumber;
-        private Integer localArea;
-        private Double frequency;
-        
-        /**
-         * Constructor.
-         * @param aName String probe name
-         * @param aPhoneNumber String phone number
-         * @param aLocalArea Integer local area
-         * @param aFrequency Double frequency
-         */
-        public ProbeInfo(String aName, String aPhoneNumber, Integer aLocalArea, Double aFrequency){
-            name = aName;
-            phoneNumber = aPhoneNumber;
-            localArea = aLocalArea;
-            frequency = aFrequency;
-        }
-        
-        /**
-         * Probe name.
-         *
-         * @return String
-         */
-        public String getName(){
-            return name;
-        }
-        
-        /**
-         * Phone number.
-         *
-         * @return String
-         */
-        public String getPhoneNumber(){
-            return phoneNumber;
-        }
-        
-        /**
-         * Local area.
-         *
-         * @return Integer.
-         */
-        public Integer getLocalAria(){
-            return localArea;
-        }
-          
-        /**
-         * Frequency.
-         *
-         * @return Double.
-         */
-        public Double getFrequency(){
-            return frequency;
-        }
-        
-        /**
-         * Set group to source groups
-         *
-         * @param number
-         */
-        public void addSourceGroup(String number){
-            sourceGroups.add(number);
-        }
-        
-        /**
-         * @return Returns the source Gropes.
-         */
-        public List<String> getSourceGroups() {
-            return sourceGroups;
-        }
-        
-        /**
-         * Set group to receiver groups
-         *
-         * @param number
-         */
-        public void addResGroup(String number){
-            resGroups.add(number);
-        }
-        
-        /**
-         * @return Returns the receiver Gropes.
-         */
-        public List<String> getResGroups() {
-            return resGroups;
-        }
     }
 
 }

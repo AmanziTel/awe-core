@@ -15,7 +15,6 @@ package org.amanzi.neo.data_generator.data.calls;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 
@@ -33,9 +32,8 @@ public class CallData {
     private ProbeData sourceProbe;
     private List<ProbeData> receiverProbes;
     
-    private Date startTime;
-    private List<Long> callTimes;
-    private Integer priority;
+    private Long startTime;
+    private List<Call> calls;
     
     /**
      * Constructor.
@@ -47,7 +45,7 @@ public class CallData {
         key = aKey;
         sourceProbe = source;
         receiverProbes = Arrays.asList(receivers);
-        callTimes = new ArrayList<Long>();
+        calls = new ArrayList<Call>();
     }
     
     /**
@@ -80,40 +78,29 @@ public class CallData {
     /**
      * @return Returns the startTime.
      */
-    public Date getStartTime() {
+    public Long getStartTime() {
         return startTime;
     }
     
     /**
-     * @param startTime The startTime to set.
+     * @return Returns the calls.
      */
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
+    public List<Call> getCalls() {
+        return calls;
     }
     
     /**
-     * @return Returns the callTimes.
+     * Add call to data.
+     *
+     * @param call
      */
-    public List<Long> getCallTimes() {
-        return callTimes;
+    public void addCall(Call call){
+        calls.add(call);
+        if(startTime==null||call.getStartTime()<startTime){
+            startTime = call.getStartTime();
+        }
     }
     
-    public void addTime(Long time){
-        callTimes.add(time);
-    }
     
-    /**
-     * @return Returns the priority.
-     */
-    public Integer getPriority() {
-        return priority;
-    }
-    
-    /**
-     * @param priority The priority to set.
-     */
-    public void setPriority(Integer priority) {
-        this.priority = priority;
-    }
     
 }

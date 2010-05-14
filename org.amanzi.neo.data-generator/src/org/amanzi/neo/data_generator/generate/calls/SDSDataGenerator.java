@@ -22,8 +22,12 @@ package org.amanzi.neo.data_generator.generate.calls;
  */
 public class SDSDataGenerator extends MessageDataGenerator{
     
+    private static final int AI_SERVICE = 12;
     private static final String PAIR_DIRECTORY_POSTFIX = "SDS";
-
+    private static final String[] MESSAGES = new String[]{"Hello","Hello World! This is a SDS","Hello World! This is a full SDS-4 message containing 120 characters of user data. ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789"};
+    private static final Long[] DURATION_BORDERS = new Long[]{1L,MILLISECONDS*30L};
+    private static final Long[] ACKNOWLEDGE_BORDERS = new Long[]{1L,MILLISECONDS*5L};
+    
     /**
      * @param aDirectory
      * @param aHours
@@ -44,12 +48,27 @@ public class SDSDataGenerator extends MessageDataGenerator{
 
     @Override
     protected Long[] getDurationBorders() {
-        return null;
+        return DURATION_BORDERS;
     }
 
     @Override
     protected int getMessagesCount() {
         return getRandomGenerator().getIntegerValue(1, 3);
+    }
+
+    @Override
+    protected Long[] getAcknowledgeBorders() {
+        return ACKNOWLEDGE_BORDERS;
+    }
+
+    @Override
+    protected Integer getAiService() {
+        return AI_SERVICE;
+    }
+
+    @Override
+    protected String[] getAllMessages() {
+        return MESSAGES;
     }
 
 }

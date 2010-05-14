@@ -28,10 +28,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.AlarmDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.EmergencyDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.GroupCallsGenerator;
-import org.amanzi.neo.data_generator.generate.calls.HelpDataGenerator;
+import org.amanzi.neo.data_generator.generate.calls.ITSIAttachDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.IndividualCallsGenerator;
 import org.amanzi.neo.data_generator.generate.calls.SDSDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.TSMDataGenerator;
@@ -91,38 +89,6 @@ public class DataGenerateManager {
     }
     
     /**
-     * Returns AMS data generator for emergency calls.
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getEmergencyGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes, Integer aMaxGroupSize) {
-        return new EmergencyDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes, aMaxGroupSize);
-    }
-    
-    /**
-     * Returns AMS data generator for help calls.
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getHelpAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift,
-            Integer aCallsPerHour, Integer aCallPerHourVariance, Integer aProbes) {
-        return new HelpDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-    }
-    
-    /**
      * Returns AMS data generator for SDS messages.
      * 
      * @param aDirectory String (path to save data)
@@ -155,7 +121,7 @@ public class DataGenerateManager {
     }
     
     /**
-     * Returns AMS data generator for Alarm messages.
+     * Returns AMS data generator for ITSI attach data.
      * 
      * @param aDirectory String (path to save data)
      * @param aHours Integer (count of hours)
@@ -165,9 +131,9 @@ public class DataGenerateManager {
      * @param aProbes Integer (probes count)
      * @return AmsDataGenerator.
      */
-    public static IDataGenerator getAlarmMessagesGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
+    public static IDataGenerator getItsiAttachGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
             Integer aCallPerHourVariance, Integer aProbes) {
-        return new AlarmDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
+        return new ITSIAttachDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
     }
 
     /**

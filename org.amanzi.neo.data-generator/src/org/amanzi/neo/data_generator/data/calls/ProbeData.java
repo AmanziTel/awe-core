@@ -18,9 +18,8 @@ import java.util.List;
 
 
 /**
- * Data saver for probe data for one call.
  * <p>
- *
+ * Data saver for probe data for one call.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0

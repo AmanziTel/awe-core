@@ -66,7 +66,7 @@ public class CallFileBuilder {
     public void saveData(List<CallGroup> aData)throws IOException{
        File mainPath = initPath();
        for(CallGroup group : aData){
-           String firstProbe = group.getFirstName();
+           String firstProbe = group.getSourceName();
            File pairDir = initPairDirectory(mainPath, firstProbe, group.getReceiverNames());
            for(CallData call : group.getData()){
                File callDir = getCallDirectory(pairDir, call.getKey());

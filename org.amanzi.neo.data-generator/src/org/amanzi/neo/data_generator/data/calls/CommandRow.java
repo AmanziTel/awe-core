@@ -144,7 +144,8 @@ public class CommandRow {
      * @return String
      */
     private String getParamPrefix() {
-        if(command!=null&& command.equals(CommandCreator.CTSDC)){
+        if(command!=null && (command.equals(CommandCreator.CTSDC)
+                ||command.equals(CommandCreator.CTSDS)||command.equals(CommandCreator.AT_CMGS))){
             return "=";
         }
         return ": ";

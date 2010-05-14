@@ -24,7 +24,7 @@ import org.amanzi.awe.views.calls.enums.IAggrStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
-import org.amanzi.awe.views.calls.statistics.constants.MessageConstants;
+import org.amanzi.awe.views.calls.statistics.constants.ItsiAttachConstants;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.data.calls.Call;
 import org.amanzi.neo.data_generator.data.calls.CallParameterNames;
@@ -36,12 +36,12 @@ import org.junit.Test;
 
 /**
  * <p>
- * Tests for SDS messages statistics.
+ * Tests for ITSI attach statistics.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class SDSMessagesStatTest extends MessagesStatisticsTest{
+public class ItsiAttachStatTest extends AmsStatisticsTest{
     
     /**
      * Prepare operations before execute test.
@@ -112,33 +112,94 @@ public class SDSMessagesStatTest extends MessagesStatisticsTest{
         clearMainDirectory();
     }
     
+    private static final int PERIODS_COUNT = 7;
+    private static final Float[] PERIODS_BORDERS = new Float[]{ItsiAttachConstants.DELAY_P1_LOW,
+                                                                ItsiAttachConstants.DELAY_P2_LOW,
+                                                                ItsiAttachConstants.DELAY_P3_LOW,
+                                                                ItsiAttachConstants.DELAY_P4_LOW,
+                                                                ItsiAttachConstants.DELAY_L1_LOW,
+                                                                ItsiAttachConstants.DELAY_L2_LOW,
+                                                                ItsiAttachConstants.DELAY_L3_LOW ,
+                                                                ItsiAttachConstants.DELAY_L4_LOW};
+    
+    @Override
+    protected StatisticsCallType getCallType() {
+        return StatisticsCallType.ITSI_ATTACH;
+    }
+
     @Override
     protected IDataGenerator getDataGenerator(Integer aHours, Integer aDrift, Integer aCallsPerHour, Integer aCallPerHourVariance,
             Integer aProbes, String dataDir) {
-        return DataGenerateManager.getSDSMessagesGenerator(dataDir, aHours, aDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
+        return DataGenerateManager.getItsiAttachGenerator(dataDir, aHours, aDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
     }
-
-    @Override
-    protected StatisticsCallType getCallType() {
-        return StatisticsCallType.SDS;
-    }
-
 
     @Override
     protected HashMap<IStatisticsHeader, Number> getStatValuesFromCall(Call call) throws ParseException {
-        HashMap<IStatisticsHeader, Number> result = new HashMap<IStatisticsHeader, Number>(getCallType().getHeaders().size());
-        result.put(StatisticsHeaders.SDS_MESSAGE_ATTEMPT, 1);
-        Float callDuration = getTimeByKey(call, CallParameterNames.DURATION_TIME);
-        if(callDuration<=MessageConstants.SDS_SEND_TIME_LIMIT){
-            result.put(StatisticsHeaders.SDS_MESSAGE_SUCC, 1);
+        HashMap<IStatisticsHeader, Number> result = new HashMap<IStatisticsHeader, Number>();
+        result.put(StatisticsHeaders.ATT_ATTEMPTS, 1);
+        Float duration = ((Long)call.getParameter(CallParameterNames.DURATION_TIME)).floatValue()/MILLISECONDS;
+        if(duration<=ItsiAttachConstants.TIME_LIMIT){
+            result.put(StatisticsHeaders.ATT_SUCCESS, 1);
+            Integer setupPeriod = getDurationPeriod(duration);
+            switch (setupPeriod) {
+            case 0:
+                result.put(StatisticsHeaders.ATT_DELAY_P1,1L);
+                break;
+            case 1:
+                result.put(StatisticsHeaders.ATT_DELAY_P2,1L);
+                break;
+            case 2:
+                result.put(StatisticsHeaders.ATT_DELAY_P3,1L);
+                break;
+            case 3:
+                result.put(StatisticsHeaders.ATT_DELAY_P4,1L);
+                break;
+            case 4:
+                result.put(StatisticsHeaders.ATT_DELAY_L1,1L);
+                break;
+            case 5:
+                result.put(StatisticsHeaders.ATT_DELAY_L2,1L);
+                break;
+            case 6:
+                result.put(StatisticsHeaders.ATT_DELAY_L3,1L);
+                break;
+            case 7:
+                result.put(StatisticsHeaders.ATT_DELAY_L4,1L);
+                break;
+            default:
+                break;
+            }
         }
         return result;
     }
+
+    /**
+     * Gets number of call duration period.
+     *
+     * @param duration Long
+     * @return Integer
+     */
+    protected Integer getDurationPeriod(Float duration){
+        for(int i=0; i<PERIODS_COUNT; i++){
+            float start = PERIODS_BORDERS[i];
+            float end = PERIODS_BORDERS[i+1];
+            if(start<=duration && duration<end){
+                return i;
+            }
+        }
+        return PERIODS_COUNT;
+    }
     
+    @Override
+    protected boolean hasSecondLevelStatistics() {
+        return true;
+    }
+
     @Override
     protected List<IAggrStatisticsHeaders> getAggregationHeaders() {
         List<IAggrStatisticsHeaders> result = new ArrayList<IAggrStatisticsHeaders>();
-        result.add(AggregationStatisticsHeaders.SDS);
+        result.add(AggregationStatisticsHeaders.INH_AT);
         return result;
     }
+    
 }

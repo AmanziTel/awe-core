@@ -16,9 +16,12 @@ package org.amanzi.neo.data_generator.generate.calls;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.data_generator.data.calls.Call;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
+import org.amanzi.neo.data_generator.data.calls.CallParameterNames;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
+import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
 import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 
@@ -32,6 +35,8 @@ import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 public class GroupCallsGenerator extends CallDataGenerator{
     
     private static final float[] CALL_DURATION_BORDERS = new float[]{0.01f,0.125f,0.25f,0.375f,0.5f,0.75f,1,2,5,1000};
+    private static final float[] AUDIO_QUAL_BORDERS = new float[]{-0.5f,4.5f};
+    private final float CALL_DURATION_TIME = 20;
     private static final String PAIR_DIRECTORY_POSTFIX = "GroupCall";
     
     private int maxGroupSize;
@@ -51,26 +56,29 @@ public class GroupCallsGenerator extends CallDataGenerator{
         maxGroupSize = aMaxGroupSize;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    protected CallData buildCall(CallGroup group, Integer hour, Long duration) {
-        Long startTime = getStartTime(); 
+    protected CallData buildCallCommands(CallGroup group,Integer hour, Call... calls) {
+        Call call = calls[0];
         Long networkIdentity = getNetworkIdentity();
-        List<ProbeInfo> probes = getProbes();
-        Long startHour = startTime+HOUR*hour;
-        Long endHour = startTime+HOUR*(hour+1);
-        Long start = getRamdomTime(startHour, endHour);
+        List<Probe> probes = getProbes();
+        Long startHour = getStartOfHour(hour);
+        Long endHour = getStartOfHour(hour+1);
+        Long start = call.getStartTime();
+        Long setupDuration = (Long)call.getParameter(CallParameterNames.SETUP_TIME);
+        Long callDuration = (Long)call.getParameter(CallParameterNames.DURATION_TIME);
         
         Integer sourceNum = group.getSourceProbe();
         List<Integer> receiverNums = group.getReceiverProbes();
         
         Long time = getRamdomTime(startHour, start);
         ProbeData source = getNewProbeData(time, sourceNum);
-        ProbeInfo sourceInfo = probes.get(sourceNum-1);
+        Probe sourceInfo = probes.get(sourceNum-1);
         List<CommandRow> sourceCommands = source.getCommands();
         
         int resCount = receiverNums.size();
         ProbeData[] receivers = new ProbeData[resCount];
-        List<ProbeInfo> allReceiversInfo = new ArrayList<ProbeInfo>(resCount);
+        List<Probe> allReceiversInfo = new ArrayList<Probe>(resCount);
         List<List<CommandRow>> allReceiverCommands = new ArrayList<List<CommandRow>>(resCount);
         for(int i=0; i<resCount; i++){
             Integer receiverNum = receiverNums.get(i);
@@ -87,7 +95,7 @@ public class GroupCallsGenerator extends CallDataGenerator{
         
         for(int i=0; i<resCount; i++){
             List<CommandRow> receiverCommands = allReceiverCommands.get(i);
-            ProbeInfo resInfo = allReceiversInfo.get(i);
+            Probe resInfo = allReceiversInfo.get(i);
             time = getRamdomTime(time, start);
             receiverCommands.add(CommandCreator.getAtCtgsRow(time));
             CommandRow receiverCtgs = CommandCreator.getCtgsRow(resInfo.getSourceGroups(),resInfo.getResGroups());
@@ -101,7 +109,7 @@ public class GroupCallsGenerator extends CallDataGenerator{
         
         for(int i=0; i<resCount; i++){
             List<CommandRow> receiverCommands = allReceiverCommands.get(i);
-            ProbeInfo receiverInfo = allReceiversInfo.get(i);
+            Probe receiverInfo = allReceiversInfo.get(i);
             time = getRamdomTime(time, start);
             receiverCommands.add(CommandCreator.getAtCciRow(time));
             CommandRow receiverCci = CommandCreator.getCciRow(networkIdentity,receiverInfo.getLocalAria(),receiverInfo.getFrequency());
@@ -110,20 +118,17 @@ public class GroupCallsGenerator extends CallDataGenerator{
         
         CommandRow ctsdcRow = CommandCreator.getCtsdcRow(start,0,0,0,1,1,0,1,1,0,0);
         sourceCommands.add(ctsdcRow);        
-        time = getRamdomTime(0L, duration);
+        time = getRamdomTime(0L, setupDuration);
         sourceCommands.add(CommandCreator.getCtsdcRow(start+time,ctsdcRow));
         
-        time = getRamdomTime(time, duration);
+        time = getRamdomTime(time, setupDuration);
         CommandRow atdRow = CommandCreator.getAtdRow(start+time, group.getGroupNumber());
         sourceCommands.add(atdRow);
         
-        Long end = start+duration;
+        Long end = start+setupDuration;
         CommandRow ctcc1 = CommandCreator.getCtccRow(end, 2,1,1,0,0,1,1);
         
-        Long rest = startTime+HOUR*(hour+1)-end;
-        if(rest<10){
-            rest = HOUR;
-        }
+        Long rest = callDuration-setupDuration;        
         
         CommandRow ctcc2 = CommandCreator.getCtccRow(null, 2,1,1,0,0,1,1);
         String numKey = networkIdentity+"0"+sourceInfo.getPhoneNumber();
@@ -136,16 +141,20 @@ public class GroupCallsGenerator extends CallDataGenerator{
             receiverCommands.add(CommandCreator.getCticnRow(end+time1, numKey, ctcc2, ctxg));
         }
         
-        sourceCommands.add(CommandCreator.getAtdRow(end+time, atdRow, ctcc1, CommandCreator.getCtxgRow(numKey,2,0,0,0)));
+        sourceCommands.add(CommandCreator.getAtdRow(end+time, atdRow, ctcc1, CommandCreator.getCtxgRow(2,0,0,0)));
         
         time = getRamdomTime(0L, rest);
         sourceCommands.add(CommandCreator.getAthRow(end+time));
-        
         time = getRamdomTime(time, rest);
         CommandRow ctcrRow = CommandCreator.getCtcrRow(end+time,2,1);
-        time = getRamdomTime(time, rest);
-        sourceCommands.add(CommandCreator.getAthRow(end+time,ctcrRow));
         
+        end+=rest;
+        sourceCommands.add(CommandCreator.getAthRow(end,ctcrRow));
+        rest = endHour-end;
+        if(rest<0){
+            rest = HOUR;
+        }
+        time = getRamdomTime(0L, rest);
         for(int i=0; i<resCount; i++){
             List<CommandRow> receiverCommands = allReceiverCommands.get(i);
             time = getRamdomTime(time, rest);
@@ -154,18 +163,25 @@ public class GroupCallsGenerator extends CallDataGenerator{
         }      
         
         Long time1 = time;
-        Long time2 = time;
-        for(int i=0;i<6;i++){            
+        List<Float> audioQuals = (List<Float>)call.getParameter(CallParameterNames.AUDIO_QUALITY+group.getSourceName());
+        for(Float quality : audioQuals){
+            sourceCommands.add(CommandCreator.getPESQRow(end+time1,quality));
             time1 = getRamdomTime(time1, rest);
-            sourceCommands.add(CommandCreator.getPESQRow(time1));
-            time2 = getRamdomTime(time2, rest);
-            for(int j=0; j<resCount; j++){
-                List<CommandRow> receiverCommands = allReceiverCommands.get(j);
-                receiverCommands.add(CommandCreator.getPESQRow(time2));
+        }
+        time1 = time;
+        List<String> receiverNames = group.getReceiverNames();
+        for (int j=0; j<resCount; j++) {
+            audioQuals = (List<Float>)call.getParameter(CallParameterNames.AUDIO_QUALITY + receiverNames.get(j));
+            List<CommandRow> receiverCommands = allReceiverCommands.get(j);
+            for (Float quality : audioQuals) {
+                receiverCommands.add(CommandCreator.getPESQRow(end+time1, quality));
+                time1 = getRamdomTime(time1, rest);
             }
         }
-        
-        return new CallData(getKey(),source, receivers);
+        //TODO priority and call quality
+        CallData callData = new CallData(getKey(),source, receivers);
+        callData.addCall(call);
+        return callData;
     }
     
 
@@ -228,5 +244,20 @@ public class GroupCallsGenerator extends CallDataGenerator{
     @Override
     protected float[] getCallDurationBorders() {
         return CALL_DURATION_BORDERS;
+    }
+
+    @Override
+    protected float[] getAudioQualityBorders() {
+        return AUDIO_QUAL_BORDERS;
+    }
+
+    @Override
+    protected Long getMinCallDuration() {
+        return (long)(CALL_DURATION_TIME*MILLISECONDS);
+    }
+
+    @Override
+    protected Integer getCallPriority() {
+        return 1; //TODO correct.
     }
 }

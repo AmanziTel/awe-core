@@ -23,11 +23,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.views.calls.enums.IAggrStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
@@ -38,6 +40,7 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.data_generator.data.calls.Call;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
@@ -78,6 +81,7 @@ public abstract class AmsStatisticsTest {
     protected static final long MILLISECONDS = 1000;
     
     private static final String PROBE_NAME_PREFIX = "PROBE";
+    protected static final int SECOND_LEVEL_STAT_ID = -1;
     
     protected static final String CTSDC_COMMAND = "AT+CTSDC";
     protected static final String ATA_COMMAND = "ATA";
@@ -282,16 +286,16 @@ public abstract class AmsStatisticsTest {
      */
     private void assertResult(HashMap<Integer, ProbeStat> generated,CallStatistics statistics, Integer hours){
         Node hourlyNode = statistics.getPeriodNode(CallTimePeriods.HOURLY, getCallType());
-        assertPeriodStatistics(hourlyNode, CallTimePeriods.HOURLY, generated);
+        assertPeriodStatistics(hourlyNode, CallTimePeriods.HOURLY, generated,statistics);
         if(hours>1){
             Node dailyNode = statistics.getPeriodNode(CallTimePeriods.DAILY, getCallType());
-            assertPeriodStatistics(dailyNode, CallTimePeriods.DAILY, generated);
+            assertPeriodStatistics(dailyNode, CallTimePeriods.DAILY, generated,statistics);
         }
         if(hours>DAY){
             Node weekNode = statistics.getPeriodNode(CallTimePeriods.WEEKLY, getCallType());
-            assertPeriodStatistics(weekNode, CallTimePeriods.WEEKLY, generated);
+            assertPeriodStatistics(weekNode, CallTimePeriods.WEEKLY, generated,statistics);
             Node monthNode = statistics.getPeriodNode(CallTimePeriods.MONTHLY, getCallType());
-            assertPeriodStatistics(monthNode, CallTimePeriods.MONTHLY, generated);
+            assertPeriodStatistics(monthNode, CallTimePeriods.MONTHLY, generated,statistics);
         }
     }
     
@@ -302,13 +306,159 @@ public abstract class AmsStatisticsTest {
      * @param period CallTimePeriods (statistics period)
      * @param generated HashMap<Integer, CallStatData> (data that was generated)
      */
-    private void assertPeriodStatistics(Node statNode,final CallTimePeriods period, HashMap<Integer, ProbeStat> generated){
+    private void assertPeriodStatistics(Node statNode,final CallTimePeriods period, HashMap<Integer, ProbeStat> generated,CallStatistics statistics){
         assertFalse(period.getId()+" node does not exists.",statNode==null);
-        assertUnderlyingStatCount(statNode, period);
+        assertUnderlyingStatCount(statNode, period,1);
         Traverser traverse = NeoUtils.getChildTraverser(statNode);
         for(Node row : traverse.getAllNodes()){
             assertRow(row, generated, period);
         }
+        if(hasSecondLevelStatistics()){
+            Node aggrStatNode = statistics.getPeriodNode(period, StatisticsCallType.AGGREGATION_STATISTICS);
+            assertAggrPeriodStatistics(aggrStatNode, period, generated.get(SECOND_LEVEL_STAT_ID).getStatisticsByPeriod(period));
+        }
+    }
+    
+    /**
+     * Assert second level statistics in period.
+     *
+     * @param statNode Node (root node for statistics)
+     * @param period CallTimePeriods (statistics period)
+     * @param generated PeriodStat (data that was generated)
+     */
+    private void assertAggrPeriodStatistics(Node statNode,final CallTimePeriods period, PeriodStat generated){
+        assertFalse(period.getId()+" node does not exists.",statNode==null);
+        assertUnderlyingStatCount(statNode, period,0);
+        List<Node> allRows = new ArrayList<Node>(NeoUtils.getChildTraverser(statNode).getAllNodes());
+        assertEquals("Incorrect count of rows in "+period.getId()+" period for second level statistics.",1,allRows.size());
+        Node row = allRows.get(0);
+        
+        Traverser traverse = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                return currentPos.depth()>0&&NodeTypes.getNodeType(node, getNeo()).equals(NodeTypes.S_ROW);
+            }            
+        }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
+        assertEquals("Incorrect count of source rows in "+period.getId()+" period for second level statistics.",generated.getSourceCount(),traverse.getAllNodes().size());
+        
+        List<HashMap<IStatisticsHeader, Number>> realAggrStat = getRealAggrStat(row);
+        HashMap<IStatisticsHeader, Number> real = realAggrStat.get(0);
+        HashMap<IStatisticsHeader, Number> bySource = realAggrStat.get(1);
+        HashMap<IStatisticsHeader, Number> etalon = generated.getRowValuesForCheck(generated.getAllTimesSorted().get(0));
+        assertEquals("Wrong cell count in second level statistics (period "+period.getId()+").",etalon.size(), real.size());
+        for(IStatisticsHeader header : etalon.keySet()){
+            assertCellValue(etalon, bySource, real, header, period);
+        }
+    }
+    
+    /**
+     * @return is second level statistics should be. 
+     */
+    protected abstract boolean hasSecondLevelStatistics();
+    
+    protected abstract List<IAggrStatisticsHeaders> getAggregationHeaders();
+    
+    /**
+     * Build maps for second level statistics (real and source)
+     *
+     * @param row Node
+     * @return List<HashMap<IStatisticsHeader, Number>>
+     */
+    protected List<HashMap<IStatisticsHeader, Number>> getRealAggrStat(Node row){
+        List<Node> allCells = new ArrayList<Node>(NeoUtils.getChildTraverser(row).getAllNodes());
+        
+        HashMap<IStatisticsHeader, Number> real = new HashMap<IStatisticsHeader, Number>();
+        HashMap<IStatisticsHeader, Number> source = new HashMap<IStatisticsHeader, Number>();
+        for(Node cell : allCells){
+            IStatisticsHeader header = getCellHeader(cell, StatisticsCallType.AGGREGATION_STATISTICS);
+            Number value = getCellValue(cell, header);
+            real.put(header, value);
+            source.put(header, getAggrValueByCells(cell, header));
+        }
+        List<HashMap<IStatisticsHeader, Number>> result = new ArrayList<HashMap<IStatisticsHeader, Number>>(2);
+        result.add(real);
+        result.add(source);
+        return result;
+        
+    }
+    
+    /**
+     * Get statistics header from cell
+     *
+     * @param cell Node
+     * @param callType StatisticsCallType
+     * @return IStatisticsHeader
+     */
+    private IStatisticsHeader getCellHeader(Node cell, StatisticsCallType callType){
+        return callType.getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+    }
+    
+    /**
+     * Build second level statistics value by source cells.
+     *
+     * @param parentCell Node
+     * @param header IStatisticsHeader
+     * @return Number
+     */
+    protected Number getAggrValueByCells(Node parentCell,IStatisticsHeader header){
+        IAggrStatisticsHeaders realHeader = (IAggrStatisticsHeaders)header;        
+        HashMap<IStatisticsHeader, Number> sourceValues = new HashMap<IStatisticsHeader, Number>();
+        for(Node cell : getAllSourceCells(parentCell)){
+            IStatisticsHeader real = getCellHeader(cell, getCallType());
+            Number value = getCellValue(cell, real);
+            Number curr = sourceValues.get(real);
+            sourceValues.put(real, updateValueByHeader(curr, value, real));
+        }
+        List<IStatisticsHeader> utilHeaders = realHeader.getDependendHeaders();
+        HashMap<IStatisticsHeader, Number> utilValues = new HashMap<IStatisticsHeader, Number>();
+        for(IStatisticsHeader util : utilHeaders){
+            for(IStatisticsHeader real : ((IAggrStatisticsHeaders)util).getDependendHeaders()){
+                Number value = sourceValues.get(real);
+                Number curr = utilValues.get(util);
+                utilValues.put(util, updateValueByHeader(curr, value, util));
+            }
+        }
+        return getAggrStatValue(utilValues, realHeader);
+    }
+    
+    /**
+     * Update value py header.
+     *
+     * @param oldV Number
+     * @param newV Number
+     * @param header IStatisticsHeader
+     * @return Number
+     */
+    private Number updateValueByHeader(Number oldV, Number newV,IStatisticsHeader header){
+        Number curr = oldV;
+        if(curr == null){
+            return newV;
+        }
+        if(newV==null){
+            return curr;
+        }
+        switch (header.getType()) {
+        case MAX:
+            if(newV.doubleValue()>curr.doubleValue()){
+                curr = newV;
+            }
+            break;
+        case MIN:
+            if(newV.doubleValue()<curr.doubleValue()){
+                curr = newV;
+            }
+            break;
+        case SUM:
+            curr = curr.floatValue()+newV.floatValue();
+            break;
+        case COUNT:
+            curr = curr.longValue()+newV.longValue();
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown header type: "+header.getType()+".");
+        }
+        return curr;
     }
     
     /**
@@ -317,7 +467,7 @@ public abstract class AmsStatisticsTest {
      * @param statNode Node (root node for statistics)
      * @param period CallTimePeriods (statistics period)
      */
-    private void assertUnderlyingStatCount(Node statNode, final CallTimePeriods period) {
+    private void assertUnderlyingStatCount(Node statNode, final CallTimePeriods period, int etalon) {
         final CallTimePeriods underlyingPeriod = period.getUnderlyingPeriod();
         if(underlyingPeriod==null){
             return;
@@ -331,7 +481,7 @@ public abstract class AmsStatisticsTest {
         }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
         List<Node> allUnderlying = new ArrayList<Node>(underlyingTraverser.getAllNodes());
         int underlyingCount = allUnderlying.size();
-        assertEquals("Incorrect count of "+underlyingPeriod.getId()+" nodes linked to "+period.getId()+".",1,underlyingCount);
+        assertEquals("Incorrect count of "+underlyingPeriod.getId()+" nodes linked to "+period.getId()+".",etalon,underlyingCount);
     }
     
     /**
@@ -352,19 +502,19 @@ public abstract class AmsStatisticsTest {
         }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
         List<Node> allProbes = new ArrayList<Node>(probeTraverse.getAllNodes());
         int probesCount = allProbes.size();
-        assertEquals("Incorrect count of probes linked to s_row.",1,probesCount);
+        assertEquals("Incorrect count of probes linked to s_row (period "+period.getId()+").",1,probesCount);
         Node probe = allProbes.get(0);
         Integer prNum = getProbeNumber(probe);
         ProbeStat statData = generated.get(prNum);
-        Date rowTime = getRowTime(row);
+        Long rowTime = getRowTime(row);
         HashMap<IStatisticsHeader, Number> prData = statData.getStatisticsByPeriod(period).getRowValuesForCheck(rowTime);
         HashMap<IStatisticsHeader, Number> sourceData = null;        
         if (period.getUnderlyingPeriod()!=null) {
             sourceData = buildStatDataByNodes(row);
         }
-        assertCells(row, prData, sourceData);
+        assertCells(row, prData, sourceData,period);
         if(period.getUnderlyingPeriod()!=null){
-            assertCellsBySource(row);
+            assertCellsBySource(row,period);
         }
     }
     
@@ -375,12 +525,12 @@ public abstract class AmsStatisticsTest {
      * @param etalon HashMap<StatisticsHeaders, Long> (values by generated data)
      * @param source HashMap<StatisticsHeaders, Long> (values by source data, null if statistics is hourly)
      */
-    private void assertCells(Node row, HashMap<IStatisticsHeader, Number> etalon, HashMap<IStatisticsHeader, Number> source){
+    private void assertCells(Node row, HashMap<IStatisticsHeader, Number> etalon, HashMap<IStatisticsHeader, Number> source, CallTimePeriods period){
         HashMap<IStatisticsHeader, Number> cells = buildCellDataMap(row);
         int cellCount = cells.size();
-        assertEquals("Wrong cell count.",getCallType().getHeaders().size(), cellCount);
+        assertEquals("Wrong cell count (period "+period.getId()+").",getCallType().getHeaders().size(), cellCount);
         for(IStatisticsHeader header : getCallType().getHeaders()){
-            assertCellValue(etalon, source, cells, header);
+            assertCellValue(etalon, source, cells, header,period);
         }
     }
     
@@ -390,20 +540,13 @@ public abstract class AmsStatisticsTest {
      *
      * @param aCell Node
      */
-    private void assertCellsBySource(Node aCell){
+    private void assertCellsBySource(Node aCell, CallTimePeriods period){
         Traverser cellTraverse = NeoUtils.getChildTraverser(aCell);
-        for(Node cell : cellTraverse.getAllNodes()){
-            Traverser traverse = cell.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return currentPos.depth()>0&&NodeTypes.getNodeType(node, getNeo()).equals(NodeTypes.S_CELL);
-                }            
-            }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
-            IStatisticsHeader header = getCallType().getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-            Number etalon = getCellsValue(traverse.getAllNodes(),header);
+        for(Node cell : cellTraverse.getAllNodes()){            
+            IStatisticsHeader header = getCellHeader(cell, getCallType());
+            Number etalon = getCellsValue(cell,header);
             Number value = getCellValue(cell, header);
-            assertEquals("Value in cell "+header+" is not conform to source.", etalon, value);
+            assertEquals("Value in cell "+header+" is not conform to source (period "+period.getId()+").", etalon, value);
         }
     }
     
@@ -416,12 +559,12 @@ public abstract class AmsStatisticsTest {
      * @param cellType StatisticsHeaders (cell header)
      */
     private void assertCellValue(HashMap<IStatisticsHeader, Number> etalon, HashMap<IStatisticsHeader, Number> source,
-            HashMap<IStatisticsHeader, Number> cells, IStatisticsHeader cellType) {
+            HashMap<IStatisticsHeader, Number> cells, IStatisticsHeader cellType, CallTimePeriods period) {
         Number assertionValue = cells.get(cellType);
-        assertFalse("Cell "+cellType+" not found.",assertionValue == null);
-        assertEquals("Wrong value in cell "+cellType+".", etalon.get(cellType), assertionValue);
+        assertFalse("Cell "+cellType+" not found (period "+period.getId()+").",assertionValue == null);
+        assertEquals("Wrong value in cell "+cellType+"(period "+period.getId()+").", etalon.get(cellType), assertionValue);
         if(source!=null){
-            assertEquals("Wrong value in cell "+cellType+" by sources.", source.get(cellType), assertionValue);
+            assertEquals("Wrong value in cell "+cellType+" by sources (period "+period.getId()+").", source.get(cellType), assertionValue);
         }
     }
     
@@ -432,36 +575,24 @@ public abstract class AmsStatisticsTest {
      * @param header cell header.
      * @return Long.
      */
-    private Number getCellsValue(Collection<Node> cells, IStatisticsHeader header){
+    private Number getCellsValue(Node parentCell, IStatisticsHeader header){        
         Number result = null;
-        for(Node cell : cells){
+        for(Node cell : getAllSourceCells(parentCell)){
             Number value = getCellValue(cell, header);
-            if(result == null){
-                result = value;
-                continue;
-            }
-            switch (header.getType()) {
-            case MAX:
-                if(value.doubleValue()>value.doubleValue()){
-                    result = value;
-                }
-                break;
-            case MIN:
-                if(value.doubleValue()<result.doubleValue()){
-                    result = value;
-                }
-                break;
-            case SUM:
-                result = result.floatValue()+value.floatValue();
-                break;
-            case COUNT:
-                result = result.longValue()+value.longValue();
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown header type: "+header.getType()+".");
-            }
+            result = updateValueByHeader(result, value, header);
         }
         return result==null?0L:result;
+    }
+    
+    private Collection<Node> getAllSourceCells(Node parentCell){
+        Traverser traverse = parentCell.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                return currentPos.depth()>0&&NodeTypes.getNodeType(node, getNeo()).equals(NodeTypes.S_CELL);
+            }            
+        }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
+        return traverse.getAllNodes();
     }
     
     /**
@@ -480,41 +611,13 @@ public abstract class AmsStatisticsTest {
             }            
         }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
         Collection<Node> allNodes = traverse.getAllNodes();
-        assertFalse("Daily row has no sourses!",allNodes.isEmpty());
+        assertFalse("Current row has no sourses!",allNodes.isEmpty());
         for(Node sRow : allNodes){
            HashMap<IStatisticsHeader, Number> cellMap = buildCellDataMap(sRow);
            for(IStatisticsHeader header : getCallType().getHeaders()){
                Number currValue = cellMap.get(header);
-               if(currValue == null){
-                   continue;
-               }
                Number resValue = result.get(header);
-               if(resValue == null){
-                   result.put(header, currValue);
-                   continue;
-               }
-               switch (header.getType()) {
-               case MAX:
-                   if(currValue.doubleValue()>resValue.doubleValue()){
-                       result.put(header, currValue);
-                   }
-                   break;
-               case MIN:
-                   if(resValue.equals(0)||(currValue.doubleValue()<resValue.doubleValue())){
-                       result.put(header, currValue);
-                   }
-                   break;
-               case SUM:
-                   resValue = resValue.floatValue()+currValue.floatValue();
-                   result.put(header, resValue);
-                   break;
-               case COUNT:
-                   resValue = resValue.longValue()+currValue.longValue();
-                   result.put(header, resValue);
-                   break;
-               default:
-                   throw new IllegalArgumentException("Unknown header type: "+header.getType()+".");
-               }
+               result.put(header, updateValueByHeader(resValue, currValue, header));
            }
         }
         return result;
@@ -530,7 +633,7 @@ public abstract class AmsStatisticsTest {
         HashMap<IStatisticsHeader, Number> result = new HashMap<IStatisticsHeader, Number>();
         Traverser traverse = NeoUtils.getChildTraverser(row);
         for(Node cell : traverse.getAllNodes()){
-            IStatisticsHeader header = getCallType().getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            IStatisticsHeader header = getCellHeader(cell, getCallType());
             Number value = getCellValue(cell, header);
             result.put(header, value);
         }
@@ -545,13 +648,11 @@ public abstract class AmsStatisticsTest {
      * @return Long
      */
     private Number getCellValue(Node cell, IStatisticsHeader header){
-        if(header.getType().equals(StatisticsType.MAX)
-                ||header.getType().equals(StatisticsType.MIN)
-                ||header.getType().equals(StatisticsType.SUM)){
-            return (Float)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
+        if(header.getType().equals(StatisticsType.COUNT)){
+            Integer value = (Integer)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
+            return value.longValue();
         }
-        Integer value = (Integer)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
-        return value.longValue();
+        return (Float)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
     }
     
     /**
@@ -562,7 +663,7 @@ public abstract class AmsStatisticsTest {
      */
     private Integer getProbeNumber(Node probe){
         String prName = (String)probe.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-        String numString  = prName.substring(PROBE_NAME_PREFIX.length());
+        String numString  = prName.split(" ")[0].substring(PROBE_NAME_PREFIX.length());
         return Integer.parseInt(numString);
     }
     
@@ -572,9 +673,9 @@ public abstract class AmsStatisticsTest {
      * @param row Node
      * @return Date
      */
-    private Date getRowTime(Node row){
+    private Long getRowTime(Node row){
         Long timestamp = (Long)row.getProperty(INeoConstants.PROPERTY_TIME_NAME);
-        return new Date(timestamp);
+        return timestamp;
     }
   
     /**
@@ -612,7 +713,77 @@ public abstract class AmsStatisticsTest {
             ProbeStat curr = statistics.get(probe);
             curr.addStatistcs(collectStatisticsByUnderling(curr.getStatisticsByPeriod(undPeriod), period));
         }
+        return buildAggregationStatistics(statistics, period);
+    }
+    
+    private HashMap<Integer, ProbeStat> buildAggregationStatistics(HashMap<Integer, ProbeStat> statistics, CallTimePeriods period){
+        if(!hasSecondLevelStatistics()){
+            return statistics;
+        }
+        ProbeStat aggrStat = statistics.get(SECOND_LEVEL_STAT_ID);
+        if(aggrStat==null){
+            aggrStat = new ProbeStat(SECOND_LEVEL_STAT_ID);
+            statistics.put(SECOND_LEVEL_STAT_ID, aggrStat);
+        }
+        List<IAggrStatisticsHeaders> aggrHeaders = getAggregationHeaders();
+        Set<IStatisticsHeader> allUtilHeaders = new HashSet<IStatisticsHeader>();
+        for(IAggrStatisticsHeaders aggr : aggrHeaders){
+            allUtilHeaders.addAll(aggr.getDependendHeaders());
+        }
+        HashMap<IStatisticsHeader, Number> utilValues = new HashMap<IStatisticsHeader, Number>(allUtilHeaders.size());        
+        PeriodStat periodStat = new PeriodStat(period);
+        for(Integer probe : statistics.keySet()){
+            if(probe.equals(SECOND_LEVEL_STAT_ID)){
+                continue;
+            }
+            PeriodStat currStat = statistics.get(probe).getStatisticsByPeriod(period);
+            for(Long time : currStat.getAllTimesSorted()){
+                HashMap<IStatisticsHeader, Number> row = currStat.getRowValues(time);
+                for(IStatisticsHeader util : allUtilHeaders){
+                    for(IStatisticsHeader real : ((IAggrStatisticsHeaders)util).getDependendHeaders()){
+                        Number value = row.get(real);
+                        Number curr = utilValues.get(util);
+                        utilValues.put(util, updateValueByHeader(curr, value, util));
+                    }
+                }
+                periodStat.incSourceCount();
+            }
+        }
+        HashMap<IStatisticsHeader, Number> resultRow = new HashMap<IStatisticsHeader, Number>();
+        for(IAggrStatisticsHeaders aggr : aggrHeaders){
+            resultRow.put(aggr, getAggrStatValue(utilValues, aggr));
+        }
+        periodStat.addRow(0L, resultRow);
+        aggrStat.addStatistcs(periodStat);
         return statistics;
+    }
+    
+    private Number getAggrStatValue(HashMap<IStatisticsHeader, Number> utilValues, IAggrStatisticsHeaders header){
+        Number result = null;
+        List<IStatisticsHeader> utilHeaders = header.getDependendHeaders();
+        if(!utilValues.isEmpty()){            
+            Number firstObj = utilValues.get(utilHeaders.get(0));
+            if(!(firstObj==null)){                
+                StatisticsType type = header.getType();
+                Float first = firstObj.floatValue();
+                if(type.equals(StatisticsType.AVERAGE)||type.equals(StatisticsType.PERCENT)){
+                    Number secObj = utilValues.get(utilHeaders.get(1));
+                    if(!(secObj==null)){                        
+                        Float second = secObj.floatValue();
+                        if(second.equals(0)){
+                            result = 0f;
+                        }
+                        result = first/second;
+                        if(type.equals(StatisticsType.PERCENT)){
+                            result = result.floatValue()*100;
+                        }
+                    }
+                } else{
+                    result = first;
+                }
+            }
+        }        
+        return result==null?0L:result;
     }
     
     /**
@@ -623,12 +794,12 @@ public abstract class AmsStatisticsTest {
      * @return PeriodStat
      */
     private PeriodStat collectStatisticsByUnderling(PeriodStat undStatistics, CallTimePeriods period){
-        List<Date> times = undStatistics.getAllTimesSorted();
+        List<Long> times = undStatistics.getAllTimesSorted();
         PeriodStat result = new PeriodStat(period);
-        Date start = times.get(0);
-        Date lastDate = times.get(times.size()-1);
-        start = new Date(period.getFirstTime(start.getTime()));
-        Date end = getNextStartDate(period, lastDate, start);
+        Long start = times.get(0);
+        Long lastDate = period.addPeriod(times.get(times.size()-1));
+        start = period.getFirstTime(start);
+        Long end = getNextStartDate(period, lastDate, start);
         do{
             List<HashMap<IStatisticsHeader, Number>> dataInBorders = undStatistics.getDataInBorders(start, end);
             if (!dataInBorders.isEmpty()) {
@@ -640,13 +811,13 @@ public abstract class AmsStatisticsTest {
             }
             start = end;
             end = getNextStartDate(period, lastDate, start);
-        }while(end.before(lastDate));
+        }while(end<lastDate);
         return result;
     }
     
-    private Date getNextStartDate(CallTimePeriods period, Date endDate, Date currentStartDate) {
-        Date nextStartDate = new Date(period.addPeriod(currentStartDate.getTime()));
-        if(!period.equals(CallTimePeriods.HOURLY)&&(nextStartDate.after(endDate))){
+    private Long getNextStartDate(CallTimePeriods period, Long endDate, Long currentStartDate) {
+        Long nextStartDate = period.addPeriod(currentStartDate);
+        if(!period.equals(CallTimePeriods.HOURLY)&&(nextStartDate>endDate)){
             nextStartDate = endDate;
         }
         return nextStartDate;
@@ -670,20 +841,23 @@ public abstract class AmsStatisticsTest {
             PeriodStat periodStat = stat.getStatisticsByPeriod(CallTimePeriods.HOURLY);
             if(periodStat == null){
                 periodStat = new PeriodStat(CallTimePeriods.HOURLY);
+                periodStat.incSourceCount();
                 stat.addStatistcs(periodStat);
             }
-            for(CallData call : group.getData()){
-                Date start = new Date(CallTimePeriods.HOURLY.getFirstTime(getCallStartTime(call).getTime()));
-                HashMap<IStatisticsHeader, Number> newValues = getStatValuesFromCall(call);
-                HashMap<IStatisticsHeader, Number> rowValues = periodStat.getRowValues(start);
-                if(rowValues==null){
-                    periodStat.addRow(start, newValues);
-                    continue;
+            for(CallData callData : group.getData()){
+                for (Call call : callData.getCalls()) {
+                    Long start = CallTimePeriods.HOURLY.getFirstTime(call.getStartTime());
+                    HashMap<IStatisticsHeader, Number> newValues = getStatValuesFromCall(call);
+                    HashMap<IStatisticsHeader, Number> rowValues = periodStat.getRowValues(start);
+                    if (rowValues == null) {
+                        periodStat.addRow(start, newValues);
+                        continue;
+                    }
+                    updateStatRow(rowValues, newValues);
                 }
-                updateStatRow(rowValues, newValues);
             }
         }
-        return result;
+        return buildAggregationStatistics(result, CallTimePeriods.HOURLY);
     }
     
     /**
@@ -696,34 +870,7 @@ public abstract class AmsStatisticsTest {
         for(IStatisticsHeader header : getCallType().getHeaders()){
             Number updValue = updated.get(header);
             Number sourceValue = source.get(header);
-            if(updValue == null){
-                updated.put(header, sourceValue);
-                continue;
-            }
-            if(sourceValue == null){
-                continue;
-            }
-            switch (header.getType()) {
-            case MAX:
-                if(sourceValue.doubleValue()>updValue.doubleValue()){
-                    updValue = sourceValue;
-                }
-                break;
-            case MIN:
-                if(sourceValue.doubleValue()<updValue.doubleValue()){
-                    updValue = sourceValue;
-                }
-                break;
-            case SUM:
-                updValue = updValue.floatValue()+sourceValue.floatValue();
-                break;
-            case COUNT:
-                updValue = updValue.longValue()+sourceValue.longValue();
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown header type: "+header.getType()+".");
-            }
-            updated.put(header, updValue);
+            updated.put(header, updateValueByHeader(updValue, sourceValue, header));
         }
     }
     
@@ -763,15 +910,7 @@ public abstract class AmsStatisticsTest {
      * @param call CallData
      * @return HashMap<StatisticsHeaders, Long>
      */
-    protected abstract HashMap<IStatisticsHeader, Number> getStatValuesFromCall(CallData call) throws ParseException;
-    
-    /**
-     * Gets time of call starts.
-     *
-     * @param call CallData
-     * @return Date
-     */
-    protected abstract Date getCallStartTime(CallData call);
+    protected abstract HashMap<IStatisticsHeader, Number> getStatValuesFromCall(Call call) throws ParseException;
     
     /**
      * <p>
@@ -816,11 +955,12 @@ public abstract class AmsStatisticsTest {
     public class PeriodStat{
         
         private CallTimePeriods period;
-        private HashMap<Date, HashMap<IStatisticsHeader, Number>> data;
+        private HashMap<Long, HashMap<IStatisticsHeader, Number>> data;
+        private int sourceCount=0;
         
         public PeriodStat(CallTimePeriods periodKey) {
             period = periodKey;
-            data = new HashMap<Date, HashMap<IStatisticsHeader,Number>>();
+            data = new HashMap<Long, HashMap<IStatisticsHeader,Number>>();
         }
         
         /**
@@ -837,7 +977,7 @@ public abstract class AmsStatisticsTest {
          * @param header
          * @param value
          */
-        public void addRow(Date time, HashMap<IStatisticsHeader, Number> row){
+        public void addRow(Long time, HashMap<IStatisticsHeader, Number> row){
             data.put(time, row);
         }
         
@@ -847,7 +987,7 @@ public abstract class AmsStatisticsTest {
          * @param timeKey Date
          * @return HashMap<StatisticsHeaders, Number> 
          */
-        public HashMap<IStatisticsHeader, Number> getRowValues(Date timeKey){
+        public HashMap<IStatisticsHeader, Number> getRowValues(Long timeKey){
             return data.get(timeKey);
         }
         
@@ -857,10 +997,10 @@ public abstract class AmsStatisticsTest {
          * @param timeKey Date
          * @return HashMap<StatisticsHeaders, Long> 
          */
-        public HashMap<IStatisticsHeader, Number> getRowValuesForCheck(Date timeKey){
+        public HashMap<IStatisticsHeader, Number> getRowValuesForCheck(Long timeKey){
             HashMap<IStatisticsHeader, Number> real = data.get(timeKey);
             HashMap<IStatisticsHeader, Number> result = new HashMap<IStatisticsHeader, Number>();
-            for(IStatisticsHeader header : getCallType().getHeaders()){
+            for(IStatisticsHeader header : real.keySet()){
                 Number value = real.get(header);
                 if(value == null){
                     value = 0;
@@ -869,6 +1009,8 @@ public abstract class AmsStatisticsTest {
                 case MAX:
                 case MIN:
                 case SUM:
+                case PERCENT:
+                case AVERAGE:
                     result.put(header, value.floatValue());
                     break;
                 case COUNT:
@@ -881,25 +1023,31 @@ public abstract class AmsStatisticsTest {
             return result;
         }
         
-        public List<Date> getAllTimesSorted(){
-            List<Date> result = new ArrayList<Date>(data.keySet());
+        public List<Long> getAllTimesSorted(){
+            List<Long> result = new ArrayList<Long>(data.keySet());
             Collections.sort(result);
             return result;
         }
         
-        public List<HashMap<IStatisticsHeader, Number>> getDataInBorders(Date start, Date end){
+        public List<HashMap<IStatisticsHeader, Number>> getDataInBorders(Long start, Long end){
             List<HashMap<IStatisticsHeader, Number>> result = new ArrayList<HashMap<IStatisticsHeader, Number>>();
-            List<Date> allTimes = getAllTimesSorted();
-            int num = 0;
-            Date curr = allTimes.get(num++);
-            while (curr.before(start)&&num<allTimes.size()) {
-                curr = allTimes.get(num++);
-            }
-            while (curr.before(end)&&num<allTimes.size()){
-                result.add(data.get(curr));
-                curr = allTimes.get(num++);
+            for(Long time : data.keySet()){
+                if(start<=time&&time<end){
+                    result.add(data.get(time));
+                }
             }
             return result;
+        }
+        
+        /**
+         * @return Returns the sourceCount.
+         */
+        public int getSourceCount() {
+            return sourceCount;
+        }
+        
+        public void incSourceCount(){
+            sourceCount++;
         }
     }
 }
