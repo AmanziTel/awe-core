@@ -7,7 +7,7 @@ module KPI
   module Default
     module Grid
       module Performance
-        def RFLayer.dispatch_blocking_queue_rate(counters,aggregation=:none)
+        def Performance.dispatch_blocking_queue_rate(counters,aggregation=:none)
           puts "dispatch_blocking_queue_rate method called"
           aggr=counters.collect("time","date","site_name","cell_name",
           "dis_tch_queued",
@@ -30,7 +30,7 @@ module KPI
           calculate_average(sites, aggregation)
         end
 
-        def RFLayer.average_dispatch_call_delay(counters,aggregation=:none)
+        def Performance.average_dispatch_call_delay(counters,aggregation=:none)
           aggr=counters.collect("time","date","site_name","cell_name",
           "dis_queued_time_total",
           "dis_tch_requests"
@@ -52,7 +52,7 @@ module KPI
           calculate_average(sites, aggregation)
         end
 
-        def RFLayer.dispatch_queue_hold_time(counters,aggregation=:none)
+        def Performance.dispatch_queue_hold_time(counters,aggregation=:none)
           aggr=counters.collect("time","date","site_name","cell_name",
           "dis_queued_time",
           "dis_queued_time_total"
