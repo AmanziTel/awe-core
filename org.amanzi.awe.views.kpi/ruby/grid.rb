@@ -6,7 +6,7 @@ require 'parsedate'
 module KPI
   module Default
     module Grid
-      module RFLayer
+      module Performance
         def RFLayer.dispatch_blocking_queue_rate(counters,aggregation=:none)
           puts "dispatch_blocking_queue_rate method called"
           aggr=counters.collect("time","date","site_name","cell_name",
