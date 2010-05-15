@@ -36,6 +36,7 @@ import net.refractions.udig.catalog.IService;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
@@ -997,7 +998,7 @@ public class NeoUtils {
                     if (!type.equals(GisTypes.NETWORK.getHeader())) {
                         return false;
                     }
-                    return node.hasRelationship(NetworkRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.OUTGOING);
+                    return node.hasRelationship(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.OUTGOING);
                 }
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
         } finally {

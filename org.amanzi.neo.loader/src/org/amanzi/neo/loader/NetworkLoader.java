@@ -565,7 +565,7 @@ public class NetworkLoader extends AbstractLoader {
             if (sector != null) {
                 // TODO check
             } else {
-                sector = addChild(site, NodeTypes.SECTOR, sectorField);
+                sector = addChild(site, NodeTypes.SECTOR, sectorField, sectorIndexName);
                 if (ci!=null){
                     sector.setProperty(INeoConstants.PROPERTY_SECTOR_CI, ci);
                     luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
@@ -601,6 +601,9 @@ public class NetworkLoader extends AbstractLoader {
         }
     }
 
+    private Node addChild(Node parent, NodeTypes type, String name) {
+    	return addChild(parent, type, name, name);
+    }
 
     /**
      * This code expects you to create a transaction around it, so don't forget to do that.
@@ -610,12 +613,13 @@ public class NetworkLoader extends AbstractLoader {
      * @param name
      * @return
      */
-    private Node addChild(Node parent, NodeTypes type, String name) {
+    private Node addChild(Node parent, NodeTypes type, String name, String indexName) {
         Node child = null;
         child = neo.createNode();
         child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, type.getId());
         child.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
-        luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, type), name);
+        child.setProperty(INeoConstants.PROPERTY_SECTOR_NAME, indexName);
+        luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, type), indexName);
         if (parent != null) {
             parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
             debug("Added '" + name + "' as child of '" + parent.getProperty(INeoConstants.PROPERTY_NAME_NAME));

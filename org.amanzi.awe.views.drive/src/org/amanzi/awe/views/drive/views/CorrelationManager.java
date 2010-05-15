@@ -26,8 +26,10 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.awe.gsm.GSMCorrelator;
 import org.amanzi.awe.views.drive.DriveInquirerPlugin;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -322,10 +324,27 @@ public class CorrelationManager extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
-                setNetworkDriveCorrelation(monitor2, networkGis, driveGis);
-                updateInputFromDisplay();
-                updateDriveLayer(networkGis, driveGis);
+//                SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
+//                setNetworkDriveCorrelation(monitor2, networkGis, driveGis);
+//                updateInputFromDisplay();
+//                updateDriveLayer(networkGis, driveGis);
+            	
+            	Node dataset, network;
+                
+                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                try {
+                    dataset = NeoUtils.findGisNode("2.gps");
+                                    
+                    network = NeoUtils.findGisNode("1.txt");                    
+                }
+                finally {
+                    tx.success();
+                    tx.finish();
+                }
+                
+                GSMCorrelator c = new GSMCorrelator(network);
+                c.correlate(dataset, null, null);
+                
                 return Status.OK_STATUS;
             }
 
@@ -350,13 +369,13 @@ public class CorrelationManager extends ViewPart {
         long totalTime = minMax.getRight() - minMax.getLeft();
         int prevPerc = 0;
         try {
-            for (Relationship relation : networkGis.getRelationships(NetworkRelationshipTypes.LINKED_NETWORK_DRIVE,
+            for (Relationship relation : networkGis.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE,
                     Direction.OUTGOING)) {
                 if (relation.getOtherNode(networkGis).equals(driveGis)) {
                     return;
                 }
             }
-            Relationship storeRelation = networkGis.createRelationshipTo(driveGis, NetworkRelationshipTypes.LINKED_NETWORK_DRIVE);
+            Relationship storeRelation = networkGis.createRelationshipTo(driveGis, CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE);
             Traverser traverse = driveGis
                     .traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
@@ -604,7 +623,7 @@ public class CorrelationManager extends ViewPart {
             }
             Traverser linkedNetworkTraverser = NeoUtils.getLinkedNetworkTraverser(service);
             for (Node node : linkedNetworkTraverser) {
-                for (Relationship relation : node.getRelationships(NetworkRelationshipTypes.LINKED_NETWORK_DRIVE,
+                for (Relationship relation : node.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE,
                         Direction.OUTGOING)) {
                     elements.add(new RowWrapper(node, relation));
                 }

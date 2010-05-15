@@ -19,13 +19,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.DriveTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * Loader for iDEN Performance Counters 
@@ -33,13 +37,17 @@ import org.neo4j.graphdb.Transaction;
  * @author Saelenchits_N
  * @since 1.0.0
  */
-public class IdenLoader extends AbstractLoader {
+public class IdenLoader extends DriveLoader {
     private static boolean needParceHeader = true;
     private final LinkedHashMap<String, Header> headers;
 
     private Node ossRoot;
     private Node fileNode;
     private Node lastChild;
+    
+    private LuceneIndexService luceneService;
+    
+    private String luceneIndexName;
 
     /**
      * Constructor
@@ -51,13 +59,23 @@ public class IdenLoader extends AbstractLoader {
     public IdenLoader(String directory, String datasetName, Display display) {
         initialize("iDEN", null, directory, display);
         basename = datasetName;
+        dataset = basename;
         headers = getHeaderMap(1).headers;
         needParceHeader = true;
+        gisType = GisTypes.OSS;
+        driveType = DriveTypes.IDEN;
+        
+        initializeLucene();
+    }
+    
+    private void initializeLucene() {
+        luceneService = NeoServiceProvider.getProvider().getIndexService();
+        luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
     }
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return ossRoot;
+        return gisNodes.get(basename).getGis();
     }
 
     @Override
@@ -71,10 +89,10 @@ public class IdenLoader extends AbstractLoader {
 
     @Override
     protected void parseLine(String line) {
-        if (fileNode == null) {
-            ossRoot = LoaderUtils.findOrCreateOSSNode(OssType.iDEN, basename, neo);
-            Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateFileNode(neo, ossRoot,new File(basename).getName(), new File(basename).getName());
-            fileNode = fileNodePair.getRight();
+        if (file == null) {
+//            ossRoot = LoaderUtils.findOrCreateOSSNode(OssType.iDEN, basename, neo);
+//            Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateFileNode(neo, ossRoot,new File(basename).getName(), new File(basename).getName());
+//            fileNode = fileNodePair.getRight();
             lastChild = null;
         }
         List<String> fields = splitLine(line);
@@ -95,10 +113,20 @@ public class IdenLoader extends AbstractLoader {
             NodeTypes.M.setNodeType(node, neo);
             for (Map.Entry<String, Object> entry : lineData.entrySet()) {
                 node.setProperty(entry.getKey(), entry.getValue());
+                
+                if (entry.getKey().equals("cell_name")) {
+                    luceneService.index(node, luceneIndexName, entry.getValue());
+                }
             }
             node.setProperty(INeoConstants.PROPERTY_NAME_NAME, "iDEN counter");
             index(node);
-            NeoUtils.addChild(fileNode, node, lastChild, neo);
+            
+            if (file == null) {
+            	findOrCreateFileNode(node);
+            }
+            else {
+            	NeoUtils.addChild(file, node, lastChild, neo);
+            }
             lastChild = node;
         } finally {
             transaction.finish();

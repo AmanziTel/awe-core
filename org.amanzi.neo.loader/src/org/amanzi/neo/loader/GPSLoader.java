@@ -27,10 +27,12 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * Loader for GSM data
@@ -38,7 +40,7 @@ import org.neo4j.graphdb.Transaction;
  * @author Saelenchits_N
  * @since 1.0.0
  */
-public class GSMLoader extends DriveLoader {
+public class GPSLoader extends DriveLoader {
     private static boolean needParceHeader = true;
     private final LinkedHashMap<String, Header> headers;
     private String time = null;
@@ -46,6 +48,10 @@ public class GSMLoader extends DriveLoader {
     private Float currentLongitude = null;
     private Node mNode = null;
     private final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    
+    private LuceneIndexService luceneService;
+    
+    private String luceneIndexName;
 
     /**
      * Constructor
@@ -54,11 +60,13 @@ public class GSMLoader extends DriveLoader {
      * @param datasetName
      * @param display
      */
-    public GSMLoader(String directory, String datasetName, Display display) {
-        initialize("GSM", null, directory, display);
+    public GPSLoader(String directory, String datasetName, Display display) {
+        initialize("GPS", null, directory, display);
         basename = datasetName;
         headers = getHeaderMap(1).headers;
         needParceHeader = true;
+        
+        initializeLucene();
     }
 
     /**
@@ -68,8 +76,8 @@ public class GSMLoader extends DriveLoader {
      * @param display for opening message dialogs
      * @param dataset to add data to
      */
-    public GSMLoader(Calendar workTime, String filename, Display display, String dataset) {
-        driveType = DriveTypes.GSM;
+    public GPSLoader(Calendar workTime, String filename, Display display, String dataset) {
+        driveType = DriveTypes.GPS;
         initialize("GSM", null, filename, display, dataset);
         basename = dataset;
         headers = getHeaderMap(1).headers;
@@ -84,6 +92,13 @@ public class GSMLoader extends DriveLoader {
             //TODO: 
             e.printStackTrace();
         }
+        
+        initializeLucene();
+    }
+    
+    private void initializeLucene() {
+        luceneService = NeoServiceProvider.getProvider().getIndexService();
+        luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
     }
 
     /**
@@ -94,6 +109,7 @@ public class GSMLoader extends DriveLoader {
         addKnownHeader(1, "timestamp", ".*timestamp.*");
         addKnownHeader(1, "latitude", ".*latitude.*");
         addKnownHeader(1, "longitude", ".*longitude.*");
+        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, "cellid");
         dropHeaderStats(1, new String[] {"timestamp", "latitude", "longitude"});
     }
 
@@ -174,8 +190,8 @@ public class GSMLoader extends DriveLoader {
                     m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
-                            mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
-                            // ms.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
+                            luceneService.index(m, luceneIndexName, entry.getValue());
+                            m.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
                         } else if ("timestamp".equals(entry.getKey())) {
 
                             try {
@@ -189,11 +205,11 @@ public class GSMLoader extends DriveLoader {
                                     mp.setProperty(entry.getKey(), timeStamp);
                                 }
                             } catch (ParseException e) {
+                                //TODO:
                                 e.printStackTrace();
                             }
                         } else {
                             m.setProperty(entry.getKey(), entry.getValue());
-                            haveEvents = haveEvents || INeoConstants.PROPERTY_TYPE_EVENT.equals(entry.getKey());
                         }
                     }
                     m.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
@@ -227,7 +243,7 @@ public class GSMLoader extends DriveLoader {
      */
     private String getMNodeName(Map<String, Object> dataLine) {
         // TODO check name of node
-        Object timeNode = dataLine.get("time");
+        Object timeNode = dataLine.get("timestamp");
         return timeNode == null ? "ms node" : timeNode.toString();
     }
 }

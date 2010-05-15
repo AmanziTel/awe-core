@@ -42,7 +42,7 @@ import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DriveLoader;
-import org.amanzi.neo.loader.GSMLoader;
+import org.amanzi.neo.loader.GPSLoader;
 import org.amanzi.neo.loader.NemoLoader;
 import org.amanzi.neo.loader.OldNemoVersionLoader;
 import org.amanzi.neo.loader.RomesLoader;
@@ -667,7 +667,7 @@ public class DriveDialog {
     protected String[] getFilterExtensions() {
         Node datasetNode = dataset.get(cDataset.getText());
         if (datasetNode == null) {
-            String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES,DriveTypes.GSM, DriveTypes.NEMO1, DriveTypes.NEMO2);
+            String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES,DriveTypes.GPS, DriveTypes.NEMO1, DriveTypes.NEMO2);
             ArrayList<String> fel = new ArrayList<String>(fileExtensions.length + 1);
             fel.add(Drive_FILE_EXTENSIONS[0]);
             fel.addAll(Arrays.asList(fileExtensions));
@@ -686,7 +686,7 @@ public class DriveDialog {
     protected String[] getFilerNames() {
         Node datasetNode = dataset.get(cDataset.getText());
         if (datasetNode == null) {
-            String[] fileDescriptions = DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.GSM, DriveTypes.NEMO1, DriveTypes.NEMO2);
+            String[] fileDescriptions = DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.GPS, DriveTypes.NEMO1, DriveTypes.NEMO2);
             ArrayList<String> fdl = new ArrayList<String>(fileDescriptions.length + 1);
             fdl.add(Drive_FILE_NAMES[6]);
             fdl.addAll(Arrays.asList(fileDescriptions));
@@ -729,8 +729,8 @@ public class DriveDialog {
                     driveLoader = new TEMSLoader(time, filePath, display, datasetName);
 			    } else if(extension.toLowerCase().equals("asc")) {
                     driveLoader = new RomesLoader(time, filePath, display, datasetName);
-                } else if(extension.toLowerCase().equals("gsm")) {
-                    driveLoader = new GSMLoader(time, filePath, display, datasetName);
+                } else if(extension.toLowerCase().equals("gps")) {
+                    driveLoader = new GPSLoader(time, filePath, display, datasetName);
                 }else if (extension.toLowerCase().equals("nmf")) {
                     driveLoader = new NemoLoader(time, filePath, display, datasetName);
                 } else if (extension.toLowerCase().equals("dt1")) {

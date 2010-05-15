@@ -46,6 +46,7 @@ import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -230,6 +231,8 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String ERROR_CHART = "Error Chart";
     // error messages for statistic calculation
     private String errorMsg = UNKNOWN_ERROR;
+    
+    private ArrayList<Pair<Node, Node>> correlationUpdate = new ArrayList<Pair<Node,Node>>();
 
     @Override
     public void createPartControl(Composite parent) {
@@ -1079,6 +1082,10 @@ public class ReuseAnalyserView extends ViewPart {
         changeBarColor();
         chart.fireChartChanged();
         fireLayerDrawEvent(gisNode, aggrNode, null);
+        
+        for (Pair<Node, Node> pair : correlationUpdate) {
+        	fireLayerDrawEvent(pair.getLeft(), pair.getRight(), null);
+        }
     }
 
     protected void changeBarColor() {
@@ -1372,7 +1379,18 @@ public class ReuseAnalyserView extends ViewPart {
                 result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.AGGREGATION.getId());
                 result.setProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, distribute);
                 result.setProperty(INeoConstants.PROPERTY_SELECT_NAME, select);
+                
                 gisNode.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
+                Iterator<Relationship> links = gisNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING).iterator();
+                while (links.hasNext()) {
+                	Relationship link = links.next();
+                	Node network = link.getEndNode().getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).getStartNode();
+                	network.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
+                	network.setProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, propertyName);
+                	
+                	correlationUpdate.add(new Pair<Node, Node>(network, result));
+                }
+                
 
                 errorMsg = UNKNOWN_ERROR;
                 boolean noError = computeStatistics(gisNode, result, propertyName, distributeColumn, Select.findSelectByValue(select), monitor);
@@ -1495,10 +1513,15 @@ public class ReuseAnalyserView extends ViewPart {
                     if (typeOfGis == GisTypes.DRIVE && select != Select.EXISTS) {
                         // Lagutko, 27.01.2010, m node can have no relationships to mp
                         Relationship relationshipToMp = node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
+                        
+                        Node mpNode = null;
                         if (relationshipToMp == null) {
+                        	
                             continue;
                         }
-                        Node mpNode = relationshipToMp.getOtherNode(node);
+                        else {
+                        	mpNode = relationshipToMp.getOtherNode(node);
+                        }
                         Number oldValue = mpMap.get(mpNode);
                         if (oldValue == null) {
                             if (select == Select.FIRST) {
@@ -1649,9 +1672,11 @@ public class ReuseAnalyserView extends ViewPart {
                     for (Column column : keySet) {
                         if (column.containsValue(value)) {
                             Integer count = result.get(column);
-                            Node nodeToLink = getNodeToLink(node, typeOfGis);
-                            if (nodeToLink != null) {
-                                column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
+                            List<Node> nodesToLink = getNodeToLink(node, typeOfGis);
+                            for (Node nodeToLink : nodesToLink) {
+                            	if (nodeToLink != null) {
+                            		column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
+                            	}
                             }
                             result.put(column, 1 + (count == null ? 0 : count));
                             break;
@@ -1739,15 +1764,14 @@ public class ReuseAnalyserView extends ViewPart {
             for (Node node : travers) {
                 if (node.hasProperty(propertyName)) {
                     String propertyVal = node.getProperty(propertyName).toString();
-                    Node nodeToLink = getNodeToLink(node, gisTypes);
-                    if (nodeToLink == null) {
-                        continue;
-                    }
-                    for (Column column : columns) {
-                        if (propertyVal.equals(column.propertyValue)) {
-                            column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
-                            break;
-                        }
+                    List<Node> nodesToLink = getNodeToLink(node, gisTypes);
+                    for (Node nodeToLink : nodesToLink) {
+                    	for (Column column : columns) {
+                    		if (propertyVal.equals(column.propertyValue)) {
+                    			column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
+                    			break;
+                    		}
+                    	}
                     }
                 }
             }
@@ -1763,12 +1787,23 @@ public class ReuseAnalyserView extends ViewPart {
      * @param gisTypes
      * @return
      */
-    private Node getNodeToLink(Node node, GisTypes gisTypes) {
-        if (gisTypes == GisTypes.NETWORK) {
-            return node;
+    private List<Node> getNodeToLink(Node node, GisTypes gisTypes) {
+    	ArrayList<Node> result = new ArrayList<Node>();
+    	if (gisTypes == GisTypes.NETWORK) {
+            result.add(node);
         } else {
-            return NeoUtils.getLocationNode(node, null);
+            result.add(NeoUtils.getLocationNode(node, null));
         }
+        
+        
+        //Lagutko, 15.05.2010, search for Correlated Locations
+        Relationship correlationLink = node.getSingleRelationship(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING);
+        if (correlationLink != null) {
+        	Node sector = correlationLink.getStartNode().getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING).getEndNode();
+        	result.add(sector);
+        }
+        
+        return result;
     }
 
     /**

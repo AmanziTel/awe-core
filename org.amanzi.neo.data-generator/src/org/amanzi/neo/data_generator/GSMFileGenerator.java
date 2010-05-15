@@ -47,7 +47,7 @@ public class GSMFileGenerator {
         System.out.println("Started.");
         try {
             // String filename = args[0];
-            String filename = "c:\\1.txt";
+            String filename = "/media/KINGSTON/1.txt";
             FileInputStream is;
             is = new FileInputStream(new File(filename));
             String characterSet = "UTF-8";
@@ -85,13 +85,16 @@ public class GSMFileGenerator {
             SimpleDateFormat sf = new SimpleDateFormat(pattern);
             Date testDate = new Date();
             
+            long timestampDelta = 0;
+            
             while ((line = reader.readLine()) != null) {
                 str2Write.append("\n");
                 String[] data = line.split("\t");
                 // S.No.
                 str2Write.append(++rowNum).append("\t");
                 // TimeStamp
-                str2Write.append(sf.format(new Date(testDate.getTime()+(generator.nextInt(10000000) - 100000)))).append("\t");
+                str2Write.append(sf.format(new Date(testDate.getTime()+ timestampDelta))).append("\t");
+                timestampDelta+=1000;
                 // Mobile Number
                 int n = generator.nextInt(5);
                 str2Write.append(mobNum[n]).append("\t");
@@ -137,7 +140,7 @@ public class GSMFileGenerator {
             }
 
             // FileWriter ryt=new FileWriter(args[1]);
-            FileWriter ryt = new FileWriter("c:\\2.txt");
+            FileWriter ryt = new FileWriter("/media/KINGSTON/2.gps");
             BufferedWriter out = new BufferedWriter(ryt);
             out.write(str2Write.toString());
             out.close();

@@ -7,6 +7,10 @@
             id="org.amanzi.awe.wizards.KPIReportCommand"
             name="KPI Report">
       </command>
+      <command
+      		id="org.amanzi.awe.wizards.Correlation"
+      		name="Network Correlation">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -14,6 +18,11 @@
             class="org.amanzi.awe.wizards.kpi.report.KPIReportHandler"
             commandId="org.amanzi.awe.wizards.KPIReportCommand">
       </handler>
+      <handler
+      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		commandId="org.amanzi.awe.wizards.Correlation">
+      </handler>
+      		
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -26,6 +35,12 @@
                   id="org.amanzi.awe.wizards.KPIReportCommand"
                   label="KPI Report"
                   mnemonic="KPI Report">
+            </command>
+            <command
+            	  commandId="org.amanzi.awe.wizards.Correlation"
+            	  id="org.amanzi.awe.wizards.Correlation"
+            	  label="Network Correlation"
+            	  mnemonic="Network Correlation">
             </command>
          </toolbar>
       </menuContribution>

@@ -45,6 +45,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
@@ -113,8 +114,9 @@ public class GPEHLoader extends DriveLoader {
     private int rscpIndex;
     
     private final LuceneIndexService luceneInd;
+    private String luceneIndexName;
     private final String eventIndName;
-
+    
     /**
      * Constructor
      * @param directory
@@ -128,18 +130,20 @@ public class GPEHLoader extends DriveLoader {
         headers = getHeaderMap(KEY_EVENT).headers;
         luceneInd = NeoServiceProvider.getProvider().getIndexService();
         eventIndName =NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.GPEH_EVENT);
+        luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
+        gisType = GisTypes.OSS;
     }
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return data;
+        return gisNodes.get(dataset).getGis();
     }
 
     @Override
     public void run(IProgressMonitor monitor) throws IOException {
         if (monitor != null)
             monitor.subTask(basename);
-        addIndex(NodeTypes.GPEH_EVENT.getId(), NeoUtils.getTimeIndexProperty(basename));
+        addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(basename));
         addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(basename));
 
         ArrayList<File> fileList = getGPEHFiles(filename);
@@ -250,7 +254,7 @@ public void printStats(boolean verbose) {
     private void saveEvent(GPEHEvent eventFile) {
         for (Event event : eventFile.getEvents()) {
             //TODO: Lagutko: fake - save only RRC Measurement Reports!!!
-//            if (event.getId() == 429) {
+            if (event.getId() == 429) {
                 saveSingleEvent(event);
                 if (event.getId() == Events.INTERNAL_UE_POSITIONING_QOS.getId()) {
                     saveLocation(event);
@@ -263,7 +267,7 @@ public void printStats(boolean verbose) {
                     previousGoodTimestamp = 0;
                     mpNode = null;
                 }            
-//            }
+            }
         }
     }
     
@@ -359,6 +363,9 @@ public void printStats(boolean verbose) {
             setIndexProperty(headers, eventNode, INeoConstants.PROPERTY_NAME_NAME, name);
             eventNode.setProperty(INeoConstants.PROPERTY_EVENT_ID, event.getType().getId());
             for (Map.Entry<Parameters, Object> entry : event.getProperties().entrySet()) {
+            	if (entry.getKey() == Parameters.EVENT_PARAM_C_ID_1) {
+                	luceneInd.index(eventNode, luceneIndexName, entry.getValue().toString());
+                }
                 //LN, 17.04.2010, if we parse a RRC Measurement Report that we should Decode Message
                 if (entry.getKey() == Parameters.EVENT_PARAM_MESSAGE_CONTENTS) {
                     if (event.getId() == Events.RRC_MEASUREMENT_REPORT.getId()) {
@@ -366,7 +373,7 @@ public void printStats(boolean verbose) {
                         UL_DCCH_Message message = MessageDecoder.getInstance().parseRRCMeasurementReport(messageContent);
                         saveMessageInfo(message, eventNode);
                     }
-                }
+                }                
                 else {
                     setIndexProperty(headers, eventNode, entry.getKey().name(), entry.getValue());
                 }

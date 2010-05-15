@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +49,7 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.awe.neostyle.ShapeType;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -270,7 +272,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String gisName = NeoUtils.getSimpleNodeName(geoNeo.getMainGisNode(), "");
             Iterable<Relationship> relations = geoNeo.getMainGisNode().getRelationships(
-                    NetworkRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.INCOMING);
+                    CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.INCOMING);
             ArrayList<IGeoResource> networkGeoNeo = new ArrayList<IGeoResource>();
             for (Relationship relationship : relations) {
                 IGeoResource network = getNetwork(relationship.getOtherNode(geoNeo.getMainGisNode()));
@@ -278,6 +280,19 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     networkGeoNeo.add(network);
                 }
             }
+            
+            //Lagutko, 15.05.2010, another way of correlation
+            relations = geoNeo.getMainGisNode().getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING);
+            for (Relationship relation : relations) {
+            	Node correlationNode = relation.getEndNode();
+            	
+            	IGeoResource network = getNetwork(correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).getStartNode());
+                if (network != null) {
+                    networkGeoNeo.add(network);
+                }
+            }
+            
+            
             filterMp = FilterUtil.getFilterOfData(geoNeo.getMainGisNode(), neo);
             // String selectedProp = geoNeo.getPropertyName();
             aggNode = geoNeo.getAggrNode();
@@ -755,7 +770,21 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         } else {
                             lineColor = FADE_LINE;
                         }
-                        Relationship relation = mpNode.getSingleRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING);
+                        Iterator<Relationship> links = mpNode.getRelationships(NetworkRelationshipTypes.DRIVE, Direction.INCOMING).iterator();
+                        
+                        Relationship relation = null;
+                        while (links.hasNext()) {
+                        	Relationship link = links.next();
+                        	
+                        	if (!links.hasNext() && (!link.hasProperty(INeoConstants.NETWORK_GIS_NAME))) {
+                        		relation = link;                        		
+                        	}
+                        	else if (geoNeo.getName().equals(link.getProperty(INeoConstants.NETWORK_GIS_NAME))) {
+                        		relation = link;                        		
+                        	}
+                        }
+                        
+                        
                         if (relation != null) {
                             Node sectorDrive = relation.getOtherNode(mpNode);
 

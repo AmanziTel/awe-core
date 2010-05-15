@@ -53,6 +53,8 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Calendar _workDate = null;
     private boolean needParceHeader = true;
     
+    protected GisTypes gisType;
+    
     /** How many units of work for the progress monitor for each file */
     public static final int WORKED_PER_FILE = 100;
     
@@ -76,6 +78,10 @@ public abstract class DriveLoader extends AbstractLoader {
             this.dataset = null;
         } else {
             this.dataset = datasetName.trim();
+        }
+        
+        if (gisType == null) {
+        	gisType = GisTypes.DRIVE;
         }
     }
 
@@ -182,7 +188,7 @@ public abstract class DriveLoader extends AbstractLoader {
 
                 Node mainFileNode = datasetNode == null ? file : datasetNode;
                 file.createRelationshipTo(firstChild, GeoNeoRelationshipTypes.CHILD);
-                findOrCreateGISNode(mainFileNode, GisTypes.DRIVE.getHeader());
+                findOrCreateGISNode(mainFileNode, gisType.getHeader());
 
                 Object time = null;
                 if (firstChild.hasProperty(INeoConstants.PROPERTY_TIME_NAME)) {

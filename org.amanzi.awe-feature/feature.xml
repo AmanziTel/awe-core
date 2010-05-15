@@ -366,4 +366,11 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="org.amanzi.awe.gsm"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
 </feature>

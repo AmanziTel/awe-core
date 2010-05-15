@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -156,9 +157,9 @@ public class GeoNeo {
             double[] result = getCoordsFromNode(next);
             return result;
         }
-
-        private static double[] getCoordsFromNode(Node next) {
-            if (next.hasProperty(INeoConstants.PROPERTY_LAT_NAME)) {
+        
+        private static double[] internalGetCoordsFromNode(Node next) {
+        	if (next.hasProperty(INeoConstants.PROPERTY_LAT_NAME)) {
                 if (next.hasProperty(INeoConstants.PROPERTY_LON_NAME)) {
                     try {
                         return new double[] {(Float)next.getProperty(INeoConstants.PROPERTY_LON_NAME),
@@ -169,8 +170,27 @@ public class GeoNeo {
                     }
                 }
             }
+        	
+        	return null;  
+        }
 
-            return null;
+        private static double[] getCoordsFromNode(Node next) {
+        	double[] result = internalGetCoordsFromNode(next);
+        	
+        	if (result != null) {
+        		return result;
+        	}
+            
+            //Lagutko, 15.05.2010, get coordinates from correlated node
+            Relationship correlationLink = next.getSingleRelationship(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING);
+            if (correlationLink == null) {
+            	return null;
+            }
+            Node correlationNode = correlationLink.getStartNode();
+            Node sectorNode = correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING).getEndNode();
+            Node site = sectorNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+            
+            return internalGetCoordsFromNode(site);
         }
 
     }

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,6 +45,7 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -937,11 +939,33 @@ public class NetworkRenderer extends RendererImpl {
         Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
         try {
             result = geoNeo.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
+            
+            if (result.equals("")) {
+            	result = checkCorrelated(geoNeo.getMainGisNode()); 
+            }
+            
             transaction.success();
         } finally {
             transaction.finish();
         }
         return result == null || result.isEmpty() ? null : result;
+    }
+    
+    private String checkCorrelated(Node root) {
+    	Relationship correlationLink = root.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING);
+    	
+    	if (correlationLink != null) {
+    		Iterator<Relationship> correlatedNodes = correlationLink.getEndNode().getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING).iterator();
+    		
+    		while (correlatedNodes.hasNext()) {
+    			Node correlatedNode = correlatedNodes.next().getStartNode();
+    			if (correlatedNode.hasProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION)) {
+    				return (String)correlatedNode.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION);
+    			}
+    		}
+    	}
+    	
+    	return "";
     }
 
     /**

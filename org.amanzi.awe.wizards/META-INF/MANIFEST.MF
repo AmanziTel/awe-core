@@ -15,5 +15,6 @@ Require-Bundle: org.eclipse.ui,
  org.rubypeople.rdt.core,
  org.rubypeople.rdt.ui,
  org.eclipse.ui.ide,
- org.amanzi.scripting.jruby
+ org.amanzi.scripting.jruby,
+ org.amanzi.awe.gsm;bundle-version="1.0.0"
 Eclipse-LazyStart: true
