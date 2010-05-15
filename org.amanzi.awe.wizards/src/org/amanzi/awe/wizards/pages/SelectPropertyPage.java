@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.amanzi.awe.wizards.AnalysisWizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -39,19 +40,17 @@ import org.eclipse.swt.widgets.Label;
  */
 public class SelectPropertyPage extends WizardPage {
     public static final int ANY = Integer.MAX_VALUE;
+    public static final String PAGE_ID = SelectPropertyPage.class.getName();
     private int numOfProperties;
     private List<String> availableProperties = new ArrayList<String>();
     private Combo[] combos;
     private String[] previousSelection;
+    private List<String> selection = new ArrayList<String>(0);
 
     public SelectPropertyPage(String pageName, int numOfProperties) {
         super(pageName);
         setTitle("Select property to be analyzed");
         this.numOfProperties = numOfProperties;
-        availableProperties.add("Property1");
-        availableProperties.add("Property2");
-        availableProperties.add("Property3");
-        availableProperties.add("Property4");
     }
 
     @Override
@@ -90,9 +89,8 @@ public class SelectPropertyPage extends WizardPage {
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        String text = ((Combo)e.getSource()).getText();
-                        Object data = e.data;
                         updateCombos((Integer)combo.getData());
+                        updatePageComplete();
                     }
 
                 });
@@ -106,13 +104,20 @@ public class SelectPropertyPage extends WizardPage {
                 // add listener which checks number of selected properties
             }
         }
+        setPageComplete(true);
         setControl(container);
+    }
+
+    protected void updatePageComplete() {
+        setPageComplete(selection.size()!=0);
     }
 
     protected void updateCombos(int num) {
         String newValue = combos[num].getText();
         String previousValue = previousSelection[num];
         previousSelection[num] = newValue;
+        selection.remove(previousValue);
+        selection.add(newValue);
         for (int i = 0; i < combos.length; i++) {
             if (i != num) {
                 Combo combo = combos[i];
@@ -126,7 +131,11 @@ public class SelectPropertyPage extends WizardPage {
 
     @Override
     public void setVisible(boolean visible) {
-        fillCombosWithDefaultValues();
+        if (visible){
+            availableProperties = ((AnalysisWizard)getWizard()).getAvailableProperties();
+            fillCombosWithDefaultValues();
+            setPageComplete(false);
+        }
         super.setVisible(visible);
     }
 
@@ -139,4 +148,7 @@ public class SelectPropertyPage extends WizardPage {
         Arrays.fill(previousSelection, "");
     }
 
+    public String[] getSelection() {
+        return selection.toArray(new String[] {});
+    }
 }

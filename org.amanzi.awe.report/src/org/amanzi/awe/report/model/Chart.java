@@ -224,19 +224,19 @@ public class Chart implements IReportPart {
         errors.clear();
     }
 
-    /**
-     * @return Returns the dataset.
-     */
-    public AbstractDataset getDataset() {
-        return dataset;
-    }
-
-    /**
-     * @param dataset The dataset to set.
-     */
-    public void setDataset(AbstractDataset dataset) {
-        this.dataset = dataset;
-    }
+//    /**
+//     * @return Returns the dataset.
+//     */
+//    public AbstractDataset getDataset() {
+//        return dataset;
+//    }
+//
+//    /**
+//     * @param dataset The dataset to set.
+//     */
+//    public void setDataset(AbstractDataset dataset) {
+//        this.dataset = dataset;
+//    }
 
     /**
      * @return Returns the plot.

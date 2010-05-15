@@ -11,8 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.wizards.kpi.report;
+package org.amanzi.awe.wizards.netview;
 
+import org.amanzi.awe.wizards.kpi.report.KPIReportWizard;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -21,20 +22,20 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
- * TODO Purpose of
+ * TODO Purpose of 
  * <p>
+ *
  * </p>
- * 
  * @author Pechko_E
  * @since 1.0.0
  */
-public class KPIReportHandler extends AbstractHandler {
+public class NetViewHandler extends AbstractHandler{
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         try {
             IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-            KPIReportWizard reportWizard = new KPIReportWizard();
+            NetViewWizard reportWizard = new NetViewWizard();
             reportWizard.init(window.getWorkbench(), null);
             WizardDialog dialog = new WizardDialog(window.getShell(), reportWizard);
             dialog.open();
@@ -44,5 +45,6 @@ public class KPIReportHandler extends AbstractHandler {
         }
         return null;
     }
+    
 
 }

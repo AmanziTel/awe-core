@@ -14,6 +14,7 @@
 package org.amanzi.awe.wizards.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.PropertyHeader;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -190,5 +192,14 @@ public class DBUtils {
             tx.finish();
         }
 
+    }
+
+    /**
+     * Finds all numeric properties for the node given
+     * @param node node to find properties
+     * @return
+     */
+    public static List<String> getProperties(Node node) {
+        return Arrays.asList(new PropertyHeader(node).getNumericFields());
     }
 }

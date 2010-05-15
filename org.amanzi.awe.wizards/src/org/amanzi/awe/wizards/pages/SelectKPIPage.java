@@ -13,19 +13,16 @@
 
 package org.amanzi.awe.wizards.pages;
 
-import java.io.File;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.awe.views.kpi.KPIPlugin;
+import org.amanzi.awe.wizards.AnalysisWizard;
 import org.amanzi.awe.wizards.kpi.report.KPIReportWizard;
 import org.amanzi.awe.wizards.utils.ScriptUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -52,6 +49,7 @@ import org.jruby.runtime.builtin.IRubyObject;
  */
 public class SelectKPIPage extends WizardPage {
     private static final Logger LOGGER = Logger.getLogger(SelectKPIPage.class);
+    public static final String PAGE_ID = SelectKPIPage.class.getName();
     private Button btnDefaultKPI;
     private Button btnCustomKPI;
     private Combo cmbSelectGroup;
@@ -65,6 +63,10 @@ public class SelectKPIPage extends WizardPage {
         super(pageName);
         setTitle("Select KPI");
         ruby = KPIPlugin.getDefault().getRubyRuntime();
+    }
+
+    public SelectKPIPage() {
+        this(PAGE_ID);
     }
 
     @Override
@@ -156,45 +158,47 @@ public class SelectKPIPage extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                    try {
-                        String pluginRoot = org.amanzi.scripting.jruby.ScriptUtils.getPluginRoot(KPIPlugin.PLUGIN_ID);
-                        String file=pluginRoot+ "\\\\" +KPIPlugin.RUBY_FOLDER+ "\\\\" + cmbSelectVendor.getText().toLowerCase()+".rb";
-                        LOGGER.debug("pluginRoot "+pluginRoot);
-//                        URL entry = Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry(KPIPlugin.RUBY_FOLDER);
-//                        String file = FileLocator.resolve(entry).getFile().replaceAll("/", "\\");
-                        LOGGER.debug(file);
-//                        String scriptText = "IO.readlines(\"" + file + File.separator + cmbSelectVendor.getText().toLowerCase()
-//                                + ".rb\").to_s";
-                        String scriptText = "IO.readlines(\"" +file.replaceAll("\\\\","/")+ "\").to_s";
-                        IRubyObject result = ruby.evalScriptlet(scriptText);
-                        LOGGER.debug("result: " + result);
-                        String res = result.asJavaString();
-                        Matcher matcher = Pattern.compile(
-                                "(?<=def\\s" + cmbSelectGroup.getText() + "\\." + cmbSelectKPI.getText() + ")\\((.*)\\)").matcher(
-                                res);
-                        if (matcher.find()) {
-                            List<String> parameters = Arrays.asList(matcher.group(1).split(","));
-                            for (String param : parameters) {
-                                if (param.matches("counters")) {
-                                    parameter = "counters";
-                                } else if (param.matches("drive")) {
-                                    parameter = "drive";
-                                } else if (param.matches("network")) {
-                                    parameter = "network";
-                                } else if (param.matches("aggregation.*")) {
-                                    needsAggregation = true;
-                                }
+                try {
+                    String pluginRoot = org.amanzi.scripting.jruby.ScriptUtils.getPluginRoot(KPIPlugin.PLUGIN_ID);
+                    String file = pluginRoot + "\\\\" + KPIPlugin.RUBY_FOLDER + "\\\\" + cmbSelectVendor.getText().toLowerCase()
+                            + ".rb";
+                    LOGGER.debug("pluginRoot " + pluginRoot);
+                    // URL entry =
+                    // Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry(KPIPlugin.RUBY_FOLDER);
+                    // String file = FileLocator.resolve(entry).getFile().replaceAll("/", "\\");
+                    LOGGER.debug(file);
+                    // String scriptText = "IO.readlines(\"" + file + File.separator +
+                    // cmbSelectVendor.getText().toLowerCase()
+                    // + ".rb\").to_s";
+                    String scriptText = "IO.readlines(\"" + file.replaceAll("\\\\", "/") + "\").to_s";
+                    IRubyObject result = ruby.evalScriptlet(scriptText);
+                    LOGGER.debug("result: " + result);
+                    String res = result.asJavaString();
+                    Matcher matcher = Pattern.compile(
+                            "(?<=def\\s" + cmbSelectGroup.getText() + "\\." + cmbSelectKPI.getText() + ")\\((.*)\\)").matcher(res);
+                    if (matcher.find()) {
+                        List<String> parameters = Arrays.asList(matcher.group(1).split(","));
+                        for (String param : parameters) {
+                            if (param.matches("counters")) {
+                                parameter = "counters";
+                            } else if (param.matches("drive")) {
+                                parameter = "drive";
+                            } else if (param.matches("network")) {
+                                parameter = "network";
+                            } else if (param.matches("aggregation.*")) {
+                                needsAggregation = true;
                             }
                         }
-                    } catch (Exception e1) {
-                        LOGGER.debug("Exception occured: ",e1);
-                        parameter = "counters";
-                        needsAggregation = true;
-                        // TODO Handle IOException
-                    }finally{
-                        updatePageComplete(true);
-                        
                     }
+                } catch (Exception e1) {
+                    LOGGER.debug("Exception occured: ", e1);
+                    parameter = "counters";
+                    needsAggregation = true;
+                    // TODO Handle IOException
+                } finally {
+                    updatePageComplete(true);
+
+                }
             }
 
         });
@@ -209,14 +213,14 @@ public class SelectKPIPage extends WizardPage {
         layoutData.right = new FormAttachment(100, -2);
         btnStoreResult.setLayoutData(layoutData);
 
-        setPageComplete(false);
+        setPageComplete(true);
         setControl(container);
     }
 
     protected void updatePageComplete(boolean complete) {
         setPageComplete(complete);
         if (complete) {
-            KPIReportWizard wiz = (KPIReportWizard)getWizard();
+            AnalysisWizard wiz = (AnalysisWizard)getWizard();
             String selectedKpiMethodName = getSelectedKpiMethodName();
             StringBuffer kpiSignature = new StringBuffer(selectedKpiMethodName);
             kpiSignature.append("(%s");
@@ -233,7 +237,10 @@ public class SelectKPIPage extends WizardPage {
 
     @Override
     public void setVisible(boolean visible) {
-        updateVendors();
+        if (visible) {
+            setPageComplete(false);
+            updateVendors();
+        }
         super.setVisible(visible);
     }
 
@@ -271,8 +278,9 @@ public class SelectKPIPage extends WizardPage {
         cmbSelectGroup.removeAll();
         cmbSelectKPI.removeAll();
     }
-    public static void main(String[] args){
-        
+
+    public static void main(String[] args) {
+
     }
 
 }

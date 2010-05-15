@@ -15,6 +15,7 @@ package org.amanzi.awe.wizards.kpi.report;
 
 import java.util.Formatter;
 
+import org.amanzi.awe.wizards.AnalysisType;
 import org.amanzi.awe.wizards.AnalysisWizard;
 import org.amanzi.awe.wizards.pages.SelectAggregationPage;
 import org.amanzi.awe.wizards.pages.SelectDatasetPage;
@@ -41,10 +42,9 @@ public class KPIReportWizard extends AnalysisWizard implements INewWizard, IWiza
 
     @Override
     public void addPages() {
-        SelectDatasetPage selectDatasetPage = new SelectDatasetPage("SelectDatasetPage");
-        SelectPropertyPage selectPropertyPage = new SelectPropertyPage("SelectPropertyPage", 3);
-        SelectKPIPage selectKPIPage = new SelectKPIPage("SelectKPIPage");
-        SelectAggregationPage selectAggregationPage=new SelectAggregationPage("SelectAggregationPage");
+        SelectDatasetPage selectDatasetPage = new SelectDatasetPage();
+        SelectKPIPage selectKPIPage = new SelectKPIPage();
+        SelectAggregationPage selectAggregationPage=new SelectAggregationPage();
         addPage(selectKPIPage);
         addPage(selectDatasetPage);
         addPage(selectAggregationPage);
@@ -62,7 +62,7 @@ public class KPIReportWizard extends AnalysisWizard implements INewWizard, IWiza
         LOGGER.debug("KpiScript " + getKpiScript());
         
         String datasetScript = new Formatter().format(getDatasetScript(), getSelectedDataset(), getSelectedSite()).toString();
-        String reportScript = ScriptUtils.generateReportScript(getSelectedKPI(), datasetScript, getKpiScript(),getAggregation());
+        String reportScript = ScriptUtils.generateKPIReportScript(getSelectedKPI(), datasetScript, getKpiScript(),getAggregation());
         LOGGER.debug(reportScript);
         openReportEditor(reportScript);
         return true;
@@ -71,6 +71,7 @@ public class KPIReportWizard extends AnalysisWizard implements INewWizard, IWiza
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle("KPI Report");
+        setAnalysisType(AnalysisType.ANALYZE_KPIS);
     }
 
 }

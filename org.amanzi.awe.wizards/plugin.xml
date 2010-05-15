@@ -11,6 +11,10 @@
       		id="org.amanzi.awe.wizards.Correlation"
       		name="Network Correlation">
       </command>
+      <command
+            id="org.amanzi.awe.wizards.NetViewCommand"
+            name="Net View">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -21,6 +25,10 @@
       <handler
       		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
       		commandId="org.amanzi.awe.wizards.Correlation">
+      </handler>
+      <handler
+            class="org.amanzi.awe.wizards.netview.NetViewHandler"
+            commandId="org.amanzi.awe.wizards.NetViewCommand">
       </handler>
       		
    </extension>
@@ -41,6 +49,12 @@
             	  id="org.amanzi.awe.wizards.Correlation"
             	  label="Network Correlation"
             	  mnemonic="Network Correlation">
+            </command>
+            <command
+                  commandId="org.amanzi.awe.wizards.NetViewCommand"
+                  id="org.amanzi.awe.wizards.NetViewCommand"
+                  label="Net View"
+                  mnemonic="Net View">
             </command>
          </toolbar>
       </menuContribution>

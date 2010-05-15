@@ -15,6 +15,7 @@ package org.amanzi.awe.wizards;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.List;
 
 import org.amanzi.awe.wizards.kpi.report.KPIReportWizard;
 import org.amanzi.integrator.awe.AWEProjectManager;
@@ -47,6 +48,9 @@ public abstract class AnalysisWizard extends Wizard {
     private String selectedSite;
     private String aggregation;
     private boolean needsAggregation;
+    private boolean needsSelectSite;
+    private AnalysisType type;
+    private List<String> properties;
 
     @Override
     public boolean performFinish() {
@@ -193,6 +197,45 @@ public abstract class AnalysisWizard extends Wizard {
      */
     public void setAggregation(String aggregation) {
         this.aggregation = aggregation;
+    }
+
+    /**
+     * @return Returns the type.
+     */
+    public AnalysisType getAnalysisType() {
+        return type;
+    }
+
+    /**
+     * @param type The type to set.
+     */
+    public void setAnalysisType(AnalysisType type) {
+        this.type = type;
+    }
+
+    public void setAvailableProperties(List<String> properties) {
+        this.properties=properties;
+    }
+
+    /**
+     * @return Returns the properties.
+     */
+    public List<String> getAvailableProperties() {
+        return properties;
+    }
+
+    /**
+     * @return Returns the needsSelectSite.
+     */
+    public boolean isNeedsSelectSite() {
+        return needsSelectSite;
+    }
+
+    /**
+     * @param needsSelectSite The needsSelectSite to set.
+     */
+    public void setNeedsSelectSite(boolean needsSelectSite) {
+        this.needsSelectSite = needsSelectSite;
     }
 
 }

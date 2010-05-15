@@ -96,6 +96,16 @@ include_class org.jfree.data.time.TimeSeriesCollection
       ds
     end
     
+  def update_chart_dataset(ds,average,p)
+    average.each_with_index do |row,j|
+      if j!=0
+        val=row.last
+        ds.addValue(java.lang.Double.parseDouble(val.to_s), p.to_s,row[3].to_s);
+      end
+    end
+    ds
+  end
+    
     def create_time_chart_dataset(nodes,name,time_period,time_property,value)
       ds=TimeSeriesCollection.new()
       series=TimeSeries.new(name)
@@ -452,10 +462,11 @@ end
   class Chart
     include NodeUtils
 
-    attr_accessor :title, :type, :orientation, :domain_axis, :range_axis
+    attr_accessor :title, :type, :orientation, :domain_axis, :range_axis,:kpi
     attr_writer :categories,:values, :nodes, :statistics
     attr_writer:property, :distribute, :select
     attr_writer :drive, :event, :property1, :property2, :start_time, :length
+    attr_accessor :dataset, :properties, :aggregation
     def initialize(title)
       @datasets=[]
       self.title = title
@@ -528,6 +539,42 @@ end
 #                            setDataset(create_chart_dataset_aggr(aggr_node))
               @datasets<<create_chart_dataset_aggr(aggr_node)
             end
+          elsif !@dataset.nil?
+            props=[]
+            @properties.each do |p|
+              props<<p
+            end
+            props<<"site_name"<<"cell_name"<<"time"<<"date"
+            props.flatten
+            aggr=@dataset.collect(props).aggregate("site_name")
+            result=[]
+            @properties.each do |p|
+              result<<Hash.new
+            end
+            aggr.each do |obj,rows|
+              rows.each do |row|
+                site=obj
+                cell=row['cell_name']
+                date=row['date']
+                time=row['time']
+                @properties.each_with_index do |p,i|
+                 value=row[p]
+                 puts "site=#{site}\tcell=#{cell}\tdate=#{date}\ttime=#{time}\tvalue=#{value}"
+                 aggregate_sites(result[i],site,cell,date,time,value)
+                end
+              end
+            end
+            averages=[]
+             ds=DefaultCategoryDataset.new()
+             time_label=get_time_label(aggregation)
+            @properties.each_with_index do |p,i|
+              average=calculate_average(result[i], @aggregation)
+              update_chart_dataset(ds,average,p)
+            end
+            @datasets<<ds
+          elsif !@kpi.nil?
+            ds=DefaultCategoryDataset.new()
+            @datasets<<update_chart_dataset(ds,@kpi,"value")
           end
           
           if @type==:time

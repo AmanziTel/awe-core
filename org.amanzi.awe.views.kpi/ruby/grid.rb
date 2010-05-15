@@ -13,8 +13,6 @@ module KPI
           "dis_tch_queued",
           "dis_tch_requests"
           ).aggregate("site_name")
-          result=[]
-          result<<['site_name','cell_name','time','KPI']
           sites=Hash.new
           aggr.each do |obj,rows|
             rows.each do |row|
@@ -35,8 +33,6 @@ module KPI
           "dis_queued_time_total",
           "dis_tch_requests"
           ).aggregate("site_name")
-          result=[]
-          result<<['site_name','cell_name','time','KPI']
           sites=Hash.new
           aggr.each do |obj,rows|
             rows.each do |row|
@@ -57,8 +53,6 @@ module KPI
           "dis_queued_time",
           "dis_queued_time_total"
           ).aggregate("site_name")
-          result=[]
-          result<<['site_name','cell_name','time','KPI']
           sites=Hash.new
           aggr.each do |obj,rows|
             rows.each do |row|

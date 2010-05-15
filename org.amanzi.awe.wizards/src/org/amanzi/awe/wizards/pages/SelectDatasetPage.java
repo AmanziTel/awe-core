@@ -15,8 +15,12 @@ package org.amanzi.awe.wizards.pages;
 
 import java.util.HashMap;
 
+import org.amanzi.awe.wizards.AnalysisWizard;
 import org.amanzi.awe.wizards.kpi.report.KPIReportWizard;
 import org.amanzi.awe.wizards.utils.DBUtils;
+import org.apache.log4j.Logger;
+import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -43,8 +47,10 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class SelectDatasetPage extends WizardPage {
-
+    private  static final Logger LOGGER = Logger.getLogger(SelectDatasetPage.class);
+    
     private static final String ALL_SITES = "all";
+    public static final String PAGE_ID = SelectDatasetPage.class.getName();
     private Button btnNetwork;
     private Button btnDrive;
     private Button btnCounters;
@@ -61,36 +67,15 @@ public class SelectDatasetPage extends WizardPage {
         setTitle("Select dataset for analysis");
     }
 
+    public SelectDatasetPage() {
+        this(PAGE_ID);
+    }
+
     @Override
     public void createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new FormLayout());
 
-        // group of radio buttons
-//        Group grpAnalyze = new Group(container, SWT.NONE);
-//        grpAnalyze.setText("Analyze:");
-//        grpAnalyze.setLayout(new GridLayout());
-//
-//        FormData formData = new FormData();
-//        formData.left = new FormAttachment(0, 2);
-//        formData.right = new FormAttachment(100, -2);
-//        grpAnalyze.setLayoutData(formData);
-//
-//        btnAnalyzeKPIs = new Button(grpAnalyze, SWT.RADIO);
-//        btnAnalyzeKPIs.setSelection(true);
-//        btnAnalyzeKPIs.setText("KPIs");
-//
-//        btnAnalyzeProperties = new Button(grpAnalyze, SWT.RADIO);
-//        btnAnalyzeProperties.setText("Properties");
-//        btnAnalyzeProperties.setEnabled(false);
-//
-//        btnAnalyzeCounters = new Button(grpAnalyze, SWT.RADIO);
-//        btnAnalyzeCounters.setText("Counters");
-//
-//        btnAnalyzeEvents = new Button(grpAnalyze, SWT.RADIO);
-//        btnAnalyzeEvents.setText("Events");
-//        btnAnalyzeEvents.setEnabled(false);
-        //
         Group grpDatasetType = new Group(container, SWT.NONE);
         grpDatasetType.setText("Select dataset type:");
         grpDatasetType.setLayout(new GridLayout());
@@ -98,8 +83,8 @@ public class SelectDatasetPage extends WizardPage {
         FormData formData = new FormData();
         formData.left = new FormAttachment(0, 2);
         formData.right = new FormAttachment(100, -2);
-//        formData.top = new FormAttachment(grpAnalyze, 2);
-//        formData.top = new FormAttachment(0, 2);
+        // formData.top = new FormAttachment(grpAnalyze, 2);
+        // formData.top = new FormAttachment(0, 2);
         grpDatasetType.setLayoutData(formData);
 
         btnNetwork = new Button(grpDatasetType, SWT.RADIO);
@@ -155,7 +140,8 @@ public class SelectDatasetPage extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 updateSites();
-                updatePageComplete(true);
+                boolean needsSelectSite = ((AnalysisWizard)getWizard()).isNeedsSelectSite();
+                updatePageComplete(needsSelectSite?!cmbSite.getText().equalsIgnoreCase("all"):true);
             }
 
         });
@@ -173,18 +159,18 @@ public class SelectDatasetPage extends WizardPage {
         formData.left = new FormAttachment(lblSelectSite, 2);
         formData.right = new FormAttachment(100, -2);
         formData.top = new FormAttachment(cmbDataset, 2);
-        cmbSite.addSelectionListener(new SelectionAdapter(){
+        cmbSite.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 updatePageComplete(true);
             }
-            
+
         });
         cmbSite.setLayoutData(formData);
 
         // TODO
-//        updateDatasetCombo();
+        // updateDatasetCombo();
         updatePageComplete(false);
 
         setControl(container);
@@ -222,48 +208,91 @@ public class SelectDatasetPage extends WizardPage {
 
         cmbDataset.setItems(datasets.keySet().toArray(new String[] {}));
         cmbSite.removeAll();
-        // updateSites();
 
     }
 
     @Override
     public void setVisible(boolean visible) {
-        KPIReportWizard wiz = (KPIReportWizard)getWizard();
-        if (visible) {
-            String datasetType = wiz.getDatasetType();
-            if (datasetType != null) {
-                if (datasetType.equalsIgnoreCase("network")) {
-                    btnNetwork.setSelection(true);
-                    btnNetwork.setEnabled(true);
-                    btnDrive.setEnabled(false);
-                    btnCounters.setEnabled(false);
-                } else if (datasetType.equalsIgnoreCase("counters")) {
-                    btnCounters.setSelection(true);
-                    btnCounters.setEnabled(true);
-                    btnDrive.setEnabled(false);
-                    btnNetwork.setEnabled(false);
-                } else if (datasetType.equalsIgnoreCase("drive")) {
-                    btnDrive.setSelection(true);
-                    btnDrive.setEnabled(true);
-                    btnCounters.setEnabled(false);
-                    btnNetwork.setEnabled(false);
-                } else {
-                    btnNetwork.setSelection(true);
-                    btnNetwork.setEnabled(true);
-                    btnDrive.setEnabled(false);
-                    btnCounters.setEnabled(false);
+        IWizard wizard = getWizard();
+        if (wizard instanceof KPIReportWizard) {
+            KPIReportWizard wiz = (KPIReportWizard)wizard;
+            if (visible) {
+                String datasetType = wiz.getDatasetType();
+                if (datasetType != null) {
+                    if (datasetType.equalsIgnoreCase("network")) {
+                        enableOnlyNetworks();
+
+                    } else if (datasetType.equalsIgnoreCase("counters")) {
+                        enableOnlyCounters();
+                    } else if (datasetType.equalsIgnoreCase("drive")) {
+                        enableOnlyDrives();
+                    } else {
+                        enableOnlyNetworks();
+                        btnCounters.setEnabled(false);
+                    }
                 }
             }
-            updateDatasetCombo();
+        } else {
+            try {
+                AnalysisWizard wiz = (AnalysisWizard)wizard;
+                switch (wiz.getAnalysisType()) {
+                case ANALYZE_COUNTERS:
+                    enableOnlyCounters();
+                    break;
+                case ANALYZE_EVENTS:
+                    enableOnlyDrives();
+                    break;
+                case ANALYZE_KPIS:
+                    enableOnlyCounters();
+                    break;
+                case ANALYZE_PROPERTIES:
+                    break;
+                default:
+                }
+            } catch (RuntimeException e) {
+                // TODO Handle RuntimeException
+                LOGGER.error("Error: ",e);
+            }
         }
+        updateDatasetCombo();
 
         super.setVisible(visible);
+    }
+
+    /**
+     *
+     */
+    private void enableOnlyNetworks() {
+        btnNetwork.setSelection(true);
+        btnNetwork.setEnabled(true);
+        btnDrive.setEnabled(false);
+        btnCounters.setEnabled(false);
+    }
+
+    /**
+     *
+     */
+    private void enableOnlyDrives() {
+        btnDrive.setSelection(true);
+        btnDrive.setEnabled(true);
+        btnCounters.setEnabled(false);
+        btnNetwork.setEnabled(false);
+    }
+
+    /**
+     *
+     */
+    private void enableOnlyCounters() {
+        btnCounters.setSelection(true);
+        btnCounters.setEnabled(true);
+        btnDrive.setEnabled(false);
+        btnNetwork.setEnabled(false);
     }
 
     protected void updatePageComplete(boolean complete) {
         setPageComplete(complete);
         if (complete) {
-            KPIReportWizard wiz = (KPIReportWizard)getWizard();
+            AnalysisWizard wiz = (AnalysisWizard)getWizard();
             wiz.setSelectedDataset(cmbDataset.getText());
             StringBuffer datasetScript = new StringBuffer();
             String parameter = wiz.getDatasetType();
@@ -276,6 +305,21 @@ public class SelectDatasetPage extends WizardPage {
             }
             wiz.setDatasetScript(datasetScript.toString());
             wiz.setSelectedSite(cmbSite.getText());
+            Node dataset = datasets.get(cmbDataset.getText());
+            wiz.setAvailableProperties( DBUtils.getProperties(dataset));
         }
     }
+
+    @Override
+    public IWizardPage getNextPage() {
+        AnalysisWizard wiz = (AnalysisWizard)getWizard();
+        switch (wiz.getAnalysisType()) {
+        case ANALYZE_COUNTERS:
+        case ANALYZE_PROPERTIES:
+            return wiz.getPage(SelectPropertyPage.PAGE_ID);
+        default:
+            return wiz.getPage(SelectAggregationPage.PAGE_ID);
+        }
+    }
+    
 }

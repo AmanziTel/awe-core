@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.wizards.pages;
 
+import org.amanzi.awe.wizards.AnalysisWizard;
 import org.amanzi.awe.wizards.kpi.report.KPIReportWizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -36,6 +37,7 @@ import org.eclipse.swt.widgets.Group;
  */
 public class SelectAggregationPage extends WizardPage {
 
+    public static final String PAGE_ID = SelectAggregationPage.class.getName();
     private Button btnWithoutAggr;
     private Button btnHourly;
     private Button btnDaily;
@@ -46,6 +48,10 @@ public class SelectAggregationPage extends WizardPage {
     public SelectAggregationPage(String pageName) {
         super(pageName);
         setTitle("Select level of time aggregation");
+    }
+
+    public SelectAggregationPage() {
+        this(PAGE_ID);
     }
 
     @Override
@@ -87,7 +93,8 @@ public class SelectAggregationPage extends WizardPage {
         btnMonthly = new Button(group, SWT.RADIO);
         btnMonthly.setText("monthly");
         btnMonthly.addSelectionListener(listener);
-
+        
+        setPageComplete(true);
         setControl(container);
     }
 
@@ -101,7 +108,7 @@ public class SelectAggregationPage extends WizardPage {
     }
 
     private void updatePageComplete() {
-        KPIReportWizard wiz = (KPIReportWizard)getWizard();
+        AnalysisWizard wiz = (AnalysisWizard)getWizard();
         String aggregation;
         if (btnWithoutAggr.getSelection()) {
             aggregation = "none";

@@ -173,7 +173,7 @@ end
 class PropertyTable
   def initialize(node_set,*properties)
     @node_set=node_set
-    @properties=properties
+    @properties=properties.flatten
   end
 
   def count_internal
@@ -193,6 +193,7 @@ class PropertyTable
   end
 
   def aggregate(property)
+    puts "PropertyTable.aggregate #{property}"
     aggregation=Aggregation.new(property)
     each do |values|
       aggregation.add(values.delete(property),values)
@@ -214,6 +215,7 @@ class PropertyTable
           break
         end
       end
+      puts props
       if !props.empty? and props.length==@properties.length
         #        i+=1
         yield props
@@ -266,7 +268,7 @@ class Aggregation
   end
 end
 
-def calculate_average(sites, aggregation)
+def get_time_label(aggregation)
   if aggregation==:hourly
     time_label="hour"
   elsif  aggregation==:daily
@@ -276,8 +278,12 @@ def calculate_average(sites, aggregation)
   else
     time_label="time"
   end
+  time_label
+end
+
+def calculate_average(sites, aggregation)
   aggr_result=[]
-  aggr_result<<['site_name','cell_name','date',time_label,'KPI']
+  aggr_result<<['site_name','cell_name','date',get_time_label(aggregation),'KPI']
   sites.each do |site,cells|
     cells.each do |cell,dates|
       days=Hash.new
@@ -289,6 +295,7 @@ def calculate_average(sites, aggregation)
         hours=Hash.new
         times.each do |time,values|
           hour=ParseDate.parsedate(time)[3]
+          puts "hour=#{hour}"
           if aggregation==:hourly
             values.each do |value|
               if hours.has_key? hour
