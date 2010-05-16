@@ -58,6 +58,7 @@ def counters(options={})
     end
     puts "oss #{oss}\nfile #{file}"
     oss_node=filter(Neo4j.ref_node,'oss', {"name"=>oss}).first
+    oss_node=filter(Neo4j.ref_node,'gis', {"gis_type"=>"oss","name"=>oss}).first if oss_node.nil?
     puts oss_node
     counter_node=filter(oss_node,'file', {"name"=>file}).first
     oss_type=counter_node["oss_type"]

@@ -455,6 +455,18 @@ public class KpiView extends ViewPart {
                     directories.put(id, node);
                 }
             }
+            
+            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
+                Node node = relationship.getEndNode();
+                Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "");
+                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(
+                                NodeTypes.GIS.getId()) && GisTypes.OSS.getHeader().equals(type)) {
+                    String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                    directories.put(id, node);
+                }
+            }
             return directories.keySet().toArray(new String[] {});
         } finally {
             tx.finish();

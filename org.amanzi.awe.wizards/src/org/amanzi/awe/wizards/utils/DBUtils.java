@@ -71,7 +71,10 @@ public class DBUtils {
      */
 
     public static HashMap<String, Node> getAllCounters() {
-        return getOSSs();
+        HashMap<String, Node> oss = getOSSs();
+        HashMap<String, Node> datasets = getDatasets(GisTypes.OSS);
+        datasets.putAll(oss);
+        return datasets;
     }
 
     /**
