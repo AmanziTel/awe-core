@@ -84,6 +84,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
                     storeMessageCall(call);
                     break;
                 case ITSI_ATTACH:
+                case ITSI_CC:
                     storeITSICall(call);
                     break;
                 default:

@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.amanzi.neo.loader.AMSLoader;
-import org.amanzi.neo.loader.AMSLoaderFromXML;
+import org.amanzi.neo.loader.AMSXMLoader;
 import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -48,7 +48,7 @@ public class AMSImportWizard extends Wizard implements IImportWizard {
             protected IStatus run(IProgressMonitor monitor) {
                 File firstFile = LoaderUtils.getFirstFile(mainPage.getFileName());
                 if (firstFile != null && LoaderUtils.getFileExtension(firstFile.getName()).equalsIgnoreCase(".xml")) {
-                    AMSLoaderFromXML loader = new AMSLoaderFromXML(mainPage.getFileName(), null, mainPage.getDatasetName(), mainPage.getNetworkName());
+                    AMSXMLoader loader = new AMSXMLoader(mainPage.getFileName(), null, mainPage.getDatasetName(), mainPage.getNetworkName());
 
                     try {
                         loader.run(monitor);
