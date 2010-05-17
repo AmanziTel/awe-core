@@ -131,6 +131,7 @@ public class INeoConstants {
     public static final String MIDDLE_RANGE = "MIDDLE_RANGE";
     public static final String ROOT_SECTOR_DRIVE = NodeTypes.ROOT_SECTOR_DRIVE.getId();//Constant used not only as a node type.
     public static final String PROPERTY_TYPE_EVENT = "event_type";
+    public static final String PROPERTY_DRIVE_TYPE_EVENT = "event_drive_type";
     
     public static final String EVENTS_LUCENE_INDEX_NAME = "events";
     

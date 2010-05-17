@@ -21,6 +21,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.icons.IconManager.EventIcons;
+import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -259,7 +260,6 @@ public enum DriveEvents {
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
     }
-
     /**
      * get list of all events
      * 
@@ -286,6 +286,12 @@ public enum DriveEvents {
             boolean haveEvents = false;
             MSNODE: for (Node node : traverser) {
                 haveEvents=true;
+                if (node.hasProperty(INeoConstants.PROPERTY_DRIVE_TYPE_EVENT)) {
+                    DriveEvents event = DriveEvents.getEvents(node, neo);
+                    assert event != null;
+                    result.add(event);
+                    continue;
+                }
                 String eventTxt = node.getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString();
                 for (DriveEvents event : DriveEvents.values()) {
                     if (result.contains(event)) {
@@ -324,6 +330,24 @@ public enum DriveEvents {
         return result;
     }
 
+    public static DriveEvents getEvents(Node node, GraphDatabaseService neo) {
+        Transaction tx = neo.beginTx();
+        try {
+            String eventType = (String)node.getProperty(INeoConstants.PROPERTY_DRIVE_TYPE_EVENT, null);
+
+            return DriveEvents.getEnumById(eventType);
+        } finally {
+            tx.finish();
+        }
+    }
+
+    public static DriveEvents getEnumById(String eventType) {
+        if (StringUtils.isEmpty(eventType)) {
+            return null;
+        }
+        return DriveEvents.valueOf(eventType);
+    }
+
     /**
      * gets the worst events of mpNode
      * 
@@ -360,4 +384,14 @@ public enum DriveEvents {
      * @return
      */
     public abstract String getDescription();
+
+    public void setEventType(Node node, GraphDatabaseService neo) {
+        Transaction tx = neo.beginTx();
+        try {
+            node.setProperty(INeoConstants.PROPERTY_DRIVE_TYPE_EVENT, name());
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
 }
