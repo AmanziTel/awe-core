@@ -47,7 +47,7 @@ public class GSMFileGenerator {
         System.out.println("Started.");
         try {
             // String filename = args[0];
-            String filename = "/media/KINGSTON/1.txt";
+            String filename = "C:/1.txt";
             FileInputStream is;
             is = new FileInputStream(new File(filename));
             String characterSet = "UTF-8";
@@ -140,7 +140,7 @@ public class GSMFileGenerator {
             }
 
             // FileWriter ryt=new FileWriter(args[1]);
-            FileWriter ryt = new FileWriter("/media/KINGSTON/2.gps");
+            FileWriter ryt = new FileWriter("C:/2.gps");
             BufferedWriter out = new BufferedWriter(ryt);
             out.write(str2Write.toString());
             out.close();

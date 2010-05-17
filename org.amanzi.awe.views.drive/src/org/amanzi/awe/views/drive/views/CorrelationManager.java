@@ -26,7 +26,6 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.gps.GPSCorrelator;
 import org.amanzi.awe.views.drive.DriveInquirerPlugin;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
@@ -324,26 +323,10 @@ public class CorrelationManager extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-//                SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
-//                setNetworkDriveCorrelation(monitor2, networkGis, driveGis);
-//                updateInputFromDisplay();
-//                updateDriveLayer(networkGis, driveGis);
-            	
-            	Node dataset, network;
-                
-                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-                try {
-                    dataset = NeoUtils.findGisNode("2.gps");
-                                    
-                    network = NeoUtils.findGisNode("1.txt");                    
-                }
-                finally {
-                    tx.success();
-                    tx.finish();
-                }
-                
-                GPSCorrelator c = new GPSCorrelator(network);
-                c.correlate(dataset, null, null);
+                SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
+                setNetworkDriveCorrelation(monitor2, networkGis, driveGis);
+                updateInputFromDisplay();
+                updateDriveLayer(networkGis, driveGis);
                 
                 return Status.OK_STATUS;
             }

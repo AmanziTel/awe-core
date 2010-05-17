@@ -1,5 +1,7 @@
 package org.amanzi.awe.wizards.geoptima;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.amanzi.awe.gps.GPSCorrelator;
 import org.amanzi.awe.wizards.pages.SelectCorrelationDataPage;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -7,6 +9,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardContainer;
@@ -41,23 +44,20 @@ public class GeoptimaWizard extends Wizard implements INewWizard, IWizard {
 		final Node gps = page.getGPSGisNode();
 		final Node oss = page.getOSSNode();
 		final Node gpeh = page.getGPEHGisNode();
-		Job job = new Job("Correlation") {
-			
-			@Override
-			protected IStatus run(IProgressMonitor monitor) {
-				GPSCorrelator correlator = new GPSCorrelator(network);
-				
-				correlator.correlate(gps, oss, gpeh);
-				
-				return Status.OK_STATUS;
-			}
-		};
-		job.schedule();
+		
 		try {
-			job.join();
+		    getContainer().run(true, false, new IRunnableWithProgress() {
+            
+		        @Override
+		        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+		            GPSCorrelator correlator = new GPSCorrelator(network, monitor);
+	                
+	                correlator.correlate(gps, oss, gpeh);
+		        }
+		    });
 		}
 		catch (Exception e) {
-			
+			e.printStackTrace();
 		}
 		
 		return true;

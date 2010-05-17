@@ -10,6 +10,8 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -62,7 +64,7 @@ public class GPSCorrelator {
 	
 	private String luceneIndexKey;
 	
-	
+	private IProgressMonitor monitor;
 	
 	
 	/**
@@ -70,7 +72,7 @@ public class GPSCorrelator {
 	 * 
 	 * @param gsmDatasetNode Dataset Node of GPS data
 	 */
-	public GPSCorrelator(Node networkNode) {
+	public GPSCorrelator(Node networkNode, IProgressMonitor monitor) {
 	    neoService = NeoServiceProvider.getProvider().getService();
 	    luceneService = NeoServiceProvider.getProvider().getIndexService();
 	    
@@ -78,6 +80,13 @@ public class GPSCorrelator {
 		this.networkName = NeoUtils.getNodeName(networkNode, neoService);
 		
 		luceneIndexKey = networkName + "@Correlation";
+		
+		if (monitor == null) {
+		    this.monitor = new NullProgressMonitor();
+		}
+		else {
+		    this.monitor = monitor;
+		}
 	}
 	
 	public void correlate(Node gsmLocationNode, Node ossCountersNode, Node gpehDataNode) {
@@ -109,7 +118,14 @@ public class GPSCorrelator {
 	    
 	    System.out.println("Begin correlation");
 	    
+	    int counter = 0;
+	    
 	    try {
+	        Node network = networkNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+	        long sectorCount = (Long)network.getProperty("sector_count");
+	        
+	        monitor.beginTask("Correlation", (int)sectorCount);
+	        
 	        for (Node sector : getNetworkIterator()) {
 	        	String sectorId = null;
 	        	if (sector.hasProperty(INeoConstants.PROPERTY_SECTOR_CI)) {
@@ -134,10 +150,16 @@ public class GPSCorrelator {
 	                }
 	            }
 	            
-	            tx.success();
-	            tx.finish();
+	            counter++;
+	            if (counter % 5000 == 0) {
+	                tx.success();
+	                tx.finish();
 	            
-	            tx = neoService.beginTx();
+	                tx = neoService.beginTx();
+	                counter = 0;
+	            }
+	            
+	            monitor.worked(1);
 	        }
 	    }
 	    catch (Exception e) {

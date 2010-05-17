@@ -288,6 +288,7 @@ public void printStats(boolean verbose) {
     	locationProperties.clear();
     	locationProperties.put(INeoConstants.PROPERTY_LAT_NAME, convertLatitude((Long)event.getProperties().get(Parameters.EVENT_PARAM_LATITUDE)));
     	locationProperties.put(INeoConstants.PROPERTY_LON_NAME, convertLongitude((Long)event.getProperties().get(Parameters.EVENT_PARAM_LONGITUDE)));
+    	locationProperties.put(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
     	
     	Transaction tx = neo.beginTx();
     	try {

@@ -571,7 +571,8 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
                 Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString(); //$NON-NLS-1$
-                if (NeoUtils.isGisNode(node) && type.equals(GisTypes.DRIVE.getHeader()) || NodeTypes.OSS.checkNode(node)) {
+                if (NeoUtils.isGisNode(node) && (type.equals(GisTypes.OSS.getHeader()) || type.equals(GisTypes.DRIVE.getHeader())) || 
+                    NodeTypes.OSS.checkNode(node)) {
                     String id = NeoUtils.getSimpleNodeName(node, null);
                     gisDriveNodes.put(id, node);
                 }

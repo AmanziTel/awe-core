@@ -9,7 +9,7 @@
       </command>
       <command
       		id="org.amanzi.awe.wizards.Correlation"
-      		name="Network Correlation">
+      		name="GEOptimA">
       </command>
       <command
             id="org.amanzi.awe.wizards.NetViewCommand"
@@ -47,8 +47,8 @@
             <command
             	  commandId="org.amanzi.awe.wizards.Correlation"
             	  id="org.amanzi.awe.wizards.Correlation"
-            	  label="Network Correlation"
-            	  mnemonic="Network Correlation">
+            	  label="GEOptimA"
+            	  mnemonic="GEOptimA">
             </command>
             <command
                   commandId="org.amanzi.awe.wizards.NetViewCommand"
