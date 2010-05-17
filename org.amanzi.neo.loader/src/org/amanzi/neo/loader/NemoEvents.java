@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.amanzi.neo.core.utils.DriveEvents;
+
 /**
  * <p>
  * Nemo events ver. 2.1
@@ -8495,5 +8497,9 @@ public enum NemoEvents {
         }
 
         return Float.parseFloat(value);
+    }
+
+    public DriveEvents getDriveEvents(Map<String, Object> parsedParameters) {
+        return null;
     }
 }

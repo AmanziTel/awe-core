@@ -35,6 +35,7 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -499,6 +500,10 @@ public class NemoLoader extends DriveLoader {
          */
         public void store(Node msNode, Map<String, Header> statisticHeaders) {
             storeProperties(msNode, INeoConstants.PROPERTY_TYPE_EVENT, eventId, statisticHeaders);
+            final DriveEvents driveEvents = event.getDriveEvents(parsedParameters);
+            if (driveEvents != null) {
+                driveEvents.setEventType(msNode, neo);
+            }
             storeProperties(msNode, INeoConstants.PROPERTY_TIME_NAME, time, statisticHeaders);
             storeProperties(msNode, INeoConstants.EVENT_CONTEXT_ID, contextId.toArray(new Integer[0]), null);
             for (String key : parsedParameters.keySet()) {
