@@ -723,16 +723,14 @@ public class AMSLoader extends AbstractCallLoader {
 			
 			if (mmNode == null) {
 				mmNode = neo.createNode();
-				mmNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MM.getId());
-			}
-			
-			if (previousMmNode != null) {
-				previousMmNode.createRelationshipTo(mmNode, GeoNeoRelationshipTypes.NEXT);
-			}
-			else {
-			    msNode.createRelationshipTo(mmNode, GeoNeoRelationshipTypes.CHILD);
-			}
-			previousMmNode = mmNode;				
+				mmNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MM.getId());if (previousMmNode != null) {
+	                previousMmNode.createRelationshipTo(mmNode, GeoNeoRelationshipTypes.NEXT);
+	            }
+	            else {
+	                msNode.createRelationshipTo(mmNode, GeoNeoRelationshipTypes.CHILD);
+	            }
+	            previousMmNode = mmNode;
+			}				
 			
 			mmNodes.add(mmNode);
 			Object value = properties.get(i);

@@ -40,6 +40,9 @@ public class AMSLoaderTest extends AbstractLoaderTest {
     
     private static final int INDIVIDUAL = 0;
     private static final int GROUP = 1;
+    private static final int TSM = 2;
+    private static final int SDS = 3;
+    private static final int ATTACH = 4;
     
     private String dataDirectory;
     
@@ -104,6 +107,33 @@ public class AMSLoaderTest extends AbstractLoaderTest {
     }
     
     /**
+     * Tests load correct data base.
+     */
+    @Test
+    public void testCorrectTSMLoading()throws IOException{
+        AMSLoader loader = initDataBase("tsm_"+BUNDLE_KEY_CORRECT);
+        assertLoader(loader);
+    }
+    
+    /**
+     * Tests load correct data base.
+     */
+    @Test
+    public void testCorrectSDSLoading()throws IOException{
+        AMSLoader loader = initDataBase("sds_"+BUNDLE_KEY_CORRECT);
+        assertLoader(loader);
+    }
+    
+    /**
+     * Tests load correct data base.
+     */
+    @Test
+    public void testCorrectItsiLoading()throws IOException{
+        AMSLoader loader = initDataBase("itsi_"+BUNDLE_KEY_CORRECT);
+        assertLoader(loader);
+    }
+    
+    /**
      * Initialize loader.
      * @param aTestKey String (key for test)
      * @throws IOException (loading problem)
@@ -134,6 +164,15 @@ public class AMSLoaderTest extends AbstractLoaderTest {
             break;
         case GROUP:
             generator = DataGenerateManager.getGroupAmsGenerator(dataDirectory, params.get(1),params.get(2), params.get(3), params.get(4), params.get(5),params.get(6));
+            break;
+        case TSM:
+            generator = DataGenerateManager.getTSMMessagesGenerator(dataDirectory, params.get(1),params.get(2), params.get(3), params.get(4), params.get(5));
+            break;
+        case SDS:
+            generator = DataGenerateManager.getSDSMessagesGenerator(dataDirectory, params.get(1),params.get(2), params.get(3), params.get(4), params.get(5));
+            break;
+        case ATTACH:
+            generator = DataGenerateManager.getItsiAttachGenerator(dataDirectory, params.get(1),params.get(2), params.get(3), params.get(4), params.get(5));
             break;
         default:
             throw new IllegalArgumentException("Unknoun AMS data type "+amsType+".");

@@ -94,6 +94,8 @@ public abstract class AmsStatisticsTest {
     private static String mainDirectoryName;
     private static GraphDatabaseService neo;
     
+    private static Long startTime = null;
+    
     /**
      * Initialize project service.
      */
@@ -715,6 +717,9 @@ public abstract class AmsStatisticsTest {
         CallTimePeriods undPeriod = period.getUnderlyingPeriod();
         HashMap<Integer, ProbeStat> statistics = buildStatistcsByPeriod(generated, undPeriod);        
         for(Integer probe : statistics.keySet()){
+            if(probe.equals(SECOND_LEVEL_STAT_ID)){
+                continue;
+            }
             ProbeStat curr = statistics.get(probe);
             curr.addStatistcs(collectStatisticsByUnderling(curr.getStatisticsByPeriod(undPeriod), period));
         }
@@ -801,7 +806,7 @@ public abstract class AmsStatisticsTest {
     private PeriodStat collectStatisticsByUnderling(PeriodStat undStatistics, CallTimePeriods period){
         List<Long> times = undStatistics.getAllTimesSorted();
         PeriodStat result = new PeriodStat(period);
-        Long start = times.get(0);
+        Long start = startTime==null?times.get(0):startTime;
         Long lastDate = period.addPeriod(times.get(times.size()-1));
         start = period.getFirstTime(start);
         Long end = getNextStartDate(period, lastDate, start);
@@ -852,6 +857,9 @@ public abstract class AmsStatisticsTest {
             for(CallData callData : group.getData()){
                 for (Call call : callData.getCalls()) {
                     Long start = CallTimePeriods.HOURLY.getFirstTime(call.getStartTime());
+                    if(startTime==null||start<startTime){
+                        startTime = start;
+                    }
                     HashMap<IStatisticsHeader, Number> newValues = getStatValuesFromCall(call);
                     HashMap<IStatisticsHeader, Number> rowValues = periodStat.getRowValues(start);
                     if (rowValues == null) {
@@ -1038,6 +1046,9 @@ public abstract class AmsStatisticsTest {
         }
         
         public List<HashMap<IStatisticsHeader, Number>> getDataInBorders(Long start, Long end){
+            if(period.equals(CallTimePeriods.WEEKLY)){
+                start = period.getFirstTime(start);
+            }
             List<HashMap<IStatisticsHeader, Number>> result = new ArrayList<HashMap<IStatisticsHeader, Number>>();
             for(Long time : data.keySet()){
                 if(start<=time&&time<end){
