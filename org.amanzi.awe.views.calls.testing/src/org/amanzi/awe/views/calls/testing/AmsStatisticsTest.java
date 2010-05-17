@@ -562,12 +562,17 @@ public abstract class AmsStatisticsTest {
             HashMap<IStatisticsHeader, Number> cells, IStatisticsHeader cellType, CallTimePeriods period) {
         Number assertionValue = cells.get(cellType);
         assertFalse("Cell "+cellType+" not found (period "+period.getId()+").",assertionValue == null);
-        assertEquals("Wrong value in cell "+cellType+"(period "+period.getId()+").", etalon.get(cellType), assertionValue);
+        assertEquals("Wrong value in cell "+cellType+"(period "+period.getId()+").", getCellValueByHeader(etalon, cellType), assertionValue);
         if(source!=null){
-            assertEquals("Wrong value in cell "+cellType+" by sources (period "+period.getId()+").", source.get(cellType), assertionValue);
+            assertEquals("Wrong value in cell "+cellType+" by sources (period "+period.getId()+").", getCellValueByHeader(source,cellType), assertionValue);
         }
     }
     
+    
+    private Number getCellValueByHeader(HashMap<IStatisticsHeader, Number> cells, IStatisticsHeader header){
+        Number result = cells.get(header);
+        return result==null?0:result;
+    }
     /**
      * Gets values from source cells.
      *
@@ -1000,6 +1005,9 @@ public abstract class AmsStatisticsTest {
         public HashMap<IStatisticsHeader, Number> getRowValuesForCheck(Long timeKey){
             HashMap<IStatisticsHeader, Number> real = data.get(timeKey);
             HashMap<IStatisticsHeader, Number> result = new HashMap<IStatisticsHeader, Number>();
+            if(real==null){
+                return result;
+            }
             for(IStatisticsHeader header : real.keySet()){
                 Number value = real.get(header);
                 if(value == null){
