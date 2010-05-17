@@ -26,7 +26,7 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.gsm.GSMCorrelator;
+import org.amanzi.awe.gps.GPSCorrelator;
 import org.amanzi.awe.views.drive.DriveInquirerPlugin;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
@@ -342,7 +342,7 @@ public class CorrelationManager extends ViewPart {
                     tx.finish();
                 }
                 
-                GSMCorrelator c = new GSMCorrelator(network);
+                GPSCorrelator c = new GPSCorrelator(network);
                 c.correlate(dataset, null, null);
                 
                 return Status.OK_STATUS;

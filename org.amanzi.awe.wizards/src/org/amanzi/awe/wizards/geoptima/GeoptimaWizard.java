@@ -1,6 +1,6 @@
 package org.amanzi.awe.wizards.geoptima;
 
-import org.amanzi.awe.gsm.GSMCorrelator;
+import org.amanzi.awe.gps.GPSCorrelator;
 import org.amanzi.awe.wizards.pages.SelectCorrelationDataPage;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -45,7 +45,7 @@ public class GeoptimaWizard extends Wizard implements INewWizard, IWizard {
 			
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				GSMCorrelator correlator = new GSMCorrelator(network);
+				GPSCorrelator correlator = new GPSCorrelator(network);
 				
 				correlator.correlate(gps, oss, gpeh);
 				
