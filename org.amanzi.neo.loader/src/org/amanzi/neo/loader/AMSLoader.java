@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -35,12 +33,10 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.ams.commands.AMSCommandPackage;
 import org.amanzi.neo.loader.ams.commands.AbstractAMSCommand;
 import org.amanzi.neo.loader.ams.commands.CCI;
@@ -69,274 +65,10 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class AMSLoader extends DriveLoader {
+public class AMSLoader extends AbstractCallLoader {
     private static final Logger LOGGER = Logger.getLogger(AMSLoader.class);
 
-    /**
-     * Class that calculates a general parameters of Call
-     * 
-     * @author Lagutko_N
-     * @since 1.0.0
-     */
-	public static class Call {
-		
-	    /*
-	     * List of Duration Parameters
-	     */
-		private final ArrayList<Long> callParameters = new ArrayList<Long>();
-		
-		/*
-		 * Index of Call Setup Begin timestamp parameter 
-		 */
-		private final int callSetupBegin = 0;
-		
-		/*
-		 * Index of Call Setup End timestamp parameter
-		 */
-		private final int callSetupEnd = 1;
-		
-		/*
-		 * Index of Call Termination Begin timestamp parameter
-		 */
-        private final int callTerminationBegin = 2;
-		
-        /*
-         * Index of Call Termination End timestamp parameter
-         */
-		private final int callTerminationEnd = 3;
-		
-		/*
-		 * Index of last processed parameter
-		 */
-		private int lastProccessedParameter;
-		
-		/*
-		 * Type of Call
-		 */
-		private CallProperties.CallResult callResult;
-        
-		private CallType callType;
-		
-        /*
-         * List of Nodes that creates this call
-         */
-		private final ArrayList<Node> relatedNodes = new ArrayList<Node>();
-		
-		private Node callerProbe;
-		
-		private final ArrayList<Node> calleeProbes = new ArrayList<Node>();
-		
-		/*
-		 * Listening quality
-		 */
-		private float[] lq = new float[0];
-		
-		/*
-		 * Audio delay
-		 */
-		private float[] delay = new float[0];
-		
-		/**
-		 * Default constructor
-		 * 
-		 * Sets zeros to timestamps
-		 */
-		public Call() {
-			callParameters.add(0l);
-			callParameters.add(0l);
-			callParameters.add(0l);
-			callParameters.add(0l);
-		}
-
-		/**
-		 * @return Returns the callBeginTime.
-		 */
-		public long getCallSetupBegin() {
-			return callParameters.get(callSetupBegin);
-		}
-
-		/**
-		 * @param callSetupBeginTime The callBeginTime to set.
-		 */
-		public void setCallSetupBeginTime(long callSetupBeginTime) {
-			callParameters.set(this.callSetupBegin, callSetupBeginTime);
-			lastProccessedParameter = this.callSetupBegin;
-		}
-
-		/**
-		 * @return Returns the callEndTime.
-		 */
-		public long getCallSetupEnd() {
-			return callParameters.get(callSetupEnd);
-		}
-
-		/**
-		 * @param callSetupEndTime The callEndTime to set.
-		 */
-		public void setCallSetupEndTime(long callSetupEndTime) {
-			callParameters.set(this.callSetupEnd, callSetupEndTime);
-			lastProccessedParameter = this.callSetupEnd;
-		}
-
-		public void addRelatedNode(Node mNode) {
-			relatedNodes.add(mNode);
-		}
-		
-		public ArrayList<Node> getRelatedNodes() {
-			return relatedNodes;
-		}
-
-		/**
-		 * @return Returns the callResult.
-		 */
-        public CallProperties.CallResult getCallResult() {
-			return callResult;
-		}
-
-		/**
-		 * @param callResult The callResult to set.
-		 */
-        public void setCallResult(CallProperties.CallResult callResult) {
-			this.callResult = callResult;
-		}
-
-		/**
-		 * @return Returns the callTerminationBegin.
-		 */
-		public long getCallTerminationBegin() {
-			return callParameters.get(callTerminationBegin);
-		}
-
-		/**
-		 * @param callTerminationBegin The callTerminationBegin to set.
-		 */
-		public void setCallTerminationBegin(long callTerminationBegin) {
-			callParameters.set(this.callTerminationBegin, callTerminationBegin);
-			lastProccessedParameter = this.callTerminationBegin;
-		}
-
-		/**
-		 * @return Returns the callTerminationEnd.
-		 */
-		public long getCallTerminationEnd() {
-			return callParameters.get(callTerminationEnd);
-		}
-
-		/**
-		 * @param callTerminationEnd The callTerminationEnd to set.
-		 */
-		public void setCallTerminationEnd(long callTerminationEnd) {
-			callParameters.set(this.callTerminationEnd, callTerminationEnd);
-			
-			if ((getCallTerminationBegin() == 0) &&
-			    (getCallSetupEnd() == 0)) {
-			    setCallSetupEndTime(callTerminationEnd);
-			}
-			
-			lastProccessedParameter = this.callTerminationEnd;
-		}
-		
-		/**
-		 * Handles error
-		 *
-		 * @param timestamp
-		 */
-		public void error(long timestamp) {
-			switch (lastProccessedParameter) {
-			case 0: 
-			case 2:
-			    //if an error was on beginning of operation than set an end time as time of error
-				callParameters.set(lastProccessedParameter + 1, timestamp);
-				break;
-			}
-		}
-
-        /**
-         * @return Returns the lq.
-         */
-        public float[] getLq() {
-            return lq;
-        }
-
-        /**
-         * @param lq The lq to set.
-         */
-        public void addLq(float lq) {
-            this.lq = addToArray(this.lq, lq);
-        }
-        
-        /**
-         * Add new element to Array
-         *
-         * @param original original Array
-         * @param value value to add
-         * @return changed array
-         */
-        private float[] addToArray(float[] original, float value) {
-            float[] result = new float[original.length + 1];
-            result = Arrays.copyOf(this.lq, result.length);
-            result[result.length - 1] = value;
-            return result;
-        }
-
-        /**
-         * @return Returns the delay.
-         */
-        public float[] getDelay() {
-            return delay;
-        }
-
-        /**
-         * @param delay The delay to set.
-         */
-        public void addDelay(float delay) {
-            this.delay = addToArray(this.delay, delay);
-        }
-
-        /**
-         * @return Returns the callerProbe.
-         */
-        public Node getCallerProbe() {
-            return callerProbe;
-        }
-
-        /**
-         * @param callerProbe The callerProbe to set.
-         */
-        public void setCallerProbe(Node callerProbe) {
-            this.callerProbe = callerProbe;
-        }
-
-        /**
-         * @return Returns the calleeProbes.
-         */
-        public ArrayList<Node> getCalleeProbes() {
-            return calleeProbes;
-        }
-        
-        public void addCalleeProbe(Node calleeProbe) {
-            if (!calleeProbe.equals(callerProbe) && !calleeProbes.contains(calleeProbe)) {
-                calleeProbes.add(calleeProbe);
-            }
-        }
-
-        /**
-         * @return Returns the callType.
-         */
-        public CallType getCallType() {
-            return callType;
-        }
-
-        /**
-         * @param callType The callType to set.
-         */
-        public void setCallType(CallType callType) {
-            this.callType = callType;
-        }
-		
-	}
-	
-	/**
+   	/**
 	 * Enum that describes type of Event for Call 
 	 * 
 	 * @author Lagutko_N
@@ -397,18 +129,8 @@ public class AMSLoader extends DriveLoader {
 	 */
 	private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
 	
-	/*
-	 * Header Index for Real Dataset
-	 */
-	private static final int REAL_DATASET_HEADER_INDEX = 0;
 	
-	/*
-	 * Header Index for Call Dataset
-	 */
-	private static final int CALL_DATASET_HEADER_INDEX = 1;
-	
-	protected static final String TIME_FORMAT = "HH:mm:ss";
-	
+
 	/*
 	 * Formatter for timestamp
 	 */
@@ -463,22 +185,15 @@ public class AMSLoader extends DriveLoader {
 	
 	// private Node lastCallInProbe;
 
-    private Node callDataset;
+
 	
-    /*
-     * Last call in Real Dataset
-     */
-	private Node lastCallInDataset;
+
 	
 	/*
 	 * Name of Probes Network
 	 */
 	private final String networkName;
 	
-	/*
-	 * Timestamp Index for Calls
-	 */
-	private final HashMap<String, MultiPropertyIndex<Long>> callTimestampIndexes = new HashMap<String, MultiPropertyIndex<Long>>();
 	
 	private boolean newDirectory;
 	
@@ -493,7 +208,7 @@ public class AMSLoader extends DriveLoader {
     private String probeName;
 	private Node probeNode;
     
-    private final static SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
+
 	
 	/**
 	 * Creates a loader
@@ -1075,34 +790,7 @@ public class AMSLoader extends DriveLoader {
         }
     }
 	
-	/**
-	 * Returns an index for Probe Calls
-	 *
-	 * @param probeCallsName name of Probe Calls
-	 * @return timestamp index of Probe Calls
-	 */
-	private MultiPropertyIndex<Long> getProbeCallsIndex(String probeCallsName) {
-	    MultiPropertyIndex<Long> result = callTimestampIndexes.get(probeCallsName);
-	    
-	    if (result == null) {
-	        Transaction tx = neo.beginTx();
-	        try {
-	            result = NeoUtils.getTimeIndexProperty(probeCallsName);	            
-	            result.initialize(neo, null);
-	            
-	            callTimestampIndexes.put(probeCallsName, result);
-	            tx.success();
-	        } catch (IOException e) {
-	            tx.failure();
-	            throw (RuntimeException)new RuntimeException().initCause(e);
-	        }
-	        finally {
-	            tx.finish();
-	        }
-	    }
-	    
-	    return result;
-	}
+
 	
 	/**
 	 * Processes parsed Command
@@ -1354,175 +1042,7 @@ public class AMSLoader extends DriveLoader {
 	    }
 	}
 	
-	/**
-	 * Creates a Call node and sets properties
-	 */
-	private void saveCall(Call call) {	    
-        if ((call != null) && (call.getCallType() != null)) {
-            CallType callType = call.getCallType();
-	        Transaction tx = neo.beginTx();
-	        try {
-	            switch (callType) {
-                case INDIVIDUAL:
-                case GROUP:
-                case EMERGENCY:
-                case HELP:
-                    storeRealCall(call);
-                    break;
-                case SDS:
-                case TSM:
-                case ALARM:
-                    storeMessageCall(call);
-                    break;
-                case ITSI_ATTACH:
-                    storeITSICall(call);
-                    break;
-                default:
-                    NeoCorePlugin.error("Unknown call type "+callType+".", null);
-                }
-                tx.success();
-	        }
-	        catch (Exception e) {
-	            tx.failure();
-	            NeoCorePlugin.error(null, e);
-	        }
-	        finally {
-	            tx.finish();
-	        }
-		}
-	}
 
-    private void storeRealCall(Call call) {
-        Node probeCallNode = call.getCallerProbe();
-        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
-
-        long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
-        long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
-        long callDuration = call.getCallTerminationEnd() - call.getCallSetupBegin();
-
-        LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
-
-        setProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), setupDuration);
-        setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
-        setProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
-        setProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), callDuration);
-        setProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
-        
-        callNode.setProperty(CallProperties.LQ.getId(), call.getLq());
-        callNode.setProperty(CallProperties.DELAY.getId(), call.getDelay());
-        
-        callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
-        
-        for (Node calleeProbe : call.getCalleeProbes()) {
-            callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
-        }
-        
-        probeCallNode.setProperty(call.getCallType().getProperty(), true);
-    }
-    
-    private void storeMessageCall(Call call) {
-        Node probeCallNode = call.getCallerProbe();
-        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
-
-        long receivedTime = call.getCallTerminationBegin() - call.getCallSetupEnd();
-        long acknTime = call.getCallTerminationEnd()-call.getCallTerminationBegin();
-        
-        LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
-
-        if (call.getCallType().equals(CallType.ALARM)) {
-            setProperty(headers, callNode, CallProperties.ALM_MESSAGE_DELAY.getId(), receivedTime);
-            setProperty(headers, callNode, CallProperties.ALM_FIRST_MESS_DELAY.getId(), acknTime);
-        } else {
-            setProperty(headers, callNode, CallProperties.MESS_RECEIVE_TIME.getId(), receivedTime);
-            setProperty(headers, callNode, CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), acknTime);
-        }
-        setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
-        setProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
-        
-        callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
-        
-        for (Node calleeProbe : call.getCalleeProbes()) {
-            callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
-        }
-        
-        probeCallNode.setProperty(call.getCallType().getProperty(), true);
-    }
-    
-    private void storeITSICall(Call call) {
-        Node probeCallNode = call.getCallerProbe();
-        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
-
-        long updateTime = call.getCallTerminationEnd() - call.getCallSetupBegin();
-        
-        LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
-        setProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), updateTime);
-
-        setProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
-        setProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
-        
-        callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
-        
-        for (Node calleeProbe : call.getCalleeProbes()) {
-            callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
-        }
-        
-        probeCallNode.setProperty(call.getCallType().getProperty(), true);
-    }
-
-	/**
-	 * Creates new Call Node
-	 *
-	 * @param timestamp timestamp of Call
-	 * @param relatedNodes list of M node that creates this call
-	 * @return created Node
-	 */
-	private Node createCallNode(long timestamp, ArrayList<Node> relatedNodes, Node probeCalls) {
-		Transaction transaction = neo.beginTx();
-		Node result = null;
-		try {
-			result = neo.createNode();
-			result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL.getId());
-			result.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-			String probeName = NeoUtils.getNodeName(probeCalls,neo);
-            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, getCallName(probeName, timestamp));
-            updateTimestampMinMax(CALL_DATASET_HEADER_INDEX, timestamp);
-			index(result);
-			
-			//index for Probe Calls
-			
-            MultiPropertyIndex<Long> callIndex = getProbeCallsIndex(probeName);
-			callIndex.add(result);
-			
-			//create relationship to M node
-			for (Node mNode : relatedNodes) {
-				result.createRelationshipTo(mNode, ProbeCallRelationshipType.CALL_M);
-			}			
-
-			//create relationship to Dataset Calls
-			if (lastCallInDataset == null) {
-                callDataset.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
-			}
-			else {
-				lastCallInDataset.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
-			}
-			lastCallInDataset = result;
-			
-			transaction.success();
-		}
-		catch (Exception e) {
-			NeoCorePlugin.error(null, e);
-		}
-		finally {
-			transaction.finish();
-		}
-		
-		return result;
-	}
-	
-	public static  String getCallName(String probeName, long timestamp){
-	    StringBuffer result = new StringBuffer(probeName.split(" ")[0]).append("_").append(timeFormat.format(new Date(timestamp)));
-	    return result.toString();
-	}
 
     @Override
     protected Node getStoringNode(Integer key) {
@@ -1541,14 +1061,7 @@ public class AMSLoader extends DriveLoader {
     	return false;
     }
     
-    @Override
-    protected void finishUpIndexes() {
-        for (MultiPropertyIndex<Long> singleIndex : callTimestampIndexes.values()) {
-            singleIndex.finishUp();
-        }
-        super.finishUpIndexes();
-    }
-    
+   
     @Override
     protected ArrayList<Node> getGisNodes() {
         ArrayList<Node> result = new ArrayList<Node>();
