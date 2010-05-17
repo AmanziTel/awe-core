@@ -81,6 +81,7 @@
     <module>org.rubypeople.rdt.ui</module>
     <module>org.amanzi.awe.neighbours</module>
     <module>org.amanzi.awe.wizards</module>
+    <module>org.amanzi.awe.gsm</module>
   </modules>
   <build>
     <plugins>
