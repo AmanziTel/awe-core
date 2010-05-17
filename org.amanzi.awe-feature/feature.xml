@@ -314,14 +314,14 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
          id="org.amanzi.awe.report"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.l3messages"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
@@ -335,28 +335,28 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
          id="org.apache.log4j"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.mapgraphic"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.1.1"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.legend"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.1.1"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.statistic"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
@@ -367,10 +367,10 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.gsm"
+         id="org.amanzi.awe.gps"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="0.0.0"
          unpack="false"/>
 
 </feature>
