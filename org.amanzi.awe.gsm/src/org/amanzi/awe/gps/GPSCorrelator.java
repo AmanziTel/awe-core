@@ -1,4 +1,4 @@
-package org.amanzi.awe.gsm;
+package org.amanzi.awe.gps;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,7 +21,7 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.index.lucene.LuceneIndexService;
 
-public class GSMCorrelator {
+public class GPSCorrelator {
     
     private class SearchRequest {
         
@@ -70,7 +70,7 @@ public class GSMCorrelator {
 	 * 
 	 * @param gsmDatasetNode Dataset Node of GPS data
 	 */
-	public GSMCorrelator(Node networkNode) {
+	public GPSCorrelator(Node networkNode) {
 	    neoService = NeoServiceProvider.getProvider().getService();
 	    luceneService = NeoServiceProvider.getProvider().getIndexService();
 	    
