@@ -1357,11 +1357,8 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
-
-    public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, DriveTypes driveType, final GraphDatabaseService neo) {
+    public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, final String virtualDatasetName, final GraphDatabaseService neo) {
         Node virtualDataset = null;
-        String realDatasetName = NeoUtils.getNodeName(realDatasetNode, neo);
-        final String virtualDatasetName = driveType.getFullDatasetName(realDatasetName);
         Transaction tx = neo.beginTx();
         try {
             Iterator<Node> virtualDatasetsIterator = realDatasetNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
@@ -1378,19 +1375,33 @@ public class NeoUtils {
                 virtualDataset = neo.createNode();
                 virtualDataset.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DATASET.getId());
                 virtualDataset.setProperty(INeoConstants.PROPERTY_NAME_NAME, virtualDatasetName);
-                virtualDataset.setProperty(INeoConstants.DRIVE_TYPE, driveType.getId());
+
 
                 realDatasetNode.createRelationshipTo(virtualDataset, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
             }
             tx.success();
+            return virtualDataset;
         } catch (Exception e) {
             tx.failure();
             NeoCorePlugin.error(null, e);
+            return null;
         } finally {
             tx.finish();
         }
 
-        return virtualDataset;
+    }
+    public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, DriveTypes driveType, final GraphDatabaseService neo) {
+
+        String realDatasetName = NeoUtils.getNodeName(realDatasetNode, neo);
+        final String virtualDatasetName = driveType.getFullDatasetName(realDatasetName);
+        Node node = findOrCreateVirtualDatasetNode(realDatasetNode, virtualDatasetName, neo);
+        DriveTypes nodeType = DriveTypes.getNodeType(node, neo);
+        if (nodeType==null){
+            driveType.setTypeToNode(node, neo);
+        }else{
+           assert nodeType==driveType; 
+        }
+        return node;
     }
 
     public static Node createGISNode(Node parent, String gisName, String gisType, GraphDatabaseService neo) {
@@ -1803,6 +1814,8 @@ public class NeoUtils {
             } else {
                 lastChild.createRelationshipTo(subNode, GeoNeoRelationshipTypes.NEXT);
             }
+            //save last child like properti in main node
+            mainNode.setProperty(INeoConstants.LAST_CHILD_ID, subNode.getId());
             successTx(tx);
         } finally {
             finishTx(tx);
@@ -1820,6 +1833,12 @@ public class NeoUtils {
     public static Node findLastChild(Node mainNode, GraphDatabaseService neo) {
         Transaction tx = beginTx(neo);
         try {
+            Long lastChild = (Long)mainNode.getProperty(INeoConstants.LAST_CHILD_ID,null);
+            if (lastChild!=null){
+               Node result= neo.getNodeById(lastChild);
+               assert !result.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+               return result;
+            }
             Iterator<Node> iterator = getChildTraverser(mainNode, new ReturnableEvaluator() {
 
                 @Override
