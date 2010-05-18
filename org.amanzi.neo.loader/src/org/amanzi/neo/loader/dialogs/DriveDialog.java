@@ -696,7 +696,7 @@ public class DriveDialog {
             return DriveTypes.getFileDescriptions(NeoUtils.getDatasetType(datasetNode, null));
         }
     }
-
+    
     public void runLoadingJob() {
 		datasetName=cDataset.getText();
 		LoadDriveJob job = new LoadDriveJob(dialogShell.getDisplay());
@@ -720,11 +720,15 @@ public class DriveDialog {
         for (String fileName : loadedFiles.keySet()) {
             String filePath = loadedFiles.get(fileName);
 			try {
-                Calendar time = getDate(filePath);
-                if (time == null) {
-                    continue;
-                }
-                String extension = getFileExt(filePath);
+			    String extension = getFileExt(filePath);
+			    
+			    Calendar time = null;
+			    if (!extension.equals(DriveTypes.GPS.getExtension())) {
+			        time = getDate(filePath);
+			        if (time == null) {
+			            continue;
+			        }
+			    }
                 if (extension.toLowerCase().equals("fmt")) {
                     driveLoader = new TEMSLoader(time, filePath, display, datasetName);
 			    } else if(extension.toLowerCase().equals("asc")) {

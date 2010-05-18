@@ -237,7 +237,7 @@ public class GPEHLoader extends DriveLoader {
             commit(false);
         }
         
-        finishUpGis(datasetNode);
+        finishUpGis();
         
         addLayersToMap();
     }
