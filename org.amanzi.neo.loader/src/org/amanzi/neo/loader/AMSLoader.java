@@ -156,10 +156,7 @@ public class AMSLoader extends AbstractCallLoader {
 	 */
 	private boolean newFile = true;
 	
-	/*
-	 * Network node for Probes data
-	 */
-	private Node networkNode;
+
 	
 	/*
 	 * Name of directory

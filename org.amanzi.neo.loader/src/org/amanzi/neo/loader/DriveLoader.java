@@ -365,6 +365,7 @@ public abstract class DriveLoader extends AbstractLoader {
      */
     @Override
     protected void finishUp() {
+        super.finishUp();
         for (Map.Entry<Integer, Pair<Long, Long>> entry : timeStamp.entrySet()) {
             Node storeNode = getStoringNode(entry.getKey());
             if (storeNode != null) {
@@ -390,7 +391,10 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Node getRootNode() {
         return datasetNode != null ? datasetNode : file;
     }
-
+@Override
+public Node[] getRootNodes() {
+    return new Node[]{datasetNode};
+}
     /**
      * get Timestamp of nodeDate
      * 
@@ -436,7 +440,7 @@ public abstract class DriveLoader extends AbstractLoader {
 		}
 		virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(datasetNode, datasetType, neo);
 		//also we should create a GIS node for this dataset
-		findOrCreateGISNode(virtualDataset, GisTypes.DRIVE.getHeader());
+//		findOrCreateGISNode(virtualDataset, GisTypes.DRIVE.getHeader());
 		
 		if (virtualDataset != null) {
 		    virtualDatasets.put(name, virtualDataset);

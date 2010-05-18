@@ -286,10 +286,14 @@ public class NetworkSiteLoader extends AbstractLoader {
         return NeoUtils.findOrCreateVirtualDatasetNode(networkNode, getVitrualDatasetName(), neo);
     }
 
+    @Override
+    public Node[] getRootNodes() {
+        return new Node[]{networkNode};
+    }
 
     /**
      * Gets the vitrual dataset name.
-     *
+     * 
      * @return the vitrual dataset name
      */
     private String getVitrualDatasetName() {

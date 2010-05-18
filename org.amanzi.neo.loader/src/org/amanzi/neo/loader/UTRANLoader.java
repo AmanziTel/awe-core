@@ -392,7 +392,10 @@ public class UTRANLoader extends AbstractLoader {
     protected Node getStoringNode(Integer key) {
         return network;
     }
-
+    @Override
+    public Node[] getRootNodes() {
+        return new Node[]{network};
+    }
     /**
      * Need parce headers.
      * 
@@ -423,7 +426,7 @@ public class UTRANLoader extends AbstractLoader {
         getGisProperties(basename).saveCRS();
         if (!isTest()) {
         try {
-            DriveLoader.finishUpGis(getGisProperties(basename).getGis());
+            DriveLoader.finishUpGis();
         } catch (MalformedURLException e) {
             // TODO Handle MalformedURLException
             throw (RuntimeException)new RuntimeException().initCause(e);

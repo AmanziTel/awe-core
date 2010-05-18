@@ -182,7 +182,10 @@ public class NokiaTopologyLoader extends AbstractLoader {
     protected Node getStoringNode(Integer key) {
         return networkNode;
     }
-
+    @Override
+    public Node[] getRootNodes() {
+        return new Node[]{networkNode};
+    }
     @Override
     protected boolean needParceHeaders() {
         return false;
@@ -243,7 +246,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
         gisProperties.saveCRS();
         if(!isTest()){           
             try {
-                finishUpGis(getGisProperties(basename).getGis());
+                finishUpGis();
             } catch (MalformedURLException e) {
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }

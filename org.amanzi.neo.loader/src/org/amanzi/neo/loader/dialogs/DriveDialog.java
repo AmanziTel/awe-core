@@ -753,7 +753,7 @@ public class DriveDialog {
         
         if (driveLoader != null) {
         	try {
-        		DriveLoader.finishUpGis(driveLoader.getDatasetNode());
+        		DriveLoader.finishUpGis();
         	}
         	catch (MalformedURLException e) {
         		NeoLoaderPlugin.error(e.getMessage());

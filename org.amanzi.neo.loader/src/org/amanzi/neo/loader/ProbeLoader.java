@@ -75,7 +75,10 @@ public class ProbeLoader extends AbstractLoader{
     protected Node getStoringNode(Integer key) {
         return network;
     }
-
+    @Override
+    public Node[] getRootNodes() {
+        return new Node[]{network};
+    }
     @Override
     protected boolean needParceHeaders() {
         if (needParceHeader) {
@@ -187,7 +190,7 @@ public class ProbeLoader extends AbstractLoader{
         gisProperties.saveBBox();
         gisProperties.saveCRS();
         try {
-            super.finishUpGis(gisNode);
+            super.finishUpGis();
         } catch (MalformedURLException e) {
             NeoLoaderPlugin.exception(e);
             throw (RuntimeException)new RuntimeException().initCause(e);

@@ -61,7 +61,7 @@ public class AMSImportWizard extends Wizard implements IImportWizard {
 
                     try {
                         loader.run(monitor);
-                        AMSLoader.finishUpGis(loader.getDatasetNode());
+                        AMSLoader.finishUpGis();
                     } catch (IOException e) {
                         NeoLoaderPlugin.error(e.getLocalizedMessage());
                         return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());

@@ -110,4 +110,8 @@ public class APDLoader extends AbstractLoader {
         }
     }
 
+    @Override
+    public Node[] getRootNodes() {
+        return new Node[] {ossRoot};
+    }
 }

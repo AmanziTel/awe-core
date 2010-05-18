@@ -273,6 +273,7 @@ public class NetworkLoader extends AbstractLoader {
      */
     @Override
     protected void finishUp() {
+        super.finishUp();
         printWarnings(emptyFields, "empty fields", 0, lineNumber);
         printWarnings(badFields, "field parsing warnings", 10, lineNumber);
         printWarnings(shortLines, "missing fields", 10, lineNumber);
@@ -696,6 +697,11 @@ public class NetworkLoader extends AbstractLoader {
     @Override
     protected Node getStoringNode(Integer key) {
         return getNetworkNode();
+    }
+
+    @Override
+    public Node[] getRootNodes() {
+        return new Node[] {getNetworkNode()};
     }
 
     @Override

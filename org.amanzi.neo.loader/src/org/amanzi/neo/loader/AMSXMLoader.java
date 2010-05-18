@@ -101,9 +101,6 @@ public class AMSXMLoader extends AbstractCallLoader {
     /** The network gis. */
     private Node networkGis;
 
-    /** The network node. */
-    private Node networkNode;
-
     /** The last dataset node. */
     private Node lastDatasetNode;
 
@@ -245,7 +242,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             finishUp();
 
             cleanupGisNode();
-            finishUpGis(getDatasetNode());
+            finishUpGis();
             tx.success();
         } finally {
             tx.finish();

@@ -62,7 +62,7 @@ public class NetworkImportWizard extends Wizard implements IImportWizard {
                         networkLoader.setup();
                         networkLoader.run(monitor);
                         networkLoader.printStats(false);
-                        NetworkLoader.finishUpGis(networkLoader.getNetworkNode());
+                        NetworkLoader.finishUpGis();
                         networkLoader.addLayersToMap();
                     } else {
                         ProbeLoader loader = new ProbeLoader(new File(mainPage.getFileName()).getName(),mainPage.getFileName(), display);

@@ -1234,12 +1234,26 @@ public abstract class AbstractLoader {
      * because it is possible, or even probable, to write an importer that does not need it.
      */
     protected void finishUp() {
+        addRootToProject();
         commit(true);
+        
     }
 
 
 
 
+
+    /**
+     * Adds the root to project.
+     */
+    protected void addRootToProject() {
+        for (Node root:getRootNodes()){
+            String aweProjectName = LoaderUtils.getAweProjectName();
+            if (root!=null){
+                NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(aweProjectName, root);
+            }
+        }
+    }
 
     /**
      * Search the database for the 'gis' node for this dataset. If none found it created an
@@ -1452,17 +1466,15 @@ public abstract class AbstractLoader {
      * <li>The catalog for Neo data is created or updated</li>
      * </ul>
      * 
-     * @param mainNode to use to connect to the AWE project
      * @throws MalformedURLException
      */
-    public static final void finishUpGis(Node mainNode) throws MalformedURLException {
+    public static final void finishUpGis() throws MalformedURLException {
         NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
         if (neoProvider != null) {
-            NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(LoaderUtils.getAweProjectName(), mainNode);
             addDataToCatalog();
         }
     }
-
+    public abstract Node[]getRootNodes();
     /**
      * Is this a test case running outside AWE application
      * 

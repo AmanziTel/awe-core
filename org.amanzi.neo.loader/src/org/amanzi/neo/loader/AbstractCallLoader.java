@@ -51,6 +51,10 @@ public abstract class AbstractCallLoader extends DriveLoader {
      * Last call in Real Dataset
      */
     private Node lastCallInDataset;
+    /*
+     * Network node for Probes data
+     */
+    protected Node networkNode;
     /** Header Index for Real Dataset. */
     protected static final int REAL_DATASET_HEADER_INDEX = 0;
     /** Header Index for Call Dataset. */
@@ -531,5 +535,9 @@ public abstract class AbstractCallLoader extends DriveLoader {
             singleIndex.finishUp();
         }
         super.finishUpIndexes();
+    }
+    @Override
+    public Node[] getRootNodes() {
+        return new Node[]{networkNode,datasetNode};
     }
 }

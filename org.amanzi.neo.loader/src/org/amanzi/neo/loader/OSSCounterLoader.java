@@ -164,7 +164,10 @@ public class OSSCounterLoader extends AbstractLoader {
     protected Node getStoringNode(Integer key) {
         return ossNode;
     }
-
+    @Override
+    public Node[] getRootNodes() {
+        return new Node[]{ossNode};
+    }
     @Override
     protected boolean needParceHeaders() {
         return false;
