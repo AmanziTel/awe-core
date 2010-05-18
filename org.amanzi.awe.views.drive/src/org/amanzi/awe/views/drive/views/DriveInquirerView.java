@@ -43,6 +43,7 @@ import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.drive.preferences.PropertyListPreferences;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -1398,7 +1399,8 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             cEvent.select(0);
 
             initializeIndex(cDrive.getText());
-            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis, null);
+            Node root=gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(gis);
+            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(root, null);
             beginGisTime = minMax.getLeft();
             endGisTime = minMax.getRight();
 
