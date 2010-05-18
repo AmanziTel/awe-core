@@ -743,9 +743,14 @@ public class AweProjectService {
         if (aweProjectName == null || data == null) {
             return;
         }
+        
         Transaction transacation = neoService.beginTx();
 
         try {
+            if (data.hasRelationship(GeoNeoRelationshipTypes.CHILD,Direction.INCOMING)){
+                //always have relation
+                return;
+            }
             AweProjectNode project = findOrCreateAweProject(aweProjectName);
             project.addChildNode(data);
             transacation.success();
