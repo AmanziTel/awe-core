@@ -115,8 +115,7 @@ public class GPSLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        GisProperties gisProperties = gisNodes.get(dataset);
-        return gisProperties == null ? null : gisProperties.getGis();
+        return datasetNode;
     }
 
     @Override
