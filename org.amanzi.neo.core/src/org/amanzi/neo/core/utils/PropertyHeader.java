@@ -117,7 +117,7 @@ public class PropertyHeader {
      */
     public String[] getNumericFields() {
         
-        return havePropertyNode ? getDefinedNumericFields() : NeoUtils.getNumericFields(node);
+        return havePropertyNode ? getDefinedNumericFields() : isGis?getDataVault().getNumericFields():NeoUtils.getNumericFields(node);
     }
     
     /**
@@ -127,7 +127,7 @@ public class PropertyHeader {
      */
     public String[] getStringFields() {
         
-        return havePropertyNode ? getDefinedStringFields() : null;
+        return havePropertyNode ? getDefinedStringFields() :isGis?getDataVault().getStringFields(): null;
     }
 
     /**
@@ -141,7 +141,7 @@ public class PropertyHeader {
     }
 
     public String[] getAllFields() {
-        return havePropertyNode ? getDefinedAllFields() : getNumericFields();// NeoUtils.getAllFields(node);
+        return havePropertyNode ? getDefinedAllFields() :isGis?getDataVault().getAllFields(): getNumericFields();// NeoUtils.getAllFields(node);
     }
 
     /**
@@ -333,6 +333,9 @@ public class PropertyHeader {
      * @return node
      */
     public Node getPropertyNode(final String propertyName) {
+        if (isGis){
+            return getDataVault().getPropertyNode(propertyName);
+        }
         if (propertyName == null) {
             return null;
         }
@@ -358,6 +361,9 @@ public class PropertyHeader {
 //        if (GisTypes.NETWORK != gisType) {
 //            return null;
 //        }
+        if (isGis){
+            return getDataVault().getSectorOrMeasurmentNames();
+        }
         Set<String> result = new HashSet<String>();
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
         if (propRel != null) {
@@ -453,6 +459,9 @@ public class PropertyHeader {
      * @return
      */
     public PropertyStatistics getPropertyStatistic(final String propertyName) {
+        if (isGis){
+            return getDataVault().getPropertyStatistic(propertyName);
+        }
         if (havePropertyNode) {
             Node property = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).getOtherNode(node);
             Iterator<Node> iterator = property.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {

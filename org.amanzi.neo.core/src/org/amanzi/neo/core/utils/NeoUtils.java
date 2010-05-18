@@ -1156,7 +1156,18 @@ public class NeoUtils {
      */
     public static Pair<Long, Long> getMinMaxTimeOfDataset(Node driveGisNode, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
+        
         try {
+            //TODO only for fast fix - remove code after testing 
+            if (isGisNode(driveGisNode)){
+                StringBuilder st=new StringBuilder("should be fixed - gets this property from root node instead gis node!\n");
+                for (StackTraceElement elem:Thread.currentThread().getStackTrace()){
+                    st.append("\tat ").append(elem).append("\n");
+                }
+                LOGGER.error(st.toString());
+                return getMinMaxTimeOfDataset(driveGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING).getOtherNode(driveGisNode), service);
+            }
+            //--
             Pair<Long, Long> pair = new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null), (Long)driveGisNode.getProperty(
                     INeoConstants.MAX_TIMESTAMP, null));
             return pair;
