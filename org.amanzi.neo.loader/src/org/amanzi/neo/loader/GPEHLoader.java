@@ -96,13 +96,12 @@ public class GPEHLoader extends DriveLoader {
     private static final int KEY_EVENT = 1;
     private final static Pattern mainFilePattern = Pattern.compile("(^.*)(_Mp0\\.)(.*$)");
     private static final int COUNT_LEN = 1000;
-    private Node data;
     private long timestampOfDay;
     private Node eventLastNode;
     private final LinkedHashMap<String, Header> headers;
     private int eventsCount;
     
-    private HashMap<String, Object> locationProperties = new HashMap<String, Object>();
+    private final HashMap<String, Object> locationProperties = new HashMap<String, Object>();
     private Node mpNode = null;
     private long previousGoodTimestamp;
     
@@ -114,7 +113,7 @@ public class GPEHLoader extends DriveLoader {
     private int rscpIndex;
     
     private final LuceneIndexService luceneInd;
-    private String luceneIndexName;
+    private final String luceneIndexName;
     private final String eventIndName;
     
     /**
@@ -136,7 +135,7 @@ public class GPEHLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return gisNodes.get(dataset).getGis();
+        return datasetNode;
     }
 
     @Override
@@ -238,7 +237,7 @@ public class GPEHLoader extends DriveLoader {
             commit(false);
         }
         
-        finishUpGis(data);
+        finishUpGis(datasetNode);
         
         addLayersToMap();
     }

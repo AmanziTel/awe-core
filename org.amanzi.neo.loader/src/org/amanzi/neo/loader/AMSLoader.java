@@ -1046,9 +1046,9 @@ public class AMSLoader extends AbstractCallLoader {
     protected Node getStoringNode(Integer key) {
     	switch (key) {
     	case REAL_DATASET_HEADER_INDEX:
-            return gisNodes.get(dataset).getGis();
+            return datasetNode;
     	case CALL_DATASET_HEADER_INDEX:
-            return gisNodes.get(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)).getGis();
+            return callDataset;
     	default:
     		return null;    			
     	}

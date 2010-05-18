@@ -73,7 +73,7 @@ public class ProbeLoader extends AbstractLoader{
     }
     @Override
     protected Node getStoringNode(Integer key) {
-        return gisNode;
+        return network;
     }
 
     @Override

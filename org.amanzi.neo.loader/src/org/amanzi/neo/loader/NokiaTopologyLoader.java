@@ -180,7 +180,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        return gisNode;
+        return networkNode;
     }
 
     @Override

@@ -69,7 +69,7 @@ public class NemoLoader extends DriveLoader {
     protected Node parentMnode;
     protected SimpleDateFormat timeFormat;
     protected LinkedHashMap<String, Header> headers;
-    private LinkedHashMap<String, Header> headersVirt;
+    private final LinkedHashMap<String, Header> headersVirt;
     private Node virtualDataset;
     private Node virtualMnode = null;
     protected Float curLat;
@@ -541,15 +541,11 @@ public class NemoLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        String datasetName = null;
         if (key == 1) {
-            datasetName = dataset;
+            return datasetNode;
         } else {
-            datasetName = DriveTypes.MS.getFullDatasetName(dataset);
+            return virtualDataset;
         }
-
-        GisProperties gisProperties = gisNodes.get(datasetName);
-        return gisProperties == null ? null : gisProperties.getGis();
     }
 
     @Override

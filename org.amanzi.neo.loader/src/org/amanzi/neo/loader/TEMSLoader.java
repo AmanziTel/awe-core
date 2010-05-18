@@ -58,9 +58,9 @@ public class TEMSLoader extends DriveLoader {
     private Float currentLongitude = null;
     private String time = null;
     private long timestamp = 0L;
-    private HashMap<String, float[]> signals = new HashMap<String, float[]>();
+    private final HashMap<String, float[]> signals = new HashMap<String, float[]>();
     private String event;
-    private ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    private final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
     private Node mNode;
     private Node virtualMnode;
     private String virtualDatasetName;
@@ -209,11 +209,13 @@ public class TEMSLoader extends DriveLoader {
      * cached data, and call the super method to finalize saving of data to gis node and the
      * properties map.
      */
+    @Override
     protected void finishUp() {
         saveData();
         super.finishUp();
     }
 
+    @Override
     protected void parseLine(String line) {
 
         // debug(line);
@@ -516,16 +518,13 @@ public class TEMSLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-        String datasetName = null;
         if (key == 1) {
-            datasetName = dataset;
+           return datasetNode;
         }
         else {
-            datasetName = getVirtualDatasetName();
+            return getVirtualDataset(DriveTypes.MS);
         }
         
-        GisProperties gisProperties = gisNodes.get(datasetName);
-		return gisProperties==null?null:gisProperties.getGis();
     }
     
     @Override

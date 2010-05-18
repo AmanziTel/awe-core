@@ -390,7 +390,7 @@ public class UTRANLoader extends AbstractLoader {
      */
     @Override
     protected Node getStoringNode(Integer key) {
-        return gis;
+        return network;
     }
 
     /**

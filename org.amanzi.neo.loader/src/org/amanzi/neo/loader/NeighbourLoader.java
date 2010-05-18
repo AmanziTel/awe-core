@@ -46,7 +46,6 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.lucene.LuceneIndexService;
 
-
 /**
  * <p>
  * NeighbourLoader - imports Neighbour data from file into database
@@ -86,7 +85,7 @@ public class NeighbourLoader {
         this.fileName = fileName;
         this.neo = neo;
         this.baseName = new File(fileName).getName();
-        gisName=NeoUtils.getSimpleNodeName(networkNode, "",neo);
+        gisName = NeoUtils.getSimpleNodeName(networkNode, "", neo);
         index = NeoServiceProvider.getProvider().getIndexService();
     }
 
@@ -340,7 +339,7 @@ public class NeighbourLoader {
 
                 Node neighbourNode = null;
                 if (serverNode != null) {
-                    neighbourNode=getSectorNodeById(neighbourNodeName); 
+                    neighbourNode = getSectorNodeById(neighbourNodeName);
                 }
                 if (serverNode == null || neighbourNode == null) {
                     NeoLoaderPlugin.error("Not found sectors for line:\n" + line);

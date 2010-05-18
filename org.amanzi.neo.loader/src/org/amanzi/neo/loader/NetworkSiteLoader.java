@@ -32,30 +32,44 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.lucene.LuceneIndexService;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Network Site loader
- * </p>
- * 
+ * </p>.
+ *
  * @author TsAr
  * @since 1.0.0
  */
 public class NetworkSiteLoader extends AbstractLoader {
-    /** String SITE_ID_KEY field */
+    
+    /** String SITE_ID_KEY field. */
     private static final String SITE_ID_KEY = "site_id";
+    
+    /** The main headers. */
     private final ArrayList<String> mainHeaders = new ArrayList<String>();
+    
+    /** The network header. */
     private NetworkHeader networkHeader = null;
+    
+    /** The line errors. */
     public ArrayList<String> lineErrors = new ArrayList<String>();
+    
+    /** The network node. */
     private final Node networkNode;
+    
+    /** The need parce header. */
     private boolean needParceHeader;
+    
+    /** The lucene ind. */
     private final LuceneIndexService luceneInd;
 
     /**
-     * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
-     * 
+     * Constructor for loading data in AWE, with specified display and dataset, but no NeoService.
+     *
+     * @param gisName the gis name
      * @param filename of file to load
      * @param display for opening message dialogs
-     * @param dataset to add data to
      */
     public NetworkSiteLoader(String gisName, String filename, Display display) {
         initialize("Network", null, filename, display);
@@ -66,6 +80,11 @@ public class NetworkSiteLoader extends AbstractLoader {
         initializeKnownHeaders();
     }
 
+    /**
+     * Parses the line.
+     *
+     * @param line the line
+     */
     @Override
     protected void parseLine(String line) {
         List<String> fields = splitLine(line);
@@ -124,9 +143,10 @@ public class NetworkSiteLoader extends AbstractLoader {
     }
 
     /**
-     * finds or create site node
+     * finds or create site node.
+     *
      * @param siteField site name
-     * @return site node. 
+     * @return site node.
      */
     private Node findOrCreateSiteNode(final String siteField) {
         Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteField);
@@ -152,9 +172,9 @@ public class NetworkSiteLoader extends AbstractLoader {
     /**
      * Add a known header entry as well as mark it as a main header. All other fields will be
      * assumed to be sector properties.
-     * 
-     * @param key
-     * @param regexes
+     *
+     * @param key the key
+     * @param regexes the regexes
      */
     private void addMainHeader(String key, String[] regexes) {
         addKnownHeader(1, key, regexes);
@@ -181,11 +201,25 @@ public class NetworkSiteLoader extends AbstractLoader {
         addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
     }
 
+    /**
+     * The Class NetworkHeader.
+     */
     private class NetworkHeader {
+        
+        /** The main keys. */
         private final Map<String, String> mainKeys = new HashMap<String, String>();
+        
+        /** The site data. */
         private final ArrayList<String> siteData = new ArrayList<String>();
+        
+        /** The line data. */
         Map<String, Object> lineData = null;
 
+        /**
+         * Instantiates a new network header.
+         *
+         * @param fields the fields
+         */
         private NetworkHeader(List<String> fields) {
             lineData = makeDataMap(fields);
             HeaderMaps headerMap = getHeaderMap(1);
@@ -199,10 +233,20 @@ public class NetworkSiteLoader extends AbstractLoader {
             }
         }
 
+        /**
+         * Sets the data.
+         *
+         * @param fields the new data
+         */
         private void setData(List<String> fields) {
             lineData = makeDataMap(fields);
         }
 
+        /**
+         * Gets the site data.
+         *
+         * @return the site data
+         */
         private Map<String, Object> getSiteData() {
             Map<String, Object> data = new LinkedHashMap<String, Object>();
             for (String key : siteData) {
@@ -213,6 +257,12 @@ public class NetworkSiteLoader extends AbstractLoader {
             return data;
         }
 
+        /**
+         * Gets the string.
+         *
+         * @param key the key
+         * @return the string
+         */
         private String getString(String key) {
             Object value = lineData.get(key);
             if (value == null || value instanceof String) {
@@ -223,13 +273,34 @@ public class NetworkSiteLoader extends AbstractLoader {
         }
     }
 
+    /**
+     * Gets the storing node.
+     *
+     * @param key the key
+     * @return the storing node
+     */
     @Override
     protected Node getStoringNode(Integer key) {
         // because gis node we use for sector storing node root, for site property we use
         // networkNode
-        return networkNode;
+        return NeoUtils.findOrCreateVirtualDatasetNode(networkNode, getVitrualDatasetName(), neo);
     }
 
+
+    /**
+     * Gets the vitrual dataset name.
+     *
+     * @return the vitrual dataset name
+     */
+    private String getVitrualDatasetName() {
+        return String.format("Site datasets of network '%s'",basename);
+    }
+
+    /**
+     * Need parce headers.
+     *
+     * @return true, if successful
+     */
     @Override
     protected boolean needParceHeaders() {
         if (needParceHeader) {
