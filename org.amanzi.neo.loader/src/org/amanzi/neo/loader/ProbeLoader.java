@@ -76,6 +76,10 @@ public class ProbeLoader extends AbstractLoader{
         return network;
     }
     @Override
+    protected String getPrymaryType(Integer key) {
+        return NodeTypes.PROBE.getId();
+    }
+    @Override
     public Node[] getRootNodes() {
         return new Node[]{network};
     }

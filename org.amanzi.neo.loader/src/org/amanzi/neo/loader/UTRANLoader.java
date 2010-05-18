@@ -393,6 +393,11 @@ public class UTRANLoader extends AbstractLoader {
         return network;
     }
     @Override
+    protected String getPrymaryType(Integer key) {
+            return NodeTypes.SECTOR.getId();
+
+    }
+    @Override
     public Node[] getRootNodes() {
         return new Node[]{network};
     }
@@ -494,7 +499,7 @@ public class UTRANLoader extends AbstractLoader {
      */
     private Node getUtranNeighbourNode() {
         if (utranNeighbourNode == null) {
-            utranNeighbourNode = getNeighbour(gis, UTRAN_NEIGHBOUR_NAME);
+            utranNeighbourNode = getNeighbour(network, UTRAN_NEIGHBOUR_NAME);
         }
         return utranNeighbourNode;
     }
@@ -506,7 +511,7 @@ public class UTRANLoader extends AbstractLoader {
      */
     private Node getGSMNeighbourNode() {
         if (gsmNeighbourNode == null) {
-            gsmNeighbourNode = getNeighbour(gis, GSM_NEIGHBOUR_NAME);
+            gsmNeighbourNode = getNeighbour(network, GSM_NEIGHBOUR_NAME);
         }
         return gsmNeighbourNode;
     }

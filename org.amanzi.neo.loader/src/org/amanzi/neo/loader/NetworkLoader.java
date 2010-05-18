@@ -700,6 +700,11 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     @Override
+    protected String getPrymaryType(Integer key) {
+        return NodeTypes.SECTOR.getId();
+    }
+
+    @Override
     public Node[] getRootNodes() {
         return new Node[] {getNetworkNode()};
     }

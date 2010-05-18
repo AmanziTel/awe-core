@@ -547,7 +547,15 @@ public class NemoLoader extends DriveLoader {
             return virtualDataset;
         }
     }
-
+    @Override
+    protected String getPrymaryType(Integer key) {
+        if (key == 1) {
+            return NodeTypes.M.getId();
+        } else {
+            return NodeTypes.MM.getId();
+        }
+        
+    }
     @Override
     protected boolean needParceHeaders() {
         return false;

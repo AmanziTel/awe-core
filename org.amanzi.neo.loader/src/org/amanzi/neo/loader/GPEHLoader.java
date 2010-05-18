@@ -139,6 +139,11 @@ public class GPEHLoader extends DriveLoader {
     }
 
     @Override
+    protected String getPrymaryType(Integer key) {
+        return NodeTypes.M.getId();
+    }
+
+    @Override
     public void run(IProgressMonitor monitor) throws IOException {
         if (monitor != null)
             monitor.subTask(basename);

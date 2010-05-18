@@ -70,6 +70,11 @@ public class APDLoader extends AbstractLoader {
     }
 
     @Override
+    protected String getPrymaryType(Integer key) {
+        return NodeTypes.M.getId();
+    }
+
+    @Override
     protected void parseLine(String line) {
         if (fileNode == null) {
             ossRoot = LoaderUtils.findOrCreateOSSNode(OssType.APD, basename, neo);

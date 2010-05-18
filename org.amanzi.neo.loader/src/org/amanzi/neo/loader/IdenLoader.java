@@ -74,7 +74,10 @@ public class IdenLoader extends DriveLoader {
     protected Node getStoringNode(Integer key) {
         return datasetNode;
     }
-
+    @Override
+    protected String getPrymaryType(Integer key) {
+        return NodeTypes.M.getId();
+    }
     @Override
     protected boolean needParceHeaders() {
         if (needParceHeader) {

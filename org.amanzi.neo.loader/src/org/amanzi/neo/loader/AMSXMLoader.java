@@ -134,6 +134,19 @@ public class AMSXMLoader extends AbstractCallLoader {
     }
 
     @Override
+    protected String getPrymaryType(Integer key) {
+        switch (key) {
+        case REAL_DATASET_HEADER_INDEX:
+            return NodeTypes.M.getId();
+        case CALL_DATASET_HEADER_INDEX:
+            return NodeTypes.CALL.getId();
+        case PROBE_NETWORK_HEADER_INDEX:
+            return NodeTypes.PROBE.getId();
+        default:
+            return null;
+        }
+    }
+    @Override
     protected boolean needParceHeaders() {
         return false;
     }

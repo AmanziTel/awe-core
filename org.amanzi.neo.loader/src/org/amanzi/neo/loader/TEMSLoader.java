@@ -527,7 +527,16 @@ public class TEMSLoader extends DriveLoader {
         }
         
     }
-    
+    @Override
+    protected String getPrymaryType(Integer key) {
+        
+        if (key == 1) {
+            return NodeTypes.M.getId();
+         }
+         else {
+            return INeoConstants.HEADER_MS;
+         }
+    }   
     @Override
     protected ArrayList<Node> getGisNodes() {
         ArrayList<Node> result = new ArrayList<Node>();

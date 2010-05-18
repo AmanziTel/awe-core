@@ -165,6 +165,10 @@ public class OSSCounterLoader extends AbstractLoader {
         return ossNode;
     }
     @Override
+    protected String getPrymaryType(Integer key) {
+        return MV_TYPE;
+    }
+    @Override
     public Node[] getRootNodes() {
         return new Node[]{ossNode};
     }

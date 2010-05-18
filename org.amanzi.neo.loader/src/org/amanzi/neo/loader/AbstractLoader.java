@@ -1309,13 +1309,17 @@ public abstract class AbstractLoader {
             node.delete();
         }
     }
-
+    protected abstract String getPrymaryType(Integer key);
     protected final void saveProperties() {
         for (Map.Entry<Integer, HeaderMaps> entryHeader : headersMap.entrySet()) {
             Node storingRootNode = getStoringNode(entryHeader.getKey());
             if (storingRootNode != null) {
                 Transaction transaction = neo.beginTx();
                 try {
+                    String primaryType=getPrymaryType(entryHeader.getKey());
+                    if (StringUtils.isNotEmpty(primaryType)){
+                        NeoUtils.setPrimaryType(storingRootNode, primaryType, neo);
+                    }
                     Node propNode;
                     Relationship propRel = storingRootNode.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES,
                             Direction.OUTGOING);

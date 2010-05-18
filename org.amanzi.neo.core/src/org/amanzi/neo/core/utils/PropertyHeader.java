@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.graphdb.Direction;
@@ -38,18 +37,17 @@ import org.neo4j.graphdb.Traverser.Order;
  * <p>
  * Contains information of property
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
 public class PropertyHeader {
-
 
     /** String RELATION_PROPERTY field */
     private static final String RELATION_PROPERTY = "property";
     private final Node node;
     private final boolean isGis;
     private final boolean isDataset;
-    private final GisTypes gisType;
     private final boolean havePropertyNode;
 
     /**
@@ -58,11 +56,10 @@ public class PropertyHeader {
      * @param node - gis Node
      */
     public PropertyHeader(Node node) {
-        isGis=NeoUtils.isGisNode(node);
-            gisType=isGis?GisTypes.findGisTypeByHeader((String)node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME,null)):null;
+        isGis = NeoUtils.isGisNode(node);
         isDataset = !isGis && NeoUtils.isDatasetNode(node);
         this.node = node;
-        havePropertyNode=node.hasRelationship(GeoNeoRelationshipTypes.PROPERTIES,Direction.OUTGOING);
+        havePropertyNode = node.hasRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
     }
 
     /**
@@ -87,6 +84,9 @@ public class PropertyHeader {
      * @return array or null
      */
     public String[] getNeighbourAllFields(String neighbourName) {
+        if (isGis) {
+            return getDataVault().getNeighbourAllFields(neighbourName);
+        }
         Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
@@ -102,6 +102,9 @@ public class PropertyHeader {
      * @return array or null
      */
     public String[] getTransmissionAllFields(String neighbourName) {
+        if (isGis) {
+            return getDataVault().getTransmissionAllFields(neighbourName);
+        }
         Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
@@ -116,18 +119,18 @@ public class PropertyHeader {
      * @return array or null
      */
     public String[] getNumericFields() {
-        
-        return havePropertyNode ? getDefinedNumericFields() : isGis?getDataVault().getNumericFields():NeoUtils.getNumericFields(node);
+
+        return havePropertyNode ? getDefinedNumericFields() : isGis ? getDataVault().getNumericFields() : NeoUtils.getNumericFields(node);
     }
-    
+
     /**
      * get String Fields of current node
      * 
      * @return array or null
      */
     public String[] getStringFields() {
-        
-        return havePropertyNode ? getDefinedStringFields() :isGis?getDataVault().getStringFields(): null;
+
+        return havePropertyNode ? getDefinedStringFields() : isGis ? getDataVault().getStringFields() : null;
     }
 
     /**
@@ -136,12 +139,11 @@ public class PropertyHeader {
      * @return data vault
      */
     public PropertyHeader getDataVault() {
-        return isGis || isDataset ? new PropertyHeader(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
-                .getOtherNode(node)) : this;
+        return isGis || isDataset ? new PropertyHeader(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node)) : this;
     }
 
     public String[] getAllFields() {
-        return havePropertyNode ? getDefinedAllFields() :isGis?getDataVault().getAllFields(): getNumericFields();// NeoUtils.getAllFields(node);
+        return havePropertyNode ? getDefinedAllFields() : isGis ? getDataVault().getAllFields() : getNumericFields();// NeoUtils.getAllFields(node);
     }
 
     /**
@@ -154,8 +156,8 @@ public class PropertyHeader {
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
         if (propRel != null) {
             Node propNode = propRel.getEndNode();
-            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                    ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,
+                    Direction.OUTGOING)) {
                 String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
                 String propertyName = propType.equals("string") ? INeoConstants.PROPERTY_STATS : INeoConstants.PROPERTY_DATA;
                 String[] properties = (String[])node.getProperty(propertyName, null);
@@ -168,7 +170,6 @@ public class PropertyHeader {
         return result.toArray(new String[0]);
     }
 
-    
     private String[] getDefinedNumericFields() {
         List<String> ints = new ArrayList<String>();
         List<String> floats = new ArrayList<String>();
@@ -177,8 +178,8 @@ public class PropertyHeader {
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
         if (propRel != null) {
             Node propNode = propRel.getEndNode();
-            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                    ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,
+                    Direction.OUTGOING)) {
                 String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
                 String[] properties = (String[])node.getProperty(INeoConstants.PROPERTY_DATA, null);
                 if (propType != null && properties != null) {
@@ -197,20 +198,20 @@ public class PropertyHeader {
         result.addAll(longs);
         return result.toArray(new String[0]);
     }
-    
+
     private String[] getDefinedStringFields() {
         List<String> result = new ArrayList<String>();
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
         if (propRel != null) {
             Node propNode = propRel.getEndNode();
-            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                    ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,
+                    Direction.OUTGOING)) {
                 String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
                 String[] properties = (String[])node.getProperty(INeoConstants.PROPERTY_DATA, null);
                 if (propType != null && properties != null) {
                     if (propType.equals("string")) {
                         result.addAll(Arrays.asList(properties));
-                    } 
+                    }
                 }
             }
         }
@@ -223,7 +224,7 @@ public class PropertyHeader {
      * @return AllChannels properties
      */
     public String[] getAllChannels() {
-        return isGis?getDataVault().getAllChannels():(String[])node.getProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, null);
+        return isGis ? getDataVault().getAllChannels() : (String[])node.getProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, null);
     }
 
     /**
@@ -233,8 +234,8 @@ public class PropertyHeader {
      */
     public Collection<String> getNeighbourList() {
         List<String> result = new ArrayList<String>();
-        if (!isGis || gisType == GisTypes.DRIVE) {
-            return result;
+        if (isGis) {
+            return getDataVault().getNeighbourList();
         }
         Iterable<Relationship> neighb = node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING);
         for (Relationship relationship : neighb) {
@@ -248,6 +249,9 @@ public class PropertyHeader {
      * @return
      */
     public String[] getNeighbourIntegerFields(String neighbourName) {
+        if (isGis) {
+            return getDataVault().getNeighbourIntegerFields(neighbourName);
+        }
         Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
@@ -255,11 +259,15 @@ public class PropertyHeader {
         String[] result = (String[])neighbour.getProperty(INeoConstants.LIST_INTEGER_PROPERTIES, null);
         return result;
     }
+
     /**
      * @param neighbourName
      * @return
      */
     public String[] getTransmissionIntegerFields(String neighbourName) {
+        if (isGis) {
+            return getDataVault().getTransmissionIntegerFields(neighbourName);
+        }
         Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
@@ -273,6 +281,9 @@ public class PropertyHeader {
      * @return
      */
     public String[] getNeighbourDoubleFields(String neighbourName) {
+        if (isGis) {
+            return getDataVault().getNeighbourDoubleFields(neighbourName);
+        }
         Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
@@ -286,6 +297,9 @@ public class PropertyHeader {
      * @return
      */
     public String[] getTransmissionDoubleFields(String neighbourName) {
+        if (isGis) {
+            return getDataVault().getTransmissionDoubleFields(neighbourName);
+        }
         Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
@@ -310,12 +324,11 @@ public class PropertyHeader {
                         return false;
                     }
                     Object property = currentPos.lastRelationshipTraversed().getProperty(RELATION_PROPERTY, "");
-                    //Pechko_E event property name for TEMS and ROMES is "event_type"
-                    //Pechko_E for Nemo is "event_id"
-                    return "event_type".equals(property)||"event_id".equals(property);
+                    // Pechko_E event property name for TEMS and ROMES is "event_type"
+                    // Pechko_E for Nemo is "event_id"
+                    return "event_type".equals(property) || "event_id".equals(property);
                 }
-            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)
-                    .iterator();
+            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).iterator();
             if (iterator.hasNext()) {
                 Iterator<String> propertyKeys = iterator.next().getPropertyKeys().iterator();
                 while (propertyKeys.hasNext()) {
@@ -333,7 +346,7 @@ public class PropertyHeader {
      * @return node
      */
     public Node getPropertyNode(final String propertyName) {
-        if (isGis){
+        if (isGis) {
             return getDataVault().getPropertyNode(propertyName);
         }
         if (propertyName == null) {
@@ -358,18 +371,18 @@ public class PropertyHeader {
      * @return
      */
     public String[] getSectorOrMeasurmentNames() {
-//        if (GisTypes.NETWORK != gisType) {
-//            return null;
-//        }
-        if (isGis){
+        // if (GisTypes.NETWORK != gisType) {
+        // return null;
+        // }
+        if (isGis) {
             return getDataVault().getSectorOrMeasurmentNames();
         }
         Set<String> result = new HashSet<String>();
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
         if (propRel != null) {
             Node propNode = propRel.getEndNode();
-            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                    ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,
+                    Direction.OUTGOING)) {
                 String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
                 String propertyName = INeoConstants.PROPERTY_DATA;
                 String[] properties = (String[])node.getProperty(propertyName, null);
@@ -381,21 +394,23 @@ public class PropertyHeader {
         }
         return result.toArray(new String[0]);
     }
+
     /**
-     * 
      * <p>
-     *Contains information about property statistics
+     * Contains information about property statistics
      * </p>
+     * 
      * @author Cinkel_A
      * @since 1.0.0
      */
-    public static class PropertyStatistics{
-        private final  Relationship statisticsRelation;
+    public static class PropertyStatistics {
+        private final Relationship statisticsRelation;
         private final Node typeNode;
         private final Node valueNode;
-        
+
         /**
          * Constructor
+         * 
          * @param statisticsRelation
          * @param typeNode
          * @param valueNode
@@ -406,60 +421,67 @@ public class PropertyHeader {
             this.typeNode = typeNode;
             this.valueNode = valueNode;
         }
+
         /**
          * @return Returns the statisticsRelation.
          */
         public Relationship getStatisticsRelation() {
             return statisticsRelation;
         }
+
         /**
          * @return Returns the typeNode.
          */
         public Node getTypeNode() {
             return typeNode;
         }
+
         /**
          * @return Returns the valueNode.
          */
         public Node getValueNode() {
             return valueNode;
         }
-        public Pair<Double,Double> getMinMax(){
-            return new Pair<Double, Double>((Double)statisticsRelation.getProperty(INeoConstants.MIN_VALUE,null),(Double)statisticsRelation.getProperty(INeoConstants.MAX_VALUE,null));
+
+        public Pair<Double, Double> getMinMax() {
+            return new Pair<Double, Double>((Double)statisticsRelation.getProperty(INeoConstants.MIN_VALUE, null), (Double)statisticsRelation.getProperty(
+                    INeoConstants.MAX_VALUE, null));
         }
+
         /**
          *get wrapped value depends of type of property
+         * 
          * @param value - number value
          * @return (cast to type of property)value
          */
         public Object getWrappedValue(Number value) {
-            if (value==null){
+            if (value == null) {
                 return null;
             }
             String name = NeoUtils.getSimpleNodeName(typeNode, "");
-            if (name.equals("long")){
+            if (name.equals("long")) {
                 return value.longValue();
             }
-            if (name.equals("float")){
+            if (name.equals("float")) {
                 return value.floatValue();
             }
-            if (name.equals("integer")){
+            if (name.equals("integer")) {
                 return value.intValue();
             }
-            if (name.equals("double")){
+            if (name.equals("double")) {
                 return value.doubleValue();
             }
-            //string value
-            return  value.toString();
+            // string value
+            return value.toString();
         }
     }
+
     /**
-     *
      * @param propertyName
      * @return
      */
     public PropertyStatistics getPropertyStatistic(final String propertyName) {
-        if (isGis){
+        if (isGis) {
             return getDataVault().getPropertyStatistic(propertyName);
         }
         if (havePropertyNode) {
@@ -469,13 +491,13 @@ public class PropertyHeader {
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Relationship relation = currentPos.lastRelationshipTraversed();
-                    return relation!=null&&relation.isType(GeoNeoRelationshipTypes.PROPERTIES)&&relation.getProperty("property","").equals(propertyName);
+                    return relation != null && relation.isType(GeoNeoRelationshipTypes.PROPERTIES) && relation.getProperty("property", "").equals(propertyName);
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).iterator();
-            if (iterator.hasNext()){
-                Node node=iterator.next();
-                Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES,Direction.INCOMING);
-                PropertyStatistics result=new PropertyStatistics(relation, relation.getOtherNode(node), node);
+            if (iterator.hasNext()) {
+                Node node = iterator.next();
+                Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.INCOMING);
+                PropertyStatistics result = new PropertyStatistics(relation, relation.getOtherNode(node), node);
                 return result;
             }
         }

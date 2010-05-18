@@ -170,7 +170,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
            result = neo.createNode();
            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NEIGHBOUR.getId());
            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, neighbourName);
-           gisNode.createRelationshipTo(result, NetworkRelationshipTypes.NEIGHBOUR_DATA);
+           networkNode.createRelationshipTo(result, NetworkRelationshipTypes.NEIGHBOUR_DATA);
            tx.success();
            return result;
        } finally {
@@ -181,6 +181,10 @@ public class NokiaTopologyLoader extends AbstractLoader {
     @Override
     protected Node getStoringNode(Integer key) {
         return networkNode;
+    }
+    @Override
+    protected String getPrymaryType(Integer key) {
+        return NodeTypes.M.getId();
     }
     @Override
     public Node[] getRootNodes() {

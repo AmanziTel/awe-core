@@ -318,7 +318,7 @@ public class LoaderUtils {
         Node oss;
         Transaction tx = neo.beginTx();
         try {
-            oss = NeoUtils.findRootNode(NodeTypes.OSS, ossName, neo);
+            oss = NeoUtils.findRootNodeByName(ossName, neo);
             if (oss == null) {
                 oss = neo.createNode();
                 oss.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.OSS.getId());
@@ -326,6 +326,7 @@ public class LoaderUtils {
                 ossType.setOssType(oss, neo);
                 neo.getReferenceNode().createRelationshipTo(oss, GeoNeoRelationshipTypes.CHILD);
             }
+            assert NodeTypes.OSS.checkNode(oss);
             tx.success();
         } finally {
             tx.finish();

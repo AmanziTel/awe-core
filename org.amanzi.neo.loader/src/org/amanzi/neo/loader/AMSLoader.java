@@ -1038,19 +1038,29 @@ public class AMSLoader extends AbstractCallLoader {
 	}
 	
 
-
     @Override
     protected Node getStoringNode(Integer key) {
-    	switch (key) {
-    	case REAL_DATASET_HEADER_INDEX:
+        switch (key) {
+        case REAL_DATASET_HEADER_INDEX:
             return datasetNode;
-    	case CALL_DATASET_HEADER_INDEX:
+        case CALL_DATASET_HEADER_INDEX:
             return callDataset;
-    	default:
-    		return null;    			
-    	}
+        default:
+            return null;
+        }
     }
-    
+
+    @Override
+    protected String getPrymaryType(Integer key) {
+        switch (key) {
+        case REAL_DATASET_HEADER_INDEX:
+            return NodeTypes.M.getId();
+        case CALL_DATASET_HEADER_INDEX:
+            return NodeTypes.CALL.getId();
+        default:
+            return null;
+        }
+    }
     @Override
     protected boolean needParceHeaders() {
     	return false;

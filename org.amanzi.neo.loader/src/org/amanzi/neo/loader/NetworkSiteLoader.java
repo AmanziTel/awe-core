@@ -290,7 +290,10 @@ public class NetworkSiteLoader extends AbstractLoader {
     public Node[] getRootNodes() {
         return new Node[]{networkNode};
     }
-
+    @Override
+    protected String getPrymaryType(Integer key) {
+        return NodeTypes.SITE.getId();
+    }
     /**
      * Gets the vitrual dataset name.
      * 

@@ -119,6 +119,11 @@ public class GPSLoader extends DriveLoader {
     }
 
     @Override
+    protected String getPrymaryType(Integer key) {
+        return NodeTypes.M.getId();
+    }
+
+    @Override
     protected boolean needParceHeaders() {
         if (needParceHeader) {
             needParceHeader = false;

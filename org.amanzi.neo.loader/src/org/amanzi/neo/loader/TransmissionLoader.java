@@ -134,7 +134,7 @@ public class TransmissionLoader {
                 return;
             }
             header = new Header(line, neo);
-            neighbour = getTransmission(gis, baseName);
+            neighbour = getTransmission(network, baseName);
             int commit = 0;
             while ((line = reader.readLine()) != null) {
                 header.parseLine(line, network, baseName);

@@ -81,7 +81,7 @@ public class NeighbourLoader {
      * @param fileName Neighbour file Name
      */
     public NeighbourLoader(Node networkNode, String fileName, GraphDatabaseService neo) {
-        network = networkNode;
+        network = NeoUtils.findRoot(networkNode,neo);
         this.fileName = fileName;
         this.neo = neo;
         this.baseName = new File(fileName).getName();
