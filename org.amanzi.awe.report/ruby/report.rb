@@ -540,17 +540,21 @@ end
               @datasets<<create_chart_dataset_aggr(aggr_node)
             end
           elsif !@dataset.nil?
+            puts "chart setup #{Time.now}"
             props=[]
             @properties.each do |p|
               props<<p
             end
             props<<"site_name"<<"cell_name"<<"time"<<"date"
             props.flatten
+            puts "collecting data: #{Time.now}"
             aggr=@dataset.collect(props).aggregate("site_name")
+            puts "collecting data finished: #{Time.now}"
             result=[]
             @properties.each do |p|
               result<<Hash.new
             end
+            puts "aggregating data: #{Time.now}"
             aggr.each do |obj,rows|
               rows.each do |row|
                 site=obj
@@ -559,18 +563,20 @@ end
                 time=row['time']
                 @properties.each_with_index do |p,i|
                  value=row[p]
-                 puts "site=#{site}\tcell=#{cell}\tdate=#{date}\ttime=#{time}\tvalue=#{value}"
                  aggregate_sites(result[i],site,cell,date,time,value)
                 end
               end
             end
+            puts "aggregating data finished: #{Time.now}"
             averages=[]
              ds=DefaultCategoryDataset.new()
              time_label=get_time_label(aggregation)
+            puts "calculating averages: #{Time.now}"
             @properties.each_with_index do |p,i|
               average=calculate_average(result[i], @aggregation)
               update_chart_dataset(ds,average,p)
             end
+            puts "calculating averages finished: #{Time.now}"
             @datasets<<ds
           elsif !@kpi.nil?
             ds=DefaultCategoryDataset.new()

@@ -2,13 +2,14 @@ require 'formulas'
 require 'search'
 require 'neo4j'
 require 'parsedate'
+require 'date'
 
 module KPI
   module Default
     module Grid
       module Performance
         def Performance.dispatch_blocking_queue_rate(counters,aggregation=:none)
-          puts "dispatch_blocking_queue_rate method called"
+          puts "dispatch_blocking_queue_rate method called: #{Time.now}"
           aggr=counters.collect("time","date","site_name","cell_name",
           "dis_tch_queued",
           "dis_tch_requests"
@@ -25,6 +26,7 @@ module KPI
               aggregate_sites(sites,site,cell,date,time,kpi_rounded)
             end
           end
+          puts "calculating averages: #{Time.now}"
           calculate_average(sites, aggregation)
         end
 

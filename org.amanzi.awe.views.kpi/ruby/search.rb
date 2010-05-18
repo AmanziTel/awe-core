@@ -57,8 +57,13 @@ def counters(options={})
       file=oss
     end
     puts "oss #{oss}\nfile #{file}"
-    oss_node=filter(Neo4j.ref_node,'oss', {"name"=>oss}).first
-    oss_node=filter(Neo4j.ref_node,'gis', {"gis_type"=>"oss","name"=>oss}).first if oss_node.nil?
+#    oss_node=filter(Neo4j.ref_node,'oss', {"name"=>oss}).first
+    oss_node=Neo4j.ref_node.outgoing(:CHILD).depth(1).filter do 
+      get_property("type")=="gis" and 
+      get_property("gis_type")=="oss" and
+      get_property("name")==oss
+    end
+#    oss_node=filter(Neo4j.ref_node,'gis', {"gis_type"=>"oss","name"=>oss}).first if oss_node.nil?
     puts oss_node
     counter_node=filter(oss_node,'file', {"name"=>file}).first
     oss_type=counter_node["oss_type"]
@@ -72,6 +77,7 @@ def counters(options={})
     traverser=filter(counter_node,type_property_name, options)
     #      traverser=filter(counter_node,'mv', options)
     traverser.stop_on {get_property('type')=='file'}
+    puts "counters finished: #{Time.now}"
     NodeSet.new traverser
   else
     if !$counter_root_node.nil?
@@ -99,6 +105,7 @@ def events(options=nil)
 end
 
 def filter(root_node,type_name,options={})
+  puts "filter: #{Time.now}"
   root_node.outgoing(:CHILD, :NEXT).depth(:all).filter do
     node_properties = props # defined in Neo4j::NodeMixin
     if node_properties["type"]==type_name
@@ -133,6 +140,7 @@ class NodeSet
   end
 
   def collect(*args)
+    puts "collect #{Time.now}"
     PropertyTable.new(self,*args)
   end
 
@@ -194,7 +202,7 @@ class PropertyTable
   end
 
   def aggregate(property)
-    puts "PropertyTable.aggregate #{property}"
+    puts "aggregate #{Time.now}"
     aggregation=Aggregation.new(property)
     each do |values|
       aggregation.add(values.delete(property),values)
@@ -216,7 +224,6 @@ class PropertyTable
           break
         end
       end
-      puts props
       if !props.empty? and props.length==@properties.length
         #        i+=1
         yield props
@@ -296,7 +303,6 @@ def calculate_average(sites, aggregation)
         hours=Hash.new
         times.each do |time,values|
           hour=ParseDate.parsedate(time)[3]
-          puts "hour=#{hour}"
           if aggregation==:hourly
             values.each do |value|
               if hours.has_key? hour
