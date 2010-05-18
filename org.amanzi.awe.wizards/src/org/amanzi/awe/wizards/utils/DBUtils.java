@@ -16,6 +16,7 @@ package org.amanzi.awe.wizards.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -32,6 +33,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -129,8 +131,16 @@ public class DBUtils {
         List<String> sites = new ArrayList<String>();
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            Relationship rel = dataset.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
-            Node propertiesNode = rel.getEndNode();
+            Node propertiesNode = null;
+            Object nodeType = dataset.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+            if (nodeType.equals(NodeTypes.NETWORK.getId()) ||nodeType.equals(NodeTypes.DATASET.getDeclaringClass())) {
+                propertiesNode = dataset.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).getEndNode();
+            } else if (nodeType.equals(NodeTypes.GIS.getId())) {
+                Node dsNode = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+                propertiesNode = dsNode.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).getEndNode();
+            }
+            if (propertiesNode == null)
+                return sites;
             for (Relationship relationship : propertiesNode.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
                 String name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
@@ -189,7 +199,6 @@ public class DBUtils {
                 }
 
             }
-
             return sites;
         } finally {
             tx.finish();
@@ -199,10 +208,13 @@ public class DBUtils {
 
     /**
      * Finds all numeric properties for the node given
+     * 
      * @param node node to find properties
      * @return
      */
     public static List<String> getProperties(Node node) {
-        return Arrays.asList(new PropertyHeader(node).getNumericFields());
+        List<String> list = Arrays.asList(new PropertyHeader(node).getNumericFields());
+        Collections.sort(list);
+        return list;
     }
 }
