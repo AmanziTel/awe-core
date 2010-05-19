@@ -15,8 +15,10 @@ package org.amanzi.splash.ui.wizards;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
@@ -40,6 +42,7 @@ import org.neo4j.graphdb.Node;
  */
 public class ExportSplashToCsvWizard extends Wizard implements IExportWizard {
     ExportSplashToCsvWizardPage mainPage = null;
+    CSVPropertyWizardPage page2 = null;
     @Override
     public boolean performFinish() {
         
@@ -58,7 +61,7 @@ public class ExportSplashToCsvWizard extends Wizard implements IExportWizard {
         File f = new File(fileName);
         BufferedWriter buf = null;
         try {
-            buf = new BufferedWriter(new FileWriter(f));
+            buf = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f),page2.getCharsetValue()));
 //            buf = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f),"UTF-8"));
             buf.write(toFile);
             buf.close();
@@ -96,7 +99,13 @@ public class ExportSplashToCsvWizard extends Wizard implements IExportWizard {
             }
             Object v = rowHeader.getValue();
             if(v != null){
-                sb.append("\"").append(rowHeader.getValue().toString()).append("\"");
+                String vStr=String.valueOf(v);
+                if (needQuote(vStr)){
+                    sb.append(getQuoteChar()).append(vStr).append(getQuoteChar());
+                }else{
+                    sb.append(vStr);
+                    
+                }
             }
             int xLastPosition = 1;
             CellNode colCell = rowHeader.getNextCellInRow();
@@ -109,17 +118,41 @@ public class ExportSplashToCsvWizard extends Wizard implements IExportWizard {
         return sb.toString();
     }
 
+    /**
+     *
+     * @param v
+     * @return
+     */
+    private boolean needQuote(String v) {
+      return !Pattern.matches("\\d*\\.{0,1}\\d*",v);
+    }
+
+    public String getQuoteChar() {
+        return page2.getTextDelValue();
+    }
+
     private int addColData(CellNode cell, StringBuilder sb, int xLastPosition) {
         int xCell = cell.getCellColumn();
-        if(cell.getValue() == null || StringUtils.isEmpty(cell.getValue().toString())){
+        String value = String.valueOf(cell.getValue());
+        if(cell.getValue() == null || StringUtils.isEmpty(value)){
             return xLastPosition;
         }
         while(xLastPosition < xCell){
-            sb.append(";");
+            sb.append(getSeparator());
             xLastPosition++;
         }
-        sb.append("\"").append(cell.getValue().toString()).append("\"");
+        if (needQuote(value)){
+            sb.append(getQuoteChar()).append(value.toString()).append(getQuoteChar());
+        }else{
+            sb.append(value.toString());
+            
+        }
+//        sb.append(getQuoteChar()).append(cell.getValue().toString()).append(getQuoteChar());
         return xCell;
+    }
+
+    private String getSeparator() {
+        return page2.getFieldDelValue();
     }
     
     @Override
@@ -128,7 +161,11 @@ public class ExportSplashToCsvWizard extends Wizard implements IExportWizard {
         if (mainPage == null) {
             mainPage = new ExportSplashToCsvWizardPage("mainPage");
         }
+        if (page2 == null) {
+            page2 = new CSVPropertyWizardPage("propertyCSV","UTF-8","\t","\"");
+        }
         addPage(mainPage);
+        addPage(page2);
     }
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
