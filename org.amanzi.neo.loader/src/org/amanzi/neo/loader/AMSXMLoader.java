@@ -708,8 +708,8 @@ public class AMSXMLoader extends AbstractCallLoader {
             assert hook.equals(simplex) : hook + "\t" + simplex;
             if (tocttc != null) {
                 if (hook == 0 && simplex == 0) {
-                    tocttc.setCallSetupEndTime((Long)node.getProperty("connectTime", 0));
-                    tocttc.setCallTerminationEnd((Long)node.getProperty("releaseTime", 0));
+                    tocttc.setCallSetupEndTime((Long)node.getProperty("connectTime", 0l));
+                    tocttc.setCallTerminationEnd((Long)node.getProperty("releaseTime", 0l));
                     if (getPropertyMap().get("errorCode") != null) {
                         tocttc.setCallResult(CallResult.FAILURE);
                     }
@@ -855,8 +855,8 @@ public class AMSXMLoader extends AbstractCallLoader {
                     Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
                     tocttc.setCallerProbe(callerProbe);
                     tocttc.setCalledPhoneNumber(getPropertyMap().get("calledNumber"));
-                    tocttc.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0));
-                    tocttc.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0));
+                    tocttc.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0l));
+                    tocttc.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0l));
                 } else if (hook == 1 && simplex == 1) {
                     tocttcGroup = new AMSCall();
                     call = tocttc;
