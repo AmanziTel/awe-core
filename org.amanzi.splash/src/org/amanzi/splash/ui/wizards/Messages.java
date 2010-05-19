@@ -25,6 +25,13 @@ import org.eclipse.osgi.util.NLS;
  */
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.amanzi.splash.ui.wizards.messages"; //$NON-NLS-1$
+    public static String CSVPropertyWizardPage_0;
+    public static String CSVPropertyWizardPage_1;
+    public static String CSVPropertyWizardPage_2;
+    public static String CSVPropertyWizardPage_3;
+    public static String CSVPropertyWizardPage_4;
+    public static String CSVPropertyWizardPage_5;
+    public static String CSVPropertyWizardPage_6;
     public static String ExportSplashToCsvWizardPage_0;
     public static String ExportSplashToCsvWizardPage_1;
     public static String ExportSplashToCsvWizardPage_2;

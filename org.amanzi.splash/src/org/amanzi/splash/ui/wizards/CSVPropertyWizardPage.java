@@ -27,10 +27,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
- * Wizard page
+ * Wizard page contains information about CSV properties
  * </p>.
  *
  * @author tsinkel_a
@@ -40,10 +39,10 @@ public class CSVPropertyWizardPage  extends WizardPage {
 
 
     /** String SPACE field. */
-    public static final String SPACE = "SPACE";
+    public static final String SPACE = Messages.CSVPropertyWizardPage_0;
     
     /** String TAB field. */
-    public static final String TAB = "TAB";
+    public static final String TAB = Messages.CSVPropertyWizardPage_1;
     
     /** The main. */
     private Group main;
@@ -76,8 +75,8 @@ public class CSVPropertyWizardPage  extends WizardPage {
      */
     public CSVPropertyWizardPage(String pageName,String charset,String fieldDel,String textDel) {
         super(pageName);
-        setTitle("CSV properties:");
-        setDescription("Select CSV properties:");
+        setTitle(Messages.CSVPropertyWizardPage_2);
+        setDescription(Messages.CSVPropertyWizardPage_3);
         charsetValue = charset;
         fieldDelValue = fieldDel;
 
@@ -95,18 +94,18 @@ public class CSVPropertyWizardPage  extends WizardPage {
         main.setLayout(new GridLayout(3, false));
 
         Label label = new Label(main, SWT.LEFT);
-        label.setText("Character set");
+        label.setText(Messages.CSVPropertyWizardPage_4);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         
         charset=new Combo(main,SWT.BORDER|SWT.READ_ONLY);
         charset.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1)); 
         label = new Label(main, SWT.LEFT);
-        label.setText("Field delimeter");
+        label.setText(Messages.CSVPropertyWizardPage_5);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         fieldDel=new Combo(main,SWT.BORDER);
         fieldDel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));   
         label = new Label(main, SWT.LEFT);
-        label.setText("Text delimeter");
+        label.setText(Messages.CSVPropertyWizardPage_6);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         textDel=new Combo(main,SWT.BORDER);
         textDel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));   
@@ -139,9 +138,9 @@ public class CSVPropertyWizardPage  extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 fieldDelValue=fieldDel.getText();
                 if (TAB.equals(fieldDelValue)){
-                    fieldDelValue= "\t";
+                    fieldDelValue= "\t"; //$NON-NLS-1$
                 }else if (SPACE.equals(fieldDelValue)){
-                    fieldDelValue=" ";
+                    fieldDelValue=" "; //$NON-NLS-1$
                 }
             }
             
@@ -171,15 +170,15 @@ public class CSVPropertyWizardPage  extends WizardPage {
         Set<String> set = Charset. availableCharsets().keySet();
         charset.setItems(set.toArray(new String[0]));
         charset.setText(charsetValue);
-        fieldDel.setItems(new String[]{TAB,SPACE,";","."});
-        if (fieldDelValue.equals("\t")){
+        fieldDel.setItems(new String[]{TAB,SPACE,";","."}); //$NON-NLS-1$ //$NON-NLS-2$
+        if (fieldDelValue.equals("\t")){ //$NON-NLS-1$
             fieldDel.setText(TAB);
-        }else if (fieldDelValue.equals(" ")){
+        }else if (fieldDelValue.equals(" ")){ //$NON-NLS-1$
             fieldDel.setText(SPACE);
         }else{
             fieldDel.setText(fieldDelValue);
         }
-        textDel.setItems(new String[]{"\"","'"});
+        textDel.setItems(new String[]{"\"","'"}); //$NON-NLS-1$ //$NON-NLS-2$
         textDel.setText(textDelValue);
     }
 

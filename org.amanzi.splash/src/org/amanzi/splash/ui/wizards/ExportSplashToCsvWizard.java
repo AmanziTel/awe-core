@@ -162,7 +162,8 @@ public class ExportSplashToCsvWizard extends Wizard implements IExportWizard {
             mainPage = new ExportSplashToCsvWizardPage("mainPage");
         }
         if (page2 == null) {
-            page2 = new CSVPropertyWizardPage("propertyCSV","UTF-8","\t","\"");
+            //TODO add load/store common values in memento/preference
+             page2 = new CSVPropertyWizardPage("propertyCSV","UTF-8","\t","\"");
         }
         addPage(mainPage);
         addPage(page2);
