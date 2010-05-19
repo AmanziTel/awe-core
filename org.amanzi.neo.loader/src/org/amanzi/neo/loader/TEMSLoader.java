@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -46,6 +47,7 @@ import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 public class TEMSLoader extends DriveLoader {
+    Pattern signalProp=Pattern.compile("(all_((active)|(pilot))_set_channel.*)|(all_((active)|(pilot))_set_pn.*)|(all_((active)|(pilot))_set_ec_io.*)|(all_((active)|(pilot))_set_count)");
     private static final String TIMESTAMP_DATE_FORMAT = "HH:mm:ss.S";
     private static final String MS_KEY = "ms";
     // private Node point = null;
@@ -176,6 +178,15 @@ public class TEMSLoader extends DriveLoader {
         addMappedHeader(1, "all_rxqual_full","All-RxQual Full", "all_rxqual_full", intMapper);
         addMappedHeader(1, "all_rxqual_sub","All-RxQual Sub", "all_rxqual_sub", intMapper);
         addMappedHeader(1, "all_sqi","All-SQI", "all_sqi", intMapper);
+        List<String>keys=new ArrayList<String>();
+        
+        for (int i=1;i<=12;i++){
+            keys.add("all_active_set_channel_"+i);
+            keys.add("all_active_set_pn_"+i);
+            keys.add("all_active_set_ec_io_"+i);
+        }
+        keys.add("all_pilot_set_count");
+        addNonDataHeaders(1, keys);
         PropertyMapper floatMapper = new PropertyMapper() {
             
             @Override
@@ -348,6 +359,9 @@ public class TEMSLoader extends DriveLoader {
                         findOrCreateFileNode(m);
                         m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
                         for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
+                            if (isMMProperties(entry.getKey())){
+                                continue;
+                            }
                             if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
                                 mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
                                 // ms.setProperty(INeoConstants.SECTOR_ID_PROPERTIES,
@@ -471,6 +485,11 @@ public class TEMSLoader extends DriveLoader {
         last_line = 0;
     }
 
+
+    private boolean isMMProperties(String string) {
+        return  signalProp.matcher(string).matches();
+    }
+
     /**
      *get name of virtual dataset
      * 
@@ -565,5 +584,17 @@ public class TEMSLoader extends DriveLoader {
         }
         
         return result;
+    }
+    @Override
+    protected void saveProperties() {
+        LinkedHashMap<String, Header> header = getHeaderMap(1).headers;
+        Iterator<String> iter = header.keySet().iterator();
+        while (iter.hasNext()){
+            String key = iter.next();
+            if (isMMProperties(key)){
+                iter.remove();
+            }
+        }
+        super.saveProperties();
     }
 }

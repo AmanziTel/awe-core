@@ -16,8 +16,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -47,17 +45,12 @@ import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.model.ams01.InterfaceData;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.PlatformUI;
-import org.exolab.castor.mapping.MappingException;
-import org.exolab.castor.xml.MarshalException;
-import org.exolab.castor.xml.Unmarshaller;
-import org.exolab.castor.xml.ValidationException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -371,12 +364,7 @@ public class LoaderUtils {
         int idx = fileName.lastIndexOf(".");
         return idx < 1 ? "" : fileName.substring(idx);
     }
-    public static void main(String[] args) throws IOException, MappingException, MarshalException, ValidationException {
-        InterfaceData interfac = (InterfaceData) 
-        Unmarshaller.unmarshal(InterfaceData.class,  new FileReader("C://2/Cluster.xml"));
-        interfac.getEvents();
-//        SourceGeneratorMain.main(new String[]{"-i","C://c/Spec1.xsd","-binding-file","C://c/bind.xml","-package","org.amanzi.neo.loader.model.ams01"});
-    }
+
 
 
     public static File getFirstFile(String dirName) {

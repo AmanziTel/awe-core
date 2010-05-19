@@ -1310,7 +1310,7 @@ public abstract class AbstractLoader {
         }
     }
     protected abstract String getPrymaryType(Integer key);
-    protected final void saveProperties() {
+    protected void saveProperties() {
         for (Map.Entry<Integer, HeaderMaps> entryHeader : headersMap.entrySet()) {
             Node storingRootNode = getStoringNode(entryHeader.getKey());
             if (storingRootNode != null) {
