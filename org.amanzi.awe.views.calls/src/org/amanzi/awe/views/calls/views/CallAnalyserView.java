@@ -62,8 +62,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -420,38 +418,52 @@ public class CallAnalyserView extends ViewPart {
         // create row composite
         Composite rowComposite = new Composite(frame, SWT.FILL);
         FormData fData = new FormData();
-        fData.top = new FormAttachment(0, 2);
         fData.left = new FormAttachment(0, 2);
         fData.right = new FormAttachment(100, -2);
         rowComposite.setLayoutData(fData);
-        GridLayout layout = new GridLayout(9, false);
+        FormLayout layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
         rowComposite.setLayout(layout);
         // ------ fill row
         // drive
+        FormData layoutData = new FormData();
+        layoutData.left = new FormAttachment(0, 2);
+        layoutData.top = new FormAttachment(0, 5);
+        
         Label label = new Label(rowComposite, SWT.FLAT);
         label.setText(LBL_DRIVE);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        label.setLayoutData(layoutData);
         cDrive = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
-        GridData layoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
-        layoutData.minimumWidth = MIN_FIELD_WIDTH;
+        layoutData = new FormData();
+        layoutData.left = new FormAttachment(label, 2);
+        layoutData.width = MIN_FIELD_WIDTH;        
         cDrive.setLayoutData(layoutData);
         
         //call type
+        layoutData = new FormData();
+        layoutData.left = new FormAttachment(cDrive, 2);
+        layoutData.top = new FormAttachment(0, 5);
         label = new Label(rowComposite, SWT.FLAT);
         label.setText(LBL_CALL_TYPE);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        label.setLayoutData(layoutData);
         cCallType = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
-        layoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
-        layoutData.minimumWidth = MIN_FIELD_WIDTH;
+        layoutData = new FormData();
+        layoutData.left = new FormAttachment(label, 2);
+        layoutData.width = MIN_FIELD_WIDTH;
         cCallType.setLayoutData(layoutData);
         
         // probe
+        layoutData = new FormData();
+        layoutData.left = new FormAttachment(cCallType, 2);
+        layoutData.top = new FormAttachment(0, 5);
         label = new Label(rowComposite, SWT.FLAT);
         label.setText(LBL_PROBE);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        label.setLayoutData(layoutData);
         cProbe = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
-        layoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
-        layoutData.minimumWidth = MIN_FIELD_WIDTH;
+        layoutData = new FormData();
+        layoutData.left = new FormAttachment(label, 2);
+        layoutData.width = MIN_FIELD_WIDTH;
         cProbe.setLayoutData(layoutData);
         // // Start time
         // label = new Label(rowComposite, SWT.FLAT);
@@ -472,18 +484,22 @@ public class CallAnalyserView extends ViewPart {
         // dateEnd.setLayoutData(dateStartlayoutData);
 
         // Period
+        layoutData = new FormData();
+        layoutData.left = new FormAttachment(cProbe, 2);
+        layoutData.top = new FormAttachment(0, 5);
         label = new Label(rowComposite, SWT.FLAT);
         label.setText(LBL_PERIOD);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        label.setLayoutData(layoutData);
         cPeriod = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
-        layoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
-        layoutData.minimumWidth = MIN_FIELD_WIDTH;
+        layoutData = new FormData();
+        layoutData.left = new FormAttachment(label, 2);
+        layoutData.width = MIN_FIELD_WIDTH;
         cPeriod.setLayoutData(layoutData);        
         
         bExport = new Button(rowComposite, SWT.PUSH);
         bExport.setText(LB_EXPORT);
-        layoutData = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
-        //layoutData.minimumWidth = MIN_FIELD_WIDTH;
+        layoutData = new FormData();
+        layoutData.right = new FormAttachment(100, -2);
         bExport.setLayoutData(layoutData);
         
         // ------- table
