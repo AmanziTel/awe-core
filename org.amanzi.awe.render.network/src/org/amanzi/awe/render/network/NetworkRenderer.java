@@ -401,7 +401,8 @@ public class NetworkRenderer extends RendererImpl {
                         }
                     }
                 }
-                renderSite(g, p, borderColor, siteColor, drawSize, drawFull, drawLite, selected);
+                Color colorSite=getSectorColor(node.getNode(),siteColor);
+                renderSite(g, p, borderColor, colorSite, drawSize, drawFull, drawLite, selected);
                 nodesMap.put(node.getNode(), p);
                 if (drawFull) {
                     int countOmnis = 0;
