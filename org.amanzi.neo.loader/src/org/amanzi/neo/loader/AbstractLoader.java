@@ -1234,7 +1234,9 @@ public abstract class AbstractLoader {
      * because it is possible, or even probable, to write an importer that does not need it.
      */
     protected void finishUp() {
-        addRootToProject();
+        if (!isTest()) {
+            addRootToProject();
+        }
         commit(true);
         
     }

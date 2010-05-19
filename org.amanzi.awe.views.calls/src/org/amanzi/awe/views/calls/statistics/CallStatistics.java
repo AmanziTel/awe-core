@@ -233,8 +233,7 @@ public class CallStatistics {
     private Pair<Long, Long> getTimeBounds(Node dataset) {
         Transaction transaction = neoService.beginTx();
         try {
-            Node gisNode = NeoUtils.findGisNodeByChild(dataset,neoService);
-            return NeoUtils.getMinMaxTimeOfDataset(gisNode, neoService);
+            return NeoUtils.getMinMaxTimeOfDataset(dataset, neoService);
         } finally {
             transaction.finish();
         }
