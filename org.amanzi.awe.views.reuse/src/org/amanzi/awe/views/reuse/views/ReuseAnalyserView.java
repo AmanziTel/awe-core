@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -232,7 +231,9 @@ public class ReuseAnalyserView extends ViewPart {
     // error messages for statistic calculation
     private String errorMsg = UNKNOWN_ERROR;
     
-    private ArrayList<Pair<Node, Node>> correlationUpdate = new ArrayList<Pair<Node,Node>>();
+    private final ArrayList<Pair<Node, Node>> correlationUpdate = new ArrayList<Pair<Node,Node>>();
+
+    private ReturnableEvaluator propertyReturnableEvalvator;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -241,7 +242,7 @@ public class ReuseAnalyserView extends ViewPart {
         gisSelected = new Label(parent, SWT.NONE);
         gisSelected.setText(GIS_LABEL);
         gisCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
-        gisCombo.setItems(getGisItems());
+        gisCombo.setItems(getRootItems());
         gisCombo.setEnabled(true);
         propertySelected = new Label(parent, SWT.NONE);
         propertySelected.setText(PROPERTY_LABEL);
@@ -464,9 +465,9 @@ public class ReuseAnalyserView extends ViewPart {
                     setVisibleForChart(false);
                     tSelectedInformation.setText("");
                 } else {
-                    Node gisNode = members.get(gisCombo.getText());
-                    cSelect.setEnabled(isAggregatedDataset(gisNode));
-                    formPropertyList(gisNode);
+                    Node rootNode = members.get(gisCombo.getText());
+                    cSelect.setEnabled(isAggregatedDataset(rootNode));
+                    formPropertyList(rootNode);
                 }
                 propertyCombo.setItems(propertyList.toArray(new String[] {}));
             }
@@ -745,19 +746,16 @@ public class ReuseAnalyserView extends ViewPart {
         setColorThema(coloredTheme);
         setVisibleForColoredTheme(coloredTheme);
         setVisibleForNotColoredTheme(!coloredTheme);
-        if (coloredTheme) {
-        } else {
-
-        }
         chartUpdate();
     }
 
     private boolean isAggregatedDataset(Node gisNode) {
-        if (!NeoUtils.isGisNode(gisNode)) {
-            return true;
+        Node gis = NeoUtils.findGisNodeByChild(gisNode);
+        if (gis==null){
+            return false;
         }
-        GeoNeo geoNeo = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
-        boolean isAggregated = geoNeo.getGisType() == GisTypes.DRIVE;
+        GeoNeo geoNeo = new GeoNeo(NeoServiceProvider.getProvider().getService(), gis);
+        boolean isAggregated = geoNeo.getGisType() != GisTypes.NETWORK;
         // if (!isAggregated) {
         // LOGGER.debug("GIS '" + geoNeo + "' is not drive: " + geoNeo.getGisType());
         // }
@@ -1170,7 +1168,7 @@ public class ReuseAnalyserView extends ViewPart {
      */
     private void setSelection(ChartNode columnKey) {
 
-        Node gisNode = members.get(gisCombo.getText());
+        Node gisNode = NeoUtils.findGisNodeByChild(members.get(gisCombo.getText()));
         Node aggrNode = dataset.getAggrNode();
         if (selectedColumn != null) {
             selectedColumn = columnKey;
@@ -1230,6 +1228,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @param columnKey property node for redraw action
      */
     protected void fireLayerDrawEvent(Node gisNode, Node aggrNode, ChartNode columnKey) {
+        gisNode=NeoUtils.findGisNodeByChild(gisNode);
         // necessary for visible changes in renderers
         NeoServiceProvider.getProvider().commit();
         int adj = spinAdj.getSelection();
@@ -1246,11 +1245,11 @@ public class ReuseAnalyserView extends ViewPart {
     /**
      * Finds aggregate node or creates if node does not exist
      * 
-     * @param gisNode GIS node
+     * @param rootNode GIS node
      * @param propertyName name of property
      * @return necessary aggregates node
      */
-    protected void findOrCreateAggregateNodeInNewThread(final Node gisNode, final String propertyName) {
+    protected void findOrCreateAggregateNodeInNewThread(final Node rootNode, final String propertyName) {
         // TODO restore focus after job execute or not necessary?
         String select = cSelect.getText();
         //TODO Pechko_E: during refactoring of the following code 
@@ -1259,7 +1258,7 @@ public class ReuseAnalyserView extends ViewPart {
             select = Select.EXISTS.toString();
         }
         mainView.setEnabled(false);
-        ComputeStatisticsJob job = new ComputeStatisticsJob(gisNode, propertyName, cDistribute.getText(), select);
+        ComputeStatisticsJob job = new ComputeStatisticsJob(rootNode, propertyName, cDistribute.getText(), select);
         job.schedule();
     }
 
@@ -1457,26 +1456,31 @@ public class ReuseAnalyserView extends ViewPart {
         } else if (isStringProperty(propertyName)) {
             return createStringChart(gisNode, aggrNode, propertyName, distribute, select, monitor);
         }
-
+        Node rootNode=gisNode;
         boolean isAggregatedProperty = isAggregatedProperty(propertyName);
         Map<Node, Number> mpMap = new HashMap<Node, Number>();
         // List<Number> aggregatedValues = new ArrayList<Number>();
         final GisTypes typeOfGis;
         int totalWork;
-        if (NeoUtils.getNodeType(gisNode, "").equals(NodeTypes.OSS.getId())) {
-            typeOfGis = GisTypes.NETWORK;
+        gisNode = NeoUtils.findGisNodeByChild(gisNode);
+        if (gisNode==null/*||NeoUtils.getNodeType(gisNode, "").equals(NodeTypes.OSS.getId())*/){
             select = Select.EXISTS;
-            totalWork = 1000;
+            totalWork = 1000;  
+            typeOfGis = GisTypes.NETWORK;
+            
         } else {
-            gisNode = NeoUtils.findGisNodeByChild(gisNode);
             GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
             typeOfGis = geoNode.getGisType();
+            if (typeOfGis == GisTypes.NETWORK){
+                select = Select.EXISTS;
+            }
             totalWork = (int)geoNode.getCount() * 2;
         }
         LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
         monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
         TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
-        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD,
+        Node startTraverse=rootNode.hasRelationship(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)||gisNode==null?rootNode:gisNode;
+        Traverser travers = startTraverse.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
                 Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
 
         Double min = null;
@@ -1641,7 +1645,7 @@ public class ReuseAnalyserView extends ViewPart {
         }
         runGcIfBig(totalWork);
         if (isAggregatedProperty) {
-            travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD,
+            travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
                     Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             monitor.subTask("Building results from database");
             for (Node node : travers) {
@@ -1663,7 +1667,7 @@ public class ReuseAnalyserView extends ViewPart {
                     break;
             }
         } else if (typeOfGis == GisTypes.NETWORK || select == Select.EXISTS) {
-            travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD,
+            travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
                     Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             monitor.subTask("Building results from database");
             for (Node node : travers) {
@@ -1759,7 +1763,7 @@ public class ReuseAnalyserView extends ViewPart {
                 columns.add(column);
             }
             // linked node
-            Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new PropertyReturnableEvalvator(), NetworkRelationshipTypes.CHILD,
+            Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
                     Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
             for (Node node : travers) {
                 if (node.hasProperty(propertyName)) {
@@ -1837,9 +1841,9 @@ public class ReuseAnalyserView extends ViewPart {
      * @return
      */
     private boolean computeTransmissionStatistics(Node neighbour, Node aggrNode, String propertyName2, Distribute distribute, Select select, IProgressMonitor monitor) {
-        Node gisNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING).getOtherNode(neighbour);
+        Node rootNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING).getOtherNode(neighbour);
         final String neighbourName = NeoUtils.getSimpleNodeName(neighbour, "");
-        GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
+        GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), NeoUtils.findGisNodeByChild(rootNode));
         int totalWork = (int)geoNode.getCount() * 2;
         LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
         monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
@@ -1859,7 +1863,7 @@ public class ReuseAnalyserView extends ViewPart {
                 return result;
             }
         };
-        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+        Traverser travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
 
         GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
 
@@ -1931,7 +1935,7 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         runGcIfBig(totalWork);
-        travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+        travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
                 GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         monitor.subTask("Building results from database");
         for (Node node : travers) {
@@ -1980,9 +1984,9 @@ public class ReuseAnalyserView extends ViewPart {
      * @return
      */
     private boolean computeNeighbourStatistics(Node neighbour, Node aggrNode, String propertyName2, Distribute distribute, Select select, IProgressMonitor monitor) {
-        Node gisNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING).getOtherNode(neighbour);
+        Node rootNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING).getOtherNode(neighbour);
         final String neighbourName = NeoUtils.getSimpleNodeName(neighbour, "");
-        GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
+        GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), NeoUtils.findGisNodeByChild(rootNode));
         int totalWork = (int)geoNode.getCount() * 2;
         LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
         monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
@@ -2002,7 +2006,7 @@ public class ReuseAnalyserView extends ViewPart {
                 return result;
             }
         };
-        Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+        Traverser travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
                 GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
 
         Double min = null;
@@ -2073,7 +2077,7 @@ public class ReuseAnalyserView extends ViewPart {
             }
         }
         runGcIfBig(totalWork);
-        travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
+        travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
                 GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         monitor.subTask("Building results from database");
         for (Node node : travers) {
@@ -2531,44 +2535,53 @@ public class ReuseAnalyserView extends ViewPart {
             propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
         }
         setVisibleForChart(false);
+        final String nodeTypeId=getNodeTypeId(node);
+        propertyReturnableEvalvator=new ReturnableEvaluator() {
+            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
+            }
+        };
     }
 
+
     /**
+     * Gets the node type id.
+     *
+     * @param node the node
+     * @return the node type id
+     */
+    private String getNodeTypeId(Node node) {
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        return NeoUtils.getPrimaryType(node,service);
+    }
+
+ /**
      * Forms list of GIS nodes
      * 
      * @return array of GIS nodes
      */
-    private String[] getGisItems() {
+    private String[] getRootItems() {
         GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-        Node refNode = service.getReferenceNode();
         members = new LinkedHashMap<String, Node>();
-        for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
-            Node node = relationship.getEndNode();
-            Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "");
-            if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-                    && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(NodeTypes.GIS.getId())) {
-                String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-                members.put(id, node);
-                if (GisTypes.NETWORK.getHeader().equals(type)) {
-                    for (Relationship ret : node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
-                        Node neigh = ret.getOtherNode(node);
-                        members.put(id + ": " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
-                    }
-                    for (Relationship ret : node.getRelationships(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING)) {
-                        Node neigh = ret.getOtherNode(node);
-                        members.put(id + "-> " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
-                    }
-                    Node networkNode = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node);
-                    if (networkNode.hasRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)) {
-                        members.put(id + "(site data)", networkNode);
-                    }
-                }
-            } else if (NodeTypes.OSS.checkNode(node)) {
-                members.put(NeoUtils.getSimpleNodeName(node, ""), node);
+        for (Node node : NeoUtils.getAllRootTraverser(service, null)) {
+            String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            members.put(id, node);
+            for (Relationship ret : node.getRelationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)) {
+                Node neigh = ret.getOtherNode(node);
+                members.put((String)neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
+            }
+            for (Relationship ret : node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
+                Node neigh = ret.getOtherNode(node);
+                members.put(id + ": " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
+            }
+            for (Relationship ret : node.getRelationships(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING)) {
+                Node neigh = ret.getOtherNode(node);
+                members.put(id + "-> " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
             }
         }
         return members.keySet().toArray(new String[] {});
-
     }
 
     /**
@@ -2743,37 +2756,37 @@ public class ReuseAnalyserView extends ViewPart {
     public void setFocus() {
     }
 
-    /**
-     * <p>
-     * Implementation of ReturnableEvaluator Returns necessary MS or sector nodes
-     * </p>
-     * 
-     * @author Cinkel_A
-     * @since 1.0.0
-     */
-    private static final class PropertyReturnableEvalvator implements ReturnableEvaluator {
-        private final HashSet<String> propertyList;
-
-        public PropertyReturnableEvalvator() {
-            super();
-            propertyList = new HashSet<String>();
-            propertyList.add(NodeTypes.M.getId());
-            propertyList.add("mv");
-            propertyList.add(NodeTypes.SECTOR.getId());
-            propertyList.add(NodeTypes.HEADER_MS.getId());
-            propertyList.add(NodeTypes.PROBE.getId());
-            propertyList.add(NodeTypes.CALL.getId());
-            propertyList.add(NodeTypes.UTRAN_DATA.getId());
-            propertyList.add(NodeTypes.GPEH_EVENT.getId());
-        }
-
-        @Override
-        public boolean isReturnableNode(TraversalPosition traversalposition) {
-            Node curNode = traversalposition.currentNode();
-            Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-            return type != null && propertyList.contains(type);
-        }
-    }
+//    /**
+//     * <p>
+//     * Implementation of ReturnableEvaluator Returns necessary MS or sector nodes
+//     * </p>
+//     * 
+//     * @author Cinkel_A
+//     * @since 1.0.0
+//     */
+//    private static final class PropertyReturnableEvalvator implements ReturnableEvaluator {
+//        private final HashSet<String> propertyList;
+//
+//        public PropertyReturnableEvalvator() {
+//            super();
+//            propertyList = new HashSet<String>();
+//            propertyList.add(NodeTypes.M.getId());
+//            propertyList.add("mv");
+//            propertyList.add(NodeTypes.SECTOR.getId());
+//            propertyList.add(NodeTypes.HEADER_MS.getId());
+//            propertyList.add(NodeTypes.PROBE.getId());
+//            propertyList.add(NodeTypes.CALL.getId());
+//            propertyList.add(NodeTypes.UTRAN_DATA.getId());
+//            propertyList.add(NodeTypes.GPEH_EVENT.getId());
+//        }
+//
+//        @Override
+//        public boolean isReturnableNode(TraversalPosition traversalposition) {
+//            Node curNode = traversalposition.currentNode();
+//            Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
+//            return type != null && propertyList.contains(type);
+//        }
+//    }
 
     /**
      * <p>
@@ -3079,7 +3092,7 @@ public class ReuseAnalyserView extends ViewPart {
      */
     public void updateGisNode() {
         setSelection(null);
-        String[] gisItems = getGisItems();
+        String[] gisItems = getRootItems();
         gisCombo.setItems(gisItems);
         propertyCombo.setItems(new String[] {});
         setVisibleForChart(false);

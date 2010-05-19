@@ -18,6 +18,7 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
@@ -73,6 +74,8 @@ public enum DataTypes {
             if(type.equals(GisTypes.NETWORK.getHeader())){
                 return NETWORK;
             }
+            Logger.getLogger(DataTypes.class).error("DriveTypes not found for node "+aNode);
+            return null;
         }
         for(DataTypes curr : values()){
             if(key.equals(curr.type)){
