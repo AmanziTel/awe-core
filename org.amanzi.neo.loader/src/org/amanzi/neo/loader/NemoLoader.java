@@ -274,30 +274,22 @@ public class NemoLoader extends DriveLoader {
                     }
                     virtualMnode = mm;
                     for (String key : propertyMap.keySet()) {
-                        setIndexProperty(headersVirt, mm, key, propertyMap.get(key));
+                        
+                        Object parsedValue = propertyMap.get(key);
+                        if (parsedValue!=null&&parsedValue.getClass().isArray()){
+                            setProperty(mm, key, parsedValue);
+                        }else{
+                            setIndexProperty(headersVirt, mm, key, parsedValue);
+                        }
                     }
 
                     index(mm);
                     if (pointNode != null) {
-                        Node virtPointNode;
-                        if (pairNode == null || !pointNode.equals(pairNode.left())) {
-                            virtPointNode = neo.createNode();
-                            for (String key : pointNode.getPropertyKeys()) {
-                                virtPointNode.setProperty(key, pointNode.getProperty(key));
-                            }
-                            index(MM_KEY, virtPointNode);
-                            pairNode = new Pair<Node, Node>(pointNode, virtPointNode);
-                        } else {
-                            virtPointNode = pairNode.getRight();
-                        }
-                        GisProperties gisProperties = getGisProperties(DriveTypes.MS.getFullDatasetName(dataset));
-                        gisProperties.incSaved();
-                        gisProperties.updateBBox(curLat, curLon);
-                        gisProperties.checkCRS(curLat, curLon, null);
-                        mm.createRelationshipTo(virtPointNode, GeoNeoRelationshipTypes.LOCATION);
+                        mm.createRelationshipTo(pointNode, GeoNeoRelationshipTypes.LOCATION);
                     }
                 } catch (Exception e) {
                     NeoLoaderPlugin.exception(e);
+                    e.printStackTrace();
                 }
             }
 

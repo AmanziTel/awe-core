@@ -128,6 +128,7 @@ public enum NemoEvents {
                 String key = "Supported system ";
                 Integer systemCount = getIntegerValue(parameters);
                 for (int i = 0; i < systemCount; i++) {
+                    if (!parameters.hasNext()){break;};
                     TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
                     parsedParameters.put(key + (i + 1), system.getName());
                 }
@@ -2760,6 +2761,7 @@ public enum NemoEvents {
                         subNodes.add(parsedSbParameters);
                         List<String> param = new ArrayList<String>();
                         for (int j = 0; j < cycleLen; j++) {
+                            if (!parameters.hasNext()){break;};
                             param.add(getStringValue(parameters));
                         }
                         parsedSbParameters.put("CQI_", param.toArray(new String[0]));
@@ -2821,6 +2823,7 @@ public enum NemoEvents {
                         subNodes.add(parsedSbParameters);
                         List<String> param = new ArrayList<String>();
                         for (int j = 0; j < cycleLen; j++) {
+                            if (!parameters.hasNext()){break;};
                             param.add(getStringValue(parameters));
                         }
                         parsedSbParameters.put("HARQ", param.toArray(new String[0]));
@@ -2879,6 +2882,7 @@ public enum NemoEvents {
                         subNodes.add(parsedSbParameters);
                         List<String> param = new ArrayList<String>();
                         for (int j = 0; j < cycleLen; j++) {
+                            if (!parameters.hasNext()){break;};
                             param.add(getStringValue(parameters));
                         }
                         parsedSbParameters.put("HSSCCHI", param.toArray(new String[0]));
@@ -2903,16 +2907,23 @@ public enum NemoEvents {
                     parsedParameters.put(key, getIntegerValue(parameters));
                     key = "Sample dur.";
                     parsedParameters.put(key, getIntegerValue(parameters));
+
                     key = "#PLA sets";
-                    final Integer cycle = getIntegerValue(parameters);
+                     Integer cycle = getIntegerValue(parameters);
+                    if (cycle!=7){
+                        //TODO fake for others format
+                        cycle = getIntegerValue(parameters); 
+                    }
                     parsedParameters.put(key, cycle);
                     key = "#params/PLA set";
                     final Integer cycleLen = getIntegerValue(parameters);
                     parsedParameters.put(key, cycleLen);
                     if (cycle != null || cycleLen != null) {
                         for (int i = 0; i < cycle; i++) {
+                            if (!parameters.hasNext()){break;};
                             List<String> param = new ArrayList<String>();
                             for (int j = 0; j < cycleLen; j++) {
+                                if (!parameters.hasNext()){break;};
                                 param.add(getStringValue(parameters));
                             }
                             parsedParameters.put("PLAI_" + i, param.toArray(new String[0]));
@@ -3526,8 +3537,10 @@ public enum NemoEvents {
                     parsedParameters.put("#Params per ch.", cycleLen);
                     if (cycle != null || cycleLen != null) {
                         for (int i = 0; i < cycle; i++) {
+                            if (!parameters.hasNext()){break;};
                             List<String> param = new ArrayList<String>();
                             for (int j = 0; j < cycleLen; j++) {
+                                if (!parameters.hasNext()){break;};
                                 param.add(getStringValue(parameters));
                             }
                             parsedParameters.put("DVBRXL_" + i, param.toArray(new String[0]));
@@ -4260,6 +4273,7 @@ public enum NemoEvents {
                         subNodes.add(parsedSbParameters);
                         List<String> param = new ArrayList<String>();
                         for (int j = 0; j < cycleLen; j++) {
+                            if (!parameters.hasNext()){break;};
                             param.add(getStringValue(parameters));
                         }
                         parsedSbParameters.put("Fingers", param.toArray(new String[0]));
@@ -4395,6 +4409,9 @@ public enum NemoEvents {
                         subNodes.add(parsedSbParameters);
                         List<String> param = new ArrayList<String>();
                         for (int j = 0; j < cycleLen; j++) {
+                            if (!parameters.hasNext()) {
+                                break;
+                            };
                             param.add(getStringValue(parameters));
                         }
                         parsedSbParameters.put("CELLSCAN", param.toArray(new String[0]));
@@ -4612,18 +4629,22 @@ public enum NemoEvents {
                     Integer addCount = getIntegerValue(parameters);
                     Integer removeCount = getIntegerValue(parameters);
                     for (int i = 0; i < addCount; i++) {
+                        if (!parameters.hasNext()){break;};
                         parsedParameters.put("Added SC" + (i + 1), getIntegerValue(parameters));
                     }
                     for (int i = 0; i < removeCount; i++) {
+                        if (!parameters.hasNext()){break;};
                         parsedParameters.put("Removed SC" + (i + 1), getIntegerValue(parameters));
                     }
                 } else if (system.equals(TechnologySystems.CDMA_ONE) || system.equals(TechnologySystems.CDMA_ONE_X)) {
                     Integer addCount = getIntegerValue(parameters);
                     Integer removeCount = getIntegerValue(parameters);
                     for (int i = 0; i < addCount; i++) {
+                        if (!parameters.hasNext()){break;};
                         parsedParameters.put("Added PN (Pilot " + (i + 1) + ")", getIntegerValue(parameters));
                     }
                     for (int i = 0; i < removeCount; i++) {
+                        if (!parameters.hasNext()){break;};
                         parsedParameters.put("Remove PN (Pilot " + (i + 1) + ")", getIntegerValue(parameters));
                     }
                 }
@@ -5138,9 +5159,11 @@ public enum NemoEvents {
                 Integer ulCount = getIntegerValue(parameters);
                 Integer dlCount = getIntegerValue(parameters);
                 for (int i = 0; i < ulCount; i++) {
+                    if (!parameters.hasNext()){break;};
                     parsedParameters.put("CS TNs (TSL UL" + (i + 1) + ")", getIntegerValue(parameters));
                 }
                 for (int i = 0; i < dlCount; i++) {
+                    if (!parameters.hasNext()){break;};
                     parsedParameters.put("CS TNs (TSL DL" + (i + 1) + ")", getIntegerValue(parameters));
                 }
 
@@ -5174,6 +5197,7 @@ public enum NemoEvents {
                         parsedParameters.put("MAIO", getIntegerValue(parameters));
                         Integer groupCount = getIntegerValue(parameters);
                         for (int i = 0; i < groupCount; i++) {
+                            if (!parameters.hasNext()){break;};
                             parsedParameters.put("Channel " + (i + 1), getIntegerValue(parameters));
                         }
                     } else {
@@ -6166,7 +6190,7 @@ public enum NemoEvents {
                 parsedParameters.put("Subchannel", getStringValue(parameters));
                 parsedParameters.put("RRC msg", getStringValue(parameters));
                 // TODO check types
-                parsedParameters.put("RRC data", getIntegerValue(parameters));
+                parsedParameters.put("RRC data", getStringValue(parameters));
             }
             return parsedParameters;
         }
@@ -6932,9 +6956,11 @@ public enum NemoEvents {
                     Integer ulCount = getIntegerValue(parameters);
                     Integer dlCount = getIntegerValue(parameters);
                     for (int i = 0; i < ulCount; i++) {
+                        if (!parameters.hasNext()){break;};
                         parsedParameters.put("PS TN (TSL UL " + (i + 1) + ")", getIntegerValue(parameters));
                     }
                     for (int i = 0; i < dlCount; i++) {
+                        if (!parameters.hasNext()){break;};
                         parsedParameters.put("PS TN (TSL DL " + (i + 1) + ")", getIntegerValue(parameters));
                     }
                     parsedParameters.put("NW operation", getIntegerValue(parameters));
@@ -7915,6 +7941,7 @@ public enum NemoEvents {
                     Integer groupCount = getIntegerValue(parameters);
                     parsedParameters.put("#MMS files", groupCount);
                     for (int i = 0; i < groupCount; i++) {
+                        if (!parameters.hasNext()){break;};
                         parsedParameters.put("MMS filename (file " + (i + 1) + ")", getStringValue(parameters));
                     }
                 }
