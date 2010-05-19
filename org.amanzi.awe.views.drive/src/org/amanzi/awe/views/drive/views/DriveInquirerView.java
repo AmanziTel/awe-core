@@ -1140,7 +1140,9 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
      */
     private void setTimeFromField() {
         GregorianCalendar cl = new GregorianCalendar();
-        cl.setTimeInMillis(dateStartTimestamp);
+        if (dateStartTimestamp!=null){
+            cl.setTimeInMillis(dateStartTimestamp);
+        }
         cl.set(Calendar.HOUR_OF_DAY, dateStart.getHours());
         cl.set(Calendar.MINUTE, dateStart.getMinutes());
         cl.set(Calendar.SECOND, dateStart.getSeconds());
