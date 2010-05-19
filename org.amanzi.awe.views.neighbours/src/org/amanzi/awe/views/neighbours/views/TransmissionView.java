@@ -74,6 +74,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
@@ -527,9 +528,9 @@ public class TransmissionView extends ViewPart {
         // Transaction tx = NeoUtils.beginTransaction();
         List<String> neighbourName = new ArrayList<String>();
         // try{
-        Node gisNode = network.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getOtherNode(network);
-        for (Relationship relation : gisNode.getRelationships(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING)) {
-            neighbourName.add(NeoUtils.getSimpleNodeName(relation.getOtherNode(gisNode), null));
+//        Node gisNode = network.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getOtherNode(network);
+        for (Relationship relation : network.getRelationships(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING)) {
+            neighbourName.add(NeoUtils.getSimpleNodeName(relation.getOtherNode(network), null));
         }
         neighbour.setItems(neighbourName.toArray(new String[0]));
         // }finally{
@@ -786,7 +787,8 @@ public class TransmissionView extends ViewPart {
         if (gis == null || neighbour.getSelectionIndex() < 0) {
             return null;
         }
-        return NeoUtils.findTransmission(gis, neighbour.getText(), NeoServiceProvider.getProvider().getService());
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        return NeoUtils.findTransmission(NeoUtils.findRoot(gis, service), neighbour.getText(), service);
     }
 
     /**

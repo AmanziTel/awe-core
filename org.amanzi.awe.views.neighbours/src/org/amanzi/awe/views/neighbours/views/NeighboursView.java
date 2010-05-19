@@ -545,9 +545,9 @@ public class NeighboursView extends ViewPart {
         // Transaction tx = NeoUtils.beginTransaction();
         List<String> neighbourName = new ArrayList<String>();
         // try{
-            Node gisNode = network.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getOtherNode(network);
-            for (Relationship relation : gisNode.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
-                neighbourName.add(NeoUtils.getSimpleNodeName(relation.getOtherNode(gisNode), null));
+//            Node gisNode = network.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getOtherNode(network);
+            for (Relationship relation : network.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
+                neighbourName.add(NeoUtils.getSimpleNodeName(relation.getOtherNode(network), null));
             }
             neighbour.setItems(neighbourName.toArray(new String[0]));
         // }finally{
@@ -788,7 +788,7 @@ public class NeighboursView extends ViewPart {
         if (gis == null || neighbour.getSelectionIndex() < 0) {
             return null;
         }
-        return NeoUtils.findNeighbour(gis, neighbour.getText());
+        return NeoUtils.findNeighbour(NeoUtils.findRoot(gis, NeoServiceProvider.getProvider().getService()), neighbour.getText());
     }
 
     /**
